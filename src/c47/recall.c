@@ -3,7 +3,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   static bool_t recallElementReal(real34Matrix_t *matrix) {
     const int16_t i = getIRegisterAsInt(true);
     const int16_t j = getJRegisterAsInt(true);
@@ -23,7 +22,6 @@
     complex34Copy(&matrix->matrixElements[i * matrix->header.matrixColumns + j], REGISTER_COMPLEX34_DATA(REGISTER_X));
     return false;
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -48,20 +46,38 @@ void fnRecall(uint16_t regist) {
 
 
 void fn2Rcl(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 1);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 0);
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 1);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 0);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fn3Rcl(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 2);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 1);
-  setSystemFlag(FLAG_ASLIFT);
-  fnRecall(regist + 0);
+  if((/*regist >= FIRST_GLOBAL_REGISTER &&*/ regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 2);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 1);
+    setSystemFlag(FLAG_ASLIFT);
+    fnRecall(regist + 0);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -377,9 +393,7 @@ void fnRecallConfig(uint16_t regist) {
       moreInfoOnError("In function fnRecallConfig:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  #if !defined(TESTSUITE_BUILD)
-    forceSBupdate();
-  #endif //TESTSUITE_BUILD
+  forceSBupdate();
 }
 
 
@@ -422,7 +436,6 @@ void fnRecallStack(uint16_t regist) {
 static void _fnRecallElement(bool_t stepForward);
 
 void fnRecallVElement(uint16_t ix) {
-  #if !defined(TESTSUITE_BUILD)
   const int16_t iBak = getIRegisterAsInt(true);
   const int16_t jBak = getJRegisterAsInt(true);
 
@@ -430,7 +443,7 @@ void fnRecallVElement(uint16_t ix) {
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t x;
       linkToRealMatrixRegister(REGISTER_X, &x);
-      //printf("ix:%u Rows:%u Cols:%u \n",ix,x.header.matrixRows, x.header.matrixColumns);
+      //printf("ix:%u Rows:%u Cols:%u \n", ix, x.header.matrixRows, x.header.matrixColumns);
       setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
       setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }
@@ -449,12 +462,11 @@ void fnRecallVElement(uint16_t ix) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-    moreInfoOnError("In function fnRecallVElement:", errorMessage, "is not a matrix.", "");
-    #endif
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+      moreInfoOnError("In function fnRecallVElement:", errorMessage, "is not a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -467,26 +479,23 @@ void fnRecallElement(uint16_t unusedButMandatoryParameter) {
 }
 
 void _fnRecallElement(bool_t stepForward) {
-  #if !defined(TESTSUITE_BUILD)
-    if(matrixIndex == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Cannot execute RCLEL without a matrix indexed");
-        moreInfoOnError("In function fnRecallElement:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(matrixIndex == INVALID_VARIABLE) {
+    displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Cannot execute RCLEL without a matrix indexed");
+      moreInfoOnError("In function fnRecallElement:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+  else {
+    callByIndexedMatrix(recallElementReal, recallElementComplex);
+    if(stepForward) {
+      fnIncDecJ(INC_FLAG);
     }
-    else {
-      callByIndexedMatrix(recallElementReal, recallElementComplex);
-      if(stepForward) {
-        fnIncDecJ(INC_FLAG);
-      }
-    }
-  #endif // !TESTSUITE_BUILD
+  }
 }
 
 
 void fnRecallIJ(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -536,5 +545,4 @@ void fnRecallIJ(uint16_t unusedButMandatoryParameter) {
 
       longIntegerFree(zero);
     }
-  #endif // !TESTSUITE_BUILD
 }

@@ -27,12 +27,13 @@
   }
 
   static bool_t checkParamChi2(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if( !getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i)) {
       goto err;
+    }
 
     if(!checkRegisterNoFP(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -138,7 +139,7 @@
     real_t p, q, r, s;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
 
@@ -160,11 +161,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
 
@@ -177,11 +178,11 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
 
@@ -195,19 +196,21 @@
     int32_t loops;
 
     if(realCompareEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
     }
 
     realCopy(x, &reg0);
     loops = 6;
-    int32ToReal(19, &p); p.exponent -= 1;
+    int32ToReal(19, &p);
+    p.exponent -= 1;
     realCopy(realCompareEqual(k, const_1) ? const_0 : k, &q);
     realChangeSign(&q);
     realPower(&p, &q, &p, realContext);
     realDivide(&p, const_pi, &p, realContext);
     if(realCompareGreaterEqual(&reg0, &p)) {
       WP34S_qf_q_est(&reg0, &q, NULL, realContext);
-      int32ToReal(222, &s); s.exponent -= 3;
+      int32ToReal(222, &s);
+      s.exponent -= 3;
       realDivide(&s, k, &s, realContext);
       realSquareRoot(&s, &r, realContext);
       realMultiply(&q, &r, &q, realContext);
@@ -225,7 +228,7 @@
         realSubtract(&t, const_1, &t, realContext);
         realMultiply(&q, &t, &q, realContext);
         realChangeSign(&q);
-        realMultiply(&reg0, const__1, &t, realContext);
+        realMinus(&reg0, &t, realContext);
         WP34S_Ln1P(&t, &t, realContext);
         realAdd(&q, &t, &q, realContext);
         realMultiply(k, const_1on2, &t, realContext);
@@ -279,7 +282,8 @@
       realChangeSign(&r);
       realAdd(&q, &r, &p, realContext);
       // SHOW_CONVERGENCE
-      realCopy(const_1, &r); r.exponent -= 32 /*14*/;
+      realSetOne(&r);
+      r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&p, &q, &r, realContext)) {
         realCopy(&p, res);
         return;
@@ -287,7 +291,7 @@
       realCopy(&p, &q);
     } while(--loops > 0);
 
-    realCopy(const_NaN, res); // ERR 20
+    realSetNaN(res); // ERR 20
   }
 
 #endif //SAVE_SPACE_DM42_15

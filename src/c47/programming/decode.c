@@ -31,38 +31,46 @@ TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_
       nextStep = findNextStep(step);
       if(nextStep) {
         numberOfBytesInStep = (uint16_t)(nextStep - step);
-        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1); fflush(stdout);
+        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1);
+        fflush(stdout);
 
         for(i=0; i<numberOfBytesInStep; i++) {
-          printf(" %02x", *(step + i)); fflush(stdout);
+          printf(" %02x", *(step + i));
+          fflush(stdout);
           if(i == 3 && numberOfBytesInStep > 4) {
             decodeOneStep(step);
             stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
             if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-              printf("   "); fflush(stdout);
+              printf("   ");
+              fflush(stdout);
             }
 
-            printf("   %s", tmpString + 2000); fflush(stdout);
+            printf("   %s", tmpString + 2000);
+            fflush(stdout);
           }
 
           if(i%4 == 3 && i != numberOfBytesInStep - 1) {
-            printf("\n          "); fflush(stdout);
+            printf("\n          ");
+            fflush(stdout);
           }
         }
 
         if(numberOfBytesInStep <= 4) {
           for(i=1; i<=4 - ((numberOfBytesInStep - 1) % 4); i++) {
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
           decodeOneStep(step);
           stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
           if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
 
-          printf("%s", tmpString + 2000); fflush(stdout);
+          printf("%s", tmpString + 2000);
+          fflush(stdout);
         }
       }
 
@@ -145,8 +153,7 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 
 
 static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
-uint8_t  opParam   = *(uint8_t *)(paramAddress);
-uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag number from FLAG_X up, is reported in the high byte, with the low byte being SYSTEM_FLAG_NUMBER = 250
+uint8_t  opParam   = *(uint8_t *)(paramAddress++);
 
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
@@ -157,7 +164,7 @@ uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag numbe
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
       }
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));;
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -240,8 +247,8 @@ uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag numbe
       if(opParam < FLAG_X) { // Global flag from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam == SYSTEM_FLAG_NUMBER && (opParam16 >> 8) <= FLAG_K) { // Lettered flag from X to K
-        sprintf(tmpString, "%s %c", op, registerFlagLetters[(opParam16 >> 8) - FLAG_X]);                //this is weird, because the flag numbers reported is continuously incremental from FLAG_X, i.e. flag M (211), at the boundary, reports as 112, i.e. the unavailable flag just after the previous flag K (111). I tweaked the formula to print right.
+      else if(FLAG_X <= opParam && opParam <= FLAG_K) { // Lettered flag from X to K
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_X]);
       }
       else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
@@ -249,8 +256,8 @@ uint16_t opParam16 = *(uint16_t *)(paramAddress++); // The continuous flag numbe
       else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
-      else if(opParam == SYSTEM_FLAG_NUMBER && (opParam16 >> 8) <= FLAG_W) { // Lettered flag from M to S and E to W
-        sprintf(tmpString, "%s %c", op, registerFlagLetters[(opParam16 >> 8) - FLAG_X]);                //this is weird, because the flag numbers reported is continuously incremental from FLAG_X, i.e. flag M (211), at the boundary, reports as 112, i.e. the unavailable flag just after the previous flag K (111). I tweaked the formula to print right.
+      else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_M + (FLAG_K - FLAG_X + 1)]);
       }
       else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
@@ -466,12 +473,16 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
     else {
       if(!GROUPRIGHT_DISABLED && digit < -1 && (abs(digit) % GROUPWIDTH_RIGHT) == 1) {
         *(strPtr++) = gapChar1Right[0];
-        if(gapChar1Right[1] !=1) *(strPtr++) = gapChar1Right[1];
+        if(gapChar1Right[1] !=1) {
+          *(strPtr++) = gapChar1Right[1];
+        }
       }
       *(strPtr++) = *(srcStr++);
       if(!GROUPLEFT_DISABLED && digit > 1 && (digit % GROUPWIDTH_LEFT) == 1) {
         *(strPtr++) = gapChar1Left[0];
-        if(gapChar1Left[1]!=1) *(strPtr++) = gapChar1Left[1];
+        if(gapChar1Left[1]!=1) {
+          *(strPtr++) = gapChar1Left[1];
+        }
       }
     }
     --digit;
@@ -614,10 +625,10 @@ static void decodeLiteral(uint8_t *literalAddress) {
       getStringLabelOrVariableName(literalAddress);
       _decodeNumeral(tmpString, tmpStringLabelOrVariableName, false, NULL, NULL);
        switch(*(literalAddress - 1)) {
-          case STRING_ANGLE_RADIAN: strcat(tmpString,STD_SUP_r); break;
-          case STRING_ANGLE_GRAD:   strcat(tmpString,STD_SUP_g); break;
-          case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
-          case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
+          case STRING_ANGLE_RADIAN: strcat(tmpString, STD_SUP_r);   break;
+          case STRING_ANGLE_GRAD:   strcat(tmpString, STD_SUP_g);   break;
+          case STRING_ANGLE_DEGREE: strcat(tmpString, STD_DEGREE);  break;
+          case STRING_ANGLE_MULTPI: strcat(tmpString, STD_SUP_pir); break;
           default: break;
         }
       break;
@@ -824,16 +835,24 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
         if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
-          sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemCatalogName);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemSoftmenuName);
+          sprintf(nameOp, "%2i", op - FIRST_CONSTANT + 1);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemCatalogName);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemSoftmenuName);
         }
-        if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
-        else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
-        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
-        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
+        if(op == ITM_op_j) {
+          sprintf(nameOp, "op_%s", COMPLEX_UNIT);
+        }
+        else if(op == ITM_op_j_pol) {
+          sprintf(nameOp, "op_%s" STD_SUB_SUN, COMPLEX_UNIT);
+        }
+        if(nameOp[0] == 0) {
+          strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
+        }
+        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
+          expandConversionName(nameOp);
+        }
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
       }
@@ -857,14 +876,16 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
 
       default: {
         if(op == ITM_INTEGRAL) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
         }
         else
         if(op == ITM_INTEGRAL_YX) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
-          if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
+          if(nameOp[0] == 0) {
+            strcpy(nameOp, indexOfItems[op].itemCatalogName);
+          }
         }
         decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       }

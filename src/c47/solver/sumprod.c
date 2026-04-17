@@ -14,8 +14,6 @@
 
 
 
-#if !defined(TESTSUITE_BUILD)
-
   void showProgressReal(const real_t *a, real_t *ai, bool_t cpx) {
     real34_t a34, ai34;
     #if ENABLE_SOLVER_PROGRESS == 1
@@ -37,7 +35,7 @@
           real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           uint32_t x = 0;
-          if(real34CompareGreaterEqual(&ai34,const34_0)) {
+          if(real34CompareGreaterEqual(&ai34, const34_0)) {
             x = showString("+", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           }
           else {
@@ -70,7 +68,7 @@
     fnToReal(NOPARAM);
     real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &counter); //Loopfrom
     realCopy(prod ? const_1 : const_0, &resultR);           //Initialize real accumulator
-    realCopy(const_0, &resultRi);                           //Initialize complex accumulator
+    realSetZero(&resultRi);                                    //Initialize complex accumulator
 
     real34Subtract(&loopTo, &counter, &rLoop);              //calculate the remaining iteration counter
     if(!real34IsZero(&loopStep)) {
@@ -90,7 +88,7 @@
       displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not count to destination");
-        moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -101,7 +99,7 @@
 
         loop--;
         if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
             showProgressReal(&resultR, &resultRi, changedOverToComplex);
           }
         }
@@ -159,14 +157,14 @@
 
         #if defined(VERBOSE_COUNTER)
           printf(">>> Fin: %d, Cpx: %d ", finished, changedOverToComplex);
-          printReal34ToConsole(&counter," Cnt: ", " ");
-          printRealToConsole(&resultX," X: ", " ");
+          printReal34ToConsole(&counter, " Cnt: ", " ");
+          printRealToConsole(&resultX, " X: ", " ");
           if(changedOverToComplex) {
-            printRealToConsole(&resultXi," Xi: ", " ");
+            printRealToConsole(&resultXi, " Xi: ", " ");
           }
-          printRealToConsole(&resultR," SUM: ", "");
+          printRealToConsole(&resultR, " SUM: ", "");
           if(changedOverToComplex) {
-            printRealToConsole(&resultRi," SUMii: ", " ");
+            printRealToConsole(&resultRi, " SUMii: ", " ");
           }
           printf("\n");
         #endif // VERBOSE_COUNTER
@@ -244,16 +242,11 @@
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void fnProgrammableSum(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkArgument(label, false);
-  #endif // !TESTSUITE_BUILD
+  _checkArgument(label, false);
 }
 
 void fnProgrammableProduct(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkArgument(label, true);
-  #endif // !TESTSUITE_BUILD
+  _checkArgument(label, true);
 }

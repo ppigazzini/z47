@@ -26,7 +26,7 @@ static void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc,
     if(realIsZero(&c)&&realIsZero(&d)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function xthRootComplexComplex: 0th Root is not defined!", NULL, NULL, NULL);
+        moreInfoOnError("In function xthRootComplex: 0th Root is not defined!", NULL, NULL, NULL);
       #endif //  (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
      }
@@ -82,13 +82,13 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsPositive(&y)) && (realCompareLessThan(&x, const_0) && (!realIsInfinite(&x))))
       ) {
       telltale += 1;
-      realCopy(const_0, &o);
+      realSetZero(&o);
     }
 
     //1
     if(((realCompareGreaterEqual(&y, const_0) || (realIsInfinite(&y) && realIsPositive(&y))) && realIsInfinite(&x))) {
       telltale += 2;
-      realCopy(const_1, &o);
+      realSetOne(&o);
     }
 
     //inf
@@ -96,7 +96,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsPositive(&y))          && (realCompareGreaterEqual(&x, const_0) && (!realIsInfinite(&x)))) // (y=+inf)  AND (0>= x > inf)
       ) {
       telltale += 4;
-      realCopy(const_plusInfinity, &o);
+      realSetPlusInfinity(&o);
     }
 
     //NaN
@@ -107,7 +107,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
        || ((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x))) // (y=-inf) AND (x is even > 0) [zero r means n/2 has no remainder, therefore even]
       ) {
       telltale += 8;
-      realCopy(const_NaN, &o);
+      realSetNaN(&o);
     }
 
     //-inf
@@ -115,7 +115,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
     realDivideRemainder(&r, const_2, &r, realContext);
     if((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x))) { // (y=-inf) AND (x is odd > 0) [zero r means (n+1)/2 has no remainder, therefore even]
       telltale += 16;
-      realCopy(const_minusInfinity, &o);
+      realSetMinusInfinity(&o);
     }
 
 
@@ -128,7 +128,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
     if(realIsZero(&x)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function xthRootRealReal: 0th Root is not defined!", NULL, NULL, NULL);
+        moreInfoOnError("In function xthRootReal: 0th Root is not defined!", NULL, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -154,7 +154,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
         if(!getFlag(FLAG_CPXRES)) {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
+            moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
         }
@@ -166,7 +166,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
         realAdd(&x, const_1, &r, realContext);
         realDivideRemainder(&r, const_2, &r, realContext);
         if(realIsZero(&r)) {                                        // negative base and odd exp
-          realDivide(const_1,&x, &x, realContext);
+          realDivide(const_1, &x, &x, realContext);
 
           realSetPositiveSign(&y);
           PowerReal(&y, &x, &x, realContext);
@@ -179,7 +179,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
           if(!getFlag(FLAG_CPXRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
+              moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             return;
           }
@@ -219,7 +219,7 @@ static void doXthRootLonI(void) {
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function doXthRootLonILonI: Cannot divide by 0!", NULL, NULL, NULL);
+      moreInfoOnError("In function doXthRootLonI: Cannot divide by 0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto end2;
   }
@@ -303,13 +303,14 @@ static void doXthRootShoI(void) {
 static void doXthRootReal(void) {
   real_t x, y;
 
-  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   if((realIsInfinite(&x) || realIsInfinite(&y)) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function xthRootRealReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X or Y input of xthRoot when flag D is not set", NULL, NULL);
+      moreInfoOnError("In function doXthRootReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X or Y input of xthRoot when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
@@ -326,9 +327,9 @@ static void doXthRootReal(void) {
 static void doXthRootCplx(void) {                       //checked
   real_t a, b, c, d;
 
-  if(!getRegisterAsComplex(REGISTER_Y, &a, &b)
-      || !getRegisterAsComplex(REGISTER_X, &c, &d))
+  if(!getRegisterAsComplex(REGISTER_Y, &a, &b) || !getRegisterAsComplex(REGISTER_X, &c, &d)) {
     return;
+  }
 
   if(realIsInfinite(&a) || realIsInfinite(&b)) {
     if(realIsZero(&c) && realIsZero(&d)) {

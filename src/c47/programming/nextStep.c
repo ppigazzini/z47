@@ -144,7 +144,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to K, and local registers from .00 to .98 OR value 0 OR value 1
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98 OR value 0 OR value 1
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
@@ -328,7 +328,6 @@ uint8_t *findPreviousStep(uint8_t *step) {
 
 
 static void _showStep(void) {
-  #if !defined(TESTSUITE_BUILD)
     bool_t lblOrEnd;
     uint8_t *tmpStep;
 
@@ -365,7 +364,6 @@ static void _showStep(void) {
     }
 //    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -464,6 +462,15 @@ static void _sstInPem(void) {
   defineFirstDisplayedStep();
 }
 
+
+void showStep(void) {
+  temporaryInformation = TI_NO_INFO;
+  refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
+  refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
+  _showStep();
+}
+
+
 void fnSst(uint16_t unusedButMandatoryParameter) {
   screenUpdatingMode = SCRUPD_AUTO;
   if(calcMode == CM_PEM) {
@@ -488,10 +495,7 @@ void fnSst(uint16_t unusedButMandatoryParameter) {
     _sstInPem();
   }
   else {
-    temporaryInformation = TI_NO_INFO;
-    refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
-    refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
-    _showStep();
+    showStep();
     if(currentInputVariable != INVALID_VARIABLE) {
       if(currentInputVariable & 0x8000) {
         fnDropY(NOPARAM);

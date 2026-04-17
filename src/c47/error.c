@@ -256,7 +256,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
 
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {  
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
   if(errorCode >= NUMBER_OF_ERROR_CODES || errorCode == 0) {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errorCode, "errorCode");
     displayBugScreen(errorMessage);
@@ -295,7 +295,6 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   void nextWord(const char *str, int16_t *pos, char *word) {
     int16_t i = 0;
 
@@ -370,7 +369,6 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 

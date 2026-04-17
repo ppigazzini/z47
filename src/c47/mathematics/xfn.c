@@ -10,9 +10,11 @@
 // The major bignumber reduction must be done outside Taylor
 
 #undef DEBUG_XFN
+#undef DEBUGRESULT_ONLY_XFN
 
 #if !defined(PC_BUILD)
   #undef DEBUG_XFN
+  #undef DEBUGRESULT_ONLY_XFN
 #endif
 
 
@@ -79,6 +81,10 @@
   void fnXXfn_YRTX                (uint16_t registerNo) {
   }
   void fnXXfn_RDP                 (uint16_t digits) {
+  }
+  void fnXXfn_RSD                 (uint16_t digits) {
+  }
+  void fnXXfn_CHS                 (uint16_t registerNo) {
   }
 
 
@@ -205,18 +211,20 @@
 
 
 int32_t realGetDigits(const real1071_t* x) {
-    return ((decNumber*)x)->digits;
+  return ((decNumber*)x)->digits;
 }
 
 void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* fractionalPart, realContext_t* c) {
     // integer part has at most maxAllowedDigits (1000) digits
     #if defined(DEBUG_XFN)
-      realToString((real_t *)x, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 000: input: %s\n", tmpString);
+      realToString((real_t *)x, tmpString);
+      tmpString[debugLongNumberLimit] = 0;
+      printf("decomposeReal 000: input: %s\n", tmpString);
     #endif //DEBUG_XFN
 //--------//--------//--------//--------//-------- pre-check on original x
     int32_t digits = realGetDigits(x);
     digits = (digits < c->digits) ? digits : c->digits;   // smaller of reported digits or context precision
-    if (digits <= 34) {                                   // if the data fits a real, assign the integer to 1
+    if(digits <= 34) {                                    // if the data fits a real, assign the integer to 1
       goto returnUnity;
     }
 
@@ -224,13 +232,15 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     real1071_t mantissa;
     realPlus((real_t*)x, (real_t*)&mantissa, c);          // Normalize to remove trailing zeros with full precision
     int32_t actualDigits = realGetDigits(&mantissa);      // Get actual significant digits after normalization
-    if (actualDigits <= 34) {                             // Fits in real34: integer = 1, fractional = original
+    if(actualDigits <= 34) {                              // Fits in real34: integer = 1, fractional = original
       goto returnUnity;
     }
 
 //--------//--------//--------//--------//-------- adjust mantissa to form integer 'mantissa'
     int32_t actualExponent = realGetExponent(&mantissa);  // For numbers with >34 digits: extract all significant digits as integer, up to 1000
-    if (actualDigits > maxAllowedDigits) actualDigits = maxAllowedDigits;
+    if(actualDigits > maxAllowedDigits) {
+      actualDigits = maxAllowedDigits;
+    }
     int32_t scaleAmount = actualDigits - 1 - actualExponent;  // Scale to make all digits into integer
     mantissa.exponent += scaleAmount;
     realContext_t cc = *c;                                // convert scaled mantissa to integral part, and condition the string
@@ -240,12 +250,14 @@ void decomposeReal(const real1071_t* x, longInteger_t integerPart, real1071_t* f
     realToString((real_t*)&mantissa, tmpString);          // Convert real to string and load string into integerPart
 
     int32_t len = strlen(tmpString);                      // Trim all zeroes from the right side, regarless if there is a decimal point or not. No zeroas are needed in the longinteger as they will sit in the compensated Real exponent.
-    for (int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
-        if(i == actualExponent && i <= 34) break;
-        tmpString[i] = '\0';
+    for(int32_t i = len - 1; i >= 0 && tmpString[i] == '0'; i--) {
+      if(i == actualExponent && i <= 34) {
+        break;
+      }
+      tmpString[i] = '\0';
     }
-    if (strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
-        strcpy(tmpString, "0");
+    if(strlen(tmpString) == 0) {                         // If all zeros were removed, keep at least one zero. Will be caught in the longinteger zero check
+      strcpy(tmpString, "0");
     }
 
     #if defined(DEBUG_XFN)
@@ -265,10 +277,11 @@ returnUnity:
     uInt32ToLongInteger(1, integerPart);
     realCopy((real_t*)x, (real_t*)fractionalPart);
     #if defined(DEBUG_XFN)
-      realToString((real_t *)fractionalPart, tmpString); tmpString[debugLongNumberLimit]=0; printf("decomposeReal 003: fractionalPart: %s\n", tmpString);
+      realToString((real_t *)fractionalPart, tmpString);
+      tmpString[debugLongNumberLimit] = 0;
+      printf("decomposeReal 003: fractionalPart: %s\n", tmpString);
     #endif //DEBUG_XFN
     return;
-
 }
 
 
@@ -282,48 +295,50 @@ returnUnity:
   #define FORCEANG    201
 
 typedef struct {
-      int function_id;
-      int function_type;
-      int function_angle;
-  } FunctionLookup;
+  int function_id;
+  int function_type;
+  int function_angle;
+} FunctionLookup;
 
 
   TO_QSPI static const FunctionLookup FUNCTION_TABLE[] = {
-      { ITM_pi_XFN      ,FT_NILADIC, NOANG},
-      { ITM_TO_XFN      ,FT_SINGLEX, NOANG},  //special case where hte function drops one register
-      { ITM_DEG2_XFN    ,FT_MONADIC, NOANG},
-      { ITM_RAD2_XFN    ,FT_MONADIC, NOANG},
-      { ITM_sin_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_cos_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_tan_XFN     ,FT_MONADIC, FORCEANG},
-      { ITM_arcsin_XFN  ,FT_MONADIC, NOANG},
-      { ITM_arccos_XFN  ,FT_MONADIC, NOANG},
-      { ITM_arctan_XFN  ,FT_MONADIC, NOANG},
-      { ITM_LN_XFN      ,FT_MONADIC, NOANG},
-      { ITM_LOG_XFN     ,FT_MONADIC, NOANG},
-      { ITM_EXP_XFN     ,FT_MONADIC, NOANG},
-      { ITM_10X_XFN     ,FT_MONADIC, NOANG},
-      { ITM_SQRT_XFN    ,FT_MONADIC, NOANG},
-      { ITM_MODANG_XFN  ,FT_MONADIC, FORCEANG},
-      { ITM_1ONX_XFN    ,FT_MONADIC, NOANG},
-      { ITM_DRG_XFN     ,FT_MONADIC, NOANG},
-      { ITM_SQR_XFN     ,FT_MONADIC, NOANG},
-      { ITM_RDP_XFN     ,FT_MONADIC, NOANG},
-      { ITM_atan2_XFN   ,FT_DYADIC , NOANG},
-      { ITM_ADD_XFN     ,FT_DYADIC , NOANG},
-      { ITM_SUB_XFN     ,FT_DYADIC , NOANG},
-      { ITM_POWER_XFN   ,FT_DYADIC , NOANG},
-      { ITM_XTHROOT_XFN ,FT_DYADIC , NOANG},
-      { ITM_MULT_XFN    ,FT_DYADIC , NOANG},
-      { ITM_DIV_XFN     ,FT_DYADIC , NOANG},
-      { ITM_MOD_XFN     ,FT_DYADIC , NOANG},
-      { 0               ,0         , 0}
+      { ITM_pi_XFN     , FT_NILADIC, NOANG},
+      { ITM_TO_XFN     , FT_SINGLEX, NOANG},  //special case where hte function drops one register
+      { ITM_DEG2_XFN   , FT_MONADIC, NOANG},
+      { ITM_RAD2_XFN   , FT_MONADIC, NOANG},
+      { ITM_sin_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_cos_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_tan_XFN    , FT_MONADIC, FORCEANG},
+      { ITM_arcsin_XFN , FT_MONADIC, NOANG},
+      { ITM_arccos_XFN , FT_MONADIC, NOANG},
+      { ITM_arctan_XFN , FT_MONADIC, NOANG},
+      { ITM_LN_XFN     , FT_MONADIC, NOANG},
+      { ITM_LOG_XFN    , FT_MONADIC, NOANG},
+      { ITM_EXP_XFN    , FT_MONADIC, NOANG},
+      { ITM_10X_XFN    , FT_MONADIC, NOANG},
+      { ITM_SQRT_XFN   , FT_MONADIC, NOANG},
+      { ITM_MODANG_XFN , FT_MONADIC, FORCEANG},
+      { ITM_1ONX_XFN   , FT_MONADIC, NOANG},
+      { ITM_DRG_XFN    , FT_MONADIC, NOANG},
+      { ITM_SQR_XFN    , FT_MONADIC, NOANG},
+      { ITM_RDP_XFN    , FT_MONADIC, NOANG},
+      { ITM_RSD_XFN    , FT_MONADIC, NOANG},
+      { ITM_CHS_XFN    , FT_MONADIC, NOANG},
+      { ITM_atan2_XFN  , FT_DYADIC , NOANG},
+      { ITM_ADD_XFN    , FT_DYADIC , NOANG},
+      { ITM_SUB_XFN    , FT_DYADIC , NOANG},
+      { ITM_POWER_XFN  , FT_DYADIC , NOANG},
+      { ITM_XTHROOT_XFN, FT_DYADIC , NOANG},
+      { ITM_MULT_XFN   , FT_DYADIC , NOANG},
+      { ITM_DIV_XFN    , FT_DYADIC , NOANG},
+      { ITM_MOD_XFN    , FT_DYADIC , NOANG},
+      { 0              , 0         , 0}
   };
 
 
   static const FunctionLookup* lookupFunction(int function_id) {
-    for (const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
-      if (entry->function_id == function_id) {
+    for(const FunctionLookup* entry = FUNCTION_TABLE; entry->function_id; entry++) {
+      if(entry->function_id == function_id) {
         return entry;
       }
     }
@@ -354,16 +369,16 @@ typedef struct {
         return true;
       }
       longIntegerFree(lint);
-    } else
-    if(getRegisterDataType(registerNo) == dtReal34) {
-        if(getRegisterAsReal(registerNo, (real_t *)result)) {
-          return true;
-        }
+    }
+    else if(getRegisterDataType(registerNo) == dtReal34) {
+      if(getRegisterAsReal(registerNo, (real_t *)result)) {
+        return true;
+      }
     }
     displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Invalid input register");
-        moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", errorMessage, NULL, NULL);
+      sprintf(errorMessage, "Invalid input register");
+      moreInfoOnError("In function fnXfn:getLongintegerRegisterAsReal1071:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
@@ -379,11 +394,12 @@ typedef struct {
         *angleMode = inputAngleMode3r(registerNo) == amNone ? currentAngularMode : inputAngleMode3r(registerNo);
         return true;
       }
-    } else {
+    }
+    else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input angle register");
-          moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Invalid input angle register");
+        moreInfoOnError("In function fnXfn:getAngleModeForRegister3r:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     return false;
@@ -401,11 +417,12 @@ typedef struct {
         *angleMode = inputAngleMode3r(registerNo);
         return true;
       }
-    } else {
+    }
+    else {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input angle register");
-          moreInfoOnError("In function fnXfn:getAngleModeForArithmetic3r:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Invalid input angle register");
+        moreInfoOnError("In function fnXfn:getAngleModeForArithmetic3r:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     return false;
@@ -415,7 +432,7 @@ typedef struct {
 
   static bool_t validateExponent(const real1071_t* x) {
     if(realGetExponent(x) > maxAllowedDigits) {
-        return false;
+      return false;
     }
     return true;
   }
@@ -423,18 +440,18 @@ typedef struct {
 
   static bool_t readThreeRegisters(int registerNo, real1071_t* result, real1071_t* temporary, realContext_t* c) {
     if(!getLongintegerRegisterAsReal1071(registerNo+0, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
-        return false;
+      return false;
     }
     if(!getLongintegerRegisterAsReal1071(registerNo+1, result, c)) {    // check for long integer first, to first have that error message if invalid number
-        return false;
+      return false;
     }
     realMultiply((real_t *)result, (real_t *)temporary, (real_t *)result, c);
 
     if(!getLongintegerRegisterAsReal1071(registerNo+2, temporary, c)) {                        //ignore anglemode, it is handled elsewhere
-        return false;
+      return false;
     }
     realAdd((real_t *)result, (real_t*)temporary, (real_t *)result, c);
-    realCopy(const_0, (real_t*)temporary);
+    realSetZero((real_t*)temporary);
     return true;
   }
 
@@ -443,55 +460,57 @@ typedef struct {
     if(!getAngleModeForRegister3r(registerNo, angleMode) && getRegisterDataType(registerNo) != dtLongInteger) {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister3r ");
-          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Invalid input registers: getAngleModeForRegister3r ");
+        moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
     if(!readThreeRegisters(registerNo, combined, temporary, c)) {
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input registers: readThreeRegisters");
-          moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Invalid input registers: readThreeRegisters");
+        moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
     #if defined(DEBUG_XFN)
-        realToString((real_t *)combined, tmpString); printf("VAR%d: x * y + z: %s; anglemode = %d\n", param, tmpString, *angleMode);
+      realToString((real_t *)combined, tmpString);
+      printf("VAR%d: x * y + z: %s; anglemode = %d\n", param, tmpString, *angleMode);
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Total VAR%d = r%d*r%d+r%d exceeds the maximum exponent %d > %d", param, registerNo, registerNo+1, registerNo+2, realGetExponent(combined), maxAllowedDigits);
+        moreInfoOnError("In function fnXfn:getCombinedParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
     }
     return true;
   }
 
   static bool getSingleParameter (int registerNo, real1071_t* combined, angularMode_t* angleMode, realContext_t* c) {
-printf("Dddd %d\n",registerNo);
+printf("Dddd %d\n", registerNo);
     *angleMode = registerIsNoAngle(registerNo) ? amNone : getRegisterAngularMode(registerNo);
 
     if(!getLongintegerRegisterAsReal1071(registerNo, combined, c)) {                        //ignore anglemode, it is handled elsewhere
       displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Invalid input registers: getLongintegerRegisterAsReal1071");
-          moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Invalid input registers: getLongintegerRegisterAsReal1071");
+        moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
     #if defined(DEBUG_XFN)
-        realToString((real_t *)combined, tmpString); printf("VAR: x * y + z: %s\n", tmpString);
+      realToString((real_t *)combined, tmpString);
+      printf("VAR: x * y + z: %s\n", tmpString);
     #endif //DEBUG_XFN
     if(!validateExponent(combined)) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Total VAR = r%d exceeds the maximum exponent %d > %d", registerNo, realGetExponent(combined), maxAllowedDigits);
-            moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Total VAR = r%d exceeds the maximum exponent %d > %d", registerNo, realGetExponent(combined), maxAllowedDigits);
+        moreInfoOnError("In function fnXfn:getSingleParameter:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
     }
     return true;
   }
@@ -524,11 +543,11 @@ printf("Dddd %d\n",registerNo);
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
     reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_T));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_T));
     reallocateRegister(REGISTER_A, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_A));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_A));
     reallocateRegister(REGISTER_B, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-    real34Copy(const34_0, REGISTER_REAL34_DATA(REGISTER_B));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_B));
   }
 
 
@@ -560,7 +579,7 @@ printf("Dddd %d\n",registerNo);
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Specified register numbers out of range: %d",registerNo);
+      sprintf(errorMessage, "Specified register numbers out of range: %d", registerNo);
       moreInfoOnError("In function fnXfnIndirect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -652,6 +671,12 @@ printf("Dddd %d\n",registerNo);
   void fnXXfn_RDP                 (uint16_t digits) {
     fnXfnIndirect(REGISTER_X, ITM_RDP_XFN, digits);
   }
+  void fnXXfn_RSD                 (uint16_t digits) {
+    fnXfnIndirect(REGISTER_X, ITM_RSD_XFN, digits);
+  }
+  void fnXXfn_CHS                 (uint16_t registerNo) {
+    fnXfnIndirect(registerNo, ITM_CHS_XFN, 0);
+  }
 
 
 
@@ -672,7 +697,7 @@ printf("Dddd %d\n",registerNo);
     }
 
     real1071_t paramX, paramY, paramTemp;
-    realCopy(const_0,(real_t*)&paramX);
+    realSetZero((real_t*)&paramX);
     real_t tmpR;
 
     realContext_t c = ctxtReal75;
@@ -683,13 +708,13 @@ printf("Dddd %d\n",registerNo);
 
     if(functionType == FT_NILADIC) {
       ; //no input needed, continue
-    } else
-    if(functionType == FT_SINGLEX) {
+    }
+    else if(functionType == FT_SINGLEX) {
       if(!getSingleParameter(registerNo, &paramX, &angleMode, &c)) {
         return;
       }
-    } else
-    if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
+    }
+    else if(functionType == FT_MONADIC || functionType == FT_DYADIC) {
       if(!getCombinedParameter(1, registerNo, &paramX, &paramTemp, &angleMode, &c)) {   //use the angle of the 1st param only, if set
         return;
       }
@@ -701,7 +726,8 @@ printf("Dddd %d\n",registerNo);
       if(functionAngle == FORCEANG && angleMode == amNone) {
         angleMode = currentAngularMode;
       }
-    } else {
+    }
+    else {
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         location = 3;
       #endif //EXTRA_INFO_ON_CALC_ERROR
@@ -716,9 +742,11 @@ printf("Dddd %d\n",registerNo);
     if(realIsSpecial((real_t *)&paramX)) {
       #if defined(DEBUG_XFN)
         printf("Real is Special, forcing NaN output, bypassing calculations\n");
-        realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX is Special = %s\n", tmpString);
+        realToString((real_t*)&paramX, tmpString);
+        tmpString[debugLongNumberLimit] = 0;
+        printf("ParamX is Special = %s\n", tmpString);
       #endif //DEBUG_XFN
-      realCopy(const_NaN, (real_t *)&paramX);
+      realSetNaN((real_t *)&paramX);
     }
     else {
       switch(function) {
@@ -727,7 +755,7 @@ printf("Dddd %d\n",registerNo);
   //--------//NILADIC FUNCTIONS
         case ITM_pi_XFN: {
           realCopy(const1071_pi, (real_t *)&paramX);
-//          realDivide(const2139_2pi, const_2, (real_t*)&paramX, &c);
+//          realMultiply(const2139_2pi, const_1on2, (real_t*)&paramX, &c);
           break;
         }
   //--------//MONADIC FUNCTIONS
@@ -735,8 +763,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = amRadian;
             break;
-          } else
-          if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
+          }
+          else if(!inputAngleError3r(registerNo) && angleMode != amRadian) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amRadian), (real_t*)&paramX, &c);
           }
@@ -748,8 +776,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = amDegree;
             break;
-          } else
-          if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
+          }
+          else if(!inputAngleError3r(registerNo) && angleMode != amDegree) {                                                                       // if either or both is/are set to am
             realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
             realMultiply((real_t*)&paramX, modulus(amDegree), (real_t*)&paramX, &c);
           }
@@ -762,7 +790,8 @@ printf("Dddd %d\n",registerNo);
           if(inputIsNoAngle3r(registerNo)) {
             angleMode = currentAngularMode;
             break;
-          } else {
+          }
+          else {
             if(!inputAngleError3r(registerNo) && angleMode != nextAngleMode) {                                                                       // if either or both is/are set to am
               realDivide((real_t*)&paramX, modulus(angleMode), (real_t*)&paramX, &c);
               realMultiply((real_t*)&paramX, modulus(nextAngleMode), (real_t*)&paramX, &c);
@@ -777,23 +806,29 @@ printf("Dddd %d\n",registerNo);
         case ITM_cos_XFN:
         case ITM_tan_XFN: {
             #if defined(DEBUG_XFN)
-              realToString((real_t*)&paramX, tmpString);   tmpString[debugLongNumberLimit]=0; printf("ParamX = %s\n", tmpString);
-              realToString(modulus(angleMode), tmpString); tmpString[debugLongNumberLimit]=0; printf("Modulus= %s\n", tmpString);
+              realToString((real_t*)&paramX, tmpString);
+              tmpString[debugLongNumberLimit]=0;
+              printf("ParamX = %s\n", tmpString);
+              realToString(modulus(angleMode), tmpString);
+              tmpString[debugLongNumberLimit]=0;
+              printf("Modulus= %s\n", tmpString);
               printf("angleMode %d\n", angleMode);
             #endif //DEBUG_XFN
 
             //WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
 
             #if defined(DEBUG_XFN)
-              realToString((real_t *)&paramX, tmpString); /*tmpString[debugLongNumberLimit]=0; */printf(" ParamX reduced angle: %s\n",tmpString);
+              realToString((real_t *)&paramX, tmpString);
+              //tmpString[debugLongNumberLimit]=0;
+              printf(" ParamX reduced angle: %s\n", tmpString);
             #endif //DEBUG_XFN
 
-            real1071_t aa,bb;
-            realCopy(const_0,(real_t*)&aa);
-            realCopy(const_0,(real_t*)&bb);
-            if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); } else
-            if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); } else
-            if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
+            real1071_t aa, bb;
+            realSetZero((real_t*)&aa);
+            realSetZero((real_t*)&bb);
+                 if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &paramX, NULL,    NULL,    &c); }
+            else if(function == ITM_cos_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, NULL,    &paramX, NULL,    &c); }
+            else if(function == ITM_tan_XFN) { C47Cvt2RadSinCosTan1071(&paramX, angleMode, &aa,     &bb,     &paramX, &c); }
             }
             break;
 
@@ -845,15 +880,24 @@ printf("Dddd %d\n",registerNo);
         }
         case ITM_MODANG_XFN: {
           if(angleMode == amRadian) {
-            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
-            // prep for: mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
-          } else {
+//            WP34S_BigMod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
+            mod2Pi((real_t *)&paramX, (real_t *)&paramX, &c);
+          }
+          else {
             WP34S_Mod((real_t *)&paramX, modulus(angleMode), (real_t *)&paramX, &c);
           }
           break;
         }
         case ITM_RDP_XFN: {
           roundToDecimalPlace((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_RSD_XFN: {
+          roundToSignificantDigits((real_t *)&paramX, (real_t *)&paramX, functionParam, &c);
+          break;
+        }
+        case ITM_CHS_XFN: {
+          realMultiply(const__1, (real_t *)&paramX, (real_t *)&paramX, &c);
           break;
         }
   //--------//SINGLE REG FUNCTIONS
@@ -925,8 +969,10 @@ printf("Dddd %d\n",registerNo);
     realPlus((real_t *)&paramX, (real_t *)&paramX, &cc);
 
     #if defined(DEBUG_XFN)
-      printRegisterToConsole(REGISTER_X,"\nX:","\n");
-      realToString((real_t *)&paramX, tmpString); tmpString[debugLongNumberLimit]=0; printf("Output: %s\n",tmpString);
+      printRegisterToConsole(REGISTER_X, "\nX:", "\n");
+      realToString((real_t *)&paramX, tmpString);
+      tmpString[debugLongNumberLimit]=0;
+      printf("Output: %s\n", tmpString);
     #endif //DEBUG_XFN
 
 
@@ -969,16 +1015,17 @@ printf("Dddd %d\n",registerNo);
 
     //Step 0: Prep the stack
     if((functionType == FT_MONADIC || functionType == FT_DYADIC)  && registerNo == REGISTER_X && lastErrorCode == 0) {       // If the base input register is X for XYZ bzw. TAB, then drop the stack input
-        fnDrop3();
-    } else if(functionType == FT_SINGLEX) {
-        fnDrop(NOPARAM);
+      fnDrop3();
+    }
+    else if(functionType == FT_SINGLEX) {
+      fnDrop(NOPARAM);
     }
 
     //Step 1: Send a 0 addition term to the stack output (Form only, will be rewritten later)
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    realCopy(const_0, &tmpR);
+    realSetZero(&tmpR);
     convertRealToReal34ResultRegister(&tmpR, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
@@ -989,7 +1036,7 @@ printf("Dddd %d\n",registerNo);
     longInteger_t integerOutput;
     longIntegerInit(integerOutput);
     decomposeReal(&paramX, integerOutput, &paramY, &c);
-    convertLongIntegerToLongIntegerRegister(integerOutput,REGISTER_X);
+    convertLongIntegerToLongIntegerRegister(integerOutput, REGISTER_X);
     longIntegerFree(integerOutput);
 
 
@@ -1015,10 +1062,20 @@ printf("Dddd %d\n",registerNo);
 
     //Step 5: debug stack output
     #if defined(DEBUG_XFN)
-      printRegisterToConsole(REGISTER_Z,"\nZ:","\n");
-      printRegisterToConsole(REGISTER_Y,"\nY:","\n");
-      printRegisterToConsole(REGISTER_X,"\nX:","\n");
+      printRegisterToConsole(REGISTER_Z, "\nZ:", "\n");
+      printRegisterToConsole(REGISTER_Y, "\nY:", "\n");
+      printRegisterToConsole(REGISTER_X, "\nX:", "\n");
     #endif //DEBUG_XFN
+
+
+    #if defined(DEBUG_XFN) || defined(DEBUGRESULT_ONLY_XFN)
+      real1071_t aa, tt;
+      readThreeRegisters(registerNo, &aa, &tt, &c);
+      realToString((real_t*)&aa, tmpString);
+      printf("\nAfter Step4, combined register: =%s|...%d\n", tmpString, (&aa)->digits);
+    #endif //DEBUG_XFN
+
+
 
     return;
 
@@ -1027,11 +1084,9 @@ noFunction:
     displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Incorrect function code %d (location %d)", function, location);
-      moreInfoOnError("In function fnXfn:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function doXfn:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
 }
 
 #endif //OPTION_XFN_1000
-
-

@@ -19,12 +19,13 @@
 
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i))
-        goto err;
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i)) {
+      goto err;
+    }
 
     if(realIsZero(i) || realIsNegative(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -176,7 +177,7 @@
   void WP34S_Cdfu_T(const real_t *x, const real_t *nu, real_t *res, realContext_t *realContext) {
     real_t xn;
 
-    realMultiply(x, const__1, &xn, realContext);
+    realMinus(x, &xn, realContext);
     cdf_t(&xn, nu, res, realContext);
   }
 
@@ -196,9 +197,8 @@
     realCopy(&p, &reg0);
     realSquareRoot(nu, &p, realContext);
     loops = 7;
-    int32ToReal(7, &q);
-    realAdd(&p, &q, &p, realContext);
-    realMultiply(nu, const__1, &q, realContext);
+    realAdd(&p, const_7, &p, realContext);
+    realMinus(nu, &q, realContext);
     realPower(&p, &q, &p, realContext);
     realMultiply(&p, const_1on4, &a, realContext);
     if(realCompareLessEqual(&reg0, &a)) {
@@ -258,7 +258,8 @@
       realChangeSign(&q);
       realAdd(&p, &q, &q, realContext);
       //SHOW_CONVERGENCE
-      realCopy(const_1, &r); r.exponent -= 32 /*14*/;
+      realSetOne(&r);
+      r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&q, &p, &r, realContext)) {
         realCopy(&q, res);
         goto qf_t_exit;
@@ -266,7 +267,7 @@
       realCopy(&q, &p);
     } while(--loops > 0);
 
-    realCopy(const_NaN, res); // ERR 20
+    realSetNaN(res); // ERR 20
 
     qf_t_exit:
     if(neg) {

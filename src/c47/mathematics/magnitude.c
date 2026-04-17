@@ -74,9 +74,12 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
  * \return void
  ***********************************************/
 void fnMagnitude(uint16_t unusedButMandatoryParameter) {
-  if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if (saveLastX())
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    if(saveLastX()) {
       magnitudeCxma();
-  } else
+    }
+  }
+  else {
     processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeCplx, &magnitudeShoI, &magnitudeLonI);
+  }
 }

@@ -37,8 +37,9 @@ static void argReal(void) {
   real_t x;
   const real_t *r;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   r = realArg(&x);
 
@@ -53,8 +54,9 @@ static void argReal(void) {
 static void argCplx(void) {
   real_t real, imag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &real, &imag))
+  if(!getRegisterAsComplex(REGISTER_X, &real, &imag)) {
     return;
+  }
 
   realRectangularToPolar(&real, &imag, &real, &imag, &ctxtReal39);
   convertAngleFromTo(&imag, amRadian, currentAngularMode, &ctxtReal39);

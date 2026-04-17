@@ -19,13 +19,13 @@
 
 #else
   static bool_t checkParamWeibull(real_t *x, real_t *shape, real_t *scale) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_Q, shape)
-        || !getRegisterAsReal(REGISTER_S, scale))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_Q, shape) || !getRegisterAsReal(REGISTER_S, scale)) {
       goto err;
+    }
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -113,7 +113,7 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsSpecial(&p) || realIsNegative(&p) || realIsZero(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realPower(&p, t, &q, realContext);
@@ -130,11 +130,11 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsNegative(&p) || realIsZero(&p)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsSpecial(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     realPower(&p, t, &p, realContext);
@@ -147,11 +147,11 @@
 
     realDivide(x, b, &p, realContext);
     if(realIsNegative(&p) || realIsZero(&p)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(&p)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realPower(&p, t, &p, realContext);
@@ -164,7 +164,7 @@
     /* (-ln(1-p) ^ (1/k)) * J */
     real_t p, q;
 
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realChangeSign(&p);
     realDivide(const_1, t, &q, realContext);

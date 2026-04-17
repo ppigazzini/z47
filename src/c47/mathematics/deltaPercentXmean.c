@@ -20,32 +20,33 @@ real_t yReal;
    */
   if(realIsZero(xReal) && realCompareEqual(xReal, &yReal)) {
       if(getSystemFlag(FLAG_SPCRES)) {
-        realCopy(const_NaN, rReal);
+        realSetNaN(rReal);
       }
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fndeltaPercentXmean:", "cannot divide 0 by 0", NULL, NULL);
+          moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide 0 by 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
       }
   }
   else if(realIsZero(&yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realCompareAbsGreaterThan(xReal, &yReal) ? const_plusInfinity : const_minusInfinity),rReal);
+      realSetPlusInfinity(rReal);
+      rReal->bits |= DECNEG*realIsZero(xReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fndeltaPercentXmean:", "cannot divide a real by y=0", NULL, NULL);
+        moreInfoOnError("In function deltaPercentXmeanReal:", "cannot divide a real by y=0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
   }
   else {
     realSubtract(xReal, &yReal, rReal, realContext); // r = x - y
-    realDivide(rReal, &yReal, rReal, realContext);   // r = (x - y)/y
-    rReal->exponent += 2;                            // r = r * 100.0
+    realDivide(rReal, &yReal, rReal, realContext);   // r = (x - y) / y
+    rReal->exponent += 2;                            // r = (x - y) / y * 100.0
   }
   return true;
 }
@@ -76,14 +77,15 @@ void fnDeltaPercentXmean(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
   }
 
-  realZero(&rReal);
+  realSetZero(&rReal);
   if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);

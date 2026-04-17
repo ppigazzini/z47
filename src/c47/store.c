@@ -87,7 +87,6 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
   static bool_t storeElementReal(real34Matrix_t *matrix) {
     const int16_t i = getIRegisterAsInt(true);
     const int16_t j = getJRegisterAsInt(true);
@@ -115,11 +114,11 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
     if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
       convertLongIntegerRegisterToReal34(REGISTER_X, VARIABLE_REAL34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
-      real34Zero(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
+      real34SetZero(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
     }
     else if(getRegisterDataType(REGISTER_X) == dtReal34) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_REAL34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
-      real34Zero(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
+      real34SetZero(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_REAL34_DATA(&matrix->matrixElements[i * matrix->header.matrixColumns + j]));
@@ -150,7 +149,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", rows, cols);
-          moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+          moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -158,7 +157,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot store %s as matrix index", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function storeIJReal:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function storeIjReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     return false;
@@ -167,7 +166,6 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
   static bool_t storeIjComplex(complex34Matrix_t *matrix) {
     return storeIjReal((real34Matrix_t *)matrix);
   }
-#endif // !TESTSUITE_BUILD
 
 
 
@@ -214,7 +212,8 @@ void fnStore(uint16_t regist) {
     if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
       if(isStatsMatrixN(&rows, regist)) {
         calcSigma(0);
-      } else {
+      }
+      else {
         clearStatisticalSums();
       }
     }
@@ -223,17 +222,35 @@ void fnStore(uint16_t regist) {
 
 
 void fn2Sto(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
-  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+  if((/*regist >= FIRST_GLOBAL_REGISTER && */regist <= (REGISTER_X-1)-1) || (regist >= REGISTER_X && regist <= REGISTER_W-1) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1)) {
+    setSystemFlag(FLAG_ASLIFT);
+    copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+    copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fn3Sto(uint16_t regist) {
-  setSystemFlag(FLAG_ASLIFT);
-  copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
-  copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
-  copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
+  if((/*regist >= FIRST_GLOBAL_REGISTER && */regist <= (REGISTER_X-1)-2) || (regist >= REGISTER_X && regist <= REGISTER_W-2) || (FIRST_LOCAL_REGISTER <= regist && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 2)) {
+    setSystemFlag(FLAG_ASLIFT);
+    copySourceRegisterToDestRegister(REGISTER_X, regist + 0);
+    copySourceRegisterToDestRegister(REGISTER_Y, regist + 1);
+    copySourceRegisterToDestRegister(REGISTER_Z, regist + 2);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "%04d", regist);
+      moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -548,7 +565,6 @@ static void _fnStoreElement(bool_t stepForward);
 
 
 void fnStoreVElement(uint16_t ix) {
-  #if !defined(TESTSUITE_BUILD)
   const int16_t iBak = getIRegisterAsInt(true);
   const int16_t jBak = getJRegisterAsInt(true);
   real_t rx;
@@ -556,10 +572,10 @@ void fnStoreVElement(uint16_t ix) {
   if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
     if(!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
-      #endif
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
     if(getRegisterDataType(REGISTER_Y) == dtReal34Matrix) {
@@ -583,12 +599,11 @@ void fnStoreVElement(uint16_t ix) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
-    moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
-    #endif
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
+      moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
@@ -600,7 +615,6 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
 }
 
 void _fnStoreElement(bool_t stepForward) {
-  #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -622,13 +636,11 @@ void _fnStoreElement(bool_t stepForward) {
         calcSigma(0);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -643,5 +655,4 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
         calcSigma(0);
       }
     }
-  #endif // !TESTSUITE_BUILD
 }

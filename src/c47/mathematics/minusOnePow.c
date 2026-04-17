@@ -51,8 +51,10 @@ static void m1PowShoI(void) {
 static void m1PowReal(void) {
   real_t x, y;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
+
   if(realIsInfinite(&x) || realIsNaN(&x)) {
     convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     return;

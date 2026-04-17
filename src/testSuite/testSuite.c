@@ -20,10 +20,18 @@ extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
-int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
+int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
+bool_t noFailForNow;
 
 uint16_t label, functionParameter;
+
+GtkWidget      *screen;
+calcKeyboard_t  calcKeyboard[43];
+int             currentBezel; // 0=normal, 1=AIM, 2=TAM
+int16_t         screenStride;
+uint32_t       *screenData;
+bool_t          screenChange;
 
 void (*funcToTest)(uint16_t);
 void (*funcCvt)(uint16_t);
@@ -81,8 +89,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnCube",                 fnCube                },
   {"fnCubeRoot",             fnCubeRoot            },
   {"fnCxToRe",               fnCxToRe              },
-  {"fnCvtCToF",              fnCvtCToF             },
-  {"fnCvtFToC",              fnCvtFToC             },
+  {"fnCvtTemp",              fnCvtTemp             },
   {"fnCyx",                  fnCyx                 },
   {"fnDateTo",               fnDateTo              },
   {"fnDateToJulian",         fnDateToJulian        },
@@ -254,7 +261,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRowSum",               fnRowSum              },
   {"fnRowNorm",              fnRowNorm             },
   {"fnRR",                   fnRr                  },
-  {"fnRRC",                  fnRrc                  },
+  {"fnRRC",                  fnRrc                 },
 
   {"fnSign",                 fnSign                },
   {"fnSin",                  fnSin                 },
@@ -283,7 +290,11 @@ const funcTest_t funcTestNoParam[] = {
   {"fnToRect2",              fnToRect2             },
   {"fnTranspose",            fnTranspose           },
   {"fnXXfn",                 fnXXfn                },
-
+  {"fnXXfn_RSD",             fnXXfn_RSD            },
+  {"fnXXfn_RDP",             fnXXfn_RDP            },
+  {"fnEffToI",               fnEffToI              },
+  {"fnEff",                  fnEff                 },
+  {"fnTvmVar",               fnTvmVar              },
   {"fnT_I",                  fnT_I                 },
   {"fnT_L",                  fnT_L                 },
   {"fnT_P",                  fnT_P                 },
@@ -309,16 +320,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnExecute",              runPgm                },
   {"",                       NULL                  }
 };
-
-
-
-void fnKeyGtoXeq             (uint16_t unusedButMandatoryParameter) {}
-void fnKeyGto                (uint16_t unusedButMandatoryParameter) {}
-void fnKeyXeq                (uint16_t unusedButMandatoryParameter) {}
-void fnProgrammableMenu      (uint16_t unusedButMandatoryParameter) {}
-void fnClearMenu             (uint16_t unusedButMandatoryParameter) {}
-void updateMatrixHeightCache (void) {}
-void tamEnterMode            (int16_t func) {}
 
 
 
@@ -380,7 +381,7 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
   }
 
   else {
-    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist, false, false));
   }
 }
 
@@ -388,6 +389,8 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
 
 void runPgm(uint16_t unusedButMandatoryParameter) {
   if(label != INVALID_VARIABLE) {
+    dynamicSoftmenu[0].numItems = 0;
+    dynamicSoftmenu[0].menuContent = NULL;
     reallyRunFunction(ITM_XEQ, label);
   }
 }
@@ -601,6 +604,7 @@ void getString(char *str) {
 
 
 void setParameter(char *p) {
+  calcRegister_t regist = 0;
   char l[200], r[1400], real[200], imag[200], angMod[200]; //, letter;
   int32_t i;
   angularMode_t am = amDegree;
@@ -752,6 +756,14 @@ void setParameter(char *p) {
           setSystemFlag(FLAG_TDM24);
         }
       }
+      else if(!strcmp(l+3, "ENDPMT")) {
+        if(r[0] == '0') {
+          clearSystemFlag(FLAG_ENDPMT);
+        }
+        else {
+          setSystemFlag(FLAG_ENDPMT);
+        }
+      }
       else {
         printf("\nMalformed numbered flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
         abortTest();
@@ -759,7 +771,7 @@ void setParameter(char *p) {
     }
   }
 
-  else if (strcmp(l, "FARG") == 0) {
+  else if(strcmp(l, "FARG") == 0) {
     functionParameter = atoi(r);
   }
 
@@ -956,9 +968,30 @@ void setParameter(char *p) {
     }
   }
 
+
+  //Setting a variable
+  else if(l[0] == 'V') {
+
+    //Variable V256-V3000
+    if(   (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)
+       || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] >= '0' && l[4] <= '9' && l[5] == 0)) {
+      regist = atoi(l + 1);
+      if(regist < 256 || regist > 3000) {
+        printf("\nMalformed variable setting. The number after V shall be from 256 to 3000.\n");
+        abortTest();
+      }
+    }
+
+    else {
+      printf("\nMalformed variable setting. After V there should be a number from 256 to 3000.\n");
+      abortTest();
+    }
+    goto var1;
+  }
+
+
   //Setting a register
   else if(l[0] == 'R') {
-    calcRegister_t regist = 0;
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
@@ -988,7 +1021,7 @@ void setParameter(char *p) {
       printf("\nMalformed register setting. After R there should be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
-
+var1:
     // find the : separating the data type and the value
     i = 0;
     while(r[i] != ':' && r[i] != 0) {
@@ -1220,7 +1253,7 @@ void setParameter(char *p) {
 
       reallocateRegister(regist, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
-      convertReal34RegisterToDateRegister(regist, regist, !YYSystem);
+      convertReal34RegisterToDateRegister(regist, regist, false);  //no !YYsystem needed here
     }
     else if(strcmp(l, "REMA") == 0) {
       // remove beginning and ending " and removing leading spaces
@@ -1730,8 +1763,9 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
     }
     return false;
   }
-  if (real34IsZero(a) && real34IsZero(b))
+  if(real34IsZero(a) && real34IsZero(b)) {
     return real34IsNegative(a) == real34IsNegative(b);
+  }
 
   return real34CompareEqual(a, b);
 }
@@ -1739,6 +1773,7 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
 
 
 void checkExpectedOutParameter(char *p) {
+  calcRegister_t regist = 0;
   char l[2000], r[2000], real[200], imag[200], angMod[200], letter = 0;
   int32_t i;
   angularMode_t am = amDegree;
@@ -2096,7 +2131,7 @@ void checkExpectedOutParameter(char *p) {
   }
 
   //Checking rounding mode
-  else if(strcmp(l, "RM") == 0) {
+  else if(strcmp(l, "RMODE") == 0) {
     if(r[0] >= '0' && r[0] <= '9' && r[1] == 0) {
       uint16_t rm = atoi(r);
 
@@ -2140,9 +2175,30 @@ void checkExpectedOutParameter(char *p) {
     }
   }
 
+
+  //Setting a variable
+  else if(l[0] == 'V') {
+
+    //Variable V256-V3000
+    if(   (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)
+       || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] >= '0' && l[4] <= '9' && l[5] == 0)) {
+      regist = atoi(l + 1);
+      if(regist < 256 || regist > 3000) {
+        printf("\nMalformed variable setting. The number after V shall be from 256 to 3000.\n");
+        abortTest();
+      }
+    }
+
+    else {
+      printf("\nMalformed variable setting. After V there should be a number from 256 to 3000.\n");
+      abortTest();
+    }
+    goto var2;
+  }
+
+
   //Checking a register
   else if(l[0] == 'R') {
-    calcRegister_t regist = 0;
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
@@ -2173,7 +2229,7 @@ void checkExpectedOutParameter(char *p) {
       printf("\nMalformed register checking. After R there shall be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
-
+var2:
     // find the : separating the data type and the value
     i = 0;
     while(r[i] != ':' && r[i] != 0) {
@@ -2479,7 +2535,7 @@ void checkExpectedOutParameter(char *p) {
       checkRegisterType(regist, letter, dtDate, amNone);
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);
@@ -2525,12 +2581,12 @@ void checkExpectedOutParameter(char *p) {
             bool_t isCheckingEigenvectors;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               x1 = malloc(REAL34_SIZE_IN_BYTES * cols);
               for(int col = 0; col < cols; ++col) {
-                real34Zero(x1 + col);
+                real34SetZero(x1 + col);
               }
             }
             while(r[0] == ' ') {
@@ -2647,15 +2703,15 @@ void checkExpectedOutParameter(char *p) {
             bool_t *xf1 = NULL;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               xr1 = malloc(REAL_SIZE_IN_BYTES * cols);
               xi1 = malloc(REAL_SIZE_IN_BYTES * cols);
               xf1 = malloc(sizeof(bool_t) * cols);
               for(int col = 0; col < cols; ++col) {
-                realZero(xr1 + col);
-                realZero(xi1 + col);
+                realSetZero(xr1 + col);
+                realSetZero(xi1 + col);
                 xf1[col] = false;
               }
             }
@@ -2727,8 +2783,8 @@ void checkExpectedOutParameter(char *p) {
                   }
                   else {
                     strcpy(imag, "0");
-                    real34Zero(&expectedImag34);
-                    realZero(&expectedImag);
+                    real34SetZero(&expectedImag34);
+                    realSetZero(&expectedImag);
                   }
 
                   if(isCheckingEigenvectors && (!realIsZero(xr1 + element % cols) || !realIsZero(xi1 + element % cols))) {
@@ -2739,15 +2795,15 @@ void checkExpectedOutParameter(char *p) {
                     real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &ei);
 
                     // check for possible real or pure imaginary
-                    WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&er); // possible pure imaginary
+                      realSetZero(&er); // possible pure imaginary
                     }
-                    WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&ei); // possible real
+                      realSetZero(&ei); // possible real
                     }
 
                     realToReal34(&er, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
@@ -2758,15 +2814,15 @@ void checkExpectedOutParameter(char *p) {
                     mulComplexComplex(&er, &ei, xr1 + element % cols, xi1 + element % cols, &er, &ei, &ctxtReal39);
 
                     // check for possible real or pure imaginary
-                    WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
+                    C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&er); // possible pure imaginary
+                      realSetZero(&er); // possible pure imaginary
                     }
-                    WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
+                    C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
                     if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
-                      realZero(&ei); // possible real
+                      realSetZero(&ei); // possible real
                     }
 
                     if(!(xf1[element % cols])) {
@@ -2904,7 +2960,7 @@ void callFunction(void) {
   lastErrorCode = 0;
 
   switch(funcType) {
-    case FUNC_NOPARAM:
+    case FUNC_TO_TEST:
       if((indexOfItems[functionIndex].status & US_STATUS) == US_ENABLED) {
         saveForUndo();
       }
@@ -2913,6 +2969,13 @@ void callFunction(void) {
       }
 
       funcToTest(functionParameter);
+      if(gmpMemInBytes != 0) {
+        char tmpMsg[1000];
+        sprintf(tmpMsg, "\ngmpMemInBytes should be 0 but it is %" PRIu64 "! Check to ensure allocated long integers have been freed.", (uint64_t)gmpMemInBytes);
+        errorf(tmpMsg);
+        fflush(stderr);
+        exit(-1);
+      }
       break;
 
     case FUNC_CVT:
@@ -2959,7 +3022,7 @@ void functionToCall(char *functionName) {
 
   if(funcTestNoParam[function].name[0] != 0) {
     funcToTest = funcTestNoParam[function].func;
-    funcType = FUNC_NOPARAM;
+    funcType = FUNC_TO_TEST;
 
     if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
@@ -2988,8 +3051,11 @@ void functionToCall(char *functionName) {
 
 
 void abortTest(void) {
-  numTestsTotal--;
-  failedTests++;
+  if(noFailForNow) {
+    noFailForNow = false;
+    failedTests++;
+    successfulTests--;
+  }
   printf("\n%s\n", lastInParameters);
   printf("%s\n", line);
   printf("in file %s line %d\n-------------------------------------------------------------------------------------------------------------------------------------\n", fileName, lineNumber);
@@ -3065,18 +3131,19 @@ static bool_t timerOperation = false;
 static bool_t timedFunction = false;
 static time_t startTime = 0;  // module-level static variable
 void startTimer(void) {
-    startTime = time(NULL);
+  startTime = time(NULL);
 }
 
 void stopTimerAndPrint(void) {
-    if (startTime == 0) {
-        printf("Timer was not started.\n");
-        return;
-    }
-    time_t endTime = time(NULL);
-    double elapsed = difftime(endTime, startTime);
-    if(elapsed > 1)
-      printf("\n -- Processing time > 1 second: %d s\n", (int)elapsed);
+  if(startTime == 0) {
+    printf("Timer was not started.\n");
+    return;
+  }
+  time_t endTime = time(NULL);
+  double elapsed = difftime(endTime, startTime);
+  if(elapsed > 1) {
+    printf("\n -- Processing time > 1 second: %d s\n", (int)elapsed);
+  }
 }
 
 
@@ -3102,7 +3169,7 @@ void processLine(void) {
 
 
   if(strncmp(line, "TIMER: ", 7) == 0) {
-    printf("\n%s", line);
+    printf("%s", line);
     timedFunction = true;
   }
 
@@ -3142,7 +3209,9 @@ void processLine(void) {
 
   else if(strncmp(line, "OUT: ", 5) == 0) {
     //printf("%s\n", line);
-    if(timedFunction && timerOperation) startTimer();
+    if(timedFunction && timerOperation) {
+      startTimer();
+    }
     callFunction();
     if(timedFunction && timerOperation) {
       timedFunction = true;
@@ -3154,6 +3223,8 @@ void processLine(void) {
     }
 
     numTestsTotal++;
+    successfulTests++;
+    noFailForNow = true;
     outParameters(line + 5);
   }
 
@@ -3186,7 +3257,7 @@ void processOneFile(void) {
   // Default function to call
   functionIndex = ITM_NOP;
   funcToTest = fnNop;
-  funcType = FUNC_NOPARAM;
+  funcType = FUNC_TO_TEST;
 
   ignoreReturnedValue(fgets(line, 9999, testSuite));
   lineNumber = 1;
@@ -3235,7 +3306,7 @@ void checkOneCatalogSorting(const int16_t *catalog, int16_t catalogId, const cha
     int32_t cmp;
     if((cmp = compareString(indexOfItems[abs(catalog[i - 1])].itemCatalogName, indexOfItems[abs(catalog[i])].itemCatalogName, CMP_EXTENSIVE)) >= 0) {
       printf("In catalog %s, element %d (item %d) should be after element %d (item %d). cmp = %d\n",
-                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i],cmp);
+                         catalogName, i - 1,  catalog[i - 1],             i,       catalog[i], cmp);
       //exit(1);
     }
   }
@@ -3261,8 +3332,9 @@ int processTests(const char *listPath) {
 
   checkCatalogsSorting();
 
-  numTestsTotal = 0;
-  failedTests = 0;
+  numTestsTotal   = 0;
+  successfulTests = 0;
+  failedTests     = 0;
 
   fileList = fopen(listPath, "rb");
   if(fileList == NULL) {
@@ -3286,7 +3358,8 @@ int processTests(const char *listPath) {
   fclose(fileList);
 
   printf("\n************************************\n");
-  printf("* %6d TESTS PASSED SUCCESSFULLY *\n", numTestsTotal);
+  printf("* NUMBER OF TESTS %6d           *\n", numTestsTotal);
+  printf("* %6d TEST%c PASSED SUCCESSFULLY *\n", successfulTests, successfulTests == 1 ? ' ' : 'S');
   printf("* %6d TEST%c FAILED              *\n", failedTests, failedTests == 1 ? ' ' : 'S');
   printf("************************************\n");
 
@@ -3304,7 +3377,7 @@ int main(int argc, char* argv[]) {
   }
 
   c47MemInBlocks = 0;
-  gmpMemInBytes = 0;
+  gmpMemInBytes  = 0;
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
   fnReset(CONFIRMED);

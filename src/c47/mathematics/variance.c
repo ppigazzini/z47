@@ -27,7 +27,7 @@ static void do_stddev(const real_t *sumXX, const real_t *sumX, const real_t *num
   }
   realDivide(&tempReal1, p, &tempReal2, realContext);
   if(realIsNegative(&tempReal2) || realIsZero(&tempReal2)) {
-    realZero(&tempReal1);
+    realSetZero(&tempReal1);
   }
   else {
     realSquareRoot(&tempReal2, &tempReal1, realContext);
@@ -114,47 +114,47 @@ void fnWeightedStandardError(uint16_t unusedButMandatoryParameter) {
 
 void fnStatSX_SY(real_t *SX, real_t *SY){
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t TT,UU;
+  real_t TT, UU;
   if(checkMinimumDataPoints(const_2)) {
-    realMultiply(SIGMA_N,SIGMA_X2, &TT, realContext);    //do sx
-    realMultiply(SIGMA_X,SIGMA_X, &UU, realContext);
-    realSubtract(&TT,&UU,&TT,realContext);
-    realDivide(&TT,SIGMA_N,&TT,realContext);
-    realSubtract(SIGMA_N,const_1,&UU,realContext);
-    realDivide(&TT,&UU,&TT,realContext);
-    realSquareRoot(&TT,SX,realContext);                 //this is sx
+    realMultiply(SIGMA_N, SIGMA_X2, &TT, realContext);    //do sx
+    realMultiply(SIGMA_X, SIGMA_X, &UU, realContext);
+    realSubtract(&TT, &UU, &TT, realContext);
+    realDivide(&TT, SIGMA_N, &TT, realContext);
+    realSubtract(SIGMA_N, const_1, &UU, realContext);
+    realDivide(&TT, &UU, &TT, realContext);
+    realSquareRoot(&TT, SX, realContext);                 //this is sx
 
-    realMultiply(SIGMA_N,SIGMA_Y2, &TT, realContext);    //do sy
-    realMultiply(SIGMA_Y,SIGMA_Y, &UU, realContext);
-    realSubtract(&TT,&UU,&TT,realContext);
-    realDivide(&TT,SIGMA_N,&TT,realContext);
-    realSubtract(SIGMA_N,const_1,&UU,realContext);
-    realDivide(&TT,&UU,&TT,realContext);
-    realSquareRoot(&TT,SY,realContext);                 //this is sy
+    realMultiply(SIGMA_N, SIGMA_Y2, &TT, realContext);    //do sy
+    realMultiply(SIGMA_Y, SIGMA_Y, &UU, realContext);
+    realSubtract(&TT, &UU, &TT, realContext);
+    realDivide(&TT, SIGMA_N, &TT, realContext);
+    realSubtract(SIGMA_N, const_1, &UU, realContext);
+    realDivide(&TT, &UU, &TT, realContext);
+    realSquareRoot(&TT, SY, realContext);                 //this is sy
   }
 }
 
 void fnStatSXY(real_t *SXY){
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t SS,TT;
+  real_t SS, TT;
   if(checkMinimumDataPoints(const_2)) {
-    realMultiply(SIGMA_N,SIGMA_XY, &SS, realContext);    //do sxy
-    realMultiply(SIGMA_X,SIGMA_Y, &TT, realContext);
-    realSubtract(&SS,&TT,&SS,realContext);
-    realDivide(&SS,SIGMA_N,&SS,realContext);
-    realSubtract(SIGMA_N,const_1,&TT,realContext);
-    realDivide(&SS,&TT,SXY,realContext);
+    realMultiply(SIGMA_N, SIGMA_XY, &SS, realContext);    //do sxy
+    realMultiply(SIGMA_X, SIGMA_Y, &TT, realContext);
+    realSubtract(&SS, &TT, &SS, realContext);
+    realDivide(&SS, SIGMA_N, &SS, realContext);
+    realSubtract(SIGMA_N, const_1, &TT, realContext);
+    realDivide(&SS, &TT, SXY, realContext);
   }
 }
 
 void fnPopulationCovariance(uint16_t unusedButMandatoryParameter){    //COVxy
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t TT,SXY;
+  real_t TT, SXY;
   if(checkMinimumDataPoints(const_2)) {
     fnStatSXY(&SXY);
-    realSubtract(SIGMA_N,const_1,&TT,realContext);
-    realMultiply(&SXY,&TT,&SXY,realContext);
-    realDivide(&SXY,SIGMA_N,&TT,realContext);
+    realSubtract(SIGMA_N, const_1, &TT, realContext);
+    realMultiply(&SXY, &TT, &SXY, realContext);
+    realDivide(&SXY, SIGMA_N, &TT, realContext);
 
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
@@ -179,20 +179,20 @@ void fnSampleCovariance(uint16_t unusedButMandatoryParameter){    //sxy
 void fnStatR(real_t *RR, real_t *SXY, real_t *SX, real_t *SY){
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
   if(checkMinimumDataPoints(const_2)) {
-    fnStatSX_SY(SX,SY);
+    fnStatSX_SY(SX, SY);
     fnStatSXY(SXY);
-    realDivide(SXY,SX,RR,realContext);                 //this is sxy/sx
-    realDivide(RR,SY,RR,realContext);                 //this is sxy/sx/sy
+    realDivide(SXY, SX, RR, realContext);                //this is sxy/sx
+    realDivide(RR, SY, RR, realContext);                 //this is sxy/sx/sy
   }
 }
 
 void fnCoefficientDetermination(uint16_t unusedButMandatoryParameter){  //r
-  real_t RR,SMI,aa0,aa1,aa2;
+  real_t RR, SMI, aa0, aa1, aa2;
   if(checkMinimumDataPoints(const_2)) {
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;
     }
-    processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);
+    processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -203,30 +203,30 @@ void fnCoefficientDetermination(uint16_t unusedButMandatoryParameter){  //r
 
 void fnStatSMI(real_t *SMI){
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t RR,SXY,SX,SY,RR2,SX2,SY2,UU,SS,TT;
+  real_t RR, SXY, SX, SY, RR2, SX2, SY2, UU, SS, TT;
   if(checkMinimumDataPoints(const_2)) {
-    fnStatR(&RR,&SXY,&SX,&SY);
-    realMultiply(&SX,&SX,&SX2,realContext);               //   --> sx^2
-    realMultiply(&SY,&SY,&SY2,realContext);               //   --> sy^2
-    realMultiply(&RR,&RR,&RR2,realContext);               //   --> r^2
-    realSubtract(const_1,&RR2,&SS,realContext);           //  sqrt[ (1-r^2) / (r^2.SY2 - SX^2) * SX2.SY2 ]
+    fnStatR(&RR, &SXY,    &SX,  &SY);
+    realMultiply(&SX,     &SX,  &SX2, realContext);       //   --> sx^2
+    realMultiply(&SY,     &SY,  &SY2, realContext);       //   --> sy^2
+    realMultiply(&RR,     &RR,  &RR2, realContext);       //   --> r^2
+    realSubtract(const_1, &RR2, &SS,  realContext);       //  sqrt[ (1-r^2) / (r^2.SY2 - SX^2) * SX2.SY2 ]
 
-    realMultiply(&RR2,&SY2,&TT,realContext);
-    realAdd     (&TT,&SX2,&TT,realContext);
-    realDivide  (&SS,&TT,&UU,realContext);
-    realMultiply(&UU,&SX2,&UU,realContext);
-    realMultiply(&UU,&SY2,&UU,realContext);               //  --> smi2
-    realSquareRoot(&UU, SMI, &ctxtReal39);
+    realMultiply(&RR2, &SY2, &TT, realContext);
+    realAdd     (&TT,  &SX2, &TT, realContext);
+    realDivide  (&SS,  &TT,  &UU, realContext);
+    realMultiply(&UU,  &SX2, &UU, realContext);
+    realMultiply(&UU,  &SY2, &UU, realContext);           //  --> smi2
+    realSquareRoot(&UU,      SMI, &ctxtReal39);
   }
 }
 
 void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
-  real_t SMI,RR,aa0,aa1,aa2,n30;
-  uInt32ToReal(30,&n30);
+  real_t SMI, RR, aa0, aa1, aa2, n30;
+  uInt32ToReal(30, &n30);
   if(checkMinimumDataPoints(&n30)) {
     lrChosen = CF_ORTHOGONAL_FITTING;                      //force to ORTHOF only
     lrSelection = CF_ORTHOGONAL_FITTING;
-    processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);
+    processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -245,7 +245,7 @@ void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
  ***********************************************/
 bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
-  real_t RR,MX,SX,SY,RR2,MX2,SX2,SY2,UU,SS,TT,aa0,aa1,aa2,SMI;
+  real_t RR, MX, SX, SY, RR2, MX2, SX2, SY2, UU, SS, TT, aa0, aa1, aa2, SMI;
 
   //LINF:   SA0 & SA1: RR2, n, Sy, Sx, Sx^2, Mx^2
   //EXPF:   new value for SY2, SY and use REX
@@ -254,23 +254,23 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   //ORTOF:  new values same as LINF
 
   if(checkMinimumDataPoints(const_2)) {
-    realCopy(const_0,&aa0);
-    realCopy(const_0,&aa1);
-    realCopy(const_0,&aa2);
+    realSetZero(&aa0);
+    realSetZero(&aa1);
+    realSetZero(&aa2);
 
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;
     }
-    //Replaced fnStatR       (&RR,&SXY,&SX,&SY);
+    //Replaced fnStatR       (&RR, &SXY, &SX, &SY);
     processCurvefitSelectionAll(lrChosen, &RR, &MX, &MX2, &SX2, &SY2, &SMI, &aa0, &aa1, &aa2);  //Can be optimised a lot, as fnStatR is also called here
-    realMultiply  (&RR,&RR,&RR2,realContext);               //   --> r^2
+    realMultiply  (&RR, &RR, &RR2, realContext);               //   --> r^2
 
     #if defined(STATDEBUG) && defined(PC_BUILD)
       printf("##### processCurvefitSA:\n");
-      printRealToConsole(&RR2, "§§ RR^2: ","\n");
-      printRealToConsole(&MX2, "§§ MX^2: ","\n");
-      printRealToConsole(&SX2, "§§ SX^2: ","\n");
-      printRealToConsole(&SY2, "§§ SY^2: ","\n");
+      printRealToConsole(&RR2, "§§ RR^2: ", "\n");
+      printRealToConsole(&MX2, "§§ MX^2: ", "\n");
+      printRealToConsole(&SX2, "§§ SX^2: ", "\n");
+      printRealToConsole(&SY2, "§§ SY^2: ", "\n");
     #endif // STATDEBUG && PC_BUILD
 
 
@@ -292,10 +292,10 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
       }
     }
 
-    realSquareRoot(&SX2,&SX,realContext);
-    realSquareRoot(&SY2,&SY,realContext);
+    realSquareRoot(&SX2, &SX, realContext);
+    realSquareRoot(&SY2, &SY, realContext);
 
-    //RR2,SY,SX,SX2,MX2 SS,TT,UU > SA1 SA0
+    //RR2, SY, SX, SX2, MX2 SS, TT, UU > SA1 SA0
     realSubtract  (const_1, &RR2, &SS, realContext);       //SA1 = f( RR2, n, SY, SX )
     realSubtract  (SIGMA_N, const_2, &TT, realContext);
     realDivide    (&SS, &TT, &UU, realContext);

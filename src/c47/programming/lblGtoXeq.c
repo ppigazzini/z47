@@ -78,11 +78,9 @@ void goToGlobalStep(int32_t step) {
     if(*labelName == 0) {
       return;
     }
-    #if !defined(TESTSUITE_BUILD)
     if((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROG) && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROGS)) {  // Don't apply the dupNum logic in configurable menus
       dupNum = 0;
     }
-    #endif // !TESTSUITE_BUILD
 
     int16_t c, len = stringByteLength((char *)labelName);
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
@@ -191,12 +189,10 @@ void fnExecute(uint16_t label) {
     fnGoto(label);
     dynamicMenuItem = -1;
     if(lastErrorCode == ERROR_NONE) {
-      #if !defined(TESTSUITE_BUILD)
-        if(tam.mode) {
-          leaveTamModeIfEnabled();
-          refreshScreen(2);
-        }
-      #endif // TESTSUITE_BUILD*
+      if(tam.mode) {
+        leaveTamModeIfEnabled();
+        refreshScreen(2);
+      }
       runProgram(false, INVALID_VARIABLE);
     }
   }
@@ -292,6 +288,8 @@ void fnRunProgram(uint16_t unusedButMandatoryParameter) {
 
 void fnStopProgram(uint16_t unusedButMandatoryParameter) {
   programRunStop = PGM_WAITING;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//  refreshStatusBar();
 }
 
 
@@ -331,7 +329,7 @@ static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
-      moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _executeWithIndirectVariable:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
@@ -459,7 +457,9 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
     case PARAM_REGISTER:
     case PARAM_COMPARE: {
       if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
-        reallyRunFunction(op, regKStoC(opParam));
+        if(regInRange(regKStoC(opParam))) {
+          reallyRunFunction(op, regKStoC(opParam));
+        }
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         _getStringLabelOrVariableName(paramAddress);
@@ -480,12 +480,12 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_0) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-        real34Copy(const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        real34SetZero(REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_1) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-        real34Copy(const34_1, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        real34SetOne(REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
       else if(opParam == INDIRECT_REGISTER) {
@@ -655,10 +655,12 @@ static void _putLiteral(uint8_t *literalAddress) {
         }
         if(*imag == 'i') {
           if(imag > tmpStringLabelOrVariableName && *(imag - 1) == '-') {
-            *imag = '-'; *(imag - 1) = 0;
+            *imag = '-';
+            *(imag - 1) = 0;
           }
           else if(imag > tmpStringLabelOrVariableName && *(imag - 1) == '+') {
-            *imag = 0; *(imag - 1) = 0;
+            *imag = 0;
+            *(imag - 1) = 0;
             ++imag;
           }
           else {
@@ -734,7 +736,7 @@ int16_t executeOneStep(uint8_t *step) {
   }
 
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  executeOneStep: §%i§%s§%s§\n",op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
+      printf("   >>>  executeOneStep: §%i§%s§%s§\n", op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
     #endif // PC_BUILD
 
 
@@ -884,7 +886,6 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
-          screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
           if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           }

@@ -20,13 +20,13 @@
 
 #else
   static bool_t checkParamNegBinom(real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_P, i)
-        || !getRegisterAsReal(REGISTER_N, j))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i) || !getRegisterAsReal(REGISTER_N, j)) {
       goto err;
+    }
 
     if(!checkRegisterNoFP(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -67,7 +67,7 @@
         pdf_NegBinomial(&val, &prob, &num, &ans, &ctxtReal39);
       }
       else {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -154,11 +154,11 @@
 
   bool_t negBinom_param(const real_t *r, real_t *res) {
     if(realIsSpecial(r)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return false;
     }
     if((!realIsPositive(r)) || (!realIsAnInteger(r))) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return false;
     }
     return true;
@@ -172,11 +172,11 @@
       return;
     }
     if(realIsNegative(x)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);       // ln(1 - p0)
     realMultiply(&p, r, &p, realContext);  // ln((1 - p0) ^ r)
 
@@ -202,7 +202,7 @@
     }
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
 
@@ -224,7 +224,7 @@
     real_t p, q;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -241,7 +241,7 @@
       return;
     }
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 

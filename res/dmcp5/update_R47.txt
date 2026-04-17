@@ -1,6 +1,6 @@
---------------------------------------
-R47 Firmware Update Guide (2025-12-04)
-======================================
+-------------------------
+R47 Firmware Update Guide
+=========================
 
 
 --------------------------------------
@@ -79,16 +79,14 @@ Verify: gEXIT(INFO) shows version information
 Option 2: Update DMCP5+R47 Combined Firmware (.bin file)
 --------------------------------------------------------
 f[1] PREF, DMCP, then item 6
-With USB activated, transfer DMCP5_flash_3.55_R47-00.109.02.07b13.bin to root directory
+With USB activated, transfer DMCP5_flash_X.XX_R47-00.109.02.XXXX.bin to root directory
 
 One-time action: Rename backup files in SAVFILES folder if this is your first update since version 00.109.02.07b13.1.
-  (This is not needed if you already did this for the 00.109.02.00b0 update)
+  (This is not needed if you already did this after the 00.109.02.00b0 update)
   If you previously used SAVE: Rename C47.sav → R47.sav
   If you previously used SAVEAUT: Rename C47auto.sav → R47auto.sav
 
 Safely Remove Hardware and Eject Media (Eject R47 USB Device)
-Press EXIT
-Press ENTER
 Press [ENTER] to continue anyway
 Press EXIT key to continue
 Restore your state: g0, fF3 (Skip if you used SAVEAUT)

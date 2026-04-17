@@ -19,13 +19,13 @@
 
 #else
   static bool_t checkParamLogistic(real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_S, j))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i) || !getRegisterAsReal(REGISTER_S, j)) {
       goto err;
+    }
 
     if(realIsZero(j) || realIsNegative(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -121,7 +121,7 @@
     real_t xx, p;
     logistic_param(x, mu, s, &xx, realContext);
     if(realIsSpecial(&xx)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     WP34S_SinhCosh(&xx, NULL, &p, realContext);
@@ -139,7 +139,7 @@
       return;
     }
     //if(!realIsPositive(&xx)) { // WP34S returns 0 wrongly when X <= 0
-    //  realCopy(const_0, res);
+    //  realSetZero(res);
     //  return;
     //}
     realChangeSign(&xx);
@@ -155,7 +155,7 @@
       return;
     }
     //if(!realIsPositive(&xx)) { // WP34S returns 0 wrongly when X <= 0
-    //  realCopy(const_0, res);
+    //  realSetZero(res);
     //  return;
     //}
     cdf_logit_common(&xx, res, realContext);

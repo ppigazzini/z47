@@ -10,8 +10,9 @@
 static void arcsinhReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   ArcsinhReal(&x, &x, &ctxtReal51);
   convertRealToResultRegister(&x, REGISTER_X, amNone);
@@ -22,8 +23,9 @@ static void arcsinhReal(void) {
 static void arcsinhCplx(void) {
   real_t xReal, xImag, rReal, rImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
 
   ArcsinhComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
@@ -33,7 +35,7 @@ static void arcsinhCplx(void) {
 
 uint8_t ArcsinhReal(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsInfinite(x)) {
-    realCopy(realIsNegative(x) ? const_minusInfinity : const_plusInfinity, res);
+    realCopy(x, res);
   }
   else {
     WP34S_ArcSinh(x, res, realContext);

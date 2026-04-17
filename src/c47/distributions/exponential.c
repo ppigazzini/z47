@@ -19,12 +19,13 @@
 
 #else
   static bool_t checkParamExponential(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_R, i))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_R, i)) {
       goto err;
+    }
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -121,11 +122,11 @@
 
   void WP34S_Pdf_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realZero(res); /* Can only be infinite which has zero probability */
+      realSetZero(res); /* Can only be infinite which has zero probability */
       return;
     }
     realMultiply(x, lambda, res, realContext);
@@ -136,16 +137,16 @@
 
   void WP34S_Cdfu_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
     realMultiply(x, lambda, res, realContext);
     if(realCompareLessThan(res, const_0)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realChangeSign(res);
@@ -154,16 +155,16 @@
 
   void WP34S_Cdf_Expon(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsSpecial(lambda)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
     realMultiply(x, lambda, res, realContext);
     if(realCompareLessThan(res, const_0)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realChangeSign(res);

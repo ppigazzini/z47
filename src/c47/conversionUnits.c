@@ -15,8 +15,9 @@
 static void unitConversion(const real_t * const coefficient, uint16_t multiplyDivide, bool_t invert) {
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
@@ -50,145 +51,147 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
 }
 
 TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
-    [constFactorFt2Hectare] = const_Ft2ToHa,    /*   0 */
-    [constFactorFt2M2] = const_Ft2ToM2,
-    [constFactorHectareKm2] = const_100,
-    [constFactorAcreHa] = const_AccreToHa,
-    [constFactorAcreusHa] = const_AccreusToHa,
-    [constFactorAtmPa] = const_AtmToPa,
-    [constFactorAuM] = const_AuToM,
-    [constFactorBarPa] = const_BarToPa,
-    [constFactorBtuJ] = const_BtuToJ,
-    [constFactorCalJ] = const_CalToJ,
-    [constFactorLbfftNm] = const_LbfftToNm,         /*  10 */
-    [constFactorCwtKg] = const_CwtToKg,
-    [constFactorFtM] = const_FtToM,
-    [constFactorSfeetM] = const_SfeetToM,
-    [constFactorFlozukIn3] = const_FlozukToIn3,
-    [constFactorFlozukMl] = const_FlozukToMl,
-    [constFactorFlozusIn3] = const_FlozusToIn3,
-    [constFactorFlozusMl] = const_FlozusToMl,
-    [constFactorFt3toGalUS] = const_Ft3ToGalUS,
-    [constFactorGalukL] = const_GalukToL,
-    [constFactorGalusL] = const_GalusToL,          /*  20 */
-    [constFactorHpeW] = const_HpeToW,
-    [constFactorHpmW] = const_HpmToW,
-    [constFactorHpukW] = const_HpukToW,
-    [constFactorInhgPa] = const_InhgToPa,
-    [constFactorInchMm] = const_InchToMm,
-    [constFactorWhJ] = const_WhToJ,
-    [constFactorLbKg] = const_LbToKg,
-    [constFactorOzG] = const_OzToG,
-    [constFactorShortcwtKg] = const_ShortcwtToKg,
-    [constFactorStoneKg] = const_StoneToKg,        /*  30 */
-    [constFactorShorttonKg] = const_ShorttonToKg,
-    [constFactorTonKg] = const_TonToKg,
-    [constFactorLiangKg] = const_20,
-    [constFactorTrozG] = const_TrozToG,
-    [constFactorLbfN] = const_LbfToN,
-    [constFactorLyM] = const_LyToM,
-    [constFactorMmhgPa] = const_MmhgToPa,
-    [constFactorMiKm] = const_MiToKm,
-    [constFactorNmiKm] = const_NmiToKm,
-    [constFactorPcM] = const_PcToM,                /*  40 */
-    [constFactorPointMm] = const_PointToMm,
-    [constFactorMileM] = const_MiToM,
-    [constFactorYardM] = const_YardToM,
-    [constFactorPsiPa] = const_PsiToPa,
-    [constFactorTorrPa] = const_TorrToPa,
-    [constFactorYearS] = const_YearToS,
-    [constFactorCaratG] = const_CaratToG,
-    [constFactorJinKg] = const_2,
-    [constFactorQuartL] = const_QuartToL,
-    [constFactorFathomM] = const_FathomToM,        /*  50 */
-    [constFactorNMiM] = const_NmiToM,
-    [constFactorBarrelM3] = const_BarrelToM3,
-    [constFactorHectareM2] = const_10000,
-    [constFactorMuM2] = const_MuToM2,
-    [constFactorLiM] = const_LiToM,
-    [constFactorChiM] = const_3,
-    [constFactorYinM] = const_YinToM,
-    [constFactorCunM] = const_CunToM,
-    [constFactorZhangM] = const_ZhangToM,
-    [constFactorFenM] = const_FenToM,              /*  60 */
-    [constFactorMi2Km2] = const_MiSqToKmSq,
-    [constFactorNmi2Km2] = const_NmiSqToKmSq,
-    [constFactorKmphmps] = const_Kmphmps,
-    [constFactorRpmDegps] = const_RpmDegps,
-    [constFactorMphmps] = const_Mphmps,
-    [constFactorRpmRadps] = const_RpmRadps,
-    [constFactorInchCm] = const_InchToCm,
-    [constFactorNmiMi] = const_NmiToMi,
-    [constFactorFurtom] = const_furToM,
-    [constFactorFtntos] = const_ftnToS,            /*  70 */
-    [constFactorFpftomps] = const_fpfToMps,
-    [constFactorBrdstom] = const_brdsTom,
-    [constFactorFirtokg] = const_firToKg,
-    [constFactorFpftokph] = const_fpfToKph,
-    [constFactorBrdstoin] = const_brdsToIn,
-    [constFactorFirtolb] = const_firToLb,
-    [constFactorFpftomph] = const_fpfToMph,
-    [constFactorFpstokph] = const_fpsToKph,
-    [constFactorFpstomps] = const_fpsToMps,
-    [constFactorL100Tokml] = const_100,            /*  80 */
-    [constFactorK100Ktokmk] = const_100,
+    [constFactorFt2Hectare]   = const_Ft2ToHa,      /*   0 */
+    [constFactorFt2M2]        = const_Ft2ToM2,
+    [constFactorHectareKm2]   = const_100,
+    [constFactorAcreHa]       = const_AccreToHa,
+    [constFactorAcreusHa]     = const_AccreusToHa,
+    [constFactorAtmPa]        = const_AtmToPa,
+    [constFactorAuM]          = const_AuToM,
+    [constFactorBarPa]        = const_BarToPa,
+    [constFactorBtuJ]         = const_BtuToJ,
+    [constFactorCalJ]         = const_CalToJ,
+    [constFactorErgJ]         = const_ErgToJ,       /*  10 */
+    [constFactorFoeJ]         = const_FoeToJ,
+    [constFactorLbfftNm]      = const_LbfftToNm,
+    [constFactorCwtKg]        = const_CwtToKg,
+    [constFactorFtM]          = const_FtToM,
+    [constFactorSfeetM]       = const_SfeetToM,
+    [constFactorFlozukIn3]    = const_FlozukToIn3,
+    [constFactorFlozukMl]     = const_FlozukToMl,
+    [constFactorFlozusIn3]    = const_FlozusToIn3,
+    [constFactorFlozusMl]     = const_FlozusToMl,
+    [constFactorFt3toGalUS]   = const_Ft3ToGalUS,   /*  20 */
+    [constFactorGalukL]       = const_GalukToL,
+    [constFactorGalusL]       = const_GalusToL,
+    [constFactorHpeW]         = const_HpeToW,
+    [constFactorHpmW]         = const_HpmToW,
+    [constFactorHpukW]        = const_HpukToW,
+    [constFactorInhgPa]       = const_InhgToPa,
+    [constFactorInchMm]       = const_InchToMm,
+    [constFactorWhJ]          = const_WhToJ,
+    [constFactorLbKg]         = const_LbToKg,
+    [constFactorOzG]          = const_OzToG,        /*  30 */
+    [constFactorShortcwtKg]   = const_ShortcwtToKg,
+    [constFactorStoneKg]      = const_StoneToKg,
+    [constFactorShorttonKg]   = const_ShorttonToKg,
+    [constFactorTonKg]        = const_TonToKg,
+    [constFactorLiangKg]      = const_20,
+    [constFactorTrozG]        = const_TrozToG,
+    [constFactorLbfN]         = const_LbfToN,
+    [constFactorLyM]          = const_LyToM,
+    [constFactorMmhgPa]       = const_MmhgToPa,
+    [constFactorMiKm]         = const_MiToKm,       /*  40 */
+    [constFactorNmiKm]        = const_NmiToKm,
+    [constFactorPcM]          = const_PcToM,
+    [constFactorPointMm]      = const_PointToMm,
+    [constFactorMileM]        = const_MiToM,
+    [constFactorYardM]        = const_YardToM,
+    [constFactorPsiPa]        = const_PsiToPa,
+    [constFactorTorrPa]       = const_TorrToPa,
+    [constFactorYearS]        = const_YearToS,
+    [constFactorCaratG]       = const_CaratToG,
+    [constFactorJinKg]        = const_2,            /*  50 */
+    [constFactorQuartL]       = const_QuartToL,
+    [constFactorFathomM]      = const_FathomToM,
+    [constFactorNMiM]         = const_NmiToM,
+    [constFactorBarrelM3]     = const_BarrelToM3,
+    [constFactorHectareM2]    = const_10000,
+    [constFactorMuM2]         = const_MuToM2,
+    [constFactorLiM]          = const_LiToM,
+    [constFactorChiM]         = const_3,
+    [constFactorYinM]         = const_YinToM,
+    [constFactorCunM]         = const_CunToM,       /*  60 */
+    [constFactorZhangM]       = const_ZhangToM,
+    [constFactorFenM]         = const_FenToM,
+    [constFactorMi2Km2]       = const_MiSqToKmSq,
+    [constFactorNmi2Km2]      = const_NmiSqToKmSq,
+    [constFactorKmphmps]      = const_Kmphmps,
+    [constFactorRpmDegps]     = const_RpmDegps,
+    [constFactorMphmps]       = const_Mphmps,
+    [constFactorRpmRadps]     = const_RpmRadps,
+    [constFactorInchCm]       = const_InchToCm,
+    [constFactorNmiMi]        = const_NmiToMi,      /*  70 */
+    [constFactorFurtom]       = const_furToM,
+    [constFactorFtntos]       = const_ftnToS,
+    [constFactorFpftomps]     = const_fpfToMps,
+    [constFactorBrdstom]      = const_brdsTom,
+    [constFactorFirtokg]      = const_firToKg,
+    [constFactorFpftokph]     = const_fpfToKph,
+    [constFactorBrdstoin]     = const_brdsToIn,
+    [constFactorFirtolb]      = const_firToLb,
+    [constFactorFpftomph]     = const_fpfToMph,
+    [constFactorFpstokph]     = const_fpsToKph,     /*  80 */
+    [constFactorFpstomps]     = const_fpsToMps,
+    [constFactorL100Tokml]    = const_100,
+    [constFactorK100Ktokmk]   = const_100,
     [constFactorK100Ktok100M] = const_MiToKm,
-    [constFactorK100Mtomik] = const_100,
+    [constFactorK100Mtomik]   = const_100,
 
-    [constFactorCupcFzus] = const_CupcFzus,
-    [constFactorCupcMl] = const_CupcMl,
-    [constFactorCupukFzuk] = const_CupukFzuk,
-    [constFactorCupukMl] = const_CupukMl,
-    [constFactorFzukCupuk] = const_CupukFzuk,
-    [constFactorFzukTbspuk] = const_FzukTbspuk,
-    [constFactorFzukTspuk] = const_FzukTspuk,
-    [constFactorFzusCupc] = const_CupcFzus,
-    [constFactorFzusTbspc] = const_FzusTbspc,
-    [constFactorFzusTspc] = const_FzusTspc,
-    [constFactorMlCupc] = const_CupcMl,
-    [constFactorMlCupuk] = const_CupukMl,
-    [constFactorMlPintlq] = const_PintlqMl,
-    [constFactorMlPintuk] = const_PintukMl,
-    [constFactorMlQt] = const_QtMl,
-    [constFactorMlQtus] = const_QtusMl,
-    [constFactorMlTbspc] = const_TbspcMl,
-    [constFactorMlTbspuk] = const_TbspukMl,
-    [constFactorMlTspc] = const_TspcMl,
-    [constFactorMlTspuk] = const_TspukMl,
-    [constFactorPintlqMl] = const_PintlqMl,
-    [constFactorPintukMl] = const_PintukMl,
-    [constFactorQtMl] = const_QtMl,
-    [constFactorQtusMl] = const_QtusMl,
-    [constFactorTbspcFzus] = const_FzusTbspc,
-    [constFactorTbspcMl] = const_TbspcMl,
-    [constFactorTbspukFzuk] = const_FzukTbspuk,
-    [constFactorTbspukMl] = const_TbspukMl,
-    [constFactorTspcFzus] = const_FzusTspc,
-    [constFactorTspcMl] = const_TspcMl,
-    [constFactorTspukFzuk] = const_FzukTspuk,
-    [constFactorTspukMl] = const_TspukMl,
+    [constFactorCupcFzus]     = const_CupcFzus,
+    [constFactorCupcMl]       = const_CupcMl,
+    [constFactorCupukFzuk]    = const_CupukFzuk,
+    [constFactorCupukMl]      = const_CupukMl,
+    [constFactorFzukCupuk]    = const_CupukFzuk,
+    [constFactorFzukTbspuk]   = const_FzukTbspuk,
+    [constFactorFzukTspuk]    = const_FzukTspuk,
+    [constFactorFzusCupc]     = const_CupcFzus,
+    [constFactorFzusTbspc]    = const_FzusTbspc,
+    [constFactorFzusTspc]     = const_FzusTspc,
+    [constFactorMlCupc]       = const_CupcMl,
+    [constFactorMlCupuk]      = const_CupukMl,
+    [constFactorMlPintlq]     = const_PintlqMl,
+    [constFactorMlPintuk]     = const_PintukMl,
+    [constFactorMlQt]         = const_QtMl,
+    [constFactorMlQtus]       = const_QtusMl,
+    [constFactorMlTbspc]      = const_TbspcMl,
+    [constFactorMlTbspuk]     = const_TbspukMl,
+    [constFactorMlTspc]       = const_TspcMl,
+    [constFactorMlTspuk]      = const_TspukMl,
+    [constFactorPintlqMl]     = const_PintlqMl,
+    [constFactorPintukMl]     = const_PintukMl,
+    [constFactorQtMl]         = const_QtMl,
+    [constFactorQtusMl]       = const_QtusMl,
+    [constFactorTbspcFzus]    = const_FzusTbspc,
+    [constFactorTbspcMl]      = const_TbspcMl,
+    [constFactorTbspukFzuk]   = const_FzukTbspuk,
+    [constFactorTbspukMl]     = const_TbspukMl,
+    [constFactorTspcFzus]     = const_FzusTspc,
+    [constFactorTspcMl]       = const_TspcMl,
+    [constFactorTspukFzuk]    = const_FzukTspuk,
+    [constFactorTspukMl]      = const_TspukMl,
 
-    [constFactorMlIn3] = const_In3Ml,
-    [constFactorIn3Ml] = const_In3Ml,
-    [constFactorFt3Gluk] = const_Ft3Gluk,
-    [constFactorGlukFt3] = const_Ft3Gluk,
-    [constFactorLFt3] = const_Ft3L,
-    [constFactorFt3L] = const_Ft3L,
-    [constFactorLQtus] = const_LQtus,
-    [constFactorQtusL] = const_LQtus,
+    [constFactorMlIn3]        = const_In3Ml,
+    [constFactorIn3Ml]        = const_In3Ml,
+    [constFactorFt3Gluk]      = const_Ft3Gluk,
+    [constFactorGlukFt3]      = const_Ft3Gluk,
+    [constFactorLFt3]         = const_Ft3L,
+    [constFactorFt3L]         = const_Ft3L,
+    [constFactorLQtus]        = const_LQtus,
+    [constFactorQtusL]        = const_LQtus,
 
-    [constFactorGlukFzuk] = const_GlukFzuk,
-    [constFactorFzukGluk] = const_GlukFzuk,
-    [constFactorGlusFzus] = const_GlusFzus,
-    [constFactorFzusGlus] = const_GlusFzus,
+    [constFactorGlukFzuk]     = const_GlukFzuk,
+    [constFactorFzukGluk]     = const_GlukFzuk,
+    [constFactorGlusFzus]     = const_GlusFzus,
+    [constFactorFzusGlus]     = const_GlusFzus,
 
-    [constFactoreVJ] = const_e,
-    [constFactorJeV] = const_e,
+    [constFactoreVJ]          = const_e,
+    [constFactorJeV]          = const_e,
 
-    [constFactormmBanana] = const_bananamm,
-    [constFactorBananamm] = const_bananamm,
-    [constFactorInchBanana] = const_bananaInch,
-    [constFactorBananaInch] = const_bananaInch,
+    [constFactormmBanana]     = const_bananamm,
+    [constFactorBananamm]     = const_bananamm,
+    [constFactorInchBanana]   = const_bananaInch,
+    [constFactorBananaInch]   = const_bananaInch,
 
   };
 
@@ -200,51 +203,47 @@ void fnUnitConvert(uint16_t arg) {
     unitConversion(conversionFactors[idx], multiply, invert);
 }
 
-/********************************************//**
- * \brief Converts °Celcius to °Fahrenheit: (°Celcius * 1,8) + 32.
- * Refreshes the stack. This is the exact formula.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
+
+//  {[(x - B) / C] * D} + E
+TO_QSPI static const real_t *cvtTempConsts[13][4] = {
+  //   B              C             D             E
+  {const_0,       const_1,      const_9on5,   const_32     }, // ITM_CtoF     ix =  0
+  {const_32,      const_9on5,   const_1,      const_0      }, // ITM_FtoC     ix =  1
+  {const_0,       const_1,      const_1,      const_273p15 }, // ITM_CtoK     ix =  2
+  {const_273p15,  const_1,      const_1,      const_0      }, // ITM_KtoC     ix =  3
+  {const_0,       const_9on5,   const_1,      const_0      }, // ITM_RAtoK    ix =  4
+  {const_0,       const_1,      const_9on5,   const_0      }, // ITM_KtoRA    ix =  5
+  {const_459p67,  const_1,      const_1,      const_0      }, // ITM_RAtoF    ix =  6
+  {const_0,       const_1,      const_1,      const_459p67 }, // ITM_FtoRA    ix =  7
+  {const_0,       const_kBeVK,  const_1,      const_0      }, // ITM_EVKBtoK  ix =  8
+  {const_0,       const_1,      const_kBeVK,  const_0      }, // ITM_KtoEVKB  ix =  9
+  {const_32,      const_9on5,   const_1,      const_273p15 }, // ITM_FtoK     ix = 10
+  {const_273p15,  const_1,      const_9on5,   const_32     }, // ITM_KtoF     ix = 11
+};
+
+void fnCvtTemp(uint16_t ix) {
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
   }
 
-  realFMA(&reX, const_9on5, const_32, &reX, &ctxtReal39);
+  //  (x - B) / C * D + E
 
-  convertRealToResultRegister(&reX, REGISTER_X, amNone);
-
-  adjustResult(REGISTER_X, false, false, -1, -1, -1);
-}
-
-
-
-/********************************************//**
- * \brief Converts °Fahrenheit to °Celcius: (°Fahrenheit - 32) / 1,8.
- * Refreshes the stack. This is the exact formula.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnCvtFToC(uint16_t unusedButMandatoryParameter) {
-  real_t reX;
-
-  if(!getRegisterAsReal(REGISTER_X, &reX))
-    return;
-
-  if(!saveLastX()) {
-    return;
-  }
-
-  realSubtract(&reX, const_32, &reX, &ctxtReal39);
-  realDivide(&reX, const_9on5, &reX, &ctxtReal39);
+  //printf("ix = %d\n",ix);
+  //printRealToConsole(cvtTempConsts[ix][0], "(x - "," ) \n");
+  //printRealToConsole(cvtTempConsts[ix][1], "/ "," \n");
+  //printRealToConsole(cvtTempConsts[ix][2], "x "," \n");
+  //printRealToConsole(cvtTempConsts[ix][3], "+ ","\n");
+  if(cvtTempConsts[ix][0] != const_0) {realSubtract(&reX, cvtTempConsts[ix][0], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][1] != const_1) {realDivide  (&reX, cvtTempConsts[ix][1], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][2] != const_1) {realMultiply(&reX, cvtTempConsts[ix][2], &reX, &ctxtReal39);}
+  if(cvtTempConsts[ix][3] != const_0) {realAdd     (&reX, cvtTempConsts[ix][3], &reX, &ctxtReal39);}
+  //printRealToConsole(&reX, "Rex: ","\n");
 
   convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
@@ -348,8 +347,9 @@ void fnCvtHMSHR   (uint16_t multiplyDivide) {
 void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
@@ -375,8 +375,9 @@ void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ra
 void fnCvtDbRatio(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
