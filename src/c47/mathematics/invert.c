@@ -16,8 +16,9 @@
 static void invertReal(void) {
   real_t x, *res = &x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsZero(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
@@ -35,12 +36,13 @@ static void invertReal(void) {
   else if(realIsInfinite(&x)) {
     const int setNeg = realIsNegative(&x) && getSystemFlag(FLAG_SPCRES);
 
-    realZero(&x);
-    if (setNeg)
+    realSetZero(&x);
+    if(setNeg) {
       realChangeSign(&x);
+    }
   }
 
-  else if (realCompareAbsEqual(&x, const_1)) {
+  else if(realCompareAbsEqual(&x, const_1)) {
     return;
   }
   else {
@@ -60,7 +62,7 @@ static void invertReal(void) {
 static void invertCplx(void) {
   real_t a, b;
 
-  if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
+  if(getRegisterAsComplex(REGISTER_X, &a, &b)) {
     divRealComplex(const_1, &a, &b, &a, &b, &ctxtReal39);
     convertComplexToResultRegister(&a, &b, REGISTER_X);
   }
@@ -77,8 +79,9 @@ static void invertCplx(void) {
 void fnInvert(uint16_t unusedButMandatoryParameter) {
   const uint32_t type = getRegisterDataType(REGISTER_X);
 
-  if (type == dtReal34Matrix || type == dtComplex34Matrix)
+  if(type == dtReal34Matrix || type == dtComplex34Matrix) {
     fnInvertMatrix(NOPARAM);
+  }
   else {
     processRealComplexMonadicFunction(&invertReal, &invertCplx);
   }

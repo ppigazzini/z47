@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.00a2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.01b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -18,6 +18,9 @@
 // Version 0.109.03.00a1    Internal C47 & R47
 // Version 0.109.03.00b1    Public C47 & R47, with 2 packages for DM42
 // Version 0.109.03.00a2    Internal C47 & R47
+// Version 0.109.03.00b2    Public C47 & R47
+// Version 0.109.03.01b0    Public C47 & R47
+// Version 0.109.03.01b1    Public C47 & R47 bugfix version TVM
 
 
 #if !defined(CALCMODEL)
@@ -37,6 +40,7 @@
 #undef SAVE_SPACE_DM42_10
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12ELLIP
 #undef SAVE_SPACE_DM42_12PRIME
 #undef SAVE_SPACE_DM42_12BESSEL
 #undef SAVE_SPACE_DM42_12ORTHO
@@ -51,10 +55,15 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
-#define OPTION_CUBIC_159               //             // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
-#undef  OPTION_SQUARE_159              // NOT NEEDED  // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits
-#define OPTION_EIGEN_159               //             // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
-#define OPTION_XFN_1000
+#define LONGPRESS_CFG
+#define OPTION_CUBIC_159               //                   // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
+#undef  OPTION_SQUARE_159              // NOT NEEDED AT ALL // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits.
+#define OPTION_EIGEN_159               //                   // C47 EIGEN user function is 159 digits internally; This is needed for 34 digit input accuracy.
+#define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
+#define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
+#define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
+
+
 
 #if defined(DMCP_BUILD)
 
@@ -75,12 +84,8 @@
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
-//The byte savings below determined by compiling on Mac on 2024-06-04 using:
-//C compiler for the host machine: ccache arm-none-eabi-gcc (gcc 12.3.1 "arm-none-eabi-gcc (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626")
-//C linker for the host machine: arm-none-eabi-gcc ld.bfd 12.3
-//C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
-//C linker for the build machine: cc ld64 820.1
 
+//The byte counts are never accurate and depending on build system. Consider general info.
 //THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
       #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
@@ -90,7 +95,8 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
+      #define SAVE_SPACE_DM42_12ELLIP  //       bytes // ELLIPTIC
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
       #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
@@ -104,49 +110,124 @@
       #define SAVE_SPACE_DM42_22_EDIT1 //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_23_EDIT2 //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
       #define SAVE_SPACE_DM42_24_PROFILES// 768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #undef  LONGPRESS_CFG
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
+      #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
-
-#define PACKAGE1_NOBESSEL_NOORTHO
-#define PACKAGE2_NODISTR
-
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+
+  #undef PACKAGE1_NOBESSEL_NOORTHO
+  #undef PACKAGE2_NODISTR
+  #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+  #undef PACKAGE4_MINIMAL_MATH
+
+  #if DMCP_PACKAGE == 1
+  #define PACKAGE1_NOBESSEL_NOORTHO
+  #elif DMCP_PACKAGE == 2
+  #define PACKAGE2_NODISTR
+  #elif DMCP_PACKAGE == 3
+  #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #elif DMCP_PACKAGE == 4
+  #define PACKAGE4_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
+  #endif
+
+
+
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+      //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #undef OPTION_TVM_FORMULAS             //  2280 bytes // Use TVM analytical formulas where possible
+    #undef OPTION_TVM_NEWTON               //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+      //  #define SAVE_SPACE_DM42_12ELLIP  // 12888 bytes // ELLIPTIC
+      //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without X.FN BESSEL
+      //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+      #define OPTION_TVM_FORMULAS          //  2280 bytes // Use TVM analytical formulas where possible
+      #define OPTION_TVM_NEWTON            //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3
+    #define SAVE_SPACE_DM42_6              //  1352 bytes // Without ELEC functions
+    #define SAVE_SPACE_DM42_8F             //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+      //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+      //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+      //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_21_HP35        //     0 bytes // Without config file activations only. Not complete removal
+    #define SAVE_SPACE_DM42_24_PROFILES    //   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #undef  OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #define OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 FOR GITLAB PIPELINE COMPILE
+      //  #define SAVE_SPACE_DM42_6        //  1352 bytes // Without ELEC functions
+      //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+    #define SAVE_SPACE_DM42_12ELLIP        // 12888 bytes // ELLIPTIC
+    #define SAVE_SPACE_DM42_12BESSEL       //  5168 bytes // Without X.FN BESSEL
+    #define SAVE_SPACE_DM42_12ORTHO        //  0744 bytes // Without X.FN ORTHO MENU
+    #define SAVE_SPACE_DM42_14             //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_15             // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_16             //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17             //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+      //  #define SAVE_SPACE_DM42_21_HP35  //     0 bytes // Without config file activations only. Not complete removal
+      //  #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    #define OPTION_TVM_FORMULAS            //  2280 bytes // Use TVM analytical formulas where possible
+    #undef  OPTION_TVM_NEWTON              //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+  #endif
+
+
+  //Options common to all hardware packages
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
-  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
-  #endif
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-  #if defined(PACKAGE2_NODISTR)
-    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-  #endif
     //#define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    //#define SAVE_SPACE_DM42_21_HP35    //   200 bytes // Without config file activations only. Not complete removal
     #define SAVE_SPACE_DM42_22_EDIT1   //  3256 bytes // Without number editing in X-register. Not complete EDIT removal.
     #define SAVE_SPACE_DM42_23_EDIT2   //  1560 bytes // Without number and function parameter editing in PEM. Not complete EDIT removal.
-    //#define SAVE_SPACE_DM42_24_PROFILES//   768 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+
+  //Large packages developed for DM42/DM42n. Could arguably work on DM42.
       #undef  OPTION_CUBIC_159         //  4080 bytes // C47 SLVC function is 159 digits internally
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -167,6 +248,9 @@
 
 
 //Testing and debugging
+  #define    REFRESH_ON_SCREEN_MONITOR  //refresh debug on actual screen. Shows the refresh source number. Works on hardware and sim.
+  #undef     REFRESH_ON_SCREEN_MONITOR
+
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
   #define    DM42_POWERMARKS
@@ -199,6 +283,8 @@
 //#undef     VERBOSE_MINIMUM
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
+  #define    VERBOSEKEYS_BUFFERED
+  #undef     VERBOSEKEYS_BUFFERED
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
@@ -214,7 +300,6 @@
   #define    GRAPHDEBUG
   #undef     GRAPHDEBUG
 
-
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
   #if (DEBUG_STAT == 0)
@@ -228,7 +313,7 @@
   #if (DEBUG_STAT == 2)
     #define STATDEBUG
     #define STATDEBUG_VERBOSE
-    #endif // DEBUG_STAT == 2
+  #endif // DEBUG_STAT == 2
 
 //Debugging
   #if defined(PC_BUILD)
@@ -361,9 +446,6 @@
 //*********************************
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
-#define DEBUG_PANEL                      0 // Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
-#define DEBUG_REGISTER_L                 0 // Showing register L content on the PC GUI
-#define SHOW_MEMORY_STATUS               0 // Showing the memory status on the PC GUI
 #define MMHG_PA_133_3224                 1 // mmHg to Pa conversion coefficient is 133.3224 and not 133.322387415
 #define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 // 1001 decimal digits: 3328 ≃ log2(10^1001)
 #define MAX_FACTORIAL                    450  // Auto conversion to Real for > 450
@@ -381,6 +463,44 @@
 #define SIMULATOR_ON_SCREEN_KEYBOARD     1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
 #define NARROW_SCREEN                    1 // 400x1280 portrait screen
 #undef  USECURVES                          // activate spline curve option in the plot menu
+#define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
+#define YYSystem                         true // Enable the shortcut system to allow two-digit year defaults, i.e. 23.1212 [.d] to decode to 2023.1212
+
+
+#if defined(TESTSUITE_BUILD)
+  #undef VERBOSE_MINIMUM
+  #undef VERBOSEKEYS
+  #undef VERBOSEKEYS_BUFFERED
+  #undef VERBOSEKEYS_AUTOCASE
+  #undef MONITOR_CLRSCR
+  #undef ANALYSE_REFRESH
+  #undef PC_BUILD_TELLTALE
+  #undef VERBOSE_DETERMINEITEM
+  #undef VERBOSE_REGISTERS
+  #undef GRAPHDEBUG
+  #undef STATDEBUG
+  #undef STATDEBUG_VERBOSE
+  #undef DEBUGUNDO
+  #undef DEBUG_EXECUTE
+  #undef DEBUG_PGM
+  #undef PAIMDEBUG
+  #undef VERBOSE_COUNTER
+  #undef PC_BUILD_VERBOSE0
+  #undef PC_BUILD_VERBOSE1
+  #undef PC_BUILD_VERBOSE2
+  #undef VERBOSE_SCREEN
+  #undef INLINE_TEST
+  #undef NOMATRIXCURSORS
+  #undef RECORDLOG
+  #undef FULLUPDATE
+  #undef BUFFER_CLICK_DETECTION
+  #undef JMSHOWCODES_KB3
+
+  #undef  VERBOSE_LEVEL
+  #define VERBOSE_LEVEL -1
+  #undef  EXTRA_INFO_ON_CALC_ERROR
+  #define EXTRA_INFO_ON_CALC_ERROR 0
+#endif // TESTSUITE_BUILD
 
 #if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
@@ -397,15 +517,7 @@
   #define SIMULATOR_ON_SCREEN_KEYBOARD 1
 #endif // PC_BUILD && !RASPBERRY
 
-
-#if defined(LINUX)
-  #define _XOPEN_SOURCE                700 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
-#endif // LINUX
-
-
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
-
-
 
 //Norm_Key_00_VAR, using -1 output for not applicable, purposely out of range
 #define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 10 :       calcModel == USER_R47fg_bk ? 11 : -1)
@@ -416,8 +528,9 @@
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 #define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
-#define isArrowUp(code)     ( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 ) // UP
-#define isArrowDown(code)   ( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 ) // DN
+#define isArrowUp(code)   (( isR47FAM && code == 22 ) || (!isR47FAM && code == 17 )) // UP
+#define isArrowDown(code) (( isR47FAM && code == 27 ) || (!isR47FAM && code == 22 )) // DN
+#define isShift(code)     (( isR47FAM && code == 10 ) || ( isR47FAM && code == 11 ) || (!isR47FAM && code == 27 )) // All shifts
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -813,6 +926,7 @@ typedef enum {
 #define CAT_SYFL                           ( 8 << 4) // System flags
 #define CAT_AINT                           ( 9 << 4) // Upper case alpha_INTL
 #define CAT_aint                           (10 << 4) // Lower case alpha_intl
+#define CAT_MNUH                           (11 << 4) // Menu, Hidden, not appearing in the catalogue: Hidden menu, eg. 'DEV', accessible with [XEQ] 'OPENM' 'DEV' or [P.FN] [OPENM] 'DEV'
 
 // EIM (Equation Input Mode) status (1 bit)
 #define EIM_STATUS                            0x0100
@@ -844,7 +958,7 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
-// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2, 22] so no big loss to do.
 #define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
 #define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
@@ -1391,7 +1505,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || tam.mode == TM_STORCL || tam.alpha) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1571,6 +1685,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_WOY_RULE                              121
 #define TI_MIJEQ                                 122
 #define TI_REGTYPE                               123
+#define TI_LR_A0                                 124
+#define TI_LR_A1                                 125
+#define TI_LR_A2                                 126
+#define TI_ELLIPSE_K                             127
+#define TI_ELLIPSE_M                             128
+#define TI_ELLIPSE_Theta                         129
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1578,15 +1698,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RBR_GLOBAL                                 0 // Global registers are browsed
 #define RBR_LOCAL                                  1 // Local registers are browsed
 #define RBR_NAMED                                  2 // Named variables are browsed
-
-// Debug window
-#define DBG_BIT_FIELDS                             0
-#define DBG_FLAGS                                  1
-#define DBG_REGISTERS                              2
-#define DBG_LOCAL_REGISTERS                        3
-#define DBG_STATISTICAL_SUMS                       4
-#define DBG_NAMED_VARIABLES                        5
-#define DBG_TMP_SAVED_STACK_REGISTERS              6
 
 // alpha selection menus
 #define CATALOG_NONE                               0 // CATALOG_NONE must be 0
@@ -1731,10 +1842,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     239 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     242 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
+#define YY_MASK_TRACKING                      0x4000 // bit14 = 1: tracking the year; meaning that the YY default is updated from the last used full YYYY used
+#define YY_MASK_OFF                           0x8000 // bit15 = 1: off
+
+
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
@@ -1916,11 +2031,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
-#define min(a,b)                             ((a)<(b)?(a):(b))
-#define max(a,b)                             ((a)>(b)?(a):(b))
-#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
-#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n,d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
-//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n,d) = rmd(n,d) (+ |d| if rmd(n,d)<0)  thus the result is always >= 0
+#define min(a, b)                            ((a)<(b) ? (a) : (b))
+#define max(a, b)                            ((a)>(b) ? (a) : (b))
+#define rmd(n, d)                            ((n)%(d))                                                       // rmd(n, d) = n - d*idiv(n, d)   where idiv is the division with decimal part truncature
+#define mod(n, d)                            (((n)%(d) + (d)) % (d))                                         // mod(n, d) = n - d*floor(n/d)  where floor(a) is the biggest integer <= a
+//#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n, d) = rmd(n, d) (+ |d| if rmd(n, d)<0)  thus the result is always >= 0
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
@@ -1994,21 +2109,21 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define checkHP                              (significantDigits <= 16 && displayStack == 1 && exponentLimit == 99 && Input_Default == ID_DP && (calcMode == CM_NORMAL || calcMode == CM_NIM))
 #define REPLACEFONT                          // Use HP 7-segment font
-#ifdef REPLACEFONT
+#if defined(REPLACEFONT)
   #define DOUBLING_A                         15u // 16=is double; 14 is 1.75*; 12=1.5*; 10=1.25* (8 is the per unit norm horizontal factor, A/B)
   #define DOUBLINGBASE_B                     8u
   #define REDUCT_A1                          4   // Reduction vertical ratio A/B
   #define REDUCT_B1                          4
   #define REDUCT_OFFSET1                     0   // Reduction vertical offset
   #define HPFONT1                            true
-#else
+#else // !REPLACEFONT
   #define DOUBLING_A                         14u // 16=is double; 14 is 1.75*; 12=1.5*; 10=1.25* (8 is the per unit norm horizontal factor, A/B)
   #define DOUBLINGBASE_B                     8u
   #define REDUCT_A1                          3   // Reduction ratio A/B
   #define REDUCT_B1                          4
   #define REDUCT_OFFSET1                     3   // Reduction offset
   #define HPFONT1                            false
-#endif
+#endif // REPLACEFONT
 #define DOUBLING                             (checkHP ? DOUBLING_A     : 6u)
 #define DOUBLINGBASEX                        (checkHP ? DOUBLINGBASE_B : 8u)
 #define REDUCT_A                             (checkHP ? REDUCT_A1      : 3)
@@ -2020,7 +2135,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define GROUPWIDTH_LEFT                      (grpGroupingLeft)
 #define GROUPWIDTH_LEFT1                     ((grpGroupingGr1Left        == 0 ? (uint16_t)grpGroupingLeft : (uint16_t)grpGroupingGr1Left))
 #define GROUPWIDTH_LEFT1X                    (grpGroupingGr1LeftOverflow)
-#define GROUP1_OVFL(digitCount, exp)         ( (grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1  ? grpGroupingGr1LeftOverflow:0 ) )
+#define GROUP1_OVFL(digitCount, exp)         ((grpGroupingGr1LeftOverflow > 0 && exp == GROUPWIDTH_LEFT1 && digitCount+1 == GROUPWIDTH_LEFT1 ? grpGroupingGr1LeftOverflow : 0))
 #define GROUPWIDTH_RIGHT                     (grpGroupingRight)
 #define SEPARATOR_(digitCount)               (digitCount >= 0 ? SEPARATOR_LEFT : SEPARATOR_RIGHT)
 #define GROUPWIDTH_(digitCount)              (digitCount >= 0 ? GROUPWIDTH_LEFT : GROUPWIDTH_RIGHT)
@@ -2058,18 +2173,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
-#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
-#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
-#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define isMatrix2dVector(rows, cols)         ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows, cols)         ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows, cols)           ((isMatrix3dVector(rows, cols) || isMatrix2dVector(rows, cols)))
 #define getTagAngularMode(tag)               ( tag & amAngleMask)
 #define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
 #define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)
 #define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
 #define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
-#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
-#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
-#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+#define isMatrix3dVectorSPH(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows, cols, tag) (isMatrix2dVector(rows, cols) && is2dVectorPolar(tag))
 
 
 
@@ -2096,53 +2211,15 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #error Only one of OS32BIT and OS64BIT must be defined
 #endif // OS32BIT && OS64BIT
 
-#if defined(PC_BUILD)
-  #if defined(WIN32) // No DEBUG_PANEL mode for Windows
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-  #endif // WIN32
-  #if defined(RASPBERRY) // No DEBUG_PANEL mode for Raspberry Pi
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-  #endif // RASPBERRY
-#endif // PC_BUILD
-
 #if defined(DMCP_BUILD) || (SIMULATOR_ON_SCREEN_KEYBOARD == 0)
-  #undef  DEBUG_PANEL
-  #define DEBUG_PANEL 0
-  #undef  DEBUG_REGISTER_L
-  #define DEBUG_REGISTER_L 0
-  #undef  SHOW_MEMORY_STATUS
-  #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
 #endif // DMCP_BUILD || SIMULATOR_ON_SCREEN_KEYBOARD == 0
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-  #undef  PC_BUILD
   #undef  DMCP_BUILD
-  #undef  DEBUG_PANEL
-  #define DEBUG_PANEL 0
-  #undef  DEBUG_REGISTER_L
-  #define DEBUG_REGISTER_L 0
-  #undef  SHOW_MEMORY_STATUS
-  #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
-  #define addItemToBuffer fnNop
-  #define fnOff           fnNop
-  #define fnAim           fnNop
-  #define asnBrowser      fnNop
-  #define registerBrowser fnNop
-  #define flagBrowser     fnNop
-  #define fontBrowser     fnNop
-  #define flagBrowser_old fnNop       //JM
-  #define refreshRegisterLine(a)  do {} while(0)
-  #define displayBugScreen(a)     do { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n"); } while(0)
-  #define showHideHourGlass()     do {} while(0)
-  #define refreshScreen(a)        do {} while(0)
-  #define refreshLcd(a)           do {} while(0)
-  #define initFontBrowser()       do {} while(0)
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
@@ -2177,67 +2254,77 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_stop);
 // printf("Duration = %11.6fs\n", stopwatch_stop.tv_sec + stopwatch_stop.tv_nsec /1e9 - stopwatch_start.tv_sec - stopwatch_start.tv_nsec /1e9);
 
-#define TEST_REG(r, comment)                                                                                       \
-  do {                                                                                                             \
-    if(globalRegister[r].dataPointer >= 500) {                                                                     \
-      uint32_t a, b;                                                                                               \
-      a = 1;                                                                                                       \
-      b = 0;                                                                                                       \
-      printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-      globalRegister[r].dataType = a/b;                                                                            \
-    }                                                                                                              \
-    else {                                                                                                         \
-      printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-    }                                                                                                              \
-  } while(0)
+#if defined(PC_BUILD)
+  #define TEST_REG(r, comment)                                                                                       \
+    do {                                                                                                             \
+      if(globalRegister[r].dataPointer >= 500) {                                                                     \
+        uint32_t a, b;                                                                                               \
+        a = 1;                                                                                                       \
+        b = 0;                                                                                                       \
+        printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+        globalRegister[r].dataType = a/b;                                                                            \
+      }                                                                                                              \
+      else {                                                                                                         \
+        printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+      }                                                                                                              \
+    } while(0)
 
-#define PRINT_LI(lint, comment)                            \
-  do {                                                     \
-    int i;                                                 \
-    printf("\n%s", comment);                               \
-    if((lint)->_mp_size == 0) printf(" lint=0");           \
-    else if((lint)->_mp_size < 0) printf(" lint=-");       \
-    else printf(" lint=+");                                \
-    for(i=0; i<abs((lint)->_mp_size); i++) {               \
-      printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
-    }                                                      \
-    printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
-    printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
-    printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size));   \
-    printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
-    printf(" PCaddress=%p", (lint)->_mp_d);                \
-    printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d));  \
-    printf("\n");                                          \
-  } while(0)
+  #define PRINT_LI(lint, comment)                            \
+    do {                                                     \
+      int i;                                                 \
+      printf("\n%s", comment);                               \
+      if((lint)->_mp_size == 0) {                            \
+        printf(" lint=0");                                   \
+      }                                                      \
+      else if((lint)->_mp_size < 0) {                        \
+        printf(" lint=-");                                   \
+      }                                                      \
+      else printf(" lint=+");                                \
+      for(i=0; i<abs((lint)->_mp_size); i++) {               \
+        printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
+      }                                                      \
+      printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
+      printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
+      printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size));   \
+      printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
+      printf(" PCaddress=%p", (lint)->_mp_d);                \
+      printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d));  \
+      printf("\n");                                          \
+    } while(0)
 
 
-#define PRINT_LI_REG(reg, comment)                                                                   \
-  do {                                                                                               \
-    int i;                                                                                           \
-    mp_limb_t *p;                                                                                    \
-    printf("\n%s", comment);                                                                         \
-    if(getRegisterLongIntegerSign(reg) == LI_ZERO) printf("lint=0");                                 \
-    else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
-    else printf("lint=+");                                                                           \
-    for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
-      printf("%lu ", *p);                                                                            \
-    }                                                                                                \
-    printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg));                                         \
-    printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
-    printf("\n");                                                                                    \
-  } while(0)
+  #define PRINT_LI_REG(reg, comment)                                                                   \
+    do {                                                                                               \
+      int i;                                                                                           \
+      mp_limb_t *p;                                                                                    \
+      printf("\n%s", comment);                                                                         \
+      if(getRegisterLongIntegerSign(reg) == LI_ZERO) {                                                 \
+        printf("lint=0");                                                                              \
+      }                                                                                                \
+      else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
+      else {                                                                                           \
+        printf("lint=+");                                                                              \
+      }                                                                                                \
+      for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
+        printf("%lu ", *p);                                                                            \
+      }                                                                                                \
+      printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg));                                         \
+      printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
+      printf("\n");                                                                                    \
+    } while(0)
+#endif // PC_BUILD
 
 #if defined(DMCP_BUILD)
   /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */
-  #define IMPORT_BIN(sect, file, sym) asm (\
-      ".section " #sect "\n"                  /* Change section */\
-      ".balign 4\n"                           /* Word alignment */\
-      ".global " #sym "\n"                    /* Export the object address */\
-      #sym ":\n"                              /* Define the object label */\
-      ".incbin \"" file "\"\n"                /* Import the file */\
-      ".global _sizeof_" #sym "\n"            /* Export the object size */\
-      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */\
-      ".balign 4\n"                           /* Word alignment */\
+  #define IMPORT_BIN(sect, file, sym) asm (                                   \
+      ".section " #sect "\n"                  /* Change section */            \
+      ".balign 4\n"                           /* Word alignment */            \
+      ".global " #sym "\n"                    /* Export the object address */ \
+      #sym ":\n"                              /* Define the object label */   \
+      ".incbin \"" file "\"\n"                /* Import the file */           \
+      ".global _sizeof_" #sym "\n"            /* Export the object size */    \
+      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */    \
+      ".balign 4\n"                           /* Word alignment */            \
       ".section \".text\"\n")                 /* Restore section */
 #endif // DMCP_BUILD
 

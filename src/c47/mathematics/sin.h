@@ -7,7 +7,8 @@
 #if !defined(SIN_H)
   #define SIN_H
 
-  void fnSin   (uint16_t unusedButMandatoryParameter);
-
+  void sinCosReal(trigType_t trigType);
+  void sinCosCplx(trigType_t trigType);
+  void fnSin     (uint16_t unusedButMandatoryParameter);
   void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 #endif // !SIN_H

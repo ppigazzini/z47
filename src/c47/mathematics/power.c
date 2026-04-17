@@ -155,12 +155,13 @@ finish1:
 static void powReal(void) {
   real_t y, x, res;
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   if(realIsInfinite(&y)) {
     if(realIsZero(&x)) {
-      realCopy(const_NaN, &res);
+      realSetNaN(&res);
     }
     else {
       if(realIsPositive(&x) && realIsAnInteger(&x)) {
@@ -168,7 +169,7 @@ static void powReal(void) {
         realCopy(realIsZero(&res) ? const_plusInfinity : const_minusInfinity, &res);
       }
       else {
-        realCopy(const_plusInfinity, &res);
+        realSetPlusInfinity(&res);
       }
     }
     goto finish;
@@ -206,87 +207,93 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
   uint8_t errorCode = ERROR_NONE;
 
   if(realIsInfinite(yReal) || realIsInfinite(yImag)) {
-      if(realIsZero(xReal) && realIsZero(xImag)) {
-          realCopy(const_NaN, rReal);
-          realCopy(const_NaN, rImag);
-      }
-      else {
-          realCopy(const_plusInfinity, rReal);
-          realCopy(const_plusInfinity, rImag);
-      }
+    if(realIsZero(xReal) && realIsZero(xImag)) {
+      realSetNaN(rReal);
+      realSetNaN(rImag);
+    }
+    else {
+      realSetPlusInfinity(rReal);
+      realSetPlusInfinity(rImag);
+    }
   }
   else if(realIsZero(yReal) && realIsZero(yImag)) {
-      if(realIsZero(xReal)) {
-          realCopy(const_NaN, rReal);
-          realCopy(const_NaN, rImag);
-      }
-      else {
-          realCopy(const_0, rReal);
-          realCopy(const_0, rImag);
-      }
+    if(realIsZero(xReal)) {
+      realSetNaN(rReal);
+      realSetNaN(rImag);
+    }
+    else {
+      realSetZero(rReal);
+      realSetZero(rImag);
+    }
   }
   else {
-      real_t theta;
-      real_t tmp;
+    real_t theta;
+    real_t tmp;
 
-      // (Yr+iYi) ^ (Xr+iXi)
-      // EXP [  (Xr+iXi) LN (Yr+iYi)  ]
-      // EXP [  (Xr+iXi) LN (r angle theta)  ]
-      // EXP [  Xr.LN (r angle theta)   +   i.(Xi.LN (r angle theta)) ]
-      // EXP [ (Xr.LN r) * (-theta Xi)  +   i.(Xi.LN r + (theta . Xr)) ]  [5]
+    // (Yr+iYi) ^ (Xr+iXi)
+    // EXP [  (Xr+iXi) LN (Yr+iYi)  ]
+    // EXP [  (Xr+iXi) LN (r angle theta)  ]
+    // EXP [  Xr.LN (r angle theta)   +   i.(Xi.LN (r angle theta)) ]
+    // EXP [ (Xr.LN r) * (-theta Xi)  +   i.(Xi.LN r + (theta . Xr)) ]  [5]
 
 
-      realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
-      WP34S_Ln(rReal, rReal, realContext);
+    realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
+    WP34S_Ln(rReal, rReal, realContext);
 
-      realMultiply(rReal, xImag, rImag, realContext);                 //rImag = Xi.LN r
+    realMultiply(rReal, xImag, rImag, realContext);                 //rImag = Xi.LN r
 
-      real_t xR;
-      int8_t md;
-      bool_t doZeroingReal = false;
-      bool_t doZeroingImag = false;
-      if (realCompareAbsEqual(yReal, yImag)) {
-        realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
-        md = realToInt32C47(&xR);
-        if (realIsZero(xImag)) {
-          if (md % 4 == 0) {
-            doZeroingImag = true;
-          } else if ((md-2) % 4 == 0) {
-            doZeroingReal = true;
-          }
+    real_t xR;
+    int8_t md;
+    bool_t doZeroingReal = false;
+    bool_t doZeroingImag = false;
+    if(realCompareAbsEqual(yReal, yImag)) {
+      realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
+      if(realIsZero(xImag) && realIsAnInteger(&xR)) {              // only compute md when exponent is integer
+        md = realToInt32C47(&xR, NULL);
+        if(md % 4 == 0) {
+          doZeroingImag = true;
         }
-      } else if (realIsZero(yReal)) {
-        realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
-        md = realToInt32C47(&xR);
-        if (realIsZero(xImag)) {
-          if (md % 2 == 0) {
-            doZeroingImag = true;
-          } else {
-            doZeroingReal = true;
-          }
+        else if((md-2) % 4 == 0) {
+          doZeroingReal = true;
         }
-      } else {
-        realCopy(xReal, &xR);
       }
-
-      realFMA(&theta, &xR, rImag, rImag, realContext);                //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by number of revolutions.
-      realChangeSign(&theta);
-
-      realMultiply(rReal, xReal, rReal, realContext);                 //rReal = Xr.LN r
-      realFMA(&theta, xImag, rReal, rReal, realContext);              //rReal = Xr.LN r  *  -theta . Xi
-
-      realExp(rReal, &tmp, realContext);
-      realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
-      if (doZeroingImag) {
-        realCopy(const_0, rImag);
-      } else {
-        realMultiply(&tmp, rImag, rImag, realContext);
+    }
+    else if(realIsZero(yReal)) {
+      realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
+      if(realIsZero(xImag) && realIsAnInteger(&xR)) {              // only compute md when exponent is integer
+        md = realToInt32C47(&xR, NULL);
+        if(md % 2 == 0) {
+          doZeroingImag = true;
+        }
+        else {
+          doZeroingReal = true;
+        }
       }
-      if (doZeroingReal) {
-        realCopy(const_0, rReal);
-      } else {
-        realMultiply(&tmp, rReal, rReal, realContext);
-      }
+    }
+    else {
+      realCopy(xReal, &xR);
+    }
+
+    realFMA(&theta, &xR, rImag, rImag, realContext);                //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by number of revolutions.
+    realChangeSign(&theta);
+
+    realMultiply(rReal, xReal, rReal, realContext);                 //rReal = Xr.LN r
+    realFMA(&theta, xImag, rReal, rReal, realContext);              //rReal = Xr.LN r  *  -theta . Xi
+
+    realExp(rReal, &tmp, realContext);
+    realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
+    if(doZeroingImag) {
+      realSetZero(rImag);
+    }
+    else {
+      realMultiply(&tmp, rImag, rImag, realContext);
+    }
+    if(doZeroingReal) {
+      realSetZero(rReal);
+    }
+    else {
+      realMultiply(&tmp, rReal, rReal, realContext);
+    }
   }
 
   return errorCode;
@@ -301,8 +308,9 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
 static void powCplx(void) {
   real_t yReal, yImag, xReal, xImag, rReal, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_Y, &yReal, &yImag) || !getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_Y, &yReal, &yImag) || !getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
 
   uint8_t errorCode = PowerComplex(&yReal, &yImag, &xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
@@ -311,7 +319,7 @@ static void powCplx(void) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnPower:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+      moreInfoOnError("In function powCplx:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {

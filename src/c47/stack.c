@@ -77,7 +77,7 @@ void fnDropT(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnDropN(uint16_t number) {
-  for(int n = 0; n < min(8,number); n++) {
+  for(int n = 0; n < min(8, number); n++) {
     _Drop(REGISTER_X);
   }
 }
@@ -128,21 +128,21 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     currentLocalRegisters[regist - FIRST_LOCAL_REGISTER] = savedRegisterHeader;
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else if(regist <= LAST_LOCAL_REGISTER) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is not defined!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "register %d", regist);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is unsupported!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -167,7 +167,7 @@ void fnSwapT(uint16_t regist) {
 
 
 void fnSwapN(uint16_t number) {
-  for(int n = 0; n < min(4,number); n++) {
+  for(int n = 0; n < min(4, number); n++) {
   _swapRegs(REGISTER_X + n, REGISTER_X + number + n);
   }
 }
@@ -340,6 +340,7 @@ void fnUndo(uint16_t unusedButMandatoryParameter) {
 
 void undo(void) {
   #if defined(DEBUGUNDO)
+    print_caller("UNDO");
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
@@ -353,7 +354,9 @@ void undo(void) {
   const uint8_t lastErrorCodeMeM = lastErrorCode;
   lastErrorCode = ERROR_NONE;
   recallStatsMatrix();
-  if(lastErrorCode == ERROR_NONE) lastErrorCode = lastErrorCodeMeM;
+  if(lastErrorCode == ERROR_NONE) {
+    lastErrorCode = lastErrorCodeMeM;
+  }
 
   if(currentInputVariable != INVALID_VARIABLE) {
     if(currentInputVariable & 0x4000) {
@@ -423,6 +426,6 @@ void undo(void) {
 
 void fillStackWithReal0(void) {
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(0);
 }

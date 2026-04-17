@@ -364,8 +364,12 @@ int8_t fnCbIsSet(int16_t item) {
                      //printf("^^^^*** activated %d\n", rb_param);
                      break;
 
-        case RB_HX:  if(lastIntegerBase != 0) rb_param = lastIntegerBase;
-                     else                     return result;
+        case RB_HX:  if(lastIntegerBase != 0) {
+                       rb_param = lastIntegerBase;
+                     }
+                     else {
+                      return result;
+                     }
                      break;
 
         case RB_FP:  rb_param = gapItemRight;
@@ -456,22 +460,25 @@ int8_t fnCbIsSet(int16_t item) {
                           case FLAG_MYM_TRIPLE:
                           case FLAG_HOME_TRIPLE:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE))
+                            if(getSystemFlag(FLAG_HOME_TRIPLE) && getSystemFlag(FLAG_MYM_TRIPLE)) {
                               clearSystemFlag(FLAG_MYM_TRIPLE);
+                            }
                             break;
 
                           case FLAG_BASE_HOME:
                           case FLAG_BASE_MYM:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM))
+                            if(getSystemFlag(FLAG_BASE_HOME) && getSystemFlag(FLAG_BASE_MYM)) {
                               clearSystemFlag(FLAG_BASE_HOME);
+                            }
                             break;
 
                           case FLAG_FGLNLIM:
                           case FLAG_FGLNFUL:
                             cb_param = getSystemFlag(param);
-                            if(getSystemFlag(FLAG_FGLNLIM) && getSystemFlag(FLAG_FGLNFUL))
+                            if(getSystemFlag(FLAG_FGLNLIM) && getSystemFlag(FLAG_FGLNFUL)) {
                               clearSystemFlag(FLAG_FGLNLIM);
+                            }
                             break;
 
                           #if defined(INLINE_TEST)
@@ -504,9 +511,7 @@ int8_t fnCbIsSet(int16_t item) {
 
 
 void fnRefreshState(void) {                      // 2023-07-18 This seems antiquated. If it has no effect, all calls to fnRefreshState can be removed. Leaving commented for a while.
-  #if !defined(TESTSUITE_BUILD)
-    doRefreshSoftMenu = true;
-  #endif //!TESTSUITE_BUILD
+  doRefreshSoftMenu = true;
 }
 
 
@@ -536,15 +541,17 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_HIDE:      result = exponentHideLimit;                                 break;
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
-    case ITM_HASH_JM:   if(lastIntegerBase != 0) result = (int16_t)lastIntegerBase; break;
+    case ITM_HASH_JM:   if(lastIntegerBase != 0) {
+                          result = (int16_t)lastIntegerBase;
+                        }
+                        break;
     case ITM_TIMER_SIGMA_L:
-    case ITM_TIMER_SIGMA_T: result = statisticalSumsPointer == NULL ? 0 : realToUint32C47(SIGMA_N); break;
+    case ITM_TIMER_SIGMA_T: result = statisticalSumsPointer == NULL ? 0 : realToUint32C47(SIGMA_N, NULL); break;
     case ITM_TIMER_R_L:
     case ITM_TIMER_R_T:     result = timerCraAndDeciseconds &0x7F; break;
     case ITM_VOL:
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
-    case ITM_YY_DFLT:   result = lastCenturyHighUsed & 0x3FFF;                        break;
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }

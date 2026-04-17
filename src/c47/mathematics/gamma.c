@@ -9,27 +9,29 @@
 
 static int checkGammaDomain(const real_t *xReal, real_t *out) {
   if(realIsSpecial(xReal)) {
-    if (realIsNaN(xReal))
-      realCopy(const_NaN, out);
+    if(realIsNaN(xReal)) {
+      realSetNaN(out);
+    }
     else if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function gammaReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
+        moreInfoOnError("In function checkGammaDomain:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    else
+    else {
       realCopy(realIsPositive(xReal) ? const_plusInfinity : const_NaN, out);
+    }
     return 0;
   }
   if(realCompareLessEqual(xReal, const_0) && realIsAnInteger(xReal)) {
     if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function gammaReal:", "cannot use a negative integer as X input of gamma when flag D is not set", NULL, NULL);
+        moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag D is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      realCopy(const_NaN, out);
+      realSetNaN(out);
     }
     return 0;
   }
@@ -39,11 +41,13 @@ static int checkGammaDomain(const real_t *xReal, real_t *out) {
 static void gammaReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
-  if (checkGammaDomain(&x, &x))
+  if(checkGammaDomain(&x, &x)) {
     WP34S_Gamma(&x, &x, &ctxtReal39);
+  }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -52,12 +56,14 @@ static void gammaReal(void) {
 static void lnGammaReal(void) {
   real_t xReal, xImag;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal)) {
     return;
+  }
   setRegisterAngularMode(REGISTER_X, amNone);
 
-  if (!checkGammaDomain(&xReal, &xReal))
+  if(!checkGammaDomain(&xReal, &xReal)) {
     goto end;
+  }
 
   if(realCompareLessEqual(&xReal, const_0)) { // x <= 0
     // x is negative and not an integer
@@ -81,7 +87,7 @@ static void lnGammaReal(void) {
       else { // Domain error
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function lngammaReal:", "cannot use a as X input of lngamma if gamma(X)<0 when flag I is not set", NULL, NULL);
+          moreInfoOnError("In function lnGammaReal:", "cannot use a as X input of lngamma if gamma(X)<0 when flag I is not set", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -98,8 +104,9 @@ end:
 static void gammaCplx(void) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
   WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
@@ -111,34 +118,44 @@ static void gammaCplx(void) {
 static void complexLnGamma_Stirling(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {
   // (z-1/2)ln(z) - z + (1/2)ln(2pi) + 1/(12z) - 1/(360z^3) + 1/(1260z^5) - 1/(1680z^7) ...
   real_t zReal, zImag, z2Real, z2Imag, zxReal, zxImag, tReal, tImag;
-  realCopy(xReal, &zReal); realCopy(xImag, &zImag);
+  realCopy(xReal, &zReal);
+  realCopy(xImag, &zImag);
   lnComplex(&zReal, &zImag, rReal, rImag, realContext);
   realSubtract(&zReal, const_1on2, &tReal, realContext);
   mulComplexComplex(&tReal, &zImag, rReal, rImag, rReal, rImag, realContext);
 
-  realSubtract(rReal, &zReal, rReal, realContext); realSubtract(rImag, &zImag, rImag, realContext);
+  realSubtract(rReal, &zReal, rReal, realContext);
+  realSubtract(rImag, &zImag, rImag, realContext);
 
   realAdd(rReal, const_ln2piOn2, rReal, realContext);
 
-  realMultiply(const_12, &zReal, &tReal, realContext); realMultiply(const_12, &zImag, &tImag, realContext);
+  realMultiply(const_12, &zReal, &tReal, realContext);
+  realMultiply(const_12, &zImag, &tImag, realContext);
   divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realAdd(rReal, &zReal, rReal, realContext); realAdd(rImag, &zImag, rImag, realContext);
+  realAdd(rReal, &zReal, rReal, realContext);
+  realAdd(rImag, &zImag, rImag, realContext);
 
   mulComplexComplex(&zReal, &zImag, &zReal, &zImag, &z2Real, &z2Imag, realContext);
   mulComplexComplex(&zReal, &zImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_360, &zxReal, &tReal, realContext); realMultiply(const_360, &zxImag, &tImag, realContext);
+  realMultiply(const_360, &zxReal, &tReal, realContext);
+  realMultiply(const_360, &zxImag, &tImag, realContext);
   divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realSubtract(rReal, &zReal, rReal, realContext); realSubtract(rImag, &zImag, rImag, realContext);
+  realSubtract(rReal, &zReal, rReal, realContext);
+  realSubtract(rImag, &zImag, rImag, realContext);
 
   mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_1260, &zxReal, &tReal, realContext); realMultiply(const_1260, &zxImag, &tImag, realContext);
+  realMultiply(const_1260, &zxReal, &tReal, realContext);
+  realMultiply(const_1260, &zxImag, &tImag, realContext);
   divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realAdd(rReal, &zReal, rReal, realContext); realAdd(rImag, &zImag, rImag, realContext);
+  realAdd(rReal, &zReal, rReal, realContext);
+  realAdd(rImag, &zImag, rImag, realContext);
 
   mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_1680, &zxReal, &tReal, realContext); realMultiply(const_1680, &zxImag, &tImag, realContext);
+  realMultiply(const_1680, &zxReal, &tReal, realContext);
+  realMultiply(const_1680, &zxImag, &tImag, realContext);
   divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realSubtract(rReal, &zReal, rReal, realContext); realSubtract(rImag, &zImag, rImag, realContext);
+  realSubtract(rReal, &zReal, rReal, realContext);
+  realSubtract(rImag, &zImag, rImag, realContext);
 }
 
 
@@ -150,7 +167,8 @@ void complexLnGamma(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
   }
   else {
     real_t zReal, zImag, tImag;
-    realCopy(xReal, &zReal); realCopy(xImag, &zImag);
+    realCopy(xReal, &zReal);
+    realCopy(xImag, &zImag);
     complexLnGamma_Stirling(&zReal, &zImag, rReal, &tImag, &ctxtReal39);
     WP34S_ComplexLnGamma(&zReal, &zImag, rReal, rImag, &ctxtReal39);
     realSubtract(&tImag, rImag, &tImag, &ctxtReal39);
@@ -165,8 +183,9 @@ void complexLnGamma(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
 static void lnGammaCplx(void) {
   real_t zReal, zImag, rReal, rImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
   complexLnGamma(&zReal, &zImag, &rReal, &rImag, &ctxtReal39);
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }

@@ -37,23 +37,23 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
     case ioPathSaveStateFile:
       check_create_dir(STATE_DIR);
       ret = file_selection_screen("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathLoadStateFile:
       check_create_dir(STATE_DIR);
       ret = file_selection_screen("Load Calculator State", STATE_DIR, STATE_EXT, load_statefile, 0, 0, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathSaveProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Save Program", PROGRAMS_DIR, PRGM_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathExportRTFProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Export Program RTF", PROGRAMS_DIR, RTF_EXT, save_programfile, 1, 1, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
    case ioPathLoadProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Load Program", PROGRAMS_DIR, PRGM_EXT, load_programfile, 0, 0, filename);
-      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
   default:
       return FILE_ERROR;
   }
@@ -102,7 +102,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   if(result == FR_OK) {
     if(mode == ioModeRead) {
       int16_t jj = stringByteLength(filename);
-      int16_t kk = max(0,jj - stateFileNameVarLength + 1);
+      int16_t kk = max(0, jj - stateFileNameVarLength + 1);
       while(jj>kk) {
         if(filename[jj-1]!='\\' && filename[jj-1]!='/' && filename[jj-1]!=0) {
           jj--;
@@ -179,14 +179,15 @@ int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
     *errorNumber = result;
   }
   sys_disk_write_enable(0);
-  return (result == FR_OK? FILE_OK : FILE_ERROR);
+  return (result == FR_OK ? FILE_OK : FILE_ERROR);
 }
 
 //
 int save_statefile(const char * fpath, const char * fname, void * data) {
 
-  lcd_puts(t24,"Saving state ...");
-  lcd_puts(t24, fname);  lcd_refresh();
+  lcd_puts(t24, "Saving state ...");
+  lcd_puts(t24, fname);
+  lcd_refresh();
 
   // Store the state file name
   strcpy(data, fpath);
@@ -235,8 +236,9 @@ int load_statefile(const char * fpath, const char * fname, void * data) {
 }
 
 int save_programfile(const char * fpath, const char * fname, void * data) {
-  lcd_puts(t24,"Saving program ...");
-  lcd_puts(t24, fname);  lcd_refresh();
+  lcd_puts(t24, "Saving program ...");
+  lcd_puts(t24, fname);
+  lcd_refresh();
 
   // Store the program file name
   strcpy(data, fpath);
@@ -261,16 +263,15 @@ void show_warning(char *str) {
   char *ptr = strtok(str, delim);
 
   lcd_clear_buf();
-  lcd_putsRAt(t24,0,"                   WARNING");
+  lcd_putsRAt(t24, 0, "                   WARNING");
   lcd_setLine(t24, 1);
 
-  while(ptr != NULL)
-  {
+  while(ptr != NULL) {
     lcd_puts(t24, ptr);
     ptr = strtok(NULL, delim);
   }
 
-  lcd_putsRAt(t24,8,"Press [ENTER] to continue.");
+  lcd_putsRAt(t24, 8, "Press [ENTER] to continue.");
   lcd_refresh();
   wait_for_key_release(-1);
   for(;;) {

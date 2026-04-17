@@ -123,8 +123,7 @@ void subTimeLonI(void) {
 void subDateLonI(void) {
   real34_t val;
   convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-  int32ToReal34(86400, &val);
-  real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), &val, &val);
+  real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), const34_86400, &val);
   reallocateRegister(REGISTER_X, dtDate, 0, amNone);
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), &val, REGISTER_REAL34_DATA(REGISTER_X));
 }
@@ -347,8 +346,7 @@ void subDateDate(void) {
   real34_t val;
 
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y));
-  int32ToReal34(86400, &val);
-  real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), &val, &val);
+  real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), const34_86400, &val);
   convertReal34ToLongIntegerRegister(&val, REGISTER_X, DEC_ROUND_DOWN);
 }
 
@@ -365,9 +363,8 @@ void subDateReal(void) {
   real34_t val;
 
   if(xAngularMode == amNone) {
-    int32ToReal34(86400, &val);
     real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X), roundingMode);
-    real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), &val, &val);
+    real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), const34_86400, &val);
     reallocateRegister(REGISTER_X, dtDate, 0, amNone);
     real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), &val, REGISTER_REAL34_DATA(REGISTER_X));
   }
@@ -720,7 +717,7 @@ void subCxmaCxma(void) {
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
-      moreInfoOnError("In function addRemaRema:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function subCxmaCxma:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 

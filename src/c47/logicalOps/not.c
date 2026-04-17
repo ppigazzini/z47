@@ -12,8 +12,9 @@ static void notCplx(void) {
   bool_t res;
   uint32_t xtype = getRegisterDataType(REGISTER_X);
 
-  if (!getRegisterAsComplex(REGISTER_X, &xr, &xc))
+  if(!getRegisterAsComplex(REGISTER_X, &xr, &xc)) {
     return;
+  }
   res = realIsZero(&xr) && realIsZero(&xc) ? true : false;
   logicalOpResult(res, xtype, xtype);
 }

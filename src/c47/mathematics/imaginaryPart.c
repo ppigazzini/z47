@@ -29,8 +29,9 @@ static void imagPartCxma(void) {
 static void imagPartCplx(void) {
   real_t zReal, zImag;
 
-  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     convertRealToResultRegister(&zImag, REGISTER_X, amNone);
+  }
 }
 
 
@@ -46,9 +47,12 @@ static void imagPartReal(void) {
  * \return void
  ***********************************************/
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter) {
-  if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    if (saveLastX())
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    if(saveLastX()) {
       imagPartCxma();
-  } else
+    }
+  }
+  else {
     processRealComplexMonadicFunction(&imagPartReal, &imagPartCplx);
+  }
 }

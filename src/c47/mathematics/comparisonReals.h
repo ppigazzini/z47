@@ -11,6 +11,7 @@
 void convergenceTolerence(real_t *tol);
 void fractionTolerence(real_t *tol);
 void irfractionTolerence(int32_t ii, real_t *tol);
+int32_t realGetExponentComp(const real_t *val);
 
 bool_t  real34CompareAbsGreaterThan (const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareAbsGreaterEqual(const real34_t *number1, const real34_t *number2);
@@ -35,4 +36,6 @@ bool_t  realCompareLessThan         (const real_t *number1, const real_t *number
 bool_t  real34IsAnInteger           (const real34_t *x);
 bool_t  realIsAnInteger             (const real_t *x);
 //int16_t realIdenticalDigits         (real_t *a, real_t *b);
+//bool_t  realCompareRoundedEqualConstant(const real_t *number, const real_t *constant, int32_t nn);
+
 #endif // !COMPARISONREALS_H

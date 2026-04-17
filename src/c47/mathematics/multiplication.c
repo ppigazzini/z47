@@ -93,8 +93,8 @@ void mulComplexComplex75(const real_t *factor1Real, const real_t *factor1Imag, c
   if(   realIsNaN(&a) || realIsNaN(&b) || realIsNaN(&c) || realIsNaN(&d)
      || (aIsZero && bIsZero && (cIsInfinite || dIsInfinite))
      || (cIsZero && dIsZero && (aIsInfinite || bIsInfinite))) {
-    realCopy(const_NaN, productReal);
-    realCopy(const_NaN, productImag);
+    realSetNaN(productReal);
+    realSetNaN(productImag);
     return;
   }
 
@@ -130,25 +130,28 @@ void mulComplexComplex75(const real_t *factor1Real, const real_t *factor1Imag, c
 
 
 #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
-// This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex(). 
+// This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex().
 // The 159 series is needed for 39 digit precision in cuberoots and the cubic formula solver
 void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
   real159_t a, b, c, d, p, t;
-  
-  realZero((real_t *)&a); realZero((real_t *)&b);
-  realZero((real_t *)&c); realZero((real_t *)&d);
-  realZero((real_t *)&p); realZero((real_t *)&t);  
+
+  realSetZero((real_t *)&a);
+  realSetZero((real_t *)&b);
+  realSetZero((real_t *)&c);
+  realSetZero((real_t *)&d);
+  realSetZero((real_t *)&p);
+  realSetZero((real_t *)&t);
   realCopy(factor1Real, (real_t *)&a);
   realCopy(factor1Imag, (real_t *)&b);
   realCopy(factor2Real, (real_t *)&c);
   realCopy(factor2Imag, (real_t *)&d);
-  
+
   // Real part: ac - bd
   realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&p, realContext);
   realChangeSign((real_t *)&b);
   realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, productReal, realContext);
   realChangeSign((real_t *)&b);
-  
+
   // Imaginary part: ad + bc
   realMultiply((real_t *)&a, (real_t *)&d, (real_t *)&p, realContext);
   realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, productImag, realContext);
@@ -160,11 +163,12 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
   if(realContext->digits <= 75) {
     mulComplexComplex75(factor1Real, factor1Imag, factor2Real, factor2Imag, productReal, productImag, realContext);
 #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
-  } else
-  if(realContext->digits <= 159) {
+  }
+  else if(realContext->digits <= 159) {
     mulComplexComplex159(factor1Real, factor1Imag, factor2Real, factor2Imag, productReal, productImag, realContext);
 #endif //OPTION_CUBIC_159) || OPTION_SQUARE_159 || OPTION_EIGEN_159
-  } else {
+  }
+  else {
     sprintf(errorMessage, "Exceed digits :mulComplexComplex: %d", (int)(realContext->digits));
     displayBugScreen(errorMessage);
   }
@@ -179,31 +183,34 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
 //   printf("DEBUG MUL159: realContext->digits = %d\n", realContext->digits);
 //   real159_t a, b, c, d, p, t;
 //   printf("DEBUG: mulComplexComplex159 called with compensated algorithm\n");
-//   
-//   realZero((real_t *)&a); realZero((real_t *)&b);
-//   realZero((real_t *)&c); realZero((real_t *)&d);
-//   realZero((real_t *)&p); realZero((real_t *)&t);  
+//
+//   realSetZero((real_t *)&a);
+//   realSetZero((real_t *)&b);
+//   realSetZero((real_t *)&c);
+//   realSetZero((real_t *)&d);
+//   realSetZero((real_t *)&p);
+//   realSetZero((real_t *)&t);
 //   realPlus(factor1Real, (real_t *)&a, realContext);
 //   realPlus(factor1Imag, (real_t *)&b, realContext);
 //   realPlus(factor2Real, (real_t *)&c, realContext);
 //   realPlus(factor2Imag, (real_t *)&d, realContext);
-// 
-// 
+//
+//
 // char dbg[2000];
 // printf("DEBUG MUL159: a.digits = %3d = %s\n", a.digits, realToString((real_t *)&a, dbg));
 // printf("DEBUG MUL159: b.digits = %3d = %s\n", b.digits, realToString((real_t *)&b, dbg));
 // printf("DEBUG MUL159: c.digits = %3d = %s\n", c.digits, realToString((real_t *)&c, dbg));
 // printf("DEBUG MUL159: d.digits = %3d = %s\n", d.digits, realToString((real_t *)&d, dbg));
-// 
-// 
-//   
+//
+//
+//
 //   // Real part: ac - bd (numerically stable compensated algorithm)
 // realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&p, realContext);
 // printf("DEBUG MUL159: p = a*c = %s\n", realToString((real_t *)&p, dbg));
 // realChangeSign((real_t *)&b);
 // realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, (real_t *)&t, realContext);
 // printf("DEBUG MUL159: t = p - b*d = %s\n", realToString((real_t *)&t, dbg));
-// 
+//
 // //  realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&p, realContext);                  // p = ac
 // //  realChangeSign((real_t *)&b);
 // //  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&p, (real_t *)&t, realContext);         // t = p - bd
@@ -211,7 +218,7 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
 //   realChangeSign((real_t *)&p);
 //   realFMA((real_t *)&a, (real_t *)&c, (real_t *)&p, productReal, realContext);          // productReal = ac - p
 //   realAdd(productReal, (real_t *)&t, productReal, realContext);                          // productReal = (ac - p) + (p - bd)
-//   
+//
 //   // Imaginary part: ad + bc (numerically stable compensated algorithm)
 //   realMultiply((real_t *)&a, (real_t *)&d, (real_t *)&p, realContext);                  // p = ad
 //   realFMA((real_t *)&b, (real_t *)&c, (real_t *)&p, (real_t *)&t, realContext);         // t = bc + p

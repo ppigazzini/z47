@@ -3,8 +3,6 @@
 
 #include "c47.h"
 
-//#define DISPLOADING
-
 void preventFilenameTimeout(void){
   uint32_t tmp__32;
   tmp__32 = getUptimeMs();
@@ -28,7 +26,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/       { 7,  "No path ID007 --> " },
   /*-DMCP-*/       { 8,  ". Using fallback." },
   /*-DMCP-*/       { 9,  "ERROR too long file using fallback" },
-  /*-DMCP-*/       {100,"Msg List"}
+  /*-DMCP-*/       {100, "Msg List"}
   /*-DMCP-*/     };
   //###################################################################################
   /*-DMCP-*/ TCHAR *f_gets(TCHAR* buff /* Pointer to the buffer to store read string */, int len /* Size of string buffer (items) */, FIL* fp /* Pointer to the file object */) {
@@ -188,8 +186,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    sys_disk_write_enable(1);
   /*-DMCP-*/    fr = sys_is_disk_write_enable();
   /*-DMCP-*/    if(fr==0) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[1].itemName, fr); //Write error ID001-->
-  /*-DMCP-*/      print_linestr(line,true);
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[1].itemName, fr); //Write error ID001-->
+  /*-DMCP-*/      print_linestr(line, true);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
   /*-DMCP-*/      return (int)fr;
@@ -203,8 +201,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/      fr = f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS);
   /*-DMCP-*/    }
   /*-DMCP-*/    if(fr) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[2].itemName,  fr); //File open error ID002-->
-  /*-DMCP-*/      print_linestr(line,false);
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[2].itemName,  fr); //File open error ID002-->
+  /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
   /*-DMCP-*/      return (int)fr;
@@ -214,8 +212,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    if(mode == APPEND) {
   /*-DMCP-*/      fr = f_lseek(&fil, f_size(&fil));
   /*-DMCP-*/      if(fr) {
-  /*-DMCP-*/        sprintf(line,"%s%d    \n",IOMsgs[3].itemName, fr); //Seek error ID003-->
-  /*-DMCP-*/        print_linestr(line,false);
+  /*-DMCP-*/        sprintf(line, "%s%d    \n", IOMsgs[3].itemName, fr); //Seek error ID003-->
+  /*-DMCP-*/        print_linestr(line, false);
   /*-DMCP-*/        f_close(&fil);
   /*-DMCP-*/        sys_disk_write_enable(0);
   /*-DMCP-*/        return (int)fr;
@@ -225,8 +223,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    // Create string and output
   /*-DMCP-*/    fr = f_puts(line1, &fil);
   /*-DMCP-*/    if(fr == EOF) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[4].itemName, fr); //Write error ID004-->
-  /*-DMCP-*/      print_linestr(line,false);
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[4].itemName, fr); //Write error ID004-->
+  /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
   /*-DMCP-*/      return (int)fr;
@@ -235,8 +233,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    // close the file
   /*-DMCP-*/    fr = f_close(&fil);
   /*-DMCP-*/    if(fr) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[4].itemName,  fr); //Write error ID004-->
-  /*-DMCP-*/      print_linestr(line,false);
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[4].itemName,  fr); //Write error ID004-->
+  /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
   /*-DMCP-*/      return (int)fr;
@@ -260,8 +258,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        sys_disk_write_enable(1);
   /*-DMCP-*/        fr = sys_is_disk_write_enable();
   /*-DMCP-*/        if(fr == 0) {
-  /*-DMCP-*/          sprintf(line,"%s%d    \n",IOMsgs[1].itemName,  fr); //Write error ID001-->
-  /*-DMCP-*/          print_linestr(line,true);
+  /*-DMCP-*/          sprintf(line, "%s%d    \n", IOMsgs[1].itemName,  fr); //Write error ID001-->
+  /*-DMCP-*/          print_linestr(line, true);
   /*-DMCP-*/          f_close(&fil);
   /*-DMCP-*/          sys_disk_write_enable(0);
   /*-DMCP-*/          return (int)fr;
@@ -274,8 +272,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/          fr = f_open(&fil, filedir, FA_WRITE|FA_CREATE_ALWAYS);
   /*-DMCP-*/        }
   /*-DMCP-*/        if(fr) {
-  /*-DMCP-*/          sprintf(line,"%s%d    \n",IOMsgs[2].itemName,  fr); //File open error ID002-->
-  /*-DMCP-*/          print_linestr(line,false);
+  /*-DMCP-*/          sprintf(line, "%s%d    \n", IOMsgs[2].itemName,  fr); //File open error ID002-->
+  /*-DMCP-*/          print_linestr(line, false);
   /*-DMCP-*/          f_close(&fil);
   /*-DMCP-*/          sys_disk_write_enable(0);
   /*-DMCP-*/          return (int)fr;
@@ -284,7 +282,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        if(mode == APPEND) {
   /*-DMCP-*/          fr = f_lseek(&fil, f_size(&fil));
   /*-DMCP-*/          if(fr) {
-  /*-DMCP-*/            sprintf(line,"%s%d    \n",IOMsgs[3].itemName,  fr); print_linestr(line,false); //Seek error ID003-->
+  /*-DMCP-*/            sprintf(line, "%s%d    \n", IOMsgs[3].itemName,  fr);
+  /*-DMCP-*/            print_linestr(line, false); //Seek error ID003-->
   /*-DMCP-*/            f_close(&fil);
   /*-DMCP-*/            sys_disk_write_enable(0);
   /*-DMCP-*/            return (int)fr;
@@ -296,7 +295,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        /* Create string and output */
   /*-DMCP-*/        fr = f_puts(line1, &fil);
   /*-DMCP-*/        if(fr == EOF) {
-  /*-DMCP-*/          sprintf(line,"%s%d    \n",IOMsgs[4].itemName,  fr); print_linestr(line,false); //Write error ID004-->
+  /*-DMCP-*/          sprintf(line, "%s%d    \n", IOMsgs[4].itemName,  fr);
+  /*-DMCP-*/          print_linestr(line, false); //Write error ID004-->
   /*-DMCP-*/          f_close(&fil);
   /*-DMCP-*/          sys_disk_write_enable(0);
   /*-DMCP-*/          return (int)fr;
@@ -307,7 +307,8 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        /* close the file */
   /*-DMCP-*/        fr = f_close(&fil);
   /*-DMCP-*/        if(fr) {
-  /*-DMCP-*/          sprintf(line,"%s%d    \n",IOMsgs[5].itemName,  fr); print_linestr(line,false); //Close error ID005-->
+  /*-DMCP-*/          sprintf(line, "%s%d    \n", IOMsgs[5].itemName,  fr);
+  /*-DMCP-*/          print_linestr(line, false); //Close error ID005-->
   /*-DMCP-*/          f_close(&fil);
   /*-DMCP-*/          sys_disk_write_enable(0);
   /*-DMCP-*/          return (int)fr;
@@ -358,7 +359,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    int16_t ii, jj;
   /*-DMCP-*/    switch(mode2) {
   /*-DMCP-*/      case WRITE:
-  /*-DMCP-*/        ii = min(nn,(int16_t)(strlen(line1)));
+  /*-DMCP-*/        ii = min(nn, (int16_t)(strlen(line1)));
   /*-DMCP-*/        jj = ii;
   /*-DMCP-*/        while(ii != 0) {
   /*-DMCP-*/          rr[0] = line1[jj-ii];
@@ -387,11 +388,11 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
   /*-DMCP-*/char dirfile[40];
   /*-DMCP-*/    //Create file name
-  /*-DMCP-*/    strcpy(dirfile,dirname);
-  /*-DMCP-*/    strcat(dirfile,"\\");
-  /*-DMCP-*/    strcat(dirfile,filename);
+  /*-DMCP-*/    strcpy(dirfile, dirname);
+  /*-DMCP-*/    strcat(dirfile, "\\");
+  /*-DMCP-*/    strcat(dirfile, filename);
   /*-DMCP-*/
-  /*-DMCP-*/    sprintf(tmpString,"%s%s",line1,CSV_NEWLINE);
+  /*-DMCP-*/    sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
   /*-DMCP-*/    check_create_dir(dirname);
   /*-DMCP-*/    if(export_append_string_to_file(tmpString, mode, dirfile) != 0) {
   /*-DMCP-*/      //ERROR ALREADY ANNOUNCED
@@ -403,9 +404,9 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/
   /*-DMCP-*/int16_t import_string_from_filename(char *line1,  char *dirname,  char *filename_short,  char *filename,  char *fallback, bool_t scanning) {
                 #if (VERBOSE_LEVEL >= 2)
-  /*-DMCP-*/      print_inlinestr("From dir:",false);
-  /*-DMCP-*/      print_inlinestr(dirname,false);
-  /*-DMCP-*/      print_inlinestr(", ",true);
+  /*-DMCP-*/      print_inlinestr("From dir:", false);
+  /*-DMCP-*/      print_inlinestr(dirname, false);
+  /*-DMCP-*/      print_inlinestr(", ", true);
   /*-DMCP-*/    #endif
   /*-DMCP-*/
                 #if (VERBOSE_LEVEL >= 2)
@@ -434,24 +435,24 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    fr = f_open(&fil, dirfile, FA_READ);   // | FA_OPEN_EXISTING
   /*-DMCP-*/    if(fr != FR_OK) {
                   #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/        print_inlinestr("Not open. ",false);
+  /*-DMCP-*/        print_inlinestr("Not open. ", false);
                     #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/          if(fr == 4) {
-  /*-DMCP-*/            sprintf(line,"%s%d ",IOMsgs[6].itemName,   fr); //Not found ID006 -->
+  /*-DMCP-*/            sprintf(line, "%s%d ", IOMsgs[6].itemName,   fr); //Not found ID006 -->
   /*-DMCP-*/            print_inlinestr(line, false);
-  /*-DMCP-*/            sprintf(line,"File: %s \n", dirfile);
+  /*-DMCP-*/            sprintf(line, "File: %s \n", dirfile);
   /*-DMCP-*/            print_inlinestr(line, false);
   /*-DMCP-*/          }
   /*-DMCP-*/          else if(fr == 5) {
-  /*-DMCP-*/            sprintf(line,"%s%d ",IOMsgs[7].itemName,   fr); //No path ID007 -->
+  /*-DMCP-*/            sprintf(line, "%s%d ", IOMsgs[7].itemName,   fr); //No path ID007 -->
   /*-DMCP-*/            print_inlinestr(line, false);
-  /*-DMCP-*/            sprintf(line,"File: %s \n", dirfile);
+  /*-DMCP-*/            sprintf(line, "File: %s \n", dirfile);
   /*-DMCP-*/            print_inlinestr(line, false);
   /*-DMCP-*/          }
   /*-DMCP-*/          else {
-  /*-DMCP-*/            sprintf(line,"%s%d ",IOMsgs[2].itemName,   fr); //File open error ID002-->
+  /*-DMCP-*/            sprintf(line, "%s%d ", IOMsgs[2].itemName,   fr); //File open error ID002-->
   /*-DMCP-*/            print_inlinestr(line, false);
-  /*-DMCP-*/            sprintf(line,"File: %s \n", dirfile);
+  /*-DMCP-*/            sprintf(line, "File: %s \n", dirfile);
   /*-DMCP-*/            print_inlinestr(line, false);
   /*-DMCP-*/          }
                     #endif // VERBOSE_LEVEL >= 2
@@ -475,16 +476,16 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/        fr = f_open(&fil, dirfile, FA_READ );   //| FA_OPEN_EXISTING
   /*-DMCP-*/        if(fr != FR_OK) {
                       #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/            print_inlinestr("Not open. ",false);
+  /*-DMCP-*/            print_inlinestr("Not open. ", false);
                         #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/              if(fr == 4) {
-  /*-DMCP-*/                sprintf(line,"%s%d ",IOMsgs[7].itemName,  fr); //No path ID007 -->
+  /*-DMCP-*/                sprintf(line, "%s%d ", IOMsgs[7].itemName,  fr); //No path ID007 -->
   /*-DMCP-*/                print_inlinestr(line, false);
-  /*-DMCP-*/                sprintf(line,"File: %s \n",dirfile);
+  /*-DMCP-*/                sprintf(line, "File: %s \n", dirfile);
   /*-DMCP-*/                print_inlinestr(line, false);
   /*-DMCP-*/              }
   /*-DMCP-*/              else {
-  /*-DMCP-*/                sprintf(line,"%s%d ",IOMsgs[2].itemName,   fr); //File open error ID002-->
+  /*-DMCP-*/                sprintf(line, "%s%d ", IOMsgs[2].itemName,   fr); //File open error ID002-->
   /*-DMCP-*/                print_inlinestr(line, false);
   /*-DMCP-*/              }
                         #endif // VERBOSE_LEVEL >= 2
@@ -507,17 +508,17 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    }
   /*-DMCP-*/
                 #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/      print_inlinestr("reading...",false);
+  /*-DMCP-*/      print_inlinestr("reading...", false);
                 #endif
   /*-DMCP-*/
   /*-DMCP-*/    /* Read if open */
   /*-DMCP-*/    line1[0]=0;
-  /*-DMCP-*/    f_getsline(line1, (scanning ? min(100,TMP_STR_LENGTH) : TMP_STR_LENGTH), &fil);
+  /*-DMCP-*/    f_getsline(line1, (scanning ? min(100, TMP_STR_LENGTH) : TMP_STR_LENGTH), &fil);
   /*-DMCP-*/    f_close(&fil);
   /*-DMCP-*/
                 #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/      print_inlinestr("read:",true);
-  /*-DMCP-*/      print_inlinestr(line1,true);
+  /*-DMCP-*/      print_inlinestr("read:", true);
+  /*-DMCP-*/      print_inlinestr(line1, true);
                 #endif
   /*-DMCP-*/
   /*-DMCP-*/    if(stringByteLength(line1) >= TMP_STR_LENGTH-1) {
@@ -536,7 +537,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    uint32_t tmp__32;                                                 //JM_CSV
   /*-DMCP-*/
   /*-DMCP-*/    tmp__32 = getUptimeMs();                                      //KEEP PERSISTENT FILE NAME FOR A PERIOD
-  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
+  /*-DMCP-*/    if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000) || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9), fn, CMP_NAME) != 0)) {
   /*-DMCP-*/      //Create file name
   /*-DMCP-*/      check_create_dir("DATA");
   /*-DMCP-*/      make_date_filename(filename_csv, "DATA\\", fn);
@@ -550,7 +551,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/  int16_t export_xy_to_file(float x, float y) {
   /*-DMCP-*/    char line[TMP_STR_LENGTH]; // Line buffer
   /*-DMCP-*/    create_filename(".STAT.TSV");
-  /*-DMCP-*/    sprintf(line,"%.16e%s%.16e%s", x, CSV_TAB, y, CSV_NEWLINE);
+  /*-DMCP-*/    sprintf(line, "%.16e%s%.16e%s", x, CSV_TAB, y, CSV_NEWLINE);
   /*-DMCP-*/    if(export_append_string_to_file(line, APPEND, filename_csv) != 0) {
   /*-DMCP-*/      //ERROR ALREADY ANNOUNCED
   /*-DMCP-*/      return 1;
@@ -568,7 +569,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    sys_disk_write_enable(1);
   /*-DMCP-*/    fr = sys_is_disk_write_enable();
   /*-DMCP-*/    if(fr==0) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[4].itemName,  fr); //Write error ID004-->
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[4].itemName,  fr); //Write error ID004-->
   /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
@@ -579,7 +580,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    // Opens an existing file. If not exist, creates a new file.
   /*-DMCP-*/    fr = f_open(&fil, filename_csv, FA_OPEN_APPEND | FA_WRITE);
   /*-DMCP-*/    if(fr) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[2].itemName,  fr); //File open error ID002-->
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[2].itemName,  fr); //File open error ID002-->
   /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
@@ -589,7 +590,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    // Seek to end of the file to append data
   /*-DMCP-*/    fr = f_lseek(&fil, f_size(&fil));
   /*-DMCP-*/    if(fr) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[3].itemName, fr); //Seek error ID003-->
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[3].itemName, fr); //Seek error ID003-->
   /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
@@ -599,12 +600,12 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    fr = f_puts(inputstring, &fil);
   /*-DMCP-*/
                #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/      sprintf(line,"wrote %d, %s\n", fr, inputstring);
+  /*-DMCP-*/      sprintf(line, "wrote %d, %s\n", fr, inputstring);
   /*-DMCP-*/      print_linestr(line, false);
                #endif // VERBOSE_LEVEL >= 1
   /*-DMCP-*/
   /*-DMCP-*/    if(fr == 0) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[4].itemName,  fr); //Write error ID004-->
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[4].itemName,  fr); //Write error ID004-->
   /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
@@ -614,7 +615,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    // close the file
   /*-DMCP-*/    fr = f_close(&fil);
   /*-DMCP-*/    if(fr) {
-  /*-DMCP-*/      sprintf(line,"%s%d    \n",IOMsgs[5].itemName,  fr); //Close error ID005-->
+  /*-DMCP-*/      sprintf(line, "%s%d    \n", IOMsgs[5].itemName,  fr); //Close error ID005-->
   /*-DMCP-*/      print_linestr(line, false);
   /*-DMCP-*/      f_close(&fil);
   /*-DMCP-*/      sys_disk_write_enable(0);
@@ -624,7 +625,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/    sys_disk_write_enable(0);
   /*-DMCP-*/
                #if (VERBOSE_LEVEL >= 1)
-  /*-DMCP-*/      print_linestr("-closed return-",false);
+  /*-DMCP-*/      print_linestr("-closed return-", false);
                #endif // VERBOSE_LEVEL >= 1
   /*-DMCP-*/
   /*-DMCP-*/    return 0;
@@ -657,7 +658,7 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/
 
 //**********************************************************************************************************
-#elif PC_BUILD // PC_BUILD
+#elif defined(PC_BUILD)
   int16_t export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename) {
     FILE *outfile;
     char dirfile[40];
@@ -685,10 +686,12 @@ void preventFilenameTimeout(void){
     frr = fputs(tmpString, outfile);
     if(frr == EOF) {
       sprintf(line, "Write error ID009 --> %i    \n", frr);
-      //print_linestr(line,false);
+      //print_linestr(line, false);
       printf("%s", line1);
       fflush(stdout);
-      if(outfile != NULL) fclose(outfile);
+      if(outfile != NULL) {
+        fclose(outfile);
+      }
       return frr;
     }
     else {
@@ -827,12 +830,14 @@ void preventFilenameTimeout(void){
     char line[200]; // Line buffer
     frr = fputs(inputstring, outfile);
     if(frr == EOF) {
-      sprintf(line,"Write error ID012 --> %i %s\n", frr, inputstring);
+      sprintf(line, "Write error ID012 --> %i %s\n", frr, inputstring);
       fflush(stdout);
       //print_linestr(line, false);
       printf("%s", line);
       fflush(stdout);
-      if(outfile != NULL) fclose(outfile);
+      if(outfile != NULL) {
+        fclose(outfile);
+      }
       return frr;
     }
     else {
@@ -850,7 +855,7 @@ void preventFilenameTimeout(void){
       struct tm *timeInfo;
 
       tmp__32 = getUptimeMs();                                          //KEEP PERSISTENT FILE NAME FOR A PERIOD
-      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9),fn, CMP_NAME) != 0)) {
+      if(cancelFilename || (mem__32 == 0) || (tmp__32 > mem__32 + 120000)  || (stringByteLength(filename_csv) > 10 && compareString(filename_csv + (stringByteLength(filename_csv) - 9), fn, CMP_NAME) != 0)) {
         //Create file name
         time(&rawTime);
         timeInfo = localtime(&rawTime);
@@ -869,19 +874,20 @@ void preventFilenameTimeout(void){
     export_append_line(line);
     return 0;
   }
-#endif // DMCP_BUILD
+#endif // DMCP_BUILD || PC_BUILD
 
 
 // BOTH vvv *** ################################################################################################
 
 uint32_t ttt = 0;
 void printStatus(uint8_t row, const char *line1, uint8_t forced) {
-  #if defined (PC_BUILD)
-    if(ttt==0) ttt = (uint32_t)(g_get_monotonic_time());
+  #if defined(PC_BUILD)
+    if(ttt==0) {
+      ttt = (uint32_t)(g_get_monotonic_time());
+    }
     printf("Status: %10u, %s\n", (uint32_t)(g_get_monotonic_time())-ttt, line1);
     fflush(stdout);
   #endif //PC_BUILD
-  #if !defined(TESTSUITE_BUILD)
     int16_t g_line_x, g_line_y;
     g_line_y = Y_POSITION_OF_REGISTER_T_LINE; //20
     g_line_x = 20 * row;
@@ -900,7 +906,6 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
     else {
       force_refresh(timed);
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -909,7 +914,6 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 int16_t g_line_x, g_line_y;
 
 void print_linestr(const char *line1, bool_t line_init) {        //prints one line at a time, filled with dots on remaining line
-  #if !defined(TESTSUITE_BUILD)
     char l1[200];
     l1[0] = 0;
     int16_t ix = 0;
@@ -944,11 +948,9 @@ void print_linestr(const char *line1, bool_t line_init) {        //prints one li
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-  #endif // !TESTSUITE_BUILD
 }
 
 void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII NUMBERS AND E AND . //FIXED FONT
-  #if !defined(TESTSUITE_BUILD)
     if(line_init || g_line_y >= SCREEN_HEIGHT) {
       g_line_y = 0;
       g_line_x = 0;
@@ -958,7 +960,8 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
         int16_t cnt = 0;
         char tt[2];
         while(line1[cnt] != 0 && g_line_x < SCREEN_WIDTH-8 +1) {
-          tt[0]=line1[cnt]; tt[1]=0;
+          tt[0]=line1[cnt];
+          tt[1]=0;
           g_line_x = showString(tt, &standardFont, (uint32_t)cnt * 8, (uint32_t) g_line_y, vmNormal, true, true);
           cnt++;
         }
@@ -968,8 +971,6 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -977,8 +978,6 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
 uint32_t t_line_x, t_line_y;
 
 void print_inlinestr(const char *line1, bool_t endline) {  //prints with or without newline at the end of the line
-    #if !defined(TESTSUITE_BUILD)
-
     char l1[100];    //Clip the string at 40
     l1[0] = 0;
     int16_t ix = 0;
@@ -1000,17 +999,14 @@ void print_inlinestr(const char *line1, bool_t endline) {  //prints with or with
     #if defined(DMCP_BUILD)
       lcd_refresh_wait();
     #endif //DMCP_BUILD
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void print_Register_line(calcRegister_t regist, char *before, char *after, bool_t line_init) {
-  #if !defined(TESTSUITE_BUILD)
-    char str[TMP_STR_LENGTH];
+  char str[TMP_STR_LENGTH];
 
-    copyRegisterToClipboardString2(regist, str);
-    addStrBothSides(str, before, after);
+  copyRegisterToClipboardString2(regist, str);
+  addStrBothSides(str, before, after);
 
-    print_numberstr(str, line_init);
-  #endif // !TESTSUITE_BUILD
+  print_numberstr(str, line_init);
 }

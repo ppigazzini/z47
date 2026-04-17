@@ -24,8 +24,9 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
       && (dataTypeY == dtReal34 || dataTypeY == dtLongInteger)) {
 
     if(!saveLastX()) {
-    return;
-  }
+      return;
+    }
+
     fnSetFlag(FLAG_CPXRES);
     fnRefreshState();                                 //drJM
 
@@ -55,8 +56,8 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
 
     if(getSystemFlag(FLAG_POLAR)) { // polar mode
       if(real34CompareEqual(VARIABLE_REAL34_DATA(&temp), const34_0)) {
-        real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
-        real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
+        real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
+        real34SetZero(REGISTER_IMAG34_DATA(REGISTER_X));
       }
       else {
         real_t magnitude, theta;
@@ -106,7 +107,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
 
           if(getSystemFlag(FLAG_POLAR)) { // polar mode
             if(real34CompareEqual(VARIABLE_REAL34_DATA(&cMat.matrixElements[i]), const34_0)) {
-              real34Zero(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+              real34SetZero(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
             }
             else {
               real_t magnitude, theta;

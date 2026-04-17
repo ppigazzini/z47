@@ -182,12 +182,12 @@ static void _removeLabelsAssignments() {
   int16_t i;
   char label[15];
   uint8_t labelLength;
-  for (i=0; i<numberOfLabels; i++) {
+  for(i=0; i<numberOfLabels; i++) {
     if((labelList[i].program == currentProgramNumber) && (labelList[i].step > 0)) {
       labelLength = labelList[i].labelPointer[0];
       xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
       label[labelLength]=0;
-      removeUserItemAssignments(ITM_XEQ,label);   // Remove label assignments
+      removeUserItemAssignments(ITM_XEQ, label);   // Remove label assignments
     }
   }
 }
@@ -200,7 +200,7 @@ void fnClPAll(uint16_t confirmation) {
   }
   else {
     // Remove assignments of all global labels, before deleting all programs
-    removeUserItemAssignments(ITM_XEQ,"");   // Remove all labels assignments
+    removeUserItemAssignments(ITM_XEQ, "");   // Remove all labels assignments
 
     bool_t wasInRam = (programList[currentProgramNumber - 1].step > 0);
     resizeProgramMemory(1); // 1 block for an empty program
@@ -382,8 +382,9 @@ void defineCurrentProgramFromCurrentStep(void) {
 
 
 void scrollPemBackwards(void) {
-  if(firstDisplayedLocalStepNumber > 0)
+  if(firstDisplayedLocalStepNumber > 0) {
     --firstDisplayedLocalStepNumber;
+  }
   defineFirstDisplayedStep();
 }
 
@@ -410,27 +411,24 @@ int32_t pemLeftOffset(int32_t y) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
-  static bool_t _isAngleType(uint8_t literalType) {
-    switch (literalType) {
-      case STRING_ANGLE_RADIAN:
-      case STRING_ANGLE_GRAD:
-      case STRING_ANGLE_DEGREE:
-      case STRING_ANGLE_MULTPI: {
-        return true;
-        break;
-      }
-      default: {
-        return false;
-      }
+static bool_t _isAngleType(uint8_t literalType) {
+  switch(literalType) {
+    case STRING_ANGLE_RADIAN:
+    case STRING_ANGLE_GRAD:
+    case STRING_ANGLE_DEGREE:
+    case STRING_ANGLE_MULTPI: {
+      return true;
+      break;
+    }
+    default: {
+      return false;
     }
   }
-#endif // !TESTSUITE_BUILD
+}
 
 
 void fnPem(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_10)
-  #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For this function to work properly we need the following variables set properly:
     //  - currentProgramNumber
@@ -545,7 +543,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if(getSystemFlag(FLAG_ALPHA)) {
           char tmpChar = tmpString[4];
           tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0 ? T_cursorPos + 4 : T_cursorPos);
           tmpString[4] = tmpChar;
           xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
           tmpString[2 + cursorInString    ] = STD_CURSOR[0];
@@ -646,7 +644,6 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
-  #endif // !TESTSUITE_BUILD
 #endif // !SAVE_SPACE_DM42_10
 }
 
@@ -699,7 +696,6 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   dynamicMenuItem = _dynamicMenuItem;
 }
 
-#if !defined(TESTSUITE_BUILD)
 static void _closeAlphaMenus(void) {
   for(int i = 0; i < SOFTMENU_STACK_SIZE; ++i) {
     switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
@@ -736,11 +732,8 @@ static void _closeAlphaMenus(void) {
     softmenuStack[i].softmenuId = 0; // MyMenu
   }
 }
-#endif // !TESTSUITE_BUILD
 
 void pemAlpha(int16_t item) {
-  #if !defined(TESTSUITE_BUILD)
-
   bool_t editCommand = false;
   if(item == ITM_EDIT) {
     int16_t aimFunc = currentStep[0];
@@ -933,20 +926,17 @@ void pemAlpha(int16_t item) {
     if(!programListEnd) {
       scrollPemBackwards();
     }
-  #endif // !TESTSUITE_BUILD
 }
 
 void pemCloseAlphaInput(void) {
-  #if !defined(TESTSUITE_BUILD)
-    aimBuffer[0] = 0;
-    clearSystemFlag(FLAG_ALPHA);
-    calcModeNormalGui();
-    ++currentLocalStepNumber;
-    currentStep = findNextStep(currentStep);
-    ++firstDisplayedLocalStepNumber;
-    firstDisplayedStep = findNextStep(firstDisplayedStep);
-    _closeAlphaMenus();
-  #endif // !TESTSUITE_BUILD
+  aimBuffer[0] = 0;
+  clearSystemFlag(FLAG_ALPHA);
+  calcModeNormalGui();
+  ++currentLocalStepNumber;
+  currentStep = findNextStep(currentStep);
+  ++firstDisplayedLocalStepNumber;
+  firstDisplayedStep = findNextStep(firstDisplayedStep);
+  _closeAlphaMenus();
 }
 
 
@@ -970,7 +960,6 @@ void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
 
 
 void pemAddNumber(int16_t item, bool doInsertInProgram) {
-  #if !defined(TESTSUITE_BUILD)
   if(aimBuffer[0] == 0) {
     lastIntegerBase = 0;
     editingLiteralType = 0;
@@ -1079,7 +1068,7 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
         *(tmpPtr - 1) = editingLiteralType;  // [DL] force literal type when editing angles
       }
       *tmpPtr++ = stringByteLength(numBuffer);
-      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));;
+      xcopy(tmpPtr, numBuffer, stringByteLength(numBuffer));
       if(doInsertInProgram) {
         _insertInProgram((uint8_t *)tmpString, stringByteLength(numBuffer) + offset);
         --currentLocalStepNumber;
@@ -1095,11 +1084,9 @@ void pemAddNumber(int16_t item, bool doInsertInProgram) {
     aimBuffer[0] = 0;
     nimNumberPart = NP_EMPTY;
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void pemCloseNumberInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   if(editingLiteralType > 0) {     // For EDIT: close number input with the right data or angle type
     switch(editingLiteralType) {
       case STRING_DATE         : _pemCloseDateInput();            break;
@@ -1197,7 +1184,7 @@ void pemCloseNumberInput(void) {
       case NP_COMPLEX_FLOAT_PART:
       case NP_COMPLEX_EXPONENT: {
         if(aimBuffer[stringByteLength(aimBuffer)-1] == 'i') {
-          strcat(aimBuffer,"1");
+          strcat(aimBuffer, "1");
           inputLength++;
         }
 
@@ -1209,10 +1196,12 @@ void pemCloseNumberInput(void) {
           }
           if(*imag == 'i') {
             if(imag > numBuffer && *(imag - 1) == '-') {
-              *imag = '-'; *(imag - 1) = 0;
+              *imag = '-';
+              *(imag - 1) = 0;
             }
             else if(imag > numBuffer && *(imag - 1) == '+') {
-              *imag = 0; *(imag - 1) = 0;
+              *imag = 0;
+              *(imag - 1) = 0;
               ++imag;
             }
             else {
@@ -1253,11 +1242,9 @@ void pemCloseNumberInput(void) {
   aimBuffer[0] = '!';
   nimNumberPart = NP_EMPTY;
   lastIntegerBase = 0;
-#endif // TESTSUITE_BUILD
 }
 
 static void _pemCloseTimeInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   switch(nimNumberPart) {
     case NP_INT_10:
     case NP_REAL_FLOAT_PART: {
@@ -1276,11 +1263,9 @@ static void _pemCloseTimeInput(void) {
       break;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 static void _pemCloseDateInput(void) {
-  #if !defined(TESTSUITE_BUILD)
   if(nimNumberPart == NP_REAL_FLOAT_PART) {
     deleteStepsFromTo(currentStep, findNextStep(currentStep));
     if(aimBuffer[0] != 0) {
@@ -1291,7 +1276,7 @@ static void _pemCloseDateInput(void) {
 
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(numBuffer, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);  //no !YYsystem needed here
       internalDateToJulianDay(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
 
       real34ToString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), tmpPtr + 1);
@@ -1303,11 +1288,9 @@ static void _pemCloseDateInput(void) {
 
     aimBuffer[0] = '!';
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 static void _pemCloseAngleInput(int item) {
-  #if !defined(TESTSUITE_BUILD)
   switch(nimNumberPart) {
     case NP_INT_10:
     case NP_REAL_FLOAT_PART: {
@@ -1324,10 +1307,10 @@ static void _pemCloseAngleInput(int item) {
             [ITM_RAD2]   = STRING_ANGLE_RADIAN
         };
         int id = -1;
-        if (item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
+        if(item >= 0 && item < (int)(sizeof(angle_ids)/sizeof(angle_ids[0]))) {
             id = angle_ids[item];
         }
-        if (id != -1) {
+        if(id != -1) {
             *(tmpPtr++) = id;
         }
         *(tmpPtr++) = stringByteLength(numBuffer);
@@ -1339,7 +1322,6 @@ static void _pemCloseAngleInput(int item) {
       break;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 void insertStepInProgram(const int16_t func) {
@@ -1369,17 +1351,19 @@ void insertStepInProgram(const int16_t func) {
       aimBuffer[0] = 0;
     }
     if(catalog) {      // If called from a catalog such as FNCS, exit catalog and Asm Mode
-      #if !defined(TESTSUITE_BUILD)
-        leaveAsmMode();
-        popSoftmenu();
-      #endif // !TESTSUITE_BUILD
+      leaveAsmMode();
+      popSoftmenu();
     }
     tam.function = ITM_REM;
     pemAlpha(func);
     pemCursorIsZerothStep = false;
     return;
   }
-  if(indexOfItems[func].func == addItemToBuffer || (!tam.mode && aimBuffer[0] != 0 && (func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT || (nimNumberPart == NP_INT_BASE && (func == ITM_1ONX || func == ITM_LOG10 || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
+  if(   indexOfItems[func].func == addItemToBuffer
+     || (!tam.mode && aimBuffer[0] != 0 && (   func == ITM_CHS || func == ITM_CC || func == ITM_op_j || func == ITM_op_j_pol || func == ITM_toINT
+                                            || (nimNumberPart == NP_INT_BASE && (   ( isR47FAM && (func == ITM_SQUAREROOTX || func == ITM_YX))
+                                                                                 || (!isR47FAM && (func == ITM_1ONX        || func == ITM_LOG10))
+                                                                                 || func == ITM_RCL || func == ITM_EXPONENT || func == ITM_ENTER))))) {
     pemAddNumber(func, true);
     return;
   }
@@ -1397,7 +1381,7 @@ void insertStepInProgram(const int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  else if ((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
+  else if((func == ITM_dotD) && editingLiteralType != 0 && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {  // cancel time/date/angle type and close number input
     editingLiteralType = 0;
     pemCloseNumberInput();
     aimBuffer[0] = '!';
@@ -1598,7 +1582,8 @@ void insertStepInProgram(const int16_t func) {
           }
           if(func == VAR_UX || func == VAR_LX) {
             tmpString[5] = 'X';
-          } else {
+          }
+          else {
             tmpString[5] = 'Y';
           }
           _insertInProgram((uint8_t *)tmpString, 6);

@@ -62,8 +62,9 @@ void fnAtan2(uint16_t unusedButMandatoryParameter) {
 void atan2RealReal(void) {
   real_t y, x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   if(realIsZero(&y) && realIsZero(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -72,7 +73,7 @@ void atan2RealReal(void) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
-  WP34S_Atan2(&y, &x, &x, &ctxtReal39);
+  C47_WP34S_Atan2(&y, &x, &x, &ctxtReal39);
   convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   reallocateRegister(REGISTER_X, dtReal34, 0, currentAngularMode);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
@@ -98,7 +99,7 @@ void atan2RemaRema(void) {
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
       }
-      WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
+      C47_WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
       convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
       roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
       realToReal34(&xx, &x.matrixElements[i]);
@@ -136,11 +137,11 @@ void atan2RealRema(void) {
     if(realIsZero(&y) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", NULL, NULL);
+        moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
+    C47_WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
     convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
     roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
     realToReal34(&xx, &x.matrixElements[i]);

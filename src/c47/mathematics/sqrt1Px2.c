@@ -12,19 +12,19 @@ void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, re
 
   if(realIsZero(imag)) {
     if(realIsInfinite(real)) {
-      realCopy(const_plusInfinity, resReal);
-      realZero(resImag);
+      realSetPlusInfinity(resReal);
+      realSetZero(resImag);
       return;
     }
     realFMA(real, real, const_1, resReal, realContext);
     realSquareRoot(resReal, resReal, realContext);
-    realZero(resImag);
+    realSetZero(resImag);
     return;
   }
 
   if(realIsSpecial(real) || realIsSpecial(imag)) {
-    realCopy(const_NaN, resReal);
-    realCopy(const_NaN, resImag);
+    realSetNaN(resReal);
+    realSetNaN(resImag);
     return;
   }
 
@@ -42,8 +42,9 @@ void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, re
 static void sqrt1Px2Real(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -54,10 +55,10 @@ static void sqrt1Px2Real(void) {
   }
 
   if(realIsInfinite(&x)) {
-    realCopy(const_plusInfinity, &x);
+    realSetPlusInfinity(&x);
   }
   else if(realIsSpecial(&x)) {
-    realCopy(const_NaN, &x);
+    realSetNaN(&x);
   }
   else {
     realFMA(&x, &x, const_1, &x, &ctxtReal51);
@@ -71,8 +72,9 @@ static void sqrt1Px2Real(void) {
 static void sqrt1Px2Cplx(void) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
 
   sqrt1Px2Complex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
 

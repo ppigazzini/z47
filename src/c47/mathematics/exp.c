@@ -10,26 +10,30 @@
 bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero) {
   if(realIsSpecial(x)) {
     if(realIsInfinite(x)) {
-inf:  if(realIsPositive(x)) {
-        realCopy(const_plusInfinity, res);
+inf:
+      if(realIsPositive(x)) {
+        realSetPlusInfinity(res);
       }
       else {
         realCopy(zero, res);
       }
     }
     else {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
     }
     return false;
   }
-  if(realCompareAbsGreaterThan(x, const_2e6))
+  if(realCompareAbsGreaterThan(x, const_2e6)) {
     goto inf;
+  }
+
   return true;
 }
 
 void realExp(const real_t *x, real_t *res, realContext_t *set) {
-  if(realExpLimitCheck(x, res, const_0))
+  if(realExpLimitCheck(x, res, const_0)) {
     decNumberExp(res, x, set);
+  }
 }
 
 void expComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
@@ -37,18 +41,18 @@ void expComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
 
   if(realIsZero(imag)) {
    realExp(real, resReal, realContext);
-   realZero(resImag);
+   realSetZero(resImag);
    return;
   }
 
   if(realIsSpecial(real) || realIsSpecial(imag)) {
-    realCopy(const_NaN, resReal);
-    realCopy(const_NaN, resImag);
+    realSetNaN(resReal);
+    realSetNaN(resImag);
     return;
   }
 
  realExp(real, &expa, realContext);
- WP34S_Cvt2RadSinCosTan(imag, amRadian, &sin, &cos, NULL, realContext);
+ C47_WP34S_Cvt2RadSinCosTan(imag, amRadian, &sin, &cos, NULL, realContext);
  realMultiply(&expa, &cos, resReal, realContext);
  realMultiply(&expa, &sin, resImag, realContext);
 }
@@ -56,8 +60,9 @@ void expComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
 static void expReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

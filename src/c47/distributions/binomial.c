@@ -20,13 +20,13 @@
 
 #else
   static bool_t checkParamBinomial(real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if( !getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_P, i)
-        || !getRegisterAsReal(REGISTER_N, j))
+    if( !getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i) || !getRegisterAsReal(REGISTER_N, j)) {
       goto err;
+    }
 
     if(!checkRegisterNoFP(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -67,7 +67,7 @@
         WP34S_Pdf_Binomial(&val, &prob, &num, &ans, &ctxtReal39);
       }
       else {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -159,11 +159,11 @@
 
   bool_t binomial_param(const real_t *n, real_t *res) {
     if(realIsSpecial(n)) {
-      realCopy(const_NaN, res);
+      realSetNaN(res);
       return false;
     }
     if(realIsNegative(n) || (!realIsAnInteger(n))) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return false;
     }
     return true;
@@ -176,10 +176,10 @@
       return;
     }
     if(realIsNegative(x) || realCompareGreaterThan(x, n)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realSubtract(n, x, &q, realContext);
     realMultiply(&p, &q, &p, realContext);
@@ -202,12 +202,12 @@
     }
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realSubtract(&p, const_1, &p, realContext);
     if(realCompareGreaterThan(&p, n)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -230,11 +230,11 @@
     real_t p, q, r;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
     if(realCompareGreaterThan(x, n)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
 
@@ -251,7 +251,7 @@
       return;
     }
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
      return;
     }
     realMultiply(p0, n, &p, realContext);       // mean = np

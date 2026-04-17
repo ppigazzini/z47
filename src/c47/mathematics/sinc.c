@@ -20,13 +20,13 @@ void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
   realCopy(imag, &ii);
 
   if(realIsZero(&rr) && realIsZero(&ii)) {
-    realCopy(const_1, resReal);
-    realCopy(const_0, resImag);
+    realSetOne(resReal);
+    realSetZero(resImag);
   }
   else {
     real_t sina, cosa, sinhb, coshb, sinR, sinImag;
 
-    WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
     WP34S_SinhCosh(imag, &sinhb, &coshb, realContext);
 
     realMultiply(&sina, &coshb, resReal, realContext);
@@ -45,8 +45,9 @@ static void sincReal(void) {
   angularMode_t xAngularMode;
   const uint32_t type = getRegisterDataType(REGISTER_X);
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
@@ -67,10 +68,11 @@ static void sincReal(void) {
     else {
       if(type == dtReal34) {
         xAngularMode = getRegisterAngularMode(REGISTER_X);
-        if(xAngularMode != amNone)
+        if(xAngularMode != amNone) {
           convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal39);
+        }
       }
-      WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal39);
+      C47_WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal39);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }
   }
@@ -82,8 +84,9 @@ static void sincReal(void) {
 static void sincCplx(void) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
 
   sincComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
 

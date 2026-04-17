@@ -68,7 +68,7 @@ void fnCvtFromCurrentAngularModeRegister(calcRegister_t regist1, uint16_t toAngu
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist1);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%s cannot be converted to an angle!", getRegisterDataTypeName(regist1, true, false));
-        moreInfoOnError("In function fnCvtFromCurrentAngularMode:", "the input value must be a long integer, a real34 or an angle16 or an angle34", errorMessage, NULL);
+        moreInfoOnError("In function fnCvtFromCurrentAngularModeRegister:", "the input value must be a long integer, a real34 or an angle16 or an angle34", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
   }
@@ -116,8 +116,8 @@ void fnCvtDegToRad(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnCvtDegToRad:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+    }
   }
-}
 }
 
 
@@ -156,8 +156,8 @@ void fnCvtRadToDeg(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnCvtRadToDeg:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+    }
   }
-}
 }
 
 
@@ -197,8 +197,8 @@ void fnCvtMultPiToRad(uint16_t unusedButMandatoryParameter) {
         sprintf(errorMessage, "%s cannot be converted to an angle!", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnCvtMultPiToRad:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
   }
-}
 }
 
 
@@ -236,8 +236,8 @@ void fnCvtRadToMultPi(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnCvtRadToMultPi:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+    }
   }
-}
 }
 
 
@@ -275,8 +275,8 @@ void fnCvtDegToDms(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnCvtDegToDms:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+    }
   }
-}
 }
 
 
@@ -316,8 +316,8 @@ void fnCvtDmsToDeg(uint16_t unusedButMandatoryParameter) {
         sprintf(errorMessage, "%s cannot be converted to an angle!", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnCvtDmsToDeg:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
   }
-}
 }
 
 
@@ -348,7 +348,7 @@ void fnCvtDmsToCurrentAngularMode(uint16_t unusedButMandatoryParameter) {
       else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnCvtDmsToDeg:", "cannot use an angle34 not tagged d.ms as an input of fnCvtDmsToDeg", NULL, NULL);
+          moreInfoOnError("In function fnCvtDmsToCurrentAngularMode:", "cannot use an angle34 not tagged d.ms as an input of fnCvtDmsToDeg", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       break;
@@ -358,10 +358,10 @@ void fnCvtDmsToCurrentAngularMode(uint16_t unusedButMandatoryParameter) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "%s cannot be converted to an angle!", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnCvtDmsToDeg:", "the input value must be a real34 or a long integer", errorMessage, NULL);
+        moreInfoOnError("In function fnCvtDmsToCurrentAngularMode:", "the input value must be a real34 or a long integer", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
   }
-}
 }
 
 */
@@ -378,25 +378,48 @@ void convertAngle34FromTo(real34_t *angle34, angularMode_t fromAngularMode, angu
 
 
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext) {
-  if(fromAngularMode == amNone)
+  if(fromAngularMode == amNone) {
     fromAngularMode = currentAngularMode;
-  if(toAngularMode == amNone)
+  }
+  if(toAngularMode == amNone) {
     toAngularMode = currentAngularMode;
-
+  }
+  bool_t lp  = (realContext->digits > 39);
+  bool_t vlp = (realContext->digits > 75);
   switch(fromAngularMode) {
     case amRadian: {
       switch(toAngularMode) {
         case amMultPi: {
-          realDivide(angle, const_pi, angle, realContext);
+          realDivide(angle, vlp ? const1071_pi : (lp ? const_pi_75 : const_pi), angle, realContext);
           break;
         }
         case amGrad: {
-          realMultiply(angle, const_200onPi, angle, realContext);
+          if(vlp) {
+            realMultiply(angle, const_100, angle, realContext);
+            realDivide(  angle, const1071_piOn2, angle, realContext);
+          }
+          else if(lp) {
+            realMultiply(angle, const_100, angle, realContext);
+            realDivide(  angle, const_piOn2_75, angle, realContext);
+          }
+          else {
+            realMultiply(angle, const_200onPi, angle, realContext);
+          }
           break;
         }
         case amDegree:
         case amDMS: {
-          realMultiply(angle, const_180onPi, angle, realContext);
+          if(vlp) {
+            realMultiply(angle, const_90, angle, realContext);
+            realDivide(  angle, const1071_piOn2, angle, realContext);
+          }
+          else if(lp) {
+            realMultiply(angle, const_90, angle, realContext);
+            realDivide(  angle, const_piOn2_75, angle, realContext);
+          }
+          else {
+            realMultiply(angle, const_180onPi, angle, realContext);
+          }
           break;
         }
         default: ;
@@ -407,7 +430,7 @@ void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMod
     case amMultPi: {
       switch(toAngularMode) {
         case amRadian: {
-          realMultiply(angle, const_pi, angle, realContext);
+          realMultiply(angle, vlp ? const1071_pi : (lp ? const_pi_75 : const_pi), angle, realContext);
           break;
         }
         case amGrad: {
@@ -427,11 +450,21 @@ void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMod
     case amGrad: {
       switch(toAngularMode) {
         case amRadian: {
-          realDivide(  angle, const_200onPi, angle, realContext);
+          if(vlp) {
+            realMultiply(angle, const1071_piOn2, angle, realContext);
+            realDivide(  angle, const_100, angle, realContext);
+          }
+          else if(lp) {
+            realMultiply(angle, const_piOn2_75, angle, realContext);
+            realDivide(  angle, const_100, angle, realContext);
+          }
+          else {
+            realDivide(angle, const_200onPi, angle, realContext);
+          }
           break;
         }
         case amMultPi: {
-          realDivide(  angle, const_200, angle, realContext);
+          realDivide(angle, const_200, angle, realContext);
           break;
         }
         case amDegree:
@@ -448,15 +481,25 @@ void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMod
     case amDMS: {
       switch(toAngularMode) {
         case amRadian: {
-          realDivide(  angle, const_180onPi, angle, realContext);
+          if(vlp) {
+            realMultiply(angle, const1071_piOn2, angle, realContext);
+            realDivide(  angle, const_90, angle, realContext);
+          }
+          else if(lp) {
+            realMultiply(angle, const_piOn2_75, angle, realContext);
+            realDivide(  angle, const_90, angle, realContext);
+          }
+          else {
+            realDivide(angle, const_180onPi, angle, realContext);
+          }
           break;
         }
         case amMultPi: {
-          realDivide(  angle, const_180, angle, realContext);
+          realDivide(angle, const_180, angle, realContext);
           break;
         }
         case amGrad: {
-          realDivide(  angle, const_9on10,   angle, realContext);
+          realDivide(angle, const_9on10, angle, realContext);
           break;
         }
         default: ;
@@ -514,40 +557,20 @@ void checkDms34(real34_t *angle34Dms) {
 
 uint32_t getInfiniteComplexAngle(real_t *x, real_t *y) {
   if(!realIsInfinite(x)) {
-    if(realIsPositive(y)) {
-      return 2; // 90°
-    }
-    else {
-      return 6; // -90° or 270°
-    }
+    return 2 + 4*realIsNegative(y); // 2 -> 90°    6 -> -90° or 270°
   }
 
   if(!realIsInfinite(y)) {
-    if(realIsPositive(x)) {
-      return 0; // 0°
-    }
-    else {
-      return 4; // -180° or 180°
-    }
+    return 4*realIsNegative(x);     // 0 -> 0°     4 -> -180° or 180°
   }
 
   // At this point, x and y are infinite
   if(realIsPositive(x)) {
-    if(realIsPositive(y)) {
-      return 1; // 45°
-    }
-    else {
-      return 7; // -45° or 315°
-    }
+    return 1 + 6*realIsNegative(y); // 1 -> 45°    7 -> -45° or 315°
   }
 
   // At this point, x is negative
-  if(realIsPositive(y)) {
-    return 3; // 135°
-  }
-  else {
-    return 5; // -135° or 225°
-  }
+  return 3 + 2*realIsNegative(y);   // 3 -> 135°   5 -> -135° or 225°
 }
 
 
@@ -556,39 +579,23 @@ void setInfiniteComplexAngle(uint32_t angle, real_t *x, real_t *y) {
   switch(angle) {
     case 3:
     case 4:
-    case 5: {
-      realCopy(const_minusInfinity, x);
-             break;
-    }
+    case 5: realSetMinusInfinity(x); break;
 
     case 2:
-    case 6: {
-      realZero(x);
-             break;
-    }
+    case 6: realSetZero(x);          break;
 
-    default: {
-      realCopy(const_plusInfinity, x);
-    }
+    default:realSetPlusInfinity(x);
   }
 
   switch(angle) {
     case 5:
     case 6:
-    case 7: {
-      realCopy(const_minusInfinity, y);
-             break;
-    }
+    case 7: realSetMinusInfinity(y); break;
 
     case 0:
-    case 4: {
-      realZero(y);
-             break;
-    }
+    case 4: realSetZero(y);          break;
 
-    default: {
-      realCopy(const_plusInfinity, y);
-    }
+    default:realSetPlusInfinity(y);
   }
 }
 
