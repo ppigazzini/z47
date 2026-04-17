@@ -237,15 +237,15 @@ static inline bool is_reserved_variable(uint16_t r) {
   return in_range_inclusive(r, FIRST_RESERVED_VARIABLE, LAST_RESERVED_VARIABLE);
 }
 
-static inline bool is_lettered_register(uint16_t r) {
-  return in_range_inclusive(r, FIRST_LETTERED_REGISTER , LAST_LETTERED_REGISTER);
+static inline bool is_global_register(uint16_t r) {
+  return in_range_inclusive(r, FIRST_GLOBAL_REGISTER, LAST_SPARE_REGISTER);
 }
 
 static inline bool is_comparable_register(uint16_t r) {
   return is_local_register(r) ||
+         is_global_register(r) ||
          is_named_variable(r) ||
          is_reserved_variable(r) ||
-         is_lettered_register(r) ||
          (r == TEMP_REGISTER_1);
 }
 
@@ -364,18 +364,23 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
       longInteger_t rInt;
 
       if(!getRegisterAsLongInt(REGISTER_X, xInt, NULL)) {
-        compareTypeError(REGISTER_X);
-      }
-      else if(!getRegisterAsLongInt(regist, rInt, NULL)) {
-        compareTypeError(regist);
-      }
-      else {
-        cmpToResult(longIntegerCompare(xInt, rInt), mode);
+        goto end;
       }
 
-      longIntegerFree(xInt);
+      if(!getRegisterAsLongInt(regist, rInt, NULL)) {
+        compareTypeError(regist);
+        longIntegerFree(rInt);
+end:
+        longIntegerFree(xInt);
+        compareTypeError(REGISTER_X);
+        break;
+      }
+
+      cmpToResult(longIntegerCompare(xInt, rInt), mode);
       longIntegerFree(rInt);
-    } break;
+      longIntegerFree(xInt);
+    } 
+    break;
 
     /* ------------------------------------------------------------------------
      * (complex, real) x (complex, real, shortI, longI)
