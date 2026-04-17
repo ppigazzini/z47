@@ -1713,8 +1713,7 @@ void fnConvertMxToStk(uint16_t param) {
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
   if(calcMode == CM_NIM) {
-    if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#')
-        || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
+    if(((nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
       #if defined(PC_BUILD)
         printf("Do not react when in NIM SI\n");
       #endif //PC_BUILD
@@ -1776,8 +1775,7 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-      if((-15 <= exponent && exponent <= 15) ||
-        (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
+      if((-15 <= exponent && exponent <= 15) || (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = SIprefixes[exponent + 30];
         if(displayString[1] == 'u') {
           displayString[1] = STD_mu[0];
@@ -1786,8 +1784,7 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
       }
   }
   else if(flag2To10) {                            //exponent of 2^(10/3)
-      if((3 <= exponent && exponent <= 15) ||
-         (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
+      if((3 <= exponent && exponent <= 15) || (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = ITSIprefixes[exponent - 3];
         displayString[2] = 'i';
       }

@@ -1908,8 +1908,9 @@ static bool_t performPrimeFactorization(bool_t doSaveLastX) {
     goto abort;
   }
 
-  if(doSaveLastX && !saveLastX())
+  if(doSaveLastX && !saveLastX()) {
     goto abort;
+  }
 
   real34SetZero(&lastAdded);
   FactorAdder_t faddr;
