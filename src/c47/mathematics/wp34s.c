@@ -26,6 +26,56 @@
 static void C47_WP34S_SinCosTanTaylor_temp75   (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
 static void C47_WP34S_SinCosTanTaylor_temp1071 (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
 
+
+void reduceAngleToRange(real_t* angle, const real_t** angle45, const real_t** angle90, const real_t** angle180, angularMode_t* angularMode, int32_t savedContextDigits, realContext_t* realContext) {
+  switch(*angularMode) {
+    case amRadian: {
+      if(savedContextDigits >= 1071) {
+        *angle45  = const1071_piOn4;
+        *angle90  = const1071_piOn2;
+        *angle180 = const1071_pi;
+      }
+      else {
+        *angle45  = const_piOn4_75;
+        *angle90  = const_piOn2_75;
+        *angle180 = const_pi_75;
+      }
+      mod2Pi(angle, angle, realContext); // mod(angle, 2pi) --> angle
+      break;
+    }
+
+    case amMultPi: {
+      *angle45  = const_1on4;
+      *angle90  = const_1on2;
+      *angle180 = const_1;
+      WP34S_Mod(angle, const_2, angle, realContext); // mod(angle, 2) --> angle
+      break;
+    }
+
+    case amGrad: {
+      *angle45  = const_50;
+      *angle90  = const_100;
+      *angle180 = const_200;
+      WP34S_Mod(angle, const_400, angle, realContext); // mod(angle, 400g) --> angle
+      break;
+    }
+
+    case amDegree:
+    case amDMS: {
+      *angle45  = const_45;
+      *angle90  = const_90;
+      *angle180 = const_180;
+      WP34S_Mod(angle, const_360, angle, realContext); // mod(angle, 360°) --> angle
+      *angularMode = amDegree;
+      break;
+    }
+
+    default: {
+    }
+  }
+}
+
+
 // called from WP34S_Cvt2RadSinCosTan for 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
 // called from C47_WP34S_Cvt2RadSinCosTan for 1071+ XFN
 static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, bool* swap, real_t* sinOut, real_t* cosOut, real_t* tanOut, angularMode_t angularMode, int32_t savedContextDigits, realContext_t* realContext) {
@@ -46,51 +96,8 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
     realSetPositiveSign(angle);
   }
 
-  switch(angularMode) {
-    case amRadian: {
-      if(savedContextDigits >= 1071) {
-        angle45 = const1071_piOn4;
-        angle90 = const1071_piOn2;
-        angle180 = const1071_pi;
-      }
-      else {
-        angle45 = const_piOn4_75;
-        angle90 = const_piOn2_75;
-        angle180 = const_pi_75;
-      }
-      mod2Pi(angle, angle, realContext); // mod(angle, 2pi) --> angle
-      break;
-    }
+  reduceAngleToRange(angle, &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
 
-    case amMultPi: {
-      angle45 = const_1on4;
-      angle90 = const_1on2;
-      angle180 = const_1;
-      WP34S_Mod(angle, const_2, angle, realContext); // mod(angle, 2) --> angle
-      break;
-    }
-
-    case amGrad: {
-      angle45 = const_50;
-      angle90 = const_100;
-      angle180 = const_200;
-      WP34S_Mod(angle, const_400, angle, realContext); // mod(angle, 400g) --> angle
-      break;
-    }
-
-    case amDegree:
-    case amDMS: {
-      angle45 = const_45;
-      angle90 = const_90;
-      angle180 = const_180;
-      WP34S_Mod(angle, const_360, angle, realContext); // mod(angle, 360°) --> angle
-      angularMode = amDegree;
-      break;
-    }
-
-    default: {
-    }
-  }
   #if defined(DEBUGTAYLOR)
    realToString(angle, tmpString);
    //tmpString[80]=0;
