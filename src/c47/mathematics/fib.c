@@ -15,8 +15,9 @@ static void fibLonI(void) {
   }
 
   bool_t neg = longIntegerIsNegative(x);
-  if(neg)
+  if(neg) {
     longIntegerChangeSign(x);
+  }
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -43,8 +44,9 @@ static void fibLonI(void) {
   longIntegerInit(result);           // Initialize fib variable
   longIntegerFibonacci(n, result);   // result = FIB(n)
 
-  if(neg && longIntegerIsEven(x))
+  if(neg && longIntegerIsEven(x)) {
     longIntegerChangeSign(result);
+  }
 
   convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
 
@@ -96,7 +98,7 @@ static void fibReal(void) {
   // FIB(x) = [ PHI^(x) - PHI^(-x)*COS(PI * x) ] / SQRT(5)
   real_t x;
 
-  if(getRegisterAsReal(REGISTER_X, &x)) {;
+  if(getRegisterAsReal(REGISTER_X, &x)) {
     FibonacciReal(&x, &x, &ctxtReal39);
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
@@ -105,8 +107,9 @@ static void fibReal(void) {
 static void fibCplx(void) {
   real_t xReal, xImag;
 
-  if(!getRegisterAsComplex(REGISTER_X,  &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X,  &xReal, &xImag)) {
     return;
+  }
 
   if(realIsZero(&xImag)) {
     FibonacciReal(&xReal, &xReal, &ctxtReal39);

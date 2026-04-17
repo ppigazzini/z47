@@ -19,13 +19,13 @@
 
 #else
   static bool_t checkParamWeibull(real_t *x, real_t *shape, real_t *scale) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_Q, shape)
-        || !getRegisterAsReal(REGISTER_S, scale))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_Q, shape) || !getRegisterAsReal(REGISTER_S, scale)) {
       goto err;
+    }
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

@@ -273,7 +273,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
 
     if(explicitTaylorIterVisibilitySelection && checkHalfSec()) {
       char ss[100];
-      sprintf(ss,"Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
+      sprintf(ss, "Taylor Iter: %d/%d; Dig: %d/", i, TaylorIterationMax, -(int16_t)tExp);
       ss[40] = 0; //Hard limit to screen display
       #if defined(DEBUGTAYLOR)
         printf("%s%d\n", ss, epsilonDigits);
@@ -283,7 +283,7 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
@@ -292,9 +292,11 @@ static void doTaylorIterations(const real_t *a, real_t* angle, real_t* a2, real_
     #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
         realToString(sin, tmpString);
-        tmpString[80]=0; printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
+        tmpString[80]=0;
+        printf("Taylor progress: n=%3d, sin=%s", i, tmpString);
         realToString(cos, tmpString);
-        tmpString[80]=0; printf(" cos=%s\n", tmpString);
+        tmpString[80]=0;
+        printf(" cos=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
   }
@@ -543,7 +545,7 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     }
     #if !defined(PC_BUILD)
       if(exitKeyWaiting()) {
-        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
         break;
       }
@@ -553,9 +555,11 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     #if defined(DEBUGTAYLOR)
       if(i > 1 && i % 1 == 0) { //left mod for printing interleaved status
         realToString(angle, tmpString);
-        tmpString[80]=0; printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
+        tmpString[80]=0;
+        printf("Taylor progress Atan: n=%3d, angle=%s", i, tmpString);
         realToString(b , tmpString);
-        tmpString[80]=0; printf(" diff=%s\n", tmpString);
+        tmpString[80]=0;
+        printf(" diff=%s\n", tmpString);
       }
     #endif //DEBUGTAYLOR
     i++;

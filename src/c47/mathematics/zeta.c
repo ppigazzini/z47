@@ -137,8 +137,10 @@ void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real
 static void doRealZeta(void) {
   real_t x, r;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
+
   WP34S_Zeta(&x, &r, &ctxtReal39);
   convertRealToResultRegister(&r, REGISTER_X, amNone);
 }
@@ -146,11 +148,13 @@ static void doRealZeta(void) {
 static void doComplexZeta(void) {
   real_t xr, xi, rr, ri;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xr, &xi))
+  if(!getRegisterAsComplex(REGISTER_X, &xr, &xi)) {
     return;
+  }
 
-  if(!saveLastX())
+  if(!saveLastX()) {
     return;
+  }
 
   ComplexZeta(&xr, &xi, &rr, &ri, &ctxtReal39);
   convertComplexToResultRegister(&rr, &ri, REGISTER_X);

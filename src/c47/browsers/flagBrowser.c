@@ -75,8 +75,13 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       refreshScreen(190);                        //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
     }
 
-    if(currentFlgScr < FIRST_SCREEN) currentFlgScr = LAST_SCREEN;
-    if(currentFlgScr > LAST_SCREEN)  currentFlgScr = FIRST_SCREEN;
+    if(currentFlgScr < FIRST_SCREEN) {
+      currentFlgScr = LAST_SCREEN;
+    }
+
+    if(currentFlgScr > LAST_SCREEN) {
+      currentFlgScr = FIRST_SCREEN;
+    }
 
     if(currentFlgScr == STATUS_SCREEN) { // Init new style
       char flagNumber[4];
