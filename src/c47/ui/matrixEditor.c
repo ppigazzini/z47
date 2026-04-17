@@ -69,6 +69,7 @@
   }
 
 void fnEditMatrix(uint16_t regist) {
+  leaveTamModeIfEnabled();
   saveStatsMatrix();
   const uint16_t reg = (regist == NOPARAM) ? REGISTER_X : regist;
   if((getRegisterDataType(reg) == dtReal34Matrix) || (getRegisterDataType(reg) == dtComplex34Matrix)) {
@@ -83,6 +84,10 @@ void fnEditMatrix(uint16_t regist) {
     nimBufferDisplay[0] = 0;
     scrollRow = scrollColumn = 0;
     showMatrixEditor();
+    #if defined(IR_PRINTING)
+      refreshScreen(80);
+      printTraceMatElement(LINE_FULL);
+    #endif //IR_PRINTING
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -596,7 +601,7 @@ void mimEnter(bool_t commit) {
           real34SetZero(VARIABLE_IMAG34_DATA(complex34Ptr));
       }
     }
-    
+
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
     hideCursor();

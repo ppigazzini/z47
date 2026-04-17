@@ -45,14 +45,15 @@ void fnP_PrintAllItems(uint16_t unusedButMandatoryParameter);
 void printProgram     (bool_t list, uint16_t lines);
 
 // Print routines
-void printTrace       (int16_t func, uint16_t param);
-void printTraceX      (uint16_t where);
+void printTrace               (int16_t func, uint16_t param);
+void printTraceX              (uint16_t where);
+void printTraceMatElement     (uint16_t where);
 void printTraceErrorFunction  (int16_t func,  char *errorString);
-void printTraceError  (char *errorString); 
-void printTraceTI     ();
-void printTraceString (char *string, uint16_t where);
-void printPrompt      (uint16_t regist);
-void printViewAview   (uint16_t func, uint16_t regist);
-void nameAlias        (uint16_t op, char *nameOp);
+void printTraceError          (char *errorString); 
+void printTraceTI             ();
+void printTraceString         (char *string, uint16_t where);
+void printPrompt              (uint16_t regist);
+void printViewAview           (uint16_t func, uint16_t regist);
+void nameAlias                (uint16_t op, char *nameOp);
 
 #endif // PRINT_H

@@ -952,6 +952,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           refreshScreen(51);
           #if defined(IR_PRINTING)
             printTrace(item,item);
+            printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
         else if(item == ITM_LEFT_ARROW) {
@@ -960,6 +961,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           refreshScreen(52);
           #if defined(IR_PRINTING)
             printTrace(item,item);
+            printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
         else if(item == ITM_UP_ARROW) {
@@ -968,6 +970,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           refreshScreen(53);
           #if defined(IR_PRINTING)
             printTrace(item,item);
+            printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
         else if(item == ITM_DOWN_ARROW) {
@@ -976,6 +979,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           refreshScreen(54);
           #if defined(IR_PRINTING)
             printTrace(item,item);
+            printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
 
