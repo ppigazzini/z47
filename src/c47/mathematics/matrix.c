@@ -933,8 +933,9 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
 
 void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(saveLastX())
+  if(saveLastX()) {
     _fnEuclideanNorm(NOPARAM);
+  }
 }
 
 
@@ -4297,8 +4298,7 @@ static bool_t isProblematicMatrix(const real_t *matrix, uint16_t size) {
   // Check if it's a companion matrix first
   bool_t isCompanion = true;
   for(int i = 0; i < size-1; i++) {
-    if(!realCompareEqual(matrix + (i * size + (i+1)) * 2, const_1) ||
-       !realIsZero(matrix + (i * size + (i+1)) * 2 + 1)) {
+    if(!realCompareEqual(matrix + (i * size + (i+1)) * 2, const_1) || !realIsZero(matrix + (i * size + (i+1)) * 2 + 1)) {
       isCompanion = false;
       break;
     }
@@ -4781,11 +4781,14 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
   #endif //OPTION_EIGEN_159
 
   {
-    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2;
+    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2;
+    mr[1] = mr[0] + 2;
     mr[2] = mr[1] + 2;
-    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2;
+    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2;
+    mr[4] = mr[3] + 2;
     mr[5] = mr[4] + 2;
-    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2; mr[7] = mr[6] + 2;
+    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2;
+    mr[7] = mr[6] + 2;
     mr[8] = mr[7] + 2;
     for(int i = 0; i < 9; ++i) {
       mi[i] = mr[i] + 1;
@@ -6485,7 +6488,8 @@ if(iteration % 20 == 0) {
 
     #if defined(EIGENDEBUG)
       printf("\n=== CONDITION NUMBER CHECK ===\n");
-      printf("maxM: "); printRealToConsole(&maxM, "", ", tol: ");
+      printf("maxM: ");
+      printRealToConsole(&maxM, "", ", tol: ");
       printRealToConsole(&tol, "", "\n");
     #endif
     for(i = 1; i < size; i++) {
@@ -6498,7 +6502,8 @@ if(iteration % 20 == 0) {
       if(!realIsZero(&tmpM) && !realIsZero(&maxM) && realCompareLessThan(&tmpM, &tol)) {
         realMultiply(&maxM, &tol, &minM, realContext);
         #if defined(EIGENDEBUG)
-          printf("ILL-CONDITIONED: minM threshold = "); printRealToConsole(&minM, "", "\n");
+          printf("ILL-CONDITIONED: minM threshold = ");
+          printRealToConsole(&minM, "", "\n");
           for(j = 1; j < size; j++) {
             real_t tmpM_check;
             complexMagnitude(eig + (j * size + j) * 2, eig + (j * size + j) * 2 + 1, &tmpM_check, realContext);

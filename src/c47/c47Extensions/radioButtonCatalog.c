@@ -558,7 +558,10 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_HIDE:      result = exponentHideLimit;                                 break;
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
-    case ITM_HASH_JM:   if(lastIntegerBase != 0) result = (int16_t)lastIntegerBase; break;
+    case ITM_HASH_JM:   if(lastIntegerBase != 0) {
+                          result = (int16_t)lastIntegerBase;
+                        }
+                        break;
     case ITM_TIMER_SIGMA_L:
     case ITM_TIMER_SIGMA_T: result = statisticalSumsPointer == NULL ? 0 : realToUint32C47(SIGMA_N, NULL); break;
     case ITM_TIMER_R_L:

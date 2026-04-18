@@ -15,8 +15,9 @@
 static void unitConversion(const real_t * const coefficient, uint16_t multiplyDivide, bool_t invert) {
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
@@ -223,8 +224,9 @@ TO_QSPI static const real_t *cvtTempConsts[13][4] = {
 void fnCvtTemp(uint16_t ix) {
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
@@ -345,8 +347,9 @@ void fnCvtHMSHR   (uint16_t multiplyDivide) {
 void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;
@@ -372,8 +375,9 @@ void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ra
 void fnCvtDbRatio(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX)) {
     return;
+  }
 
   if(!saveLastX()) {
     return;

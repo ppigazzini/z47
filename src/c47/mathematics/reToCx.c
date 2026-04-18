@@ -24,8 +24,9 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
       && (dataTypeY == dtReal34 || dataTypeY == dtLongInteger)) {
 
     if(!saveLastX()) {
-    return;
-  }
+      return;
+    }
+
     fnSetFlag(FLAG_CPXRES);
     fnRefreshState();                                 //drJM
 
