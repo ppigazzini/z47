@@ -29,8 +29,9 @@ static void sqrtShoI(void) {
 static void sqrtReal(void) {
   real_t a;
 
-  if(!getRegisterAsReal(REGISTER_X, &a))
+  if(!getRegisterAsReal(REGISTER_X, &a)) {
     return;
+  }
 
   if(realIsInfinite(&a) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
