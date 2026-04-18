@@ -2155,8 +2155,8 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_2104                    2104
-#define ITM_2105                    2105
+#define ITM_KtoM                    2104
+#define ITM_MtoK                    2105
 #define MNU_VECT                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
@@ -2455,7 +2455,7 @@
 #define ITM_USER_R47bk_fg           2392
 #define ITM_USER_R47fg_bk           2393
 #define ITM_USER_R47fg_g            2394
-#define ITM_2395                    2395
+#define ITM_ELLIPSE                 2395
 
 #define ITM_ANGLEQ                  2396
 #define ITM_DATEQ                   2397
@@ -2679,8 +2679,8 @@
 
 #define MNU_XXFCNS                  2596
 #define MNU_MULTSTK                 2597
-#define ITM_2598                    2598
-#define ITM_2599                    2599
+#define ITM_MtoTH                   2598
+#define ITM_THtoM                   2599
 
 #define MNU_UNIFORM                 2600    // Uniform distributions
 #define ITM_UNIFORMP                2601

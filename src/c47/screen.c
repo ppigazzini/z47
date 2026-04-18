@@ -4134,6 +4134,27 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
 
+          else if(temporaryInformation == TI_ELLIPSE_K) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "eccentricity e=k=" STD_SQUARE_ROOT "m" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
+          else if(temporaryInformation == TI_ELLIPSE_M) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "modulus m=k" STD_SUP_2 STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
+          else if(temporaryInformation == TI_ELLIPSE_Theta) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "eccentricity angle " STD_theta_m STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
               sprintf(prefix, "ACC" STD_SPACE_FIGURE ":");
