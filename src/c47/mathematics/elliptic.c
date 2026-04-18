@@ -1033,7 +1033,7 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
             realCopy(&k, &q);
             mod2Pi(&q, &k, realContext);
             if(realCompareGreaterThan(&k, const_pi)) {
-              realSubtract(&k, const_2pi_75, &k, realContext);
+              realSubtract(&k, const75_2pi, &k, realContext);
             }
             realSubtract(&q, &k, &q, realContext);
             realSubtract(a + i - 1, b + i - 1, &c, realContext);
