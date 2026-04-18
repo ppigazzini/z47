@@ -1178,6 +1178,8 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
     ll = _keyCodeFromGdkKey(ll);        //utilise the raw key event value, which will be contain a-z or A-Z
     if(ll > 0) {
+      lastshiftF = shiftF;
+      lastshiftG = shiftG;
       sendKey(ll);
       screenUpdatingMode = SCRUPD_AUTO;
       refreshStatusBar();
