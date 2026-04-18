@@ -171,6 +171,70 @@ In:  FL_ASLIFT=0 RX=Real:"1"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.004970969537898671756939473474906546"
 
 ;=============================================================
+; CHINESE LENGTH CONVERSIONS (li, yin, zhang, cun, chi, fen)
+;=============================================================
+
+; li → m (constFactorLiM=55)
+Func: fnUnitConvert(55)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"500"
+
+; m → li (constFactorLiM=55 | 0x8000)
+Func: fnUnitConvert(32823)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.002"
+
+; chi → m (constFactorChiM=56 | 0x8000)
+Func: fnUnitConvert(32824)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3333333333333333333333333333333333"
+
+; m → chi (constFactorChiM=56)
+Func: fnUnitConvert(56)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3"
+
+; yin → m (constFactorYinM=57 | 0x8000)
+Func: fnUnitConvert(32825)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"33.33333333333333333333333333333333"
+
+; m → yin (constFactorYinM=57)
+Func: fnUnitConvert(57)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03"
+
+; cun → m (constFactorCunM=58 | 0x8000)
+Func: fnUnitConvert(32826)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03333333333333333333333333333333333"
+
+; m → cun (constFactorCunM=58)
+Func: fnUnitConvert(58)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"30"
+
+; zhang → m (constFactorZhangM=59 | 0x8000)
+Func: fnUnitConvert(32827)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.333333333333333333333333333333333"
+
+; m → zhang (constFactorZhangM=59)
+Func: fnUnitConvert(59)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3"
+
+; fen → m (constFactorFenM=60 | 0x8000)
+Func: fnUnitConvert(32828)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00333333333333333333333333333333333"
+
+; m → fen (constFactorFenM=60)
+Func: fnUnitConvert(60)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"300"
+
+;=============================================================
 ; AREA CONVERSIONS
 ;=============================================================
 
