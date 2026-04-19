@@ -7,6 +7,8 @@
 #if !defined(MATRIX_H)
   #define MATRIX_H
 
+  bool_t getMatrixDims(calcRegister_t regist, const char *funcName, uint16_t *rows, uint16_t *cols);
+
   /**
    * Creates new Matrix of size y->m x x ->n.
    *

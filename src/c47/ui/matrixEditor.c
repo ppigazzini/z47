@@ -1189,6 +1189,8 @@ smallFont:
                       "]" STD_SPACE_HAIR STD_SUP_p : \
                       "]");
   //printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
+  #else
+    strcpy(endChar, "]");
   #endif //OPTION_VECTOR
 
 

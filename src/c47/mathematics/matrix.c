@@ -57,6 +57,31 @@
 // End Eigenvalue setup
 
 
+bool_t getMatrixDims(calcRegister_t regist, const char *funcName, uint16_t *rows, uint16_t *cols) {
+  uint32_t dt = getRegisterDataType(regist);
+  if(dt == dtReal34Matrix) {
+    real34Matrix_t x;
+    linkToRealMatrixRegister(regist, &x);
+    *rows = x.header.matrixRows;
+    *cols = x.header.matrixColumns;
+    return true;
+  }
+  else if(dt == dtComplex34Matrix) {
+    complex34Matrix_t x;
+    linkToComplexMatrixRegister(regist, &x);
+    *rows = x.header.matrixRows;
+    *cols = x.header.matrixColumns;
+    return true;
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, dt);
+      moreInfoOnError(funcName, errorMessage, "is not a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+}
 
   static bool_t getArg(calcRegister_t regist, real_t *arg) {
     if(getRegisterDataType(regist) == dtLongInteger) {
