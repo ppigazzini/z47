@@ -3918,13 +3918,22 @@ void _view(uint16_t regist) {
 
 void fnView(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printViewAview(ITM_VIEW, regist);
+  #endif //IR_PRINTING
 }
 
 void fnAview(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printViewAview(ITM_AVIEW, regist);
+  #endif //IR_PRINTING
 }
 
 void fnPrompt(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printPrompt(regist);
+  #endif //IR_PRINTING
   fnStopProgram(NOPARAM);
 }

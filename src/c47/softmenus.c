@@ -693,7 +693,7 @@ TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
 
                                              ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINTERUSER,             ITM_PRINTERADV,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_PRINT_ALL_ITEMS,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
 
 TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
@@ -1125,7 +1125,6 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 177 */  {.menuItem = -MNU_TAMNORM,       .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
 /* 178 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
-
 
 };
 
@@ -2403,6 +2402,19 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     }
   }
   else if(itemNr < 0) { //itemNr >= 0
+    if(itemNr == -MNU_PRINTER) {
+      switch(printerState.printer_model) {
+        case PRINTER_HP:
+          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_8 STD_SUB_2 STD_SUB_2 STD_SUB_4 STD_SUB_0);
+          break;
+        case PRINTER_MARTEL:
+          stringCopy(showText + stringByteLength(showText), STD_SUB_M STD_SUB_a STD_SUB_r STD_SUB_t STD_SUB_e STD_SUB_l);
+          break;
+        case PRINTER_OTHER:
+          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_O STD_SUB_t STD_SUB_h STD_SUB_e STD_SUB_r);
+          break;
+     }
+    }
     stringCopy(itemName, indexOfItems[-itemNr%10000].itemSoftmenuName);
     //printf("WWW3: itemName=%s, ItemNr=%i \n", itemName, itemNr);
     return;
@@ -2951,7 +2963,6 @@ void showSoftmenuCurrentPart(void) {
           }
           changeSoftKey(softmenu[m].menuItem, item, itemName, &vm, &showCb, &showValue, showText);
 
-
           if(item < 0) { // item is softmenu name
             int16_t menu = 0;
             while(softmenu[menu].menuItem != 0) {
@@ -2985,6 +2996,9 @@ void showSoftmenuCurrentPart(void) {
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_LOWER) {
               showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+            }
+            else if(softmenu[menu].menuItem == -MNU_PRINTER) {
+              showSoftkey(indexOfItems[MNU_PRINTER].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, showText);
             }
             else {
               #if defined(INLINE_TEST)
@@ -3479,6 +3493,13 @@ void showSoftmenuCurrentPart(void) {
 
   void showSoftmenu(int16_t id) {
     int16_t m;
+
+    #if defined(IR_PRINTING)
+      if(!tam.mode) {
+        printTrace(id,NOPARAM);
+      }
+    #endif //IR_PRINTING
+
     #if defined(PC_BUILD)
       char tmp[200];
       sprintf(tmp, "ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);

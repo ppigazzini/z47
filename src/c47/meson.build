@@ -188,6 +188,8 @@ c47_src = files(
   'c47Extensions/xeqm.c',
   'memory.c',
   'plotstat.c',
+  'printing/print.c',
+  'printing/printerFont8.c',
   'programming/clcvar.c',
   'programming/decode.c',
   'programming/input.c',

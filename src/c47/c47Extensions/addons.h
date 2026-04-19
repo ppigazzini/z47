@@ -25,17 +25,6 @@ void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
-#define PRN_ALL     0
-#define PRN_STK     1
-#define PRN_GLOBALr 2
-#define PRN_LOCALr  3
-#define PRN_NAMEDr  4
-#define PRN_Xr      5
-#define PRN_XYr     6
-#define PRN_TMP     7
-void fnP_All_Regs   (uint16_t option);
-void fnP_Regs       (uint16_t registerNo);
-void fnP_Alpha      (void);
 void fnMinute       (uint16_t unusedButMandatoryParameter);
 void fnSecond       (uint16_t unusedButMandatoryParameter);
 void fnHrDeg        (uint16_t unusedButMandatoryParameter);

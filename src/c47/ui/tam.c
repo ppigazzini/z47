@@ -837,6 +837,7 @@ printf("tam.value: %d\n", tam.value);
           value += ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) ? FIRST_LOCAL_FLAG : FIRST_LOCAL_REGISTER);
         }
         if(tam.indirect && calcMode != CM_PEM) {
+          tam.value0 = value;
           value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
           run = (lastErrorCode == 0);
         }
@@ -904,6 +905,7 @@ printf("tam.value: %d\n", tam.value);
         }
         else {
           value = findNamedVariable(buffer);
+          tam.value0 = value;
           if(calcMode != CM_PEM) {
             if(value != INVALID_VARIABLE) {
               value2 = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
@@ -912,6 +914,11 @@ printf("tam.value: %d\n", tam.value);
               value = (value2 != FAILED_INDIRECTION ? value2 : INVALID_VARIABLE);
             }
             else {
+              #if defined(IR_PRINTING)
+                sprintf(errorMessage, "'%s'", buffer);
+                printTraceErrorFunction(tam.function,errorMessage);
+              #endif //IR_PRINTING
+
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", buffer);
@@ -939,6 +946,11 @@ printf("tam.value: %d\n", tam.value);
           if(calcMode != CM_PEM) {
             leaveTamModeIfEnabled();
             if(!tam.indirect) {
+              #if defined(IR_PRINTING)
+                sprintf(errorMessage, "'%s'", buffer);
+                printTraceErrorFunction(tam.function,errorMessage);
+              #endif //IR_PRINTING
+
               displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
@@ -956,7 +968,11 @@ printf("tam.value: %d\n", tam.value);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
-          else if(calcMode != CM_PEM){
+          else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function,errorMessage);
+            #endif //IR_PRINTING
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);
@@ -989,6 +1005,11 @@ printf("tam.value: %d\n", tam.value);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function,errorMessage);
+            #endif //IR_PRINTING
+
             displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a menu name", buffer);
@@ -1009,6 +1030,11 @@ printf("tam.value: %d\n", tam.value);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function,errorMessage);
+            #endif //IR_PRINTING
+
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", buffer);
@@ -1024,6 +1050,7 @@ printf("tam.value: %d\n", tam.value);
         aimBuffer[0] = 0;
       }
       if(tam.indirect && value != INVALID_VARIABLE && calcMode != CM_PEM) {
+        tam.value0 = value;
         value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
         if(lastErrorCode != 0) {
           value = INVALID_VARIABLE;

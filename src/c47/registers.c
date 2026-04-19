@@ -2114,7 +2114,7 @@ bool_t saveLastX(void) {
 }
 
 
-static uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
+uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
   real_t x, p;
 
   if(getRegisterDataType(REGISTER_X) == dtReal34) {

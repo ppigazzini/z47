@@ -2343,8 +2343,8 @@
 #define SFL_FGGR                    2287 // The SFL item names are not used
 #define SFL_3DPHYS                  2288 // The SFL item names are not used
 #define SFL_3DXYZ                   2289 // The SFL item names are not used
-#define SFL_2290                    2290 // The SFL item names are not used
-#define SFL_2291                    2291 // The SFL item names are not used
+#define SFL_PRTEN                   2290 // The SFL item names are not used
+#define SFL_NORM                    2291 // The SFL item names are not used
 #define SFL_2292                    2292 // The SFL item names are not used
 #define SFL_2293                    2293 // The SFL item names are not used
 #define SFL_2294                    2294 // The SFL item names are not used
@@ -2788,7 +2788,7 @@
 #define ITM_NORM                    2690
 #define ITM_TRACE                   2691
 #define ITM_PRINTERLIST             2692
-#define ITM_2693                    2693
+#define ITM_PRINT_ALL_ITEMS         2693
 #define ITM_2694                    2694
 #define ITM_2695                    2695
 #define ITM_2696                    2696
