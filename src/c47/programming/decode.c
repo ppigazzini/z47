@@ -12,6 +12,7 @@ TO_QSPI const char supDigit[24] = STD_SUP_0 STD_SUP_1 STD_SUP_2 STD_SUP_3 STD_SU
 TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BASE_4 STD_BASE_5 STD_BASE_6 STD_BASE_7 STD_BASE_8 STD_BASE_9 STD_BASE_10 STD_BASE_11 STD_BASE_12 STD_BASE_13 STD_BASE_14 STD_BASE_15 STD_BASE_16;
 TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir;
 
+
 #if !defined(DMCP_BUILD)
   void listPrograms(void) {
     uint16_t i, numberOfBytesInStep, stepNumber = 0, programNumber = 0;
@@ -821,7 +822,6 @@ static void decodeRem(uint8_t *literalAddress) {
 }
 
 
-
 static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
   uint16_t op = *(step++);
   if(op & 0x80) {
@@ -852,7 +852,14 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           sprintf(nameOp, "op_%s" STD_SUB_SUN, COMPLEX_UNIT);
         }
         if(nameOp[0] == 0) {
-          strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
+          if(textVersion == MODE_ALIAS) {
+          #if defined(IR_PRINTING)
+            nameAlias(op, nameOp); 
+          #endif //IR_PRINTING
+          }
+          else {
+            strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
+          }
         }
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
           expandConversionName(nameOp);
@@ -888,7 +895,14 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         }
         else {
           if(nameOp[0] == 0) {
-            strcpy(nameOp, indexOfItems[op].itemCatalogName);
+            if(textVersion == MODE_ALIAS) {
+            #if defined(IR_PRINTING)
+              nameAlias(op, nameOp); 
+            #endif //IR_PRINTING
+            }
+            else {
+              strcpy(nameOp,indexOfItems[op].itemCatalogName);
+            }
           }
         }
         decodeOp(step, op, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
@@ -903,4 +917,8 @@ void decodeOneStep(uint8_t *step) {
 
 void decodeOneStep_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_RTF);
+}
+
+void decodeOneStep_ALIAS(uint8_t *step) {
+  _decodeOneStep(step, MODE_ALIAS);
 }

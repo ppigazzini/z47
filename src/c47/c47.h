@@ -93,6 +93,7 @@
     #include "hal/gui.h"
     #include "hal/io.h"
     #include "hal/lcd.h"
+    #include "hal/print_ir.h"
     #include "integers.h"
     #include "items.h"
     #include "keyboard.h"
@@ -100,6 +101,7 @@
     #include "mathematics/mathematics.h"
     #include "memory.h"
     #include "plotstat.h"
+    #include "printing/print.h"
     #include "programming/programming.h"
     #include "recall.h"
     #include "registers.h"
@@ -152,6 +154,7 @@
     #include "fonts.h"
     #include "items.h"
     #include "mathematics/mathematics.h"
+    #include "printing/print.h"
     #include "solver/solver.h"
     #include "sort.h"
     #include "stats.h"
@@ -593,6 +596,12 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
+  
+  //#if defined(IR_PRINTING)
+    extern printerState_t         printerState;
+    extern const printerFont_t    printerFont8;
+    extern uint16_t               printerColumn;
+  //#endif //IR_PRINTING
 
   #if defined(DMCP_BUILD)
     extern bool_t               backToDMCP;

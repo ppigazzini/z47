@@ -125,6 +125,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_PROPFR,           FLAG_PROPFR ,           CB_JC},
   {ITM_FRACT,            FLAG_FRACT  ,           CB_JC},
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
+//  {ITM_TRACE,            FLAG_TRACE ,            CB_JC},  // SFL_TRACE
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
   {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
   {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
@@ -218,7 +219,15 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SETJPN,           ITM_SETJPN,             MB_MAC},
   {ITM_SETUK,            ITM_SETUK,              MB_MAC},
   {ITM_SETUSA,           ITM_SETUSA,             MB_MAC},
-  {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC}
+  {ITM_SETDFLT,          ITM_SETDFLT,            MB_MAC},
+
+  {ITM_PRINTERHP,        PRINTER_HP,             RB_PRM},
+  {ITM_PRINTERMARTEL,    PRINTER_MARTEL,         RB_PRM},
+  {ITM_PRINTERON,        true,                   RB_PRON},
+  {ITM_PRINTEROFF,       false,                  RB_PRON},
+  {ITM_MAN,              MAN,                    RB_PM},
+  {ITM_NORM,             NORM,                   RB_PM},
+  {ITM_TRACE,            TRACE,                  RB_PM},
 
 };
 
@@ -279,7 +288,8 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_SHFT_4s,
   FLAG_FGGR,
   FLAG_3DPHYS,
-  FLAG_3DXYZ
+  FLAG_3DXYZ,
+  FLAG_TRACE
 };
 
 
@@ -418,6 +428,15 @@ int8_t fnCbIsSet(int16_t item) {
                      }
                      break;
 
+        case RB_PRM: rb_param = printerState.printer_model;
+                     break;
+
+        case RB_PRON: rb_param = printerState.print_on;
+                     break;
+
+        case RB_PM:  rb_param = (getSystemFlag(FLAG_TRACE) ? TRACE : getSystemFlag(FLAG_NORM) ? NORM : MAN);
+                     break;
+                     
         case CB_JC:  is_cb = true;
 
 
@@ -556,6 +575,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOL:
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
+    case ITM_PRINTERDLAY: result = printerState.delay;                              break; // DLr
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }

@@ -447,9 +447,9 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     lastIntegerBase = 0;
 
     if(calcMode != CM_PEM) {
+      calcMode = CM_PEM;
       showSoftmenu(-MNU_PFN);
       screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-      calcMode = CM_PEM;
       hourGlassIconEnabled = false;
       aimBuffer[0] = 0;
       currentInputVariable = INVALID_VARIABLE;
@@ -651,7 +651,6 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
 
 static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   //#define printarr(fmt, dat, len) for (uint16_t i = 0; i < len; i++) printf(fmt, dat[i])
-  //printf("**[DL]** _insertInProgram: ");
   //printarr("%d ", dat, size);
   //printf("\n");fflush(stdout);
   int16_t _dynamicMenuItem = dynamicMenuItem;
