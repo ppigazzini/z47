@@ -78,7 +78,7 @@ void sendByteIR( uint8_t c )
   //Send character to the socket    
   size_sent = g_socket_send(udpSocket, buffer, 1, NULL, &error);
   if(error != NULL) {
-    printf("Error g_socket_send - domain: %d code: %d %s size_sent %lld\n", error->domain, error->code, error->message, size_sent);
+    printf("Error g_socket_send - domain: %d code: %d %s size_sent %lld\n", error->domain, error->code, error->message, (long long)size_sent);
     g_error_free(error);
   }
 
