@@ -109,8 +109,7 @@ static bool_t getSingleDimension(calcRegister_t reg, uint32_t *d) {
 
 bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
   //Get Size or I&J for STOIJ from REGISTER_X and REGISTER_Y
-  return getSingleDimension(REGISTER_X, cols) &&
-         getSingleDimension(REGISTER_Y, rows);
+  return getSingleDimension(REGISTER_X, cols) && getSingleDimension(REGISTER_Y, rows);
 }
 
 
@@ -939,6 +938,12 @@ static void _fnEuclideanNorm(uint16_t pParam) {
 }
 
 
+void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
+  if(saveLastX()) {
+    _fnEuclideanNorm(NOPARAM);
+  }
+}
+
 
 void fnVectorDist(uint16_t unusedParamButMandatory) {
   fnSubtract(NOPARAM);
@@ -1386,7 +1391,7 @@ void fnQrDecomposition(uint16_t unusedParamButMandatory) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnQrDecomposition:", errorMessage, "is not a matrix.", "");
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
@@ -1580,7 +1585,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnEigenvalues:", errorMessage, "is not a matrix.", "");
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
 ErrorExit:

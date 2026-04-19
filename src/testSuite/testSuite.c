@@ -1762,8 +1762,9 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
     }
     return false;
   }
-  if(real34IsZero(a) && real34IsZero(b))
+  if(real34IsZero(a) && real34IsZero(b)) {
     return real34IsNegative(a) == real34IsNegative(b);
+  }
 
   return real34CompareEqual(a, b);
 }
@@ -3207,7 +3208,9 @@ void processLine(void) {
 
   else if(strncmp(line, "OUT: ", 5) == 0) {
     //printf("%s\n", line);
-    if(timedFunction && timerOperation) startTimer();
+    if(timedFunction && timerOperation) {
+      startTimer();
+    }
     callFunction();
     if(timedFunction && timerOperation) {
       timedFunction = true;
