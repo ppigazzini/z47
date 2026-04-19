@@ -66,7 +66,7 @@
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
 #define OPTION_ELEC                    //                   // ELEC functions
-#define OPTION_VECTOR                  //                   // 2D 3D vector conversions; vector swaps; display TI for vector
+#undef OPTION_VECTOR                   //                   // 2D 3D vector conversions; vector swaps; display TI for vector
 #define IR_PRINTING                    // Enable printing everywhere
 
 #undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST, TO REMOVE, TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
