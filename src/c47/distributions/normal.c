@@ -29,17 +29,21 @@
   enum normalType {stdNormal, paramNormal, logNormal};
 
   static bool_t checkParamNormal(enum normalType type, real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x))
+    if(!getRegisterAsReal(REGISTER_X, x)) {
       goto err;
-    if(type == stdNormal)
+    }
+
+    if(type == stdNormal) {
       return true;
+    }
 
-    if(!getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_S, j))
+    if(!getRegisterAsReal(REGISTER_M, i) || !getRegisterAsReal(REGISTER_S, j)) {
       goto err;
+    }
 
     if(realIsZero(j) || realIsNegative(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -84,9 +88,10 @@
         }
         WP34S_Pdf_Q(&val, &ans, &ctxtReal39);
         if(!stdn) {
-            realDivide(&ans, &sigma, &ans, &ctxtReal39);
-            if(logn)
-              realDivide(&ans, &alval, &ans, &ctxtReal39);
+          realDivide(&ans, &sigma, &ans, &ctxtReal39);
+          if(logn) {
+            realDivide(&ans, &alval, &ans, &ctxtReal39);
+          }
         }
       }
       convertRealToResultRegister(&ans, REGISTER_X, amNone);

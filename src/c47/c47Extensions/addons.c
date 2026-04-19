@@ -24,7 +24,7 @@ All the below: because both Last x and savestack does not work due to multiple s
   7. SYM>ABC
   8. ABC>SYM
   9. e^theta. redo in math file,
-  10. three phase Ohms Law: 17,18,19
+  10. three phase Ohms Law: 17, 18, 19
 
 
  Check for savestack in jm.c
@@ -206,7 +206,7 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
   if(noDisplayExponent) {                                // if no exponent in display string but exponent in real34ToString, use the display string
     for(i = 0; i < strlen(nimDisplay); i++) {
       if((nimDisplay[i] == 'e') || (nimDisplay[i] == 'E')) {
-        strcpy(nimDisplay, tmpString + (tmpString[0] == '-'? 0 : 1));
+        strcpy(nimDisplay, tmpString + (tmpString[0] == '-' ? 0 : 1));
         break;
       }
       if(nimDisplay[i] == '.') {
@@ -469,7 +469,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
 
                 decContext c = ctxtReal39;
                 int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-                c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
+                c.digits = (SHOWMODE ? 39 : max(0, maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
                 realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
                 c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
                 convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
@@ -528,7 +528,8 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n",aimBuffer,nimBufferDisplay);fflush(stdout);
+              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+              fflush(stdout);
 
               exponentSignLocation = realExponentSignLocation;
               calcMode = CM_NIM;
@@ -537,7 +538,9 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
               //real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
               hexDigits = 0;
-              if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              if(!checkHP) {
+                clearRegisterLine(NIM_REGISTER_LINE, true, true);
+              }
               xCursor = 1;
               cursorEnabled = true;
               cursorFont = &numericFont;
@@ -660,7 +663,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         }
         uint8_t opParam  = currentStep[i++];
         #if !defined(SAVE_SPACE_DM42_23_EDIT2)
-        uint8_t opParam2 = currentStep[i++];
+          uint8_t opParam2 = currentStep[i++];
           uint8_t opParam3 = currentStep[i];
         #endif
 
@@ -852,7 +855,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   //fflush(stdout);
                   break;
               }
-              lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2: opParam == STRING_SHORT_INTEGER ? opParam2: 0);
+              lastIntegerBase = (opParam == BINARY_SHORT_INTEGER ? opParam2 : opParam == STRING_SHORT_INTEGER ? opParam2 : 0);
             }
             if(chsNeeded) {
               pemAddNumber(ITM_CHS, false);
@@ -1044,21 +1047,21 @@ err:
   int32_t vol = 0;
   vol = getBeepVolume();
   fnSetVolume(11);
-  _Buzz(100,5);
+  _Buzz(100, 5);
   xcopy(tmpString, errorMessage, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
   create_screenshot(0);      //Screen dump
   xcopy(errorMessage, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-  _Buzz(100,5);
+  _Buzz(100, 5);
   fnSetVolume((uint16_t)vol);
 }
-#endif //DMCP_BUILD
+#endif // DMCP_BUILD
 
 
 bool_t anyKeyWaiting(void) {
   #if defined(DMCP_BUILD)
     return key_empty() == 0 || key_tail() != -1;
   #elif defined(PC_BUILD) // !DMCP_BUILD
-    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    //printf("KeyWaiting keyCode=%u", currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
   #endif // PC_BUILD
   return false;
@@ -1075,7 +1078,7 @@ bool_t exitKeyWaiting(void) {
     }
     return checkKey;
   #elif defined(PC_BUILD) // !DMCP_BUILD
-    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    //printf("KeyWaiting keyCode=%u", currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
   #endif // PC_BUILD
   return false;
@@ -1095,8 +1098,8 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
       force_refresh(force);
 ////Monitor key codes on screen
 //char sss[22];
-//sprintf(sss,"%i   AA ",sys_last_key());
-//print_linestr(sss,true);
+//sprintf(sss, "%i   AA ", sys_last_key());
+//print_linestr(sss, true);
     }
     wait_for_key_release(0);
     bool_t signalToDoScreenDump = false;
@@ -1105,7 +1108,7 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     int tmpz = -1;
     while(anyKeyWaiting()) {
       tmpz = key_pop();
-      if(tmpz > 0) tmpf = tmpz;                     //use the last key in the buffer
+      if(tmpz > 0)   tmpf = tmpz;                   //use the last key in the buffer
       if(tmpz == 44) signalToDoScreenDump = true;   //if any key in the buffer is 44
       if(tmpz == 33) signalToDoEXIT = true;
       if(tmpz == 36) signalToDoRS = true;
@@ -1256,7 +1259,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
+          printf("\n ------- 003 >>>%s<<<\n", tmpString100_OUT);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -1507,7 +1510,7 @@ void fn_cnst_op_A(uint16_t option) {
 
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+  convertRealToResultRegister(const_0, REGISTER_X, amNone);
 
   //Initialize Memory for Matrix
   if(initMatrixRegister(REGISTER_X, 3, 3, true)) {
@@ -1728,7 +1731,8 @@ void fnConvertStkToMx(uint16_t constVector1) {
   if(vecCreate[constVector].xdef <= V_D1 || vecCreate[constVector].ydef <= V_D1 || vecCreate[constVector].zdef <= V_D1) {  // means is either default 0 or 1
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-  } else {
+  }
+  else {
     fnDrop(NOPARAM);
     if(elements > 2) {
       fnDrop(NOPARAM);
@@ -1755,7 +1759,8 @@ void fnConvertStkToMx(uint16_t constVector1) {
   bool_t matrixRegisterLoaded = false;
   if(complexCoefs) {
     linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
-  } else {
+  }
+  else {
     linkToRealMatrixRegister(REGISTER_X,  &matrix);
 
     if(ang2Dx != amNone && ang2Dy == amNone && constVector == VECT_CR_yx) {
@@ -1952,7 +1957,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
       setRegisterAngularMode(rg, getComplexRegisterAngularMode(TEMP_REGISTER_1) | getComplexRegisterPolarMode(TEMP_REGISTER_1));
     }
     else {
-      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
+      real34Copy(&matrix.matrixElements[i], REGISTER_REAL34_DATA(rg));
     }
     adjustResult(rg, false, false, rg, -1, -1);
   }
@@ -1984,9 +1989,8 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
   if(calcMode == CM_NIM) {
-    if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#')
-        || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
-      #if defined (PC_BUILD)
+    if(((nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
+      #if defined(PC_BUILD)
         printf("Do not react when in NIM SI\n");
       #endif //PC_BUILD
       return;
@@ -2005,7 +2009,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       }
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
 
-      if(longIntegerCompare(tmp1,tmp3) != 0) {
+      if(longIntegerCompare(tmp1, tmp3) != 0) {
         if(temporaryInformation != TI_DATA_NEG_OVRFL) {
           temporaryInformation = TI_DATA_LOSS;             // I cannot think of which condition will reach here, without other overflows overriding, but leaving it in
         }
@@ -2051,7 +2055,8 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
         (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = SIprefixes[exponent + 30];
         if(displayString[1] == 'u') {
-          displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1];
+          displayString[1] = STD_mu[0];
+          displayString[2] = STD_mu[1];
         }
       }
   }
@@ -2209,7 +2214,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);      //re-set it to Polar iven if it was there already
     dest = getComplexRegisterAngularMode(REGISTER_X);
     DRG_cyc(&dest);
-    setComplexRegisterAngularMode(REGISTER_X,dest);
+    setComplexRegisterAngularMode(REGISTER_X, dest);
 
   }
   else if(getRegisterDataType(REGISTER_X) == dtShortInteger) {           // If shortinteger in X, convert to real
@@ -2264,7 +2269,7 @@ void shrinkNimBuffer(void) {                      //JMNIM vv
         //printf(">>> ***A # found. hexD=%d\n",hexD);
       }
       else {
-        //printf(">>> ***B # not found in %s:%d=%d hexD=%d\n",nimBuffer,ix,nimBuffer[ix],hexD);
+        //printf(">>> ***B # not found in %s:%d=%d hexD=%d\n", nimBuffer, ix, nimBuffer[ix], hexD);
       }
       ix++;
     }
@@ -2387,8 +2392,8 @@ void fnP_Alpha(void) {
     #endif // VERBOSE_LEVEL >= 1
 
     tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-    //print_linestr(aimBuffer,false);
+    xcopy(aimBuffer, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+    //print_linestr(aimBuffer, false);
 }
 
 
@@ -2985,8 +2990,8 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     maxden = denMax;
   }
   int32ToReal(maxden, &temp);
-  realDivide(const_1on4,&temp,&temp,&ctxtReal_denom_finder);
-  if(realCompareLessThan(&xx,&temp)) {
+  realDivide(const_1on4, &temp, &temp, &ctxtReal_denom_finder);
+  if(realCompareLessThan(&xx, &temp)) {
     //printf("Lower than 0.25/DMX, quitting before fraction loop.\n");  // Any value lower than 0.5/DMX will be deemed 0. Make the threshold 1/2 of 0.5/DMX
     dd = 1;
     goto nothingTodo;
@@ -3018,14 +3023,14 @@ int32_t getSmallestDenom(const real_t *val) { // ignore numerator determined, as
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
-    realDivide(const_1,&xx,&xx,&ctxtReal_denom_finder);
-    if(realCompareGreaterThan(&xx,const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
-      realCopy(const_10p9__1,&xx);
+    realDivide(const_1, &xx, &xx, &ctxtReal_denom_finder);
+    if(realCompareGreaterThan(&xx, const_10p9__1)) {         // let 1/xx ceiling to const_10p9__1
+      realCopy(const_10p9__1, &xx);
     }
     if(realIsSpecial(&xx)) {
       #if defined(PC_BUILD)
         errorf("Representation failure. Quitting fraction loop.");
-        printRealToConsole(&xx,"xx:","\n");
+        printRealToConsole(&xx, "xx:", "\n");
         fflush(stderr);
       #endif //PC_BUILD
       dd = 1;
@@ -3104,7 +3109,7 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
   longIntegerInit(lgInt);
   int32ToLongInteger(intt, lgInt);
   longIntegerToDisplayString(lgInt, str, 30, SCREEN_WIDTH, 20, true);
-  strcat(str,str1);
+  strcat(str, str1);
   longIntegerFree(lgInt);
 }
 
@@ -3143,7 +3148,7 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
       return false;
     }
     //Returning: Multiple of constant is too large
-    realDivide(valueRealAbs,constant,&multConstant,&ctxtReal_irrational_detection);                                               //TRYOUT 12 instead of 27
+    realDivide(valueRealAbs, constant, &multConstant, &ctxtReal_irrational_detection);                                               //TRYOUT 12 instead of 27
     if(realCompareGreaterThan(&multConstant, const_10p9__1)) {   //reduce whole multiple range to 34-24 = 10 digits. Use 10p9__1 = 999 999 999. (was const_2p31__1 = 2 147 483 647)
       return false;
     }
@@ -3157,14 +3162,14 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
     reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-    realToReal34(&multConstant,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    realToReal34(&multConstant, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
-    //printf("aaaaaaa: %i%llu + %llu / %llu \n",sign1,intPart,numer,denom);
+    //printf("aaaaaaa: %i%llu + %llu / %llu \n", sign1, intPart, numer, denom);
     int32_t smallestDenom = denom;
 #else // FRACT_ENGINE
     //* This section uses the new special demoninator search engine
     int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
-#endif //IRFRAC_ENGINE
+#endif // !IRFRAC_ENGINE
 
 
     //Create a new constant comprising the constant divided by the whole denominator
@@ -3188,54 +3193,54 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
 
 
 // DEBUG CODE
-//                                printRealToConsole(constant,"\n\nconstant=","\n");
-//                                printRealToConsole(valueReal,"valueReal=","\n");
-//                                printRealToConsole(&multConstant,"multConstant=","\n");
+//                                printRealToConsole(constant, "\n\nconstant=", "\n");
+//                                printRealToConsole(valueReal, "valueReal=", "\n");
+//                                printRealToConsole(&multConstant, "multConstant=", "\n");
 //                                printf("smallestDenom:%i\n",smallestDenom);
-//                                printRealToConsole(&newConstant,"newConstant=","\n");
-//                                printRealToConsole(&multipleOfNewConstant,"multipleOfNewConstant=","\n");
-//                                printRealToConsole(&multipleOfNewConstant_ip,"multipleOfNewConstant_ip=","\n");
-//                                printRealToConsole(&multipleOfNewConstant_fp,"multipleOfNewConstant_fp=","\n");
+//                                printRealToConsole(&newConstant, "newConstant=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant, "multipleOfNewConstant=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant_ip, "multipleOfNewConstant_ip=", "\n");
+//                                printRealToConsole(&multipleOfNewConstant_fp, "multipleOfNewConstant_fp=", "\n");
 
 //                                printf(">>>multipleOfNewConstantInteger:%i>1? SmallestDenom:%i\n", multipleOfNewConstantInteger, smallestDenom);
 //                                printf(" Numer=%i Denom:%i\n---\n", multipleOfNewConstantInteger, smallestDenom);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"fp:","--\n");
-//                                printRealToConsole(findingIrrationalTolerance,"tol:","--\n");
-//                                printf("realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n",realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
+//                                printRealToConsole(&multipleOfNewConstant_fp, "fp:", "--\n");
+//                                printRealToConsole(findingIrrationalTolerance, "tol:", "--\n");
+//                                printf("realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance):%i\n", realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance));
 //                                printf(">>> %i ", multipleOfNewConstantInteger);
 //                                printf("QQ:%s§\n",displayString);
 //                                char teststr[1000];
 //                                char teststr1[1000];
-//                                sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
-//                                stringToASCII(teststr,teststr1);
+//                                sprintf(teststr, ">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                stringToASCII(teststr, teststr1);
 //                                printf("%s\n",teststr1);
-//                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance));
+//                                printf(">>>multipleOfNewConstantInteger:%i>=1? realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance):%i\n", multipleOfNewConstantInteger, realCompareAbsLessThan(&multipleOfNewConstant_fp, findingIrrationalTolerance));
 
 
     if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && multipleOfNewConstantInteger > smallestDenom) && useMixedNumbers && smallestDenom != 1) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
       cStr[0] = 0;
     }
     else {
-      strcpy(cStr,constantStr);
+      strcpy(cStr, constantStr);
     }
 
 
 // DEBUG CODE
-//                                printRealToConsole(valueReal,"\n\nInputvalue: valueReal=","\n");
-//                                printRealToConsole(constant,"    constant=","\n");
+//                                printRealToConsole(valueReal, "\n\nInputvalue: valueReal=", "\n");
+//                                printRealToConsole(constant, "    constant=", "\n");
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
-//                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                                printRealToConsole(&findingIrrationalTolerance1, "findingIrrationalTolerance1=", "\n");
 //                                char displayString2[200];
-//                                stringToASCII(constantStr,displayString2);
-//                                printf("constantStr:%s\n",displayString2);
-//                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
+//                                stringToASCII(constantStr, displayString2);
+//                                printf("constantStr:%s\n", displayString2);
+//                                printf("Numerator: multipleOfNewConstantInteger   %i\n", multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+//                                printRealToConsole(&multipleOfNewConstant_fp, "&multipleOfNewConstant_fp=", "\n");
 //                                char displayString1[200];
 //                                stringToASCII(resultingIntStr, displayString1);
 //                                printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n", displayString1, (uint8_t)(displayString[0]), (uint8_t)(displayString[1]), (uint8_t)(displayString[2]), (uint8_t)(displayString[3]), (uint8_t)(displayString[4]), (uint8_t)(displayString[5]), (uint8_t)(displayString[6]), (uint8_t)(displayString[7]));
 
-    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
+    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp, &findingIrrationalTolerance1)) {
 
 // DEBUG CODE
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
@@ -3252,8 +3257,8 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
           useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
           useMixedNumbersSep[2] = 0;
-          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);
-          strcat(wholePart,useMixedNumbersSep);                                                                   // "1 "
+          changeToWholeString(wholeInteger, wholePart, useMixedNumbersSep);
+          strcat(wholePart, useMixedNumbersSep);                                                                   // "1 "
         }
         else {                                                                                                    // constant with numbers
           useMixedNumbersSep[0] = sign[0];
@@ -3263,9 +3268,9 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
             sprintf(wholePart, "%s%s", cStr, useMixedNumbersSep);                                                 // "e+"
           }
           else {
-            changeToWholeString(wholeInteger,wholePart,PRODUCT_SIGN);
-            strcat(wholePart,cStr);
-            strcat(wholePart,useMixedNumbersSep);                                                                 // "2xe+"
+            changeToWholeString(wholeInteger, wholePart, PRODUCT_SIGN);
+            strcat(wholePart, cStr);
+            strcat(wholePart, useMixedNumbersSep);                                                                 // "2xe+"
           }
         }
       }
@@ -3277,25 +3282,26 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
         else {
           return false;
           //return false, to abort and use standard decimal instead of "1."
-          //sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);                                                 //==1
-          //strcat(tmpstr,RADIX34_MARK_STRING);
+          //sprintf(tmpstr, "%i", (int)multipleOfNewConstantInteger);                                                 //==1
+          //strcat(tmpstr, RADIX34_MARK_STRING);
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
       else {                                                                                                      // constant
         if(multipleOfNewConstantInteger == 1) {
-          sprintf(resultingIntStr,"%s", wholePart);                                                                 // "e+" or "2xe+"
+          sprintf(resultingIntStr, "%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
-          sprintf(tmpstr,"%i%s",(int)multipleOfNewConstantInteger,PRODUCT_SIGN);
+          sprintf(tmpstr, "%i%s", (int)multipleOfNewConstantInteger, PRODUCT_SIGN);
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
-    } else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
+    }
+    else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
         if(smallestDenom == 1) {
           return false;   //unlikely
           //return false, to abort and use standard decimal instead of "1."
-          //sprintf(resultingIntStr,"%i", (int)multipleOfNewConstantInteger);                                       // if denom = 1, then use large font
+          //sprintf(resultingIntStr, "%i", (int)multipleOfNewConstantInteger);                                       // if denom = 1, then use large font
         }
         else {
           changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                             // if denom <> 0, then use superscript, knowing there is a denom
@@ -3304,20 +3310,20 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
     }
 
 // DEBUG CODE
-//                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
-//                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(tmpstr[0]),(uint8_t)(tmpstr[1]),(uint8_t)(tmpstr[2]),(uint8_t)(tmpstr[3]),(uint8_t)(tmpstr[4]),(uint8_t)(tmpstr[5]),(uint8_t)(tmpstr[6]),(uint8_t)(tmpstr[7]));
-//                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(resultingIntStr[0]),(uint8_t)(resultingIntStr[1]),(uint8_t)(resultingIntStr[2]),(uint8_t)(resultingIntStr[3]),(uint8_t)(resultingIntStr[4]),(uint8_t)(resultingIntStr[5]),(uint8_t)(resultingIntStr[6]),(uint8_t)(resultingIntStr[7]));
+//                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(wholePart[0]),       (uint8_t)(wholePart[1]),       (uint8_t)(wholePart[2]),       (uint8_t)(wholePart[3]),       (uint8_t)(wholePart[4]),       (uint8_t)(wholePart[5]),       (uint8_t)(wholePart[6]),       (uint8_t)(wholePart[7]));
+//                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(tmpstr[0]),          (uint8_t)(tmpstr[1]),          (uint8_t)(tmpstr[2]),          (uint8_t)(tmpstr[3]),          (uint8_t)(tmpstr[4]),          (uint8_t)(tmpstr[5]),          (uint8_t)(tmpstr[6]),          (uint8_t)(tmpstr[7]));
+//                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n", (uint8_t)(resultingIntStr[0]), (uint8_t)(resultingIntStr[1]), (uint8_t)(resultingIntStr[2]), (uint8_t)(resultingIntStr[3]), (uint8_t)(resultingIntStr[4]), (uint8_t)(resultingIntStr[5]), (uint8_t)(resultingIntStr[6]), (uint8_t)(resultingIntStr[7]));
 //                                char teststr[1000];
-//                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                sprintf(teststr, ">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
 //                                char teststr2[1000];
-//                                stringToASCII(teststr,teststr2);
-//                                printf("%s\n",teststr2);
+//                                stringToASCII(teststr, teststr2);
+//                                printf("%s\n", teststr2);
 
     if(smallestDenom > 1) {
       changeToSub(smallestDenom, denomStr);                                                                     // "/12"
     }
 
-    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
+    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0, stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
@@ -3326,13 +3332,13 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
   irfractionTolerence(smallestDenom * 6 + 1, &roundingTolerance1);                                              // relative convergence, add (6x+1) i.e about 0.43 digits + 1 for safety margin)
 
 // DEBUG CODE
-//                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
-//                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
-//                               printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                               printRealToConsole(&multipleOfNewConstant_fp, "&multipleOfNewConstant_fp=", "\n");
+//                               printRealToConsole(&roundingTolerance1, "roundingTolerance1=", "\n");
+//                               printRealToConsole(&findingIrrationalTolerance1, "findingIrrationalTolerance1=", "\n");
 
     displayString[0] = 0;
-    if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
-      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,&roundingTolerance1) ){                                               // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
+    if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp, &findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
+      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp, &roundingTolerance1) ){                                               // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 
@@ -3342,15 +3348,15 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
           if(resultingIntStr[0] !=0 ) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,cStr);
-          strcat(displayString,denomStr);                              // " 2xe+" "e" "/3"
+          strcat(displayString, cStr);
+          strcat(displayString, denomStr);                             // " 2xe+" "e" "/3"
         }
         else {
           if(resultingIntStr[0] != 0) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,cStr);
-          strcat(displayString,denomStr);                              // "2xe+" "e" "/3"
+          strcat(displayString, cStr);
+          strcat(displayString, denomStr);                             // "2xe+" "e" "/3"
         }
       }
       else { // "-"
@@ -3358,15 +3364,15 @@ bool_t checkForAndChange(char *displayString, const real_t *valueReal, const rea
         if(resultingIntStr[0] !=0 ) {
           strcat(displayString, resultingIntStr);
         }
-        strcat(displayString,cStr);
-        strcat(displayString,denomStr);                                // "-2xe+" "e" "/3"
+        strcat(displayString, cStr);
+        strcat(displayString, denomStr);                               // "-2xe+" "e" "/3"
       }
 
       if(cStr[0] == 0 && constantStr[0] !=0) {                         // "-2/3" "e"
-        strcat(displayString,STD_SPACE_4_PER_EM);
-        strcat(displayString,PRODUCT_SIGN);
-        strcat(displayString,STD_SPACE_4_PER_EM);
-        strcat(displayString,constantStr);
+        strcat(displayString, STD_SPACE_4_PER_EM);
+        strcat(displayString, PRODUCT_SIGN);
+        strcat(displayString, STD_SPACE_4_PER_EM);
+        strcat(displayString, constantStr);
       }
 
       return true;             //successful IRFRAC conversion, displaying as fraction
@@ -3468,11 +3474,11 @@ void fnRESET_MyM(uint16_t param) {
 
 
       if(itemToBeAssigned == -MNU_PFN) {
-        strcpy(aimBuffer,"P.FN");
+        strcpy(aimBuffer, "P.FN");
         assignGetName1();
       }
       else if(itemToBeAssigned == -MNU_HOME) {
-        strcpy(aimBuffer,"HOME");
+        strcpy(aimBuffer, "HOME");
         assignGetName1();
       }
 
@@ -3514,7 +3520,7 @@ int16_t mm(int16_t id) {
     while(softmenu[m].menuItem != 0) {
       //printf(">>> mm %d %d %d %s \n",id, m, softmenu[m].menuItem, indexOfItems[-softmenu[m].menuItem].itemSoftmenuName);
       if(softmenu[m].menuItem == id) {
-        //printf("####>> mm() broken out id=%i m=%i\n",id,m);
+        //printf("####>> mm() broken out id=%i m=%i\n", id, m);
         break;
       }
       m++;
@@ -3683,17 +3689,17 @@ int16_t mm(int16_t id) {
     // Diamond outline coordinates (x_offset, y_offset from xx, yy)
     // Forms diamond shape: top point → widest middle → bottom point
     TO_QSPI static const uint8_t diamond[][2] = {
-      {5, 0},                                       // Top point
-      {4, 1}, {6, 1},                               // Row 1: 2 pixels
-      {3, 2}, {7, 2},                               // Row 2: 2 pixels
-      {2, 3}, {8, 3},                               // Row 3: 2 pixels
-      {1, 4}, {9, 4},                               // Row 4: 2 pixels
-      {0, 5}, {10, 5},                              // Row 5: widest point (2 pixels)
-      {1, 6}, {9, 6},                               // Row 6: 2 pixels
-      {2, 7}, {8, 7},                               // Row 7: 2 pixels
-      {3, 8}, {7, 8},                               // Row 8: 2 pixels
-      {4, 9}, {6, 9},                               // Row 9: 2 pixels
-      {5, 10}                                       // Bottom point
+      {5, 0},           // Top point
+      {4, 1},  {6, 1},  // Row 1: 2 pixels
+      {3, 2},  {7, 2},  // Row 2: 2 pixels
+      {2, 3},  {8, 3},  // Row 3: 2 pixels
+      {1, 4},  {9, 4},  // Row 4: 2 pixels
+      {0, 5},  {10, 5}, // Row 5: widest point (2 pixels)
+      {1, 6},  {9, 6},  // Row 6: 2 pixels
+      {2, 7},  {8, 7},  // Row 7: 2 pixels
+      {3, 8},  {7, 8},  // Row 8: 2 pixels
+      {4, 9},  {6, 9},  // Row 9: 2 pixels
+      {5, 10}           // Bottom point
     };
     #define DOUBLE                                  // Draw double-width for visibility
     #define offs 1                                  // X-offset adjustment
@@ -3707,17 +3713,17 @@ int16_t mm(int16_t id) {
 
   // ◇ Diamond/macro button checked: diamond outline + center fill
   void MB_MACRO_CHECKED(uint32_t xx, uint32_t yy) {
-    MB_MACRO(xx,yy);  // Draw outline first
+    MB_MACRO(xx, yy);  // Draw outline first
 
     // Diamond interior fill coordinates (x_offset, y_offset from xx, yy)
     // Fills center area to indicate checked state
     TO_QSPI static const uint8_t diamond[][2] = {
-      {5, 3},                                       // Row 3: 1 pixel
-      {4, 4}, {5, 4}, {6, 4},                       // Row 4: 3 pixels
-      {3, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5},       // Row 5: 5 pixels (widest)
-      {3, 6}, {4, 6}, {5, 6}, {6, 6}, {7, 6},       // Row 6: 5 pixels (widest)
-      {4, 7}, {5, 7}, {6, 7},                       // Row 7: 3 pixels
-      {5, 8}                                        // Row 8: 1 pixel
+      {5, 3},                                     // Row 3: 1 pixel
+      {4, 4},  {5, 4},  {6, 4},                   // Row 4: 3 pixels
+      {3, 5},  {4, 5},  {5, 5},  {6, 5},  {7, 5}, // Row 5: 5 pixels (widest)
+      {3, 6},  {4, 6},  {5, 6},  {6, 6},  {7, 6}, // Row 6: 5 pixels (widest)
+      {4, 7},  {5, 7},  {6, 7},                   // Row 7: 3 pixels
+      {5, 8}                                      // Row 8: 1 pixel
     };
     for(uint8_t i = 0; i < sizeof(diamond) / sizeof(diamond[0]); i++) {
       placePixel(xx + diamond[i][0] - offs, yy + diamond[i][1] - 1);  // Match DOUBLE offset from outline

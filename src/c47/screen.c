@@ -4370,6 +4370,27 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
 
+          else if(temporaryInformation == TI_ELLIPSE_K) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "eccentricity e=k=" STD_SQUARE_ROOT "m" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
+          else if(temporaryInformation == TI_ELLIPSE_M) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "modulus m=k" STD_SUP_2 STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
+          else if(temporaryInformation == TI_ELLIPSE_Theta) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "eccentricity angle " STD_theta_m STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
               sprintf(prefix, "ACC" STD_SPACE_FIGURE ":");
@@ -4682,7 +4703,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w; //slighly incorrect if special characters are there as well.
               showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else                                                                   //JM
+            else                                                                  //JM
           #endif // STACK_X_STR_LRG_FONT
 
           #if defined(STACK_X_STR_MED_FONT)
@@ -4691,7 +4712,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else                                                                   //JM
+            else                                                                  //JM
           #endif //STACK_X_STR_MED_FONT
 
           #if defined(STACK_STR_MED_FONT)
@@ -4700,12 +4721,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               lineWidth = w;
               showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
             }
-            else                                                                   //JM
+            else                                                                  //JM
           #endif // STACK_STR_MED_FONT
+          {
             //JM ^^ large fonts
 
 
-          {
             //printf("^^^^#### combinationFonts=%d maxiC=%d miniC=%d displaymode=%d\n", combinationFonts, maxiC, miniC, displaymode);
             w = stringWidth(REGISTER_STRING_DATA(regist), &standardFont, false, true);
             if(w >= SCREEN_WIDTH - prefixWidth) {

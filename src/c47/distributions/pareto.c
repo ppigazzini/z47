@@ -20,14 +20,13 @@
 
 
 bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t qf) {
-  if(!saveLastX())
+  if(!saveLastX()) {
     return false;
+  }
 
-  if(!getRegisterAsReal(REGISTER_X, x)
-      || (mu != NULL && !getRegisterAsReal(REGISTER_M, mu))
-      || !getRegisterAsReal(REGISTER_S, sigma)
-      || !getRegisterAsReal(REGISTER_Q, alpha))
+  if(!getRegisterAsReal(REGISTER_X, x) || (mu != NULL && !getRegisterAsReal(REGISTER_M, mu)) || !getRegisterAsReal(REGISTER_S, sigma) || !getRegisterAsReal(REGISTER_Q, alpha)) {
     goto err;
+  }
 
   if(realIsZero(sigma) || realIsNegative(sigma)) {
     displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
