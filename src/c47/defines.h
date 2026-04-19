@@ -153,7 +153,7 @@
 
 
 
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 11256) // ALL DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; NO VECTOR
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 9952) // ALL DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; NO VECTOR
          //  #define SAVE_SPACE_DM42_8F        //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
@@ -170,9 +170,10 @@
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 1960) // 10% DIST; ALL X.FN; ELEC; FAST FIN; NO VECTOR
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 648) // 10% DIST; ALL X.FN; ELEC; FAST FIN; NO VECTOR
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
          // #define SAVE_SPACE_DM42_12ELLIP    // 12888 bytes // Without ELLIPTIC
          // #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without X.FN BESSEL
@@ -189,9 +190,10 @@
          // #undef OPTION_TVM_NEWTON           //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
          // #undef OPTION_ELEC                 //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 7616) // 50% DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; VECTOR
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 10032) // 50% DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; VECTOR; PRINTING
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
@@ -206,8 +208,9 @@
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-         // #undef OPTION_VECTOR               //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+         // #undef OPTION_VECTOR               //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+         // #undef  IR_PRINTING                // 10032 bytes // Remove IR printing for old hardware
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 (free 33208) FOR GITLAB PIPELINE COMPILE
@@ -227,6 +230,7 @@
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
 
@@ -250,7 +254,6 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-      #undef  IR_PRINTING              //             // Remove IR printing for old hardware
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
