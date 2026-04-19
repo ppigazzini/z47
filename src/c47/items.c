@@ -1606,6 +1606,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSetC47                   (uint16_t unusedButMandatoryParameter) {}
   void fnSetJM                    (uint16_t unusedButMandatoryParameter) {}
   void fnSetRJ                    (uint16_t unusedButMandatoryParameter) {}
+  void fnRecallVector             (uint16_t unusedButMandatoryParameter) {}
+  void fnStoreVector              (uint16_t unusedButMandatoryParameter) {}
+
 
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
 
@@ -4252,8 +4255,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2494 */  { fnComplexToVector,            ITM_VtoCPX,                     STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                         STD_v_BAR STD_SUB_2 STD_RIGHT_ARROW STD_COMPLEX_C,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 2495 */  { fnExchangeStkToMx,           ITM_stkexV2,                     "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,         "yx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2,          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2496 */  { fnExchangeStkToMx,           ITM_stkexV3,                     "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,        "zyx" STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_3,         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2497 */  { itemToBeCoded,                   NOPARAM,                     "R" STD_SUB_n STD_RIGHT_ARROW "V",                                         "R" STD_SUB_n STD_RIGHT_ARROW "V",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2498 */  { itemToBeCoded,                   NOPARAM,                     "V" STD_RIGHT_ARROW "R" STD_SUB_n,                                         "V" STD_RIGHT_ARROW "R" STD_SUB_n,                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2497 */  { fnStoreVector,               TM_REGISTER,                     "R" STD_SUB_n STD_SUB_n STD_RIGHT_ARROW "V",                               "R" STD_SUB_n STD_SUB_n STD_RIGHT_ARROW "V",                                (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_DISABLED        },
+/* 2498 */  { fnRecallVector,              TM_REGISTER,                     "V" STD_RIGHT_ARROW "R" STD_SUB_n STD_SUB_n,                               "V" STD_RIGHT_ARROW "R" STD_SUB_n STD_SUB_n,                                (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_DISABLED        },
 /* 2499 */  { itemToBeCoded,                   NOPARAM,                     STD_v_BAR STD_LEFT_ARROW STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR,     STD_v_BAR STD_LEFT_ARROW STD_RIGHT_ARROW STD_SPACE_6_PER_EM STD_v_BAR,      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 /* 2500 */  { fnPseudoMenu,                    (2<<14) + MNU_CLK,           "CLK" STD_CR "2",                              DT TM "SET",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },

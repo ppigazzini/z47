@@ -146,7 +146,7 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_M_INV,                     ITM_M_TRANSP,               ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   VECT,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_VECtoREG,             ITM_REGtoVEC,          ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_UNITV,                  ITM_REGtoVEC,             ITM_VECtoREG,          ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
