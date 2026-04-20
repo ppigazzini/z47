@@ -69,7 +69,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
         }
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
-          realAdd(&theta, const_pi, &theta, &ctxtReal39);
+          realAdd(&theta, const39_pi, &theta, &ctxtReal39);
           mod2Pi(&theta, &theta, &ctxtReal39);
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
@@ -117,7 +117,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
               convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
               if(realCompareLessThan(&magnitude, const_0)) {
                 realSetPositiveSign(&magnitude);
-                realAdd(&theta, const_pi, &theta, &ctxtReal39);
+                realAdd(&theta, const39_pi, &theta, &ctxtReal39);
                 mod2Pi(&theta, &theta, &ctxtReal39);
               }
               realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian

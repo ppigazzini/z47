@@ -8,12 +8,24 @@
 #if !defined(REALTYPE_H)
   #define REALTYPE_H
 
-#define DEFN_REAL(n)                            \
-  typedef struct {                              \
-    int32_t digits;                             \
-    int32_t exponent;                           \
-    uint8_t bits;                               \
-    decNumberUnit lsu[(n+DECDPUN-1)/DECDPUN];   \
+// C47Bits : maybe this will come in handy someday
+#define REAL_NONE  0x00
+#define REAL_EXACT 0x01
+//#define REAL_?     0x02
+//#define REAL_?     0x04
+//#define REAL_?     0x08
+//#define REAL_?     0x10
+//#define REAL_?     0x20
+//#define REAL_?     0x40
+//#define REAL_?     0x80
+
+#define DEFN_REAL(n)                          \
+  typedef struct {                            \
+    int32_t digits;                           \
+    int32_t exponent;                         \
+    uint8_t bits;                             \
+    uint8_t C47Bits;                          \
+    decNumberUnit lsu[(n+DECDPUN-1)/DECDPUN]; \
   } real ## n ## _t
 
   DEFN_REAL(39);

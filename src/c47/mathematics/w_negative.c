@@ -8,7 +8,7 @@
 #include "c47.h"
 
 static real_t *get_1oneE(real_t *a) {
-  realCopy(const_1oneE, a);
+  realCopy(const39_1oneE, a);
   realSetNegativeSign(a);
   return a;
 }
