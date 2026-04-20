@@ -1712,7 +1712,7 @@ void fnConvertStkToMx(uint16_t constVector1) {
     convertAngleFromTo(&x[0].r, ang2Dx, amRadian, &ctxtReal39);
     if(realCompareLessThan(&x[1].r, const_0)) {
       realSetPositiveSign(&x[1].r);
-      realAdd(&x[0].r, const_pi, &x[0].r, &ctxtReal39);
+      realAdd(&x[0].r, const39_pi, &x[0].r, &ctxtReal39);
     }
   }
 
