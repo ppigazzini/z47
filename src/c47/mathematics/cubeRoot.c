@@ -10,11 +10,11 @@ static void curtShoI(void) {
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
 
   if(realIsPositive(&x)) {
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
   }
   else {
     realSetPositiveSign(&x);
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
   }
 
@@ -46,11 +46,11 @@ void curtReal(void) {
   }
 
   if(realIsPositive(&x)) {
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
   }
   else {
     realSetPositiveSign(&x);
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
   }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
@@ -83,19 +83,19 @@ void curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
 
   if(realIsZero(&b)) {
     if(realIsPositive(&a)) {
-      PowerReal(&a, const_1on3, resReal, realContext);
+      PowerReal(&a, const39_1on3, resReal, realContext);
     }
     else {
       realSetPositiveSign(&a);
-      PowerReal(&a, const_1on3, resReal, realContext);
+      PowerReal(&a, const39_1on3, resReal, realContext);
       realSetNegativeSign(resReal);
     }
     realSetZero(resImag);
   }
   else {
     realRectangularToPolar(&a, &b, &a, &b, realContext);
-    PowerReal(&a, const_1on3, &a, realContext);
-    realMultiply(&b, const_1on3, &b, realContext);
+    PowerReal(&a, const39_1on3, &a, realContext);
+    realMultiply(&b, const39_1on3, &b, realContext);
     realPolarToRectangular(&a, &b, resReal, resImag, realContext);
   }
 }

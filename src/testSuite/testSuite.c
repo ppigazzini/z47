@@ -82,26 +82,21 @@ const funcTest_t funcTestNoParam[] = {
   {"fnClSigma",              fnClSigma             },
   {"fnClX",                  fnClX                 },
   {"fnConjugate",            fnConjugate           },
+  {"fnConstant",             fnConstant            },
   {"fnCos",                  fnCos                 },
   {"fnCosh",                 fnCosh                },
   {"fnCountBits",            fnCountBits           },
   {"fnCross",                fnCross               },
   {"fnCube",                 fnCube                },
   {"fnCubeRoot",             fnCubeRoot            },
-  {"fnCxToRe",               fnCxToRe              },
-  {"fnCvtTemp",              fnCvtTemp             },
   {"fnCvtDbRatio",           fnCvtDbRatio          },
   {"fnCvtDegGrad",           fnCvtDegGrad          },
   {"fnCvtDegRad",            fnCvtDegRad           },
   {"fnCvtGradRad",           fnCvtGradRad          },
   {"fnCvtHMSHR",             fnCvtHMSHR            },
   {"fnCvtRatioDb",           fnCvtRatioDb          },
-  {"fnKmletok100K",          fnKmletok100K         },
-  {"fnL100Tomgus",           fnL100Tomgus          },
-  {"fnL100Tomguk",           fnL100Tomguk          },
-  {"fnMgeuktok100M",         fnMgeuktok100M        },
-  {"fnMgeustok100M",         fnMgeustok100M        },
-  {"fnUnitConvert",          fnUnitConvert         },
+  {"fnCvtTemp",              fnCvtTemp             },
+  {"fnCxToRe",               fnCxToRe              },
   {"fnCyx",                  fnCyx                 },
   {"fnDateTo",               fnDateTo              },
   {"fnDateToJulian",         fnDateToJulian        },
@@ -189,6 +184,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnJacobiSn",             fnJacobiSn            },
   {"fnJacobiZeta",           fnJacobiZeta          },
   {"fnJulianToDateTime",     fnJulianToDateTime    },
+  {"fnKmletok100K",          fnKmletok100K         },
+  {"fnL100Tomgus",           fnL100Tomgus          },
+  {"fnL100Tomguk",           fnL100Tomguk          },
   {"fnLaguerre",             fnLaguerre            },
   {"fnLaguerreAlpha",        fnLaguerreAlpha       },
   {"fnLcm",                  fnLcm                 },
@@ -225,11 +223,13 @@ const funcTest_t funcTestNoParam[] = {
   {"fnLuDecomposition",      fnLuDecomposition     },
   {"fnM1Pow",                fnM1Pow               },
   {"fnMagnitude",            fnMagnitude           },
+  {"fnMant",                 fnMant                },
   {"fnMaskl",                fnMaskl               },
   {"fnMaskr",                fnMaskr               },
-  {"fnMin",                  fnMin                 },
   {"fnMax",                  fnMax                 },
-  {"fnMant",                 fnMant                },
+  {"fnMgeuktok100M",         fnMgeuktok100M        },
+  {"fnMgeustok100M",         fnMgeustok100M        },
+  {"fnMin",                  fnMin                 },
   {"fnMirror",               fnMirror              },
   {"fnMod",                  fnMod                 },
   {"fnMonth",                fnMonth               },
@@ -274,7 +274,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRowNorm",              fnRowNorm             },
   {"fnRR",                   fnRr                  },
   {"fnRRC",                  fnRrc                 },
-
   {"fnSign",                 fnSign                },
   {"fnSin",                  fnSin                 },
   {"fnSinc",                 fnSinc                },
@@ -312,6 +311,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnT_P",                  fnT_P                 },
   {"fnT_R",                  fnT_R                 },
   {"fnUlp",                  fnUlp                 },
+  {"fnUnitConvert",          fnUnitConvert         },
   {"fnUnitVector",           fnUnitVector          },
   {"fnUnzip",                fnUnzip               },
   {"fnVectorAngle",          fnVectorAngle         },
@@ -2809,12 +2809,12 @@ var2:
                     // check for possible real or pure imaginary
                     C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
                     C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real
                     }
 
@@ -2828,12 +2828,12 @@ var2:
                     // check for possible real or pure imaginary
                     C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
                     C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real
                     }
 

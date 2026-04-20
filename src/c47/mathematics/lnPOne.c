@@ -99,7 +99,7 @@ static void lnP1Real(void) {
         realSetPlusInfinity(&x);
       }
       else {
-        convertComplexToResultRegister(const_plusInfinity, const_pi, REGISTER_X);
+        convertComplexToResultRegister(const_plusInfinity, const39_pi, REGISTER_X);
         return;
       }
     }
@@ -115,7 +115,7 @@ static void lnP1Real(void) {
      }
     else if(getFlag(FLAG_CPXRES)) {
       lnP1Complex(&arg, const_0, &x, &r, &ctxtReal75);
-      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const39_pi, REGISTER_X);
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
