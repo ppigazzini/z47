@@ -798,7 +798,7 @@ void mimAddNumber(int16_t item) {
             complex34_t *elm = &openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col];
             if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
               real_t theta;
-              realCopy(const_piOn2, &theta);
+              realCopy(const39_piOn2, &theta);
               convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
               real34SetOne(VARIABLE_REAL34_DATA(elm));
               real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
@@ -819,10 +819,10 @@ void mimAddNumber(int16_t item) {
       case ITM_CONSTpi: {
       if(aimBuffer[0] == 0) {
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-          realToReal34(const_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+          realToReal34(const39_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
         }
         else {
-          realToReal34(const_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          realToReal34(const39_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
           real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
       }

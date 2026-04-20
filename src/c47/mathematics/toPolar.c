@@ -244,7 +244,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
       //  |+∞  |+b  |∞       |0           |  26
       //  |+∞  |+∞  |∞       |π/4         |  27
       if(realIsInfinite(&im)) { // re = +inf  im = ±inf
-        realCopy(const_piOn4, theta);
+        realCopy(const39_piOn4, theta);
 
         if(realIsNegative(&im)) { // re = +inf  im = -inf
           realSetNegativeSign(theta);
@@ -264,14 +264,14 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
       //  |-∞  |+b  |∞       |π           |   6
       //  |-∞  |+∞  |∞       |3π/4        |   7
       if(realIsInfinite(&im)) { // re = -inf  im = ±inf
-        realCopy(const_3piOn4, theta);
+        realCopy(const39_3piOn4, theta);
 
         if(realIsNegative(&im)) { // re = -inf  im = -inf
           realSetNegativeSign(theta);
         }
       }
       else { // re = -inf  im ≠ infinite
-        realCopy(const_pi, theta);
+        realCopy(const39_pi, theta);
       }
     }
 
@@ -290,7 +290,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  |0   |-∞  |∞       |-π/2        |  13
     //  |+a  |-∞  |∞       |-π/2        |  18
     realSetPlusInfinity(magnitude);
-    realCopy(const_piOn2, theta);
+    realCopy(const39_piOn2, theta);
 
     if(realIsNegative(&im)) { // im = -inf
       realSetNegativeSign(theta);
@@ -313,7 +313,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     }
     else { // re = 0  im ≠ 0
       realCopyAbs(&im, magnitude);
-      realCopy(const_piOn2, theta); // 90°
+      realCopy(const39_piOn2, theta); // 90°
 
       if(realIsNegative(&im)) { // re = 0  im < 0
         realSetNegativeSign(theta); // -90°
@@ -333,7 +333,7 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     realCopyAbs(&re, magnitude);
 
     if(realIsNegative(&re)) { // re < 0  im = 0
-      realCopy(const_pi, theta); // 180°
+      realCopy(const39_pi, theta); // 180°
     }
     else { // re > 0  im = 0
       realSetZero(theta); // 0°

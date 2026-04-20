@@ -1067,6 +1067,7 @@ typedef enum  {
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
+#define NOUC                                      84 // Number Of User Constants
 
 // Local labels
 #define FIRST_LOCAL_LABEL        0                             //   0 - 99 and A to L
