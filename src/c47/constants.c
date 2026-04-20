@@ -22,6 +22,7 @@ void fnConstant(const uint16_t constant) {
     if(constant >= NOUC) {
       sprintf(errorMessage, "parameter constant (%" PRIu16 ") is out of bounds, constant must be less or equal to %" PRId32, constant, NOUC - 1);
       moreInfoOnError("In function fnConstant:", errorMessage, NULL, NULL);
+      return;
     }
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
