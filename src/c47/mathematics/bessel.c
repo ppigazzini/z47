@@ -342,7 +342,7 @@ static void bessel_asymptotic_large_order_hyp(const real_t *nu, const real_t *x,
   }
 
   // coefficient denominator
-  realMultiply(is_y ? const_piOn2_75 : const_2pi_75, nu, &tmp, realContext);
+  realMultiply(is_y ? const75_piOn2 : const75_2pi, nu, &tmp, realContext);
   realMultiply(&tmp, &tanh_alpha, &tmp, realContext);
   realSquareRoot(&tmp, &tmp, realContext);
   realDivide(&coefficient, &tmp, &coefficient, realContext);
@@ -600,7 +600,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   }
 
   WP34S_BesselJ(n, x, &u, realContext);
-  realDivide(&u, const_piOn2_75, &t, realContext);
+  realDivide(&u, const75_piOn2, &t, realContext);
 
   WP34S_Ln(&xon2, &u, realContext);
   realMultiply(&u, &t, &v, realContext);

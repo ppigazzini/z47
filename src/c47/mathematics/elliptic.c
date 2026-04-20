@@ -51,18 +51,18 @@ void fnKtoM(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnMtoK(uint16_t unusedButMandatoryParameter) {
-  fnSquareRoot(NOPARAM);  
+  fnSquareRoot(NOPARAM);
   temporaryInformation = TI_ELLIPSE_K;
 }
 
 void fnMtoTheta(uint16_t unusedButMandatoryParameter) {
-  fnSquareRoot(NOPARAM);  
+  fnSquareRoot(NOPARAM);
   fnArcsin(NOPARAM);
   temporaryInformation = TI_ELLIPSE_Theta;
 }
 
 void fnThetatoM(uint16_t unusedButMandatoryParameter) {
-  fnSin(NOPARAM);  
+  fnSin(NOPARAM);
   fnSquare(NOPARAM);
   temporaryInformation = TI_ELLIPSE_M;
 }
@@ -1157,7 +1157,7 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
             realCopy(&k, &q);
             mod2Pi(&q, &k, realContext);
             if(realCompareGreaterThan(&k, const_pi)) {
-              realSubtract(&k, const_2pi, &k, realContext); // shift k to (-pi, pi]
+              realSubtract(&k, const75_2pi, &k, realContext); // shift k to (-pi, pi]
             }
             realSubtract(&q, &k, &q, realContext);
             realSubtract(a + i - 1, b + i - 1, &c, realContext);

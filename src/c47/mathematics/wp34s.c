@@ -36,9 +36,9 @@ void reduceAngleToRange(real_t* angle, const real_t** angle45, const real_t** an
         *angle180 = const1071_pi;
       }
       else {
-        *angle45  = const_piOn4_75;
-        *angle90  = const_piOn2_75;
-        *angle180 = const_pi_75;
+        *angle45  = const_75piOn4;
+        *angle90  = const_75piOn2;
+        *angle180 = const_75pi;
       }
       mod2Pi(angle, angle, realContext); // mod(angle, 2pi) --> angle
       break;
@@ -636,10 +636,10 @@ void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) 
 }
 
 
-#define _pi(d)     (d > 51 ? (d > 75 ? const1071_pi     : const_pi_75)     : const_pi)
-#define _piOn2(d)  (d > 51 ? (d > 75 ? const1071_piOn2  : const_piOn2_75)  : const_piOn2)
-#define _piOn4(d)  (d > 51 ? (d > 75 ? const1071_piOn4  : const_piOn4_75)  : const_piOn4)
-#define _3piOn4(d) (d > 51 ? (d > 75 ? const1071_3piOn4 : const_3piOn4_75) : const_3piOn4)
+#define _pi(d)     (d > 51 ? (d > 75 ? const1071_pi     : const75_pi)     : const_pi)
+#define _piOn2(d)  (d > 51 ? (d > 75 ? const1071_piOn2  : const75_piOn2)  : const_piOn2)
+#define _piOn4(d)  (d > 51 ? (d > 75 ? const1071_piOn4  : const75_piOn4)  : const_piOn4)
+#define _3piOn4(d) (d > 51 ? (d > 75 ? const1071_3piOn4 : const75_3piOn4) : const_3piOn4)
 
 static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r, real_t *t, realContext_t *realContext) {
   const bool_t xNeg = realIsNegative(x);
