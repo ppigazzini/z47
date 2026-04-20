@@ -1476,7 +1476,7 @@ void fn_cnst_op_j_pol(uint16_t unusedButMandatoryParameter) {
 
 
 void fn_cnst_op_aa(uint16_t unusedButMandatoryParameter) {
-  cpxToStk(const_1on2, const_root3on2, !forcedLiftTheStack);
+  cpxToStk(const_1on2, const39_root3on2, !forcedLiftTheStack);
   chsCplx();
 }
 
@@ -1528,8 +1528,8 @@ void fn_cnst_op_A(uint16_t option) {
   linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
 
   real_t const__rt3on2, const_rt3on2, const__1on2;
-  realMultiply(const_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
-  realMultiply(const_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
   realSetNegativeSign(&const__rt3on2);
   realCopy(const_1on2, &const__1on2);
   realSetNegativeSign(&const__1on2);

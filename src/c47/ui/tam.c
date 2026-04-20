@@ -1057,10 +1057,6 @@ printf("tam.value: %d\n", tam.value);
       tam.max = 32766;
     }
 
-    if(func == ITM_CNST) {
-      tam.max = LAST_CONSTANT-FIRST_CONSTANT - 1;
-    }
-
     if(calcMode == CM_NIM) {
       if(func == ITM_toINT || func == ITM_HASH_JM) {
         lastIntegerBase = 0;

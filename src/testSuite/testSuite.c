@@ -2809,12 +2809,12 @@ var2:
                     // check for possible real or pure imaginary
                     C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
                     C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real
                     }
 
@@ -2828,12 +2828,12 @@ var2:
                     // check for possible real or pure imaginary
                     C47_WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&er); // possible pure imaginary
                     }
                     C47_WP34S_Atan2(&er, &ei, &tmpe, &ctxtReal39); // arccotangent: check for possible real
                     realSetPositiveSign(&tmpe);
-                    if(WP34S_RelativeError(&tmpe, const_piOn2, &tol, &ctxtReal39)) {
+                    if(WP34S_RelativeError(&tmpe, const39_piOn2, &tol, &ctxtReal39)) {
                       realSetZero(&ei); // possible real
                     }
 

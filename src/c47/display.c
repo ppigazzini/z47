@@ -327,7 +327,7 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
       maxExponent = x.exponent + x.digits;
       c.digits = (SHOWMODE ? 39 : min(75, max(0, maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS));
-      realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
+      realDivide(&x, const39_ln2, &x, &c);              //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x, "log base 1024 of real34 = lnx / ln1024 ", "\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
@@ -406,21 +406,21 @@ overRange:
         char terminator;            // 15 bytes
         const unsigned char option; // 16 bytes containts an irfracOption_t
       } replacements[] = {
-          { const_1,        "",                           0, NOIRFRAC },
-          { const_rt3,      STD_SQUARE_ROOT STD_SUB_3,    0, LIMITIRFRAC },
-          { const_root2,    STD_SQUARE_ROOT STD_SUB_2,    0, LIMITIRFRAC },
-          { const_pi,       STD_pi,                       0, LIMITIRFRAC },
-          { const_eE,       STD_EulerE,                   0, LIGHTIRFRAC },
-          { const_PHI,      STD_phi_m,                    0, LIGHTIRFRAC },
-          { const_rt5,      STD_SQUARE_ROOT STD_SUB_5,    0, LIGHTIRFRAC },
-          { const_rt7,      STD_SQUARE_ROOT STD_SUB_7,    0, LIGHTIRFRAC },
-          { const_rtpi,     STD_SQUARE_ROOT STD_pi,       0, LIGHTIRFRAC },
-          { const_1onpi,    oneOverPi,                    0, LIGHTIRFRAC },
-          { const_1oneE,    oneOverE,                     0, LIGHTIRFRAC },
-          { const_pisq,     "(" STD_pi STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
-          { const_eEsq,     "(" STD_EulerE STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
-          { const_1onpisq,  "(" STD_pi STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
-          { const_1oneEsq,  "(" STD_EulerE STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
+          { const_1,          "",                           0, NOIRFRAC },
+          { const39_rt3,      STD_SQUARE_ROOT STD_SUB_3,    0, LIMITIRFRAC },
+          { const39_root2,    STD_SQUARE_ROOT STD_SUB_2,    0, LIMITIRFRAC },
+          { const39_pi,       STD_pi,                       0, LIMITIRFRAC },
+          { const39_eE,       STD_EulerE,                   0, LIGHTIRFRAC },
+          { const39_PHI,      STD_phi_m,                    0, LIGHTIRFRAC },
+          { const39_rt5,      STD_SQUARE_ROOT STD_SUB_5,    0, LIGHTIRFRAC },
+          { const39_rt7,      STD_SQUARE_ROOT STD_SUB_7,    0, LIGHTIRFRAC },
+          { const39_rtpi,     STD_SQUARE_ROOT STD_pi,       0, LIGHTIRFRAC },
+          { const39_1onpi,    oneOverPi,                    0, LIGHTIRFRAC },
+          { const39_1oneE,    oneOverE,                     0, LIGHTIRFRAC },
+          { const39_pisq,     "(" STD_pi STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
+          { const39_eEsq,     "(" STD_EulerE STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
+          { const39_1onpisq,  "(" STD_pi STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")",     0, FULLIRFRAC },
+          { const39_1oneEsq,  "(" STD_EulerE STD_SUP_MINUS STD_SUP_2 STD_SPACE_HAIR STD_SPACE_HAIR ")", 0, FULLIRFRAC },
       };
 
       real34ToReal(real34, &valueReal);

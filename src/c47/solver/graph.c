@@ -1496,7 +1496,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
       if(realIsZero(&X2.Imag)) {
         // realCopy(&temp0.Real, &X2.Imag);
         // X2.Imag.exponent -= 1;
-        realMultiply(&X2.Real, const_1on3, &X2.Imag, ctxtSolver2);
+        realMultiply(&X2.Real, const39_1on3, &X2.Imag, ctxtSolver2);
       }
     }
 
