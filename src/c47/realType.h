@@ -169,13 +169,13 @@
   #define realPlus(operand, res, ctxt)                           decNumberPlus            (res, operand, ctxt)
   #define realPower(operand1, operand2, res, ctxt)               decNumberPower           (res, operand1, operand2, ctxt)
   #define realRescale(operand, res, acc, ctxt)                   decNumberRescale         (res, operand, acc, ctxt)
-  #define realReduce(operand, res, ctxt)                         decNumberReduce          (res, operand, ctxt)
+  #define realReduce(operand, res, ctxt)                         decNumberReduce          ((real_t *)(res), (real_t *)(operand), ctxt)
   #define realSetNegativeSign(operand)                           (operand)->bits |= 0x80
   #define realSetPositiveSign(operand)                           (operand)->bits &= 0x7F
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (res, operand, ctxt)
   #define realSubtract(operand1, operand2, res, ctxt)            decNumberSubtract        (res, operand1, operand2, ctxt)
   #define realToReal34(source, destination)                      decQuadFromNumber        ((real34_t *)(destination), source, &ctxtReal34)
   #define realToString(source, destination)                      decNumberToString        ((real_t *)(source), destination)
-  #define stringToReal(source, destination, ctxt)                decNumberFromString      (destination, source, ctxt)
-  #define uInt32ToReal(source, destination)                      decNumberFromUInt32      (destination, source)
+  #define stringToReal(source, destination, ctxt)                decNumberFromString      ((real_t *)(destination), source, ctxt)
+  #define uInt32ToReal(source, destination)                      decNumberFromUInt32      ((real_t *)(destination), source)
 #endif // !REALTYPE_H
