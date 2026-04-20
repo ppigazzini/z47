@@ -2516,7 +2516,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
-          realAdd(&theta, const_pi, &theta, &ctxtReal39);
+          realAdd(&theta, const39_pi, &theta, &ctxtReal39);
         }
         realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
         realToReal34(&magnitude, dest_r);

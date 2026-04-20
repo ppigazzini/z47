@@ -218,7 +218,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
   realMultiply(&q, &p, &q, realContext);
   realDivide(&q, &r, &q, realContext);
   realDivide(const_2, &r, &p, realContext);
-  realMultiply(&p, const_1on3, &p, realContext);
+  realMultiply(&p, const39_1on3, &p, realContext);
   realChangeSign(&p);
   realAdd(&p, &s, &p, realContext);
   realDivide(const_5, const_60, &r, realContext), r.exponent += 1;
