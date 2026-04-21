@@ -14,7 +14,7 @@ static void wPosReal(void) {
     return;
   }
 
-  realCopy(const_1oneE, &res);
+  realCopy(const39_1oneE, &res);
   realSetNegativeSign(&res);
   if(realCompareGreaterEqual(&x, &res)) {
     WP34S_LambertW(&x, &res, false, &ctxtReal39);

@@ -1476,7 +1476,7 @@ void fn_cnst_op_j_pol(uint16_t unusedButMandatoryParameter) {
 
 
 void fn_cnst_op_aa(uint16_t unusedButMandatoryParameter) {
-  cpxToStk(const_1on2, const_root3on2, !forcedLiftTheStack);
+  cpxToStk(const_1on2, const39_root3on2, !forcedLiftTheStack);
   chsCplx();
 }
 
@@ -1528,8 +1528,8 @@ void fn_cnst_op_A(uint16_t option) {
   linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
 
   real_t const__rt3on2, const_rt3on2, const__1on2;
-  realMultiply(const_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
-  realMultiply(const_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
   realSetNegativeSign(&const__rt3on2);
   realCopy(const_1on2, &const__1on2);
   realSetNegativeSign(&const__1on2);
@@ -1712,7 +1712,7 @@ void fnConvertStkToMx(uint16_t constVector1) {
     convertAngleFromTo(&x[0].r, ang2Dx, amRadian, &ctxtReal39);
     if(realCompareLessThan(&x[1].r, const_0)) {
       realSetPositiveSign(&x[1].r);
-      realAdd(&x[0].r, const_pi, &x[0].r, &ctxtReal39);
+      realAdd(&x[0].r, const39_pi, &x[0].r, &ctxtReal39);
     }
   }
 

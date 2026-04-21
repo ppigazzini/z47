@@ -11,7 +11,7 @@ static void tenPowReal(void);
 
 
 void realPower10(const real_t *x, real_t *res, realContext_t *realContext) {
-  realMultiply(x, const_ln10, res, realContext);
+  realMultiply(x, const39_ln10, res, realContext);
   realExp(res, res, realContext);
 }
 
@@ -119,7 +119,7 @@ void intPowCplx(const real_t *lnBase) {
 }
 
 static void tenPowCplx(void) {
-  intPowCplx(const_ln10);
+  intPowCplx(const39_ln10);
 }
 
 
