@@ -303,7 +303,7 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   // reusing q, r for (s1 ± s2)
   addComplex(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
   subComplex(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
-  mulComplexComplex(&rr, &ri, const_0, const_root3on2, &rr, &ri, realContext);
+  mulComplexComplex(&rr, &ri, const_0, const39_root3on2, &rr, &ri, realContext);
 
   // roots
   divComplexReal(c2Real, c2Imag, const_3, x2Real, x2Imag, realContext);

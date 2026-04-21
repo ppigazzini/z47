@@ -55,7 +55,7 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorFt2M2]        = const_Ft2ToM2,
     [constFactorHectareKm2]   = const_100,
     [constFactorAcreHa]       = const_AccreToHa,
-    [constFactorAcreusHa]     = const_AccreusToHa,
+    [constFactorAcreusHa]     = const39_AccreusToHa,
     [constFactorAtmPa]        = const_AtmToPa,
     [constFactorAuM]          = const_AuToM,
     [constFactorBarPa]        = const_BarToPa,
@@ -64,7 +64,7 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorLbfftNm]      = const_LbfftToNm,    /*  10 */
     [constFactorCwtKg]        = const_CwtToKg,
     [constFactorFtM]          = const_FtToM,
-    [constFactorSfeetM]       = const_SfeetToM,
+    [constFactorSfeetM]       = const39_SfeetToM,
     [constFactorFlozukIn3]    = const_FlozukToIn3,
     [constFactorFlozukMl]     = const_FlozukToMl,
     [constFactorFlozusIn3]    = const_FlozusToIn3,
@@ -91,12 +91,12 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorMmhgPa]       = const_MmhgToPa,
     [constFactorMiKm]         = const_MiToKm,
     [constFactorNmiKm]        = const_NmiToKm,
-    [constFactorPcM]          = const_PcToM,        /*  40 */
-    [constFactorPointMm]      = const_PointToMm,
+    [constFactorPcM]          = const39_PcToM,      /*  40 */
+    [constFactorPointMm]      = const39_PointToMm,
     [constFactorMileM]        = const_MiToM,
     [constFactorYardM]        = const_YardToM,
-    [constFactorPsiPa]        = const_PsiToPa,
-    [constFactorTorrPa]       = const_TorrToPa,
+    [constFactorPsiPa]        = const39_PsiToPa,
+    [constFactorTorrPa]       = const39_TorrToPa,
     [constFactorYearS]        = const_YearToS,
     [constFactorCaratG]       = const_CaratToG,
     [constFactorJinKg]        = const_2,
@@ -114,12 +114,12 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorFenM]         = const_FenToM,       /*  60 */
     [constFactorMi2Km2]       = const_MiSqToKmSq,
     [constFactorNmi2Km2]      = const_NmiSqToKmSq,
-    [constFactorKmphmps]      = const_Kmphmps,
+    [constFactorKmphmps]      = const39_Kmphmps,
     [constFactorRpmDegps]     = const_RpmDegps,
     [constFactorMphmps]       = const_Mphmps,
-    [constFactorRpmRadps]     = const_RpmRadps,
+    [constFactorRpmRadps]     = const39_RpmRadps,
     [constFactorInchCm]       = const_InchToCm,
-    [constFactorNmiMi]        = const_NmiToMi,
+    [constFactorNmiMi]        = const39_NmiToMi,
     [constFactorFurtom]       = const_furToM,
     [constFactorFtntos]       = const_ftnToS,       /*  70 */
     [constFactorFpftomps]     = const_fpfToMps,
@@ -159,7 +159,7 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorMlTbspc]      = const_TbspcMl,
     [constFactorMlTbspuk]     = const_TbspukMl,
     [constFactorMlTspc]       = const_TspcMl,
-    [constFactorMlTspuk]      = const_TspukMl,
+    [constFactorMlTspuk]      = const39_TspukMl,
     [constFactorPintlqMl]     = const_PintlqMl,
     [constFactorPintukMl]     = const_PintukMl,     /* 110 */
     [constFactorQtMl]         = const_QtMl,
@@ -171,7 +171,7 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorTspcFzus]     = const_FzusTspc,
     [constFactorTspcMl]       = const_TspcMl,
     [constFactorTspukFzuk]    = const_FzukTspuk,
-    [constFactorTspukMl]      = const_TspukMl,      /* 120 */
+    [constFactorTspukMl]      = const39_TspukMl,    /* 120 */
     [constFactorMlIn3]        = const_In3Ml,
     [constFactorIn3Ml]        = const_In3Ml,
     [constFactorFt3Gluk]      = const_Ft3Gluk,
@@ -188,8 +188,8 @@ TO_QSPI static const real_t *conversionFactors[constFactorEND] = {
     [constFactorJeV]          = const_e,
     [constFactormmBanana]     = const_bananamm,
     [constFactorBananamm]     = const_bananamm,
-    [constFactorInchBanana]   = const_bananaInch,
-    [constFactorBananaInch]   = const_bananaInch,
+    [constFactorInchBanana]   = const39_bananaInch,
+    [constFactorBananaInch]   = const39_bananaInch,
     [constFactorErgJ]         = const_ErgToJ,
     [constFactorFoeJ]         = const_FoeToJ,       /* 140 */
   };
@@ -206,18 +206,18 @@ void fnUnitConvert(uint16_t arg) {
 //  {[(x - B) / C] * D} + E
 TO_QSPI static const real_t *cvtTempConsts[13][4] = {
   //   B              C             D             E
-  {const_0,       const_1,      const_9on5,   const_32     }, // ITM_CtoF     ix =  0
-  {const_32,      const_9on5,   const_1,      const_0      }, // ITM_FtoC     ix =  1
-  {const_0,       const_1,      const_1,      const_273p15 }, // ITM_CtoK     ix =  2
-  {const_273p15,  const_1,      const_1,      const_0      }, // ITM_KtoC     ix =  3
-  {const_0,       const_9on5,   const_1,      const_0      }, // ITM_RAtoK    ix =  4
-  {const_0,       const_1,      const_9on5,   const_0      }, // ITM_KtoRA    ix =  5
-  {const_459p67,  const_1,      const_1,      const_0      }, // ITM_RAtoF    ix =  6
-  {const_0,       const_1,      const_1,      const_459p67 }, // ITM_FtoRA    ix =  7
-  {const_0,       const_kBeVK,  const_1,      const_0      }, // ITM_EVKBtoK  ix =  8
-  {const_0,       const_1,      const_kBeVK,  const_0      }, // ITM_KtoEVKB  ix =  9
-  {const_32,      const_9on5,   const_1,      const_273p15 }, // ITM_FtoK     ix = 10
-  {const_273p15,  const_1,      const_9on5,   const_32     }, // ITM_KtoF     ix = 11
+  {const_0,       const_1,       const_9on5,    const_32     }, // ITM_CtoF     ix =  0
+  {const_32,      const_9on5,    const_1,       const_0      }, // ITM_FtoC     ix =  1
+  {const_0,       const_1,       const_1,       const_273p15 }, // ITM_CtoK     ix =  2
+  {const_273p15,  const_1,       const_1,       const_0      }, // ITM_KtoC     ix =  3
+  {const_0,       const_9on5,    const_1,       const_0      }, // ITM_RAtoK    ix =  4
+  {const_0,       const_1,       const_9on5,    const_0      }, // ITM_KtoRA    ix =  5
+  {const_459p67,  const_1,       const_1,       const_0      }, // ITM_RAtoF    ix =  6
+  {const_0,       const_1,       const_1,       const_459p67 }, // ITM_FtoRA    ix =  7
+  {const_0,       const39_kBeVK, const_1,       const_0      }, // ITM_EVKBtoK  ix =  8
+  {const_0,       const_1,       const39_kBeVK, const_0      }, // ITM_KtoEVKB  ix =  9
+  {const_32,      const_9on5,    const_1,       const_273p15 }, // ITM_FtoK     ix = 10
+  {const_273p15,  const_1,       const_9on5,    const_32     }, // ITM_KtoF     ix = 11
 };
 
 void fnCvtTemp(uint16_t ix) {
@@ -252,26 +252,26 @@ void fnCvtTemp(uint16_t ix) {
 
 void fnCvtDegRad(uint16_t multiplyDivide) {
   if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == multiply) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == divide) )) {
+    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == multiply) )) {
     setRegisterAngularMode(REGISTER_X, amNone);
   }
-  unitConversion(const_DegRad, multiplyDivide, noninverting);
+  unitConversion(const39_180onPi, multiplyDivide, noninverting);
 }
 
 void fnCvtDegGrad(uint16_t multiplyDivide) {
   if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == multiply) || ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == divide) )) {
+    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == multiply) )) {
     setRegisterAngularMode(REGISTER_X, amNone);
   }
-  unitConversion(const_DegGrad, multiplyDivide, noninverting);
+  unitConversion(const_9on10, multiplyDivide, noninverting);
 }
 
 void fnCvtGradRad(uint16_t multiplyDivide) {
   if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == multiply) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == divide) )) {
+    ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == multiply) )) {
     setRegisterAngularMode(REGISTER_X, amNone);
   }
-  unitConversion(const_GradRad, multiplyDivide, noninverting);
+  unitConversion(const39_200onPi, multiplyDivide, noninverting);
 }
 
 void fnKmletok100K   (uint16_t multiplyDivide) {

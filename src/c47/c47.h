@@ -269,8 +269,6 @@
   extern const softmenu_t                softmenu[];
   extern const confirmationTI_t          confirmationTI[];
 
-  #define gammaLanczosCoefficients       ((real51_t *)const_gammaC01)
-
   // Variables stored in RAM
   extern bool_t                 fnAsnDisplayUSER;
   extern bool_t                 funcOK;
