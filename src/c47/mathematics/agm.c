@@ -114,7 +114,7 @@ static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const 
     realSubtract(&cArg, &bArg, &cArg, realContext);
     realSetPositiveSign(&cArg);
     realAdd(&aArg, &cArg, &bArg, realContext);
-    if(realCompareGreaterThan(&bArg, const_pi)) {
+    if(realCompareGreaterThan(&bArg, const39_pi)) {
       realChangeSign(&bReal);
       realChangeSign(&bImag);
     }

@@ -88,7 +88,7 @@ static void _lnGammaComplex(real_t *xReal, real_t *rReal, real_t *rImag, realCon
   WP34S_Ln(xReal, xReal, realContext);
   realCopy(xReal, rReal);
   realToIntegralValue(rImag, rImag, DEC_ROUND_FLOOR, realContext);
-  realMultiply(rImag, const_pi, rImag, realContext);
+  realMultiply(rImag, const39_pi, rImag, realContext);
 }
 
 
