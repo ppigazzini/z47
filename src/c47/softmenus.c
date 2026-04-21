@@ -652,12 +652,18 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
                                              ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
+#if defined(PC_BUILD)
+  #define PAT  ITM_PRINT_ALL_ITEMS
+#else
+  #define PAT  ITM_NULL
+#endif //PC_BUILD
+
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
                                              ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERLIST,             ITM_PRINTERTAB,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
 
                                              ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINTERUSER,             ITM_PRINTERADV,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_PRINT_ALL_ITEMS,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    PAT,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
 
 TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
@@ -2367,15 +2373,15 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     if(itemNr == -MNU_PRINTER) {
       switch(printerState.printer_model) {
         case PRINTER_HP:
-          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_8 STD_SUB_2 STD_SUB_2 STD_SUB_4 STD_SUB_0);
+            sprintf(showText + stringByteLength(showText), STD_SPACE_3_PER_EM "%s", stringToSub(indexOfItems[ITM_PRINTERHP].itemSoftmenuName));
           break;
         case PRINTER_MARTEL:
-          stringCopy(showText + stringByteLength(showText), STD_SUB_M STD_SUB_a STD_SUB_r STD_SUB_t STD_SUB_e STD_SUB_l);
+            sprintf(showText + stringByteLength(showText), "%s", stringToSub(indexOfItems[ITM_PRINTERMARTEL].itemSoftmenuName));
           break;
         case PRINTER_OTHER:
-          stringCopy(showText + stringByteLength(showText), STD_SPACE_3_PER_EM STD_SUB_O STD_SUB_t STD_SUB_h STD_SUB_e STD_SUB_r);
+            sprintf(showText + stringByteLength(showText), STD_SPACE_3_PER_EM "%s", stringToSub(indexOfItems[ITM_PRINTEROTHER].itemSoftmenuName));
           break;
-     }
+      }
     }
     stringCopy(itemName, indexOfItems[-itemNr%10000].itemSoftmenuName);
     //printf("WWW3: itemName=%s, ItemNr=%i \n", itemName, itemNr);
