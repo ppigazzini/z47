@@ -23,6 +23,7 @@
 int8_t   fnCbIsSet             (int16_t item);
 void     fnRefreshState        (void);
 int16_t  fnItemShowValue       (int16_t item);
+char*    stringToSub           (const char *showText);
 char*    figlabel              (const char* label, const char* showText, int16_t showValue);
 
 

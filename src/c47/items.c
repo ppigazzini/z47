@@ -41,54 +41,6 @@ void doNothing(void) {
 #define  _TO_ITM_ERR  1
 #define  _TO_ITM_TI   2
 
-static uint8_t itemERRTIVal(int16_t itemNr) {
-  switch(max(itemNr, -itemNr)) {
-    #if defined(DMCP_BUILD)
-      case ITM_WRXPALL   :
-                          return  _TO_ITM_ERR;
-    #elif defined(PC_BUILD)
-      case ITM_SAVEAUT  :
-      case ITM_SETDAT   :
-      case ITM_SETTIM   :
-      case ITM_SYSTEM2  :
-      case ITM_ACTUSB   :
-                          return  _TO_ITM_ERR;
-    #endif // PC_BUILD
-
-    #if defined(PC_BUILD)
-      case ITM_DISK     :
-      case ITM_BUZZ     :
-      case ITM_PLAY     :
-      case ITM_VOL      :
-      case ITM_VOLMINUS :
-      case ITM_VOLPLUS  :
-      case ITM_VOLQ     :
-      case ITM_BATT     :  return  _TO_ITM_TI;
-    #endif // PC_BUILD
-      default           :  return  _TO_ITM_NONE;
-    }
-}
-
-
-
-//Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
-bool_t itemNotAvail(int16_t itemNr) {
-#if defined(DMCP_BUILD)
-  return (itemERRTIVal(itemNr) !=  _TO_ITM_NONE);
-#elif defined(PC_BUILD)
-  if(itemERRTIVal(itemNr) !=  _TO_ITM_NONE) {
-    #if (VERBOSE_LEVEL >= 0)
-      printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n", itemNr);
-    #endif
-    return true;
-  }
-  else {
-    return false;
-  }
-#else //!DMCP_BUILD && !PC_BUILD
-  return false;
-#endif //!DMCP_BUILD && !PC_BUILD
-}
 
 bool_t isFunctionOldParam16(uint16_t func) {
     return (func == ITM_BESTF_OLD ||
@@ -97,7 +49,63 @@ bool_t isFunctionOldParam16(uint16_t func) {
             func == ITM_DENMAX2_OLD);
 }
 
+
 #if !defined(GENERATE_CATALOGS) &&  !defined(GENERATE_TESTPGMS)
+
+  static uint8_t itemERRTIVal(int16_t itemNr) {
+    switch(max(itemNr, -itemNr)) {
+      #if defined(DMCP_BUILD)
+        case ITM_WRXPALL   :
+                            return  _TO_ITM_ERR;
+      #elif defined(PC_BUILD)
+        case ITM_SAVEAUT  :
+        case ITM_SETDAT   :
+        case ITM_SETTIM   :
+        case ITM_SYSTEM2  :
+        case ITM_ACTUSB   :
+                            return  _TO_ITM_ERR;
+      #endif // PC_BUILD
+
+      #if defined(PC_BUILD)
+        case ITM_DISK     :
+        case ITM_BUZZ     :
+        case ITM_PLAY     :
+        case ITM_VOL      :
+        case ITM_VOLMINUS :
+        case ITM_VOLPLUS  :
+        case ITM_VOLQ     :
+        case ITM_BATT     :  return  _TO_ITM_TI;
+      #endif // PC_BUILD
+        default           :  return  _TO_ITM_NONE;
+      }
+  }
+
+
+
+  //Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
+  bool_t itemNotAvail(int16_t itemNr) {
+  #if defined(DMCP_BUILD) || defined(PC_BUILD)
+    #if defined(IR_PRINTING)
+      if(itemNr == ITM_PRINTERLCD && printerState.printer_model != PRINTER_MARTEL) {
+        #if defined(PC_BUILD) && (VERBOSE_LEVEL >= 0)
+          printf("Item %i Printer softkey item not available, not executing and/or struck through.\n", itemNr);
+        #endif
+        return true;
+      }
+    #endif //IR_PRINTING
+    if(itemERRTIVal(itemNr) != _TO_ITM_NONE) {
+      #if defined(PC_BUILD) && (VERBOSE_LEVEL >= 0)
+        printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n", itemNr);
+      #endif
+      return true;
+    }
+    return false;
+  #else //!DMCP_BUILD && !PC_BUILD
+    return false;
+  #endif //!DMCP_BUILD && !PC_BUILD
+  }
+
+
   uint16_t indirectionType(uint16_t func) {
     switch(indexOfItems[func].param) {
       case TM_FLAGR   :
@@ -379,6 +387,11 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
 
     refreshStatusBar();
+    #if defined(IR_PRINTING)
+      if(tam.mode && getSystemFlag(FLAG_PRTACT)) {
+        leaveTamModeIfEnabled();
+      }
+    #endif// IR_PRINTING
 
 
     //**RunFunction
@@ -2208,8 +2221,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  477 */  { fnGetSystemFlag,                 FLAG_ALPHA,                  "ALPHA",                                       "ALPHA",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /*  478 */  { fnGetSystemFlag,                 FLAG_alphaCAP,               STD_alpha "CAP",                               STD_alpha "CAP",                               (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /*  479 */  { fnGetSystemFlag,                 FLAG_RUNTIM,                 "RUNTIM",                                      "RUNTIM",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/*  480 */  { fnGetSystemFlag,                 FLAG_RUNIO,                  "RUNIO",                                       "RUNIO",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/*  481 */  { fnGetSystemFlag,                 FLAG_PRINTS,                 "PRINTS",                                      "PRINTS",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/*  480 */  { itemToBeCoded,                   NOPARAM,                     "0480",                                        "0480",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/*  481 */  { itemToBeCoded,                   NOPARAM,                     "0481",                                        "0481",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /*  482 */  { fnGetSystemFlag,                 FLAG_TRACE,                  STD_PRINTER "TRACE",                           STD_PRINTER "TRACE",                           (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /*  483 */  { fnGetSystemFlag,                 FLAG_USER,                   "USER",                                        "USER",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /*  484 */  { fnGetSystemFlag,                 FLAG_LOWBAT,                 "LOWBAT",                                      "LOWBAT",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
