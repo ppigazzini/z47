@@ -52,7 +52,6 @@ void fnRound(uint16_t unusedButMandatoryParameter) {
 
 void roundTime(void) {
   real34_t real34;
-  uint32_t digits;
 
   real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &real34);
 
