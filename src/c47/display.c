@@ -1801,6 +1801,9 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     displayFormatDigits = 0;
     displayFormat = DF_ALL;
     real34ToDisplayString2(&tmp, degStr, displayHasNDigits, limitExponent, false, frontSpace, true, limitIrfrac);
+    if(degStr[0] == ' ' && degStr[1] != 0) {       //degStr has a leading space as it is always positive, and the sign is separately handled.
+      memmove(degStr, degStr + 1, strlen(degStr));
+    }
     displayFormatDigits = savedDisplayFormatDigits;
     displayFormat       = savedDisplayFormat;
     //remove the '.' radix indicating it is a real
