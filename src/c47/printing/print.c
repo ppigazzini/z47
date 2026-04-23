@@ -355,26 +355,35 @@
 
     return font->numberOfGlyphs - 1;  // Last character of the font is for charCodes not supported by the font
   }
+  
+  
+  uint16_t findMartelGlyph(const martelFont24_t *font, uint16_t charCode) {
+    uint16_t first, middle, last;
 
+    first = 0;
+    last = font->numberOfGlyphs - 1;
 
-/*
-// Some utilities to replace the various string and mem functions.
-// Return the length of a string
-int slen(const char *s) {
-        const char *p;
+    middle = (first + last) / 2;
+    while(last > first + 1) {
+      if(charCode < font->glyphs[middle].charCode) {
+        last = middle;
+      }
+      else {
+        first = middle;
+      }
+      middle = (first + last) / 2;
+    }
 
-        for (p=s; *p != '\0'; p++);
-        return p-s;
-}
+    if(font->glyphs[first].charCode == charCode) {
+      return first;
+    }
 
-// And a little something to set memory to a value.
-void *xset(void *d, const char c, int n) {
-        char *dp = d;
-        while (n--)
-                *dp++ = c;
-        return d;
-}
-*/
+    if(font->glyphs[last].charCode == charCode) {
+      return last;
+    }
+
+    return 255;  // charCode not supported by the font
+  }
 
 
   static bool_t _exitKeyPressed() {
@@ -454,7 +463,7 @@ void findlengths(unsigned short int posns[257], int smallp) {
   }
 
 
-void prepare_new_line(void) {
+void prepareNewLine(void) {
 #if defined(DMCP_BUILD)
   int i = 0;
   clearSystemFlag(FLAG_PRTACT);
@@ -475,7 +484,7 @@ void prepare_new_line(void) {
 /*
  *  Print to IR
  */
-void print( uint8_t c ) { // prints a single character
+void printIR( uint8_t c ) { // prints a single character
   const print_modes_t mode = printerState.print_mode;
 
   if ( c == '\n' && ( mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS ) ) {
@@ -499,31 +508,31 @@ void print( uint8_t c ) { // prints a single character
  *                 0: \n    - standard LF
  *                 1: 0x04  - HP 82240 custom LF
  */
-void print_advance( uint8_t nlMode ) {
+void printAdvance( uint8_t nlMode ) {
   printerColumn = 0;
-  print( nlMode ? 0x04 : '\n' );
-  if (printerState.print_blank_line) print( nlMode ? 0x04 : '\n' );
-  prepare_new_line();
+  printIR( nlMode ? 0x04 : '\n' );
+  if (printerState.print_blank_line) printIR( nlMode ? 0x04 : '\n' );
+  prepareNewLine();
 }
 
 
 /*
  *  New line if tracing is active
  */
-static void advance_if_trace()
+static void advanceIfTrace()
 {
   if ( printerColumn != 0 && getSystemFlag(FLAG_TRACE) ) {
-    print_advance( 0 );
+    printAdvance( 0 );
   }
 }
 
 //
 //  Move to column
 //
-void print_tab( uint16_t col ) // pixel-aligned column
+void printTab( uint16_t col ) // pixel-aligned column
 {
   if ( printerColumn > col ) {
-    print_advance( 0 );
+    printAdvance( 0 );
   }
   if ( printerColumn < col ) {
     uint16_t i, j;
@@ -547,7 +556,7 @@ void print_tab( uint16_t col ) // pixel-aligned column
 //
 //  Print a graphic sequence
 //
-void print_graphic( uint8_t glen, const unsigned char *graphic ) {
+void printGraphic( uint8_t glen, const unsigned char *graphic ) {
   if ( glen > 0 ) {
     sendByteIR( 27 );
     sendByteIR( glen );
@@ -560,7 +569,7 @@ void print_graphic( uint8_t glen, const unsigned char *graphic ) {
 //
 //  Print a 8-bit graphic sequence
 //
-void print_graphic_8( uint8_t glen, const unsigned char *graphic ) {
+void printGraphic8( uint8_t glen, const unsigned char *graphic ) {
   uint8_t len = glen + ((printerColumn == 0) || (printerColumn >= 160)? 1 : 2);
   if ( glen > 0 ) {
     sendByteIR( 27);    // Set bit image (82240 graphic character printing : ESC Xchar [Ci]
@@ -577,14 +586,14 @@ void print_graphic_8( uint8_t glen, const unsigned char *graphic ) {
 //
 //  Print a 24-bit graphic sequence
 //
-void print_graphic_24( uint8_t glen, const unsigned char *graphic ) {
+void printGraphic24( uint8_t glen, const unsigned char *graphic ) {
   if ( glen > 0 ) {
     printerColumn += glen;
     sendByteIR( 27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
     sendByteIR(  0);
     sendByteIR( 42);
     sendByteIR( 33);
-    sendByteIR( 14);
+    sendByteIR( glen/3);
     sendByteIR(  0);
     while ( glen-- ) {
       sendByteIR( *graphic++ );
@@ -596,7 +605,7 @@ void print_graphic_24( uint8_t glen, const unsigned char *graphic ) {
 //
 //  Print a glyph (HP-82240 8-bit graphic)
 //
-void print_glyph8(uint16_t charCode, const printerFont_t *font) {
+void printGlyph8(uint16_t charCode, const printerFont_t *font) {
   int32_t  glyphId;
   uint8_t  *data;
   const glyphPrinter_t *glyph;
@@ -604,13 +613,34 @@ void print_glyph8(uint16_t charCode, const printerFont_t *font) {
     glyphId = findPrinterGlyph(font, charCode);
     glyph = (font->glyphs) + glyphId;
     data = (uint8_t *)glyph->data;
-    print_graphic_8(5, data);   // Print the glyph columns
+    printGraphic8(5, data);   // Print the glyph columns
+}
+
+//
+//  Print a glyph on a Martel printer
+//
+void printMartelGlyph(uint16_t charCode) {
+  int32_t  glyphId;
+  uint8_t  *data;
+  const glyphMartelPrinter_t *glyph;
+  const martelFont24_t *martelFont = &martelFont24;
+
+    glyphId = findMartelGlyph(martelFont, charCode);
+    if(glyphId == 255) {
+      printGlyph8(charCode, &printerFont8);  // Character not in the Martel high res font
+    }
+    else {
+      glyph = (martelFont->glyphs) + glyphId;
+      data = (uint8_t *)glyph->data;
+      printGraphic24(48, data);   // Print the glyph columns
+      printerColumn += 8;
+    }
 }
 
 //
 //  Print a glyph (Martel 24-bit graphic)
 //
-void print_glyph24(uint16_t charCode, const font_t *font) {
+void printGlyph24(uint16_t charCode, const font_t *font) {
     uint32_t col, row, row_scaled;
     uint32_t graphic_byte;
     int32_t  glyphId;
@@ -663,7 +693,7 @@ void print_glyph24(uint16_t charCode, const font_t *font) {
         }
       }
     }
-    print_graphic_24(42, graphic);
+    printGraphic24(42, graphic);
     printerColumn += 14;
 }
 
@@ -700,7 +730,7 @@ static int buffer_width(const char *buff)
 //
 static void wrap( int width ) {
   if ( printerColumn + width > PAPER_WIDTH ) {
-    print_advance (0);
+    printAdvance (0);
     if ( width == 7 ) width = 6;
   }
   printerColumn += width;
@@ -709,7 +739,7 @@ static void wrap( int width ) {
 //
 //  Print a complete line using character set translation
 //
-void print_line( const char *buff, int with_lf )
+void printLine( const char *buff, int with_lf )
 {
   const int mode = printerState.print_mode;
   uint8_t c;
@@ -739,10 +769,11 @@ void print_line( const char *buff, int with_lf )
           c = charMap(charCode);
           if(c == 0) {  // Not in the 82240 roman character set, need to print graphic
             if(printerState.printer_model == PRINTER_HP) {
-              print_glyph8(charCode, &printerFont8);
+              printGlyph8(charCode, &printerFont8);
             }
             else if(printerState.printer_model == PRINTER_MARTEL) {
-              print_glyph24(charCode, &standardFont);
+              //printGlyph24(charCode, &standardFont);
+              printMartelGlyph(charCode);
             }
           }
           else {       // Character is in the 82240 roman character set
@@ -754,68 +785,17 @@ void print_line( const char *buff, int with_lf )
         else {
 	    // Use printer character set
 	      w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-	      print_graphic( glen, graphic );
+	      printGraphic( glen, graphic );
 	      glen = 0;
 	      wrap( w );
 	      sendByteIR( c );
         }
         break;
-
-/*
-      case PMODE_SMALLGRAPHICS:		// Small font
-        c += 256;
-        // fallthrough
-
-      case PMODE_GRAPHICS:			// Standard font
-        //graphic_print:
-        // Spit out the character as a graphic
-#ifdef INCLUDE_C_LOCK
-        if ( ((C_LOCKED) && (POLAR_DISPLAY)) && c == (256+'<') ) {
-	      w = 4;
-	      pattern[0] = 8;
-	      pattern[1] = 4;
-	      pattern[2] = 2;
-	      pattern[3] = 15;
-	      pattern[4] = 0;
-	      pattern[5] = 0;
-        }
-        else {
-	      unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
-        }
-#else
-        //unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
-#endif
-        if ( w == 0 ) {
-	      w = charlengths( c );
-	      if ( printerColumn + w == 167 ) {
-	      // drop last column on last character in line
-	        --w;
-	      }
-        }
-        if ( printerColumn + w > PAPER_WIDTH ) {
-	      print_graphic( glen, graphic );
-	      glen = 0;
-        }
-        wrap( w );
-        // Transpose the pattern
-        m = 1;
-        for ( i = 0; i < w; ++i ) {
-	      c = 0;
-	      for ( j = 0; j < 6; ++j ) {
-	        if ( pattern[ j ] & m ) {
-	          c |= ( 2 << j );
-	        }
-          }
-	      graphic[ glen++ ] = c;
-	      m <<= 1;
-        }
-        break;
-*/
     }
   }
-  print_graphic( glen, graphic );
+  printGraphic( glen, graphic );
   if ( with_lf ) {
-    print_advance( 0 );
+    printAdvance( 0 );
   }
 
   // Hide Print SBI
@@ -826,7 +806,7 @@ void print_line( const char *buff, int with_lf )
 //
 //  Print buffer right justified
 //
-void print_justified( const char *buff )
+void printJustified( const char *buff )
 {
   print_modes_t pmode = printerState.print_mode;
   uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
@@ -837,15 +817,15 @@ void print_justified( const char *buff )
     len = paperWidth - printerColumn;
   }
   if ( len > 0 ) {
-    print_tab( paperWidth - len);
+    printTab( paperWidth - len);
   }
-  print_line( buff, 1 );
+  printLine( buff, 1 );
 }
 
 //
 //  Print buffer justified on the left half of the paper line
 //
-void print_justified_left( const char *buff )
+void printJustifiedLeft( const char *buff )
 {
   print_modes_t pmode = printerState.print_mode;
   uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
@@ -856,9 +836,9 @@ void print_justified_left( const char *buff )
     len = paperWidth - printerColumn;
   }
   if ( len > 0 ) {
-    print_tab( paperWidth - len );
+    printTab( paperWidth - len );
   }
-  print_line( buff, 0 );
+  printLine( buff, 0 );
 }
 
 //
@@ -959,12 +939,14 @@ static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realSt
         break;
 
       case 0xac:
-        if(realString[i+1] == STD_SUP_pir[1]) {
+        if((realString[i+1] == STD_SUP_pir[1]) && (printerState.printer_model == PRINTER_HP))  {
           realString[j++] = STD_SUP_pi[0];       // replace sup pi r by sup pi
           realString[j++] = STD_SUP_pi[1];
           i++;
         }
         else {
+          realString[j++] = realString[i];
+          realString[j++] = realString[i+1];
           i++;
         }
         break;
@@ -1049,7 +1031,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 //
 //  Print a single register
 //
-void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma ) {
+void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma ) {
   uint16_t tagAngle;
   uint16_t tagPolar;
   real34_t *real34;
@@ -1062,8 +1044,8 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
   }
 
   if ( label != NULL ) {
-    print_line( label, 0 );
-    if ( eq ) print_line( "=", 0 );
+    printLine( label, 0 );
+    if ( eq ) printLine( "=", 0 );
   }
 
 //  dtLongInteger     =  0,  ///< Z arbitrary precision integer                    DONE
@@ -1109,15 +1091,15 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
       rows = matrixHeader->matrixRows;
       columns = matrixHeader->matrixColumns;
       sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Matrix ]", rows, columns);  //Matrix header
-      print_justified( tmpString );
+      printJustified( tmpString );
       for(i = 1; i <= rows; i++) {
         for(j = 1; j <= columns; j++) {
           sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i, j);  //Matrix element
-          print_line( tmpString, 0 );
+          printLine( tmpString, 0 );
           real34Reduce(real34++, &reduced);
           _real34ToPrintString(&reduced, amNone, tmpString, max_len * 9);
           _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
-          print_justified( tmpString );
+          printJustified( tmpString );
         }
       }
       return;
@@ -1136,15 +1118,15 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
       rows = matrix->header.matrixRows;
       cols = matrix->header.matrixColumns;
       sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Cpx Matrix ]", rows, cols);  //Matrix header
-      print_justified( tmpString );
+      printJustified( tmpString );
       for(i = 0; i < rows; i++) {
         for(j = 0; j < cols; j++) {
           sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i+1, j+1);  //Matrix element
-          print_line( tmpString, 0 );
+          printLine( tmpString, 0 );
           real34 = VARIABLE_REAL34_DATA(&matrix->matrixElements[i*cols+j]);
           imag34 = VARIABLE_IMAG34_DATA(&matrix->matrixElements[i*cols+j]);
           _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
-          print_justified( tmpString );
+          printJustified( tmpString );
         }
       }
       return;
@@ -1184,16 +1166,16 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
   switch (where) {
     case LINE_FULL:
     case LINE_RIGHT:
-      print_justified( tmpString );
+      printJustified( tmpString );
       break;
     case LINE_LEFT:
-      print_justified_left( tmpString );
+      printJustifiedLeft( tmpString );
       break;
     case LINE_NOLF:
-      print_line( tmpString, 0 );
+      printLine( tmpString, 0 );
       break;
     default:
-      print_justified( tmpString );
+      printJustified( tmpString );
   }
 }
 
@@ -1201,15 +1183,15 @@ void print_reg( uint16_t regist, const char *label, bool_t eq, print_area_t wher
 //
 //  Print the contents of an Alpha register, terminated by a LF
 //
-void print_alpha( const char *Alpha, printArgument_t arg )
+void printAlpha( const char *Alpha, printArgument_t arg )
 {
   RETURN_IF_PRINT_OFF;
-  advance_if_trace();
+  advanceIfTrace();
   if ( arg == PRINT_ALPHA_JUST ) {
-    print_justified( Alpha );
+    printJustified( Alpha );
   }
   else {
-    print_line( Alpha, arg == PRINT_ALPHA );
+    printLine( Alpha, arg == PRINT_ALPHA );
   }
 }
 
@@ -1218,15 +1200,15 @@ void print_alpha( const char *Alpha, printArgument_t arg )
 //
 void print_lf() {
   RETURN_IF_PRINT_OFF;
-  advance_if_trace();
-  print_advance( 0 );
+  advanceIfTrace();
+  printAdvance( 0 );
 }
 
 
 //
 //  Print a single character or control code
 //
-void cmdprint( uint16_t arg, printArgument_t op )
+void cmdPrint( uint16_t arg, printArgument_t op )
 {
   char buff[ 4 ];
   char *line;
@@ -1236,7 +1218,7 @@ void cmdprint( uint16_t arg, printArgument_t op )
       displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
         sprintf(errorMessage, "Printing is disabled");
-        moreInfoOnError("In function cmdprint:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function cmdPrint:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
     }
     return;
@@ -1246,9 +1228,9 @@ void cmdprint( uint16_t arg, printArgument_t op )
 
   case PRINT_BYTE:
     // Transparent printing of bytes
-    print( arg ); // might be a line feed, so...
+    printIR( arg ); // might be a line feed, so...
     if (arg == '\n' || arg == 0x04)
-      prepare_new_line();
+      prepareNewLine();
     break;
 
   case PRINT_CHAR:
@@ -1259,12 +1241,12 @@ void cmdprint( uint16_t arg, printArgument_t op )
     }
     *line++ = arg & 0xff;
     *line = '\0';
-    print_line( buff, 0 );
+    printLine( buff, 0 );
     break;
 
   case PRINT_TAB:
     // Move to specific column
-    print_tab( arg );
+    printTab( arg );
     break;
 
   default:
@@ -1275,7 +1257,7 @@ void cmdprint( uint16_t arg, printArgument_t op )
 //
 //  Set print mode
 //
-void set_print_mode(uint8_t mode)
+void setPrintMode(uint8_t mode)
 {
   // Set print mode: ESC NULL  !  n
   //                 27   0   33  n
@@ -1295,7 +1277,7 @@ uint8_t reverse(uint8_t b) {
 //
 //  Print LCD screen
 //
-void print_lcd()
+void printLcd()
 {
   int32_t x, y;
   uint8_t * line_addr = 0;
@@ -1303,13 +1285,13 @@ void print_lcd()
   int16_t i;
   int32_t offset;
 
-  //set_print_mode(0x01);  // 48 chars/line
+  //setPrintMode(0x01);  // 48 chars/line
   sendByteIR('\n');
   //for(x=0; x<SCREEN_WIDTH/8; x++) {
   for(x=16; x>=0; x--) {
     //New graphic line
     printerColumn = 0;
-    print_tab(30);  // Center screen shot
+    printTab(30);  // Center screen shot
     sendByteIR( 27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
     sendByteIR(  0);
     sendByteIR( 42);
@@ -1350,7 +1332,7 @@ void print_lcd()
     //print_lf();
   }
 
-  set_print_mode(0x00);  // Default 24 chars/line
+  setPrintMode(0x00);  // Default 24 chars/line
   print_lf();
 }
 
@@ -1399,7 +1381,7 @@ void printTraceErrorFunction  (int16_t func,  char *errorString) {
     nameAlias(func, tmpString);
     strcat(tmpString, " ");
     strcat(tmpString, errorString);
-    print_justified(tmpString);
+    printJustified(tmpString);
     leaveTamModeIfEnabled();
 
     #if defined(PC_BUILD)
@@ -1413,7 +1395,7 @@ void printTraceErrorFunction  (int16_t func,  char *errorString) {
 //
 void printTraceError  (char *errorString) {
   if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
-    print_line( errorString, 1 );
+    printLine( errorString, 1 );
 
     #if defined(PC_BUILD)
       printf("**[DL]** Trace: %s\n",errorString);fflush(stdout);
@@ -1431,7 +1413,7 @@ void printTraceX(uint16_t where) {
       print_lf();
     }
     else {
-      print_reg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
+      printReg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
     }
 
     #if defined(PC_BUILD)
@@ -1462,7 +1444,7 @@ void printTraceMatElement(uint16_t where) {
       reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
       complex34Copy(&matrix->matrixElements[i * matrix->header.matrixColumns + j], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
     }
-    print_reg(TEMP_REGISTER_1, NULL, false, where, false );  // Print temporary register 1 without name header
+    printReg(TEMP_REGISTER_1, NULL, false, where, false );  // Print temporary register 1 without name header
 
     #if defined(PC_BUILD)
       printf("**[DL]** printTraceMatElement where %d Trace: %s\n",where,tmpString);fflush(stdout);
@@ -1479,7 +1461,7 @@ void printTraceString(char *string, uint16_t where) {
   if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(lenInBytes), amNone);
     xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), string, lenInBytes);
-    print_reg(TEMP_REGISTER_1, NULL, false, where, false );  // Print register X without name header
+    printReg(TEMP_REGISTER_1, NULL, false, where, false );  // Print register X without name header
 
     #if defined(PC_BUILD)
       printf("**[DL]** printTraceString Trace: %s\n",tmpString);fflush(stdout);
@@ -1505,7 +1487,7 @@ void printTraceTI() {
           break;
       }
       if(tmpString[0] != 0) {
-        print_line( tmpString, 1 );
+        printLine( tmpString, 1 );
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
@@ -1540,7 +1522,7 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 void printPrompt(uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
-      print_reg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
+      printReg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
       #if defined(PC_BUILD)
         printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
       #endif // PC_BUILD
@@ -1557,13 +1539,13 @@ void printViewAview(uint16_t func, uint16_t regist) {
       if(func == ITM_VIEW) {
         char label[16];
         _getRegisterLabel(regist, label);
-        print_reg(regist, label, true, LINE_LEFT, false );  // Print register left justified with name header
+        printReg(regist, label, true, LINE_LEFT, false );  // Print register left justified with name header
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s=%s\n",label,tmpString);fflush(stdout);
         #endif // PC_BUILD
       }
       else {
-        print_reg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
+        printReg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
@@ -1591,13 +1573,13 @@ void printTrace(int16_t func, uint16_t param) {
     if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) { // Not executing a program instruction
       if(func < 0) {   // Menu
         if(func == -MNU_DYNAMIC) {
-          print_justified(userMenus[currentUserMenu].menuName);    // User Menu
+          printJustified(userMenus[currentUserMenu].menuName);    // User Menu
           #if defined(PC_BUILD)
             printf("**[DL]** Trace: %s\n",userMenus[currentUserMenu].menuName);fflush(stdout);
           #endif // PC_BUILD
         }
         else {
-          print_justified(indexOfItems[-func].itemSoftmenuName);   // Predefined Menu
+          printJustified(indexOfItems[-func].itemSoftmenuName);   // Predefined Menu
           #if defined(PC_BUILD)
             printf("**[DL]** Trace: %s\n",indexOfItems[-func].itemSoftmenuName);fflush(stdout);
           #endif // PC_BUILD
@@ -1723,9 +1705,9 @@ void printTrace(int16_t func, uint16_t param) {
         }
         uint16_t width = stringGlyphLength( tmpString ) * 7 - 1;
         if ( printerColumn + width > PAPER_WIDTH ) {
-          print_advance (0);
+          printAdvance (0);
         }
-        print_justified(tmpString);
+        printJustified(tmpString);
 
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
@@ -1735,17 +1717,17 @@ void printTrace(int16_t func, uint16_t param) {
     else if(getSystemFlag(FLAG_TRACE)) {  // Program running or single stepping - Trace mode only
       decodeOneStep_ALIAS(currentStep);
       if(func == ITM_LBL) {
-        print_advance( 0 ); // Skip one line before printing the label
+        printAdvance( 0 ); // Skip one line before printing the label
         sprintf(traceBuffer, " %02d" , currentLocalStepNumber);
         strcat(traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
         strcat(traceBuffer, tmpString);
-        print_justified(traceBuffer);     // Current step & step number
+        printJustified(traceBuffer);     // Current step & step number
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",traceBuffer);fflush(stdout);
         #endif // PC_BUILD
       }
       else {
-        print_justified(tmpString);    // Current step
+        printJustified(tmpString);    // Current step
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
         #endif // PC_BUILD
@@ -1781,7 +1763,7 @@ void printProgram(bool_t list, uint16_t lines) {
     uint8_t *step, *nextStep;
     currentKeyCode = 255;
     RETURN_IF_PRINT_OFF;
-    advance_if_trace();
+    advanceIfTrace();
 
     firstDisplayedLocalStepNumber = 0;
     if(!list) {
@@ -1799,21 +1781,21 @@ void printProgram(bool_t list, uint16_t lines) {
     if(!list) {  // Print Program (pr_PROG)
       // Time and date header line
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-        print_line( " ", 0 );          // add a space before the header
+        printLine( " ", 0 );          // add a space before the header
       }
       getTimeString(tmpString);
-      print_line( tmpString, 0 );
-      print_line( " ", 0 );
+      printLine( tmpString, 0 );
+      printLine( " ", 0 );
       getDateString(tmpString);
-      print_line( tmpString, 1 );
+      printLine( tmpString, 1 );
       print_lf();
 
       if(firstDisplayedLocalStepNumber == 0) {
         if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-           print_line( " ", 0 );          // add a space before the first line
+           printLine( " ", 0 );          // add a space before the first line
         }
         sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
-        print_line( tmpString, 1 );
+        printLine( tmpString, 1 );
         firstLine = 1;
       }
       else {
@@ -1839,26 +1821,26 @@ void printProgram(bool_t list, uint16_t lines) {
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
         if(isLabel) {
           if((line != 01) && !startOfLine) {
-            print_advance( 0 ); // Print pending line
+            printAdvance( 0 ); // Print pending line
           }
-          print_advance( 0 ); // Skip one line before printing the label
+          printAdvance( 0 ); // Skip one line before printing the label
           sprintf(tmpString, " %02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
           strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
-          print_line( tmpString, 0 );
+          printLine( tmpString, 0 );
         }
         else if(!startOfLine) {
           if( printerColumn + 14 <= PAPER_WIDTH ) {
-            print_line( "  ", 0 );
+            printLine( "  ", 0 );
           }
           else {
-            print_advance (0);
+            printAdvance (0);
           }
         }
       }
       else {
         sprintf(tmpString, "%02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
         strcat(tmpString, (isLabel ? STD_BLACK_RIGHT_TRIANGLE : " "));
-        print_line( tmpString, 0 );
+        printLine( tmpString, 0 );
       }
 
       //Decode instruction
@@ -1866,13 +1848,13 @@ void printProgram(bool_t list, uint16_t lines) {
 
       if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
         if ( printerColumn + stringGlyphLength(tmpString)*7 > PAPER_WIDTH + 2 ) {
-          print_advance (0);
+          printAdvance (0);
         }
-        print_line( tmpString, isLabel );
+        printLine( tmpString, isLabel );
         startOfLine = isLabel;
       }
       else {
-        print_line( tmpString, 1 );
+        printLine( tmpString, 1 );
       }
 
       if(isAtEndOfProgram(step)) {
@@ -1891,7 +1873,7 @@ void printProgram(bool_t list, uint16_t lines) {
       if(_exitKeyPressed()) break;
     }
     if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-       print_advance( 0 );            // print remaining buffer content
+       printAdvance( 0 );            // print remaining buffer content
     }
 }
 
@@ -2043,7 +2025,7 @@ void fnP_PrinterList(uint16_t lines) {
 void fnP_Byte(uint16_t byte) {
     #if defined(IR_PRINTING)
       setPrinterSBI(true);
-      cmdprint( byte, PRINT_BYTE );
+      cmdPrint( byte, PRINT_BYTE );
       setPrinterSBI(false);
     #endif //IR_PRINTING
 }
@@ -2054,7 +2036,7 @@ void fnP_Char(uint16_t registerNo) {
     uint16_t character;
     setPrinterSBI(true);
     character = _getUnicodeValue(registerNo);
-    cmdprint( character, PRINT_CHAR );
+    cmdPrint( character, PRINT_CHAR );
     setPrinterSBI(false);
   #endif //IR_PRINTING
 }
@@ -2064,7 +2046,7 @@ void fnP_Char(uint16_t registerNo) {
 void fnP_Tab(uint16_t column) {
   #if defined(IR_PRINTING)
     setPrinterSBI(true);
-    cmdprint( column, PRINT_TAB );
+    cmdPrint( column, PRINT_TAB );
     setPrinterSBI(false);
   #endif //IR_PRINTING
 }
@@ -2098,7 +2080,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
         }
         else {
           variable =  findNamedVariable(label);
-          print_reg(variable, label, true, LINE_FULL, false );
+          printReg(variable, label, true, LINE_FULL, false );
           userVariableFound = true;
           if(_exitKeyPressed()) {
             return;
@@ -2121,22 +2103,22 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
           if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
             xcopy(label, step + 3, *(step+2));
             label[*(step+2)] = 0;
-            print_line("LBL " STD_LEFT_SINGLE_QUOTE,0);
-            print_line(label, 0);
-            print_line(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
+            printLine("LBL " STD_LEFT_SINGLE_QUOTE,0);
+            printLine(label, 0);
+            printLine(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
             if(firstProgramLabel) {
               sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
-              print_justified( tmpString );
+              printJustified( tmpString );
               firstProgramLabel = false;
             }
           }
         }
 
         if(isAtEndOfProgram(step)) { // END
-          print_line("END", !firstProgramLabel);
+          printLine("END", !firstProgramLabel);
           if(firstProgramLabel) {
             sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
-            print_justified( tmpString );
+            printJustified( tmpString );
           }
           programNumber++;
           firstProgramLabel = true;
@@ -2149,7 +2131,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
         }
       }
 
-      print_line(".END.", 1);
+      printLine(".END.", 1);
 
     #endif //IR_PRINTING*
 }
@@ -2162,7 +2144,7 @@ void fnP_LCD(uint16_t unusedButMandatoryParameter) {
       setPrinterSBI(true);
       resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
       refreshScreen(80);
-      print_lcd();
+      printLcd();
       setPrinterSBI(false);
     #endif //IR_PRINTING
     }
@@ -2177,7 +2159,7 @@ void fnP_Alpha(uint16_t registerNo) {
     if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(IR_PRINTING)
       if (getRegisterDataType(registerNo) == dtString) {
-        print_alpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
+        printAlpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
       }
     #endif //IR_PRINTING
     }
@@ -2229,7 +2211,7 @@ void fnP_Regs (uint16_t registerNo) {
       else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
         sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
       }
-      print_reg(registerNo, label, true, LINE_FULL, false );
+      printReg(registerNo, label, true, LINE_FULL, false );
     #endif //IR_PRINTING
     }
     else {                             // Print to file
@@ -2301,7 +2283,7 @@ void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
         }
         for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
           convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
-          print_reg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL, true );
+          printReg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL, true );
           if(_exitKeyPressed()) {
             return;
           }
@@ -2351,7 +2333,7 @@ void fnP_All_Regs(uint16_t option) {
           break;
 
         case PRN_Xr:
-          print_reg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
+          printReg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
           break;
 
         case PRN_STK:
@@ -2373,8 +2355,8 @@ void fnP_All_Regs(uint16_t option) {
                 case dtString:
                 case dtDate:
                 case dtTime: {
-                  print_reg(REGISTER_X, NULL, false, LINE_LEFT, false );   // Print register X on the left half of the line
-                  print_reg(REGISTER_Y, NULL, false, LINE_RIGHT, false );  // Print register Y on the right half of the line
+                  printReg(REGISTER_X, NULL, false, LINE_LEFT, false );   // Print register X on the left half of the line
+                  printReg(REGISTER_Y, NULL, false, LINE_RIGHT, false );  // Print register Y on the right half of the line
                   return;
                 }
                 default: {
@@ -2398,18 +2380,18 @@ void fnP_All_Regs(uint16_t option) {
                 for(int i = 0; i < x.header.matrixRows; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
                   real34Copy(&x.matrixElements[i*2], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
                   real34Copy(&x.matrixElements[i*2+1], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
                 }
               }
               else if(x.header.matrixRows == 2) {
                 for(int i = 0; i < x.header.matrixColumns; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
                   real34Copy(&x.matrixElements[i], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
                   real34Copy(&x.matrixElements[i + x.header.matrixColumns], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
                 }
               }
               else {
@@ -2430,18 +2412,18 @@ void fnP_All_Regs(uint16_t option) {
                 for(int i = 0; i < xc.header.matrixRows; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
                   complex34Copy(&xc.matrixElements[i*2], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
                   complex34Copy(&xc.matrixElements[i*2+1], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
                 }
               }
               else if(xc.header.matrixRows == 2) {
                 for(int i = 0; i < xc.header.matrixColumns; ++i) {
                   reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
                   complex34Copy(&xc.matrixElements[i], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
                   complex34Copy(&xc.matrixElements[i + xc.header.matrixColumns], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  print_reg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
+                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
                 }
               }
               else {
@@ -2553,14 +2535,14 @@ void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
     currentKeyCode = 255;
     if(getSystemFlag(FLAG_PRTACT)) {
       sprintf(tmpString, "item catname  menuname");
-      print_line(tmpString,1);
+      printLine(tmpString,1);
       for(item=1; item<LAST_ITEM; item++) {
         sprintf(tmpString, "%4d ", item);
         strcat(tmpString, indexOfItems[item].itemCatalogName);
-        print_line(tmpString,0);
-        print_tab( 97 );
+        printLine(tmpString,0);
+        printTab( 97 );
         sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
-        print_line(tmpString,1);
+        printLine(tmpString,1);
         if(_exitKeyPressed()) break;
       }
       temporaryInformation = TI_PRINT_COMPLETE;

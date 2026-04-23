@@ -598,6 +598,7 @@
   //#if defined(IR_PRINTING)
     extern printerState_t         printerState;
     extern const printerFont_t    printerFont8;
+    extern const martelFont24_t   martelFont24;
     extern uint16_t               printerColumn;
   //#endif //IR_PRINTING
 
