@@ -190,6 +190,7 @@ c47_src = files(
   'plotstat.c',
   'printing/print.c',
   'printing/printerFont8.c',
+  'printing/martelFonts.c',
   'programming/clcvar.c',
   'programming/decode.c',
   'programming/input.c',

@@ -111,6 +111,28 @@ typedef struct {
 
 
 /**
+ * \struct glyphMartelPrinter_t
+ * Structure keeping the informations for one Martel printer glyph.
+ */
+typedef struct {
+  uint16_t charCode;         ///< Unicode code point
+  char     data[48];         ///< Hexadecimal data representing the glyph (16 columns x 24 pixels)
+                             ///< There are rowsGlyph x (colsGlyph rounded up to 8 bit boundary) bytes
+} glyphMartelPrinter_t;
+
+
+/**
+ * \struct martelFont24_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t        numberOfGlyphs; ///< Number of glyphs in the font
+  glyphMartelPrinter_t  glyphs[];       ///< Pointer to the glyph description structure
+} martelFont24_t;
+
+
+
+/**
  * \struct nameAlias_t
  * Font description.
  */
