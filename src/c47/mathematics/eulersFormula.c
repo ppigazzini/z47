@@ -21,7 +21,7 @@ static void eulersFormulaCplx(void) {
     return;
   }
 
-  if( (realIsInfinite(&zReal) || (real34IsInfinite(&zImag))) ) {
+  if( (realIsInfinite(&zReal) || (realIsInfinite(&zImag))) ) {
     if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)

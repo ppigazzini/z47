@@ -324,7 +324,7 @@ void clearStatisticalSums(void) {
 void initStatisticalSums(void) {
   if(statisticalSumsUpdate) {
     if(statisticalSumsPointer == NULL) {
-      statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+      statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
       clearStatisticalSums();
       strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     }
@@ -519,7 +519,7 @@ static calcRegister_t fnClHisto(bool_t deleteVariable) {
 void setStatisticalSumsUpdate(bool_t para) {
   //if going off auto, or confirming it is still on auto off, clear sums
   if(!para) {
-    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
     statisticalSumsPointer = NULL;
     if(lastErrorCode != ERROR_NONE) {
       return;
@@ -567,7 +567,7 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
   histElementXorY = 0;
 
 
-  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
   statisticalSumsPointer = NULL;
 }
 

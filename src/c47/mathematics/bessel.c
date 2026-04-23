@@ -171,7 +171,7 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
 
 // Polynomial U[k] (based on Abramowitz and Stegun, p.366)
 #define NUMBER_OF_COEFF   100
-#define COEFF_BUFFER_SIZE_IN_BLOCKS (REAL_SIZE_IN_BLOCKS * NUMBER_OF_COEFF)
+#define COEFF_BUFFER_SIZE_IN_BLOCKS (REAL_SIZE_IN_BLOCKS(75) * NUMBER_OF_COEFF)
 static void u_k(uint32_t k, const real_t *coeff/*array*/, const real_t *t_r, const real_t *t_i, real_t *res_r, real_t *res_i, realContext_t *realContext) {
   real_t t_n_r, t_n_i, tmp_r, tmp_i;
   uint32_t i;

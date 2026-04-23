@@ -295,7 +295,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         }
       }
       else {
-        realToString(buffer, value + strlen(value));
+        realToString((real_t *)buffer, value + strlen(value));
       }
       strcat(value, LINEBREAK);
       changeCommaToPeriod(value);
@@ -313,7 +313,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         }
       }
       else {
-        real34ToString(buffer, value + strlen(value));
+        real34ToString((real34_t *)buffer, value + strlen(value));
       }
       strcat(value, LINEBREAK);
       changeCommaToPeriod(value);

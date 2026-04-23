@@ -2718,8 +2718,8 @@ var2:
             isCheckingEigenvectors = (funcType == FUNC_TO_TEST) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
-              xr1 = malloc(REAL_SIZE_IN_BYTES * cols);
-              xi1 = malloc(REAL_SIZE_IN_BYTES * cols);
+              xr1 = malloc(REAL_SIZE_IN_BYTES(75) * cols);
+              xi1 = malloc(REAL_SIZE_IN_BYTES(75) * cols);
               xf1 = malloc(sizeof(bool_t) * cols);
               for(int col = 0; col < cols; ++col) {
                 realSetZero(xr1 + col);

@@ -70,7 +70,7 @@ static void emitConstant(const char *name, const char *type, const void *vptr, i
 }
 
 void generateConstant(char *name, int32_t digits, bool_t exact, char *value) {
-  real12321_t real;
+  DECLARE_REAL_T_PTR(real, 12321);
   char temp[20];
 
   #if defined(DEBUG)
@@ -84,24 +84,22 @@ void generateConstant(char *name, int32_t digits, bool_t exact, char *value) {
   int32_t maxDigits = ((digits + 2) / 6) * 6 + 3; // Assuming DECDPUN = 3 and memory alignment is 4 bytes
   ctxtReal.digits = maxDigits;
 
-  memset(&real, 0, sizeof(real12321_t));
-  stringToReal(value, &real, &ctxtReal);
-  realReduce(&real, &real, &ctxtReal);
+  memset(real, 0, REAL_SIZE_IN_BYTES(12321));
+  stringToReal(value, real, &ctxtReal);
+  realReduce(real, real, &ctxtReal);
 
   if(exact) {
     strcpy(temp, "const_");
-    real.C47Bits = REAL_EXACT;
   }
   else {
     sprintf(temp, "const%" PRId32 "_", maxDigits);
-    real.C47Bits = REAL_NONE;
   }
 
   strcpy(whiteSpace, "                                              ");
   whiteSpace[25 - strlen(name) - strlen(temp)] = 0;
 
   int32_t lenInBytes = 10 + sizeof(decNumberUnit) * (maxDigits / DECDPUN);
-  emitConstant(name, "real_t", &real, lenInBytes, temp);
+  emitConstant(name, "real_t", real, lenInBytes, temp);
 
   cntRealt++;
 
