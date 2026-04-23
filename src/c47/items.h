@@ -505,8 +505,8 @@
 #define SFL_ALPHA                    477 // The SFL item names are not used
 #define SFL_alphaCAP                 478 // The SFL item names are not used
 #define SFL_RUNTIM                   479 // The SFL item names are not used
-#define ITM_0480                     480 // The SFL item names are not used - RUNIO  was never used, flag number can be reused
-#define ITM_0481                     481 // The SFL item names are not used - PRINTS was never used, flag number can be reused
+#define SFL_0480                     480 // The SFL item names are not used
+#define SFL_0481                     481 // The SFL item names are not used
 #define SFL_TRACE                    482 // The SFL item names are not used
 #define SFL_USER                     483 // The SFL item names are not used
 #define SFL_LOWBAT                   484 // The SFL item names are not used
