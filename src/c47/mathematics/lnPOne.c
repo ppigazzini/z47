@@ -109,7 +109,6 @@ static void lnP1Real(void) {
   }
 
   else {
-    real34ToReal(&r, &x);
     if(realIsPositive(&r)) {
       WP34S_Ln1P(&arg, &x, &ctxtReal39);
      }
