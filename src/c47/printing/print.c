@@ -633,7 +633,7 @@ void printMartelGlyph(uint16_t charCode) {
       glyph = (martelFont->glyphs) + glyphId;
       data = (uint8_t *)glyph->data;
       printGraphic24(48, data);   // Print the glyph columns
-      printerColumn += 5;
+      printerColumn += 8;
     }
 }
 
