@@ -600,7 +600,7 @@ overRange:
       }
       return;
     }
-    else if(exponent < -exponentLimit || (exponentHideLimit != 0 && exponent < -exponentHideLimit)) {
+    else if(exponent < -exponentLimit || (exponentHideLimit != 0 && exponent < -exponentHideLimit && currentMenu() != -MNU_XXFCNS)) {
       if(real34IsPositive(&value34)) {
         strcpy(displayString, STD_ALMOST_EQUAL "0");
         if(updateDisplayValueX) {
