@@ -64,10 +64,7 @@
 #define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
-
-#if defined(PC_BUILD)
-  #define IR_PRINTING  // Enable IR printing for the simulator
-#endif // PC_BUILD
+#define IR_PRINTING                    // Enable printing everywhere
 
 #if defined(DMCP_BUILD)
 
@@ -82,7 +79,6 @@
     #undef TWO_FILE_PGM
     #undef HARDWARE_MODEL
     #define HARDWARE_MODEL HWM_DM42n
-    #define IR_PRINTING  // Enable IR printing for on new hardware
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -231,6 +227,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  IR_PRINTING              //             // Remove IR printing for old hardware
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
