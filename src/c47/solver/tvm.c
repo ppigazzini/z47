@@ -1350,7 +1350,7 @@ void fnAmortP (uint16_t select) {
 }
 
 void fnAmortNext(uint16_t unusedButMandatoryParameter) {
-  uint16_t delta = abs((int)amortP2 - (int)amortP1); 
+  uint16_t delta = abs((int)amortP2 - (int)amortP1);
   uint32_t npper = real34ToUInt32(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER));
   amortP1 = amortP2 + 1;
   amortP2 = amortP1 + delta;
@@ -1384,14 +1384,58 @@ static void amortPeriodicRate(const real_t *iA, const real_t *pperA, const real_
 }
 
 
+// HP12C-style iteration (period-by-period with rounding)
+static void amortBalAt_HP12C(const real_t *k, const real_t *pv, const real_t *pmt,
+                             const real_t *i, bool_t begin, real_t *bal) {
+  real_t balance, one_plus_i, pmt_eff, i_rounded;
+  uint32_t periods = realToUint32C47(k, NULL);
+
+  // HP12C: Round periodic rate to 10 significant digits (e.g., 7.75/12 => 0.006458333333... => 0.006458333333)
+  roundToSignificantDigits(i, &i_rounded, 10, &ctxtReal39);
+
+  // Effective PMT for Begin mode
+  if(begin) {
+    realAdd(const_1, &i_rounded, &one_plus_i, &ctxtTvm);
+    realMultiply(pmt, &one_plus_i, &pmt_eff, &ctxtTvm);
+  } else {
+    realCopy(pmt, &pmt_eff);
+  }
+
+  // HP12C: Round PMT to 2 decimals
+  real_t pmt_scaled;
+  realMultiply(&pmt_eff, const_100, &pmt_scaled, &ctxtTvm);
+  realToIntegralValue(&pmt_scaled, &pmt_scaled, DEC_ROUND_HALF_UP, &ctxtTvm);
+  realDivide(&pmt_scaled, const_100, &pmt_eff, &ctxtTvm);
+
+  // Iterate period-by-period with rounding at each step
+  realCopy(pv, &balance);
+
+  for(uint32_t p = 1; p <= periods; p++) {
+    realAdd(const_1, &i_rounded, &one_plus_i, &ctxtTvm);
+    realMultiply(&balance, &one_plus_i, &balance, &ctxtTvm);
+    realAdd(&balance, &pmt_eff, &balance, &ctxtTvm);
+
+    // Round to 2 decimals after EACH period
+    real_t bal_scaled;
+    realMultiply(&balance, const_100, &bal_scaled, &ctxtTvm);
+    realToIntegralValue(&bal_scaled, &bal_scaled, DEC_ROUND_HALF_UP, &ctxtTvm);
+    realDivide(&bal_scaled, const_100, &balance, &ctxtTvm);
+  }
+  realCopy(&balance, bal);
+}
+
+
 // BAL at the end of period k
 //   i != 0, End:   BAL_k = PV * q^k + PMT         * (q^k - 1) / i
 //   i != 0, Begin: BAL_k = PV * q^k + PMT * (1+i) * (q^k - 1) / i
 //   i == 0:        BAL_k = PV + k * PMT
-static void amortBalAt(const real_t *k, const real_t *pv, const real_t *pmt, const real_t *i,
-                       bool_t begin, real_t *bal) {
-  real_t log1pi, x, qk, qk_m1, pvEff, pvQk, ratio;
+static void amortBalAt(const real_t *k, const real_t *pv, const real_t *pmt, const real_t *i, bool_t begin, real_t *bal) {
+  if(getSystemFlag(FLAG_AMORT_HP12C)) {
+    amortBalAt_HP12C(k, pv, pmt, i, begin, bal);
+    return;
+  }
 
+  real_t log1pi, x, qk, qk_m1, pvEff, pvQk, ratio;
   if(realIsZero(i)) {
     realFMA(k, pmt, pv, bal, &ctxtTvm);              // PV + k * PMT
     return;
@@ -1433,6 +1477,13 @@ static bool_t amortCompute(real_t *sumInt, real_t *sumPrn, real_t *bal) {
 
   if(realIsZero(&cperA) || realIsZero(&pperA)) {
     return false;
+  }
+
+  if(getSystemFlag(FLAG_AMORT_HP12C)) {
+    real_t pmt_scaled;
+    realMultiply(&pmt, const_100, &pmt_scaled, &ctxtTvm);
+    realToIntegralValue(&pmt_scaled, &pmt_scaled, DEC_ROUND_HALF_UP, &ctxtTvm);
+    realDivide(&pmt_scaled, const_100, &pmt, &ctxtTvm);
   }
 
   begin = !getSystemFlag(FLAG_ENDPMT);
