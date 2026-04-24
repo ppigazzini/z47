@@ -144,6 +144,7 @@
   #define real34ToUInt32(source)                                 decQuadToUInt32          ((real34_t *)(source), &ctxtReal34, DEC_ROUND_DOWN)
   #define real34SetZero(destination)                             decQuadZero              (destination)
   #define real34SetOne(destination)                              decQuadFromInt32         (destination, 1)
+  #define real34ScaleB(source, shift, destination)               decQuadScaleB            ((real34_t *)(destination), (real34_t *)(source), (real34_t *)(shift), &ctxtReal34)
   //#define real34SetZero(destination)                              xcopy                    (destination, const34_0, REAL34_SIZE_IN_BYTES)
   /*#define real34SetZero(destination)                              do { *(uint64_t *)(destination)     =   *(uint64_t *)const34_0;     \
                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)const34_0)+1); \
