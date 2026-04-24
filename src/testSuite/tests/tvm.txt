@@ -609,3 +609,387 @@ Func: fnTvmVar(2036)
 In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"5" V2039=Real:"-1000" V2038=Real:"0" V2034=Real:"2000" V2037=Real:"1" V2043=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"14.20669908289047413032023363185645"
 
+
+
+;===========================================================================
+;-=-=- AMORT -=-=-==-=-=-=-=-==-=-
+;===========================================================================
+
+
+; ╔══════════════════════════════════════════════════════════════════════════════╗
+; ║ AMORT verification: HP 30b vs C47 (verified matching results only)           ║
+; ╚══════════════════════════════════════════════════════════════════════════════╝
+; 
+; Block A  END mode   N=360  I/YR=6  PV=100000  FV=0  P/YR=C/YR=12
+;                     PMT (End solve) = -599.5505251527523945914612436844759
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     -5966.59    │    -5966.594589556309856946943730308004 │
+; │        │ ΣPRN  │     -1228.01    │    -1228.011712276718878150591193905707 │
+; │        │ BAL   │     98771.99    │    98771.98828772328112184940880609429  │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 13..24 │ ΣINT  │     -5890.85    │    (matches 30b to display precision)   │
+; │        │ ΣPRN  │     -1303.75    │    (matches)                            │
+; │        │ BAL   │     97468.24    │    (matches)                            │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..360 │ ΣINT  │   -115838.19    │   -115838.1890549908620529260477264113  │
+; │        │ ΣPRN  │   -100000.00    │   -99999.99999999999999999999999999998  │
+; │        │ BAL   │         0.00    │    1.510493562884100367564280638397E-29 │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..1   │ ΣINT  │      -500.00    │    (matches)                            │
+; │        │ ΣPRN  │       -99.55    │    (matches)                            │
+; │        │ BAL   │     99900.45    │    (matches)                            │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │360..360│ ΣINT  │        -2.98    │    (matches)                            │
+; │        │ ΣPRN  │      -596.57    │    (matches)                            │
+; │        │ BAL   │         0.00    │    (matches, tiny residual expected)    │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+; 
+; Block B  BEGIN mode N=360  I/YR=6  PV=100000  FV=0  P/YR=C/YR=12
+;                     PMT (Begin solve) = -596.5676867191566115337922822731104
+;                     HP convention: period 1 has zero interest
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..1   │ ΣINT  │         0.00    │    0                                    │
+; │        │ ΣPRN  │      -596.57    │    -596.5676867191566115337922822731104 │
+; │        │ BAL   │     99403.43    │    99403.4323132808433884662077177268896│
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..2   │ ΣINT  │      -497.0172  │    -497.0171615664042169423310385886344 │
+; │        │ ΣPRN  │      -696.1182  │    -696.1182118719090061252535259575864 │
+; │        │ BAL   │     99303.8818  │    99303.88178812809099387474647404241  │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     -5439.3977  │    -5439.397601548567021837754955530352 │
+; │        │ ΣPRN  │     -1719.4147  │    -1719.414639081312316567752431746973 │
+; │        │ BAL   │     98280.5953  │    98280.58536091868768343224756825303  │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+; 
+; Block C  END mode   N=60  I/YR=0  PV=30000  PMT=-500  FV=0  P/YR=C/YR=12
+;                     Interest-free loan (i=0 branch of amortBalAt)
+;                     All results are exact integers, no numerical residuals.
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -6000       │    -6000                                │
+; │        │ BAL   │     24000       │    24000                                │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 13..24 │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -6000       │    -6000                                │
+; │        │ BAL   │     18000       │    18000                                │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..60  │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -30000      │    -30000                               │
+; │        │ BAL   │     0           │    0                                    │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+
+
+
+;===========================================================================
+;AMORT test suite - verified results from C47 (matching HP 30b to display precision)
+;===========================================================================
+
+;---- Block A: END mode mortgage, N=360, I/YR=6, PV=100000 -----------------
+;Step A1: solve PMT (End mode)
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-599.5505251527523945914612436844759"
+
+;---- A.1: P1=1, P2=12 -----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5966.594589556309856946943730308004"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1228.011712276718878150591193905707"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98771.98828772328112184940880609429"
+
+;---- A.2: P1=13, P2=24 ----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"13"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"24"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5890.853514199104414548305567013195"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1303.752787633924320549229357200515"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"97468.23550008935680130017944889378"
+
+;---- A.3: P1=1, P2=360 (full loan) ----------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-115838.1890549908620529260477264113"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-99999.99999999999999999999999999998"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.510493562884100367564280638397331E-29"
+
+;---- Block B: BEGIN mode mortgage, same loan, HP convention ---------------
+;Step B1: solve PMT (Begin mode)
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+
+
+;---- B.1: P1=1, P2=1 (Begin, period 1 zero interest, single period) -------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-596.5676867191566115337922822731104"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"99403.4323132808433884662077177268896"
+
+;---- B.2: P1=1, P2=2 (Begin, period 1 zero interest, period 2 normal) -----
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-497.0171615664042169423310385886344"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-696.1182118719090061252535259575864"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"99303.88178812809099387474647404241"
+
+
+;---- B.3: P1=1, P2=12 (Begin, HP convention period 1 interest=0) ----------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5439.397601548567021837754955530352"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1719.414639081312316567752431746973"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98280.58536091868768343224756825303"
+
+
+;---- Block C: i=0 edge case, interest-free car loan, END mode -------------
+;Step C1: set up TVM state with i=0 and PMT=-500 directly
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"-500" V2036=Real:"60" V2035=Real:"0" V2039=Real:"30000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_ASLIFT=1 V2038=Real:"-500"
+
+;---- C.1: P1=1, P2=12 -----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-6000"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"24000"
+
+
+
+
+;=============================================================================
+
+
+
+
+
+;Test: AMORT Begin mode - mortgage, P1=1, P2=12
+;N=360, i%/a=6, PV=100000, PMT=-596.5676867..., FV=0, pp/a=12, cp/a=12, BEGIN mode
+;Begin-mode PMT from solving Block B setup.
+;Expected: INT=-5439.398, PRN=-1719.415, BAL=98280.595 (HP convention: period 1 interest=0)
+;Step 1: solve PMT in Begin mode to populate the register with full precision
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5439.397601548567021837754955530352"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1719.414639081312316567752431746973"
+;Step 6: call fnAmortBal
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98280.58536091868768343224756825303"
+
+
+
+;===========================================================================
+;Test: AMORT End mode - standard mortgage, full-loan payoff
+;N=360, i%/a=6, PV=100000, PMT=solve, FV=0, pp/a=12, cp/a=12, END mode
+;Exercises: End mode, large P2=N, full-loan BAL should be ~0, total interest
+;Identity: ΣINT + ΣPRN = 360 × PMT, BAL ≈ 0
+;Step 1: solve PMT in End mode
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-599.5505251527523945914612436844759"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=360
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-115838.189054990862052926047726411"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-99999.99999999999999999999999999998"
+;Step 6: call fnAmortBal (tiny residual, should be ~1.5e-29)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.510493562884100367564280638397331E-29"
+
+
+
+;===========================================================================
+;Test: AMORT i=0 edge case - interest-free car loan
+;N=60, i%/a=0, PV=30000, PMT=-500, FV=0, pp/a=12, cp/a=12, END mode
+;Exercises: amortBalAt zero-interest branch (realIsZero(i)), expect ΣINT=0 exactly
+;Identity: ΣPRN = 12 × PMT, ΣINT = 0
+;Step 1: store PMT directly
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_ENDPMT=1 RX=Real:"-500" V2036=Real:"60" V2035=Real:"0" V2039=Real:"30000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_ASLIFT=1 V2038=Real:"-500"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt (exactly 0)
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+;Step 5: call fnAmortPrn (exactly -6000)
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-6000"
+;Step 6: call fnAmortBal (exactly 24000)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"24000"
+
+;===========================================================================
+;Test: AMORT mixed compounding - C/YR != P/YR
+;N=60, i%/a=12, PV=10000, PMT=solve, FV=0, pp/a=12, cp/a=2, END mode
+;Exercises: non-shortcut branch of amortPeriodicRate (Ln1P/ExpM1 path)
+;Monthly payments, semi-annual compounding.
+;Periodic rate: i = (1.06)^(1/6) - 1 = 0.009758794179192246...
+;Step 1: solve PMT
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"60" V2035=Real:"12" V2039=Real:"10000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-220.9845733033028243879325164829463"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1088.934940299727205295652703402212"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1562.879939339906687359537494393144"
+;Step 6: call fnAmortBal
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"8437.120060660093312640462505606856"
+
+;===========================================================================
+;Test: AMORT single period at tail of loan - Begin mode, P1=P2=360
+;N=360, i%/a=6, PV=100000, PMT=Begin-solve, FV=0, pp/a=12, cp/a=12, BEGIN mode
+;Exercises: single-period window at the end, Begin mode, p1>1 (closed form both ends)
+;Last period: tiny interest, principal nearly full PMT, BAL near 0
+;Step 1: solve PMT in Begin mode
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+;Step 2: set P1=360
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=360
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-2.967998441388838863352200409318773"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-593.5996882777677726704400818637916"
+;Step 6: call fnAmortBal (tiny residual, ~3.7e-29)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-3.694512097382730823235749296393496E-29"
+
