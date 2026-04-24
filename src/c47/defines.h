@@ -62,6 +62,7 @@
 #define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
+#define OPTION_TVM_AMORT               //                   // Use AMORT
 
 
 
@@ -117,6 +118,7 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -226,6 +228,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -1692,6 +1695,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ELLIPSE_K                             127
 #define TI_ELLIPSE_M                             128
 #define TI_ELLIPSE_Theta                         129
+#define TI_AMORT_BAL                             130 
+#define TI_AMORT_PRN                             131 
+#define TI_AMORT_INT                             132
+#define TI_AMORT_P1                              133 
+#define TI_AMORT_P2                              134
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

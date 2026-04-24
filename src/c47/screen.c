@@ -4255,6 +4255,37 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
           }
 
+
+
+#if defined(OPTION_TVM_AMORT)
+          else if(temporaryInformation == TI_AMORT_BAL && regist == REGISTER_X) {
+            strcpy(prefix, "Balance remaining =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_PRN && regist == REGISTER_X) {
+            sprintf(prefix, "%s", STD_SIGMA);
+            strcat(prefix, " of principal to P2 =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_INT && regist == REGISTER_X) {
+            sprintf(prefix, "%s", STD_SIGMA);
+            strcat(prefix, " of interest to P2=");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P1 && regist == REGISTER_X) {
+            strcpy(prefix, "From period P1:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P2 && regist == REGISTER_X) {
+            strcpy(prefix, "To period P2:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+#endif //OPTION_TVM_AMORT
+
           else if(temporaryInformation == TI_TVM_EFF && regist == REGISTER_X) {
             strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4666,6 +4697,19 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
+
+#if defined(OPTION_TVM_AMORT)
+          else if(temporaryInformation == TI_AMORT_P1 && regist == REGISTER_X) {
+            strcpy(prefix, "From period P1:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P2 && regist == REGISTER_X) {
+            strcpy(prefix, "To period P2:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+#endif //OPTION_TVM_AMORT
+
 
 
           //shift longinter prefix on by two space if interfering with the shift indicator, when SB_TIME is selected
