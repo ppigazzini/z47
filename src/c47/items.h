@@ -2787,9 +2787,9 @@
 #define ITM_MAN                     2689
 #define ITM_NORM                    2690
 #define ITM_TRACE                   2691
-#define ITM_PRINTERLIST             2692
-#define ITM_PRINT_ALL_ITEMS         2693
-#define ITM_2694                    2694
+#define ITM_STRACE                  2692
+#define ITM_PRINTERLIST             2693
+#define ITM_PRINT_ALL_ITEMS         2694
 #define ITM_2695                    2695
 #define ITM_2696                    2696
 #define ITM_2697                    2697
