@@ -229,6 +229,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_MAN,              MAN,                    RB_PM},
   {ITM_NORM,             NORM,                   RB_PM},
   {ITM_TRACE,            TRACE,                  RB_PM},
+  {ITM_STRACE,           STRACE,                 RB_PM},
 
 };
 
@@ -436,7 +437,7 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_PRON: rb_param = printerState.print_on;
                      break;
 
-        case RB_PM:  rb_param = (getSystemFlag(FLAG_TRACE) ? TRACE : getSystemFlag(FLAG_NORM) ? NORM : MAN);
+        case RB_PM:  rb_param = (getSystemFlag(FLAG_TRACE) ? getSystemFlag(FLAG_NORM) ? STRACE : TRACE : getSystemFlag(FLAG_NORM) ? NORM : MAN);
                      break;
                      
         case CB_JC:  is_cb = true;

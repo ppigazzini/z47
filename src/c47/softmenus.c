@@ -705,11 +705,11 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
                                              ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERLIST,             ITM_PRINTERTAB,
-                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE,
 
                                              ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINTERUSER,             ITM_PRINTERADV,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    PAT,
-                                             ITM_PRINTERON,                 ITM_PRINTEROFF,            -MNU_PRINTER,              ITM_MAN,               ITM_NORM,                    ITM_TRACE                     };
+                                            -MNU_PRINTER,                   ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    PAT,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE                    };
 
 TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
 

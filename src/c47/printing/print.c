@@ -1973,6 +1973,10 @@ void fnP_PrinterMode(uint16_t mode) {
         fnClearFlag(FLAG_NORM);
         fnSetFlag(FLAG_TRACE);
       }
+      else if(mode == STRACE) {
+        fnSetFlag(FLAG_NORM);
+        fnSetFlag(FLAG_TRACE);
+      }
     //#endif //IR_PRINTING
 }
 
