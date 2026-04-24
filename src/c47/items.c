@@ -1619,6 +1619,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnAmortP                   (uint16_t unusedButMandatoryParameter) {}
   void fnAmortNext                (uint16_t unusedButMandatoryParameter) {}
 
+
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
 
 
