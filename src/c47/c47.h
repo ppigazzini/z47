@@ -508,6 +508,8 @@
   extern uint16_t               currentProgramNumber;
   extern uint16_t               lrSelection;
   extern uint16_t               lrSelectionUndo;
+  extern uint16_t               amortP1;
+  extern uint16_t               amortP2;
   extern uint16_t               lrChosen;
   extern uint16_t               lrChosenUndo;
   extern uint16_t               lastPlotMode;

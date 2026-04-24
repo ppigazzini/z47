@@ -333,6 +333,9 @@ real_t                 SAVED_SIGMA_LASTX;
 real_t                 SAVED_SIGMA_LASTY;
 int8_t                 SAVED_SIGMA_lastAddRem;
 
+uint16_t               amortP1;
+uint16_t               amortP2;
+
 uint16_t               lrSelectionHistobackup;
 uint16_t               lrChosenHistobackup;
 int16_t                histElementXorY;
