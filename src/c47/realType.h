@@ -27,6 +27,10 @@
   #define REAL34_SIZE_IN_BYTES     TO_BYTES(REAL34_SIZE_IN_BLOCKS)
   #define COMPLEX34_SIZE_IN_BYTES  TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
 
+
+  // The 2 macros below are for checking the pointer type passed to the
+  // decNumber library functions. Both macros are only used in this file.
+  // A wrong type generates a compilation error.
   #define TO_REAL34_T(ptr) (                        \
     _Generic((ptr),                                 \
       real34_t *         : (ptr),                   \
