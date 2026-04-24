@@ -13,7 +13,7 @@
   typedef decQuad    real34_t; // 34 digits and 128 bits = 16 bytes
 
   #define REAL_MAX_DIGITS(digits)      (((digits + 2) / 6) * 6 + 3) // Assuming DECDPUN=3 and memory alignment is 4 bytes
-  #define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN)) // This always a multiple of 4
+  #define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN)) // This is always a multiple of 4
   #define REAL_SIZE_IN_BLOCKS(digits)  TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
   #define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *name=(real_t *)_ ## name ## _data
 
