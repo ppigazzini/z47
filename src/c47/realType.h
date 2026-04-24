@@ -12,10 +12,10 @@
   typedef decNumber  real_t;   // 75 digits and 60 bytes
   typedef decQuad    real34_t; // 34 digits and 128 bits = 16 bytes
 
-  #define REAL_MAX_DIGITS(digits)          (((digits + 2) / 6) * 6 + 3) // Assuming DECDPUN=3 and memory alignment is 4 bytes
-  #define REAL_SIZE_IN_BYTES(digits)       (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN))
-  #define REAL_SIZE_IN_BLOCKS(digits)      TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
-  #define DECLARE_REAL_T_PTR(name, digits) uint8_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits)]; real_t *name=(real_t *)_ ## name ## _data
+  #define REAL_MAX_DIGITS(digits)      (((digits + 2) / 6) * 6 + 3) // Assuming DECDPUN=3 and memory alignment is 4 bytes
+  #define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN))
+  #define REAL_SIZE_IN_BLOCKS(digits)  TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
+  #define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *name=(real_t *)_ ## name ## _data
 
   typedef struct {
     real34_t real, imag;

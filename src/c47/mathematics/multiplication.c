@@ -133,12 +133,12 @@ void mulComplexComplex75(const real_t *factor1Real, const real_t *factor1Imag, c
 // This re-write is needed as the mixing of decNumber types cannot deal with the real_t temporary variable withinn mulComplexComplex().
 // The 159 series is needed for 39 digit precision in cuberoots and the cubic formula solver
 void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
-  DECLARE_REAL_T_PTR(a, 159);
-  DECLARE_REAL_T_PTR(b, 159);
-  DECLARE_REAL_T_PTR(c, 159);
-  DECLARE_REAL_T_PTR(d, 159);
-  DECLARE_REAL_T_PTR(p, 159);
-  DECLARE_REAL_T_PTR(t, 159);
+  REAL_T_PTR(a, 159);
+  REAL_T_PTR(b, 159);
+  REAL_T_PTR(c, 159);
+  REAL_T_PTR(d, 159);
+  REAL_T_PTR(p, 159);
+  REAL_T_PTR(t, 159);
 
   realSetZero(a);
   realSetZero(b);
@@ -186,12 +186,12 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
 
 // void mulComplexComplex159(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2Real, const real_t *factor2Imag, real_t *productReal, real_t *productImag, realContext_t *realContext) {
 //   printf("DEBUG MUL159: realContext->digits = %d\n", realContext->digits);
-//   DECLARE_REAL_T_PTR(a, 159);
-//   DECLARE_REAL_T_PTR(b, 159);
-//   DECLARE_REAL_T_PTR(c, 159);
-//   DECLARE_REAL_T_PTR(d, 159);
-//   DECLARE_REAL_T_PTR(p, 159);
-//   DECLARE_REAL_T_PTR(t, 159);
+//   REAL_T_PTR(a, 159);
+//   REAL_T_PTR(b, 159);
+//   REAL_T_PTR(c, 159);
+//   REAL_T_PTR(d, 159);
+//   REAL_T_PTR(p, 159);
+//   REAL_T_PTR(t, 159);
 //   printf("DEBUG: mulComplexComplex159 called with compensated algorithm\n");
 //
 //   realSetZero(a);

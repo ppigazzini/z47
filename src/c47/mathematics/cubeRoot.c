@@ -114,31 +114,31 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   #endif //PC_BUILD
 
   // create 159 constants
-  DECLARE_REAL_T_PTR(const159_1on3, 159);
-  DECLARE_REAL_T_PTR(const159_root3on2, 159);
+  REAL_T_PTR(const159_1on3, 159);
+  REAL_T_PTR(const159_root3on2, 159);
   // 1/3 = 1 ÷ 3
   realDivide(const_1, const_3, const159_1on3, realContext);
   // sqrt(3)/2 = sqrt(3) ÷ 2
   realSquareRoot(const_3, const159_root3on2, realContext);
   realDivide(const159_root3on2, const_2, const159_root3on2, realContext);
 
-  DECLARE_REAL_T_PTR(xr, 159);
-  DECLARE_REAL_T_PTR(xi, 159);
-  DECLARE_REAL_T_PTR(zr, 159);
-  DECLARE_REAL_T_PTR(zi, 159);
-  DECLARE_REAL_T_PTR(x3r, 159);
-  DECLARE_REAL_T_PTR(x3i, 159);
-  DECLARE_REAL_T_PTR(temp1r, 159);
-  DECLARE_REAL_T_PTR(temp1i, 159);
-  DECLARE_REAL_T_PTR(temp2r, 159);
-  DECLARE_REAL_T_PTR(numr, 159);
-  DECLARE_REAL_T_PTR(numi, 159);
-  DECLARE_REAL_T_PTR(denomr, 159);
-  DECLARE_REAL_T_PTR(denomi, 159);
-  DECLARE_REAL_T_PTR(quotr, 159);
-  DECLARE_REAL_T_PTR(quoti, 159);
-  DECLARE_REAL_T_PTR(temp, 159);
-  DECLARE_REAL_T_PTR(denom_mag, 159);
+  REAL_T_PTR(xr, 159);
+  REAL_T_PTR(xi, 159);
+  REAL_T_PTR(zr, 159);
+  REAL_T_PTR(zi, 159);
+  REAL_T_PTR(x3r, 159);
+  REAL_T_PTR(x3i, 159);
+  REAL_T_PTR(temp1r, 159);
+  REAL_T_PTR(temp1i, 159);
+  REAL_T_PTR(temp2r, 159);
+  REAL_T_PTR(numr, 159);
+  REAL_T_PTR(numi, 159);
+  REAL_T_PTR(denomr, 159);
+  REAL_T_PTR(denomi, 159);
+  REAL_T_PTR(quotr, 159);
+  REAL_T_PTR(quoti, 159);
+  REAL_T_PTR(temp, 159);
+  REAL_T_PTR(denom_mag, 159);
 
   realSetZero(xr);
   realSetZero(xi);
@@ -299,12 +299,12 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
 
   // The three cube roots are: w, w*omega, w*omega^2
   // where omega = -1/2 + i*sqrt(3)/2
-  DECLARE_REAL_T_PTR(w1r, 159);
-  DECLARE_REAL_T_PTR(w1i, 159);
-  DECLARE_REAL_T_PTR(w2r, 159);
-  DECLARE_REAL_T_PTR(w2i, 159);
-  DECLARE_REAL_T_PTR(w3r, 159);
-  DECLARE_REAL_T_PTR(w3i, 159);
+  REAL_T_PTR(w1r, 159);
+  REAL_T_PTR(w1i, 159);
+  REAL_T_PTR(w2r, 159);
+  REAL_T_PTR(w2i, 159);
+  REAL_T_PTR(w3r, 159);
+  REAL_T_PTR(w3i, 159);
   realSetZero(w1r);
   realSetZero(w1i);
   realSetZero(w2r);
@@ -317,8 +317,8 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
   realCopy(xi, w1i);
 
   // omega = -1/2 + i*sqrt(3)/2
-  DECLARE_REAL_T_PTR(omega_r, 159);
-  DECLARE_REAL_T_PTR(omega_i, 159);
+  REAL_T_PTR(omega_r, 159);
+  REAL_T_PTR(omega_i, 159);
   realSetZero(omega_r);
   realSetZero(omega_i);
   realCopy(const_1on2, omega_r);

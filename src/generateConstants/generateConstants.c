@@ -70,7 +70,7 @@ static void emitConstant(const char *name, const char *type, const void *vptr, i
 }
 
 void generateConstant(char *name, int32_t digits, bool_t exact, char *value) {
-  DECLARE_REAL_T_PTR(real, 12321);
+  REAL_T_PTR(real, 12321);
   char temp[20];
 
   #if defined(DEBUG)

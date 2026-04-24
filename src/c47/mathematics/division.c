@@ -112,12 +112,12 @@ void divComplexComplex75(const real_t *numerReal, const real_t *numerImag, const
 
 #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
 void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
-  DECLARE_REAL_T_PTR(realNumer, 159);
-  DECLARE_REAL_T_PTR(realDenom, 159);
-  DECLARE_REAL_T_PTR(a, 159);
-  DECLARE_REAL_T_PTR(b, 159);
-  DECLARE_REAL_T_PTR(c, 159);
-  DECLARE_REAL_T_PTR(d, 159);
+  REAL_T_PTR(realNumer, 159);
+  REAL_T_PTR(realDenom, 159);
+  REAL_T_PTR(a, 159);
+  REAL_T_PTR(b, 159);
+  REAL_T_PTR(c, 159);
+  REAL_T_PTR(d, 159);
 
   realSetZero(realNumer);
   realSetZero(realDenom);

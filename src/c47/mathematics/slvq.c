@@ -48,18 +48,18 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
 #if defined(OPTION_SQUARE_159)
     realContext_t c = ctxtReal75;
     c.digits = 159;
-    DECLARE_REAL_T_PTR(x1r, 159);
-    DECLARE_REAL_T_PTR(x1i, 159);
-    DECLARE_REAL_T_PTR(x2r, 159);
-    DECLARE_REAL_T_PTR(x2i, 159);
-    DECLARE_REAL_T_PTR(r0r, 159);
-    DECLARE_REAL_T_PTR(r0i, 159);
-    DECLARE_REAL_T_PTR(aRealH, 159);
-    DECLARE_REAL_T_PTR(aImagH, 159);
-    DECLARE_REAL_T_PTR(bRealH, 159);
-    DECLARE_REAL_T_PTR(bImagH, 159);
-    DECLARE_REAL_T_PTR(cRealH, 159);
-    DECLARE_REAL_T_PTR(cImagH, 159);
+    REAL_T_PTR(x1r, 159);
+    REAL_T_PTR(x1i, 159);
+    REAL_T_PTR(x2r, 159);
+    REAL_T_PTR(x2i, 159);
+    REAL_T_PTR(r0r, 159);
+    REAL_T_PTR(r0i, 159);
+    REAL_T_PTR(aRealH, 159);
+    REAL_T_PTR(aImagH, 159);
+    REAL_T_PTR(bRealH, 159);
+    REAL_T_PTR(bImagH, 159);
+    REAL_T_PTR(cRealH, 159);
+    REAL_T_PTR(cImagH, 159);
 
     realPlus(&aReal, aRealH, &c);
     realPlus(&aImag, aImagH, &c);
@@ -302,12 +302,12 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
 
   if(realCoefs) {
     // All coefficients are real - use 159-digit precision
-    DECLARE_REAL_T_PTR(rR, 159);
-    DECLARE_REAL_T_PTR(a_h, 159);
-    DECLARE_REAL_T_PTR(b_h, 159);
-    DECLARE_REAL_T_PTR(c_h, 159);
-    DECLARE_REAL_T_PTR(temp, 159);
-    DECLARE_REAL_T_PTR(sqrt_r, 159);
+    REAL_T_PTR(rR, 159);
+    REAL_T_PTR(a_h, 159);
+    REAL_T_PTR(b_h, 159);
+    REAL_T_PTR(c_h, 159);
+    REAL_T_PTR(temp, 159);
+    REAL_T_PTR(sqrt_r, 159);
     realSetZero(rR);
     realSetZero(a_h);
     realSetZero(b_h);
@@ -373,7 +373,7 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
           realChangeSign(temp);
         }
 
-        DECLARE_REAL_T_PTR(neg_b, 159);
+        REAL_T_PTR(neg_b, 159);
         realMinus(b_h, neg_b, realContext);
         realAdd(neg_b, temp, temp, realContext);
         realMultiply(temp, const_1on2, temp, realContext);
@@ -388,10 +388,10 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       }
       else {
         // Complex roots (r < 0)
-        DECLARE_REAL_T_PTR(x1R_h, 159);
-        DECLARE_REAL_T_PTR(x1I_h, 159);
-        DECLARE_REAL_T_PTR(temp_sqrt, 159);
-        DECLARE_REAL_T_PTR(temp_calc, 159);
+        REAL_T_PTR(x1R_h, 159);
+        REAL_T_PTR(x1I_h, 159);
+        REAL_T_PTR(temp_sqrt, 159);
+        REAL_T_PTR(temp_calc, 159);
         realSetZero(x1R_h);
         realSetZero(x1I_h);
         realSetZero(temp_sqrt);
@@ -429,14 +429,14 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
   }
   else {
       // Complex coefficients - use 159-digit precision
-      DECLARE_REAL_T_PTR(rR, 159);
-      DECLARE_REAL_T_PTR(rI, 159);
-      DECLARE_REAL_T_PTR(temp1R, 159);
-      DECLARE_REAL_T_PTR(temp1I, 159);
-      DECLARE_REAL_T_PTR(temp2R, 159);
-      DECLARE_REAL_T_PTR(temp2I, 159);
-      DECLARE_REAL_T_PTR(sqrtR, 159);
-      DECLARE_REAL_T_PTR(sqrtI, 159);
+      REAL_T_PTR(rR, 159);
+      REAL_T_PTR(rI, 159);
+      REAL_T_PTR(temp1R, 159);
+      REAL_T_PTR(temp1I, 159);
+      REAL_T_PTR(temp2R, 159);
+      REAL_T_PTR(temp2I, 159);
+      REAL_T_PTR(sqrtR, 159);
+      REAL_T_PTR(sqrtI, 159);
       realSetZero(rR);
       realSetZero(rI);
       realSetZero(temp1R);
@@ -446,12 +446,12 @@ void solveQuadraticEquation159(const real_t *aReal, const real_t *aImag, const r
       realSetZero(sqrtR);
       realSetZero(sqrtI);
 
-      DECLARE_REAL_T_PTR(a_h, 159);
-      DECLARE_REAL_T_PTR(b_h, 159);
-      DECLARE_REAL_T_PTR(c_h, 159);
-      DECLARE_REAL_T_PTR(aI_h, 159);
-      DECLARE_REAL_T_PTR(bI_h, 159);
-      DECLARE_REAL_T_PTR(cI_h, 159);
+      REAL_T_PTR(a_h, 159);
+      REAL_T_PTR(b_h, 159);
+      REAL_T_PTR(c_h, 159);
+      REAL_T_PTR(aI_h, 159);
+      REAL_T_PTR(bI_h, 159);
+      REAL_T_PTR(cI_h, 159);
       realCopy(aReal, a_h);
       realCopy(aImag, aI_h);
       realCopy(bReal, b_h);
