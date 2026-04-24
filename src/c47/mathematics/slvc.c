@@ -142,20 +142,20 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
 #if defined(OPTION_CUBIC_159)
     realContext_t c = ctxtReal75;
     c.digits = 159;
-    DECLARE_REAL_T_PTR(x1r, 159);
-    DECLARE_REAL_T_PTR(x1i, 159);
-    DECLARE_REAL_T_PTR(x2r, 159);
-    DECLARE_REAL_T_PTR(x2i, 159);
-    DECLARE_REAL_T_PTR(x3r, 159);
-    DECLARE_REAL_T_PTR(x3i, 159);
-    DECLARE_REAL_T_PTR(r0r, 159);
-    DECLARE_REAL_T_PTR(r0i, 159);
-    DECLARE_REAL_T_PTR(bRealH, 159);
-    DECLARE_REAL_T_PTR(bImagH, 159);
-    DECLARE_REAL_T_PTR(cRealH, 159);
-    DECLARE_REAL_T_PTR(cImagH, 159);
-    DECLARE_REAL_T_PTR(dRealH, 159);
-    DECLARE_REAL_T_PTR(dImagH, 159);
+    REAL_T_PTR(x1r, 159);
+    REAL_T_PTR(x1i, 159);
+    REAL_T_PTR(x2r, 159);
+    REAL_T_PTR(x2i, 159);
+    REAL_T_PTR(x3r, 159);
+    REAL_T_PTR(x3i, 159);
+    REAL_T_PTR(r0r, 159);
+    REAL_T_PTR(r0i, 159);
+    REAL_T_PTR(bRealH, 159);
+    REAL_T_PTR(bImagH, 159);
+    REAL_T_PTR(cRealH, 159);
+    REAL_T_PTR(cImagH, 159);
+    REAL_T_PTR(dRealH, 159);
+    REAL_T_PTR(dImagH, 159);
 
     realPlus(&bReal, bRealH, &c);
     realPlus(&bImag, bImagH, &c);
@@ -383,21 +383,21 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 
   // Compute high-precision constant sqrt(3)/2
-  DECLARE_REAL_T_PTR(const159_root3on2, 159);
+  REAL_T_PTR(const159_root3on2, 159);
   realSquareRoot(const_3, const159_root3on2, realContext);
   realMultiply(const159_root3on2, const_1on2, const159_root3on2, realContext);
 
   // Intermediate variables in 159-digit precision
-  DECLARE_REAL_T_PTR(qr, 159);
-  DECLARE_REAL_T_PTR(qi, 159);
-  DECLARE_REAL_T_PTR(rr, 159);
-  DECLARE_REAL_T_PTR(ri, 159);
-  DECLARE_REAL_T_PTR(s1r, 159);
-  DECLARE_REAL_T_PTR(s1i, 159);
-  DECLARE_REAL_T_PTR(s2r, 159);
-  DECLARE_REAL_T_PTR(s2i, 159);
-  DECLARE_REAL_T_PTR(ar, 159);
-  DECLARE_REAL_T_PTR(ai, 159);
+  REAL_T_PTR(qr, 159);
+  REAL_T_PTR(qi, 159);
+  REAL_T_PTR(rr, 159);
+  REAL_T_PTR(ri, 159);
+  REAL_T_PTR(s1r, 159);
+  REAL_T_PTR(s1i, 159);
+  REAL_T_PTR(s2r, 159);
+  REAL_T_PTR(s2i, 159);
+  REAL_T_PTR(ar, 159);
+  REAL_T_PTR(ai, 159);
 
   realSetZero(qr);
   realSetZero(qi);
@@ -444,8 +444,8 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //  divComplexReal(rReal, rImag, const_2916, rReal, rImag, realContext);
 
 // Compute discriminant using intermediate 159-digit variables
-  DECLARE_REAL_T_PTR(discrimR, 159);
-  DECLARE_REAL_T_PTR(discrimI, 159);
+  REAL_T_PTR(discrimR, 159);
+  REAL_T_PTR(discrimI, 159);
   realSetZero(discrimR);
   realSetZero(discrimI);
 
@@ -562,22 +562,22 @@ void solveCubicEquation159(const real_t *c2Real, const real_t *c2Imag,
 //                                    realContext_t *realContext) {
 //
 //   // ALL intermediate variables as real159_t
-//   DECLARE_REAL_T_PTR(qr, 159);
-//   DECLARE_REAL_T_PTR(qi, 159);
-//   DECLARE_REAL_T_PTR(rr, 159);
-//   DECLARE_REAL_T_PTR(ri, 159);
-//   DECLARE_REAL_T_PTR(s1r, 159);
-//   DECLARE_REAL_T_PTR(s1i, 159);
-//   DECLARE_REAL_T_PTR(s2r, 159);
-//   DECLARE_REAL_T_PTR(s2i, 159);
-//   DECLARE_REAL_T_PTR(ar, 159);
-//   DECLARE_REAL_T_PTR(ai, 159);
-//   DECLARE_REAL_T_PTR(temp1, 159);
-//   DECLARE_REAL_T_PTR(temp2, 159);
-//   DECLARE_REAL_T_PTR(temp3, 159);
-//   DECLARE_REAL_T_PTR(temp4, 159);
-//   DECLARE_REAL_T_PTR(mag, 159);
-//   DECLARE_REAL_T_PTR(angle, 159);
+//   REAL_T_PTR(qr, 159);
+//   REAL_T_PTR(qi, 159);
+//   REAL_T_PTR(rr, 159);
+//   REAL_T_PTR(ri, 159);
+//   REAL_T_PTR(s1r, 159);
+//   REAL_T_PTR(s1i, 159);
+//   REAL_T_PTR(s2r, 159);
+//   REAL_T_PTR(s2i, 159);
+//   REAL_T_PTR(ar, 159);
+//   REAL_T_PTR(ai, 159);
+//   REAL_T_PTR(temp1, 159);
+//   REAL_T_PTR(temp2, 159);
+//   REAL_T_PTR(temp3, 159);
+//   REAL_T_PTR(temp4, 159);
+//   REAL_T_PTR(mag, 159);
+//   REAL_T_PTR(angle, 159);
 //
 //   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 //

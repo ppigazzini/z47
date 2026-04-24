@@ -229,7 +229,7 @@ void decomposeReal(const real_t *x, longInteger_t integerPart, real_t *fractiona
     }
 
 //--------//--------//--------//--------//-------- normalize using realPlus() and re-check if it fits
-    DECLARE_REAL_T_PTR(mantissa, 1071);
+    REAL_T_PTR(mantissa, 1071);
     realPlus(x, mantissa, c);                           // Normalize to remove trailing zeros with full precision
     int32_t actualDigits = realGetDigits(mantissa);      // Get actual significant digits after normalization
     if(actualDigits <= 34) {                             // Fits in real34: integer = 1, fractional = original
@@ -268,7 +268,7 @@ void decomposeReal(const real_t *x, longInteger_t integerPart, real_t *fractiona
     if(longIntegerIsZero(integerPart)) {                  // failed string manipulation
       goto returnUnity;
     }
-    DECLARE_REAL_T_PTR(integerAsReal, 1071);
+    REAL_T_PTR(integerAsReal, 1071);
     convertLongIntegerToReal(integerPart, integerAsReal, c); // use the actual integer (from the text) that will be output
     realDivide(x, integerAsReal, fractionalPart, c);         // to calculate the real multiplier, normally the exponent
     return;
@@ -518,8 +518,8 @@ printf("Dddd %d\n", registerNo);
 
   bool_t registerFMAOutputString(calcRegister_t regist, char* prefix, char *displayString) {
     angularMode_t angle;
-    DECLARE_REAL_T_PTR(tmp1, 1071);
-    DECLARE_REAL_T_PTR(tmp2, 1071);
+    REAL_T_PTR(tmp1, 1071);
+    REAL_T_PTR(tmp2, 1071);
     realContext_t c = ctxtReal75;
     c.digits = 1000;
     c.round = DEC_ROUND_HALF_UP;
@@ -697,9 +697,9 @@ printf("Dddd %d\n", registerNo);
       return;
     }
 
-    DECLARE_REAL_T_PTR(paramX, 1071);
-    DECLARE_REAL_T_PTR(paramY, 1071);
-    DECLARE_REAL_T_PTR(paramTemp, 1071);
+    REAL_T_PTR(paramX, 1071);
+    REAL_T_PTR(paramY, 1071);
+    REAL_T_PTR(paramTemp, 1071);
     realSetZero(paramX);
     real_t tmpR;
 
@@ -826,8 +826,8 @@ printf("Dddd %d\n", registerNo);
               printf(" ParamX reduced angle: %s\n", tmpString);
             #endif //DEBUG_XFN
 
-            DECLARE_REAL_T_PTR(aa, 1071);
-            DECLARE_REAL_T_PTR(bb, 1071);
+            REAL_T_PTR(aa, 1071);
+            REAL_T_PTR(bb, 1071);
             realSetZero(aa);
             realSetZero(bb);
                  if(function == ITM_sin_XFN) { C47Cvt2RadSinCosTan1071(paramX, angleMode, paramX, NULL,   NULL,   &c); }
@@ -1073,8 +1073,8 @@ printf("Dddd %d\n", registerNo);
 
 
     #if defined(DEBUG_XFN) || defined(DEBUGRESULT_ONLY_XFN)
-      DECLARE_REAL_T_PTR(aa, 1071);
-      DECLARE_REAL_T_PTR(tt, 1071);
+      REAL_T_PTR(aa, 1071);
+      REAL_T_PTR(tt, 1071);
       readThreeRegisters(registerNo, aa, tt, &c);
       realToString(aa, tmpString);
       printf("\nAfter Step4, combined register: =%s|...%d\n", tmpString, aa->digits);

@@ -152,16 +152,16 @@ void sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
 //
 // Complex square root using Newton-Raphson: x_{n+1} = (x_n + z/x_n) / 2
 void sqrtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
-  DECLARE_REAL_T_PTR(xr, 159);
-  DECLARE_REAL_T_PTR(xi, 159);
-  DECLARE_REAL_T_PTR(zr, 159);
-  DECLARE_REAL_T_PTR(zi, 159);
-  DECLARE_REAL_T_PTR(temp1, 159);
-  DECLARE_REAL_T_PTR(temp2, 159);
-  DECLARE_REAL_T_PTR(temp3, 159);
-  DECLARE_REAL_T_PTR(temp4, 159);
-  DECLARE_REAL_T_PTR(denom, 159);
-  DECLARE_REAL_T_PTR(mag, 159);
+  REAL_T_PTR(xr, 159);
+  REAL_T_PTR(xi, 159);
+  REAL_T_PTR(zr, 159);
+  REAL_T_PTR(zi, 159);
+  REAL_T_PTR(temp1, 159);
+  REAL_T_PTR(temp2, 159);
+  REAL_T_PTR(temp3, 159);
+  REAL_T_PTR(temp4, 159);
+  REAL_T_PTR(denom, 159);
+  REAL_T_PTR(mag, 159);
 
   realSetZero(xr);
   realSetZero(xi);

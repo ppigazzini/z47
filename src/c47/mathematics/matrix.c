@@ -4665,20 +4665,20 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
 
   #if defined(OPTION_EIGEN_159)
     ctx159.digits = 159;
-    DECLARE_REAL_T_PTR(trR, 159);
-    DECLARE_REAL_T_PTR(trI, 159);
-    DECLARE_REAL_T_PTR(detR, 159);
-    DECLARE_REAL_T_PTR(detI, 159);
-    DECLARE_REAL_T_PTR(discrR, 159);
-    DECLARE_REAL_T_PTR(discrI, 159);
+    REAL_T_PTR(trR, 159);
+    REAL_T_PTR(trI, 159);
+    REAL_T_PTR(detR, 159);
+    REAL_T_PTR(detI, 159);
+    REAL_T_PTR(discrR, 159);
+    REAL_T_PTR(discrI, 159);
   #else
     ctx159.digits = 75;
-    DECLARE_REAL_T_PTR(trR, 75);
-    DECLARE_REAL_T_PTR(trI, 75);
-    DECLARE_REAL_T_PTR(detR, 75);
-    DECLARE_REAL_T_PTR(detI, 75);
-    DECLARE_REAL_T_PTR(discrR, 75);
-    DECLARE_REAL_T_PTR(discrI, 75);
+    REAL_T_PTR(trR, 75);
+    REAL_T_PTR(trI, 75);
+    REAL_T_PTR(detR, 75);
+    REAL_T_PTR(detI, 75);
+    REAL_T_PTR(discrR, 75);
+    REAL_T_PTR(discrI, 75);
   #endif //OPTION_EIGEN_159
 
 
@@ -4723,10 +4723,10 @@ static void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r
 
   blockMonitoring = true;
   #if defined(OPTION_EIGEN_159)
-    DECLARE_REAL_T_PTR(t1rH, 159);
-    DECLARE_REAL_T_PTR(t1iH, 159);
-    DECLARE_REAL_T_PTR(t2rH, 159);
-    DECLARE_REAL_T_PTR(t2iH, 159);
+    REAL_T_PTR(t1rH, 159);
+    REAL_T_PTR(t1iH, 159);
+    REAL_T_PTR(t2rH, 159);
+    REAL_T_PTR(t2iH, 159);
     realSetZero(t1rH);
     realSetZero(t1iH);
     realSetZero(t2rH);
@@ -4776,48 +4776,48 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
   realContext_t ctx159 = ctxtReal75;
 
   #if defined(OPTION_EIGEN_159)
-    DECLARE_REAL_T_PTR(aekr, 159);
-    DECLARE_REAL_T_PTR(aeki, 159);
-    DECLARE_REAL_T_PTR(bfgr, 159);
-    DECLARE_REAL_T_PTR(bfgi, 159);
-    DECLARE_REAL_T_PTR(cdhr, 159);
-    DECLARE_REAL_T_PTR(cdhi, 159);
-    DECLARE_REAL_T_PTR(cegr, 159);
-    DECLARE_REAL_T_PTR(cegi, 159);
-    DECLARE_REAL_T_PTR(bdkr, 159);
-    DECLARE_REAL_T_PTR(bdki, 159);
-    DECLARE_REAL_T_PTR(afhr, 159);
-    DECLARE_REAL_T_PTR(afhi, 159);
-    DECLARE_REAL_T_PTR(br, 159);
-    DECLARE_REAL_T_PTR(bi, 159);
-    DECLARE_REAL_T_PTR(cr, 159);
-    DECLARE_REAL_T_PTR(ci, 159);
-    DECLARE_REAL_T_PTR(dr, 159);
-    DECLARE_REAL_T_PTR(di, 159);
-    DECLARE_REAL_T_PTR(discrR, 159);
-    DECLARE_REAL_T_PTR(discrI, 159);
+    REAL_T_PTR(aekr, 159);
+    REAL_T_PTR(aeki, 159);
+    REAL_T_PTR(bfgr, 159);
+    REAL_T_PTR(bfgi, 159);
+    REAL_T_PTR(cdhr, 159);
+    REAL_T_PTR(cdhi, 159);
+    REAL_T_PTR(cegr, 159);
+    REAL_T_PTR(cegi, 159);
+    REAL_T_PTR(bdkr, 159);
+    REAL_T_PTR(bdki, 159);
+    REAL_T_PTR(afhr, 159);
+    REAL_T_PTR(afhi, 159);
+    REAL_T_PTR(br, 159);
+    REAL_T_PTR(bi, 159);
+    REAL_T_PTR(cr, 159);
+    REAL_T_PTR(ci, 159);
+    REAL_T_PTR(dr, 159);
+    REAL_T_PTR(di, 159);
+    REAL_T_PTR(discrR, 159);
+    REAL_T_PTR(discrI, 159);
     ctx159.digits = 159;
   #else
-    DECLARE_REAL_T_PTR(aekr, 75);
-    DECLARE_REAL_T_PTR(aeki, 75);
-    DECLARE_REAL_T_PTR(bfgr, 75);
-    DECLARE_REAL_T_PTR(bfgi, 75);
-    DECLARE_REAL_T_PTR(cdhr, 75);
-    DECLARE_REAL_T_PTR(cdhi, 75);
-    DECLARE_REAL_T_PTR(cegr, 75);
-    DECLARE_REAL_T_PTR(cegi, 75);
-    DECLARE_REAL_T_PTR(bdkr, 75);
-    DECLARE_REAL_T_PTR(bdki, 75);
-    DECLARE_REAL_T_PTR(afhr, 75);
-    DECLARE_REAL_T_PTR(afhi, 75);
-    DECLARE_REAL_T_PTR(br, 75);
-    DECLARE_REAL_T_PTR(bi, 75);
-    DECLARE_REAL_T_PTR(cr, 75);
-    DECLARE_REAL_T_PTR(ci, 75);
-    DECLARE_REAL_T_PTR(dr, 75);
-    DECLARE_REAL_T_PTR(di, 75);
-    DECLARE_REAL_T_PTR(discrR, 75);
-    DECLARE_REAL_T_PTR(discrI, 75);
+    REAL_T_PTR(aekr, 75);
+    REAL_T_PTR(aeki, 75);
+    REAL_T_PTR(bfgr, 75);
+    REAL_T_PTR(bfgi, 75);
+    REAL_T_PTR(cdhr, 75);
+    REAL_T_PTR(cdhi, 75);
+    REAL_T_PTR(cegr, 75);
+    REAL_T_PTR(cegi, 75);
+    REAL_T_PTR(bdkr, 75);
+    REAL_T_PTR(bdki, 75);
+    REAL_T_PTR(afhr, 75);
+    REAL_T_PTR(afhi, 75);
+    REAL_T_PTR(br, 75);
+    REAL_T_PTR(bi, 75);
+    REAL_T_PTR(cr, 75);
+    REAL_T_PTR(ci, 75);
+    REAL_T_PTR(dr, 75);
+    REAL_T_PTR(di, 75);
+    REAL_T_PTR(discrR, 75);
+    REAL_T_PTR(discrI, 75);
     ctx159.digits = 75;
   #endif //OPTION_EIGEN_159
 
@@ -4908,12 +4908,12 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
 
   blockMonitoring = true;
   #if defined(OPTION_EIGEN_159)
-    DECLARE_REAL_T_PTR(t1rH, 159);
-    DECLARE_REAL_T_PTR(t1iH, 159);
-    DECLARE_REAL_T_PTR(t2rH, 159);
-    DECLARE_REAL_T_PTR(t2iH, 159);
-    DECLARE_REAL_T_PTR(t3rH, 159);
-    DECLARE_REAL_T_PTR(t3iH, 159);
+    REAL_T_PTR(t1rH, 159);
+    REAL_T_PTR(t1iH, 159);
+    REAL_T_PTR(t2rH, 159);
+    REAL_T_PTR(t2iH, 159);
+    REAL_T_PTR(t3rH, 159);
+    REAL_T_PTR(t3iH, 159);
     realSetZero(t1rH);
     realSetZero(t1iH);
     realSetZero(t2rH);
@@ -5203,7 +5203,7 @@ static void sumOfSubSupDiagonalAll(const char *heading, const real_t *matrix, re
     printf("%s\n", heading);                 // print heading for debug
   #endif //EIGENDEBUG
   #if defined(CONV_SUM_159)
-    DECLARE_REAL_T_PTR(sum159, 159); // 159-digit intermediate sum
+    REAL_T_PTR(sum159, 159); // 159-digit intermediate sum
     realSetZero(sum159);
     realContext_t ctx159 = ctxtReal75;
     ctx159.digits = 159;

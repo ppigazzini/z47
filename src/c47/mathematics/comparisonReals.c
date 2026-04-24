@@ -117,12 +117,12 @@ bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
   realContext_t c = ctxtReal75;
   c.digits = max(max(75, number1->digits), number2->digits);
   #if defined(ALLOW_159)
-    DECLARE_REAL_T_PTR(num1, 159);
-    DECLARE_REAL_T_PTR(num2, 159);
+    REAL_T_PTR(num1, 159);
+    REAL_T_PTR(num2, 159);
     const int32_t k = 159;
   #else
-    DECLARE_REAL_T_PTR(num1, 75);
-    DECLARE_REAL_T_PTR(num2, 75);
+    REAL_T_PTR(num1, 75);
+    REAL_T_PTR(num2, 75);
     const int32_t k = 75;
   #endif //ALLOW_159
   if(c.digits > k) {
@@ -138,8 +138,8 @@ bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
 
 /*
 bool_t realCompareAbsGreaterEqual(const real_t *number1, const real_t *number2) {
-  DECLARE_REAL_T_PTR(num1, 159);
-  DECLARE_REAL_T_PTR(num2, 159);
+  REAL_T_PTR(num1, 159);
+  REAL_T_PTR(num2, 159);
   realContext_t c = ctxtReal75;
   c.digits = max(max(75, number1->digits), number2->digits);
   if(c.digits > 159) {
@@ -158,12 +158,12 @@ bool_t realCompareAbsLessThan(const real_t *number1, const real_t *number2) {
   realContext_t c = ctxtReal75;
   c.digits = max(max(75, number1->digits), number2->digits);
   #if defined(ALLOW_159)
-    DECLARE_REAL_T_PTR(num1, 159);
-    DECLARE_REAL_T_PTR(num2, 159);
+    REAL_T_PTR(num1, 159);
+    REAL_T_PTR(num2, 159);
     const int32_t k = 159;
   #else
-    DECLARE_REAL_T_PTR(num1, 75);
-    DECLARE_REAL_T_PTR(num2, 75);
+    REAL_T_PTR(num1, 75);
+    REAL_T_PTR(num2, 75);
     const int32_t k = 75;
   #endif //OPTION_CUBIC_159 || OPTION_EIGEN_159
   if(c.digits > k) {
@@ -192,12 +192,12 @@ bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
   realContext_t c = ctxtReal75;
   c.digits = max(max(75, number1->digits), number2->digits);
   #if defined(ALLOW_159)
-    DECLARE_REAL_T_PTR(num1, 159);
-    DECLARE_REAL_T_PTR(num2, 159);
+    REAL_T_PTR(num1, 159);
+    REAL_T_PTR(num2, 159);
     const int32_t k = 159;
   #else
-    DECLARE_REAL_T_PTR(num1, 75);
-    DECLARE_REAL_T_PTR(num2, 75);
+    REAL_T_PTR(num1, 75);
+    REAL_T_PTR(num2, 75);
     const int32_t k = 75;
   #endif //ALLOW_159
   if(c.digits > k) {
@@ -271,10 +271,10 @@ bool_t realIsAnInteger(const real_t *x) {
   realContext_t c = ctxtReal75;
   c.digits = max(75, x->digits);
   #if defined(ALLOW_159)
-    DECLARE_REAL_T_PTR(y, 159);
+    REAL_T_PTR(y, 159);
     const int32_t k = 159;
   #else
-    DECLARE_REAL_T_PTR(y, 75);
+    REAL_T_PTR(y, 75);
     const int32_t k = 75;
   #endif //ALLOW_159
   if(c.digits > k) {
@@ -368,8 +368,8 @@ int16_t realIdenticalDigits(real_t *a, real_t *b) {
 //       return false;
 //     }
 //
-//     DECLARE_REAL_T_PTR(pii, 1071);
-//     DECLARE_REAL_T_PTR(n1, 1071);
+//     REAL_T_PTR(pii, 1071);
+//     REAL_T_PTR(n1, 1071);
 //     realContext_t c = ctxtReal75;
 //
 //     // Extract constant at appropriate precision

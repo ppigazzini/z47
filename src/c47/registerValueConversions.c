@@ -1258,8 +1258,8 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       }
       case amRadian: {
         //incoming longInteger, converted via tempString to real6147, modulus 2pi into real6147, convert to real75
-        DECLARE_REAL_T_PTR(reducedAngleTmp, 2139); // This cannot be increased to 6147 further. 6147 overruns the stack even if we just have the type in here also when using 2139 digits below.
-        DECLARE_REAL_T_PTR(reducedAngleTmp2, 2139);
+        REAL_T_PTR(reducedAngleTmp, 2139); // This cannot be increased to 6147 further. 6147 overruns the stack even if we just have the type in here also when using 2139 digits below.
+        REAL_T_PTR(reducedAngleTmp2, 2139);
         realContext_t c = ctxtReal75;
         c.digits = 2139;                               // Cannot be increased further. It works well on 1071, worked for a few tests already on 2139 but crashes if this goes to 6147 (together with the real_xxx above)
                                                        // The minimum required for 1000 digits input reduction is slightly less than double, so 1071 is maybe ok for 99.99% cases, but 2139 is preferred as theoretically you will not have a case where 2139 will not work.
