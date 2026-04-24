@@ -93,7 +93,7 @@ TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_
 
 TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_PCT    ,                ITM_PC         ,          ITM_DELTAPC,            ITM_PCPMG,                   ITM_PCMRR,
                                              ITM_SIGMAMINUS,                ITM_SIGMAx ,                ITM_NSIGMA     ,          ITM_XMEAN,              ITM_NULL,                    ITM_NULL,
-                                             ITM_CLSIGMA   ,                ITM_PCSIGMA,                ITM_PCSGM_DPCMN,          ITM_DPCMEAN,            ITM_NULL  ,                  -MNU_TVM                     };
+                                             ITM_CLSIGMA   ,                ITM_PCSIGMA,                ITM_PCSGM_DPCMN,          ITM_DPCMEAN,            -MNU_CASHFL,                 -MNU_TVM                     };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -101,7 +101,14 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 
 TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,
                                              ITM_CLTVM,                     ITM_EFFTOI,                 ITM_ITOEFF,               ITM_NULL,              ITM_NULL,                    VAR_CPERonA,
-                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_SETSIG2,              ITM_NULL,              ITM_NULL,                    -MNU_CASHFL                  };
+                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_SETSIG2,              ITM_NULL,              ITM_NULL,                    -MNU_AMORT                    };
+
+#if defined(OPTION_TVM_AMORT)
+TO_QSPI const int16_t menu_AMORT[]       = { ITM_AMORT_P1,                  ITM_AMORT_P2,               ITM_AMORT_INT,            ITM_AMORT_PRN,         ITM_AMORT_BAL,               ITM_AMORT_NXT                 };
+#else
+TO_QSPI const int16_t menu_AMORT[]       = {};
+#endif //OPTION_TVM_AMORT
+
 
 TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_FS,                     ITM_FF,                   ITM_STATUS,            ITM_FC,                      ITM_CF,
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
@@ -568,7 +575,7 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,             ITM_LESS
 
                                              ITM_POLAR_char,            ITM_RIGHT_ANGLE,           ITM_ANGLE,                 ITM_MEASURED_ANGLE,        ITM_SPHERICAL_ANGLE,       ITM_AMPERSAND,
                                              ITM_PIPE,                  ITM_DEGREE,                ITM_RIGHT_SINGLE_QUOTE,    ITM_RIGHT_DOUBLE_QUOTE,    ITM_RIGHT_TACK,            ITM_PERPENDICULAR,
-                                             ITM_PARALLEL,              ITM_BULLET,                ITM_RING,                  ITM_EulerE,                ITM_pi,                    ITM_op_i_char,
+                                             ITM_PARALLEL_SIGN,         ITM_BULLET,                ITM_RING,                  ITM_EulerE,                ITM_pi,                    ITM_op_i_char,
 
                                              ITM_op_j_char,             ITM_PLANCK_2PI,            ITM_EEXCHR,                ITM_SUM_char,              ITM_PRODUCT,               ITM_MICRO,
                                              ITM_INTEGRAL_SIGN,         ITM_CONTOUR_INTEGRAL,      ITM_DOUBLE_INTEGRAL,       ITM_SURFACE_INTEGRAL,      ITM_TRIPLE_INTEGRAL,       ITM_VOLUME_INTEGRAL,
@@ -902,7 +909,6 @@ TO_QSPI const int16_t menu_GAP_R[]       = { ITM_GAPPER_R,                  ITM_
 
 TO_QSPI const int16_t menu_SHOW[]        = {  };
 TO_QSPI const int16_t menu_CASHFL[]      = {  };
-TO_QSPI const int16_t menu_AMORT[]       = {  };
 
 
 #include "softmenuCatalogs.h"
@@ -2084,6 +2090,77 @@ TO_QSPI static const mstr modeNames[] = {
 /*5*/  { "UNIT"},
 };
 
+static void placeSubscript(int16_t itemNr, bool_t flt, float tmpF, char *itemName, char *tmpS, char *tmpSS, char *showText) {
+  if(flt && tmpF == (int)tmpF && (
+     (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
+     (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
+     )) {
+    //integer smaller than limit
+    sprintf(tmpS,"%i",(int)tmpF);
+  }
+  else {
+    //out of range for display
+    if(tmpF>0 && tmpF<1.0e-34) {
+      strcpy(tmpS,STD_GAUSS_WHITE_R STD_SUB_0);
+    }
+    else if(tmpF<0 && tmpF>-1.0e-34) {
+      strcpy(tmpS,STD_GAUSS_WHITE_L STD_SUB_0);
+    }
+    else if(tmpF>1.0e34) {
+      strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
+    }
+    else if(tmpF<-1.0e34) {
+      strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
+    }
+    else {
+      bool_t convertedRealPerfectly;
+      char tmpBuf[100];
+      strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
+      //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", convertedRealPerfectly");
+      //printf(") => %s and convertedRealPerfectly = %d\n", tmpS, convertedRealPerfectly);
+      if(tmpS[0] == '?' ||  strchr(tmpS, 'E') != NULL) {    // ?? if no cenversion too place, cut string length and try again; If E on the first try, try again with wider
+        switch(itemNr%10000) {
+          case VAR_ULIM    :
+          case VAR_LLIM    :
+          case VAR_UEST    :
+          case VAR_LEST    :
+               stringCopy(itemName + 3, STD_SPACE_4_PER_EM);
+               break;
+          case VAR_IPonA   :
+          case VAR_PPERonA :
+          case VAR_CPERonA :
+               stringCopy(itemName + 1, STD_SUB_a STD_SPACE_4_PER_EM);
+               break;
+          case VAR_PV      :
+               stringCopy(itemName + 1, STD_SUB_v);
+               break;
+          case VAR_FV      :
+               itemName[1] = 0;
+               break;
+          //case VAR_NPPER   :
+          case VAR_PMT     :
+               stringCopy(itemName + 1, STD_SUB_m);// STD_SPACE_4_PER_EM);
+               break;
+          default:;
+        }
+        strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
+        //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", convertedRealPerfectly");
+        //printf(") => %s and success = %d\n", tmpS, convertedRealPerfectly);
+      }
+    }
+  }
+
+  radixProcess(tmpSS,tmpS);
+  //for very short numerics, add one space
+  if(stringByteLength(tmpSS) < 4) {
+    sprintf(tmpS, STD_SPACE_3_PER_EM "%s",tmpSS);
+  }
+  else {
+    sprintf(tmpS, "%s",tmpSS);
+  }
+  stringCopy(showText + stringByteLength(showText), tmpS);
+}
+
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
@@ -2176,85 +2253,32 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_PPERonA :
       case VAR_CPERonA :
 
-      case VAR_PV      : //comment these out to have no subscripted numbers on FV, PV & PMT
-      case VAR_FV      : //comment these out to have no subscripted numbers on FV, PV & PMT
-      case VAR_PMT     : //comment these out to have no subscripted numbers on FV, PV & PMT
+      case VAR_PV      :
+      case VAR_FV      :
+      case VAR_PMT     :
+                    { 
+                      stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
+                      //real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
+                      //realToFloat(&tmpR, &tmpF);
+                      placeSubscript(itemNr, false, tmpF, itemName, tmpS, tmpSS, showText);
+                      return;
+                      break;
+                    }
 
-                    { stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
-                      real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
-                      realToFloat(&tmpR, &tmpF);
+      case ITM_AMORT_P1: 
+                    {
+                      stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
+                      tmpF = amortP1;
+                      placeSubscript(itemNr, true, tmpF, itemName, tmpS, tmpSS, showText);
+                      return;
+                      break;
+                    }
 
-                      if(false && tmpF == (int)tmpF && (
-                         (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
-                         (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
-                         )) {
-                        //integer smaller than limit
-                        sprintf(tmpS,"%i",(int)tmpF);
-                      }
-                      else {
-                        //out of range for display
-                        if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_SUB_0);
-                        }
-                        else if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_SUB_0);
-                        }
-                        else if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );
-                        }
-                        else if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );
-                        }
-                        else {
-                          bool_t convertedRealPerfectly;
-                          char tmpBuf[100];
-                          strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
-                          //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth1(", ", 4, \"QQ\", convertedRealPerfectly");
-                          //printf(") => %s and convertedRealPerfectly = %d\n", tmpS, convertedRealPerfectly);
-
-                          if(tmpS[0] == '?' ||  strchr(tmpS, 'E') != NULL) {    // ?? if no cenversion too place, cut string length and try again; If E on the first try, try again with wider
-                            switch(itemNr%10000) {
-                              case VAR_ULIM    :
-                              case VAR_LLIM    :
-                              case VAR_UEST    :
-                              case VAR_LEST    :
-                                   stringCopy(itemName + 3, STD_SPACE_4_PER_EM);
-                                   break;
-                              case VAR_IPonA   :
-                              case VAR_PPERonA :
-                              case VAR_CPERonA :
-                                   stringCopy(itemName + 1, STD_SUB_a STD_SPACE_4_PER_EM);
-                                   break;
-                              case VAR_PV      :
-                                   stringCopy(itemName + 1, STD_SUB_v);
-                                   break;
-                              case VAR_FV      :
-                                   itemName[1] = 0;
-                                   break;
-                              //case VAR_NPPER   :
-                              case VAR_PMT     :
-                                   stringCopy(itemName + 1, STD_SUB_m);// STD_SPACE_4_PER_EM);
-                                   break;
-                              default:;
-                            }
-                            strcpy(tmpS, formatDoubleWidth((REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, tmpBuf, 60));
-
-                            //printReal34ToConsole(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), "formatDoubleWidth2(", ", 4, \"Q\", convertedRealPerfectly");
-                            //printf(") => %s and success = %d\n", tmpS, convertedRealPerfectly);
-                          }
-                        }
-                      }
-
-                      radixProcess(tmpSS,tmpS);
-
-                      //for very short numerics, add one space
-                      if(stringByteLength(tmpSS) < 4) {
-                        sprintf(tmpS, STD_SPACE_3_PER_EM "%s",tmpSS);
-                      }
-                      else {
-                        sprintf(tmpS, "%s",tmpSS);
-                      }
-                      stringCopy(showText + stringByteLength(showText), tmpS);
+      case ITM_AMORT_P2: 
+                    { 
+                      stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
+                      tmpF = amortP2;
+                      placeSubscript(itemNr, true, tmpF, itemName, tmpS, tmpSS, showText);
                       return;
                       break;
                     }
@@ -2367,6 +2391,10 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch(itemNr) {
+    #if defined(OPTION_TVM_AMORT)
+      case -MNU_AMORT:
+    #endif //OPTION_TVM_AMORT
+
     #if defined(SAVE_SPACE_DM42_12ORTHO)
       case -MNU_ORTHOG:
       case ITM_HN     :

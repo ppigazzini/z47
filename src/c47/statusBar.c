@@ -371,7 +371,7 @@ void drawBattery(uint16_t voltage);
     if(!(SBARUPD_TVMMode)) {
       return false;
     }
-    bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN;
+    bool_t enable = softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_AMORT;
     if(enable) {
       reInstateOCModeDisplay = true;
       reInstateIntegerModeDisplay = true;

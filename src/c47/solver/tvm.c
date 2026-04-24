@@ -11,6 +11,8 @@
 // This mdule as two control defines, controlled from defines.h:
 //   OPTION_TVM_FORMULAS
 //   OPTION_TVM_NEWTON
+//   OPTION_TVM_AMORT
+
 
 
 #define TVMDEBUG2 //only progress indicators
@@ -1312,3 +1314,206 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
   #endif //OPTION_TVM_NEWTON
 }
 
+
+// ******************* AMORT ****************
+#if defined(OPTION_TVM_AMORT)
+
+void fnAmortP (uint16_t select) {
+  real_t r;
+  if(!getRegisterAsReal(REGISTER_X, &r)) {
+    return;
+  }
+  uint16_t tmp = realToUint32C47(&r, NULL);
+  if(tmp == 0) {
+    return;
+  }
+  uint32_t npper = real34ToUInt32(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER));
+  if(select == 1) {
+    amortP1 = tmp;
+    if(amortP1 > npper) {
+      amortP1 = npper;
+    }
+    if(amortP2 < amortP1) {
+      amortP2 = amortP1;
+    }
+    temporaryInformation = TI_AMORT_P1;
+  } else if(select == 2) {
+    amortP2 = tmp;
+    if(amortP2 > npper) {
+      amortP2 = npper;
+    }
+    if(amortP1 > amortP2) {
+      amortP1 = amortP2;
+    }
+    temporaryInformation = TI_AMORT_P2;
+  }
+}
+
+void fnAmortNext(uint16_t unusedButMandatoryParameter) {
+  uint16_t delta = abs((int)amortP2 - (int)amortP1); 
+  uint32_t npper = real34ToUInt32(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER));
+  amortP1 = amortP2 + 1;
+  amortP2 = amortP1 + delta;
+  if(amortP1 > npper) {
+    amortP1 = npper;
+  }
+  if(amortP2 > npper) {
+    amortP2 = npper;
+  }
+}
+
+
+// Periodic rate from TVM state, with the cperA == pperA case
+//   general:  ip = (1 + iA/(100*cperA))^(cperA/pperA) - 1   or  ip = iA/(100*cperA) when cperA == pperA
+static void amortPeriodicRate(const real_t *iA, const real_t *pperA, const real_t *cperA, real_t *ip) {
+  real_t ic, diff, exponent, tmp;
+
+  realDivide(iA, const_100, &ic, &ctxtTvm);
+  realDivide(&ic, cperA, &ic, &ctxtTvm);
+
+  realSubtract(cperA, pperA, &diff, &ctxtTvm);
+  if(realIsZero(&diff)) {
+    realCopy(&ic, ip);
+    return;
+  }
+
+  realDivide(cperA, pperA, &exponent, &ctxtTvm);
+  WP34S_Ln1P(&ic, &tmp, &ctxtTvmHi);                 // tmp = ln(1 + ic)
+  realMultiply(&tmp, &exponent, &tmp, &ctxtTvmHi);   // tmp = exponent * ln(1 + ic)
+  WP34S_ExpM1(&tmp, ip, &ctxtTvmHi);                 // ip  = exp(tmp) - 1
+}
+
+
+// BAL at the end of period k
+//   i != 0, End:   BAL_k = PV * q^k + PMT         * (q^k - 1) / i
+//   i != 0, Begin: BAL_k = PV * q^k + PMT * (1+i) * (q^k - 1) / i
+//   i == 0:        BAL_k = PV + k * PMT
+static void amortBalAt(const real_t *k, const real_t *pv, const real_t *pmt, const real_t *i,
+                       bool_t begin, real_t *bal) {
+  real_t log1pi, x, qk, qk_m1, pvEff, pvQk, ratio;
+
+  if(realIsZero(i)) {
+    realFMA(k, pmt, pv, bal, &ctxtTvm);              // PV + k * PMT
+    return;
+  }
+
+  WP34S_Ln1P(i, &log1pi, &ctxtSolverTvmHi);
+  realMultiply(k, &log1pi, &x, &ctxtSolverTvmHi);
+  doubleExp(&x, &qk, &qk_m1, &ctxtSolverTvmHi);      // qk = q^k, qk_m1 = q^k - 1
+
+  if(begin) {                                        // Begin: BAL_k = (PV/q) * q^k + PMT * (q^k - 1)/i
+    real_t one_plus_i;
+    realAdd(const_1, i, &one_plus_i, &ctxtTvm);
+    realDivide(pv, &one_plus_i, &pvEff, &ctxtTvm);
+  }
+  else {                                             // End:   BAL_k =  PV     * q^k + PMT * (q^k - 1)/i
+    realCopy(pv, &pvEff);
+  }
+
+  realMultiply(&pvEff, &qk, &pvQk, &ctxtTvm);
+  realDivide(&qk_m1, i, &ratio, &ctxtSolverTvmInv);
+  realFMA(pmt, &ratio, &pvQk, bal, &ctxtTvm);        // pvEff*q^k + PMT*(q^k-1)/i
+}
+
+
+// Load TVM state, validate, compute all three AMORT results. Returns false if cp/a == 0 or P/YR == 0.
+static bool_t amortCompute(real_t *sumInt, real_t *sumPrn, real_t *bal) {
+  real_t iA, pperA, cperA, pmt, pv;
+  real_t i, p1m1, balStart, count, totalPmt;
+  bool_t begin;
+  real_t p1, p2;
+  uInt32ToReal(amortP1, &p1);
+  uInt32ToReal(amortP2, &p2);
+
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);
+
+  if(realIsZero(&cperA) || realIsZero(&pperA)) {
+    return false;
+  }
+
+  begin = !getSystemFlag(FLAG_ENDPMT);
+  amortPeriodicRate(&iA, &pperA, &cperA, &i);
+
+  realSubtract(&p1, const_1, &p1m1, &ctxtTvm);
+
+  if(realIsZero(&p1m1)) {                          // HP convention: balance before period 1 is PV in both modes. Begin mode would give PV/(1+i), implies non-zero period 1 interest.
+    realCopy(&pv, &balStart);
+  }
+  else {
+    amortBalAt(&p1m1, &pv, &pmt, &i, begin, &balStart);
+  }
+  amortBalAt(&p2, &pv, &pmt, &i, begin, bal);
+
+  realSubtract(bal, &balStart, sumPrn, &ctxtTvm);
+
+  realSubtract(&p2, &p1, &count, &ctxtTvm);
+  realAdd(&count, const_1, &count, &ctxtTvm);
+  realMultiply(&count, &pmt, &totalPmt, &ctxtTvm);
+  realSubtract(&totalPmt, sumPrn, sumInt, &ctxtTvm);
+
+  return true;
+}
+
+
+static void amortStoreResult(const real_t *value, uint16_t tiTag) {
+  saveForUndo();
+  thereIsSomethingToUndo = true;
+  liftStack();
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  convertRealToReal34ResultRegister(value, REGISTER_X);
+  temporaryInformation = tiTag;
+}
+
+void fnAmortBal(uint16_t unusedButMandatoryParameter) {
+  ensureTvmContext();
+  real_t sumInt, sumPrn, bal;
+
+  if(!amortCompute(&sumInt, &sumPrn, &bal)) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnAmortBal:", "cannot compute BAL ", "with cp/a = 0 or P/YR = 0", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  amortStoreResult(&bal, TI_AMORT_BAL);
+}
+
+void fnAmortPrn(uint16_t unusedButMandatoryParameter) {
+  ensureTvmContext();
+  real_t sumInt, sumPrn, bal;
+
+  if(!amortCompute(&sumInt, &sumPrn, &bal)) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnAmortPrn:", "cannot compute ΣPRN ", "with cp/a = 0 or P/YR = 0", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  amortStoreResult(&sumPrn, TI_AMORT_PRN);
+}
+
+void fnAmortInt(uint16_t unusedButMandatoryParameter) {
+  ensureTvmContext();
+  real_t sumInt, sumPrn, bal;
+
+  if(!amortCompute(&sumInt, &sumPrn, &bal)) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnAmortInt:", "cannot compute ΣINT ", "with cp/a = 0 or P/YR = 0", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  amortStoreResult(&sumInt, TI_AMORT_INT);
+}
+
+#else //OPTION_TVM_AMORT
+  void fnAmortP (uint16_t select) {;}
+  void fnAmortNext(uint16_t unusedButMandatoryParameter) {;}
+  void fnAmortBal(uint16_t unusedButMandatoryParameter) {;}
+  void fnAmortPrn(uint16_t unusedButMandatoryParameter) {;}
+  void fnAmortInt(uint16_t unusedButMandatoryParameter) {;}
+#endif //OPTION_TVM_AMORT

@@ -40,6 +40,10 @@ void runPgm(uint16_t unusedButMandatoryParameter);
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
 const funcTest_t funcTestNoParam[] = {
+  {"fnAmortP",               fnAmortP              },
+  {"fnAmortInt",             fnAmortInt            },
+  {"fnAmortPrn",             fnAmortPrn            },
+  {"fnAmortBal",             fnAmortBal            },
   {"fn10Pow",                fn10Pow               },
   {"fn2Pow",                 fn2Pow                },
   {"fnAdd",                  fnAdd                 },

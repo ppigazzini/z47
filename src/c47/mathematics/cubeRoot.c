@@ -202,12 +202,11 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
       realSetZero(xi);
     }
     else {
-      realSetPositiveSign(zr);
+      realSetPositiveSign(zr); // Temorarily set to positive, handle the sign later after the power function on positive only
       realPower(zr, const159_1on3, xr, realContext);
       realSetNegativeSign(xr);
       realSetZero(xi);
-      realSetPositiveSign(zr); // Restore sign
-      realSetNegativeSign(zr);
+      realSetNegativeSign(zr); // Restore to negative (input was negative real, we're handling cbrt of negative)
     }
     realCopy(xr, resReal);
     realCopy(xi, resImag);
