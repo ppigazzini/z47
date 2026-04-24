@@ -104,7 +104,9 @@ TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_
                                              ITM_BEGINP,                    ITM_ENDP,                   ITM_SETSIG2,              ITM_NULL,              ITM_NULL,                    -MNU_AMORT                    };
 
 #if defined(OPTION_TVM_AMORT)
-TO_QSPI const int16_t menu_AMORT[]       = { ITM_AMORT_P1,                  ITM_AMORT_P2,               ITM_AMORT_INT,            ITM_AMORT_PRN,         ITM_AMORT_BAL,               ITM_AMORT_NXT                 };
+TO_QSPI const int16_t menu_AMORT[]       = { ITM_AMORT_P1,                  ITM_AMORT_P2,               ITM_AMORT_INT,            ITM_AMORT_PRN,         ITM_AMORT_BAL,               ITM_AMORT_NXT,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_AMORT_HP12C               };
 #else
 TO_QSPI const int16_t menu_AMORT[]       = {};
 #endif //OPTION_TVM_AMORT
@@ -2447,7 +2449,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch(itemNr) {
-    #if defined(OPTION_TVM_AMORT)
+    #if !defined(OPTION_TVM_AMORT)
       case -MNU_AMORT:
     #endif //OPTION_TVM_AMORT
 
