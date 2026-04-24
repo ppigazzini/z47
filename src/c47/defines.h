@@ -906,6 +906,7 @@ typedef enum {
 #define MAN     0
 #define NORM    1
 #define TRACE   2
+#define STRACE  3
 
 #define PROG    false
 #define LIST    true
