@@ -147,6 +147,8 @@ void configCommon(uint16_t idx) {
 #define TVMIKnown             121    // tvm
 #define TVMIChanges           122    // tvm
 #define FDIGS                 123    // config_fractionDigits
+#define AMORTP1               124
+#define AMORTP2               125
 
 
 #define xxx -10001
@@ -210,6 +212,10 @@ RESERVED_VARIABLE_PV,                xxx,        0,                             
 RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
+AMORTP1                              xxx,        1,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             1,
+AMORTP2                              xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
+
+
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
 3,                                   1,          FLAG_HPCONV,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPCONV
@@ -335,6 +341,8 @@ void Sett(int16_t grp) {
         case DenMaX               : denMax                     =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // DenMaX
         case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIKnown
         case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIChanges
+        case AMORTP1              : amortP1                    =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // Amort
+        case AMORTP2              : amortP2                    =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // Amort
 
         case RESERVED_VARIABLE_LX     :
         case RESERVED_VARIABLE_UX     :
