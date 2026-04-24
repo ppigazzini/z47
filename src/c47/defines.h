@@ -742,7 +742,7 @@
 #define FLAG_ALPHA                            0x800e
 #define FLAG_alphaCAP                         0xc00f
 #define FLAG_RUNTIM                           0xc010
-#define FLAG_RUNIO                            0xc011
+#define FLAG_AMORT_HP12C                      0x8011
 #define FLAG_PRINTS                           0xc012
 #define FLAG_TRACE                            0x8013
 #define FLAG_USER                             0x8014
