@@ -57,7 +57,6 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
-
 #define LONGPRESS_CFG
 #define OPTION_CUBIC_159               //                   // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
 #undef  OPTION_SQUARE_159              // NOT NEEDED AT ALL // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits.
@@ -102,7 +101,7 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
       #define SAVE_SPACE_DM42_12ELLIP  //       bytes // ELLIPTIC
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
@@ -241,7 +240,7 @@
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
@@ -780,7 +779,7 @@
 #define FLAG_ALPHA                            0x800e
 #define FLAG_alphaCAP                         0xc00f
 #define FLAG_RUNTIM                           0xc010
-#define FLAG_spare1                           0xc011 // spare
+#define FLAG_AMORT_HP12C                      0x8011
 #define FLAG_spare2                           0xc012 // spare
 #define FLAG_TRACE                            0x8013
 #define FLAG_USER                             0x8014
@@ -2168,7 +2167,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
-
 #define inputAngleMode3r(r)                  ((registerIsNoAngle(r+1) && registerIsNoAngle(r+2)) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 #define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
 #define registerIsAngle(r)                   ( getRegisterDataType(r  ) == dtReal34 && !registerIsNoAngle(r))
@@ -2179,6 +2177,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
                                               !inputAngleError3r(r))
 #define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))
+
 
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))

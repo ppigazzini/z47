@@ -505,7 +505,7 @@
 #define SFL_ALPHA                    477 // The SFL item names are not used
 #define SFL_alphaCAP                 478 // The SFL item names are not used
 #define SFL_RUNTIM                   479 // The SFL item names are not used
-#define SFL_0480                     480 // The SFL item names are not used
+#define SFL_AMORT_HP12C              480 // The SFL item names are not used
 #define SFL_0481                     481 // The SFL item names are not used
 #define SFL_TRACE                    482 // The SFL item names are not used
 #define SFL_USER                     483 // The SFL item names are not used
@@ -2103,7 +2103,7 @@
 #define ITM_2049                    2049  //blank
 #define ITM_2050                    2050  //blank
 #define ITM_2051                    2051  //blank
-#define ITM_2052                    2052  //blank
+#define ITM_AMORT_HP12C             2052
 #define ITM_2TO10                   2053
 #define ITM_USER_HRESET             2054
 #define ITM_USER_PRESET             2055
