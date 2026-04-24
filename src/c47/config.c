@@ -212,8 +212,8 @@ RESERVED_VARIABLE_PV,                xxx,        0,                             
 RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
-AMORTP1                              xxx,        1,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             1,
-AMORTP2                              xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
+AMORTP1,                             xxx,        1,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             1,
+AMORTP2,                             xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 
 
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
