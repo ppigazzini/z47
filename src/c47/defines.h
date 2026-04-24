@@ -57,7 +57,6 @@
 #undef SAVE_SPACE_DM42_22_EDIT1
 #undef SAVE_SPACE_DM42_23_EDIT2
 #undef SAVE_SPACE_DM42_24_PROFILES
-
 #define LONGPRESS_CFG
 #define OPTION_CUBIC_159               //                   // C47 SLVC user function is 159 digits internally;  This is needed for 34 digit input accuracy.
 #undef  OPTION_SQUARE_159              // NOT NEEDED AT ALL // C47 SLVQ user function is 159 digits internally; This NOT needed for 34 digit input accuracy. Even the worst case quadratic solve is ok in the standard 75 digits.
@@ -65,6 +64,7 @@
 #define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
+#define OPTION_TVM_AMORT               //                   // Use AMORT
 #define OPTION_ELEC                    //                   // ELEC functions
 #undef OPTION_VECTOR                   //                   // 2D 3D vector conversions; vector swaps; display TI for vector
 #define IR_PRINTING                    // Enable printing everywhere
@@ -101,7 +101,7 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
       #define SAVE_SPACE_DM42_12ELLIP  //       bytes // ELLIPTIC
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
@@ -126,10 +126,7 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
-      #undef  OPTION_VECTOR            //  10k ? bytes// Vector
-      #undef  OPTION_ELEC              //  2k ?  bytes// ELEC functions
-
-
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
 
@@ -240,7 +237,7 @@
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW use VIEW
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR, NUMTHEORY
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics (full plot from memory)
@@ -254,6 +251,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -1794,7 +1792,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ELLIPSE_K                             133
 #define TI_ELLIPSE_M                             134
 #define TI_ELLIPSE_Theta                         135
-#define TI_PRINT_COMPLETE                        127
+#define TI_PRINT_COMPLETE                        136
+#define TI_AMORT_BAL                             137 
+#define TI_AMORT_PRN                             138 
+#define TI_AMORT_INT                             139
+#define TI_AMORT_P1                              140 
+#define TI_AMORT_P2                              141
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -2161,7 +2164,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger)   ||\
                                                 (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtLongInteger)) \
                                               )
-
 #define inputAngleMode3r(r)                  ((registerIsNoAngle(r+1) && registerIsNoAngle(r+2)) ? (!registerIsNoAngle(r) ? getRegisterAngularMode(r) : amNone) : amNone)
 #define registerIsNoAngle(r)                 ((getRegisterDataType(r  ) == dtReal34 && getRegisterAngularMode(r) == amNone) || getRegisterDataType(r) == dtLongInteger)
 #define registerIsAngle(r)                   ( getRegisterDataType(r  ) == dtReal34 && !registerIsNoAngle(r))
@@ -2172,6 +2174,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                               (getRegisterDataType(r+2) == dtReal34 || getRegisterDataType(r+2) == dtLongInteger) &&\
                                               !inputAngleError3r(r))
 #define isXFNShowing(r)                      (menu(0) == -MNU_SHOW && menu(1) == -MNU_XXFCNS && isXFNregisterValid3r(r))
+
 
 
 #define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
