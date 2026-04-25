@@ -2789,12 +2789,12 @@
 #define ITM_TRACE                   2691
 #define ITM_STRACE                  2692
 #define ITM_PRINTERLIST             2693
-#define ITM_PRINT_ALL_ITEMS         2694
+#define ITM_PRINTERXFN              2694
 #define ITM_2695                    2695
 #define ITM_2696                    2696
 #define ITM_2697                    2697
 #define ITM_2698                    2698
-#define ITM_2699                    2699 //spares for the print menu
+#define ITM_PRINT_ALL_ITEMS         2699 //spares for the print menu
 
 #define ITM_3DPHYS                  2700
 #define ITM_3DXYZ                   2701
