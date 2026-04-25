@@ -506,7 +506,7 @@
 #define SFL_alphaCAP                 478 // The SFL item names are not used
 #define SFL_RUNTIM                   479 // The SFL item names are not used
 #define SFL_AMORT_HP12C              480 // The SFL item names are not used
-#define SFL_PRINTS                   481 // The SFL item names are not used
+#define SFL_0481                     481 // The SFL item names are not used
 #define SFL_TRACE                    482 // The SFL item names are not used
 #define SFL_USER                     483 // The SFL item names are not used
 #define SFL_LOWBAT                   484 // The SFL item names are not used
@@ -2341,10 +2341,10 @@
 #define SFL_FGLNLIM                 2285 // The SFL item names are not used
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
 #define SFL_FGGR                    2287 // The SFL item names are not used
-#define SFL_2288                    2288 // The SFL item names are not used
-#define SFL_2289                    2289 // The SFL item names are not used
-#define SFL_2290                    2290 // The SFL item names are not used
-#define SFL_2291                    2291 // The SFL item names are not used
+#define SFL_3DPHYS                  2288 // The SFL item names are not used
+#define SFL_3DXYZ                   2289 // The SFL item names are not used
+#define SFL_PRTEN                   2290 // The SFL item names are not used
+#define SFL_NORM                    2291 // The SFL item names are not used
 #define SFL_2292                    2292 // The SFL item names are not used
 #define SFL_2293                    2293 // The SFL item names are not used
 #define SFL_2294                    2294 // The SFL item names are not used
@@ -2540,13 +2540,13 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_CONCAT                  2473
+#define ITM_M_CONCAT                2473
 
-#define ITM_STKtoV3                 2474
+#define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475
-#define ITM_V3toSTK                 2476
+#define ITM_V3toSTK_M               2476
 #define ITM_V2toSTK                 2477
-#define ITM_VECtoSTK                2478
+#define ITM_2478                    2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481
@@ -2557,8 +2557,8 @@
 #define ITM_STOVEL1                 2485
 #define ITM_STOVEL2                 2486
 #define ITM_STOVEL3                 2487
-#define ITM_2488                    2488
-#define ITM_2489                    2489
+#define ITM_STKtoV3_P               2488
+#define ITM_V3toSTK_P               2489
 #define ITM_V10                     2490
 #define ITM_V01                     2491
 #define ITM_CPXexV                  2492
@@ -2787,9 +2787,9 @@
 #define ITM_MAN                     2689
 #define ITM_NORM                    2690
 #define ITM_TRACE                   2691
-#define ITM_PRINTERLIST             2692
-#define ITM_2693                    2693
-#define ITM_2694                    2694
+#define ITM_STRACE                  2692
+#define ITM_PRINTERLIST             2693
+#define ITM_PRINT_ALL_ITEMS         2694
 #define ITM_2695                    2695
 #define ITM_2696                    2696
 #define ITM_2697                    2697
@@ -2798,8 +2798,8 @@
 
 #define ITM_3DPHYS                  2700
 #define ITM_3DXYZ                   2701
-#define ITM_2702                    2702
-#define ITM_2703                    2703
+#define ITM_STKtoV3                 2702
+#define ITM_V3toSTK                 2703
 
 #define ITM_PNORM                   2704
 #define ITM_NNZ                     2705

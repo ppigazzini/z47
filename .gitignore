@@ -17,7 +17,11 @@
 backup.bin
 backup.cfg
 backupR47.cfg
+<<<<<<< HEAD
+wp43.sav
+=======
 wp43.sav    
+>>>>>>> master
 wp43.dat
 c47.sav
 c47.dat

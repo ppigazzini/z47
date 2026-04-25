@@ -7,6 +7,14 @@
 
 #include "c47.h"
 
+#if defined(SAVE_SPACE_DM42_17C)
+  void fnGEVP                      (uint16_t unusedButMandatoryParameter){}
+  void fnGEVL                      (uint16_t unusedButMandatoryParameter){}
+  void fnGEVR                      (uint16_t unusedButMandatoryParameter){}
+  void fnGEVI                      (uint16_t unusedButMandatoryParameter){}
+#else
+
+
 static bool_t checkParamGEV(real_t *x, real_t *mu, real_t *sigma, real_t *xi, bool_t qf) {
   real_t t;
 
@@ -162,3 +170,4 @@ void fnGEVI(uint16_t unusedButMandatoryParameter) {
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
 
+#endif //SAVE_SPACE_DM42_17C

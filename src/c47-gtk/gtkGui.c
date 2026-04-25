@@ -1222,6 +1222,13 @@ continueWithOldDetections:
           copyScreenToClipboard();
           break;
 
+        case GDK_KEY_M+65536: // Ctrl M
+        case GDK_KEY_m+65536: // Ctrl m
+          CTRL_State = 0;
+          printf("key pressed: CTRL+m Menu copy\n");
+          copyMenuToClipboard();
+          break;
+
       case 83+65536: // Ctrl S
       case 115+65536: // Ctrl s
         CTRL_State = 0;
@@ -5465,7 +5472,7 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen

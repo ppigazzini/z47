@@ -294,6 +294,8 @@ AMORTP2,                             xxx,        12,                            
 
 3,                                   0,          FLAG_FGGR,                      xxx,             xxx,                  FLAG_FGGR,              FLAG_FGGR,       xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_FGGR,            xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_3DPHYS,                    xxx,             xxx,                  FLAG_3DPHYS,            FLAG_3DPHYS,     xxx,             xxx,
+3,                                   0,          FLAG_3DXYZ,                     xxx,             xxx,                  FLAG_3DXYZ,             FLAG_3DXYZ,      xxx,             xxx,
 
 
 
@@ -1124,7 +1126,7 @@ void fnClAll(uint16_t confirmation) {
 
 
 void addTestPrograms(void) {
-  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(19000));
+  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(20000));
 
   resizeProgramMemory(TO_BLOCKS(numberOfBytesForTheTestPrograms));
   firstDisplayedStep            = beginOfProgramMemory;
@@ -1806,6 +1808,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       fnStore(indexOfStrings[i].count);
       fnDrop(NOPARAM);
     }
+    
+    //Initialize Printer status
+    #if defined(IR_PRINTING)
+      printerState.print_on         = false;          ///< Printing off
+      printerState.print_blank_line = 0; 	          ///< Print space between lines
+      printerState.print_mode       = PMODE_DEFAULT;  ///< printer modes;
+      printerState.printer_model    = PRINTER_HP;     ///< printer modes;
+      printerState.delay            = getLineDelay(); ///< printer line delay      
+    #endif //IR_PRINTING
 
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("version\n");
