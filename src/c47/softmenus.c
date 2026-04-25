@@ -696,18 +696,18 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
                                              ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
 #if defined(PC_BUILD)
-  #define PAT  ITM_PRINT_ALL_ITEMS
+  #define PAT  ITM_NULL //ITM_PRINT_ALL_ITEMS
 #else
   #define PAT  ITM_NULL
 #endif //PC_BUILD
 
-TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERALPHA,           ITM_PRINTERSTK,           ITM_PRINTERR,          ITM_PRINTERPROG,             ITM_PRINTERADV,
-                                             ITM_PRINTERHASH,               ITM_PRINTERCHAR,            ITM_PRINTERLCD,           ITM_PRINTERSIGMA,      ITM_PRINTERLIST,             ITM_PRINTERTAB,
-                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE,
+TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERADV,                ITM_PRINTERSTK,             ITM_PRINTERX,             ITM_PRINTERR,          ITM_PRINTERALPHA,            ITM_PRINTERPROG,             
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_PRINTERHASH,          ITM_NULL,              ITM_PRINTERCHAR,             ITM_PRINTERLIST,
+                                            -MNU_PRINTER,                   ITM_NULL,                   ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE,
 
-                                             ITM_PRINTERXY,                 ITM_P_ALLREGS,              ITM_PRINTERREGS,          ITM_PRINTERWIDTH,      ITM_PRINTERUSER,             ITM_PRINTERADV,
-                                            -MNU_PRINTER,                   ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    PAT,
-                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE                    };
+                                             ITM_PRINTERADV,                ITM_PRINTERSIGMA,           ITM_PRINTERXY,            ITM_PRINTERREGS,       ITM_PRINTERTAB,              ITM_PRINTERUSER,
+                                             ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_PRINTERXFN,           ITM_P_ALLREGS,         ITM_PRINTERWIDTH,            ITM_PRINTERLCD,
+                                            -MNU_PRINTER,                   PAT,                        ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE                    };
 
 TO_QSPI const int16_t menu_Printer[]     = { ITM_PRINTERHP,                 ITM_PRINTERMARTEL,          ITM_NULL,                 ITM_NULL,              ITM_PRINTERMODE,             ITM_PRINTERDLAY               };
 
