@@ -4531,7 +4531,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation == TI_AMORT_INT && regist == REGISTER_X) {
             sprintf(prefix, "%s", STD_SIGMA);
-            strcat(prefix, " of interest to P2=");
+            strcat(prefix, " of interest to P2 =");
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
