@@ -696,7 +696,7 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
                                              ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
 #if defined(PC_BUILD)
-  #define PAT  ITM_NULL //ITM_PRINT_ALL_ITEMS
+  #define PAT  ITM_PRINT_ALL_ITEMS
 #else
   #define PAT  ITM_NULL
 #endif //PC_BUILD
