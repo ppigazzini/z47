@@ -2096,8 +2096,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
-      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS) {
-        showFunctionNameItem = ITM_RS;
+      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS && !SHOWMODE) {
+         showFunctionNameItem = ITM_RS;
         temporaryInformation = TI_NO_INFO;
         refreshRegisterLine(REGISTER_T);
       }
