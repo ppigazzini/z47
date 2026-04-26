@@ -1495,7 +1495,10 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
       strcat(displayString, STD_SPACE_HAIR);
     }
 
-    if(real34IsZero(&real34)) {           // JM
+    if(real34IsZero(&real34) &&                                     // This section handles and shortend 0+i.n to i.n, if real part = 0
+       !(real34IsNegative(&real34) || real34IsNegative(&imag34)) && //   except when any Re or Im is +0 or -0
+       !(real34IsZero(&imag34))                                     //   except for 0+i0
+       ) {
       #if defined(PC_BUILD_TELLTALE)
         char tmp_a[100];
         char tmp_b[100];
