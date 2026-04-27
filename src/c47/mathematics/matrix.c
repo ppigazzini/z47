@@ -8,6 +8,8 @@
 #include "c47.h"
 
 
+static void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res);
+
 // Eigenvalue setup
 //unlikely to change:
 #undef  CONV_SUM_159       //DEFAULT NOT SET  //use for higher accuracy on the converge sums. Need need seen for the higher accuracy.
@@ -924,6 +926,58 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
+
+void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    real34Matrix_t x, res;
+
+    linkToRealMatrixRegister(REGISTER_X, &x);
+
+    if(x.header.matrixRows != x.header.matrixColumns) {
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
+        moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+      sqrtRealMatrix(&x, &res);
+      if(lastErrorCode == ERROR_NONE) {
+        if(res.matrixElements) {
+          convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
+          realMatrixFree(&res);
+          setSystemFlag(FLAG_ASLIFT);
+        }
+        else {
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "matrix has no real square root, or iteration failed to converge");
+            moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
+      }
+      else {
+        temporaryInformation = TI_NO_INFO;
+        if(programRunStop == PGM_WAITING) {
+          programRunStop = PGM_STOPPED;
+        }
+      }
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+      moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, "is not a (real) matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
 
 
 static void _fnEuclideanNorm(uint16_t pParam) {
@@ -3835,6 +3889,245 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
       moreInfoOnError("In function invertRealMatrix:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+}
+
+
+
+// ============================================================================
+// Matrix square root
+#ifndef MATRIX_SQRT_USE_EIGEN
+//   0 = Denman-Beavers iteration (iterative, default)
+//   1 = Eigendecomposition: Y = Q * sqrt(Lambda) * Q^-1 (single-shot, real eigenvalues
+  #define MATRIX_SQRT_USE_EIGEN 1
+#endif //MATRIX_SQRT_USE_EIGEN
+
+
+#if (MATRIX_SQRT_USE_EIGEN == 0)
+// Element-wise (a + b) / 2 at the given context precision; supports in-place when a == res or b == res.  For Denman-Beavers.
+static void halfSumRealMatrices(const real34Matrix_t *a, const real34Matrix_t *b, real34Matrix_t *res, realContext_t *realContext) {
+  const uint16_t rows = a->header.matrixRows;
+  const uint16_t cols = a->header.matrixColumns;
+  real_t ae, be;
+
+  if((a != res) && (b != res)) {
+    if(!realMatrixInit(res, rows, cols)) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Ram full");
+        moreInfoOnError("In function halfSumRealMatrices:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+  for(uint32_t i = 0; i < (uint32_t)rows * cols; ++i) {
+    real34ToReal(&a->matrixElements[i], &ae);
+    real34ToReal(&b->matrixElements[i], &be);
+    realAdd(&ae, &be, &ae, realContext);
+    realMultiply(&ae, const_1on2, &ae, realContext);
+    realToReal34(&ae, &res->matrixElements[i]);
+  }
+}
+#endif //MATRIX_SQRT_USE_EIGEN
+
+
+static bool_t isRealMatrixDiagonal(const real34Matrix_t *matrix) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  for(uint16_t i = 0; i < rows; ++i) {
+    for(uint16_t j = 0; j < cols; ++j) {
+      if(i != j && !real34IsZero(&matrix->matrixElements[i * cols + j])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
+#if (MATRIX_SQRT_USE_EIGEN == 0)
+// Denman-Beavers iteration
+//   Y_0 = A,  Z_0 = I
+//   Y_{k+1} = (Y_k + inv(Z_k)) / 2
+//   Z_{k+1} = (Z_k + inv(Y_k)) / 2
+// Y converges to sqrt(A), Z converges to inv(sqrt(A))
+// On failure (singular intermediate or non-convergence), res->matrixElements set to NULL
+static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  const uint16_t MAX_ITER = 30;
+  real_t normVal, tol;
+  real34Matrix_t Y = {0}, Z = {0}, Yinv = {0}, Zinv = {0}, YY = {0};
+  bool_t converged = false;
+  bool_t failed = false;
+  uint16_t k;
+
+  copyRealMatrix(matrix, &Y);                      // Y_0 = A
+  if(!Y.matrixElements) { failed = true; goto cleanup; }
+  realMatrixIdentity(&Z, n);                       // Z_0 = I
+  if(!Z.matrixElements) { failed = true; goto cleanup; }
+
+  stringToReal("1E-30", &tol, &ctxtReal39);
+
+  for(k = 0; k < MAX_ITER; ++k) {
+    if(Yinv.matrixElements) realMatrixFree(&Yinv);
+    if(Zinv.matrixElements) realMatrixFree(&Zinv);
+
+    invertRealMatrix(&Y, &Yinv);
+    if(!Yinv.matrixElements) { failed = true; goto cleanup; }
+    invertRealMatrix(&Z, &Zinv);
+    if(!Zinv.matrixElements) { failed = true; goto cleanup; }
+
+    halfSumRealMatrices(&Y, &Zinv, &Y, &ctxtReal39);
+    halfSumRealMatrices(&Z, &Yinv, &Z, &ctxtReal39);
+
+    if((k & 1) == 1) {
+      if(YY.matrixElements) realMatrixFree(&YY);
+      multiplyRealMatrices(&Y, &Y, &YY);
+      if(!YY.matrixElements) { failed = true; goto cleanup; }
+      subtractRealMatrices(&YY, matrix, &YY);
+      _euclideanNormRealMatrix(&YY, 2, &normVal, &ctxtReal39);
+      if(realCompareLessThan(&normVal, &tol)) {
+        converged = true;
+        break;
+      }
+    }
+  }
+
+cleanup:
+  if(Yinv.matrixElements) realMatrixFree(&Yinv);
+  if(Zinv.matrixElements) realMatrixFree(&Zinv);
+  if(YY.matrixElements)   realMatrixFree(&YY);
+  if(Z.matrixElements)    realMatrixFree(&Z);
+
+  if(converged && !failed) {
+    res->header        = Y.header;
+    res->matrixElements = Y.matrixElements;
+  }
+  else {
+    if(Y.matrixElements) realMatrixFree(&Y);
+    res->matrixElements = NULL;
+    res->header.matrixRows = res->header.matrixColumns = 0;
+  }
+}
+#endif // MATRIX_SQRT_USE_EIGEN == 0
+
+
+#if (MATRIX_SQRT_USE_EIGEN == 1)
+// Eigendecomposition: A = Q * Lambda * inv(Q)
+// sqrt(A) = Q * sqrt(Lambda) * inv(Q)
+// On failure (complex or negative eigenvalues, eigensolver error), res->matrixElements is set to NULL
+static void sqrtRealMatrixEigen(const real34Matrix_t *matrix, real34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  real34Matrix_t Lambda = {0}, LambdaImag = {0};
+  real34Matrix_t Q = {0}, QImag = {0}, Qinv = {0}, tmp = {0};
+  real_t a;
+  bool_t failed = false;
+
+  // Eigenvalues. Lambda gets the (size x size) diagonal-eigenvalue matrix. LambdaImag allocated only if at least one eigenvalue is complex.
+  realEigenvalues(matrix, &Lambda, &LambdaImag);
+  if(!Lambda.matrixElements) { failed = true; goto cleanup; }
+  if(LambdaImag.matrixElements) {
+    // At least one complex-conjugate pair: defer to complex phase.
+    failed = true;
+    goto cleanup;
+  }
+
+  // Element-wise sqrt of diagonal eigenvalue matrix; bail on negatives.
+  for(uint16_t i = 0; i < n; ++i) {
+    real34ToReal(&Lambda.matrixElements[i * n + i], &a);
+    if(realIsNegative(&a)) {
+      failed = true;
+      goto cleanup;
+    }
+    realSquareRoot(&a, &a, &ctxtReal39);
+    realToReal34(&a, &Lambda.matrixElements[i * n + i]);
+  }
+
+  // Eigenvectors. Q's columns are the eigenvectors of A.
+  realEigenvectors(matrix, &Q, &QImag);
+  if(!Q.matrixElements) { failed = true; goto cleanup; }
+  if(QImag.matrixElements) { failed = true; goto cleanup; }   // shouldn't happen
+
+  // inv(Q). For symmetric input Q is orthogonal so Q^T would suffice and be faster, but using the general inverse covers the non-symmetric case at modest cost.
+  invertRealMatrix(&Q, &Qinv);
+  if(!Qinv.matrixElements) { failed = true; goto cleanup; }   // singular Q
+
+  // tmp = Q * sqrt(Lambda)
+  multiplyRealMatrices(&Q, &Lambda, &tmp);
+  if(!tmp.matrixElements) { failed = true; goto cleanup; }
+
+  // res = tmp * inv(Q) = Q * sqrt(Lambda) * inv(Q)
+  multiplyRealMatrices(&tmp, &Qinv, res);
+  if(!res->matrixElements) { failed = true; goto cleanup; }
+
+cleanup:
+  if(Lambda.matrixElements)     realMatrixFree(&Lambda);
+  if(LambdaImag.matrixElements) realMatrixFree(&LambdaImag);
+  if(Q.matrixElements)          realMatrixFree(&Q);
+  if(QImag.matrixElements)      realMatrixFree(&QImag);
+  if(Qinv.matrixElements)       realMatrixFree(&Qinv);
+  if(tmp.matrixElements)        realMatrixFree(&tmp);
+
+  if(failed) {
+    res->matrixElements = NULL;
+    res->header.matrixRows = res->header.matrixColumns = 0;
+  }
+}
+#endif // MATRIX_SQRT_USE_EIGEN == 1
+
+
+// Compute Y such that Y*Y == matrix. Matrix must be square. Failure, res->matrixElements is NULL.
+void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  real_t a;
+
+  res->matrixElements = NULL;
+  res->header.matrixRows = res->header.matrixColumns = 0;
+
+  // Fast path: 1x1 matrix
+  if(n == 1) {
+    real34ToReal(&matrix->matrixElements[0], &a);
+    if(realIsNegative(&a)) {
+      res->matrixElements = NULL;
+      res->header.matrixRows = res->header.matrixColumns = 0;
+      return;
+    }
+    if(!realMatrixInit(res, 1, 1)) {
+      res->matrixElements = NULL;
+      res->header.matrixRows = res->header.matrixColumns = 0;
+      return;
+    }
+    realSquareRoot(&a, &a, &ctxtReal39);
+    realToReal34(&a, &res->matrixElements[0]);
+    return;
+  }
+
+  // Fast path: diagonal A (per-element diagonal sqrt)
+  if(isRealMatrixDiagonal(matrix)) {
+    if(!realMatrixInit(res, n, n)) {
+      res->matrixElements = NULL;
+      res->header.matrixRows = res->header.matrixColumns = 0;
+      return;
+    }
+    for(uint16_t i = 0; i < n; ++i) {
+      real34ToReal(&matrix->matrixElements[i * n + i], &a);
+      if(realIsNegative(&a)) {
+        realMatrixFree(res);
+        res->matrixElements = NULL;
+        res->header.matrixRows = res->header.matrixColumns = 0;
+        return;
+      }
+      realSquareRoot(&a, &a, &ctxtReal39);
+      realToReal34(&a, &res->matrixElements[i * n + i]);
+    }
+    return;
+  }
+
+  #if (MATRIX_SQRT_USE_EIGEN == 1)
+    sqrtRealMatrixEigen(matrix, res);
+  #else
+    sqrtRealMatrixDB(matrix, res);
+  #endif
 }
 
 

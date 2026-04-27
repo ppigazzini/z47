@@ -230,6 +230,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnMant",                 fnMant                },
   {"fnMaskl",                fnMaskl               },
   {"fnMaskr",                fnMaskr               },
+  {"fnMatrixSquareRoot",     fnMatrixSquareRoot    },
   {"fnMax",                  fnMax                 },
   {"fnMgeuktok100M",         fnMgeuktok100M        },
   {"fnMgeustok100M",         fnMgeustok100M        },
