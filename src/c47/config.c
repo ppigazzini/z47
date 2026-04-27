@@ -255,6 +255,7 @@ AMORTP2,                             xxx,        12,                            
 3,                                   1,          FLAG_HPBASE,                    xxx,             FLAG_HPBASE,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPBASE
 3,                                   0,          xxx,                            xxx,             xxx,                  FLAG_HPBASE,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPBASE
 3,                                   0,          FLAG_2TO10,                     xxx,             FLAG_2TO10,           FLAG_2TO10,             xxx,             xxx,             xxx,                  // Clear flag FLAG_2TO10
+3,                                   0,          FLAG_AMORT_HP12C,               xxx,             FLAG_AMORT_HP12C,     FLAG_AMORT_HP12C,       xxx,             xxx,             xxx,                  // Clear flag FLAG_AMORT_HP12C
 3,                                   0,          xxx,                            xxx,             FLAG_POLAR,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_POLAR
 3,                                   0,          xxx,                            xxx,             xxx,                  xxx,                    FLAG_CPXj,       xxx,             xxx,                  // Clear flag FLAG_CPXj
 3,                                   1,          xxx,                            xxx,             FLAG_CPXj,            xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXj
@@ -293,6 +294,8 @@ AMORTP2,                             xxx,        12,                            
 
 3,                                   0,          FLAG_FGGR,                      xxx,             xxx,                  FLAG_FGGR,              FLAG_FGGR,       xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_FGGR,            xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_3DPHYS,                    xxx,             xxx,                  FLAG_3DPHYS,            FLAG_3DPHYS,     xxx,             xxx,
+3,                                   0,          FLAG_3DXYZ,                     xxx,             xxx,                  FLAG_3DXYZ,             FLAG_3DXYZ,      xxx,             xxx,
 
 
 
@@ -1123,7 +1126,7 @@ void fnClAll(uint16_t confirmation) {
 
 
 void addTestPrograms(void) {
-  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(19000));
+  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(20000));
 
   resizeProgramMemory(TO_BLOCKS(numberOfBytesForTheTestPrograms));
   firstDisplayedStep            = beginOfProgramMemory;
@@ -1805,6 +1808,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       fnStore(indexOfStrings[i].count);
       fnDrop(NOPARAM);
     }
+    
+    //Initialize Printer status
+    #if defined(IR_PRINTING)
+      printerState.print_on         = false;          ///< Printing off
+      printerState.print_blank_line = 0; 	          ///< Print space between lines
+      printerState.print_mode       = PMODE_DEFAULT;  ///< printer modes;
+      printerState.printer_model    = PRINTER_HP;     ///< printer modes;
+      printerState.delay            = getLineDelay(); ///< printer line delay      
+    #endif //IR_PRINTING
 
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("version\n");

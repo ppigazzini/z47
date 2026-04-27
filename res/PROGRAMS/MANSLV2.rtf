@@ -1,0 +1,145 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #2/2: 1716 bytes / 134 steps } \par
+\par
+0001:  LBL \u8216?MANSLV\u8217?\par
+0002:    REM \u8216?Manual modified NEWTON solve using XFN with no checks and stabilisations\u8217?\par
+0003:    REM \u8216?JMOSTERT\u8217?\par
+0004:    REM \u8216?START WITH X Y as the two initial endpoints\u8217?\par
+0005:    1.\u215?\u9341?\u8555?\super 1\nosupersub \super 0\nosupersub \super 0\nosupersub \super 0\nosupersub \par
+0006:    STO \u8216?tol\u8217?\par
+0007:    R\u8595?\par
+0008:    \u8216?\u8629?TOL\u8629?X0\u8629?X1\u8217?\par
+0009:    STO W\par
+0010:    R\u8595?\par
+0011:    RAD\par
+0012:    70\par
+0013:    STO \u8216?temp\u8217?\par
+0014:    REM \u8216?the indirection arrow \u8594? reads/writes the triplet via this base\u8217?\par
+0015:    R\u8595?\par
+0016:    73\par
+0017:    STO \u8216?x0\u8217?\par
+0018:    R\u8595?\par
+0019:    76\par
+0020:    STO \u8216?x1\u8217?\par
+0021:    R\u8595?\par
+0022:    79\par
+0023:    STO \u8216?y0\u8217?\par
+0024:    R\u8595?\par
+0025:    82\par
+0026:    STO \u8216?y1\u8217?\par
+0027:    R\u8595?\par
+0028:    X\u8594?XFN\par
+0029:    3STO \u8594?\u8216?x0\u8217?\par
+0030:    RCL T\par
+0031:    X\u8594?XFN\par
+0032:    3STO \u8594?\u8216?x1\u8217?\par
+0033:    0\par
+0034:    STO \u8216?loop\u8217?\par
+0035:    85\par
+0036:    STO \u8216?deltax\u8217?\par
+0037:    88\par
+0038:    STO \u8216?deltay\u8217?\par
+0039:    91\par
+0040:    STO \u8216?DELTAX\u8217?\par
+0041:    94\par
+0042:    STO \u8216?slope\u8217?\par
+\par
+0043:  LBL \u8216?LOOP\u8217?\par
+0044:    3RCL \u8594?\u8216?x1\u8217?\par
+0045:  XEQ \u8216?CALC\u8217?\par
+0046:    3STO \u8594?\u8216?y1\u8217?\par
+0047:    3RCL \u8594?\u8216?x0\u8217?\par
+0048:  XEQ \u8216?CALC\u8217?\par
+0049:    3STO \u8594?\u8216?y0\u8217?\par
+0050:    REM \u8216?SLOPE                      ; secant slope, not analytic derivative. Avoids\u8217?\par
+0051:    REM \u8216?evaluating -sin(x)-1, and damps near flat regions.\u8217?\par
+0052:    3RCL \u8594?\u8216?y1\u8217?\par
+0053:    3RCL \u8594?\u8216?y0\u8217?\par
+0054:    XSUB\par
+0055:    3STO \u8594?\u8216?deltay\u8217?\par
+0056:    3RCL \u8594?\u8216?x1\u8217?\par
+0057:    3RCL \u8594?\u8216?x0\u8217?\par
+0058:    XSUB\par
+0059:    3STO \u8594?\u8216?deltax\u8217?\par
+0060:    3RCL \u8594?\u8216?deltay\u8217?\par
+0061:    3SWAP\par
+0062:    XDIV\par
+0063:    3STO \u8594?\u8216?slope\u8217?\par
+0064:    REM \u8216?CREATE NEW X               ; MOD vs textbook secant: alternate which side is\u8217?\par
+0065:    REM \u8216?refined each iteration. Pure secant promotes\u8217?\par
+0066:    REM \u8216?new->x1, x1->x0 and discards x0; one endpoint can\u8217?\par
+0067:    REM \u8216?stall and degrade the slope estimate. Alternating\u8217?\par
+0068:    REM \u8216?keeps both sides moving against the shared slope\u8217?\par
+0069:    REM \u8216?(Newton flavour: each side takes a Newton step\u8217?\par
+0070:    REM \u8216?using the current secant f'). At extended precision\u8217?\par
+0071:    REM \u8216?this prevents (y1-y0)/(x1-x0) cancellation when\u8217?\par
+0072:    REM \u8216?one endpoint freezes far from the root.\u8217?\par
+0073:    RCL \u8216?loop\u8217?\par
+0074:    ODD?\par
+0075:      GTO A\par
+0076:  GTO B\par
+\par
+0077:  LBL A\par
+0078:    3RCL \u8594?\u8216?y1\u8217?\par
+0079:    3RCL \u8594?\u8216?slope\u8217?\par
+0080:    XDIV\par
+0081:    3STO \u8594?\u8216?DELTAX\u8217?\par
+0082:    3RCL \u8594?\u8216?x1\u8217?\par
+0083:    3SWAP\par
+0084:    XSUB\par
+0085:    3STO \u8594?\u8216?x1\u8217?\par
+0086:  GTO C\par
+\par
+0087:  LBL B\par
+0088:    3RCL \u8594?\u8216?y0\u8217?\par
+0089:    3RCL \u8594?\u8216?slope\u8217?\par
+0090:    XDIV\par
+0091:    3STO \u8594?\u8216?DELTAX\u8217?\par
+0092:    3RCL \u8594?\u8216?x0\u8217?\par
+0093:    3SWAP\par
+0094:    XSUB\par
+0095:    3STO \u8594?\u8216?x0\u8217?\par
+\par
+0096:  LBL C\par
+0097:    REM \u8216?SHOW                 ; live progress display, purely informational. Composite\u8217?\par
+0098:    REM \u8216?of x0, x1, DELTAX with loop weighting so position and\u8217?\par
+0099:    REM \u8216?step magnitude are both visible. The \u21605?\u8805?? tol check\u8217?\par
+0100:    REM \u8216?below uses the same composite, and exit is\u8217?\par
+0101:    REM \u8216?once DELTAX is observed to vanish.\u8217?\par
+0102:    CLSTK\par
+0103:    \u8216?\u8217?\par
+0104:    INCR \u8216?loop\u8217?\par
+0105:    RCL \u8216?loop\u8217?\par
+0106:    3RCL \u8594?\u8216?x1\u8217?\par
+0107:    \u215?\par
+0108:    +\par
+0109:    3RCL \u8594?\u8216?x0\u8217?\par
+0110:    \u215?\par
+0111:    +\par
+0112:    3RCL \u8594?\u8216?DELTAX\u8217?\par
+0113:    \u215?\par
+0114:    +\par
+0115:    |x|\par
+0116:    VIEW \u8216?loop\u8217?\par
+0117:    x\u8805? ? \u8216?tol\u8217?\par
+0118:      GTO \u8216?LOOP\u8217?\par
+0119:    RCL \u8216?loop\u8217?\par
+0120:    EVEN?\par
+0121:      REM \u8216?recently refined side; the user can intuitively\u8217?\par
+0122:    REM \u8216?treat x0 as "the" answer\u8217?\par
+0123:  GTO \u8216?LOOP\u8217?\par
+0124:    R\u8595?\par
+0125:    AVIEW W\par
+0126:  RTN\par
+\par
+0127:  LBL \u8216?CALC\u8217?\par
+0128:    REM \u8216?_COSX-X\u8217?\par
+0129:    3STO \u8594?\u8216?temp\u8217?\par
+0130:    XCOS\par
+0131:    3RCL \u8594?\u8216?temp\u8217?\par
+0132:    XSUB\par
+0133:  RTN\par
+0134:  .END.\par
+}}

@@ -116,7 +116,7 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 ;=======================================
 ; Euclidean (aka Frobenius) norm
 ;=======================================
-Func: fnEuclideanNorm
+Func: fnPNorm(2) ;pNorm_2_ENORM
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"9.5393920141694564915262158602322654025462342525054575390815185291"
 
@@ -127,11 +127,38 @@ In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 
 
+;=======================================
+; Euclidean (aka Frobenius) norm, p = 9
+;=======================================
+Func: fnPNorm(9) ;pNorm_2_ENORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"6.135060358359295905752434408356624651512"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"16.61630178335188287687597789600111822202"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; number of non-zero elements
+;=======================================
+Func:  fnPNorm(0) ;pNorm_0_NNZ
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
 
 ;=======================================
 ; Row sum
 ;=======================================
-Func: fnRowSum
+Func: fnRowColSum(1)
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M3,1[3,7,11]"
 
@@ -142,11 +169,25 @@ In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
 
 
+;=======================================
+; Column sum
+;=======================================
+Func: fnRowColSum(0)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M1,2[9,12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M1,2[15i18,21i24]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
 
 ;=======================================
 ; Row norm
 ;=======================================
-Func: fnRowNorm
+Func: fnPNorm(924) ;pNorm_inf_RNORM
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"11"
 
@@ -155,6 +196,22 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=
 
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; Column norm
+;=======================================
+Func: fnPNorm(1) ;pNorm_1_CNORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"12"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"31.90896640883435579535213782491314"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
 
 
 

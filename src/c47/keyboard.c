@@ -1853,6 +1853,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
+            #if defined(IR_PRINTING)
+              printf("**[DL]** STOP program\n");fflush(stdout);
+              refreshStatusBar();
+              printTrace(ITM_STOP,NOPARAM);   // STOP program
+            #endif //IR_PRINTING
           }
           else if(programRunStop == PGM_PAUSED) {
             programRunStop = PGM_KEY_PRESSED_WHILE_PAUSED;
@@ -2091,8 +2096,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
-      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS) {
-        showFunctionNameItem = ITM_RS;
+      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS && !SHOWMODE) {
+         showFunctionNameItem = ITM_RS;
         temporaryInformation = TI_NO_INFO;
         refreshRegisterLine(REGISTER_T);
       }
@@ -3427,6 +3432,13 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
+          #if defined(IR_PRINTING)
+            #if defined(PC_BUILD)
+              printf("**[DL]** fnKeyEnter printTraceX\n");fflush(stdout);
+            #endif //PC_BUILD
+            printTraceX(LINE_FULL);
+          #endif //IR_PRINTING
+          
           if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterB\n");
