@@ -1495,7 +1495,10 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
       strcat(displayString, STD_SPACE_HAIR);
     }
 
-    if(real34IsZero(&real34)) {           // JM
+    if(real34IsZero(&real34) &&                                     // This section handles and shortend 0+i.n to i.n, if real part = 0
+       !(real34IsNegative(&real34)) &&                              //   except when any Re is -0, i.e. -0 + i
+       !(real34IsZero(&imag34))                                     //   except when Im = 0, i.e. for 0 + 0.i or 0 -0.i
+       ) {
       #if defined(PC_BUILD_TELLTALE)
         char tmp_a[100];
         char tmp_b[100];
@@ -1727,7 +1730,8 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 }
 
 
-void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
+void angle34ToDisplayString2(const real34_t *angle34, uint8_t modeIn, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
+  const uint8_t mode = (modeIn & amAngleMask);
   if(mode == amDMS) {
     char degStr[100];
     uint32_t m, s, fs;
@@ -1817,7 +1821,7 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
                                                                                     fs);
   }
   else if(mode == amMultPi) {
-    IrFractionsCurrentStatus = CF_OFF;        //JM
+//    IrFractionsCurrentStatus = CF_OFF;        //JM
     real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal, limitIrfrac);
     strcat(displayString, STD_SUP_pir);
   }
@@ -2888,8 +2892,18 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
 
 void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) { // [n×n Matrix]
+  #if defined(OPTION_VECTOR)
+    if(isRegisterMatrix2dVector(regist)) {
+      sprintf(displayString, "[2D Vector]%s", getVectorRegisterPolarMode(regist) == amPolar ? STD_SPACE_HAIR STD_SUP_p : "");
+    } else
+    if(isRegisterMatrix3dVector(regist)) {
+      sprintf(displayString, "[3D Vector]%s", getVectorRegisterPolarMode(regist) == amPolarSPH ? STD_SPACE_HAIR STD_SUP_s : getVectorRegisterPolarMode(regist) == amPolarCYL ? STD_SPACE_HAIR STD_SUP_c : "");
+    } else 
+  #endif //OPTION_VECTOR
+  {
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
   sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
+  }
 }
 
 
@@ -2904,9 +2918,8 @@ bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
     if(isMatrixVector(matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
       real34Matrix_t matrix;
-      int16_t prefixWidth = 0;
       linkToRealMatrixRegister(regist, &matrix);
-      showRealMatrix(&matrix, prefixWidth, !toDisplayVectorMatrix);
+      showRealMatrix(&matrix, 0, !toDisplayVectorMatrix, regXp);
       sprintf(displayString, "%s", errorMessage);
       //if(stringWidth(tmpString, &numericFont, true, true) + 1 > SCREEN_WIDTH) {
       //  return false;     //this is to revert to [4x4 Matrix] if the digits in the default standard font is too wide. Not needed as it is managed by reducing the font
@@ -3070,8 +3083,8 @@ static void dispM(uint16_t regist, char * prefix) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     real34Matrix_t matrix;
     linkToRealMatrixRegister(regist, &matrix);
-    showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix);
-    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n", tmpString, prefix, prefixWidth, lastErrorCode, temporaryInformation);
+    showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !regXp);
+    //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString, prefix, prefixWidth, lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
     }
@@ -3085,7 +3098,7 @@ static void dispM(uint16_t regist, char * prefix) {
   else if(getRegisterDataType(regist) == dtComplex34Matrix) {
     complex34Matrix_t matrix;
     linkToComplexMatrixRegister(regist, &matrix);
-    showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
+    showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar, !regXp);
     //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n", tmpString, prefix, prefixWidth, lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
@@ -4037,13 +4050,22 @@ void _view(uint16_t regist) {
 
 void fnView(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printViewAview(ITM_VIEW, regist);
+  #endif //IR_PRINTING
 }
 
 void fnAview(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printViewAview(ITM_AVIEW, regist);
+  #endif //IR_PRINTING
 }
 
 void fnPrompt(uint16_t regist) {
   _view(regist);
+  #if defined(IR_PRINTING)
+    printPrompt(regist);
+  #endif //IR_PRINTING
   fnStopProgram(NOPARAM);
 }

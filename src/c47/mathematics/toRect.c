@@ -41,6 +41,16 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
     setComplexRegisterAngularMode(REGISTER_X, amNone);
     return;
   }
+#if defined(OPTION_VECTOR)
+   else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix){
+    if(isRegisterMatrixVector(REGISTER_X)) {
+      setVectorRegisterPolarMode(REGISTER_X, 0);
+      setVectorRegisterAngularMode(REGISTER_X, amNone);
+        temporaryInformation = TI_VECTOR;
+      return;
+    }
+  } 
+#endif //OPTION_VECTOR
 
   dataTypeX = getRegisterDataType(REGISTER_X);
   dataAtagX = getRegisterAngularMode(REGISTER_X);
