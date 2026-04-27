@@ -186,6 +186,7 @@
    * \param[in] matrix
    */
   void     realMatrixIdentity             (real34Matrix_t *matrix, uint16_t size);
+  void     fnMatrixIdentity               (uint16_t unusedButMandatoryParameter);
 
   /**
    * Redemention a real matrix.
