@@ -1754,7 +1754,7 @@
 #define ITM_ARG                     1706
 #define ITM_PRINTERXY               1707
 #define ITM_PRINTERADV              1708
-#define ITM_PRINTERCHAR             1709
+#define ITM_PRINTERCHAR_OLD         1709
 #define ITM_PRINTERDLAY             1710
 #define ITM_PRINTERLCD              1711
 #define ITM_PRINTERMODE             1712
@@ -1762,11 +1762,11 @@
 #define ITM_PRINTERR                1714
 #define ITM_PRINTERREGS             1715
 #define ITM_PRINTERSTK              1716
-#define ITM_PRINTERTAB              1717
+#define ITM_PRINTERTAB_OLD          1717
 #define ITM_PRINTERUSER             1718
 #define ITM_PRINTERWIDTH            1719
 #define ITM_PRINTERSIGMA            1720
-#define ITM_PRINTERHASH             1721
+#define ITM_PRINTERHASH_OLD         1721
 
 #define ITM_FBR                     1722
 
@@ -2790,9 +2790,9 @@
 #define ITM_STRACE                  2692
 #define ITM_PRINTERLIST             2693
 #define ITM_PRINTERXFN              2694
-#define ITM_2695                    2695
-#define ITM_2696                    2696
-#define ITM_2697                    2697
+#define ITM_PRINTERCHAR             2695
+#define ITM_PRINTERTAB              2696
+#define ITM_PRINTERHASH             2697
 #define ITM_2698                    2698
 #define ITM_PRINT_ALL_ITEMS         2699 //spares for the print menu
 
