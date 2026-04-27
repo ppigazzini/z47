@@ -1114,7 +1114,7 @@ void fnRowColSum(uint16_t isRow) {
 
 
 // pParam == pNorm_0_NNZ     : count of non-zero elements (whole matrix/vector)
-// pParam == pNorm_inf_RNORM : rowNorm; 
+// pParam == pNorm_inf_RNORM : rowNorm;
 // pParam == pNorm_1_CNORM   : columnNorm
 static void _row_columnNorm(uint16_t pParam) {
   if(pParam != pNorm_inf_RNORM && pParam != pNorm_1_CNORM && pParam != pNorm_0_NNZ) {
@@ -1241,13 +1241,13 @@ static void _row_columnNorm(uint16_t pParam) {
 
 void fnPNorm(uint16_t param) {
   switch(param) {
-    case pNorm_0_NNZ    : 
+    case pNorm_0_NNZ    :
     case pNorm_1_CNORM  :
     case pNorm_inf_RNORM: _row_columnNorm(param); break;
     case pNorm_2_ENORM  :
     default: if(saveLastX()) {
                _fnEuclideanNorm(param);
-             } 
+             }
   }
 }
 
@@ -3962,9 +3962,15 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
   uint16_t k;
 
   copyRealMatrix(matrix, &Y);                      // Y_0 = A
-  if(!Y.matrixElements) { failed = true; goto cleanup; }
+  if(!Y.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
   realMatrixIdentity(&Z, n);                       // Z_0 = I
-  if(!Z.matrixElements) { failed = true; goto cleanup; }
+  if(!Z.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
 
   stringToReal("1E-30", &tol, &ctxtReal39);
 
@@ -3973,17 +3979,28 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
     if(Zinv.matrixElements) realMatrixFree(&Zinv);
 
     invertRealMatrix(&Y, &Yinv);
-    if(!Yinv.matrixElements) { failed = true; goto cleanup; }
+    if(!Yinv.matrixElements) {
+      failed = true;
+      goto cleanup;
+    }
     invertRealMatrix(&Z, &Zinv);
-    if(!Zinv.matrixElements) { failed = true; goto cleanup; }
+    if(!Zinv.matrixElements) {
+      failed = true;
+      goto cleanup;
+    }
 
     halfSumRealMatrices(&Y, &Zinv, &Y, &ctxtReal39);
     halfSumRealMatrices(&Z, &Yinv, &Z, &ctxtReal39);
 
     if((k & 1) == 1) {
-      if(YY.matrixElements) realMatrixFree(&YY);
+      if(YY.matrixElements) {
+        realMatrixFree(&YY);
+      }
       multiplyRealMatrices(&Y, &Y, &YY);
-      if(!YY.matrixElements) { failed = true; goto cleanup; }
+      if(!YY.matrixElements) {
+        failed = true;
+        goto cleanup;
+      }
       subtractRealMatrices(&YY, matrix, &YY);
       _euclideanNormRealMatrix(&YY, 2, &normVal, &ctxtReal39);
       if(realCompareLessThan(&normVal, &tol)) {
@@ -3994,10 +4011,18 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
   }
 
 cleanup:
-  if(Yinv.matrixElements) realMatrixFree(&Yinv);
-  if(Zinv.matrixElements) realMatrixFree(&Zinv);
-  if(YY.matrixElements)   realMatrixFree(&YY);
-  if(Z.matrixElements)    realMatrixFree(&Z);
+  if(Yinv.matrixElements) {
+    realMatrixFree(&Yinv);
+  }
+  if(Zinv.matrixElements) {
+    realMatrixFree(&Zinv);
+  }
+  if(YY.matrixElements) {
+    realMatrixFree(&YY);
+  }
+  if(Z.matrixElements) {
+    realMatrixFree(&Z);
+  }
 
   if(converged && !failed) {
     res->header        = Y.header;
@@ -4025,7 +4050,10 @@ static void sqrtRealMatrixEigen(const real34Matrix_t *matrix, real34Matrix_t *re
 
   // Eigenvalues. Lambda gets the (size x size) diagonal-eigenvalue matrix. LambdaImag allocated only if at least one eigenvalue is complex.
   realEigenvalues(matrix, &Lambda, &LambdaImag);
-  if(!Lambda.matrixElements) { failed = true; goto cleanup; }
+  if(!Lambda.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
   if(LambdaImag.matrixElements) {
     // At least one complex-conjugate pair: defer to complex phase.
     failed = true;
@@ -4045,28 +4073,55 @@ static void sqrtRealMatrixEigen(const real34Matrix_t *matrix, real34Matrix_t *re
 
   // Eigenvectors. Q's columns are the eigenvectors of A.
   realEigenvectors(matrix, &Q, &QImag);
-  if(!Q.matrixElements) { failed = true; goto cleanup; }
-  if(QImag.matrixElements) { failed = true; goto cleanup; }   // shouldn't happen
+  if(!Q.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+  if(QImag.matrixElements) {    // shouldn't happen
+    failed = true;
+    goto cleanup;
+  }
 
   // inv(Q). For symmetric input Q is orthogonal so Q^T would suffice and be faster, but using the general inverse covers the non-symmetric case at modest cost.
   invertRealMatrix(&Q, &Qinv);
-  if(!Qinv.matrixElements) { failed = true; goto cleanup; }   // singular Q
+  if(!Qinv.matrixElements) {    // singular Q
+    failed = true;
+    goto cleanup;
+  }
 
   // tmp = Q * sqrt(Lambda)
   multiplyRealMatrices(&Q, &Lambda, &tmp);
-  if(!tmp.matrixElements) { failed = true; goto cleanup; }
+  if(!tmp.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
 
   // res = tmp * inv(Q) = Q * sqrt(Lambda) * inv(Q)
   multiplyRealMatrices(&tmp, &Qinv, res);
-  if(!res->matrixElements) { failed = true; goto cleanup; }
+  if(!res->matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
 
 cleanup:
-  if(Lambda.matrixElements)     realMatrixFree(&Lambda);
-  if(LambdaImag.matrixElements) realMatrixFree(&LambdaImag);
-  if(Q.matrixElements)          realMatrixFree(&Q);
-  if(QImag.matrixElements)      realMatrixFree(&QImag);
-  if(Qinv.matrixElements)       realMatrixFree(&Qinv);
-  if(tmp.matrixElements)        realMatrixFree(&tmp);
+  if(Lambda.matrixElements) {
+    realMatrixFree(&Lambda);
+  }
+  if(LambdaImag.matrixElements) {
+    realMatrixFree(&LambdaImag);
+  }
+  if(Q.matrixElements) {
+    realMatrixFree(&Q);
+  }
+  if(QImag.matrixElements) {
+    realMatrixFree(&QImag);
+  }
+  if(Qinv.matrixElements) {
+    realMatrixFree(&Qinv);
+  }
+  if(tmp.matrixElements) {
+    realMatrixFree(&tmp);
+  }
 
   if(failed) {
     res->matrixElements = NULL;
@@ -8261,7 +8316,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 //     r: Distance from z-axis
 //     θ: Angle from positive x-axis toward positive y-axis (counterclockwise in xy-plane)
 //     z: Height along z-axis
-//     
+//
 
 //   Special Cases in Coordinate Conversions Rectangular to Cylindrical [r, θ, z]
 //     Origin: [0, 0, 0] → [0, undefined°, 0]
@@ -8270,7 +8325,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 //     Negative x-axis: [-x, 0, z] → [x, 180°, z]
 //     Positive y-axis: [0, y, z] → [y, 90°, z]
 //     Negative y-axis: [0, -y, z] → [y, 270°, z]
-//   
+//
 //   Special Cases in Coordinate Conversions Rectangular to Spherical [r, θ, φ]
 //     Origin: [0, 0, 0] → [0, undefined°, undefined°]
 //     Positive z-axis: [0, 0, z] → [z, 0°, undefined°]
@@ -8280,7 +8335,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 //     Positive y-axis: [0, y, 0] → [y, 90°, 90°]
 //     Negative y-axis: [0, -y, 0] → [y, 90°, 270°]
 //     XY-plane points: [x, y, 0] → [√(x²+y²), 90°, arctan(y/x)°]
-//   
+//
 //   Note: "undefined°" indicates angles that are mathematically indeterminate but can be set to any value by convention (chosen to be 0°)
 
 
@@ -8318,23 +8373,23 @@ SPH_ret1:
 
   void convertSPHto3D(real_t *r, real_t *th1, real_t *th2, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
     real_t x, y, z, theta1, theta2, sinTh2;
-    
+
     realCopy(th1, &theta1);
     realCopy(th2, &theta2);
     convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
     convertAngleFromTo(&theta2, am, amRadian, ctxtRealDisplay);
-    
+
     C47_WP34S_Cvt2RadSinCosTan(&theta2, amRadian, NULL,    &z,   NULL, ctxtRealDisplay);
     realMultiply(r, &z, &z, ctxtRealDisplay);
     C47_WP34S_Cvt2RadSinCosTan(&theta2, amRadian, &sinTh2, NULL, NULL, ctxtRealDisplay);
     C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL,    &x,   NULL, ctxtRealDisplay);
     realMultiply(r, &x, &x, ctxtRealDisplay);
     realMultiply(&x, &sinTh2, &x, ctxtRealDisplay);
-    
+
     C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y,      NULL, NULL, ctxtRealDisplay);
     realMultiply(r, &y, &y, ctxtRealDisplay);
     realMultiply(&y, &sinTh2, &y, ctxtRealDisplay);
-    
+
     realToReal34(&x, &matrix->matrixElements[0]);
     realToReal34(&y, &matrix->matrixElements[1]);
     realToReal34(&z, &matrix->matrixElements[2]);
@@ -8363,16 +8418,16 @@ SPH_ret1:
 
   void convertCYLto3D(real_t *r, real_t *th1, real_t *z, uint8_t am, real34Matrix_t *matrix, decContext *ctxtRealDisplay) {
     real_t x, y, theta1;
-    
+
     realCopy(th1, &theta1);
     convertAngleFromTo(&theta1, am, amRadian, ctxtRealDisplay);
-    
+
     C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, NULL, &x, NULL, ctxtRealDisplay);
     realMultiply(r, &x, &x, ctxtRealDisplay);
-    
+
     C47_WP34S_Cvt2RadSinCosTan(&theta1, amRadian, &y, NULL, NULL, ctxtRealDisplay);
     realMultiply(r, &y, &y, ctxtRealDisplay);
-    
+
     realToReal34(&x, &matrix->matrixElements[0]);
     realToReal34(&y, &matrix->matrixElements[1]);
     realToReal34(z, &matrix->matrixElements[2]);
