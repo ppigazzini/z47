@@ -256,5 +256,12 @@ void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
  * \return void
  ***********************************************/
 void fnSquareRoot(uint16_t unusedButMandatoryParameter) {
-  processIntRealComplexMonadicFunction(&sqrtReal, &sqrtCplx, &sqrtShoI, &sqrtLonI);
+  const uint32_t type = getRegisterDataType(REGISTER_X);
+
+  if(type == dtReal34Matrix || type == dtComplex34Matrix) {
+    fnMatrixSquareRoot(NOPARAM);
+  }
+  else {
+    processIntRealComplexMonadicFunction(&sqrtReal, &sqrtCplx, &sqrtShoI, &sqrtLonI);
+  }
 }

@@ -59,6 +59,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnInvertMatrix                 (uint16_t unusedParamButMandatory);
+  void       fnMatrixSquareRoot             (uint16_t unusedParamButMandatory);
 
   /**
    * Euclidean norm of matrix X.
