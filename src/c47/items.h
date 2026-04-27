@@ -2546,7 +2546,7 @@
 #define ITM_STKtoV2                 2475
 #define ITM_V3toSTK_M               2476
 #define ITM_V2toSTK                 2477
-#define ITM_2478                    2478
+#define ITM_MIDENT                  2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481

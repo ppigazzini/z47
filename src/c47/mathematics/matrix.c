@@ -1804,6 +1804,47 @@ void realMatrixIdentity(real34Matrix_t *matrix, uint16_t size) {
 }
 
 
+void fnMatrixIdentity(uint16_t unusedButMandatoryParameter) {
+  uint32_t rows, cols;
+  if(!getDimensionArg(&rows, &cols)) {
+    return;
+  }
+  if(rows != cols || rows == 0 || cols == 0) {
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "not a square matrix (%" PRIu32 STD_CROSS "%" PRIu32 ")", rows, cols);
+      moreInfoOnError("In function fnMatrixIdentity:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  //Initialize Memory for Matrix (zero-filled by realMatrixInit)
+  if(initMatrixRegister(REGISTER_X, rows, cols, false)) {
+    real34Matrix_t res;
+    linkToRealMatrixRegister(REGISTER_X, &res);
+    for(uint16_t i = 0; i < rows; ++i) {
+      real34SetOne(&res.matrixElements[i * rows + i]);
+    }
+    setSystemFlag(FLAG_ASLIFT);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " identity matrix", rows, cols);
+      moreInfoOnError("In function fnMatrixIdentity:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
+  adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
+}
+
+
+
 void realMatrixRedim(real34Matrix_t *matrix, uint16_t rows, uint16_t cols) {
   real34Matrix_t newMatrix;
   uint32_t elements;
