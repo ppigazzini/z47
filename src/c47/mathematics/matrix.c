@@ -4264,6 +4264,55 @@ cleanup:
 #endif // MATRIX_SQRT_USE_EIGEN == 1
 
 
+// Verify Y^2 == matrix to catch cases where the algorithm produces a non-existent sqrt like [[0,0],[1,0]]).
+// Operates in complex for both real and complex paths, with NULL for the unused type.
+// Returns true if Y^2 - matrix is below ||matrix||_F * 1e-30
+static bool_t verifySqrtMatrix(const real34Matrix_t *inputReal,    const real34Matrix_t *resultReal, const complex34Matrix_t *inputComplex, const complex34Matrix_t *resultComplex) {
+  complex34Matrix_t inputCopy = {0}, resultCopy = {0}, residual = {0};
+  real_t residualNorm, inputNorm, tolerance;
+  real34_t residualNorm34, inputNorm34;
+  const bool_t isComplex = (inputComplex != NULL);
+  const uint16_t rows = isComplex ? inputComplex->header.matrixRows    : inputReal->header.matrixRows;
+  const uint16_t cols = isComplex ? inputComplex->header.matrixColumns : inputReal->header.matrixColumns;
+  const uint32_t total = (uint32_t)rows * cols;
+  bool_t verified = false;
+
+  if(complexMatrixInit(&inputCopy, rows, cols) && complexMatrixInit(&resultCopy, rows, cols)) {
+    for(uint32_t i = 0; i < total; ++i) {
+      if(isComplex) {
+        real34Copy(VARIABLE_REAL34_DATA(&inputComplex->matrixElements[i]),  VARIABLE_REAL34_DATA(&inputCopy.matrixElements[i]));
+        real34Copy(VARIABLE_IMAG34_DATA(&inputComplex->matrixElements[i]),  VARIABLE_IMAG34_DATA(&inputCopy.matrixElements[i]));
+        real34Copy(VARIABLE_REAL34_DATA(&resultComplex->matrixElements[i]), VARIABLE_REAL34_DATA(&resultCopy.matrixElements[i]));
+        real34Copy(VARIABLE_IMAG34_DATA(&resultComplex->matrixElements[i]), VARIABLE_IMAG34_DATA(&resultCopy.matrixElements[i]));
+      } else {
+        real34Copy(&inputReal->matrixElements[i],  VARIABLE_REAL34_DATA(&inputCopy.matrixElements[i]));
+        real34Copy(&resultReal->matrixElements[i], VARIABLE_REAL34_DATA(&resultCopy.matrixElements[i]));
+        real34SetZero(VARIABLE_IMAG34_DATA(&inputCopy.matrixElements[i]));
+        real34SetZero(VARIABLE_IMAG34_DATA(&resultCopy.matrixElements[i]));
+      }
+    }
+
+    multiplyComplexMatrices(&resultCopy, &resultCopy, &residual);
+    if(residual.matrixElements) {
+      subtractComplexMatrices(&residual, &inputCopy, &residual);
+      euclideanNormComplexMatrix(&residual, 2, &residualNorm34);
+      euclideanNormComplexMatrix(&inputCopy, 2, &inputNorm34);
+      real34ToReal(&residualNorm34, &residualNorm);
+      real34ToReal(&inputNorm34, &inputNorm);
+      realMultiply(&inputNorm, const_1e_30, &tolerance, &ctxtReal39);
+      verified = !realCompareGreaterThan(&residualNorm, &tolerance);
+      complexMatrixFree(&residual);
+    }
+  }
+
+  if(inputCopy.matrixElements)  complexMatrixFree(&inputCopy);
+  if(resultCopy.matrixElements) complexMatrixFree(&resultCopy);
+
+  return verified;
+}
+
+
+
 // Compute Y such that Y*Y == matrix. Matrix must be square. On failure res->matrixElements is NULL. Fast paths handle 1x1 and diagonal inputs;
 // otherwise dispatches to the eigendecomposition or Denman-Beavers iteration based on MATRIX_SQRT_USE_EIGEN == 1 or 0.
 void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
@@ -4277,14 +4326,10 @@ void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   if(n == 1) {
     real34ToReal(&matrix->matrixElements[0], &a);
     if(realIsNegative(&a)) {
-      res->matrixElements = NULL;
-      res->header.matrixRows = res->header.matrixColumns = 0;
-      return;
+      goto fail;
     }
     if(!realMatrixInit(res, 1, 1)) {
-      res->matrixElements = NULL;
-      res->header.matrixRows = res->header.matrixColumns = 0;
-      return;
+      goto fail;
     }
     realSquareRoot(&a, &a, &ctxtReal39);
     realToReal34(&a, &res->matrixElements[0]);
@@ -4294,17 +4339,12 @@ void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   // Fast path: diagonal A (per-element diagonal sqrt)
   if(isRealMatrixDiagonal(matrix)) {
     if(!realMatrixInit(res, n, n)) {
-      res->matrixElements = NULL;
-      res->header.matrixRows = res->header.matrixColumns = 0;
-      return;
+      goto fail;
     }
     for(uint16_t i = 0; i < n; ++i) {
       real34ToReal(&matrix->matrixElements[i * n + i], &a);
       if(realIsNegative(&a)) {
-        realMatrixFree(res);
-        res->matrixElements = NULL;
-        res->header.matrixRows = res->header.matrixColumns = 0;
-        return;
+        goto fail;
       }
       realSquareRoot(&a, &a, &ctxtReal39);
       realToReal34(&a, &res->matrixElements[i * n + i]);
@@ -4317,6 +4357,18 @@ void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   #else
     sqrtRealMatrixDB(matrix, res);
   #endif
+
+  if(res->matrixElements && !verifySqrtMatrix(matrix, res, NULL, NULL)) {
+    goto fail;
+  }
+  return;
+
+fail:
+  if(res->matrixElements) {
+    realMatrixFree(res);
+  }
+  res->matrixElements = NULL;
+  res->header.matrixRows = res->header.matrixColumns = 0;
 }
 
 
@@ -4522,10 +4574,11 @@ void sqrtComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
   res->matrixElements = NULL;
   res->header.matrixRows = res->header.matrixColumns = 0;
 
-  // Fast path: diagonal complex matrix. Avoids the eigensolver, which is ill-conditioned for degenerate eigenvalues (e.g. k*I). Not needed in diagonal form.
+  // Fast path: diagonal complex matrix. Avoids the eigensolver, which is ill-conditioned for degenerate eigenvalues (e.g. k*I).
+  // Not needed in diagonal form.
   if(isComplexMatrixDiagonal(matrix)) {
     if(!complexMatrixInit(res, n, n)) {
-      return;
+      goto fail;
     }
     for(uint16_t i = 0; i < n; ++i) {
       real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[i * n + i]), &aReal);
@@ -4542,6 +4595,18 @@ void sqrtComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
   #else
     sqrtComplexMatrixDB(matrix, res);
   #endif
+
+  if(res->matrixElements && !verifySqrtMatrix(NULL, NULL, matrix, res)) {
+    goto fail;
+  }
+  return;
+
+fail:
+  if(res->matrixElements) {
+    complexMatrixFree(res);
+  }
+  res->matrixElements = NULL;
+  res->header.matrixRows = res->header.matrixColumns = 0;
 }
 
 
