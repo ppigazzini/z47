@@ -8,7 +8,13 @@
 #include "c47.h"
 
 
-static void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res);
+static void sqrtRealMatrix     (const real34Matrix_t *matrix, real34Matrix_t *res);
+static void sqrtComplexMatrix  (const complex34Matrix_t *matrix, complex34Matrix_t *res);
+static void realEigenvalues    (const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires);
+static void complexEigenvalues (const complex34Matrix_t *matrix, complex34Matrix_t *res);
+static void realEigenvectors   (const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires);
+static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res);
+
 
 // Eigenvalue setup
 //unlikely to change:
@@ -934,7 +940,6 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
 
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t x, res;
-
     linkToRealMatrixRegister(REGISTER_X, &x);
 
     if(x.header.matrixRows != x.header.matrixColumns) {
@@ -952,6 +957,36 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
           realMatrixFree(&res);
           setSystemFlag(FLAG_ASLIFT);
         }
+        else if(getSystemFlag(FLAG_CPXRES)) {
+          // Real path failed but complex results allowed: promote and retry
+          complex34Matrix_t cx, cres;
+          convertReal34MatrixToComplex34Matrix(&x, &cx);
+          if(cx.matrixElements) {
+            sqrtComplexMatrix(&cx, &cres);
+            complexMatrixFree(&cx);
+            if(lastErrorCode == ERROR_NONE) {
+              if(cres.matrixElements) {
+                convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
+                complexMatrixFree(&cres);
+                setSystemFlag(FLAG_ASLIFT);
+              }
+              else {
+                displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  sprintf(errorMessage, "matrix has no square root, or iteration failed to converge");
+                  moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
+                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+              }
+            }
+            else {
+              temporaryInformation = TI_NO_INFO;
+              if(programRunStop == PGM_WAITING) {
+                programRunStop = PGM_STOPPED;
+              }
+            }
+          }
+          // else: convert failed and already raised RAM_FULL
+        }
         else {
           displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -968,11 +1003,46 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
       }
     }
   }
+  else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    complex34Matrix_t x, res;
+    linkToComplexMatrixRegister(REGISTER_X, &x);
+
+    if(x.header.matrixRows != x.header.matrixColumns) {
+      displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "not a square matrix (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
+        moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+      sqrtComplexMatrix(&x, &res);
+      if(lastErrorCode == ERROR_NONE) {
+        if(res.matrixElements) {
+          convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+          complexMatrixFree(&res);
+          setSystemFlag(FLAG_ASLIFT);
+        }
+        else {
+          displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "matrix has no square root, or iteration failed to converge");
+            moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
+      }
+      else {
+        temporaryInformation = TI_NO_INFO;
+        if(programRunStop == PGM_WAITING) {
+          programRunStop = PGM_STOPPED;
+        }
+      }
+    }
+  }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-      moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, "is not a (real) matrix.", "");
+      moreInfoOnError("In function fnMatrixSquareRoot:", errorMessage, "is not a (real or complex) matrix.", "");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
@@ -3896,8 +3966,8 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
 // ============================================================================
 // Matrix square root
 #ifndef MATRIX_SQRT_USE_EIGEN
-//   0 = Denman-Beavers iteration (iterative, default)
-//   1 = Eigendecomposition: Y = Q * sqrt(Lambda) * Q^-1 (single-shot, real eigenvalues
+//   0 = Denman-Beavers iteration (iterative)
+//   1 = Eigendecomposition: Y = Q * sqrt(Lambda) * Q^-1 (single-shot, real eigenvalues, default
   #define MATRIX_SQRT_USE_EIGEN 1
 #endif //MATRIX_SQRT_USE_EIGEN
 
@@ -3955,7 +4025,7 @@ static bool_t isRealMatrixDiagonal(const real34Matrix_t *matrix) {
 static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) {
   const uint16_t n = matrix->header.matrixRows;
   const uint16_t MAX_ITER = 30;
-  real_t normVal, tol;
+  real_t normVal;
   real34Matrix_t Y = {0}, Z = {0}, Yinv = {0}, Zinv = {0}, YY = {0};
   bool_t converged = false;
   bool_t failed = false;
@@ -3971,8 +4041,6 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
     failed = true;
     goto cleanup;
   }
-
-  stringToReal("1E-30", &tol, &ctxtReal39);
 
   for(k = 0; k < MAX_ITER; ++k) {
     if(Yinv.matrixElements) realMatrixFree(&Yinv);
@@ -4003,9 +4071,9 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
       }
       subtractRealMatrices(&YY, matrix, &YY);
       _euclideanNormRealMatrix(&YY, 2, &normVal, &ctxtReal39);
-      if(realCompareLessThan(&normVal, &tol)) {
+      if(realCompareLessThan(&normVal, const_1e_30)) {    // convergence check, using const_1e_30
+        if(converged) break;
         converged = true;
-        break;
       }
     }
   }
@@ -4055,9 +4123,30 @@ static void sqrtRealMatrixEigen(const real34Matrix_t *matrix, real34Matrix_t *re
     goto cleanup;
   }
   if(LambdaImag.matrixElements) {
-    // At least one complex-conjugate pair: defer to complex phase.
-    failed = true;
-    goto cleanup;
+    // Reject genuine complex eigenvalues; tolerate QR roundoff noise (||A||_F * 1e-34).
+    real34_t inputNorm34;
+    real_t tol, val, scale;
+    bool_t hasGenuineComplex = false;
+
+    euclideanNormRealMatrix(matrix, 2, &inputNorm34);
+    real34ToReal(&inputNorm34, &scale);
+    realMultiply(&scale, const_1e_34, &tol, &ctxtReal39);
+
+    for(uint16_t i = 0; i < n; ++i) {
+      real34ToReal(&LambdaImag.matrixElements[i * n + i], &val);
+      if(realIsNegative(&val)) {
+        realChangeSign(&val);
+      }
+      if(realCompareGreaterThan(&val, &tol)) {
+        hasGenuineComplex = true;
+        break;
+      }
+    }
+
+    if(hasGenuineComplex) {
+      failed = true;
+      goto cleanup;
+    }
   }
 
   // Element-wise sqrt of diagonal eigenvalue matrix; bail on negatives.
@@ -4077,9 +4166,31 @@ static void sqrtRealMatrixEigen(const real34Matrix_t *matrix, real34Matrix_t *re
     failed = true;
     goto cleanup;
   }
-  if(QImag.matrixElements) {    // shouldn't happen
-    failed = true;
-    goto cleanup;
+  if(QImag.matrixElements) {
+    // Reject genuine complex eigenvectors; tolerate QR roundoff noise (||A||_F * 1e-34).
+    real34_t inputNorm34;
+    real_t tol, val, scale;
+    bool_t hasGenuineComplex = false;
+
+    euclideanNormRealMatrix(matrix, 2, &inputNorm34);
+    real34ToReal(&inputNorm34, &scale);
+    realMultiply(&scale, const_1e_34, &tol, &ctxtReal39);
+
+    for(uint32_t k = 0; k < (uint32_t)n * n; ++k) {
+      real34ToReal(&QImag.matrixElements[k], &val);
+      if(realIsNegative(&val)) {
+        realChangeSign(&val);
+      }
+      if(realCompareGreaterThan(&val, &tol)) {
+        hasGenuineComplex = true;
+        break;
+      }
+    }
+
+    if(hasGenuineComplex) {
+      failed = true;
+      goto cleanup;
+    }
   }
 
   // inv(Q). For symmetric input Q is orthogonal so Q^T would suffice and be faster, but using the general inverse covers the non-symmetric case at modest cost.
@@ -4131,7 +4242,8 @@ cleanup:
 #endif // MATRIX_SQRT_USE_EIGEN == 1
 
 
-// Compute Y such that Y*Y == matrix. Matrix must be square. Failure, res->matrixElements is NULL.
+// Compute Y such that Y*Y == matrix. Matrix must be square. On failure res->matrixElements is NULL. Fast paths handle 1x1 and diagonal inputs;
+// otherwise dispatches to the eigendecomposition or Denman-Beavers iteration based on MATRIX_SQRT_USE_EIGEN == 1 or 0.
 void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
   const uint16_t n = matrix->header.matrixRows;
   real_t a;
@@ -4182,6 +4294,231 @@ void sqrtRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
     sqrtRealMatrixEigen(matrix, res);
   #else
     sqrtRealMatrixDB(matrix, res);
+  #endif
+}
+
+
+static bool_t isComplexMatrixDiagonal(const complex34Matrix_t *matrix) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  for(uint16_t i = 0; i < rows; ++i) {
+    for(uint16_t j = 0; j < cols; ++j) {
+      if(i != j) {
+        if(!real34IsZero(VARIABLE_REAL34_DATA(&matrix->matrixElements[i * cols + j])) ||
+           !real34IsZero(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * cols + j]))) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
+#if (MATRIX_SQRT_USE_EIGEN == 0)
+// Denman-Beavers iteration on a complex matrix. Same structure as real DB,
+// but with complex primitives. addComplexMatrices and _multiplyComplexMatrix
+// both support in-place (matrix == res), so we inline the (a+b)/2 step.
+static void sqrtComplexMatrixDB(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  const uint16_t MAX_ITER = 30;
+  real34_t normVal34;
+  real_t normVal;
+  complex34Matrix_t Y = {0}, Z = {0}, Yinv = {0}, Zinv = {0}, YY = {0};
+  bool_t converged = false;
+  bool_t failed = false;
+  uint16_t k;
+
+  copyComplexMatrix(matrix, &Y);                   // Y_0 = A
+  if(!Y.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+  complexMatrixIdentity(&Z, n);                    // Z_0 = I
+  if(!Z.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+  for(k = 0; k < MAX_ITER; ++k) {
+    if(Yinv.matrixElements) {
+      complexMatrixFree(&Yinv);
+    }
+    if(Zinv.matrixElements) {
+      complexMatrixFree(&Zinv);
+    }
+
+    invertComplexMatrix(&Y, &Yinv);
+    if(!Yinv.matrixElements) {
+      failed = true;
+      goto cleanup;
+    }
+    invertComplexMatrix(&Z, &Zinv);
+    if(!Zinv.matrixElements) {
+      failed = true;
+      goto cleanup;
+    }
+
+    // Y = (Y + Zinv) * 0.5
+    addComplexMatrices(&Y, &Zinv, &Y);
+    _multiplyComplexMatrix(&Y, const_1on2, const_0, &Y, &ctxtReal39);
+
+    // Z = (Z + Yinv) * 0.5
+    addComplexMatrices(&Z, &Yinv, &Z);
+    _multiplyComplexMatrix(&Z, const_1on2, const_0, &Z, &ctxtReal39);
+
+    if((k & 1) == 1) {
+      if(YY.matrixElements) {
+        complexMatrixFree(&YY);
+      }
+      multiplyComplexMatrices(&Y, &Y, &YY);
+      if(!YY.matrixElements) {
+        failed = true;
+        goto cleanup;
+      }
+      subtractComplexMatrices(&YY, matrix, &YY);
+      euclideanNormComplexMatrix(&YY, 2, &normVal34);
+      real34ToReal(&normVal34, &normVal);
+      if(realCompareLessThan(&normVal, const_1e_30)) {    // convergence check, using const_1e_30
+        if(converged) break;
+        converged = true;
+      }
+    }
+  }
+
+cleanup:
+  if(Yinv.matrixElements) {
+    complexMatrixFree(&Yinv);
+  }
+  if(Zinv.matrixElements) {
+    complexMatrixFree(&Zinv);
+  }
+  if(YY.matrixElements) {
+    complexMatrixFree(&YY);
+  }
+  if(Z.matrixElements) {
+    complexMatrixFree(&Z);
+  }
+
+  if(converged && !failed) {
+    res->header        = Y.header;
+    res->matrixElements = Y.matrixElements;
+  }
+  else {
+    if(Y.matrixElements) {
+      complexMatrixFree(&Y);
+    }
+    res->matrixElements = NULL;
+    res->header.matrixRows = res->header.matrixColumns = 0;
+  }
+}
+#endif // MATRIX_SQRT_USE_EIGEN == 0
+
+
+#if (MATRIX_SQRT_USE_EIGEN == 1)
+// Eigendecomposition: A = Q * Lambda * inv(Q), so sqrt(A) = Q * sqrt(Lambda) * inv(Q).
+// Scalar complex sqrt of each eigenvalue computed inline using the rectangular
+// formula sqrt(a+bi) = sqrt((|z|+a)/2) + sign(b)*sqrt((|z|-a)/2)*i (principal branch).
+static void sqrtComplexMatrixEigen(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  complex34Matrix_t Lambda = {0}, Q = {0}, Qinv = {0}, tmp = {0};
+  bool_t failed = false;
+
+  // Eigenvalues - complex matrix already holds both real and imag parts
+  complexEigenvalues(matrix, &Lambda);
+  if(!Lambda.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+  // Element-wise complex sqrt of diagonal eigenvalue matrix
+  for(uint16_t i = 0; i < n; ++i) {
+    real_t aReal, aImag, sqrtR, sqrtI;
+    real34ToReal(VARIABLE_REAL34_DATA(&Lambda.matrixElements[i * n + i]), &aReal);
+    real34ToReal(VARIABLE_IMAG34_DATA(&Lambda.matrixElements[i * n + i]), &aImag);
+    sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &ctxtReal39);
+    realToReal34(&sqrtR, VARIABLE_REAL34_DATA(&Lambda.matrixElements[i * n + i]));
+    realToReal34(&sqrtI, VARIABLE_IMAG34_DATA(&Lambda.matrixElements[i * n + i]));
+  }
+
+  // Eigenvectors
+  complexEigenvectors(matrix, &Q);
+  if(!Q.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+  // inv(Q)
+  invertComplexMatrix(&Q, &Qinv);
+  if(!Qinv.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+  // tmp = Q * sqrt(Lambda)
+  multiplyComplexMatrices(&Q, &Lambda, &tmp);
+  if(!tmp.matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+  // res = tmp * inv(Q) = Q * sqrt(Lambda) * inv(Q)
+  multiplyComplexMatrices(&tmp, &Qinv, res);
+  if(!res->matrixElements) {
+    failed = true;
+    goto cleanup;
+  }
+
+cleanup:
+  if(Lambda.matrixElements) {
+    complexMatrixFree(&Lambda);
+  }
+  if(Q.matrixElements) {
+    complexMatrixFree(&Q);
+  }
+  if(Qinv.matrixElements) {
+    complexMatrixFree(&Qinv);
+  }
+  if(tmp.matrixElements) {
+    complexMatrixFree(&tmp);
+  }
+
+  if(failed) {
+    res->matrixElements = NULL;
+    res->header.matrixRows = res->header.matrixColumns = 0;
+  }
+}
+#endif // MATRIX_SQRT_USE_EIGEN == 1
+
+
+// Compute Y such that Y*Y == matrix (matrix product), complex case.
+// Caller must ensure matrix is square. On failure res->matrixElements is NULL.
+void sqrtComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+  const uint16_t n = matrix->header.matrixRows;
+  real_t aReal, aImag, sqrtR, sqrtI;
+
+  res->matrixElements = NULL;
+  res->header.matrixRows = res->header.matrixColumns = 0;
+
+  // Fast path: diagonal complex matrix. Avoids the eigensolver, which is ill-conditioned for degenerate eigenvalues (e.g. k*I). Not needed in diagonal form.
+  if(isComplexMatrixDiagonal(matrix)) {
+    if(!complexMatrixInit(res, n, n)) {
+      return;
+    }
+    for(uint16_t i = 0; i < n; ++i) {
+      real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[i * n + i]), &aReal);
+      real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i * n + i]), &aImag);
+      sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &ctxtReal39);
+      realToReal34(&sqrtR, VARIABLE_REAL34_DATA(&res->matrixElements[i * n + i]));
+      realToReal34(&sqrtI, VARIABLE_IMAG34_DATA(&res->matrixElements[i * n + i]));
+    }
+    return;
+  }
+
+  #if (MATRIX_SQRT_USE_EIGEN == 1)
+    sqrtComplexMatrixEigen(matrix, res);
+  #else
+    sqrtComplexMatrixDB(matrix, res);
   #endif
 }
 
@@ -7276,7 +7613,7 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
 }
 
 
-void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
+static void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
   const uint16_t size = matrix->header.matrixRows;
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
@@ -7352,7 +7689,7 @@ void realEigenvalues(const real34Matrix_t *matrix, real34Matrix_t *res, real34Ma
 }
 
 
-void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+static void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   const uint16_t size = matrix->header.matrixRows;
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
@@ -7405,7 +7742,7 @@ void complexEigenvalues(const complex34Matrix_t *matrix, complex34Matrix_t *res)
 }
 
 
-void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
+static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires) {
   const uint16_t size = matrix->header.matrixRows;
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i, j;
@@ -7425,13 +7762,6 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
       for(i = 0; i < size * size; i++) {
         real34ToReal(&matrix->matrixElements[i], a + i * 2);
         realSetZero(a + i * 2 + 1);
-      }
-      // Initialize ALL elements to zero for eig, q, and r
-      for(int i = 0; i < size * size * 2; i++) {
-        realSetZero(eig + i);
-        realSetZero(q + i);
-        realSetZero(r + i);
-        realSetZero(previousDiagonal + i);
       }
 
       // Calculate eigenvalues
@@ -7509,7 +7839,7 @@ void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, real34M
 }
 
 
-void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   const uint16_t size = matrix->header.matrixRows;
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i;
