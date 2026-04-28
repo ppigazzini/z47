@@ -78,6 +78,8 @@ void fnEditMatrix(uint16_t regist) {
     return;
   }
 
+  leaveTamModeIfEnabled();
+
   saveStatsMatrix();
   const uint16_t reg = (regist == NOPARAM) ? REGISTER_X : regist;
   if((getRegisterDataType(reg) == dtReal34Matrix) || (getRegisterDataType(reg) == dtComplex34Matrix)) {
@@ -92,6 +94,10 @@ void fnEditMatrix(uint16_t regist) {
     nimBufferDisplay[0] = 0;
     scrollRow = scrollColumn = 0;
     showMatrixEditor();
+    #if defined(IR_PRINTING)
+      refreshScreen(80);
+      printTraceMatElement(LINE_FULL);
+    #endif //IR_PRINTING
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -552,6 +558,14 @@ void mimEnter(bool_t commit) {
   int16_t col = getJRegisterAsInt(true);
 
   if(aimBuffer[0] != 0) {
+    #if defined(IR_PRINTING)
+      if(aimBuffer[0] == '+') {
+        printTraceString(aimBuffer+1,LINE_NOLF);
+      }
+      else {
+        printTraceString(aimBuffer,LINE_NOLF);
+      }
+    #endif //IR_PRINTING
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       real34_t real34tmp;
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
@@ -784,7 +798,7 @@ void mimAddNumber(int16_t item) {
             complex34_t *elm = &openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col];
             if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
               real_t theta;
-              realCopy(const_piOn2, &theta);
+              realCopy(const39_piOn2, &theta);
               convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
               real34SetOne(VARIABLE_REAL34_DATA(elm));
               real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
@@ -794,6 +808,9 @@ void mimAddNumber(int16_t item) {
               real34SetOne(VARIABLE_IMAG34_DATA(elm));
             }
           }
+          #if defined(IR_PRINTING)
+            printTrace(lastFunc,item);
+          #endif //IR_PRINTING
           return;
         }
       break;
@@ -802,10 +819,10 @@ void mimAddNumber(int16_t item) {
       case ITM_CONSTpi: {
       if(aimBuffer[0] == 0) {
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-          realToReal34(const_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+          realToReal34(const39_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
         }
         else {
-          realToReal34(const_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          realToReal34(const39_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
           real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
       }
@@ -1080,7 +1097,7 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t to
   }
 
   toDisplay |= forEditor || rows > 1;
-  strcpy(errorMessage,"[");
+  strcpy(errorMessage, "[");
 
   uint16_t maxCols = cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols;
   const uint16_t maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
@@ -1247,7 +1264,8 @@ real_t aa, bb, cc;
       if(allElementsInColAreIntegers[j]) {
         displayFormat = DF_FIX;
         displayFormatDigits = 0;
-      } else {
+      }
+      else {
         displayFormat = displayFormat1;
         displayFormatDigits = displayFormatDigits1;
       }
@@ -1282,9 +1300,9 @@ real_t aa, bb, cc;
         colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true) - 1;
       } else {
         if(j > 0) {
-          strcat(errorMessage," ");
+          strcat(errorMessage, " ");
         }
-      strcat(errorMessage,tmpString);
+        strcat(errorMessage, tmpString);
       }
     }
 //end string creation
@@ -1371,7 +1389,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         if(allElementsInColAreIntegers[j]){ // && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
-        } else {
+        }
+        else {
           displayFormat = displayFormat1;
           displayFormatDigits = displayFormatDigits1;
         }
@@ -1704,7 +1723,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   }
   cpxUnitWidth = stringWidth(tmpString, font, true, true);
 
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2), 0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }

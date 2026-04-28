@@ -125,7 +125,7 @@
     realMultiply(&p, &i, &p, realContext);
     realSubtract(&q, &p, &p, realContext);
     realExp(&p, &p, realContext);
-    realMultiply(const_pi, nu, &q, realContext);
+    realMultiply(const39_pi, nu, &q, realContext);
     realSquareRoot(&q, &q, realContext);
     realDivide(&p, &q, res, realContext);
   }
@@ -206,7 +206,7 @@
       realMultiply(&reg0, &p, &q, realContext);
       realSubtract(const_1on4, const_1, &r, realContext);
       realAdd(&p, &r, &p, realContext);
-      realDivide(const_pi, &p, &p, realContext);
+      realDivide(const39_pi, &p, &p, realContext);
       realSquareRoot(&p, &p, realContext);
       realMultiply(&p, &q, &q, realContext);
       realDivide(const_1, nu, &r, realContext);
@@ -217,7 +217,7 @@
     else { // qf_t_tail
       WP34S_qf_q_est(&reg0, &p, NULL, realContext);
       realMultiply(&p, &p, &p, realContext);
-      realMultiply(const_eE, nu, &r, realContext);
+      realMultiply(const39_eE, nu, &r, realContext);
       realDivide(const_1, &r, &r, realContext);
       realAdd(&r, const_1, &r, realContext);
       realMultiply(&p, &r, &p, realContext);

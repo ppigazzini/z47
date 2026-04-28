@@ -1853,6 +1853,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
+            #if defined(IR_PRINTING)
+              printf("**[DL]** STOP program\n");fflush(stdout);
+              refreshStatusBar();
+              printTrace(ITM_STOP,NOPARAM);   // STOP program
+            #endif //IR_PRINTING
           }
           else if(programRunStop == PGM_PAUSED) {
             programRunStop = PGM_KEY_PRESSED_WHILE_PAUSED;
@@ -2091,8 +2096,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
       screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 
-      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS) {
-        showFunctionNameItem = ITM_RS;
+      if(calcMode == CM_NORMAL && showFunctionNameItem == 0 && lastKeyItemDetermined == ITM_RS && !SHOWMODE && calcMode != CM_REGISTER_BROWSER) {
+         showFunctionNameItem = ITM_RS;
         temporaryInformation = TI_NO_INFO;
         refreshRegisterLine(REGISTER_T);
       }
@@ -2460,17 +2465,6 @@ RELEASE_END:
           break;
         }
 
-        case ITM_RS:
-          showStep();
-          keyActionProcessed = true;
-          showFunctionNameItem = 0;
-          #if defined(DMCP_BUILD)
-            lcd_refresh();
-          #else // !DMCP_BUILD
-            refreshLcd(NULL);
-          #endif // DMCP_BUILD
-          break;
-
         case ITM_DOWN1: {
           if(calcMode != CM_CONFIRMATION) {
             keyActionProcessed = true;   //swapped to before fnKeyUp to be able to check if key was processed below. Chose to process it here, as fnKeyUp does not have access to item.
@@ -2790,11 +2784,24 @@ RELEASE_END:
                   refreshRegisterLine(REGISTER_X);
                   keyActionProcessed = true;
                 }
+
                 // Following commands do not timeout to NOP
                 else if(item == ITM_UNDO || item == ITM_BST || item == ITM_SST || item == ITM_PR || item == ITM_AIM || item == ITM_SNAP) {
                   runFunction(item);
                   keyActionProcessed = true;
                 }
+
+                else if(item == ITM_RS) {
+                  showStep();
+                  keyActionProcessed = true;
+                  showFunctionNameItem = 0;
+                  #if defined(DMCP_BUILD)
+                    lcd_refresh();
+                  #else // !DMCP_BUILD
+                    refreshLcd(NULL);
+                  #endif // DMCP_BUILD
+                }
+
                 break;
               }
 
@@ -3427,6 +3434,13 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
+          #if defined(IR_PRINTING)
+            #if defined(PC_BUILD)
+              printf("**[DL]** fnKeyEnter printTraceX\n");fflush(stdout);
+            #endif //PC_BUILD
+            printTraceX(LINE_FULL);
+          #endif //IR_PRINTING
+          
           if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterB\n");

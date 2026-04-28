@@ -90,7 +90,7 @@ static void lnP1Real(void) {
     if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function lnP1Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of ln(x+1) when flag D is not set", NULL, NULL);
+        moreInfoOnError("In function lnP1Real:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of ln(x+1) when flag SPCRES is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -99,7 +99,7 @@ static void lnP1Real(void) {
         realSetPlusInfinity(&x);
       }
       else {
-        convertComplexToResultRegister(const_plusInfinity, const_pi, REGISTER_X);
+        convertComplexToResultRegister(const_plusInfinity, const39_pi, REGISTER_X);
         return;
       }
     }
@@ -109,13 +109,12 @@ static void lnP1Real(void) {
   }
 
   else {
-    real34ToReal(&r, &x);
     if(realIsPositive(&r)) {
       WP34S_Ln1P(&arg, &x, &ctxtReal39);
      }
     else if(getFlag(FLAG_CPXRES)) {
       lnP1Complex(&arg, const_0, &x, &r, &ctxtReal75);
-      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const39_pi, REGISTER_X);
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {

@@ -8,12 +8,24 @@
 #if !defined(REALTYPE_H)
   #define REALTYPE_H
 
-#define DEFN_REAL(n)                            \
-  typedef struct {                              \
-    int32_t digits;                             \
-    int32_t exponent;                           \
-    uint8_t bits;                               \
-    decNumberUnit lsu[(n+DECDPUN-1)/DECDPUN];   \
+// C47Bits : maybe this will come in handy someday
+#define REAL_NONE  0x00
+#define REAL_EXACT 0x01
+//#define REAL_?     0x02
+//#define REAL_?     0x04
+//#define REAL_?     0x08
+//#define REAL_?     0x10
+//#define REAL_?     0x20
+//#define REAL_?     0x40
+//#define REAL_?     0x80
+
+#define DEFN_REAL(n)                          \
+  typedef struct {                            \
+    int32_t digits;                           \
+    int32_t exponent;                         \
+    uint8_t bits;                             \
+    uint8_t C47Bits;                          \
+    decNumberUnit lsu[(n+DECDPUN-1)/DECDPUN]; \
   } real ## n ## _t
 
   DEFN_REAL(39);
@@ -132,6 +144,7 @@
   #define real34ToUInt32(source)                                 decQuadToUInt32          ((real34_t *)(source), &ctxtReal34, DEC_ROUND_DOWN)
   #define real34SetZero(destination)                             decQuadZero              (destination)
   #define real34SetOne(destination)                              decQuadFromInt32         (destination, 1)
+  #define real34ScaleB(source, shift, destination)               decQuadScaleB            ((real34_t *)(destination), (real34_t *)(source), (real34_t *)(shift), &ctxtReal34)
   //#define real34SetZero(destination)                              xcopy                    (destination, const34_0, REAL34_SIZE_IN_BYTES)
   /*#define real34SetZero(destination)                              do { *(uint64_t *)(destination)     =   *(uint64_t *)const34_0;     \
                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)const34_0)+1); \
@@ -169,13 +182,13 @@
   #define realPlus(operand, res, ctxt)                           decNumberPlus            (res, operand, ctxt)
   #define realPower(operand1, operand2, res, ctxt)               decNumberPower           (res, operand1, operand2, ctxt)
   #define realRescale(operand, res, acc, ctxt)                   decNumberRescale         (res, operand, acc, ctxt)
-  #define realReduce(operand, res, ctxt)                         decNumberReduce          (res, operand, ctxt)
+  #define realReduce(operand, res, ctxt)                         decNumberReduce          ((real_t *)(res), (real_t *)(operand), ctxt)
   #define realSetNegativeSign(operand)                           (operand)->bits |= 0x80
   #define realSetPositiveSign(operand)                           (operand)->bits &= 0x7F
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (res, operand, ctxt)
   #define realSubtract(operand1, operand2, res, ctxt)            decNumberSubtract        (res, operand1, operand2, ctxt)
   #define realToReal34(source, destination)                      decQuadFromNumber        ((real34_t *)(destination), source, &ctxtReal34)
   #define realToString(source, destination)                      decNumberToString        ((real_t *)(source), destination)
-  #define stringToReal(source, destination, ctxt)                decNumberFromString      (destination, source, ctxt)
-  #define uInt32ToReal(source, destination)                      decNumberFromUInt32      (destination, source)
+  #define stringToReal(source, destination, ctxt)                decNumberFromString      ((real_t *)(destination), source, ctxt)
+  #define uInt32ToReal(source, destination)                      decNumberFromUInt32      ((real_t *)(destination), source)
 #endif // !REALTYPE_H

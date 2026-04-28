@@ -30,4 +30,9 @@ Demonstration programs included in C47 distro
 
 8.   47DFLT.rtf    47DFLT.p47      Restore typical settings on C47, R47, after HP35fun.rtf
                                    Recommend load your prior settings: RCL Config 35
+
+9.   MANSLV.rtf    MANSLV.p47      Manula solve illustrating Newton/Secant/Mod solve program solving cos(x)=x in 1000 digit accuracy
+                                   https://forum.swissmicros.com/viewtopic.php?p=42167#p42167
+
+                                   
                                    

@@ -10,11 +10,11 @@ static void curtShoI(void) {
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
 
   if(realIsPositive(&x)) {
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
   }
   else {
     realSetPositiveSign(&x);
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
   }
 
@@ -46,11 +46,11 @@ void curtReal(void) {
   }
 
   if(realIsPositive(&x)) {
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
   }
   else {
     realSetPositiveSign(&x);
-    PowerReal(&x, const_1on3, &x, &ctxtReal39);
+    PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
   }
   convertRealToResultRegister(&x, REGISTER_X, amNone);
@@ -83,19 +83,19 @@ void curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real
 
   if(realIsZero(&b)) {
     if(realIsPositive(&a)) {
-      PowerReal(&a, const_1on3, resReal, realContext);
+      PowerReal(&a, const39_1on3, resReal, realContext);
     }
     else {
       realSetPositiveSign(&a);
-      PowerReal(&a, const_1on3, resReal, realContext);
+      PowerReal(&a, const39_1on3, resReal, realContext);
       realSetNegativeSign(resReal);
     }
     realSetZero(resImag);
   }
   else {
     realRectangularToPolar(&a, &b, &a, &b, realContext);
-    PowerReal(&a, const_1on3, &a, realContext);
-    realMultiply(&b, const_1on3, &b, realContext);
+    PowerReal(&a, const39_1on3, &a, realContext);
+    realMultiply(&b, const39_1on3, &b, realContext);
     realPolarToRectangular(&a, &b, resReal, resImag, realContext);
   }
 }
@@ -188,12 +188,11 @@ void curtComplex159(const real_t *zReal, const real_t *zImag, real_t *resReal, r
       realSetZero((real_t *)&xi);
     }
     else {
-      realSetPositiveSign((real_t *)&zr);
+      realSetPositiveSign((real_t *)&zr); // Temorarily set to positive, handle the sign later after the power function on positive only
       realPower((real_t *)&zr, (real_t *)&const159_1on3, (real_t *)&xr, realContext);
       realSetNegativeSign((real_t *)&xr);
       realSetZero((real_t *)&xi);
-      realSetPositiveSign((real_t *)&zr); // Restore sign
-      realSetNegativeSign((real_t *)&zr);
+      realSetNegativeSign((real_t *)&zr); // Restore to negative (input was negative real, we're handling cbrt of negative)
     }
     realCopy((real_t *)&xr, resReal);
     realCopy((real_t *)&xi, resImag);

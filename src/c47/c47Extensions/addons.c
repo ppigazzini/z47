@@ -1476,7 +1476,7 @@ void fn_cnst_op_j_pol(uint16_t unusedButMandatoryParameter) {
 
 
 void fn_cnst_op_aa(uint16_t unusedButMandatoryParameter) {
-  cpxToStk(const_1on2, const_root3on2, !forcedLiftTheStack);
+  cpxToStk(const_1on2, const39_root3on2, !forcedLiftTheStack);
   chsCplx();
 }
 
@@ -1528,8 +1528,8 @@ void fn_cnst_op_A(uint16_t option) {
   linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
 
   real_t const__rt3on2, const_rt3on2, const__1on2;
-  realMultiply(const_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
-  realMultiply(const_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const_rt3on2,  &ctxtReal39);
+  realMultiply(const39_rt3, const_1on2, &const__rt3on2, &ctxtReal39);
   realSetNegativeSign(&const__rt3on2);
   realCopy(const_1on2, &const__1on2);
   realSetNegativeSign(&const__1on2);
@@ -1712,7 +1712,7 @@ void fnConvertStkToMx(uint16_t constVector1) {
     convertAngleFromTo(&x[0].r, ang2Dx, amRadian, &ctxtReal39);
     if(realCompareLessThan(&x[1].r, const_0)) {
       realSetPositiveSign(&x[1].r);
-      realAdd(&x[0].r, const_pi, &x[0].r, &ctxtReal39);
+      realAdd(&x[0].r, const39_pi, &x[0].r, &ctxtReal39);
     }
   }
 
@@ -2370,129 +2370,6 @@ void fnByteShortcutsS(uint16_t size) { //JM POC BASE2 vv
 void fnByteShortcutsU(uint16_t size) {
   fnSetWordSize(size);
   fnIntegerMode(SIM_UNSIGN);
-}
-
-
-void fnP_Alpha(void) {
-    if(calcMode != CM_AIM) {
-      #if defined(DMCP_BUILD)
-        beep(440, 50);
-        beep(4400, 50);
-        beep(440, 50);
-      #endif // DMCP_BUILD
-      return;
-    }
-    xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-    create_filename(".REGS.TSV");
-
-    #if (VERBOSE_LEVEL >= 1)
-      clearScreen(2);
-      print_linestr("Output Aim Buffer to drive:", true);
-      print_linestr(filename_csv, false);
-    #endif // VERBOSE_LEVEL >= 1
-
-    tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
-    xcopy(aimBuffer, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-    //print_linestr(aimBuffer, false);
-}
-
-
-
-void fnP_Regs (uint16_t registerNo) {
-    if(calcMode != CM_NORMAL) {
-      #if defined(DMCP_BUILD)
-        beep(440, 50);
-        beep(4400, 50);
-        beep(440, 50);
-      #endif // DMCP_BUILD
-      return;
-    }
-
-    create_filename(".REGS.TSV");
-
-    #if (VERBOSE_LEVEL >= 1)
-      clearScreen(3);
-      print_linestr("Output regs to drive:", true);
-      print_linestr(filename_csv, false);
-    #endif // VERBOSE_LEVEL >= 1
-
-    stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
-}
-
-
-
-void fnP_All_Regs(uint16_t option) {
-    if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
-      #if defined(DMCP_BUILD)
-        beep(440, 50);
-        beep(4400, 50);
-        beep(440, 50);
-      #endif // DMCP_BUILD
-      return;
-    }
-
-    create_filename(".REGS.TSV");
-
-    #if (VERBOSE_LEVEL >= 1)
-      clearScreen(4);
-      print_linestr("Output regs to drive:", true);
-      print_linestr(filename_csv, false);
-    #endif // VERBOSE_LEVEL >= 1
-
-    switch(option) {
-      case PRN_ALL:
-        stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
-        stackregister_csv_out(0, 99, !ONELINE);
-        if(currentNumberOfLocalRegisters > 0) {
-          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-        }
-        if(numberOfNamedVariables > 0) {
-          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
-        }
-
-
-        //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
-        break;
-
-      case PRN_STK:
-        if(getSystemFlag(FLAG_SSIZE8)) {
-          stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
-        }
-        else {
-          stackregister_csv_out(REGISTER_X, REGISTER_T, !ONELINE);
-        }
-        break;
-
-      case PRN_GLOBALr:
-        stackregister_csv_out(0, 99, !ONELINE);
-        break;
-
-      case PRN_LOCALr:
-        if(currentNumberOfLocalRegisters > 0) {
-          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-        }
-        break;
-
-      case PRN_NAMEDr:
-        if(numberOfNamedVariables > 0) {
-          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
-        }
-        break;
-
-      case PRN_Xr:
-        stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
-        break;
-
-      case PRN_TMP:
-        stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
-        break;
-
-      case PRN_XYr:
-        stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
-        break;
-
-      default: ;
-    }
 }
 
 

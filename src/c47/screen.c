@@ -163,7 +163,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
     }
   }
 
-  void copyRegisterToClipboardString(calcRegister_t regist, char *clipboardString) {
+  void copyRegisterToClipboardString(calcRegister_t regist, char *clipboardString, bool_t forPrinter) {
     longInteger_t lgInt;
     int16_t base, sign, n;
     uint64_t shortInt;
@@ -259,7 +259,12 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
         base = getRegisterShortIntegerBase(regist);
 
         n = ERROR_MESSAGE_LENGTH - 100;
-        sprintf(errorMessage + n--, "#%d (word size = %u)", base, shortIntegerWordSize);
+        if(forPrinter) {
+          sprintf(errorMessage + n--, "#%d", base);
+        }
+        else {
+          sprintf(errorMessage + n--, "#%d (word size = %u)", base, shortIntegerWordSize);
+        }
 
         if(shortInt == 0) {
           errorMessage[n--] = '0';
@@ -323,14 +328,26 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
       }
 
       case dtConfig:
-        xcopy(string, "Configuration data", 19);
+        if(forPrinter) {
+          xcopy(string, "Config. data", 13);
+        }
+        else {
+          xcopy(string, "Configuration data", 19);
+        }
+
+        
         break;
 
       default:
         sprintf(string, "In function copyRegisterXToClipboard, the data type %" PRIu32 " is unknown! Please try to reproduce and submit a bug.", getRegisterDataType(regist));
     }
 
-    stringToUtf8(string, (uint8_t *)clipboardString);
+    if(forPrinter) {
+      strcpy(clipboardString, string);
+    }
+    else {
+      stringToUtf8(string, (uint8_t *)clipboardString);
+    }
   }
 #endif // PC_BUILD || DMCP_BUILD                              //JMCSV
 
@@ -350,7 +367,7 @@ char letteredRegisterName(calcRegister_t regist) {
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyRegisterToClipboardString(REGISTER_X, clipboardString);
+    copyRegisterToClipboardString(REGISTER_X, clipboardString, false);
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
   }
 
@@ -361,7 +378,7 @@ char letteredRegisterName(calcRegister_t regist) {
 
     for(calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
-      copyRegisterToClipboardString(r, ptr);
+      copyRegisterToClipboardString(r, ptr, false);
       ptr = strchr(ptr, '\0');
       sep = LINEBREAK;
     }
@@ -396,14 +413,14 @@ char letteredRegisterName(calcRegister_t regist) {
       ptr += strlen(ptr);
       sprintf(ptr, LINEBREAK "R%02d = ", regist);
       ptr += strlen(ptr);
-      copyRegisterToClipboardString(regist, ptr);
+      copyRegisterToClipboardString(regist, ptr, false);
     }
 
     for(int32_t regist=currentNumberOfLocalRegisters-1; regist>=0; --regist) {
       ptr += strlen(ptr);
       sprintf(ptr, LINEBREAK "R.%02d = ", regist);
       ptr += strlen(ptr);
-      copyRegisterToClipboardString(FIRST_LOCAL_REGISTER + regist, ptr);
+      copyRegisterToClipboardString(FIRST_LOCAL_REGISTER + regist, ptr, false);
     }
 
     if(statisticalSumsPointer != NULL) {
@@ -3253,6 +3270,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         displayTemporaryInformationOnX(prefix);
       }
 
+    #if defined(IR_PRINTING)
+      else if(temporaryInformation == TI_PRINT_COMPLETE && regist == REGISTER_X) {
+        sprintf(prefix, "Print completed");
+        displayTemporaryInformationOnX(prefix);
+      }
+    #endif //IR_PRINTING
+      
       else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
         sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
@@ -4491,6 +4515,37 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             }
           }
 
+
+
+#if defined(OPTION_TVM_AMORT)
+          else if(temporaryInformation == TI_AMORT_BAL && regist == REGISTER_X) {
+            strcpy(prefix, "Balance remaining =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_PRN && regist == REGISTER_X) {
+            sprintf(prefix, "%s", STD_SIGMA);
+            strcat(prefix, " of principal to P2 =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_INT && regist == REGISTER_X) {
+            sprintf(prefix, "%s", STD_SIGMA);
+            strcat(prefix, " of interest to P2 =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P1 && regist == REGISTER_X) {
+            strcpy(prefix, "From period P1:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P2 && regist == REGISTER_X) {
+            strcpy(prefix, "To period P2:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+#endif //OPTION_TVM_AMORT
+
           else if(temporaryInformation == TI_TVM_EFF && regist == REGISTER_X) {
             strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -4907,6 +4962,19 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
+
+#if defined(OPTION_TVM_AMORT)
+          else if(temporaryInformation == TI_AMORT_P1 && regist == REGISTER_X) {
+            strcpy(prefix, "From period P1:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
+          else if(temporaryInformation == TI_AMORT_P2 && regist == REGISTER_X) {
+            strcpy(prefix, "To period P2:");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+#endif //OPTION_TVM_AMORT
+
 
 
           //shift longinter prefix on by two space if interfering with the shift indicator, when SB_TIME is selected
@@ -6049,7 +6117,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   char ss[TAM_BUFFER_LENGTH];
   xcopy(ss, tamBuffer, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
   if(calcMode == CM_AIM) {
-    fnP_Alpha();     //print alpha
+    fnP_Alpha(NOPARAM);     //print alpha
   }
   else {
     fnP_All_Regs(PRN_STK); //print stack

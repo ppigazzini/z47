@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.02a0"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.02a3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -64,8 +64,10 @@
 #define OPTION_XFN_1000                // NO DM42           // XFN extended 1000 digit math Functionality; does not work on DM42, due to stack constraint.
 #define OPTION_TVM_FORMULAS            //                   // Use analytical formulas where possible
 #define OPTION_TVM_NEWTON              //                   // Use additional newton raphson in the brent solver for tvm where possible
+#define OPTION_TVM_AMORT               //                   // Use AMORT
 #define OPTION_ELEC                    //                   // ELEC functions
-#define OPTION_VECTOR                  //                   // 2D 3D vector conversions; vector swaps; display TI for vector
+#undef OPTION_VECTOR                   //                   // 2D 3D vector conversions; vector swaps; display TI for vector
+#define IR_PRINTING                    // Enable printing everywhere
 
 #undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST, TO REMOVE, TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
 
@@ -99,7 +101,7 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ZETA, BETA
       #define SAVE_SPACE_DM42_12ELLIP  //       bytes // ELLIPTIC
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
@@ -124,9 +126,9 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
       #undef  OPTION_VECTOR            //  10k ? bytes// Vector
       #undef  OPTION_ELEC              //  2k ?  bytes// ELEC functions
-
 
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // !TWO_FILE_PGM && !NEW_HW
@@ -151,7 +153,7 @@
 
 
 
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 11256) // ALL DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; NO VECTOR
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 9952) // ALL DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; NO VECTOR
          //  #define SAVE_SPACE_DM42_8F        //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
@@ -168,9 +170,10 @@
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 1960) // 10% DIST; ALL X.FN; ELEC; FAST FIN; NO VECTOR
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 648) // 10% DIST; ALL X.FN; ELEC; FAST FIN; NO VECTOR
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
          // #define SAVE_SPACE_DM42_12ELLIP    // 12888 bytes // Without ELLIPTIC
          // #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without X.FN BESSEL
@@ -187,9 +190,10 @@
          // #undef OPTION_TVM_NEWTON           //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
          // #undef OPTION_ELEC                 //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 7616) // 50% DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; VECTOR
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 10032) // 50% DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; VECTOR; PRINTING
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
@@ -204,8 +208,9 @@
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-         // #undef OPTION_VECTOR               //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+         // #undef OPTION_VECTOR               //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
+         // #undef  IR_PRINTING                // 10032 bytes // Remove IR printing for old hardware
   #endif
 
   #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 (free 33208) FOR GITLAB PIPELINE COMPILE
@@ -225,6 +230,7 @@
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
 
@@ -248,8 +254,9 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
 
+    //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -671,7 +678,8 @@
 #define ERROR_SOLVER_ABORT                        60
 #define ERROR_RESERVED_VARIABLE_NAME              61
 #define ERROR_INVALID_TYPE_XFN                    62
-#define LAST_ERROR_MESSAGE                        62
+#define ERROR_PRINTING_DISABLED                   63
+#define LAST_ERROR_MESSAGE                        63
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -771,8 +779,8 @@
 #define FLAG_ALPHA                            0x800e
 #define FLAG_alphaCAP                         0xc00f
 #define FLAG_RUNTIM                           0xc010
-#define FLAG_RUNIO                            0xc011
-#define FLAG_PRINTS                           0xc012
+#define FLAG_AMORT_HP12C                      0x8011
+#define FLAG_spare2                           0xc012 // spare
 #define FLAG_TRACE                            0x8013
 #define FLAG_USER                             0x8014
 #define FLAG_LOWBAT                           0xc015
@@ -786,7 +794,7 @@
 #define FLAG_GROW                             0x801d
 #define FLAG_AUTOFF                           0x801e
 #define FLAG_AUTXEQ                           0x801f
-#define FLAG_PRTACT                           0x8020
+#define FLAG_PRTACT                           0xc020
 #define FLAG_NUMIN                            0x8021
 #define FLAG_ALPIN                            0x8022
 #define FLAG_ASLIFT                           0xc023
@@ -837,19 +845,19 @@
 #define FLAG_PPLUS                            0x8050
 #define FLAG_PLINE                            0x8051
 #define FLAG_SCALE                            0x8052
-#define FLAG_VECT                             0x8053 //20
+#define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
 #define FLAG_SBwoy                            0x8057
 #define FLAG_TOPHEX                           0x8058
-#define FLAG_BCD                              0x8059 //26
-#define FLAG_PCURVE                           0x805A //27
-#define FLAG_CLX_DROP                         0x805B //28
+#define FLAG_BCD                              0x8059
+#define FLAG_PCURVE                           0x805A
+#define FLAG_CLX_DROP                         0x805B
 #define FLAG_BASE_MYM                         0x805C
 #define FLAG_G_DOUBLETAP                      0x805D
 #define FLAG_BASE_HOME                        0x805E
-#define FLAG_MYM_TRIPLE                       0x805F
+#define FLAG_MYM_TRIPLE                       0x805F //32
 #define FLAG_HOME_TRIPLE                      0x8060
 #define FLAG_SHFT_4s                          0x8061
 #define FLAG_FGLNLIM                          0x8062
@@ -857,8 +865,10 @@
 #define FLAG_FGGR                             0x8064
 #define FLAG_3DPHYS                           0x8065
 #define FLAG_3DXYZ                            0x8066
+#define FLAG_PRTEN                            0x8067
+#define FLAG_NORM                             0x8068 //41
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+39 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+41 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -888,6 +898,52 @@ typedef enum {
   LI_POSITIVE = 2  // Long integer sign +
 } longIntegerSign_t;
 
+
+// PRINTING
+#define PROFF   0
+#define PRON    1
+
+#define MAN     0
+#define NORM    1
+#define TRACE   2
+#define STRACE  3
+
+#define PROG    false
+#define LIST    true
+
+typedef enum {
+  PRINT_BYTE,
+  PRINT_CHAR,
+  PRINT_TAB,
+  PRINT_ALPHA,
+  PRINT_ALPHA_NOADV,
+  PRINT_ALPHA_JUST
+} printArgument_t;
+
+
+
+typedef enum {
+  PRINTER_HP,
+  PRINTER_MARTEL,
+  PRINTER_OTHER
+} printerModel_t;
+
+
+
+typedef enum  {
+	PMODE_DEFAULT = 0,
+	PMODE_GRAPHICS = 1,
+	PMODE_SMALLGRAPHICS = 2,
+	PMODE_SERIAL = 3
+} print_modes_t;
+
+
+typedef enum  {
+	LINE_FULL  = 0,
+	LINE_LEFT  = 1,
+	LINE_RIGHT = 2,
+	LINE_NOLF  = 3
+} print_area_t;
 
 
 
@@ -992,23 +1048,28 @@ typedef enum {
 #define HG_ENABLED_MX_ONLY                 ( 1 << 13 ) // Hourglass disabled except when matrixes are in X or Y
 #define HG_DISABLED                        ( 2 << 13 ) // Hourglass blocked
 
-// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2,22] so no big loss to do.
+// EIM function parameter number - Note, if we need a bit here for more important tasks, we can convert this information into an array in equation.c, sized [2, 22] so no big loss to do.
 #define EIM_INPUT                            0x8000  // 1000 0000 0000 0000
 #define EIM_NI_MO                          ( 0 << 15 ) // MONADIC or NILADIC
 #define EIM_DY                             ( 1 << 15 ) // DYADIC
+
+// Function returns result in X - used to tracing
+#define RESULT_IN_X                          0x8000  // 1000 0000 0000 0000
 
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
 
-//Export type
-#define MODE_NRM 2
-#define MODE_RTF 1
+//Export/print type
+#define MODE_NRM   2
+#define MODE_RTF   1
+#define MODE_ALIAS 3
 
 
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
+#define NOUC                                      84 // Number Of User Constants
 
 // Local labels
 #define FIRST_LOCAL_LABEL        0                             //   0 - 99 and A to L
@@ -1573,6 +1634,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_VALUE_NORM                          10020
 #define TM_CMP                                 10021 // TM_CMP must be the last in this list
 
+#define TAM_IN_PROGRESS                         true
+#define TAM_COMPLETE                           false
+
 // gamma function type
 #define GAMMA_XYLOWER                              0
 #define GAMMA_P                                    1
@@ -1732,7 +1796,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ELLIPSE_K                             133
 #define TI_ELLIPSE_M                             134
 #define TI_ELLIPSE_Theta                         135
-
+#define TI_PRINT_COMPLETE                        136
+#define TI_AMORT_BAL                             137 
+#define TI_AMORT_PRN                             138 
+#define TI_AMORT_INT                             139
+#define TI_AMORT_P1                              140 
+#define TI_AMORT_P2                              141
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -2242,9 +2311,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
 #define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
-#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
-#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
-#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+#define isMatrix3dVectorSPH(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows, cols, tag) (isMatrix3dVector(rows, cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows, cols, tag) (isMatrix2dVector(rows, cols) && is2dVectorPolar(tag))
 
 
 
@@ -2376,15 +2445,15 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #if defined(DMCP_BUILD)
   /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */
-  #define IMPORT_BIN(sect, file, sym) asm (\
-      ".section " #sect "\n"                  /* Change section */\
-      ".balign 4\n"                           /* Word alignment */\
-      ".global " #sym "\n"                    /* Export the object address */\
-      #sym ":\n"                              /* Define the object label */\
-      ".incbin \"" file "\"\n"                /* Import the file */\
-      ".global _sizeof_" #sym "\n"            /* Export the object size */\
-      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */\
-      ".balign 4\n"                           /* Word alignment */\
+  #define IMPORT_BIN(sect, file, sym) asm (                                   \
+      ".section " #sect "\n"                  /* Change section */            \
+      ".balign 4\n"                           /* Word alignment */            \
+      ".global " #sym "\n"                    /* Export the object address */ \
+      #sym ":\n"                              /* Define the object label */   \
+      ".incbin \"" file "\"\n"                /* Import the file */           \
+      ".global _sizeof_" #sym "\n"            /* Export the object size */    \
+      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */    \
+      ".balign 4\n"                           /* Word alignment */            \
       ".section \".text\"\n")                 /* Restore section */
 #endif // DMCP_BUILD
 
