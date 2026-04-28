@@ -957,16 +957,38 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
           realMatrixFree(&res);
           setSystemFlag(FLAG_ASLIFT);
         }
-        else if(getSystemFlag(FLAG_CPXRES)) {
-          // Real path failed but complex results allowed: promote and retry
+        else if(getSystemFlag(FLAG_CPXRES)) {  // Real path failed, promote to complex and solve
           complex34Matrix_t cx, cres;
           convertReal34MatrixToComplex34Matrix(&x, &cx);
           if(cx.matrixElements) {
             sqrtComplexMatrix(&cx, &cres);
             complexMatrixFree(&cx);
             if(lastErrorCode == ERROR_NONE) {
-              if(cres.matrixElements) {
-                convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
+              if(cres.matrixElements) {                                                      // Auto-promote produced a complex result. If all imag parts are zero store as real matrix
+                bool_t allRealResult = true;
+                const uint16_t total = cres.header.matrixRows * cres.header.matrixColumns;
+                for(uint16_t i = 0; i < total; ++i) {
+                  if(!real34IsZero(VARIABLE_IMAG34_DATA(&cres.matrixElements[i]))) {
+                    allRealResult = false;
+                    break;
+                  }
+                }
+                if(allRealResult) {
+                  real34Matrix_t rres;
+                  if(realMatrixInit(&rres, cres.header.matrixRows, cres.header.matrixColumns)) {
+                    for(uint16_t i = 0; i < total; ++i) {
+                      real34Copy(VARIABLE_REAL34_DATA(&cres.matrixElements[i]), &rres.matrixElements[i]);
+                    }
+                    convertReal34MatrixToReal34MatrixRegister(&rres, REGISTER_X);
+                    realMatrixFree(&rres);
+                  }
+                  else {                    
+                    convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);      // Insufficient RAM for downgrade - keep complex
+                  }
+                }
+                else {
+                  convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
+                }
                 complexMatrixFree(&cres);
                 setSystemFlag(FLAG_ASLIFT);
               }
