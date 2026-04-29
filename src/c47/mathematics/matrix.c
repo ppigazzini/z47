@@ -1773,12 +1773,13 @@ return;
 
 
 
-static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns){
-  real34Matrix_t matrix;
+static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns, bool_t isComplex) {
+  real34Matrix_t    rmatrix;
+  complex34Matrix_t cmatrix;
   if(Rows == 1 && Columns == 1) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    if(!initMatrixRegister(REGISTER_X, 1, 1, false)) {
+    if(!initMatrixRegister(REGISTER_X, 1, 1, isComplex)) {
       fnDrop(NOPARAM);
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1787,8 +1788,15 @@ static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns){
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return 255;
     }
-    linkToRealMatrixRegister(REGISTER_X,  &matrix);
-    realToReal34(const_1, &matrix.matrixElements[0]);
+    if(isComplex) {
+      linkToComplexMatrixRegister(REGISTER_X, &cmatrix);
+      realToReal34(const_1, VARIABLE_REAL34_DATA(&cmatrix.matrixElements[0]));
+      real34SetZero(VARIABLE_IMAG34_DATA(&cmatrix.matrixElements[0]));
+    }
+    else {
+      linkToRealMatrixRegister(REGISTER_X,  &rmatrix);
+      realToReal34(const_1, &rmatrix.matrixElements[0]);
+    }
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
     return 1;
   }
@@ -1819,38 +1827,49 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       goto ErrorExit;
     }
 
-    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns, false)) {
       case 1  : break;
       case 255: return;
       default:
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
       ires.header.matrixRows = ires.header.matrixColumns = 0;
       ires.matrixElements = NULL;
       realEigenvectors(&x, &res, &ires);
-      if(ires.matrixElements) {
-        complex34Matrix_t cres;
-        if(complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
-          for(uint32_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; i++) {
-            real34Copy(&res.matrixElements[i],  VARIABLE_REAL34_DATA(&cres.matrixElements[i]));
-            real34Copy(&ires.matrixElements[i], VARIABLE_IMAG34_DATA(&cres.matrixElements[i]));
+      if(res.matrixElements) {
+        // Success: lift the stack and install the result.
+        setSystemFlag(FLAG_ASLIFT);
+        liftStack();
+        if(ires.matrixElements) {
+          complex34Matrix_t cres;
+          if(complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
+            for(uint32_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; i++) {
+              real34Copy(&res.matrixElements[i],  VARIABLE_REAL34_DATA(&cres.matrixElements[i]));
+              real34Copy(&ires.matrixElements[i], VARIABLE_IMAG34_DATA(&cres.matrixElements[i]));
+            }
+            convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
+            realMatrixFree(&ires);
+            complexMatrixFree(&cres);
           }
-          convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
-          realMatrixFree(&ires);
-          complexMatrixFree(&cres);
+          else {
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full");
+              moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
         }
         else {
-          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "Ram full");
-            moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
         }
+        realMatrixFree(&res);
       }
       else {
-        convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
+        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "matrix is defective: no full set of linearly independent eigenvectors");
+          moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        goto ErrorExit;
       }
-      realMatrixFree(&res);
     }
     goto Success;
   }
@@ -1872,15 +1891,26 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       goto ErrorExit;
     }
 
-    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns, true)) {
       case 1  : break;
       case 255: return;
       default:
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
       complexEigenvectors(&x, &res);
-      convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
-      complexMatrixFree(&res);
+      if(res.matrixElements) {
+        // Success: lift the stack and install the result.
+        setSystemFlag(FLAG_ASLIFT);
+        liftStack();
+        convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+        complexMatrixFree(&res);
+      }
+      else {
+        displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "matrix is defective: no full set of linearly independent eigenvectors");
+          moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        goto ErrorExit;
+      }
     }
     goto Success;
   }
@@ -1890,13 +1920,14 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
       moreInfoOnError("In function fnEigenvectors:", errorMessage, "is not a matrix.", "");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto ErrorExit;
   }
 
 ErrorExit:
 return;
 
 Success:
-adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 return;
 
 }
@@ -7597,6 +7628,77 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
       realPlus(eig + (k * size + k) * 2 + 1, eig + (k * size + k) * 2 + 1, &ctxtReal34);
     }
 
+    // Fast path: diagonal matrix has trivial unit eigenvectors permuted to match the eigenvalue ordering. The augmented-system technique below
+    // fails on diagonal A because (A - lambda*I) has at least one entirely zero row for any eigenvalue, making the augmented matrix singular.
+    bool_t isDiagonal = true;
+    for(i = 0; i < size && isDiagonal; ++i) {
+      for(j = 0; j < size && isDiagonal; ++j) {
+        if(i != j) {
+          if(isComplex) {
+            if(!real34IsZero(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[i * size + j])) ||
+               !real34IsZero(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]))) {
+              isDiagonal = false;
+            }
+          }
+          else {
+            if(!real34IsZero(&matrix->realMatrix.matrixElements[i * size + j])) {
+              isDiagonal = false;
+            }
+          }
+        }
+      }
+    }
+    if(isDiagonal) {
+      // For each eigenvalue eig[k], find the first unclaimed diagonal position j where A[j][j] == eig[k], then set r[j][k] = 1. Repeated
+      // eigenvalues land in distinct columns; the "unclaimed" check uses r itself (zero-initialized above, becomes nonzero where claimed).
+      for(k = 0; k < size; ++k) {
+        for(j = 0; j < size; ++j) {
+          bool_t alreadyUsed = false;
+          for(uint16_t kPrev = 0; kPrev < k; ++kPrev) {
+            if(!realIsZero(r + (j * size + kPrev) * 2)) {
+              alreadyUsed = true;
+              break;
+            }
+          }
+          if(alreadyUsed) {
+            continue;
+          }
+          // Tolerance-based match: |eig[k] - A[j][j]| <= max(|eig|, |A[j][j]|, 1) * 1e-30.
+          // Exact equality fails when QR produces tiny numerical residuals (e.g. eigenvalue 0 emerges as ~1e-37) while diagonal entries are exact zeros from the input.
+          real_t diagR, diagI, diff_r, diff_i;
+          real_t mag_eig, mag_diag, scale, eps, tol;
+          if(isComplex) {
+            real34ToReal(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[j * size + j]), &diagR);
+            real34ToReal(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[j * size + j]), &diagI);
+          }
+          else {
+            real34ToReal(&matrix->realMatrix.matrixElements[j * size + j], &diagR);
+            realSetZero(&diagI);
+          }
+          realSubtract(eig + (k * size + k) * 2,     &diagR, &diff_r, realContext);
+          realSubtract(eig + (k * size + k) * 2 + 1, &diagI, &diff_i, realContext);
+          complexMagnitude(eig + (k * size + k) * 2, eig + (k * size + k) * 2 + 1, &mag_eig, realContext);
+          complexMagnitude(&diagR, &diagI, &mag_diag, realContext);
+          realCopy(&mag_eig, &scale);
+          if(realCompareLessThan(&scale, &mag_diag)) {
+            realCopy(&mag_diag, &scale);
+          }
+          if(realCompareLessThan(&scale, const_1)) {
+            realCopy(const_1, &scale);
+          }
+          realSetOne(&eps);
+          eps.exponent -= 30;
+          realMultiply(&scale, &eps, &tol, realContext);
+          bool_t matches = isElementWithinTolerance(&diff_r, &diff_i, &tol, realContext);
+          if(matches) {
+            realCopy(const_1, r + (j * size + k) * 2);
+            break;
+          }
+        }
+      }
+      return;
+    }
+
     if((unknownsToFill = allocC47Blocks(size * 2 * REAL_SIZE_IN_BLOCKS(75) * 2))) {
       for(k = 0; k < size; k++) {
         if(k > 0 && realCompareEqual(eig + (k * size + k) * 2, eig + ((k - 1) * size + (k - 1)) * 2) && realCompareEqual(eig + (k * size + k) * 2 + 1, eig + ((k - 1) * size + (k - 1)) * 2 + 1)) {
@@ -7688,6 +7790,8 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
             }
           } while(freeUnknowns <= size);
           if(lastErrorCode == ERROR_SINGULAR_MATRIX) {
+            // Zero-fill on failure. The caller (realEigenvectors / complexEigenvectors) detects
+            // zero columns and reports the defective-matrix error to the user.
             for(i = 0; i < size; i++) {
               realSetZero(v + i * 2    );
               realSetZero(v + i * 2 + 1);
@@ -7888,6 +7992,28 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
       shifted = false;
       calculateEigenvectors((any34Matrix_t *)matrix, false, a, q, r, eig, eigenContext);
 
+      // Detect failure: calculateEigenvectors zero-fills any column where it could not find a linearly independent eigenvector (defective matrix).
+      // A genuine eigenvector is never zero, so a zero column unambiguously signals failure.
+      for(j = 0; j < size; j++) {
+        bool_t allZero = true;
+        for(i = 0; i < size; i++) {
+          if(!realIsZero(r + (i * size + j) * 2) || !realIsZero(r + (i * size + j) * 2 + 1)) {
+            allZero = false;
+            break;
+          }
+        }
+        if(allZero) {
+          // No linearly independent eigenvector for this column. Caller checks
+          // res.matrixElements; fnEigenvectors raises ERROR_SINGULAR_MATRIX,
+          // fnMatrixSquareRoot's eigen path falls back silently.
+          res->matrixElements = NULL;
+          res->header.matrixRows = 0;
+          res->header.matrixColumns = 0;
+          freeC47Blocks(bulk, bulkSize);
+          return;
+        }
+      }
+
       // Check imaginary part (mutually conjugate complex roots are possible in real quadratic equations)
       isComplex = false;
       for(i = 0; i < size * size; i++) {
@@ -7961,7 +8087,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
 static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix_t *res) {
   const uint16_t size = matrix->header.matrixRows;
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
-  uint16_t i;
+  uint16_t i, j;
   bool_t shifted = true;
   size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * (size * size * 4 * 2 * 4 + size * 2);
 
@@ -7983,6 +8109,25 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
       calculateEigenvalues(a, q, r, eig, previousDiagonal, size, shifted, false, eigenContext);
       shifted = false;
       calculateEigenvectors((any34Matrix_t *)matrix, true, a, q, r, eig, eigenContext);
+
+      // Detect failure: calculateEigenvectors zero-fills any column where it could not find a linearly independent eigenvector (defective matrix).
+      // A genuine eigenvector is never zero, so a zero column unambiguously signals failure.
+      for(j = 0; j < size; j++) {
+        bool_t allZero = true;
+        for(i = 0; i < size; i++) {
+          if(!realIsZero(r + (i * size + j) * 2) || !realIsZero(r + (i * size + j) * 2 + 1)) {
+            allZero = false;
+            break;
+          }
+        }
+        if(allZero) {
+          res->matrixElements = NULL;
+          res->header.matrixRows = 0;
+          res->header.matrixColumns = 0;
+          freeC47Blocks(bulk, bulkSize);
+          return;
+        }
+      }
 
       // Write back
       if(matrix == res || complexMatrixInit(res, size, size)) {
