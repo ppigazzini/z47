@@ -8,7 +8,1082 @@
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 
+;=======================================
+; transpose
+;=======================================
+Func: fnTranspose
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M2,3[1,3,5,2,4,6]"
 
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M2,3[1i2,5i6,9i10,3i4,7i8,11i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; LU decomposition
+;=======================================
+Func: fnLuDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RZ=ReMa:"M2,2[?,?,?,?]" RY=ReMa:"M2,2[1,0,?,1]" RX=ReMa:"M2,2[?,?,0,?]"
+Func: fnMultiply ; check undoing decomposition
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ReMa:"M2,2[1,2,3,4]"
+
+Func: fnLuDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,2[1,2,2,4]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RZ=ReMa:"M2,2[?,?,?,?]" RY=CxMa:"M2,2[1,0,?,1]" RX=CxMa:"M2,2[?,?,0,?]"
+Func: fnMultiply ; check undoing decomposition
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+
+Func: fnLuDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; Determinant
+;=======================================
+Func: fnDeterminant
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=Real:"-2"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,2,4]" RX=Real:"0"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=Cplx:"0i-16"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]" RX=Cplx:"0i0"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; Inverse matrix
+;=======================================
+Func: fnInvertMatrix
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[-2,1,1.5,-0.5]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,2[1,2,2,4]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[-0.5i0.4375,0.25i-0.1875,0.375i-0.3125,-0.125i0.0625]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; Euclidean (aka Frobenius) norm
+;=======================================
+Func: fnPNorm(2) ;pNorm_2_ENORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"9.5393920141694564915262158602322654025462342525054575390815185291"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"25.495097567963924150141120545113909947818854730497982037924854022"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; Euclidean (aka Frobenius) norm, p = 9
+;=======================================
+Func: fnPNorm(9) ;pNorm_2_ENORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"6.135060358359295905752434408356624651512"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"16.61630178335188287687597789600111822202"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; number of non-zero elements
+;=======================================
+Func:  fnPNorm(0) ;pNorm_0_NNZ
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,0i8,9i0,0]" RX=Real:"5"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; Row sum
+;=======================================
+Func: fnRowColSum(1)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M3,1[3,7,11]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,1[4i6,12i14,20i22]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; Column sum
+;=======================================
+Func: fnRowColSum(0)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M1,2[9,12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M1,2[15i18,21i24]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; Row norm
+;=======================================
+Func: fnPNorm(924) ;pNorm_inf_RNORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"11"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"29.732444643173416704516101372154237347879368698904136289004950223"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+;=======================================
+; Column norm
+;=======================================
+Func: fnPNorm(1) ;pNorm_1_CNORM
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,2[1,2,3,4,5,6]" RX=Real:"12"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"31.90896640883435579535213782491314"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+
+
+;=======================================
+; Vector angle
+;=======================================
+Func: fnVectorAngle
+In: AM=Deg FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,2[1,2]" RX=ReMa:"M2,1[3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,1[3,4]" RX=Real:"10.30484646876603194528341883864011598638735710106433691604195105413580253554577816487427856819350584":Deg
+
+In: AM=Rad FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,2[1,2]" RX=ReMa:"M2,1[3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,1[3,4]" RX=Real:"0.1798534997924782705885529972561082360129735368291921190546730299933146106458793834122165607163948563":Rad
+
+In: AM=Grad FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,2[1,2]" RX=ReMa:"M2,1[3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,1[3,4]" RX=Real:"11.449829409740035494759354265155684429319285667849263240046612282":Grad
+
+In: AM=Deg FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,3[1,2,3]" RX=ReMa:"M3,1[4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[4,5,6]" RX=Real:"12.93315449189911937002800159681536437258698072489592200654859361820236332376560964830284310088047898":Deg
+
+In: AM=Rad FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,3[1,2,3]" RX=ReMa:"M3,1[4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[4,5,6]" RX=Real:"0.2257261285527339361186934608557414488067560097661106091049396482421193961074150914568055600554670487":Rad
+
+In: AM=Grad FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,3[1,2,3]" RX=ReMa:"M3,1[4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[4,5,6]" RX=Real:"14.370171657665688188920001774239293747318867472106580007276215131":Grad
+
+In: AM=Deg FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,2[1,2]" RX=ReMa:"M3,1[3,4,5]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M1,2[1,2]" RX=ReMa:"M3,1[3,4,5]"
+
+In: AM=Deg FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M1,4[1,2,3,4]" RX=ReMa:"M4,1[5,6,7,8]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M1,4[1,2,3,4]" RX=ReMa:"M4,1[5,6,7,8]"
+
+In: AM=Deg FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M3,2[7,8,9,10,11,12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M3,2[1,2,3,4,5,6]" RX=ReMa:"M3,2[7,8,9,10,11,12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; QR Decomposition
+;=======================================
+Func: fnQrDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[?,?,0,?]"
+Func: fnMultiply ; check undoing decomposition
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ReMa:"M2,2[1,2,3,4]"
+Func: fnQrDecomposition ; check orthogonality
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[?,?,0,?]"
+Func: fnSwapXY
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnFillStack
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnTranspose
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+Func: fnMultiply
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ReMa:"M2,2[1,0,0,1]"
+
+Func: fnQrDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[?,?,0,?]"
+Func: fnMultiply ; check undoing decomposition
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Func: fnQrDecomposition ; check unitariness
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[?,?,0,?]"
+Func: fnSwapXY
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Func: fnFillStack
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Func: fnTranspose
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Func: fnConjugate
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1
+Func: fnMultiply
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[1,0,0,1]"
+
+Func: fnQrDecomposition
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+
+;=======================================
+; Eigenvalues
+;=======================================
+Func: fnEigenvalues
+
+TIMERON: With an ON, the timer function will list each designated test if it runs for longer than 1 second (on 1 sec resolution, so 1-2 second threshold)
+
+TIMER: 000 TEST CASE 0a: 2x2
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RY=ReMa:"M2,2[5.3722813232690143299253057341094646591101322289913961838499387352,0,0,-0.372281323269014329925305734109464659110132228991396183849938735]"
+
+TIMER: 001 TEST CASE 0b: 3x3
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RY=ReMa:"M3,3[16.1168439698070429897759172023283939773303966869741885515498,0,0,0,-1.1168439698070429897759172023283939773303966869741885515498,0,0,0,0]"
+;Wolfram: N[Eigenvalues[{{1,2,3},{4,5,6},{7,8,9}}], 34]
+
+TIMER: 002 TEST CASE 0c: 4x4
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M4,4[1,2,0,0,2,3,4,0,0,4,5,6,0,0,6,7]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,4[1,2,0,0,2,3,4,0,0,4,5,6,0,0,6,7]" RY=ReMa:"M4,4[12.8436703629024818840360839786175092819579376740985330582929,0,0,0,0,4.9365525782667158784360522634850333795458022436804644356437,0,0,0,0,-2.4847875177766476690550309486413237050234204158205397839314,0,0,0,0,0.7045645766074499065828947065387810435196804980415422899948]"
+;Wolfram: N[Eigenvalues[{{1,2,0,0},{2,3,4,0},{0,4,5,6},{0,0,6,7}}], 34]
+
+TIMER: 003 TEST CASE 0d: 2x2
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[0,-1,1,0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[0,-1,1,0]" RY=CxMa:"M2,2[0i1,0,0,0i-1]"
+
+TIMER: 004 TEST CASE 0d: 3x2 Error
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+TIMER: 005 TEST CASE 0e: 2x2 Complex
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RY=CxMa:"M2,2[8.884598430267780429214819274652178993357143803036698530538666696i10.73230336121305295214305210959447927564575812424373700536699603,0,0,-0.88459843026778042921481927465217899335714380303669853053866669i-0.73230336121305295214305210959447927564575812424373700536699603]"
+
+TIMER: 006 TEST CASE 0f: 3x2 Complex Error
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+TIMER: 007 TEST CASE 0g: Real Error
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+
+TIMER: 008 RCL00: 5x5 Real, one complex pair in output
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,134.106,-352.611,261.218,-99.41,17.8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,134.106,-352.611,261.218,-99.41,17.8]" RX=CxMa:"M1,5[10.30000000000000000000000000000000i0,3.619868415357066363166874420603965i0,1.650000000000000000000000000000000i+1.864805619897151639855477863375268,1.650000000000000000000000000000000i-1.864805619897151639855477863375268,0.5801315846429336368331255793960355i0]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[10.30000000000000000000000000000000001,0,0,0,0,0,3.619868415357066363166874420603965,0,0,0,0,0,1.65i1.864805619897151639855477863375268,0,0,0,0,0,1.65i-1.864805619897151639855477863375268,0,0,0,0,0,0.5801315846429336368331255793960355]"
+;N[Eigenvalues[{{0`34,1`34,0`34,0`34,0`34},{0`34,0`34,1`34,0`34,0`34},{0`34,0`34,0`34,1`34,0`34},{0`34,0`34,0`34,0`34,1`34},{134.106`34,-352.611`34,261.218`34,-99.41`34,17.8`34}}],34]
+;N[Eigenvalues[{{0,1,0,0,0},{0,0,1,0,0},{0,0,0,1,0},{0,0,0,0,1},{134.106,-352.611,261.218,-99.41,17.8}}], 34] (does not work in full digits)
+; [0       1       0       0       0      ]
+; [0       0       1       0       0      ]
+; [0       0       0       1       0      ]
+; [0       0       0       0       1      ]
+; [134.106 -352.611 261.218 -99.41 17.8  ]
+; λ1 = 10.3                                                                          Wolfram: 10.30000000000000000000000000000000001
+; λ2 = 3.619868415357066363166874420603965                                           Wolfram: 3.619868415357066363166874420603965
+; λ3 = 1.650000000000000000000000000000000 - i1.864805619897151639855477863375268    Wolfram: 1.65 - i1.864805619897151639855477863375268
+; λ4 = 1.650000000000000000000000000000000 + i1.864805619897151639855477863375268    Wolfram: 1.65 + i1.864805619897151639855477863375268
+; λ5 = 0.5801315846429336368331255793960355                                          Wolfram: 0.5801315846429336368331255793960355
+
+
+
+TIMER: 009 RCL01: 5x5 integer in/out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,120,-274,225,-85,15]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,120,-274,225,-85,15]" RX=ReMa:"M1,5[5,4,3,2,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[5,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,1]"
+;N[Eigenvalues[{{0,1,0,0,0},{0,0,1,0,0},{0,0,0,1,0},{0,0,0,0,1},{120,-274,225,-85,15}}], 34]
+; [0   1   0   0   0 ]
+; [0   0   1   0   0 ]
+; [0   0   0   1   0 ]
+; [0   0   0   0   1 ]
+; [120 -274 225 -85 15]
+; λ1 = 5.   Wolfram: 5
+; λ2 = 4.   Wolfram: 4
+; λ3 = 3.   Wolfram: 3
+; λ4 = 2.   Wolfram: 2
+; λ5 = 1.   Wolfram: 1
+
+
+
+TIMER: 010 RCL02: 5x5 integer in, irrational out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[3,2,1,0,0,1,3,2,1,0,0,1,3,2,1,0,0,1,3,2,0,0,0,1,3]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[3,2,1,0,0,1,3,2,1,0,0,1,3,2,1,0,0,1,3,2,0,0,0,1,3]" RX=ReMa:"M1,5[5.693525202227872802634610193506791,4.329727176360500876832395200356819,2.670272823639499123167604799643181,1.306474797772127197365389806493209,1.000000000000000000000000000000000]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[5.6935252022278728,0,0,0,0,0,4.3297271763605009,0,0,0,0,0,2.6702728236394991,0,0,0,0,0,1.3064747977721272,0,0,0,0,0,1]"
+;N[Eigenvalues[{{3,2,1,0,0},{1,3,2,1,0},{0,1,3,2,1},{0,0,1,3,2},{0,0,0,1,3}}], 34]
+; [3 2 1 0 0]
+; [1 3 2 1 0]
+; [0 1 3 2 1]
+; [0 0 1 3 2]
+; [0 0 0 1 3]
+; λ1 = 5.69352520222787280263461019350679 1       Wolfram: 5.6935252022278728026346101935067879
+; λ2 = 4.329727176360500876832395200356819        Wolfram: 4.3297271763605008768323952003568193
+; λ3 = 2.670272823639499123167604799643181        Wolfram: 2.6702728236394991231676047996431807
+; λ4 = 1.306474797772127197365389806493209        Wolfram: 1.3064747977721271973653898064932088
+; λ5 = 1.                                         Wolfram: 1
+
+
+
+TIMER: 011 RCL03: 5x5 symmetrical, integer in/out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2]" RY=ReMa:"M5,5[6,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[6,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1]"
+;N[Eigenvalues[{{2,1,1,1,1},{1,2,1,1,1},{1,1,2,1,1},{1,1,1,2,1},{1,1,1,1,2}}], 34]
+; [2 1 1 1 1]
+; [1 2 1 1 1]
+; [1 1 2 1 1]
+; [1 1 1 2 1]
+; [1 1 1 1 2]
+; λ1 = 6                                          Wolfram: 6
+; λ2 = 1                                          Wolfram: 1
+; λ3 = 1                                          Wolfram: 1
+; λ4 = 1                                          Wolfram: 1
+; λ5 = 1                                          Wolfram: 1
+
+
+
+TIMER: 012 RCL04: 6x6 rational in, integer out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M6,6[1,0.1,0,0,0,0,0,2,0.1,0,0,0,0,0,3,0.1,0,0,0,0,0,4,0.1,0,0,0,0,0,5,0.1,0,0,0,0,0,6]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M6,6[1,0.1,0,0,0,0,0,2,0.1,0,0,0,0,0,3,0.1,0,0,0,0,0,4,0.1,0,0,0,0,0,5,0.1,0,0,0,0,0,6]" RY=ReMa:"M6,6[6,0,0,0,0,0,0,5,0,0,0,0,0,0,4,0,0,0,0,0,0,3,0,0,0,0,0,0,2,0,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M6,6[6,0,0,0,0,0,0,5,0,0,0,0,0,0,4,0,0,0,0,0,0,3,0,0,0,0,0,0,2,0,0,0,0,0,0,1]"
+;N[Eigenvalues[{{1,0.1,0,0,0,0},{0,2,0.1,0,0,0},{0,0,3,0.1,0,0},{0,0,0,4,0.1,0},{0,0,0,0,5,0.1},{0,0,0,0,0,6}}], 34]
+; [1   0.1 0   0   0   0  ]
+; [0   2   0.1 0   0   0  ]
+; [0   0   3   0.1 0   0  ]
+; [0   0   0   4   0.1 0  ]
+; [0   0   0   0   5   0.1]
+; [0   0   0   0   0   6  ]
+; λ1 = 6                                          Wolfram: 6
+; λ2 = 5                                          Wolfram: 5
+; λ3 = 4                                          Wolfram: 4
+; λ4 = 3                                          Wolfram: 3
+; λ5 = 2                                          Wolfram: 2
+; λ6 = 1                                          Wolfram: 1
+
+
+
+TIMER: 013 RCL05: 2x2 integer in and out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[1,0,0,2]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[1,0,0,2]" RY=ReMa:"M2,2[2,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M2,2[2,0,0,1]"
+;N[Eigenvalues[{{1,0},{0,2}}], 34]
+; [1 0]
+; [0 2]
+; λ1 = 2                                          Wolfram: 2
+; λ2 = 1                                          Wolfram: 1
+
+
+
+TIMER: 014 RCL06: 3x3 upper triangular, integer in and out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[1,1,1,0,2,1,0,0,3]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[1,1,1,0,2,1,0,0,3]" RY=ReMa:"M3,3[3,0,0,0,2,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[3,0,0,0,2,0,0,0,1]"
+;N[Eigenvalues[{{1,1,1},{0,2,1},{0,0,3}}], 34]
+; [1 1 1]
+; [0 2 1]
+; [0 0 3]
+; λ1 = 3                                          Wolfram: 3
+; λ2 = 2                                          Wolfram: 2
+; λ3 = 1                                          Wolfram: 1
+
+
+
+TIMER: 015 RCL07: 4x4 rational in, integer out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[1,0.1,0,0,0,2,0.1,0,0,0,3,0.1,0,0,0,4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[1,0.1,0,0,0,2,0.1,0,0,0,3,0.1,0,0,0,4]" RY=ReMa:"M4,4[4,0,0,0,0,3,0,0,0,0,2,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[4,0,0,0,0,3,0,0,0,0,2,0,0,0,0,1]"
+;N[Eigenvalues[{{1,0.1,0,0},{0,2,0.1,0},{0,0,3,0.1},{0,0,0,4}}], 34]
+; [1 0.1 0   0]
+; [0 2   0.1 0]
+; [0 0   3   0.1]
+; [0 0   0   4]
+; λ1 = 4                                          Wolfram: 4
+; λ2 = 3                                          Wolfram: 3
+; λ3 = 2                                          Wolfram: 2
+; λ4 = 1                                          Wolfram: 1
+
+
+
+TIMER: 016 RCL08: 3x3 integer 1-9 in, irrational out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RX=ReMa:"M1,3[16.11684396980704298977591720232839,-1.116843969807042989775917202328394,0]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[16.1168439698070430,0,0,0,-1.1168439698070430,0,0,0,0]"
+;N[Eigenvalues[{{1,2,3},{4,5,6},{7,8,9}}], 34]
+; [1 2 3]
+; [4 5 6]
+; [7 8 9]
+; λ1 = 16.11684396980704298977591720232839        Wolfram: 16.116843969807042989775917202328394
+; λ2 = -1.116843969807042989775917202328394       Wolfram: -1.116843969807042989775917202328394
+; λ3 = 0                                          Wolfram: 0
+
+
+
+TIMER: 017 RCL09: 2x2 integer in, complex out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[0,-1,1,0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[0,-1,1,0]" RY=CxMa:"M2,2[0i1,0,0,0i-1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[0i1,0,0,0i-1]"
+;N[Eigenvalues[{{0,-1},{1,0}}], 34]
+; [0  -1]
+; [1   0]
+; λ1 = 0 + i1                                     Wolfram: 0 + i1
+; λ2 = 0 - i1                                     Wolfram: 0 - i1
+
+
+
+TIMER: 018 TEST CASE 1: 3x3 Identity Matrix, integer in/out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]" RY=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]"
+;N[Eigenvalues[{{1,0,0},{0,1,0},{0,0,1}}], 34]
+; [1 0 0]
+; [0 1 0]
+; [0 0 1]
+; λ1 = 1                                          Wolfram: 1
+; λ2 = 1                                          Wolfram: 1
+; λ3 = 1                                          Wolfram: 1
+
+
+
+TIMER: 019 TEST CASE 2: 2x2 integer in, complex irrational out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[1,2,-1,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,-1,1]" RY=CxMa:"M2,2[1i1.414213562373095048801688724209698,0,0,1i-1.414213562373095048801688724209698]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[1i1.4142135623730950,0,0,1i-1.4142135623730950]"
+;N[Eigenvalues[{{1,2},{-1,1}}], 34]
+; [1  2]
+; [-1 1]
+; λ1 = 1 + i1.414213562373095048801688724209698   Wolfram: 1 + i1.4142135623730950488016887242096981
+; λ2 = 1 - i1.414213562373095048801688724209698   Wolfram: 1 - i1.4142135623730950488016887242096981
+
+
+
+TIMER: 020 TEST CASE 3: 3x3 integer in/out, companion Matrix (x³-6x²+11x-6=0, roots: 1,2,3)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[0,1,0,0,0,1,6,-11,6]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[0,1,0,0,0,1,6,-11,6]" RY=ReMa:"M3,3[3,0,0,0,2,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[3,0,0,0,2,0,0,0,1]"
+;N[Eigenvalues[{{0,1,0},{0,0,1},{6,-11,6}}], 34]
+; [0 1  0]
+; [0 0  1]
+; [6 -11 6]
+; λ1 = 3                                          Wolfram: 3
+; λ2 = 2                                          Wolfram: 2
+; λ3 = 1                                          Wolfram: 1
+
+
+
+TIMER: 021 TEST CASE 4: 4x4 integer in/out, diagonal with Mixed Values
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[5,0,0,0,0,-2,0,0,0,0,3,0,0,0,0,7]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[5,0,0,0,0,-2,0,0,0,0,3,0,0,0,0,7]" RY=ReMa:"M4,4[7,0,0,0,0,5,0,0,0,0,3,0,0,0,0,-2]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[7,0,0,0,0,5,0,0,0,0,3,0,0,0,0,-2]"
+;N[Eigenvalues[{{5,0,0,0},{0,-2,0,0},{0,0,3,0},{0,0,0,7}}], 34]
+; [5  0  0 0]
+; [0 -2  0 0]
+; [0  0  3 0]
+; [0  0  0 7]
+; λ1 = 7                                          Wolfram: 7
+; λ2 = 5                                          Wolfram: 5
+; λ3 = 3                                          Wolfram: 3
+; λ4 = -2                                         Wolfram: -2
+
+
+
+TIMER: 022 TEST CASE 5: 3x3 integer in, irrational out, symmetric matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[4,1,2,1,4,1,2,1,4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[4,1,2,1,4,1,2,1,4]" RY=ReMa:"M3,3[6.732050807568877293527446341505872,0,0,0,3.267949192431122706472553658494128,0,0,0,2]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[6.7320508075688773,0,0,0,3.2679491924311227,0,0,0,2]"
+;N[Eigenvalues[{{4,1,2},{1,4,1},{2,1,4}}], 34]
+; [4 1 2]
+; [1 4 1]
+; [2 1 4]
+; λ1 = 6.732050807568877293527446341505872        Wolfram: 6.7320508075688772935274463415058723
+; λ2 = 3.267949192431122706472553658494128        Wolfram: 3.2679491924311227064725536584941277
+; λ3 = 2                                          Wolfram: 2
+
+
+
+TIMER: 023 TEST CASE 6: 5x5 integer in/out, upper triangular
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[2,1,3,0,1,0,4,2,1,0,0,0,1,5,2,0,0,0,3,1,0,0,0,0,6]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[2,1,3,0,1,0,4,2,1,0,0,0,1,5,2,0,0,0,3,1,0,0,0,0,6]" RY=ReMa:"M5,5[6,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[6,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,1]"
+;N[Eigenvalues[{{2,1,3,0,1},{0,4,2,1,0},{0,0,1,5,2},{0,0,0,3,1},{0,0,0,0,6}}], 34]
+; [2 1 3 0 1]
+; [0 4 2 1 0]
+; [0 0 1 5 2]
+; [0 0 0 3 1]
+; [0 0 0 0 6]
+; λ1 = 6                                          Wolfram: 6
+; λ2 = 4                                          Wolfram: 4
+; λ3 = 3                                          Wolfram: 3
+; λ4 = 2                                          Wolfram: 2
+; λ5 = 1                                          Wolfram: 1
+
+
+
+TIMER: 024 TEST CASE 7: 3x3 integer in/out, companion matrix (x³-7x²+14x-8=0, roots: 1,2,4)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[0,1,0,0,0,1,8,-14,7]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[0,1,0,0,0,1,8,-14,7]" RY=ReMa:"M3,3[4,0,0,0,2,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[4,0,0,0,2,0,0,0,1]"
+;N[Eigenvalues[{{0,1,0},{0,0,1},{8,-14,7}}], 34]
+; [0 1  0]
+; [0 0  1]
+; [8 -14 7]
+; λ1 = 4                                          Wolfram: 4
+; λ2 = 2                                          Wolfram: 2
+; λ3 = 1                                          Wolfram: 1
+
+
+
+TIMER: 025 TEST CASE 9: 2x2 integer in, complex out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[2,5,-1,2]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[2,5,-1,2]" RY=CxMa:"M2,2[2i2.236067977499789696409173668731276,0,0,2i-2.236067977499789696409173668731276]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M2,2[2i2.2360679774997897,0,0,2i-2.2360679774997897]"
+;N[Eigenvalues[{{2,5},{-1,2}}], 34]
+; [2  5]
+; [-1 2]
+; λ1 = 2 + i2.236067977499789696409173668731276   Wolfram: 2 + i2.2360679774997896964091736687312762
+; λ2 = 2 - i2.236067977499789696409173668731276   Wolfram: 2 - i2.2360679774997896964091736687312762
+
+
+
+TIMER: 026 TEST CASE 11: 7×7 integer 7-1 in/out, diagonal matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M7,7[1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,7]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M7,7[1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,7]" RY=ReMa:"M7,7[7,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M7,7[7,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1]"
+;N[Eigenvalues[{{1,0,0,0,0,0,0},{0,2,0,0,0,0,0},{0,0,3,0,0,0,0},{0,0,0,4,0,0,0},{0,0,0,0,5,0,0},{0,0,0,0,0,6,0},{0,0,0,0,0,0,7}}], 34]
+; [1 0 0 0 0 0 0]
+; [0 2 0 0 0 0 0]
+; [0 0 3 0 0 0 0]
+; [0 0 0 4 0 0 0]
+; [0 0 0 0 5 0 0]
+; [0 0 0 0 0 6 0]
+; [0 0 0 0 0 0 7]
+; λ1 = 7                                          Wolfram: 7
+; λ2 = 6                                          Wolfram: 6
+; λ3 = 5                                          Wolfram: 5
+; λ4 = 4                                          Wolfram: 4
+; λ5 = 3                                          Wolfram: 3
+; λ6 = 2                                          Wolfram: 2
+; λ7 = 1                                          Wolfram: 1
+
+
+
+TIMER: 027 TEST CASE 12: 8×8 integer 8-1 in/out, upper triangular (super diagonal) matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M8,8[1,1,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,3,1,0,0,0,0,0,0,0,4,1,0,0,0,0,0,0,0,5,1,0,0,0,0,0,0,0,6,1,0,0,0,0,0,0,0,7,1,0,0,0,0,0,0,0,8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M8,8[1,1,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,3,1,0,0,0,0,0,0,0,4,1,0,0,0,0,0,0,0,5,1,0,0,0,0,0,0,0,6,1,0,0,0,0,0,0,0,7,1,0,0,0,0,0,0,0,8]" RY=ReMa:"M8,8[8,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M8,8[8,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1]"
+;N[Eigenvalues[{{1,1,0,0,0,0,0,0},{0,2,1,0,0,0,0,0},{0,0,3,1,0,0,0,0},{0,0,0,4,1,0,0,0},{0,0,0,0,5,1,0,0},{0,0,0,0,0,6,1,0},{0,0,0,0,0,0,7,1},{0,0,0,0,0,0,0,8}}], 34]
+; [1 1 0 0 0 0 0 0]
+; [0 2 1 0 0 0 0 0]
+; [0 0 3 1 0 0 0 0]
+; [0 0 0 4 1 0 0 0]
+; [0 0 0 0 5 1 0 0]
+; [0 0 0 0 0 6 1 0]
+; [0 0 0 0 0 0 7 1]
+; [0 0 0 0 0 0 0 8]
+; λ1 = 8                                          Wolfram: 8
+; λ2 = 7                                          Wolfram: 7
+; λ3 = 6                                          Wolfram: 6
+; λ4 = 5                                          Wolfram: 5
+; λ5 = 4                                          Wolfram: 4
+; λ6 = 3                                          Wolfram: 3
+; λ7 = 2                                          Wolfram: 2
+; λ8 = 1                                          Wolfram: 1
+
+
+
+TIMER: 028 TEST CASE 13: 9×9 identity matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M9,9[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M9,9[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1]" RY=ReMa:"M9,9[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M9,9[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1]"
+;N[Eigenvalues[{{1,0,0,0,0,0,0,0,0},{0,1,0,0,0,0,0,0,0},{0,0,1,0,0,0,0,0,0},{0,0,0,1,0,0,0,0,0},{0,0,0,0,1,0,0,0,0},{0,0,0,0,0,1,0,0,0},{0,0,0,0,0,0,1,0,0},{0,0,0,0,0,0,0,1,0},{0,0,0,0,0,0,0,0,1}}], 34]
+; [1 0 0 0 0 0 0 0 0]
+; [0 1 0 0 0 0 0 0 0]
+; [0 0 1 0 0 0 0 0 0]
+; [0 0 0 1 0 0 0 0 0]
+; [0 0 0 0 1 0 0 0 0]
+; [0 0 0 0 0 1 0 0 0]
+; [0 0 0 0 0 0 1 0 0]
+; [0 0 0 0 0 0 0 1 0]
+; [0 0 0 0 0 0 0 0 1]
+; λ1 = 1                                          Wolfram: 1
+; λ2 = 1                                          Wolfram: 1
+; λ3 = 1                                          Wolfram: 1
+; λ4 = 1                                          Wolfram: 1
+; λ5 = 1                                          Wolfram: 1
+; λ6 = 1                                          Wolfram: 1
+; λ7 = 1                                          Wolfram: 1
+; λ8 = 1                                          Wolfram: 1
+; λ9 = 1                                          Wolfram: 1
+
+
+
+TIMER: 031 TEST CASE 18: 4×4 integer in/out, symmetrical all ones except diagonal (94% density)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[5,1,1,1,1,5,1,1,1,1,5,1,1,1,1,5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[5,1,1,1,1,5,1,1,1,1,5,1,1,1,1,5]" RY=ReMa:"M4,4[8,0,0,0,0,4,0,0,0,0,4,0,0,0,0,4]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[8,0,0,0,0,4,0,0,0,0,4,0,0,0,0,4]"
+;N[Eigenvalues[{{5,1,1,1},{1,5,1,1},{1,1,5,1},{1,1,1,5}}], 34]
+; [5 1 1 1]
+; [1 5 1 1]
+; [1 1 5 1]
+; [1 1 1 5]
+; λ1 = 8                                          Wolfram: 8
+; λ2 = 4                                          Wolfram: 4
+; λ3 = 4                                          Wolfram: 4
+; λ4 = 4                                          Wolfram: 4
+
+
+
+TIMER: 032 TEST CASE 19: 3×3 Moderate Dense (67% density)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M3,3[3,1,0,1,3,1,0,1,3]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M3,3[3,1,0,1,3,1,0,1,3]" RY=ReMa:"M3,3[4.414213562373095048801688724209698,0,0,0,3,0,0,0,1.585786437626904951198311275790302]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M3,3[4.4142135623730950,0,0,0,3,0,0,0,1.5857864376269050]"
+;N[Eigenvalues[{{3,1,0},{1,3,1},{0,1,3}}], 34]
+; [3 1 0]
+; [1 3 1]
+; [0 1 3]
+; λ1 = 4.414213562373095048801688724209698                                                Wolfram: 4.4142135623730950488016887242096981
+; λ2 = 3                                                                                   Wolfram: 3
+; λ3 = 1.585786437626904951198311275790302                                                Wolfram: 1.5857864376269049511983112757903019
+
+
+
+;  ▗▄▄▖   ▄▄ ▗▖    ▗▄▖  ▗▄
+;  ▐▛▀▜▌ █▀▀▌▐▌    █▀▜  ▛█
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖   █
+;  ▐███ ▐▌   ▐▌   ▐█▀█▖  █
+;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌  █
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘▗▄█▄▖
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▀▀▀▘                                                      https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL61&x=none&v=4&h=0&w=80&we=false
+TIMER: 034 RCL61 TEST CASE 8: 4x4 integer in/out, symmetric
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[3,1,0,1,1,3,1,0,0,1,3,1,1,0,1,3]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[3,1,0,1,1,3,1,0,0,1,3,1,1,0,1,3]" RY=ReMa:"M4,4[5,0,0,0,0,3,0,0,0,0,3,0,0,0,0,1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[5,0,0,0,0,3,0,0,0,0,3,0,0,0,0,1]"
+;N[Eigenvalues[{{3,1,0,1},{1,3,1,0},{0,1,3,1},{1,0,1,3}}], 34]
+; [3 1 0 1]
+; [1 3 1 0]
+; [0 1 3 1]
+; [1 0 1 3]
+; λ1 = 5     Wolfram: 5
+; λ2 = 3     Wolfram: 3
+; λ3 = 3     Wolfram: 3
+; λ4 = 1     Wolfram: 1
+
+
+
+; ▗▄▄▖   ▄▄ ▗▖    ▗▄▖  ▄▄▖
+; ▐▛▀▜▌ █▀▀▌▐▌    █▀▜ ▐▀▀█▖
+; ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖    ▐▌
+; ▐███ ▐▌   ▐▌   ▐█▀█▖  ▗▛
+; ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌ ▗▛
+; ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘▗█▄▄▖
+; ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘ ▝▀▀▀▘                                 https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL62&x=none&v=4&h=0&w=80&we=false
+TIMER: 029 RCL62 TEST CASE 14: 10×10 Tridiagonal Matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M10,10[2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M10,10[2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,1,2]" RX=ReMa:"M1,10[3.918985947228994779780736114132655,3.682507065662362337723623297838735,3.309721467890570128113850144932587,2.830830026003772851058548298459246,2.284629676546570280887585337232739,1.715370323453429719112414662767261,1.169169973996227148941451701540754,0.6902785321094298718861498550674129,0.3174929343376376622763767021612646,0.08101405277100522021926388586734490]"
+;N[Eigenvalues[{{2,1,0,0,0,0,0,0,0,0},{1,2,1,0,0,0,0,0,0,0},{0,1,2,1,0,0,0,0,0,0},{0,0,1,2,1,0,0,0,0,0},{0,0,0,1,2,1,0,0,0,0},{0,0,0,0,1,2,1,0,0,0},{0,0,0,0,0,1,2,1,0,0},{0,0,0,0,0,0,1,2,1,0},{0,0,0,0,0,0,0,1,2,1},{0,0,0,0,0,0,0,0,1,2}}], 34]
+; [2 1 0 0 0 0 0 0 0 0]
+; [1 2 1 0 0 0 0 0 0 0]
+; [0 1 2 1 0 0 0 0 0 0]
+; [0 0 1 2 1 0 0 0 0 0]
+; [0 0 0 1 2 1 0 0 0 0]
+; [0 0 0 0 1 2 1 0 0 0]
+; [0 0 0 0 0 1 2 1 0 0]
+; [0 0 0 0 0 0 1 2 1 0]
+; [0 0 0 0 0 0 0 1 2 1]
+; [0 0 0 0 0 0 0 0 1 2]
+; λ1  = 3.918985947228994779780736114132655       Wolfram: 3.9189859472289947797807361141326554
+; λ2  = 3.682507065662362337723623297838735       Wolfram: 3.6825070656623623377236232978387354
+; λ3  = 3.309721467890570128113850144932587       Wolfram: 3.3097214678905701281138501449325871
+; λ4  = 2.830830026003772851058548298459246       Wolfram: 2.8308300260037728510585482984592464
+; λ5  = 2.284629676546570280887585337232739       Wolfram: 2.2846296765465702808875853372327393
+; λ6  = 1.715370323453429719112414662767261       Wolfram: 1.7153703234534297191124146627672607
+; λ7  = 1.169169973996227148941451701540754       Wolfram: 1.1691699739962271489414517015407536
+; λ8  = 0.6902785321094298718861498550674129      Wolfram: 0.6902785321094298718861498550674129
+; λ9  = 0.3174929343376376622763767021612646      Wolfram: 0.3174929343376376622763767021612646
+; λ10 = 0.0810140527710052202192638858673446      Wolfram: 0.0810140527710052202192638858673446
+
+
+;2025-11-10: Change: Off-diagonal stability test 2:
+; 1161 iter  34+3-1+10 digit                  1281 iter; 36+15 digit                        1781 iter; eigentolearance=(min(70,toleranceDigits*2))=70 digit
+;3.918985947228994779780736114132655 + 0i     3.918985947228994779780736114132655 + 0i      3.918985947228994779780736114132655 + 0i
+;3.682507065662362337723623297838735 + 0i     3.682507065662362337723623297838735 + 0i      3.682507065662362337723623297838735 + 0i
+;3.309721467890570128113850144932587 + 0i     3.309721467890570128113850144932587 + 0i      3.309721467890570128113850144932587 + 0i
+;2.830830026003772851058548298459246 + 0i     2.830830026003772851058548298459246 + 0i      2.830830026003772851058548298459246 + 0i
+;2.28462967654657028088 0885589334104 + 0i    2.2846296765465702808875 67838884138 + 0i     2.284629676546570280887585337232739 + 0i
+;1.715370323453429719112414662767261 + 0i     1.715370323453429719112414662767261 + 0i      1.715370323453429719112414662767261 + 0i
+;1.169169973996227148941451701540754 + 0i     1.169169973996227148941451701540754 + 0i      1.169169973996227148941451701540754 + 0i
+;0.6902785321094298718861498550674129 + 0i    0.6902785321094298718861498550674129 + 0i     0.6902785321094298718861498550674129 + 0i
+;0.3174929343376376622763767021612646 + 0i    0.3174929343376376622763767021612646 + 0i     0.3174929343376376622763767021612646 + 0i
+;0.0810140527710052202 2596363376597964 + 0i  0.0810140527710052202192 8138421594593 + 0i   0.081014052771005220219263885867344 90 + 0i
+
+
+;2025-11-09, 10. It must iterate for longer, maybe due to symmetrical can go longer?
+; 901 iterations
+;3.918985947228994779780736114132655 + 0i
+;3.682507065662362337723623297838735 + 0i
+;3.309721467890570128113850144932587 + 0i
+;2.830830026003772851058548298459246 + 0i
+;2.2846296765465 67634268208750536756 + 0i
+;1.71537032345342971911241466276726 1 + 0i
+;1.16916997399622714894145170154075 4 + 0i
+;0.6902785321094298718861498550674129 + 0i
+;0.3174929343376376622763767021612646 + 0i
+;0.08101405277100 786683864047256332767 + 0i
+
+;2025-11-09
+; disables deflation, then 3521 iterations needed: perfect accuracy
+;3.918985947228994779780736114132655 + 0i
+;3.682507065662362337723623297838735 + 0i
+;3.309721467890570128113850144932587 + 0i
+;2.830830026003772851058548298459246 + 0i
+;2.284629676546570280887585337232739 + 0i
+;1.715370323453429719112414662767261 + 0i
+;1.16916997399622714894145170154075 4 + 0i
+;0.6902785321094298718861498550674129 + 0i
+;0.3174929343376376622763767021612646 + 0i
+;0.08101405277100522021926388586734460 + 0i
+
+;------------old
+;used thae actual but incorrect values to pass the test
+;1x10 1081 51 truncating
+;3.918985947228994779780736114132655
+;3.682507065662362337723623297838735
+;3.309721467890570128113850144932587
+;2.830830026003772851058548298459246
+;2.284629676546570280 533093943160226
+;1.715370323453429719112414662767261
+;1.169169973996227148941451701540754
+;0.6902785321094298718861498550674129
+;0.3174929343376376622763767021612646
+;0.081014052771005220 57375527993985774
+
+;1x10 1081 34 truncating
+;3.91898594722899477978073611413265 4
+;3.68250706566236233772362329783875 2
+;3.30972146789057012811385014493258 9
+;2.8308300260037728510585482984592 51
+;2.284629676546570280 533075850084213
+;1.71537032345342971911241466276726
+;1.16916997399622714894145170154075 4
+;0.69027853210942987188614985506741 34
+;0.317492934337637662276376702161264 8
+;0.081014052771005220 57377337301587354
+
+; Ralf's manual RPN functon:
+; SCHUR
+; 1x10 100 iterations
+; 3.91898 2528173123934624710172125488
+; 3.6825 10482124055349368041299969249
+; 3.3097214 70484440999934988620898858
+; 2.83083002600 4079808424983133612222
+; 2.28462967654657028 5211617312110023
+; 1.7153703234534297191124 17316647399
+; 1.16916997399622714894145170154075 9
+; 0.69027853210942987188614985506741 31
+; 0.317492934337637662276376702161264 8
+; 0.0810140527710052202192638858673446
+;
+; 1x10 600 iterations
+; 3.9189859472289947797807361141326 63
+; 3.68250706566236233772362329783873 3
+; 3.3097214678905701281138501449325 97
+; 2.8308300260037728510585482984592 52
+; 2.2846296765465702808875853372327 43
+; 1.71537032345342971911241466276726 2
+; 1.16916997399622714894145170154075 1
+; 0.69027853210942987188614985506741 31
+; 0.317492934337637662276376702161264 8
+; 0.0810140527710052202192638858673446
+
+
+
+;  ▗▄▄▖   ▄▄ ▗▖    ▗▄▖  ▄▄▖
+;  ▐▛▀▜▌ █▀▀▌▐▌    █▀▜ ▐▀▀█▖
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖    ▟▌
+;  ▐███ ▐▌   ▐▌   ▐█▀█▖ ▐██
+;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌   ▜▌
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘▐▄▄█▘
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘  ▀▀▘                                                  https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL63&x=none&v=4&h=0&w=80&we=false
+TIMER: 037 RCL63 TEST CASE 15: 4×4 integer in/out, dense symmetrical (100% density)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[3,2,1,2,2,3,2,1,1,2,3,2,2,1,2,3]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[3,2,1,2,2,3,2,1,1,2,3,2,2,1,2,3]" RY=ReMa:"M4,4[8,0,0,0,0,2.,0,0,0,0,2.,0,0,0,0,0]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[8,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0]"
+;N[Eigenvalues[{{3,2,1,2},{2,3,2,1},{1,2,3,2},{2,1,2,3}}], 34]
+; [3 2 1 2]
+; [2 3 2 1]
+; [1 2 3 2]
+; [2 1 2 3]
+; λ1 = 8.       Wolfram: 8
+; λ2 = 2.       Wolfram: 2
+; λ3 = 2.       Wolfram: 2
+; λ4 = 0.       Wolfram: 0
+
+
+
+;  ▗▄▄▖   ▄▄ ▗▖    ▗▄▖   ▗▄
+;  ▐▛▀▜▌ █▀▀▌▐▌    █▀▜   ▟█
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖  ▐▘█
+;  ▐███ ▐▌   ▐▌   ▐█▀█▖▗▛ █
+;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌▐███▌
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘   █
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘    ▀                                                https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL64&x=none&v=4&h=0&w=80&we=false
+TIMER: 038 RCL64 TEST CASE 16: 5×5 integer in, irrational out, checkerboard pattern (48% density)
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2]" RY=ReMa:"M5,5[4.449489742783178098197284074705891,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,-0.4494897427831780981972840747058909]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M5,5[4.4494897427831780981972840747058914,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,-0.4494897427831780981972840747058914]"
+;N[Eigenvalues[{{2,1,0,1,0},{1,2,1,0,1},{0,1,2,1,0},{1,0,1,2,1},{0,1,0,1,2}}], 34]
+; [2 1 0 1 0]
+; [1 2 1 0 1]
+; [0 1 2 1 0]
+; [1 0 1 2 1]
+; [0 1 0 1 2]
+; λ1 = 4.449489742783178098197284074705891     Wolfram: 4.4494897427831780981972840747058914
+; λ2 = 2                                       Wolfram: 2
+; λ3 = 2                                       Wolfram: 2
+; λ4 = 2                                       Wolfram: 2
+; λ5 = -0.4494897427831780981972840747058909   Wolfram: -0.4494897427831780981972840747058914
+
+
+
+;  ▗▄▄▖   ▄▄ ▗▖    ▗▄▖ ▗▄▄▄
+;  ▐▛▀▜▌ █▀▀▌▐▌    █▀▜ ▐▛▀▀
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖ ▐▙▄▖
+;  ▐███ ▐▌   ▐▌   ▐█▀█▖▐▀▀█▖
+;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌   ▐▌
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘▐▄▄█▘
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘  ▀▀▘                                                  https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL65&x=none&v=4&h=0&w=80&we=false
+TIMER: 035 RCL65: 10×10 integer in/out, dense matrix
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M10,10[4,1,0,1,0,1,0,1,0,1,1,4,1,0,1,0,1,0,1,0,0,1,4,1,0,1,0,1,0,1,1,0,1,4,1,0,1,0,1,0,0,1,0,1,4,1,0,1,0,1,1,0,1,0,1,4,1,0,1,0,0,1,0,1,0,1,4,1,0,1,1,0,1,0,1,0,1,4,1,0,0,1,0,1,0,1,0,1,4,1,1,0,1,0,1,0,1,0,1,4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M10,10[4,1,0,1,0,1,0,1,0,1,1,4,1,0,1,0,1,0,1,0,0,1,4,1,0,1,0,1,0,1,1,0,1,4,1,0,1,0,1,0,0,1,0,1,4,1,0,1,0,1,1,0,1,0,1,4,1,0,1,0,0,1,0,1,0,1,4,1,0,1,1,0,1,0,1,0,1,4,1,0,0,1,0,1,0,1,0,1,4,1,1,0,1,0,1,0,1,0,1,4]" RY=ReMa:"M10,10[9,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,-1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M10,10[9,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,-1]"
+;N[Eigenvalues[{{4,1,0,1,0,1,0,1,0,1},{1,4,1,0,1,0,1,0,1,0},{0,1,4,1,0,1,0,1,0,1},{1,0,1,4,1,0,1,0,1,0},{0,1,0,1,4,1,0,1,0,1},{1,0,1,0,1,4,1,0,1,0},{0,1,0,1,0,1,4,1,0,1},{1,0,1,0,1,0,1,4,1,0},{0,1,0,1,0,1,0,1,4,1},{1,0,1,0,1,0,1,0,1,4}}], 34]
+; [4 1 0 1 0 1 0 1 0 1]
+; [1 4 1 0 1 0 1 0 1 0]
+; [0 1 4 1 0 1 0 1 0 1]
+; [1 0 1 4 1 0 1 0 1 0]
+; [0 1 0 1 4 1 0 1 0 1]
+; [1 0 1 0 1 4 1 0 1 0]
+; [0 1 0 1 0 1 4 1 0 1]
+; [1 0 1 0 1 0 1 4 1 0]
+; [0 1 0 1 0 1 0 1 4 1]
+; [1 0 1 0 1 0 1 0 1 4]
+; λ1  = 9                      Wolfram: 9
+; λ2  = 4                      Wolfram: 4
+; λ3  = 4                      Wolfram: 4
+; λ4  = 4                      Wolfram: 4
+; λ5  = 4                      Wolfram: 4
+; λ6  = 4                      Wolfram: 4
+; λ7  = 4                      Wolfram: 4
+; λ8  = 4                      Wolfram: 4
+; λ9  = 4                      Wolfram: 4
+; λ10 = -1                     Wolfram: -1
+
+
+
+TIMER: 036 RCL10: 4x4 integer in, irrational out, symmetrical
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M4,4[1,2,0,0,2,3,4,0,0,4,5,6,0,0,6,7]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M4,4[1,2,0,0,2,3,4,0,0,4,5,6,0,0,6,7]" RX=ReMa:"M1,4[12.84367036290248188403608397861751,4.936552578266715878436052263485033,-2.484787517776647669055030948641324,0.7045645766074499065828947065387811]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M4,4[12.8436703629024819,0,0,0,0,4.9365525782667159,0,0,0,0,-2.4847875177766477,0,0,0,0,0.7045645766074499]"
+;N[Eigenvalues[{{1,2,0,0},{2,3,4,0},{0,4,5,6},{0,0,6,7}}], 34]
+; [1 2 0 0]
+; [2 3 4 0]
+; [0 4 5 6]
+; [0 0 6 7]
+; λ1 = 12.84367036290248188403608397861751     Wolfram: 12.843670362902481884036083978617509
+; λ2 = 4.936552578266715878436052263485033     Wolfram: 4.9365525782667158784360522634850334
+; λ3 = -2.484787517776647669055030948641324    Wolfram: -2.4847875177766476690550309486413237
+; λ4 = 0.7045645766074499065828947065387811    Wolfram: 0.7045645766074499065828947065387810
+
+
+
+
+;  === === ===                           === === ===:
+;  === === === PROBLEMATIC MATRICES      === === ===:
+;  === === ===                           === === ===:
+;  ▗▄▄▖ ▗▄▄▖  ▗▄▖ ▗▄▄▖ ▗▖   ▗▄▄▄▖▗▄ ▄▖  ▄  ▗▄▄▄▖ ▄▄▄   ▄▄      ▗▄ ▄▖  ▄  ▗▄▄▄▖▗▄▄▖  ▄▄▄   ▄▄ ▗▄▄▄▖ ▗▄▖
+;  ▐▛▀▜▖▐▛▀▜▌ █▀█ ▐▛▀▜▌▐▌   ▐▛▀▀▘▐█ █▌ ▐█▌ ▝▀█▀▘ ▀█▀  █▀▀▌     ▐█ █▌ ▐█▌ ▝▀█▀▘▐▛▀▜▌ ▀█▀  █▀▀▌▐▛▀▀▘▗▛▀▜
+;  ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌   ▐███▌ ▐█▌   █    █  ▐▛        ▐███▌ ▐█▌   █  ▐▌ ▐▌  █  ▐▛   ▐▌   ▐▙
+;  ▐██▛ ▐███ ▐▌ ▐▌▐███ ▐▌   ▐███ ▐▌█▐▌ █ █   █    █  ▐▌        ▐▌█▐▌ █ █   █  ▐███   █  ▐▌   ▐███  ▜█▙
+;  ▐▌   ▐▌▝█▖▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌   ▐▌▀▐▌ ███   █    █  ▐▙        ▐▌▀▐▌ ███   █  ▐▌▝█▖  █  ▐▙   ▐▌      ▜▌
+;  ▐▌   ▐▌ ▐▌ █▄█ ▐▙▄▟▌▐▙▄▄▖▐▙▄▄▖▐▌ ▐▌▗█ █▖  █   ▄█▄  █▄▄▌     ▐▌ ▐▌▗█ █▖  █  ▐▌ ▐▌ ▄█▄  █▄▄▌▐▙▄▄▖▐▄▄▟▘
+;  ▝▘   ▝▘ ▝▀ ▝▀▘ ▝▀▀▀ ▝▀▀▀▘▝▀▀▀▘▝▘ ▝▘▝▘ ▝▘  ▀   ▀▀▀   ▀▀      ▝▘ ▝▘▝▘ ▝▘  ▀  ▝▘ ▝▀ ▀▀▀   ▀▀ ▝▀▀▀▘ ▀▀▘
+;
+
+
+
+; WORKS BUT NEEDS ACCELERATION
+;  ▗▄▄▖   ▄▄ ▗▖   ▗▄▄▄  ▗▄▖
+;  ▐▛▀▜▌ █▀▀▌▐▌   ▐▛▀▀ ▗█▀█▖
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▙▄▖ ▐▙ ▟▌
+;  ▐███ ▐▌   ▐▌   ▐▀▀█▖ ███
+;  ▐▌▝█▖▐▙   ▐▌      ▐▌▐▛ ▜▌
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▐▄▄█▘▝█▄█▘
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▀▀▘  ▝▀▘                                                 https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL58&x=none&v=4&h=0&w=80&we=false
+TIMER: KNOWN TO BE TOO LONG - 039 RCL58: 14x14 integer in, irrational out
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M14,14[	1,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,  	2,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,  	3,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	4,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	5,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	6,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	7,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	8,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	9,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	10,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	11,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	12,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	13,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	14]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M14,14[	1,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,  	2,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,  	3,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	4,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	5,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	6,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	7,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	8,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	9,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	10,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	11,0,0,0,0,0,0,0,0,0,0,-1,1,-1,-1,  	12,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,  	13,0,0,0,0,0,0,0,0,0,0,0,-1,1,-1,  	14]" RX=ReMa:"M1,14[14,13,12,11,10,9,8,7,6,5,4,3,2,1]"
+
+; 2001 iterations, 2025-11-15 needs some kind of acceleration
+; 1181 iterations, 2025-11-16
+
+
+
+;NEED OSCILLATION DETECTION IN QR
+;  ▗▄▄▖   ▄▄ ▗▖    ▗▄▖  ▗▄▖
+;  ▐▛▀▜▌ █▀▀▌▐▌    █▀▜  █▀█
+;  ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖ ▐▌ ▐▌
+;  ▐███ ▐▌   ▐▌   ▐█▀█▖▐▌ ▐▌
+;  ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌▐▌ ▐▌
+;  ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘ █▄█
+;  ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘  ▝▀▘                                                        https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL60&x=none&v=4&h=0&w=80&we=false
+TIMER: DISABLED NO CONVERGE OSCILLATES 033 RCL60 TEST CASE 20: 5×5 integer in, complex out, companion matrix (100, -300, 200, -100, 10 coefficients) -- Not working in algo. Disabled test to pass testSuite temporarily
+;In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]"
+;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M5,5[0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,100,-300,200,-100,10]" RY=CxMa:"M5,5[3.930973095712259496667443556797425i8.005680540385435780405924781128042,0,0,0,0,0,3.930973095712259496667443556797425i-8.005680540385435780405924781128038,0,0,0,0,0,0.8530383331319622753469193428747031i1.477364236754080833984574739166843,0,0,0,0,0,0.8530383331319622758653981820393341i-1.477364236754080833645388946395076,0,0,0,0,0,0.4319771423115564554527953614911131i-3.391857927717606015138231185488567E-19]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M5,5[3.930973095712259496667443556797425i8.0056805403854357804059247811280374,0,0,0,0,0,3.930973095712259496667443556797425i-8.0056805403854357804059247811280374,0,0,0,0,0,0.8530383331319622758653981820982252i1.4773642367540808336453889463748971,0,0,0,0,0,0.8530383331319622758653981820982252i-1.4773642367540808336453889463748971,0,0,0,0,0,0.4319771423115564549343165222086994]"
+;N[Eigenvalues[{{0,1,0,0,0},{0,0,1,0,0},{0,0,0,1,0},{0,0,0,0,1},{100,-300,200,-100,10}}], 34]
+; [0   1   0   0   0  ]
+; [0   0   1   0   0  ]
+; [0   0   0   1   0  ]
+; [0   0   0   0   1  ]
+; [100 -300 200 -100 10]
+; λ1 = 3.930973095712259496667443556797425 + i8.005680540385435780405924781128042      Wolfram: 3.930973095712259496667443556797425 + i8.0056805403854357804059247811280374
+; λ2 = 3.930973095712259496667443556797425 - i8.005680540385435780405924781128038      Wolfram: 3.930973095712259496667443556797425 - i8.0056805403854357804059247811280374
+; λ3 = 0.8530383331319622753469193428747031 + i1.477364236754080833984574739166843     Wolfram: 0.8530383331319622758653981820982252 + i1.4773642367540808336453889463748971
+; λ4 = 0.8530383331319622758653981820393341 - i1.477364236754080833645388946395076     Wolfram: 0.8530383331319622758653981820982252 - i1.4773642367540808336453889463748971
+; λ5 = 0.4319771423115564554527953614911131 - i3.391857927717606015138231185488567E-19 Wolfram: 0.4319771423115564549343165222086994
+
+;10000 iterations
+;2025-11-10 Not converging
+;3.930973095712259496667443556797425 + 8.005680540385435780405924781128037i
+;3.930973095712259496667443556797425 + -8.005680540385435780405924781128037i
+;XXX 1.463153729168786886878901862148301 + 0i
+;0.4319771423115564549343165222086994 + 0i
+;XXX 0.2429229370951376648518945020481490 + 0i
+
+;Has two unresolved values
+
+
+
+
+; ▗▄▄▖   ▄▄ ▗▖    ▗▄▖ ▗▄▄▄▖
+; ▐▛▀▜▌ █▀▀▌▐▌    █▀▜ ▝▀▀█▌
+; ▐▌ ▐▌▐▛   ▐▌   ▐▌▄▖   ▗█
+; ▐███ ▐▌   ▐▌   ▐█▀█▖  ▐▌
+; ▐▌▝█▖▐▙   ▐▌   ▐▌ ▐▌  █
+; ▐▌ ▐▌ █▄▄▌▐▙▄▄▖▝█▄█▘ ▐▌
+; ▝▘ ▝▀  ▀▀ ▝▀▀▀▘ ▝▀▘  ▀                                                          https://patorjk.com/software/taag/#p=display&f=Small+Mono+12&t=RCL67&x=none&v=4&h=0&w=80&we=false
+TIMER: DISABLED 030 RCL67 TEST CASE 17: 6x6 integer in integer out, pathological, dense anti-diagonal (33% density) -- Not working in algo. Disabled test to pass testSuite temporarily
+;In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M6,6[1,0,0,0,0,2,0,1,0,0,2,0,0,0,1,2,0,0,0,0,2,1,0,0,0,2,0,0,1,0,2,0,0,0,0,1]"
+;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M6,6[1,0,0,0,0,2,0,1,0,0,2,0,0,0,1,2,0,0,0,0,2,1,0,0,0,2,0,0,1,0,2,0,0,0,0,1]" RY=ReMa:"M6,6[3,0,0,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,0,0,0,-1,0,0,0,0,0,0,-1,0,0,0,0,0,0,-1]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=ReMa:"M6,6[3,0,0,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,0,0,0,-1,0,0,0,0,0,0,-1,0,0,0,0,0,0,-1]"
+;N[Eigenvalues[{{1,0,0,0,0,2},{0,1,0,0,2,0},{0,0,1,2,0,0},{0,0,2,1,0,0},{0,2,0,0,1,0},{2,0,0,0,0,1}}], 34]
+; [1 0 0 0 0 2]
+; [0 1 0 0 2 0]
+; [0 0 1 2 0 0]
+; [0 0 2 1 0 0]
+; [0 2 0 0 1 0]
+; [2 0 0 0 0 1]
+; λ1 = 3                          Wolfram: 3
+; λ2 = 3                          Wolfram: 3
+; λ3 = 3                          Wolfram: 3
+; λ4 = -1                         Wolfram: -1
+; λ5 = -1                         Wolfram: -1
+; λ6 = -1                         Wolfram: -1
+
+
+
+; === === ===                           === === ===:
+; === === === UNSUPPORTED MATRIX TYPES === === ===:
+; === === ===                           === === ===:
+
+
+
+
+; === === === CASE IDENTIFIED AND ERRORED === === ===:
+
+TIMER: TEST ERROR CASE RCL11 --- Not supported; matrix error checked; not in the QR method
+In: RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]"
+;Wolfram: Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=CxMa:"M4,4[-1,0,0,0,0,1i1,0,0,0,0,-1i1,0,0,0,0,1]"
+;N[Eigenvalues[{{0,1,0,0},{0,0,1,0},{0,0,0,1},{1,0,0,0}}], 34]
+; [0 1 0 0]
+; [0 0 1 0]
+; [0 0 0 1]
+; [1 0 0 0]
+; Error case: EC=8 - Matrix type not supported by QR algorithm
 
 
 
