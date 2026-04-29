@@ -4300,7 +4300,7 @@ static bool_t verifySqrtMatrix(const real34Matrix_t *inputReal,    const real34M
       real34ToReal(&residualNorm34, &residualNorm);
       real34ToReal(&inputNorm34, &inputNorm);
       realMultiply(&inputNorm, const_1e_30, &tolerance, &ctxtReal39);
-      verified = !realCompareGreaterThan(&residualNorm, &tolerance);
+      verified = realCompareLessEqual(&residualNorm, &tolerance);
       complexMatrixFree(&residual);
     }
   }
