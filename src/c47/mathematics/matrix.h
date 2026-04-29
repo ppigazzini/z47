@@ -59,6 +59,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnInvertMatrix                 (uint16_t unusedParamButMandatory);
+  void       fnMatrixSquareRoot             (uint16_t unusedParamButMandatory);
 
   /**
    * Euclidean norm of matrix X.
@@ -186,6 +187,7 @@
    * \param[in] matrix
    */
   void     realMatrixIdentity             (real34Matrix_t *matrix, uint16_t size);
+  void     fnMatrixIdentity               (uint16_t unusedButMandatoryParameter);
 
   /**
    * Redemention a real matrix.
@@ -405,10 +407,6 @@
   void     real_QR_decomposition          (const real34Matrix_t *matrix, real34Matrix_t *q, real34Matrix_t *r);
   void     complex_QR_decomposition       (const complex34Matrix_t *matrix, complex34Matrix_t *q, complex34Matrix_t *r);
 
-  void     realEigenvalues                (const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires);
-  void     complexEigenvalues             (const complex34Matrix_t *matrix, complex34Matrix_t *res);
-  void     realEigenvectors               (const real34Matrix_t *matrix, real34Matrix_t *res, real34Matrix_t *ires);
-  void     complexEigenvectors            (const complex34Matrix_t *matrix, complex34Matrix_t *res);
   void     callByIndexedMatrix            (bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)(complex34Matrix_t *));
 
   void       linkToRealMatrixRegister       (calcRegister_t regist, real34Matrix_t *linkedMatrix);
