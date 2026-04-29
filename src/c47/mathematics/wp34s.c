@@ -363,7 +363,7 @@ void C47_WP34S_SinCosTanTaylor_temp75(const real_t *a, bool_t swap, real_t *sinO
 //used only by XFN 1071
 static void C47_WP34S_Cvt2RadSinCosTan_1071temp(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
-  real1071_t angle;
+  REAL_T_PTR(angle, 1071);
 
 
   if(realIsNaN(an)) {
@@ -379,11 +379,11 @@ static void C47_WP34S_Cvt2RadSinCosTan_1071temp(const real_t *an, angularMode_t 
    return;
   }
 
-  realCopy(an, (real_t*)&angle);
+  realCopy(an, angle);
 
   int32_t savedContextDigits = realContext->digits;
 
-  doWP34S_SinCosTanTaylor((real_t *)&angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, realContext);
+  doWP34S_SinCosTanTaylor(angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, realContext);
 
   }
 
@@ -401,15 +401,22 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
 //Used by normal C47 TRIG as well as XFN
 // Calculate sin, cos by Taylor series and tan by division, for 1071 contexts
 void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) { // a in radian
-  real1071_t angle, a2, t, j, z, sin, cos, epsilonOrCompare;
+  REAL_T_PTR(angle, 1071);
+  REAL_T_PTR(a2, 1071);
+  REAL_T_PTR(t, 1071);
+  REAL_T_PTR(j, 1071);
+  REAL_T_PTR(z, 1071);
+  REAL_T_PTR(sin, 1071);
+  REAL_T_PTR(cos, 1071);
+  REAL_T_PTR(epsilonOrCompare, 1071);
 
-  doTaylorIterations(a, (real_t*)&angle, (real_t*)&a2, (real_t*)&t, (real_t*)&j, (real_t*)&z, (real_t*)&sin, (real_t*)&cos, sinOut, cosOut, (real_t*)&epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
+  doTaylorIterations(a, angle, a2, t, j, z, sin, cos, sinOut, cosOut, epsilonOrCompare, true /*doEpsilon*/, 1040, realContext);
 
   if(sinOut != NULL) {
-    realPlus((real_t*)&sin, sinOut, realContext);
+    realPlus(sin, sinOut, realContext);
   }
   if(cosOut != NULL) {
-    realPlus((real_t*)&cos, cosOut, realContext);
+    realPlus(cos, cosOut, realContext);
   }
   if(tanOut != NULL) {
     if(sinOut == NULL || cosOut == NULL) {
@@ -417,10 +424,10 @@ void C47_WP34S_SinCosTanTaylor_temp1071(const real_t *a, bool_t swap, real_t *si
     }
     else {
       if(swap) {
-        realDivide((real_t*)&cos, (real_t*)&sin, tanOut, realContext);
+        realDivide(cos, sin, tanOut, realContext);
       }
       else {
-        realDivide((real_t*)&sin, (real_t*)&cos, tanOut, realContext);
+        realDivide(sin, cos, tanOut, realContext);
       }
     }
   }
@@ -438,10 +445,7 @@ void C47_WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, rea
 }
 
 
-static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* j, real_t* z, const real_t* x, real_t* b, real_t* epsilon, real_t* last,
-              const bool_t doEpsilon, int epsilonDigits,
-              int* doubles, int* invert, int* neg,
-              realContext_t *realContext){
+static bool_t doAtan(real_t *a, real_t *angle, real_t *a2, real_t *t, real_t *j, real_t *z, const real_t *x, real_t *b, real_t *epsilon, real_t *last, const bool_t doEpsilon, int epsilonDigits, int* doubles, int* invert, int* neg, realContext_t *realContext){
   bool_t conditionToKeepIterating = false;
   char tmpEpsilon[16]; //-- for epsilon string conversion
   //-- use epsilon convergence instead of exact equality
@@ -449,8 +453,8 @@ static bool_t doAtan(  real_t *a, real_t* angle, real_t* a2, real_t* t, real_t* 
     sprintf(tmpEpsilon, "1E-%d", epsilonDigits);
     stringToReal(tmpEpsilon, epsilon, realContext);
     //-- create const_1on10 equivalent for 1071 precision, temporary use of z - up to for loop below
-    //uInt32ToReal(10, (real_t*)z);
-    //realDivide(const_1, (real_t*)z, (real_t*)z, realContext);
+    //uInt32ToReal(10, z);
+    //realDivide(const_1, z, z, realContext);
   }
 
 
@@ -614,14 +618,18 @@ static void WP34S_Atan_75temp(const real_t *x, real_t *angle, realContext_t *rea
 
 
 static void C47do_WP34S_Atan_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
-  real1071_t a, b, a2, t, j, z, last, epsilon; //-- added epsilon for convergence
+  REAL_T_PTR(a, 1071);
+  REAL_T_PTR(b, 1071);
+  REAL_T_PTR(a2, 1071);
+  REAL_T_PTR(t, 1071);
+  REAL_T_PTR(j, 1071);
+  REAL_T_PTR(z, 1071);
+  REAL_T_PTR(last, 1071);
+  REAL_T_PTR(epsilon, 1071);
   int doubles = 0;
   int invert;
   int neg;
-  if(!doAtan( (real_t *)&a, angle, (real_t *)&a2, (real_t *)&t, (real_t *)&j, (real_t *)&z, x, (real_t *)&b, (real_t *)&epsilon, (real_t *)&last,
-              true, 1040,
-              &doubles, &invert, &neg,
-              realContext)) {
+  if(!doAtan( a, angle, a2, t, j, z, x, b, epsilon, last, true, 1040, &doubles, &invert, &neg, realContext)) {
     return; //NaN
   }
 }
@@ -762,8 +770,9 @@ static void WP34S_Atan2_75temp(const real_t *y, const real_t *x, real_t *atan, r
 }
 
 static void C47do_WP34S_Atan2_1071temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
-  real1071_t r, t;
-  if(!doAtan2(y, x, atan, (real_t *)&r, (real_t *)&t, realContext)) {
+  REAL_T_PTR(r, 1071);
+  REAL_T_PTR(t, 1071);
+  if(!doAtan2(y, x, atan, r, t, realContext)) {
     return; //NaN
   }
 }
@@ -808,8 +817,9 @@ static void WP34S_Asin_75temp(const real_t *x, real_t *angle, realContext_t *rea
 }
 
 static void C47do_WP34S_Asin_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
-  real1071_t abx, z;
-  if(!doAsin(x, angle, (real_t *)&abx, (real_t *)&z, realContext)) {
+  REAL_T_PTR(abx, 1071);
+  REAL_T_PTR(z, 1071);
+  if(!doAsin(x, angle, abx, z, realContext)) {
     return; //NaN
   }
 }
@@ -860,8 +870,9 @@ static void WP34S_Acos_75temp(const real_t *x, real_t *angle, realContext_t *rea
 }
 
 static void C47do_WP34S_Acos_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
-  real1071_t abx, z;
-  if(!doAcos(x, angle, (real_t *)&abx, (real_t *)&z, realContext)) {
+  REAL_T_PTR(abx, 1071);
+  REAL_T_PTR(z, 1071);
+  if(!doAcos(x, angle, abx, z, realContext)) {
     return; //NaN
   }
 }
@@ -890,7 +901,7 @@ static void WP34S_Calc_Gamma_LnGamma_Lanczos(const real_t *xin, real_t *res, boo
   realSetZero(&s);
   realAdd(&x, const_29, &t, realContext);
   for(k=28; k>=0; k--) {
-    realDivide((real_t *)(((real51_t *)const51_gammaC01) + k), &t, &u, realContext);
+    realDivide((real_t *)(((uint8_t *)const51_gammaC01) + k*REAL_SIZE_IN_BYTES(51)), &t, &u, realContext);
     realSubtract(&t, const_1, &t, realContext);
     realAdd(&s, &u, &s, realContext);
   }
@@ -1380,7 +1391,7 @@ static void WP34S_CalcComplexLnGamma_Lanczos(const real_t *zReal, const real_t *
   realAdd(zReal, const_29, &tReal, realContext);
   realCopy(zImag, &tImag);
   for(k=28; k>=0; k--) {
-    divRealComplex((real_t *)(((real51_t *)const51_gammaC01) + k), &tReal, &tImag, &sReal, &sImag, realContext);
+    divRealComplex((real_t *)(((uint8_t *)const51_gammaC01) + k*REAL_SIZE_IN_BYTES(51)), &tReal, &tImag, &sReal, &sImag, realContext);
     realSubtract(&tReal, const_1, &tReal, realContext);
     realAdd(&uReal, &sReal, &uReal, realContext);
     realAdd(&uImag, &sImag, &uImag, realContext);
@@ -1513,18 +1524,18 @@ static void doMod(const real_t *x, const real_t *y, real_t *res, realContext_t *
 void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 6147;
-  const size_t blocks = TO_BLOCKS(sizeof(real6147_t));
-  void *tofree = allocC47Blocks(blocks);
-  real2139_t small; // Fallback size
+  const size_t blocks = TO_BLOCKS(REAL_SIZE_IN_BYTES(6147));
+  real_t *tofree = allocC47Blocks(blocks);
+  REAL_T_PTR(small, 2139); // Fallback size
   real_t *out;
 
-  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  out = tofree == NULL ? small : tofree;
   doMod(x, y, res, realContext, digits, out);
   freeC47Blocks(out, blocks);
 #else
-  real6147_t temp;
+  REAL_T_PTR(temp, 6147);
 
-  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+  doMod(x, y, res, realContext, 6147, temp);
 #endif
 }
 
@@ -1534,18 +1545,18 @@ void WP34S_Mod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_
 void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
   unsigned int digits = 12321;
-  const size_t blocks = TO_BLOCKS(sizeof(real12321_t));
-  void *tofree = allocC47Blocks(blocks);
-  real2139_t small; // Fallback size
+  const size_t blocks = TO_BLOCKS(REAL_SIZE_IN_BYTES(12321));
+  real_t *tofree = allocC47Blocks(blocks);
+  REAL_T_PTR(small, 2139); // Fallback size
   real_t *out;
 
-  out = tofree == NULL ? (real_t *)&small : (real_t *)tofree;
+  out = tofree == NULL ? small : tofree;
   doMod(x, y, res, realContext, digits, out);
   freeC47Blocks(out, blocks);
 #else
-  real12321_t temp;
+  REAL_T_PTR(temp, 12321);
 
-  doMod(x, y, res, realContext, 12321, (real_t *)&temp);
+  doMod(x, y, res, realContext, 12321, temp);
 #endif
 }
 #endif
@@ -1553,22 +1564,22 @@ void WP34S_BigMod_Pauli(const real_t *x, const real_t *y, real_t *res, realConte
 
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
-  real2139_t small; // Fallback size
-  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+  REAL_T_PTR(small, 2139); // Fallback size
+  doMod(x, y, res, realContext, 2139, small);
 #else
-  real6147_t temp;
-  doMod(x, y, res, realContext, 6147, (real_t *)&temp);
+  REAL_T_PTR(temp, 12321);
+  doMod(x, y, res, realContext, 6147, temp);
 #endif
 }
 
 
 void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
 #if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42
-  real2139_t small; // Fallback size
-  doMod(x, y, res, realContext, 2139, (real_t *)&small);
+  REAL_T_PTR(small, 2139); // Fallback size
+  doMod(x, y, res, realContext, 2139, small);
 #else
-  real12321_t temp;
-  doMod(x, y, res, realContext, 12321, (real_t *)&temp);                  //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
+  REAL_T_PTR(temp, 12321);
+  doMod(x, y, res, realContext, 12321, temp);                  //printf("\n******  ****** NOT MATCHED 2pi !! ****** ******\n");
 #endif
 }
 
