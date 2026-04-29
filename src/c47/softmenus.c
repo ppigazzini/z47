@@ -151,10 +151,10 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  VECT1,
-                                             ITM_M_DIM,                     ITM_M_DIM_GR,               ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                             ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMQ,            ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_M_INV,                     ITM_M_TRANSP,               ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   VECT,
+                                             ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   VECT,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_REGtoVEC,             ITM_VECtoREG,          ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 

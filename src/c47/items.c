@@ -1618,6 +1618,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnAmortInt                 (uint16_t unusedButMandatoryParameter) {}
   void fnAmortP                   (uint16_t unusedButMandatoryParameter) {}
   void fnAmortNext                (uint16_t unusedButMandatoryParameter) {}
+  void fnMatrixIdentity           (uint16_t unusedButMandatoryParameter) {}
+  void fnMatrixSquareRoot         (uint16_t unusedButMandatoryParameter) {}
 
 
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
@@ -4517,6 +4519,13 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2724 */  { itemToBeCoded,                NOPARAM,                        "2724",                                        "2724",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2725 */  { itemToBeCoded,                NOPARAM,                        "2725",                                        "2725",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 //spares for the TVM/AMORT ^^^
+
+/* 2726 */  { fnMatrixIdentity,             NOPARAM,                     "M.IDENT",                                        "IDENT",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
+/* 2727 */  { fnMatrixSquareRoot,           NOPARAM,                      "M.SQRT",                                        "MSQRT",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
+/* 2728 */  { itemToBeCoded,                NOPARAM,                        "2726",                                        "2726",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2729 */  { itemToBeCoded,                NOPARAM,                        "2727",                                        "2727",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2730 */  { itemToBeCoded,                NOPARAM,                        "2728",                                        "2728",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2731 */  { itemToBeCoded,                NOPARAM,                        "2729",                                        "2729",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 
 /* 2726 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },

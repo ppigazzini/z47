@@ -2825,7 +2825,14 @@
 #define ITM_2724                    2724
 #define ITM_2725                    2725 //spares for TVM/AMORT
 
-#define LAST_ITEM                   2726
+#define ITM_MIDENT                  2726
+#define ITM_M_SQRT                  2727
+#define ITM_2728                    2728
+#define ITM_2729                    2729
+#define ITM_2730                    2730
+#define ITM_2731                    2731 //spares for Matrix/Vector
+
+#define LAST_ITEM                   2732
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

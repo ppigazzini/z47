@@ -360,6 +360,8 @@ void generateAllConstants(void) {
          generateConstant("1oneE",         39, APPROX, "+3.678794411714423215955237701614608674458111310317678345e-01");
          generateConstant("1e_49",          1, EXACT,  "+1e-49"                                                       );
          generateConstant("1e_37",          1, EXACT,  "+1e-37"                                                       );
+         generateConstant("1e_34",          1, EXACT,  "+1e-34"                                                       );
+         generateConstant("1e_30",          1, EXACT,  "+1e-30"                                                       );
          generateConstant("1e_24",          1, EXACT,  "+1e-24"                                                       );
          generateConstant("1e_6",           1, EXACT,  "+1e-06"                                                       );
          generateConstant("1e_16",          1, EXACT,  "+1e-16"                                                       );
