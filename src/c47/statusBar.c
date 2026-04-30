@@ -91,7 +91,7 @@ void drawBattery(uint16_t voltage);
       getDateString(dateTimeString);
     }
 
-    if((dateTimeString[0] >= '0' || dateTimeString[0] <= '9')) {                      // not yet initialized, senseless to continue
+    if((dateTimeString[0] >= '0' && dateTimeString[0] <= '9')) {                      // not yet initialized, senseless to continue
       if(SBARUPD_Date) {
         x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
       }
