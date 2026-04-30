@@ -2898,7 +2898,7 @@ void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) { /
     } else
     if(isRegisterMatrix3dVector(regist)) {
       sprintf(displayString, "[3D Vector]%s", getVectorRegisterPolarMode(regist) == amPolarSPH ? STD_SPACE_HAIR STD_SUP_s : getVectorRegisterPolarMode(regist) == amPolarCYL ? STD_SPACE_HAIR STD_SUP_c : "");
-    } else 
+    } else
   #endif //OPTION_VECTOR
   {
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
