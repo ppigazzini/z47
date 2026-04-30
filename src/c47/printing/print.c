@@ -355,8 +355,8 @@
 
     return font->numberOfGlyphs - 1;  // Last character of the font is for charCodes not supported by the font
   }
-  
-  
+
+
   uint16_t findMartelGlyph(const martelFont24_t *font, uint16_t charCode) {
     uint16_t first, middle, last;
 
@@ -412,34 +412,34 @@
   }
 
 unsigned int charlengths(unsigned int c) {
-	static const unsigned char widths[171] = {
-		162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,
-		215,  85, 107, 123, 160, 172, 172,  88, 178, 177, 208, 208,
-		166, 208, 179, 173, 209, 215, 130, 165, 170, 172, 172, 165,
-		177, 172, 172, 214, 171, 117, 131, 209, 143, 215, 131, 178,
-		215, 213, 143, 201, 213, 179, 172, 214, 170, 172, 215, 209,
-		215,  95, 129, 129, 172, 172, 172, 172, 129, 207, 215, 136,
-		172, 208, 173, 172, 172, 172, 136, 129, 172, 172, 166, 172,
-		172, 112, 135, 147, 129, 171, 130, 129, 176, 131, 141, 208,
-		115, 143,  82, 140,  50,  93, 129, 129,  57, 128, 165, 129,
-		129,  57, 135, 137, 171, 129, 135,  93, 123, 123, 129, 129,
-		 87, 195, 129, 129, 129, 131,  57, 135, 141, 172, 171, 131,
-		207, 165, 202, 177,  93, 167, 178, 135, 165, 124, 129, 177,
-		136, 142, 143,  86, 129, 129, 129, 129, 129,  87, 165, 129,
-		129, 129, 129, 129, 129, 129, 129, 129, 123, 129, 129, 129,
-		129, 129,  21
-	};
-	static const unsigned char divs[3] = { 1, 6, 36 };
-	return (widths[c/3] / divs[c%3]) % 6 + 1;
+  static const unsigned char widths[171] = {
+    162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,
+    215,  85, 107, 123, 160, 172, 172,  88, 178, 177, 208, 208,
+    166, 208, 179, 173, 209, 215, 130, 165, 170, 172, 172, 165,
+    177, 172, 172, 214, 171, 117, 131, 209, 143, 215, 131, 178,
+    215, 213, 143, 201, 213, 179, 172, 214, 170, 172, 215, 209,
+    215,  95, 129, 129, 172, 172, 172, 172, 129, 207, 215, 136,
+    172, 208, 173, 172, 172, 172, 136, 129, 172, 172, 166, 172,
+    172, 112, 135, 147, 129, 171, 130, 129, 176, 131, 141, 208,
+    115, 143,  82, 140,  50,  93, 129, 129,  57, 128, 165, 129,
+    129,  57, 135, 137, 171, 129, 135,  93, 123, 123, 129, 129,
+     87, 195, 129, 129, 129, 131,  57, 135, 141, 172, 171, 131,
+    207, 165, 202, 177,  93, 167, 178, 135, 165, 124, 129, 177,
+    136, 142, 143,  86, 129, 129, 129, 129, 129,  87, 165, 129,
+    129, 129, 129, 129, 129, 129, 129, 129, 123, 129, 129, 129,
+    129, 129,  21
+  };
+  static const unsigned char divs[3] = { 1, 6, 36 };
+  return (widths[c/3] / divs[c%3]) % 6 + 1;
 }
 
 void findlengths(unsigned short int posns[257], int smallp) {
-	const int mask = smallp ? 256 : 0;
-	int i;
+  const int mask = smallp ? 256 : 0;
+  int i;
 
-	posns[0] = 0;
-	for(i=0; i<256; i++)
-		posns[i+1] = posns[i] + charlengths(i + mask) - 1;
+  posns[0] = 0;
+  for(i=0; i<256; i++)
+    posns[i+1] = posns[i] + charlengths(i + mask) - 1;
 }
 
 
@@ -447,19 +447,19 @@ void findlengths(unsigned short int posns[257], int smallp) {
 */
   int pixel_length(const char *s, int smallp)
   {
-	int len = 0;
-	const int offset = smallp ? 256 : 0;
-	while (*s != '\0') {
+  int len = 0;
+  const int offset = smallp ? 256 : 0;
+  while (*s != '\0') {
 #ifdef INCLUDE_FONT_ESCAPE
-	  if (s[0] == '\007') {
-	    len += s[1] & 0x1F;
-	    s += 3;
-	    continue;
-	  }
+    if (s[0] == '\007') {
+      len += s[1] & 0x1F;
+      s += 3;
+      continue;
+    }
 #endif
-	  len += charlengths( (unsigned char) *s++ + offset );
-	}
-	return len;
+    len += charlengths( (unsigned char) *s++ + offset );
+  }
+  return len;
   }
 
 
@@ -543,7 +543,7 @@ void printTab( uint16_t col ) // pixel-aligned column
       sendByteIR( 27 );
       sendByteIR( i );
       while ( i-- ) {
-	    sendByteIR( 0 );
+      sendByteIR( 0 );
       }
     }
     j = (col - 1 - printerColumn) / 7;
@@ -744,9 +744,9 @@ void printLine( const char *buff, int with_lf )
   const int mode = printerState.print_mode;
   uint8_t c;
 //  unsigned short int posns[ 257 ];
-//  unsigned char pattern[ 6 ];	// Rows
+//  unsigned char pattern[ 6 ];  // Rows
 //  unsigned char i, j, m = 0;
-  unsigned char graphic[ PAPER_WIDTH ];	// Columns
+  unsigned char graphic[ PAPER_WIDTH ];  // Columns
   unsigned char glen = 0;
   unsigned char w = 0;
 
@@ -759,10 +759,10 @@ void printLine( const char *buff, int with_lf )
     w= 0;
     switch ( mode ) {
 
-      case PMODE_DEFAULT:			// Mixed character and graphic printing
+      case PMODE_DEFAULT:      // Mixed character and graphic printing
         if ( c == 006 && *buff == 006 ) {
-	    // merge small spaces
-	     continue;
+      // merge small spaces
+       continue;
         }
         if( c & 0x80 ) {  // Unicode
           uint16_t charCode = (c << 8) | *( (const unsigned char *) buff++ );
@@ -778,17 +778,17 @@ void printLine( const char *buff, int with_lf )
           }
           else {       // Character is in the 82240 roman character set
             w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-	        wrap( w );
-	        sendByteIR( c );
+          wrap( w );
+          sendByteIR( c );
           }
         }
         else {
-	    // Use printer character set
-	      w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-	      printGraphic( glen, graphic );
-	      glen = 0;
-	      wrap( w );
-	      sendByteIR( c );
+      // Use printer character set
+        w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
+        printGraphic( glen, graphic );
+        glen = 0;
+        wrap( w );
+        sendByteIR( c );
         }
         break;
     }

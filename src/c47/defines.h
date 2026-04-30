@@ -126,7 +126,7 @@
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
       #undef  OPTION_TVM_FORMULAS      //  2320 bytes // Use analytical formulas where possible
       #undef  OPTION_TVM_NEWTON        //             // Use additional newton raphson in the brent solver for tvm where possible
-      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm
       #undef  OPTION_VECTOR            //  10k ? bytes// Vector
       #undef  OPTION_ELEC              //  2k ?  bytes// ELEC functions
 
@@ -254,7 +254,7 @@
       #undef  OPTION_SQUARE_159        //  2700 bytes // C47 SLVQ function is 159 digits internally
       #undef  OPTION_EIGEN_159         //  5480 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
       #undef  OPTION_XFN_1000          //  4850 bytes // XFN extended 1000 digit math Functionality
-      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm 
+      #undef  OPTION_TVM_AMORT         //             // Use additional AMORT in tvm
 
     //#undef  LONGPRESS_CFG            //  1152 bytes // Logic for longpress assignment to the f/g key
            // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
@@ -931,18 +931,18 @@ typedef enum {
 
 
 typedef enum  {
-	PMODE_DEFAULT = 0,
-	PMODE_GRAPHICS = 1,
-	PMODE_SMALLGRAPHICS = 2,
-	PMODE_SERIAL = 3
+  PMODE_DEFAULT = 0,
+  PMODE_GRAPHICS = 1,
+  PMODE_SMALLGRAPHICS = 2,
+  PMODE_SERIAL = 3
 } print_modes_t;
 
 
 typedef enum  {
-	LINE_FULL  = 0,
-	LINE_LEFT  = 1,
-	LINE_RIGHT = 2,
-	LINE_NOLF  = 3
+  LINE_FULL  = 0,
+  LINE_LEFT  = 1,
+  LINE_RIGHT = 2,
+  LINE_NOLF  = 3
 } print_area_t;
 
 
@@ -1797,10 +1797,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ELLIPSE_M                             134
 #define TI_ELLIPSE_Theta                         135
 #define TI_PRINT_COMPLETE                        136
-#define TI_AMORT_BAL                             137 
-#define TI_AMORT_PRN                             138 
+#define TI_AMORT_BAL                             137
+#define TI_AMORT_PRN                             138
 #define TI_AMORT_INT                             139
-#define TI_AMORT_P1                              140 
+#define TI_AMORT_P1                              140
 #define TI_AMORT_P2                              141
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
