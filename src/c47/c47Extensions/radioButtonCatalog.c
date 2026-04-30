@@ -439,7 +439,7 @@ int8_t fnCbIsSet(int16_t item) {
 
         case RB_PM:  rb_param = (getSystemFlag(FLAG_TRACE) ? getSystemFlag(FLAG_NORM) ? STRACE : TRACE : getSystemFlag(FLAG_NORM) ? NORM : MAN);
                      break;
-                     
+
         case CB_JC:  is_cb = true;
 
 

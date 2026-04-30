@@ -184,10 +184,10 @@ TO_QSPI const int16_t menu_VECT[]        = {
                                           };
 
 
-TO_QSPI const int16_t menu_VECCONV[]     = { 
+TO_QSPI const int16_t menu_VECCONV[]     = {
                                              ITM_STKtoV2,                   ITM_V2toSTK,                ITM_VECtoREG,             ITM_REGtoVEC,          ITM_STKtoV3,                 ITM_V3toSTK,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                             ITM_CPXtoV,                    ITM_VtoCPX,                 ITM_NULL,                 ITM_NULL,              ITM_3DPHYS,                  ITM_3DXYZ                    
+                                             ITM_CPXtoV,                    ITM_VtoCPX,                 ITM_NULL,                 ITM_NULL,              ITM_3DPHYS,                  ITM_3DXYZ
                                            };
 
 
@@ -703,7 +703,7 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_
   #define PAT  ITM_NULL
 #endif //PC_BUILD
 
-TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERADV,                ITM_PRINTERSTK,             ITM_PRINTERX,             ITM_PRINTERR,          ITM_PRINTERALPHA,            ITM_PRINTERPROG,             
+TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERADV,                ITM_PRINTERSTK,             ITM_PRINTERX,             ITM_PRINTERR,          ITM_PRINTERALPHA,            ITM_PRINTERPROG,
                                              ITM_PRINTERON,                 ITM_PRINTEROFF,             ITM_PRINTERHASH,          ITM_NULL,              ITM_PRINTERCHAR,             ITM_PRINTERLIST,
                                             -MNU_PRINTER,                   ITM_NULL,                   ITM_MAN,                  ITM_NORM,              ITM_TRACE,                   ITM_STRACE,
 
@@ -821,7 +821,7 @@ TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_
                                              ITM_BCD9,                      ITM_BCD10,                  ITM_BCDU,                 ITM_BCD,               ITM_HPBASE,                  ITM_FF};
 
 
-TO_QSPI const int16_t menu_EE[]          = { 
+TO_QSPI const int16_t menu_EE[]          = {
   #if (CALCMODEL != USER_R47)
                                              ITM_op_j,                      ITM_op_j_pol,               ITM_SQUARE,               ITM_M_INV,             ITM_PARALLEL,                ITM_CLSTK,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_op_a,                 ITM_op_a2,             ITM_MATX_A,                  ITM_MATX_A_1,
@@ -2301,7 +2301,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_PV      :
       case VAR_FV      :
       case VAR_PMT     :
-                    { 
+                    {
                       stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       //real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
                       //realToFloat(&tmpR, &tmpF);
@@ -2310,7 +2310,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
                     }
 
-      case ITM_AMORT_P1: 
+      case ITM_AMORT_P1:
                     {
                       stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       tmpF = amortP1;
@@ -2319,8 +2319,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
                     }
 
-      case ITM_AMORT_P2: 
-                    { 
+      case ITM_AMORT_P2:
+                    {
                       stringCopy(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       tmpF = amortP2;
                       placeSubscript(itemNr, true, tmpF, itemName, tmpS, tmpSS, showText);
@@ -2608,16 +2608,16 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_PARETO2L  :
       case ITM_PARETO2U  :
       case ITM_PARETO2M1 :
-      case -MNU_UNIFORM    : 
-      case ITM_UNIFORMP   : 
-      case ITM_UNIFORML   : 
-      case ITM_UNIFORMU   : 
-      case ITM_UNIFORMI   : 
-      case -MNU_DISUNIFORM : 
-      case ITM_DISUNIFORMP: 
-      case ITM_DISUNIFORML: 
-      case ITM_DISUNIFORMU: 
-      case ITM_DISUNIFORMI: 
+      case -MNU_UNIFORM    :
+      case ITM_UNIFORMP   :
+      case ITM_UNIFORML   :
+      case ITM_UNIFORMU   :
+      case ITM_UNIFORMI   :
+      case -MNU_DISUNIFORM :
+      case ITM_DISUNIFORMP:
+      case ITM_DISUNIFORML:
+      case ITM_DISUNIFORMU:
+      case ITM_DISUNIFORMI:
     #endif //SAVE_SPACE_DM42_17C
 
     #ifdef SAVE_SPACE_DM42_16
