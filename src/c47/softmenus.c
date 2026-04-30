@@ -155,8 +155,10 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   VECT,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_EIGVAL,               ITM_EIGVEC,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_M_LU,                    ITM_M_QR,
+//"the well"                                 ITM_PNORM,                     ITM_UNITV,                  ITM_NULL,                 ITM_NULL,              ITM_DOT_PROD,                ITM_CROSS_PROD,
+//"the well"                                 ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_NULL,                 ITM_NULL,              ITM_M_LU,                    ITM_M_QR,
+/**/                                         ITM_PNORM,                     ITM_UNITV,                  ITM_EIGVEC,               ITM_EIGVAL,            ITM_M_LU,                    ITM_M_QR,
+/**/                                         ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_DOT_PROD,                ITM_CROSS_PROD,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
                                              ITM_M_CONCAT,                  ITM_M_RR,                   ITM_STOVEL,               ITM_RCLVEL,            ITM_M_CC,                    ITM_INDEX,
