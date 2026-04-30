@@ -659,9 +659,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
-    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM  
-    saveStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL 
-    saveStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL 
+    saveStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
+    saveStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL
+    saveStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL
     saveStateValue(&printerState.delay,             sizeof(printerState.delay),                                  "printerState.delay",             "uint16");  //DL
 
     ramPtr = TO_C47MEMPTR(allNamedVariables);
@@ -1289,12 +1289,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     calcModel = USER_C47;
     restoreStateValue(&calcModel,                      sizeof(calcModel),                                           "calcModel",                      "uint8");   //JM
     printerState.print_on = false;
-    restoreStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL 
+    restoreStateValue(&printerState.print_on,          sizeof(printerState.print_on),                               "printerState.print_on",          "bool");    //DL
     printerState.trace_done = false;
     printerState.print_blank_line = 0;
     printerState.print_mode = PMODE_DEFAULT;
     printerState.printer_model = PRINTER_HP;
-    restoreStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL 
+    restoreStateValue(&printerState.printer_model,     sizeof(printerState.printer_model),                          "printerState.printer_model",     "uint8");   //DL
     printerState.delay = getLineDelay();
     restoreStateValue(&printerState.delay,             sizeof(printerState.delay),                                  "printerState.delay",             "uint16");  //DL
 

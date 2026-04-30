@@ -596,7 +596,7 @@
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
   //#if defined(IR_PRINTING)
     extern printerState_t         printerState;
     extern const printerFont_t    printerFont8;

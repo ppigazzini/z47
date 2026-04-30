@@ -982,7 +982,7 @@ void fnMatrixSquareRoot(uint16_t unusedParamButMandatory) {
                     convertReal34MatrixToReal34MatrixRegister(&rres, REGISTER_X);
                     realMatrixFree(&rres);
                   }
-                  else {                    
+                  else {
                     convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);      // Insufficient RAM for downgrade - keep complex
                   }
                 }
