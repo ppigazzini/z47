@@ -1211,10 +1211,10 @@ void fnRowColSum(uint16_t isRow) {
 static void _row_columnNorm(uint16_t pParam) {
   if(pParam != pNorm_inf_RNORM && pParam != pNorm_1_CNORM && pParam != pNorm_0_NNZ) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "pParam %" PRIu32, pParam);
       moreInfoOnError("In function _row_columnNorm:", errorMessage, "incorrect operating option.", "");
-    #endif // PC_BUILD
+    #endif // EXTRA_INFO_ON_CALC_ERROR
     return;
   }
 
@@ -1254,10 +1254,10 @@ static void _row_columnNorm(uint16_t pParam) {
     }
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
         moreInfoOnError("In function _row_columnNorm:", errorMessage, "is not a matrix.", "");
-      #endif // PC_BUILD
+      #endif // EXTRA_INFO_ON_CALC_ERROR
     }
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
     return;
@@ -7971,7 +7971,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
   uint16_t i, j;
   bool_t isComplex;
   bool_t shifted = true;
-  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * (size * size * 4 * 2 * 4 + size * 2);
+  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * (size * size * 4 * 2 * 4 + size * size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
     if((bulk = allocC47Blocks(bulkSize))) {
@@ -8089,7 +8089,7 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
   real_t *bulk, *a, *q, *r, *eig, *previousDiagonal;
   uint16_t i, j;
   bool_t shifted = true;
-  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * (size * size * 4 * 2 * 4 + size * 2);
+  size_t bulkSize = (size_t)REAL_SIZE_IN_BLOCKS(75) * (size * size * 4 * 2 * 4 + size * size * 2);
 
   if(matrix->header.matrixRows == matrix->header.matrixColumns) {
     if((bulk = allocC47Blocks(bulkSize))) {
