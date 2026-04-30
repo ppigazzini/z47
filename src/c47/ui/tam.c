@@ -473,9 +473,9 @@
       hourGlassIconEnabled = false;
       return;
     }
-    else if(item==ITM_Max    || item==ITM_Min   || 
-            item==ITM_ADD    || item==ITM_SUB   || item==ITM_MULT  || item==ITM_DIV || 
-            item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || 
+    else if(item==ITM_Max    || item==ITM_Min   ||
+            item==ITM_ADD    || item==ITM_SUB   || item==ITM_MULT  || item==ITM_DIV ||
+            item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ ||
             item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_dddVEL1 && item <= ITM_dddVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {

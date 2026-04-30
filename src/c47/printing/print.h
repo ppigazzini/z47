@@ -49,7 +49,7 @@ void printTrace               (int16_t func, uint16_t param);
 void printTraceX              (uint16_t where);
 void printTraceMatElement     (uint16_t where);
 void printTraceErrorFunction  (int16_t func,  char *errorString);
-void printTraceError          (char *errorString); 
+void printTraceError          (char *errorString);
 void printTraceTI             ();
 void printTraceString         (char *string, uint16_t where);
 void printPrompt              (uint16_t regist);

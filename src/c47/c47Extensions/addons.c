@@ -1607,10 +1607,10 @@ void fnExchangeStkToMx(uint16_t opType) {
     case ITM_stkexV2:{
       if(isRegisterMatrix2dVector(REGISTER_X)) {
         fnConvertMxToStk(indexOfItems[ITM_V2toSTK].param);
-      } 
+      }
       else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
               (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
-        fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);        
+        fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);
       }
       else {
         #if !defined(TESTSUITE_BUILD)
@@ -1627,11 +1627,11 @@ void fnExchangeStkToMx(uint16_t opType) {
     case ITM_stkexV3:{
       if(isRegisterMatrix3dVector(REGISTER_X)) {
         fnConvertMxToStk(VECT_CR_AUT); // indexOfItems[ITM_V3toSTK].param);
-      } 
+      }
       else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
               (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger) &&
               (getRegisterDataType(REGISTER_Z) == dtReal34 || getRegisterDataType(REGISTER_Z) == dtLongInteger)) {
-        fnConvertStkToMx(VECT_CR_AUT); // indexOfItems[ITM_STKtoV3].param);        
+        fnConvertStkToMx(VECT_CR_AUT); // indexOfItems[ITM_STKtoV3].param);
       }
       else {
         #if !defined(TESTSUITE_BUILD)
@@ -1687,7 +1687,7 @@ void fnConvertStkToMx(uint16_t constVector1) {
 
   uint32_t ang2Dx,ang2Dy,ang3Dx,ang3Dy,ang3Dz;
   bool_t validPolarInput,valid2DRInput,validSPHInput,validCYLInput,valid3DRInput;
-  
+
   if(!is_2D3D_Register_Ready(&ang2Dx,&ang2Dy,&ang3Dx,&ang3Dy,&ang3Dz,&validPolarInput,&valid2DRInput,&validSPHInput,&validCYLInput,&valid3DRInput,constVector)) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2243,7 +2243,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     DRG_cyc(&dest);
     VtoAngleMode(dest);
   }
-  
+
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
