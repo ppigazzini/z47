@@ -2302,9 +2302,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define V_COPY      2
 #define V_NANA      3
 
-#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
-#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
-#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define isMatrix2dVector(rows, cols)         ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows, cols)         ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows, cols)           ((isMatrix3dVector(rows, cols) || isMatrix2dVector(rows, cols)))
 #define getTagAngularMode(tag)               ( tag & amAngleMask)
 #define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
 #define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)

@@ -1108,10 +1108,18 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     int tmpz = -1;
     while(anyKeyWaiting()) {
       tmpz = key_pop();
-      if(tmpz > 0)   tmpf = tmpz;                   //use the last key in the buffer
-      if(tmpz == 44) signalToDoScreenDump = true;   //if any key in the buffer is 44
-      if(tmpz == 33) signalToDoEXIT = true;
-      if(tmpz == 36) signalToDoRS = true;
+      if(tmpz > 0) {
+        tmpf = tmpz;                   //use the last key in the buffer
+      }
+      if(tmpz == 44) {
+        signalToDoScreenDump = true;   //if any key in the buffer is 44
+      }
+      if(tmpz == 33) {
+        signalToDoEXIT = true;
+      }
+      if(tmpz == 36) {
+        signalToDoRS = true;
+      }
     }
 
     if(signalToDoScreenDump) {
@@ -1658,8 +1666,12 @@ void fnConvertStkToMx(uint16_t constVector1) {
   complex34Matrix_t matrixC;
   uint16_t elements;
 
-  if(constVector1 == VECT_CR_zyx) clearSystemFlag(FLAG_3DPHYS);
-  else if(constVector1 == VECT_CR_zxy) setSystemFlag(FLAG_3DPHYS);
+  if(constVector1 == VECT_CR_zyx) {
+    clearSystemFlag(FLAG_3DPHYS);
+  }
+  else if(constVector1 == VECT_CR_zxy) {
+    setSystemFlag(FLAG_3DPHYS);
+  }
 
   uint16_t constVector = constVector1;
   if(constVector == VECT_CR_AUT) {
@@ -1783,7 +1795,7 @@ void fnConvertStkToMx(uint16_t constVector1) {
 
 
   if(!matrixRegisterLoaded) {
-    for (int i = 0; i < elements; i++) {
+    for(int i = 0; i < elements; i++) {
       if(complexCoefs) {
         realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
         realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
@@ -1862,8 +1874,12 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
   }
 
 
-  if(param1 == VECT_CR_zyx) clearSystemFlag(FLAG_3DPHYS);
-  else if(param1 == VECT_CR_zxy) setSystemFlag(FLAG_3DPHYS);
+  if(param1 == VECT_CR_zyx) {
+    clearSystemFlag(FLAG_3DPHYS);
+  }
+  else if(param1 == VECT_CR_zxy) {
+    setSystemFlag(FLAG_3DPHYS);
+  }
 
   uint16_t param = param1;
   if(param == VECT_CR_AUT) {
@@ -1947,7 +1963,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     }
   }
 
-  for (int i = 0; i < elements; i++) {
+  for(int i = 0; i < elements; i++) {
     uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
                   vecCreate[constVector].y == elements-1-i ? REGISTER_Y : \
                   vecCreate[constVector].z == elements-1-i ? REGISTER_Z : 0;
@@ -2051,8 +2067,7 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-      if((-15 <= exponent && exponent <= 15) ||
-        (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
+      if((-15 <= exponent && exponent <= 15) || (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = SIprefixes[exponent + 30];
         if(displayString[1] == 'u') {
           displayString[1] = STD_mu[0];
@@ -2061,8 +2076,7 @@ TO_QSPI static const char ITSIprefixes[22] = "K  M  G  T  P  E  Z  ";
       }
   }
   else if(flag2To10) {                            //exponent of 2^(10/3)
-      if((3 <= exponent && exponent <= 15) ||
-         (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
+      if((3 <= exponent && exponent <= 15) || (3 <= exponent && exponent <= 21 && getSystemFlag(FLAG_PFX_ALL))) {
         displayString[1] = ITSIprefixes[exponent - 3];
         displayString[2] = 'i';
       }

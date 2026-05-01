@@ -7,8 +7,8 @@
 //
 //  Get print line delay
 //
-uint32_t getLineDelay() {
-  return (printer_get_delay()/100); // DMCP delay is in ms, so convert to ticks.
+uint32_t getLineDelay(void) {
+  return printer_get_delay() / 100; // DMCP delay is in ms, so convert to ticks.
 }
 
 
@@ -16,15 +16,15 @@ uint32_t getLineDelay() {
 //  Set print line delay
 //
 void setLineDelay(uint16_t delay) {
-    printer_set_delay(delay*100); // delay is in ticks, so convert to ms.
+  printer_set_delay(delay * 100); // delay is in ticks, so convert to ms.
 }
 
 
 //
 // Send Byte to over IR
 //
-void sendByteIR( uint8_t byte ) {
-  if (getSystemFlag(FLAG_PRTACT)) {
+void sendByteIR(uint8_t byte) {
+  if(getSystemFlag(FLAG_PRTACT)) {
     print_byte(byte);
   }
 }
