@@ -780,7 +780,7 @@
 #define FLAG_alphaCAP                         0xc00f
 #define FLAG_RUNTIM                           0xc010
 #define FLAG_AMORT_HP12C                      0x8011
-#define FLAG_spare2                           0xc012 // spare
+#define FLAG_spare                            0xc012 // spare
 #define FLAG_TRACE                            0x8013
 #define FLAG_USER                             0x8014
 #define FLAG_LOWBAT                           0xc015
