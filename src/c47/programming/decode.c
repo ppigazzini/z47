@@ -858,7 +858,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           #endif //IR_PRINTING
           }
           else {
-            strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
+            strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
           }
         }
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
@@ -889,8 +889,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         if(op == ITM_INTEGRAL) {
           strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
         }
-        else
-        if(op == ITM_INTEGRAL_YX) {
+        else if(op == ITM_INTEGRAL_YX) {
           strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
@@ -901,7 +900,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
             #endif //IR_PRINTING
             }
             else {
-              strcpy(nameOp,indexOfItems[op].itemCatalogName);
+              strcpy(nameOp, indexOfItems[op].itemCatalogName);
             }
           }
         }

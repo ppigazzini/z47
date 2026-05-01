@@ -281,10 +281,10 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
 
     #if defined(IR_PRINTING)
        if((tam.mode != 0) && (errorCode != ERROR_LABEL_NOT_FOUND) &&   !printerState.trace_done) {
-         printTrace(tam.function,tam.value);
+         printTrace(tam.function, tam.value);
        }
        if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-         sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode],errorMessage);
+         sprintf(tmpString, "%s: %s", errorMessages[lastErrorCode], errorMessage);
        }
        else {
          sprintf(tmpString, "%s", errorMessages[lastErrorCode]);

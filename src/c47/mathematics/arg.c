@@ -19,10 +19,12 @@ static void argError(void) {
 }
 
 static const real_t *realArg(const real_t *x) {
-  if(realIsNaN(x))
+  if(realIsNaN(x)) {
     return x;
-  if(realIsZero(x))
+  }
+  if(realIsZero(x)) {
     return getSystemFlag(FLAG_SPCRES) ? x : const_0;
+  }
   return realIsPositive(x) ? const_0 : const_180;
 }
 
