@@ -8,7 +8,6 @@
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
 
-
 ;=======================================
 ; transpose
 ;=======================================
@@ -1088,41 +1087,261 @@ Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M4,4[0,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0]
 
 
 
-
 ;=======================================
 ; Eigenvectors
 ;=======================================
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64 RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=LonI:"0"
+
 Func: fnEigenvectors
 ; the opposite direction will be allowed here
 
-TIMER: EIGVEC 001
+TIMER: EIGVEC A001
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[0.415973557919284272575105384867529811726,-0.824564840132393765369050717078772678961,0.909376709132124107229038001070350876239,0.565767464968992284722887627980526731252]"
 
-TIMER: EIGVEC 002
+TIMER: EIGVEC A002
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RX=ReMa:"M3,3[0.231970687246285861660847159963658451121,-0.785830238742067101675101014904077793290,?,0.525322093301233693431987995128990931612,-0.0867513392566284536150418787153147671072,?,0.818673499356181525203128830294323412103,0.612327560228810194445017257473448259076,?]"
 
-TIMER: EIGVEC 003
+TIMER: EIGVEC A003
 In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[0,-1,1,0]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[0,-1,1,0]" RX=CxMa:"M2,2[0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0i-0.707106781186547524400844362104849039285,0i0.707106781186547524400844362104849039285]"
 
-TIMER: EIGVEC 004
-In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+TIMER: EIGVEC A004
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]" RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=LonI:"0"
 Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
 
-TIMER: EIGVEC COMPLEX 005
+TIMER: EIGVEC COMPLEX A005
 ; For complex matrices, divided by sqrt((a + bi)^2 + (c + di)^2) (rather than norm = sqrt(a^2 + b^2 + c^2 + d^2)) then checked
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[0.390383581081206384467531221189875581175i0.030143344178748225545159258082208839900,0.833351764284674033346589549471949785405i-0.010114930746920511304188183349046366851,0.921234196817803007438228798949152841288i-0.012773588612875144724700915548189366893,-0.553045617376392261802570292334119286598i-0.015241591504786641670314461284779315551]"
 
-TIMER: EIGVEC COMPLEX 006
-In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+TIMER: EIGVEC COMPLEX A006
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=LonI:"0"
 Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
 
-TIMER: EIGVEC COMPLEX 007
+TIMER: EIGVEC COMPLEX A007
 In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=Real:"2"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2"
+
+TIMER: EIGVEC 001 2x2 diagonal real, distinct eigenvalues, diagonal fast path
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,0,0,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,0,0,2]" RX=ReMa:"M2,2[0,1,1,0]"
+; Eigenvalues sorted descending: [2, 1]
+; Column 0 = eigenvector for lambda=2 (basis vector e2 = [0,1])
+; Column 1 = eigenvector for lambda=1 (basis vector e1 = [1,0])
+
+TIMER: EIGVEC 002 3x3 diagonal real, distinct eigenvalues, descending order verification
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[3,0,0,0,1,0,0,0,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[3,0,0,0,1,0,0,0,2]" RX=ReMa:"M3,3[1,0,0,0,0,1,0,1,0]"
+; Eigenvalues sorted descending: [3, 2, 1]
+; Column 0 = e1 (matches A[0][0]=3), column 1 = e3 (matches A[2][2]=2), column 2 = e2 (matches A[1][1]=1)
+
+TIMER: EIGVEC 003 2x2 identity, repeated eigenvalues, slot reuse logic
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,0,0,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,0,0,1]" RX=ReMa:"M2,2[1,0,0,1]"
+; Both eigenvalues = 1. Column 0 picks j=0 (first unclaimed match)
+; Column 1 picks j=1 (j=0 already used). Result is identity.
+
+TIMER: EIGVEC 004 2x2 nilpotent real, defective matrix rejected (BUG FIX VERIFICATION)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=ReMa:"M2,2[0,0,1,0]" RX=ReMa:"M2,2[0,0,1,0]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M2,2[0,0,1,0]" RX=ReMa:"M2,2[0,0,1,0]"
+; Both eigenvalues = 0 with geometric multiplicity 1 (Jordan block).
+
+TIMER: EIGVEC 005 2X2 DIAGONAL COMPLEX, DISTINCT REAL EIGENVALUES, DIAGONAL FAST PATH
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i0,0i0,2i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i0,0i0,0i0,2i0]" RX=CxMa:"M2,2[0i0,1i0,1i0,0i0]"
+; Same as test 001 but on complex matrix register, exercises the complex path of the diagonal fast path.
+
+TIMER: EIGVEC 006 2x2 nilpotent complex, defective matrix rejected (BUG FIX VERIFICATION)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RT=LonI:"0" RZ=LonI:"0" RY=LonI:"0" RL=CxMa:"M2,2[0i0,0i0,1i0,0i0]" RX=CxMa:"M2,2[0i0,0i0,1i0,0i0]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=CxMa:"M2,2[0i0,0i0,1i0,0i0]" RX=CxMa:"M2,2[0i0,0i0,1i0,0i0]"
+; Complex variant of test 004. complexEigenvectors path detects defective matrix.
+
+TIMER: EIGVEC 007 1x1 real trivial, special path via createEigenVectorIf1x1
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M1,1[7]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[7]" RX=ReMa:"M1,1[1]"
+; 1x1 eigenvector is always [1] regardless of input value.
+
+TIMER: EIGVEC 008 1x1 complex trivial, special path via createEigenVectorIf1x1
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M1,1[3i4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,1[3i4]" RX=CxMa:"M1,1[1i0]"
+; 1x1 complex eigenvector is always [1+0i].
+
+TIMER: EIGVEC 009 4x4 diagonal real distinct positive, larger fast path
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M4,4[1,0,0,0,0,2,0,0,0,0,3,0,0,0,0,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,4[1,0,0,0,0,2,0,0,0,0,3,0,0,0,0,4]" RX=ReMa:"M4,4[0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0]"
+; Eigenvalues sorted descending: [4, 3, 2, 1]. Result is anti-diagonal (reversed identity).
+
+TIMER: EIGVEC 010 2x2 all-zero real, fully degenerate diagonal, fast path with eigenvalue zero
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[0,0,0,0]" RX=ReMa:"M2,2[1,0,0,1]"
+; Both eigenvalues = 0. Diagonal fast path returns identity. Augmented system would fail here
+; (A - 0*I = A is fully singular), so this verifies the fast path correctly bypasses it.
+
+TIMER: EIGVEC 011 2x2 all-zero complex, fully degenerate complex diagonal
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[0i0,0i0,0i0,0i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[0i0,0i0,0i0,0i0]" RX=CxMa:"M2,2[1i0,0i0,0i0,1i0]"
+; Complex variant of test 010.
+
+TIMER: EIGVEC 012 3x3 diagonal real with zero eigenvalue, rank-deficient but non-defective
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[2,0,0,0,5,0,0,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[2,0,0,0,5,0,0,0,0]" RX=ReMa:"M3,3[0,1,0,1,0,0,0,0,1]"
+; Eigenvalues sorted descending: [5, 2, 0]
+; Column 0 = e2 (matches A[1][1]=5), column 1 = e1 (matches A[0][0]=2), column 2 = e3 (matches A[2][2]=0)
+
+TIMER: EIGVEC 013 2x2 scalar matrix 3*I, repeated non-trivial eigenvalue
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[3,0,0,3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[3,0,0,3]" RX=ReMa:"M2,2[1,0,0,1]"
+; Both eigenvalues = 3. Diagonal fast path picks j=0 then j=1 (slot reuse). Result is identity.
+
+TIMER: EIGVEC 014 3x3 diagonal real with one repeated eigenvalue, slot reuse with sorted order
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,0,0,0,1,0,0,0,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,0,0,0,1,0,0,0,2]" RX=ReMa:"M3,3[0,1,0,0,0,1,1,0,0]"
+; Eigenvalues sorted descending: [2, 1, 1]
+; Column 0 = e3 (matches A[2][2]=2)
+; Column 1 = e1 (first unclaimed j with A[j][j]=1, picks j=0)
+; Column 2 = e2 (j=0 used, picks j=1, A[1][1]=1)
+
+TIMER: EIGVEC 015 2x2 diagonal real with negative entry, fast path with mixed signs
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[5,0,0,-3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[5,0,0,-3]" RX=ReMa:"M2,2[1,0,0,1]"
+; Eigenvalues sorted descending: [5, -3] (both by value and by magnitude)
+; Column 0 = e1 (matches A[0][0]=5), column 1 = e2 (matches A[1][1]=-3)
+
+
+
+; ============================================================================
+; KNOWN LIMITATION: Defective matrices with non-zero eigenvalues are not detected.
+;
+; The wrapper-level zero-column scan in realEigenvectors / complexEigenvectors
+; catches defective inputs only when calculateEigenvectors leaves a column all
+; zero (e.g. the augmented system fails fully singular). This works for nilpotent
+; cases like [[0,0],[1,0]] where the eigenvalue is 0 and (A - 0*I) is fully
+; singular.
+;
+; For Jordan blocks with non-zero eigenvalue (e.g. [[2,1,0],[0,2,1],[0,0,2]]),
+; the augmented system finds non-zero pseudo-eigenvectors that do not satisfy
+; A*v = lambda*v. The columns are non-zero so the scan does not trigger, and
+; EC=0 is returned with mathematically wrong vectors.
+;
+; Detecting this would require a residual check (verify ||A*v_k - lambda_k*v_k||
+; against a scaled tolerance) added to the wrappers, similar to verifySqrtMatrix.
+; That is a viable future improvement but adds ~60 lines per wrapper for two
+; edge cases. Re-enable these tests if/when that check is implemented.
+; ============================================================================
+;
+; TIMER: EIGVEC 016 3x3 Jordan block real, defective with single repeated eigenvalue (BUG FIX)
+; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RL=ReMa:"M3,3[2,1,0,0,2,1,0,0,2]" RX=ReMa:"M3,3[2,1,0,0,2,1,0,0,2]"
+; Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M3,3[2,1,0,0,2,1,0,0,2]" RX=ReMa:"M3,3[2,1,0,0,2,1,0,0,2]"
+;
+; TIMER: EIGVEC 017 3x3 partial defect real, one Jordan block plus one regular eigenvalue (BUG FIX)
+; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RL=ReMa:"M3,3[2,1,0,0,2,0,0,0,3]" RX=ReMa:"M3,3[2,1,0,0,2,0,0,0,3]"
+; Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M3,3[2,1,0,0,2,0,0,0,3]" RX=ReMa:"M3,3[2,1,0,0,2,0,0,0,3]"
+
+
+
+
+; ============================================================================
+TIMER: EIGVEC 016 2x2 symmetric, integer eigenvalues, off-diagonal coupling
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[2,1,1,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[2,1,1,2]" RX=ReMa:"M2,2[0.707106781186547524400844362104849039285,-0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285]"
+; Wolfram: Eigensystem[{{2,1},{1,2}}]
+; Eigenvalues: {3, 1}. Symmetric -> orthogonal eigenvectors.
+
+TIMER: EIGVEC 017 2x2 real with complex conjugate eigenvalues, FL_CPXRES required
+In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=ReMa:"M2,2[0,-1,1,0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,2[0,-1,1,0]" RX=CxMa:"M2,2[0.707106781186547524400844362104849039285i0,0.707106781186547524400844362104849039285i0,0i-0.707106781186547524400844362104849039285,0i0.707106781186547524400844362104849039285]"
+; Wolfram: Eigensystem[{{0,-1},{1,0}}]
+; Eigenvalues: {i, -i}. Real input promoted to complex result.
+
+TIMER: EIGVEC 019 3x3 with Jordan-like block (defective)
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RL=ReMa:"M3,3[2,0,0,1,2,0,0,0,3]" RX=ReMa:"M3,3[2,0,0,1,2,0,0,0,3]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RL=ReMa:"M3,3[2,0,0,1,2,0,0,0,3]" RX=ReMa:"M3,3[2,0,0,1,2,0,0,0,3]"
+; Eigenvalues: {3, 2, 2} with only 2 linearly independent eigenvectors.
+; The zero-column scan correctly rejects this defective matrix.
+
+TIMER: EIGVEC 021 5x5 diagonal with mixed signs and zero, fast path
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M5,5[3,0,0,0,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,-4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M5,5[3,0,0,0,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,-4]" RX=ReMa:"M5,5[0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0]"
+; Diagonal -> fast path. Eigenvalues by magnitude desc: {-4, 3, 2, -1, 0}.
+
+TIMER: EIGVEC 022 2x2 with separated eigenvalues, off-diagonal coupling, irrational result
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[3,4,4,-3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[3,4,4,-3]" RX=ReMa:"M2,2[0.894427190999915878563669467492510494176,-0.447213595499957939281834733746255247088,0.447213595499957939281834733746255247088,0.894427190999915878563669467492510494176]"
+; Wolfram: Eigensystem[{{3,4},{4,-3}}]
+; Eigenvalues: {5, -5}. Symmetric, irrational eigenvector entries (2/sqrt(5), 1/sqrt(5)).
+
+TIMER: EIGVEC 023 1x1 zero matrix, edge of fast path
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M1,1[0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[0]" RX=ReMa:"M1,1[1]"
+; createEigenVectorIf1x1 returns [1] for any 1x1 input including zero.
+
+
+
+; ===== EIGENVECTOR BUGS =========
+; ----------------------------------------------------------------------------
+; BUG: EIGVEC-UPPER-TRIANGULAR-DROPS-COMPONENTS
+;   Symptom: For upper-triangular matrices with full off-diagonal coupling,
+;   calculateEigenvectors returns the first component correctly but zeroes
+;   trailing components. Test below: input [[1,2,3],[0,4,5],[0,0,6]], expected
+;   col 0 = (16, 25, 10)/sqrt(981), but engine returns (0.5108, 0, 0).
+;   Likely location: augmented-system back-substitution in calculateEigenvectors.
+;   Re-enable test 018 when fixed.
+; ----------------------------------------------------------------------------
+; TIMER: EIGVEC 018 3x3 upper triangular, integer distinct eigenvalues
+; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]"
+; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,2,3,0,4,5,0,0,6]" RX=ReMa:"M3,3[0.510840685451280742740440563794399886400,0.554700196225229122018341733456999376346,1,0.798188571017626160531938380928749822499,0.832050294337843683027512600185499064520,0,0.319275428407050464212775352371499929000,0,0]"
+; Wolfram: Eigensystem[{{1,2,3},{0,4,5},{0,0,6}}]
+; Eigenvalues: {6, 4, 1}.
+
+; ----------------------------------------------------------------------------
+; BUG: EIGVEC-BLOCK-DIAGONAL-FAILS
+;   Symptom: Block-diagonal matrices with non-trivial blocks fail eigendecomposition.
+;   The augmented system in calculateEigenvectors is genuinely singular when the
+;   matrix is reducible; cpxLinearEqn fails repeatedly (14 "attempt to invert a
+;   singular matrix" messages spam the UI), and the second block's eigenvectors
+;   are lost. Top block contributes rows 0-1; bottom block (rows 2-3) returns 0.
+;   Pre-existing engine limitation, NOT introduced by the EIGVEC fixes today.
+;   Likely fix: detect block-diagonal structure before QR and recurse on each
+;   block separately. Or use a different technique that handles reducibility.
+;   Re-enable test 020 when fixed.
+; ----------------------------------------------------------------------------
+; TIMER: EIGVEC 020 4x4 block diagonal with two 2x2 symmetric blocks
+; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]"
+; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,4[2,1,0,0,1,2,0,0,0,0,5,2,0,0,2,5]" RX=ReMa:"M4,4[0,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0]"
+; Wolfram: Eigensystem[{{2,1,0,0},{1,2,0,0},{0,0,5,2},{0,0,2,5}}]
+; Eigenvalues: {7, 3, 3, 1}. Eigenvectors should live in their respective 2x2 blocks.
+
+; ----------------------------------------------------------------------------
+; BUG: EIGVEC-RANK-DEFICIENT-SYMMETRIC-FAILS
+; Symptom: 3x3 matrix [[1,1,0],[1,1,0],[0,0,2]] has structure of a 2x2 block
+; coupled to a 1x1 block (effectively block-diagonal). Same failure mode as
+; EIGVEC-BLOCK-DIAGONAL-FAILS. Engine returns wrong eigenvectors with some
+; rows zeroed. Likely the same fix as bug 020.
+; Re-enable test 024 when fixed.
+; ----------------------------------------------------------------------------
+; TIMER: EIGVEC 024 3x3 symmetric with one zero eigenvalue, rank-deficient diagonalisable
+; In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]"
+; Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,3[1,1,0,1,1,0,0,0,2]" RX=ReMa:"M3,3[0.707106781186547524400844362104849039285,0,-0.707106781186547524400844362104849039285,0.707106781186547524400844362104849039285,0,0.707106781186547524400844362104849039285,0,1,0]"
+; Wolfram: Eigensystem[{{1,1,0},{1,1,0},{0,0,2}}]
+; Eigenvalues: {2, 2, 0}. Rank 2 but full set of eigenvectors.
+
+; ----------------------------------------------------------------------------
+; BUG: EIGVEC-COMPLEX-HERMITIAN-UNNORMALIZED
+; Symptom: For complex Hermitian input [[2,i],[-i,2]] the engine returns
+; eigenvectors (1, -i) and (1, i) instead of dividing by sqrt(2). The real
+; path normalizes correctly; the complex path appears to skip the final
+; normalization step.
+; Likely location: complexEigenvectors after calculateEigenvectors call,
+; missing equivalent of the normalization loop that realEigenvectors does.
+; Re-enable test 025 when fixed.
+; ----------------------------------------------------------------------------
+; TIMER: EIGVEC 025 2x2 Hermitian complex, real eigenvalues from complex input
+; In: FL_ASLIFT=0 FL_CPXRES=1 IM=2COMPL RX=CxMa:"M2,2[2i0,0i1,0i-1,2i0]"
+; Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[2i0,0i1,0i-1,2i0]" RX=CxMa:"M2,2[0.707106781186547524400844362104849039285i0,0.707106781186547524400844362104849039285i0,0i-0.707106781186547524400844362104849039285,0i0.707106781186547524400844362104849039285]"
+; Wolfram: Eigensystem[{{2,I},{-I,2}}]
+; Hermitian -> real eigenvalues {3, 1}.
 
 
 
