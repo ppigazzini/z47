@@ -161,15 +161,15 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  Mp1F6,
-                                             ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMQ,            ITM_NULL,                    ITM_NULL,
-                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_MIDENT,                    ITM_M_CONCAT,               ITM_M_DIM,                ITM_M_DIM_GR,          ITM_M_DIMQ,                  ITM_NULL,
+                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_NULL,                    ITM_NULL,
 
                                              ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   Mp2F6,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_EIGVEC,               ITM_EIGVAL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_M_CONCAT,                  ITM_M_RR,                   ITM_STOVEL,               ITM_RCLVEL,            ITM_M_CC,                    ITM_INDEX,
+                                             ITM_M_CMIN,                    ITM_M_CMAX,                 ITM_M_FIND,               ITM_M_RR,              ITM_M_CC,                    ITM_INDEX,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS                 };
 
 
