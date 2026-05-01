@@ -1620,6 +1620,9 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnAmortNext                (uint16_t unusedButMandatoryParameter) {}
   void fnMatrixIdentity           (uint16_t unusedButMandatoryParameter) {}
   void fnMatrixSquareRoot         (uint16_t unusedButMandatoryParameter) {}
+  void fnColumnMin                (uint16_t unusedButMandatoryParameter) {}
+  void fnColumnMax                (uint16_t unusedButMandatoryParameter) {}
+  void fnMatrixFind               (uint16_t unusedButMandatoryParameter) {}
 
 
 #endif // GENERATE_CATALOGS || defined(GENERATE_TESTPGMS)
@@ -4503,10 +4506,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2710 */  { fnRowColSum,                     0,                           "CSUM",                                        "CSUM",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2711 */  { itemToBeCoded,                   NOPARAM,                     "",                                            "TamNorm",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2712 */  { fnSwapColumns,                   NOPARAM,                     "M.C" STD_RIGHT_OVER_LEFT_ARROW "C",           "C" STD_RIGHT_OVER_LEFT_ARROW "C",             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
-/* 2713 */  { itemToBeCoded,                   NOPARAM,                     "2694",                                        "2694",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2714 */  { itemToBeCoded,                   NOPARAM,                     "2695",                                        "2695",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2715 */  { itemToBeCoded,                   NOPARAM,                     "2696",                                        "2696",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-//spares for the matrix and vectors ^^^
+/* 2713 */  { fnColumnMax,                     NOPARAM,                     "M.CMAX",                                      "CMAX",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2714 */  { fnColumnMin,                     NOPARAM,                     "M.CMIN",                                      "CMIN",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2715 */  { fnMatrixFind,                    NOPARAM,                     "M.FIND",                                      "FIND",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
 /* 2716 */  { fnAmortP,                           1,                        "P1",                                          "P1",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2717 */  { fnAmortP,                           2,                        "P2",                                          "P2",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
