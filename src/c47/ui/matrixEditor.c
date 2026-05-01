@@ -632,7 +632,7 @@ void mimEnter(bool_t commit) {
             real34Copy(&real34tmp, real34Ptr);
           }
         }
-        else 
+        else
 #endif //OPTION_VECTOR_EDIT
         {
           real34Copy(&real34tmp, real34Ptr);
@@ -1047,7 +1047,7 @@ static void extractVectorElement34(const real34Matrix_t *matrix, int j, int ii, 
       case 0: realToReal34(aa,element); break;
       case 1: realToReal34(bb,element); break;
       default:;
-    } 
+    }
     //printRealToConsole(aa,"POL aa=","\n");
     //printRealToConsole(bb,"POL bb=","\n");
   } else {
@@ -1395,7 +1395,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
           displayFormatDigits = displayFormatDigits1;
         }
 
-        
+
         real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, calcDigits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
