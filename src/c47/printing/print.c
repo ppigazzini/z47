@@ -459,7 +459,7 @@ int pixel_length(const char *s, int smallp) {
       continue;
     }
     #endif // INCLUDE_FONT_ESCAPE
-    len += charlengths( (unsigned char) *s++ + offset );
+    len += charlengths((unsigned char)*s++ + offset);
   }
   return len;
 }
@@ -491,7 +491,7 @@ void printIR(uint8_t c) { // prints a single character
 
   if(c == '\n' && (mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS)) {
     // better LF for graphics printing
-    sendByteIR( 0x04 );
+    sendByteIR(0x04);
   }
   else {
     sendByteIR(c);
@@ -573,8 +573,8 @@ void printGraphic(uint8_t glen, const unsigned char *graphic) {
 //
 //  Print a 8-bit graphic sequence
 //
-void printGraphic8( uint8_t glen, const unsigned char *graphic ) {
-  uint8_t len = glen + ((printerColumn == 0) || (printerColumn >= 160)? 1 : 2);
+void printGraphic8(uint8_t glen, const unsigned char *graphic) {
+  uint8_t len = glen + ((printerColumn == 0) || (printerColumn >= 160) ? 1 : 2);
   if(glen > 0) {
     sendByteIR(27);    // Set bit image (82240 graphic character printing : ESC Xchar [Ci]
     sendByteIR(len);
@@ -594,16 +594,16 @@ void printGraphic8( uint8_t glen, const unsigned char *graphic ) {
 //
 //  Print a 24-bit graphic sequence
 //
-void printGraphic24( uint8_t glen, const unsigned char *graphic ) {
+void printGraphic24(uint8_t glen, const unsigned char *graphic) {
   if(glen > 0) {
     printerColumn += glen;
     sendByteIR(27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
-    sendByteIR( 0);
+    sendByteIR(0);
     sendByteIR(42);
     sendByteIR(33);
     sendByteIR(glen/3);
-    sendByteIR( 0);
-    while( glen--) {
+    sendByteIR(0);
+    while(glen--) {
       sendByteIR(*graphic++);
     }
   }
@@ -813,8 +813,8 @@ void printLine(const char *buff, int with_lf) {
 //
 void printJustified(const char *buff) {
   print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
-                                        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength(buff) * 7 - 1
+                                        : pixel_length(buff, pmode == PMODE_SMALLGRAPHICS);
   uint16_t paperWidth = PAPER_WIDTH;
 
   if(len >= paperWidth - printerColumn) {
@@ -831,8 +831,8 @@ void printJustified(const char *buff) {
 //
 void printJustifiedLeft(const char *buff) {
   print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
-                                        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength(buff) * 7 - 1
+                                        : pixel_length(buff, pmode == PMODE_SMALLGRAPHICS);
   uint16_t paperWidth = (PAPER_WIDTH / 2) - 7;
 
   if(len >= paperWidth - printerColumn) {
@@ -883,7 +883,7 @@ static void _realStringToPrint(char *realString, int16_t max_len) {
 // Fit a real in a string for printing
 //
 
-static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realString,int16_t maxWidth) {
+static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realString, int16_t maxWidth) {
   uint8_t grpGroupingLeftOld  = grpGroupingLeft;
   uint8_t grpGroupingRightOld = grpGroupingRight;
 
@@ -999,7 +999,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 
     decContext c = ctxtReal39;
     int maxExponent = max(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-    c.digits = (SHOWMODE ? 39 : max(0,maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
+    c.digits = (SHOWMODE ? 39 : max(0, maxExponent) + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS + 2); //add 2 guard digits for Taylor etc.
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
     c.digits = (SHOWMODE ? 39 : 3 + NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS); //converting from radians to grad is the worst, i.e. x 2E2 / pi, which requires 3 digits accuarcy more
     convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
@@ -1014,7 +1014,7 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 
   // Real part
   _real34ToPrintString(&real34, amNone, tmpString, max_len * 9);
-  _realStringToPrint(tmpString,max_len);                 // Adjust the real part lenght (same as a standard real)
+  _realStringToPrint(tmpString, max_len);                 // Adjust the real part lenght (same as a standard real)
 
   // Separator
   if(tagPolar) {
@@ -1029,14 +1029,14 @@ static void _complex34ToPrintString(real34_t *registReal34, real34_t *registImag
 
   // Imaginary part
   char * imaginaryPart = tmpString + strlen(tmpString);
-  _real34ToPrintString(&imag34, tagAngle, imaginaryPart,max_len * 9);
-  _realStringToPrint(imaginaryPart,max_len + (tagPolar ? 1 : 0));             // Adjust the imaginary part length
+  _real34ToPrintString(&imag34, tagAngle, imaginaryPart, max_len * 9);
+  _realStringToPrint(imaginaryPart, max_len + (tagPolar ? 1 : 0));             // Adjust the imaginary part length
 }
 
 //
 //  Print a single register
 //
-void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma ) {
+void printReg(uint16_t regist, const char *label, bool_t eq, print_area_t where, bool prSigma) {
   uint16_t tagAngle;
   uint16_t tagPolar;
   real34_t *real34;
@@ -1452,7 +1452,8 @@ void printTraceMatElement(uint16_t where) {
     printReg(TEMP_REGISTER_1, NULL, false, where, false);  // Print temporary register 1 without name header
 
     #if defined(PC_BUILD)
-      printf("**[DL]** printTraceMatElement where %d Trace: %s\n",where,tmpString);fflush(stdout);
+      printf("**[DL]** printTraceMatElement where %d Trace: %s\n", where, tmpString);
+      fflush(stdout);
     #endif // PC_BUILD
   }
 }
@@ -1551,7 +1552,7 @@ void printViewAview(uint16_t func, uint16_t regist) {
         _getRegisterLabel(regist, label);
         printReg(regist, label, true, LINE_LEFT, false);  // Print register left justified with name header
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s=%s\n",label, tmpString);
+          printf("**[DL]** Trace: %s=%s\n", label, tmpString);
           fflush(stdout);
         #endif // PC_BUILD
       }
@@ -1642,17 +1643,17 @@ void printTrace(int16_t func, uint16_t param) {
           }
           else if((param >= FIRST_NAMED_VARIABLE) && (param <= LAST_NAMED_VARIABLE)) {
             if(!tam.indirect) {
-              strcat(tmpString," ");
+              strcat(tmpString, " ");
             }
-            strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
+            strcat(tmpString, STD_LEFT_SINGLE_QUOTE);
             strcat(tmpString, (char *)allNamedVariables[param - FIRST_NAMED_VARIABLE].variableName + 1);
             strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
           }
           else if((param >= FIRST_NAMED_RESERVED_VARIABLE) && (param <= LAST_RESERVED_VARIABLE)) {
             if(!tam.indirect) {
-              strcat(tmpString," ");
+              strcat(tmpString, " ");
             }
-            strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
+            strcat(tmpString, STD_LEFT_SINGLE_QUOTE);
             strcat(tmpString, (char *)allReservedVariables[param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
             strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
           }
@@ -1706,32 +1707,32 @@ void printTrace(int16_t func, uint16_t param) {
           else {
             if(param < 99) { // Global register from 00 to 99
               if(!tam.indirect) {
-                strcat(tmpString," ");
+                strcat(tmpString, " ");
               }
               sprintf(traceBuffer, "%02u", param);
             }
             else if(param <= REGISTER_K) { // Lettered register from X to K
               if(!tam.indirect) {
-                strcat(tmpString," ");
+                strcat(tmpString, " ");
               }
               sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_X + param - REGISTER_X].itemSoftmenuName);
             }
             else if(param <= REGISTER_W) { // Lettered register from M to S and E to W
               if(!tam.indirect) {
-                strcat(tmpString," ");
+                strcat(tmpString, " ");
               }
               sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_M + param - REGISTER_M].itemSoftmenuName);
             }
             else if((param >= FIRST_LOCAL_REGISTER) && (param <= LAST_LOCAL_REGISTER)) { // Local register from .00 to .98
               if(!tam.indirect) {
-                strcat(tmpString," ");
+                strcat(tmpString, " ");
               }
               sprintf(traceBuffer, ".%02d", param - FIRST_LOCAL_REGISTER);
             }
           }
           strcat(tmpString, traceBuffer);
         }
-        uint16_t width = stringGlyphLength( tmpString ) * 7 - 1;
+        uint16_t width = stringGlyphLength(tmpString) * 7 - 1;
         if(printerColumn + width > PAPER_WIDTH) {
           printAdvance(0);
         }
@@ -1812,7 +1813,7 @@ void printProgram(bool_t list, uint16_t lines) {
   if(!list) {  // Print Program (pr_PROG)
     // Time and date header line
     if(getSystemFlag(FLAG_TRACE)) { // Compact program format
-      printLine(" ", 0);            // add a space before the header
+      printLine(" ", 0);            // add a space before the header
     }
     getTimeString(tmpString);
     printLine(tmpString, 0);
@@ -2062,7 +2063,7 @@ void fnP_PrinterList(uint16_t lines) {
 void fnP_Byte(uint16_t byte) {
   #if defined(IR_PRINTING)
     setPrinterSBI(true);
-    cmdPrint( byte, PRINT_BYTE );
+    cmdPrint(byte, PRINT_BYTE);
     setPrinterSBI(false);
   #endif //IR_PRINTING
 }
@@ -2073,7 +2074,7 @@ void fnP_Char(uint16_t registerNo) {
     uint16_t character;
     setPrinterSBI(true);
     character = _getUnicodeValue(registerNo);
-    cmdPrint( character, PRINT_CHAR );
+    cmdPrint(character, PRINT_CHAR);
     setPrinterSBI(false);
   #endif //IR_PRINTING
 }
@@ -2083,7 +2084,7 @@ void fnP_Char(uint16_t registerNo) {
 void fnP_Tab(uint16_t column) {
   #if defined(IR_PRINTING)
     setPrinterSBI(true);
-    cmdPrint( column, PRINT_TAB );
+    cmdPrint(column, PRINT_TAB);
     setPrinterSBI(false);
   #endif //IR_PRINTING
 }
@@ -2142,12 +2143,12 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
         if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
           xcopy(label, step + 3, *(step+2));
           label[*(step+2)] = 0;
-          printLine("LBL " STD_LEFT_SINGLE_QUOTE,0);
+          printLine("LBL " STD_LEFT_SINGLE_QUOTE, 0);
           printLine(label, 0);
           printLine(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
           if(firstProgramLabel) {
             sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
-            printJustified( tmpString );
+            printJustified(tmpString);
             firstProgramLabel = false;
           }
         }
@@ -2157,7 +2158,7 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
         printLine("END", !firstProgramLabel);
         if(firstProgramLabel) {
           sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
-          printJustified( tmpString );
+          printJustified(tmpString);
         }
         programNumber++;
         firstProgramLabel = true;
@@ -2221,7 +2222,7 @@ void fnP_Alpha(uint16_t registerNo) {
     #endif // VERBOSE_LEVEL >= 1
 
     tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+    xcopy(aimBuffer, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     //print_linestr(aimBuffer, false);
   }
 }
@@ -2589,14 +2590,14 @@ void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
     currentKeyCode = 255;
     if(getSystemFlag(FLAG_PRTACT)) {
       sprintf(tmpString, "item catname  menuname");
-      printLine(tmpString,1);
+      printLine(tmpString, 1);
       for(item=1; item<LAST_ITEM; item++) {
         sprintf(tmpString, "%4d ", item);
         strcat(tmpString, indexOfItems[item].itemCatalogName);
-        printLine(tmpString,0);
-        printTab( 97 );
+        printLine(tmpString, 0);
+        printTab(97);
         sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
-        printLine(tmpString,1);
+        printLine(tmpString, 1);
         if(_exitKeyPressed()) {
           break;
         }

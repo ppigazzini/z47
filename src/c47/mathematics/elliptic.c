@@ -1799,7 +1799,7 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
 }
 
 #else //SAVE_SPACE_DM42_12ELLIP
-  void fnEllipse(uint16_t unusedButMandatoryParameter) {;};
+  void fnEllipse(uint16_t unusedButMandatoryParameter) {;}
   void fnKtoM(uint16_t unusedButMandatoryParameter) {;}
   void fnMtoK(uint16_t unusedButMandatoryParameter) {;}
   void fnMtoTheta(uint16_t unusedButMandatoryParameter) {;}

@@ -1912,11 +1912,7 @@ void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, b
     fontForShortInteger = &numericFont;
     addBaseNumber(displayString, dispBase);
   }
-  else
-  if( stringWidth(displayString, &standardFont, false, true) +
-      stringWidth(STD_SUB_0 STD_SUB_0, &standardFont, false, true) +
-      stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
-      <= width) {
+  else if( stringWidth(displayString, &standardFont, false, true) + stringWidth(STD_SUB_0 STD_SUB_0, &standardFont, false, true) + stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true) <= width) {
     fontForShortInteger = &standardFont;
     addBaseNumber(displayString, dispBase);
   }
@@ -2007,8 +2003,7 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
         strcpy(displayString + i, "1001");
         strcpy(ss, STD_BASE_9);
       }
-      else
-      if(bcdDisplaySign == BCD10c) {
+      else if(bcdDisplaySign == BCD10c) {
         strcpy(displayString + i, "0000");
         strcpy(ss, STD_SUB_o);
       }
@@ -2071,13 +2066,11 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
       if(bcdDisplaySign == BCD9c) {
         unit = 9 - unit;
       }
-      else
-      if(bcdDisplaySign == BCD10c) {           //see https://madformath.com/calculators/digital-systems/complement-calculators/10-s-complement-calculator-alternative/10-s-complement-calculator-alternative
+      else if(bcdDisplaySign == BCD10c) {           //see https://madformath.com/calculators/digital-systems/complement-calculators/10-s-complement-calculator-alternative/10-s-complement-calculator-alternative
         if(firstNonZero == 0) {
           unit = 0;
         }
-        else
-        if(firstNonZero == 1) {
+        else if(firstNonZero == 1) {
           unit = 9 - unit + 1;
           firstNonZero++;
         }
@@ -2895,10 +2888,11 @@ void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) { /
   #if defined(OPTION_VECTOR)
     if(isRegisterMatrix2dVector(regist)) {
       sprintf(displayString, "[2D Vector]%s", getVectorRegisterPolarMode(regist) == amPolar ? STD_SPACE_HAIR STD_SUP_p : "");
-    } else
-    if(isRegisterMatrix3dVector(regist)) {
+    }
+    else if(isRegisterMatrix3dVector(regist)) {
       sprintf(displayString, "[3D Vector]%s", getVectorRegisterPolarMode(regist) == amPolarSPH ? STD_SPACE_HAIR STD_SUP_s : getVectorRegisterPolarMode(regist) == amPolarCYL ? STD_SPACE_HAIR STD_SUP_c : "");
-    } else
+    }
+    else
   #endif //OPTION_VECTOR
   {
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
@@ -3361,8 +3355,7 @@ void fnC47Show(uint16_t fnShow_param) {
                    source = 0;
                    IntShowMode = SHOWAUTO;
                  }
-                 else
-                 if(IntShowMode != SHOWSML) {
+                 else if(IntShowMode != SHOWSML) {
                    startingLine = 0;
                    source = 0;
                    IntShowMode = SHOWSML;
@@ -3759,14 +3752,13 @@ goBreak1:
               source++;
               tmpString[dest++]=49;
             }
-            else
-              if((uint8_t)(tmpString[source]) == 162 && (uint8_t)(tmpString[source+1]) == 14) {
-                source++;
-                tmpString[dest++]=48;
-              }
-              else {
-                tmpString[dest++] = tmpString[source];
-              }
+            else if((uint8_t)(tmpString[source]) == 162 && (uint8_t)(tmpString[source+1]) == 14) {
+              source++;
+              tmpString[dest++]=48;
+            }
+            else {
+              tmpString[dest++] = tmpString[source];
+            }
             source++;
           }
           tmpString[dest]=0;

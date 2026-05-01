@@ -296,7 +296,7 @@ static void _pushRealOut(real34_t* rr) {
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  real34Copy(rr,REGISTER_REAL34_DATA(REGISTER_X));
+  real34Copy(rr, REGISTER_REAL34_DATA(REGISTER_X));
   setSystemFlag(FLAG_ASLIFT);
 }
 
@@ -321,23 +321,30 @@ void fnGetType(uint16_t unusedButMandatoryParameter) {
         int polRec;
         if(isRegisterMatrix2dVector(REGISTER_X)) {
           polRec = 2;                                    // 2D vector POLAR or RECT
-        } else if(isRegisterMatrix3dVector(REGISTER_X)) {
+        }
+        else if(isRegisterMatrix3dVector(REGISTER_X)) {
           int polarMode = getVectorRegisterPolarMode(REGISTER_X);
           polRec = (polarMode == amPolarCYL) ? 4 : 3;    // CYL=4, SPH/RECT=3
-        } else {
+        }
+        else {
           polRec = 0;                                    // 1D vector
         }
         uInt32ToReal34(dtp*1000 + 100*angle + 10*polRec + T, &realOut);
-      } else if(dtp == dtReal34Matrix) {
+      }
+      else if(dtp == dtReal34Matrix) {
         int isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
         int isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
         if(isCol || isRow) {
           uInt32ToReal34(dtp*1000 + (isCol ? 2 : 1), &realOut);  // 1D row/col: angle=0 polRec=0
-        } else {
-          _pushIntOut(dtp); break;
         }
-      } else {
-        _pushIntOut(dtp); break;
+        else {
+          _pushIntOut(dtp);
+          break;
+        }
+      }
+      else {
+        _pushIntOut(dtp);
+        break;
       }
       real34Divide(&realOut, const34_1000, &realOut);
       _pushRealOut(&realOut);

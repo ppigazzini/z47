@@ -83,7 +83,9 @@ void sendByteIR(uint8_t c) {
 
   //Close the socket
   g_socket_close(udpSocket, NULL);
-  if(error != NULL) g_error_free(error);
+  if(error != NULL) {
+    g_error_free(error);
+  }
 
 #endif //IR_PRINTING
 }

@@ -1616,8 +1616,7 @@ void fnExchangeStkToMx(uint16_t opType) {
       if(isRegisterMatrix2dVector(REGISTER_X)) {
         fnConvertMxToStk(indexOfItems[ITM_V2toSTK].param);
       }
-      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
-              (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
+      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) && (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
         fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);
       }
       else {
@@ -1697,17 +1696,18 @@ void fnConvertStkToMx(uint16_t constVector1) {
   }
 
 
-  uint32_t ang2Dx,ang2Dy,ang3Dx,ang3Dy,ang3Dz;
-  bool_t validPolarInput,valid2DRInput,validSPHInput,validCYLInput,valid3DRInput;
+  uint32_t ang2Dx, ang2Dy, ang3Dx, ang3Dy, ang3Dz;
+  bool_t validPolarInput, valid2DRInput, validSPHInput, validCYLInput, valid3DRInput;
 
-  if(!is_2D3D_Register_Ready(&ang2Dx,&ang2Dy,&ang3Dx,&ang3Dy,&ang3Dz,&validPolarInput,&valid2DRInput,&validSPHInput,&validCYLInput,&valid3DRInput,constVector)) {
+  if(!is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector)) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "No valid coordinates for 2D/3D Rect/Polar/Spherical/Cylindrical");
       moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
-  } else {
+  }
+  else {
     if(constVector1 == M_CR_zyx && !valid3DRInput) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1733,8 +1733,8 @@ void fnConvertStkToMx(uint16_t constVector1) {
   if(validSPHInput) {
     convertAngleFromTo(&x[vecCreate[constVector].x].r, ang3Dx, amRadian, &ctxtReal39);
     convertAngleFromTo(&x[vecCreate[constVector].y].r, ang3Dy, amRadian, &ctxtReal39);
-  } else
-  if(validCYLInput) {
+  }
+  else if(validCYLInput) {
     convertAngleFromTo(&x[vecCreate[constVector].y].r, ang3Dy, amRadian, &ctxtReal39);
   }
 
@@ -1778,16 +1778,17 @@ void fnConvertStkToMx(uint16_t constVector1) {
     if(ang2Dx != amNone && ang2Dy == amNone && constVector == VECT_CR_yx) {
       convertPOLto2D(&x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
       matrixRegisterLoaded = true;
-    } else
-    if(ang3Dx != amNone && ang3Dy != amNone && (constVector == VECT_CR_zyx || constVector == VECT_CR_zxy)) {
+    }
+    else if(ang3Dx != amNone && ang3Dy != amNone && (constVector == VECT_CR_zyx || constVector == VECT_CR_zxy)) {
       if(constVector == VECT_CR_zxy) {
         convertSPHto3D(&x[2].r, &x[0].r, &x[1].r, amRadian, &matrix, &ctxtReal39);
-      } else {
+      }
+      else {
         convertSPHto3D(&x[2].r, &x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
       }
       matrixRegisterLoaded = true;
-    } else
-    if(ang3Dx == amNone && ang3Dy != amNone && constVector == VECT_CR_zyx) {
+    }
+    else if(ang3Dx == amNone && ang3Dy != amNone && constVector == VECT_CR_zyx) {
       convertCYLto3D(&x[2].r, &x[1].r, &x[0].r, amRadian, &matrix, &ctxtReal39);
       matrixRegisterLoaded = true;
     }
@@ -1812,13 +1813,13 @@ void fnConvertStkToMx(uint16_t constVector1) {
     setVectorRegisterAngularMode(REGISTER_X, ang2Dx);
     setVectorRegisterPolarMode(REGISTER_X, amPolar);
     temporaryInformation = TI_VECTOR;
-  } else
-  if(validSPHInput) {
+  }
+  else if(validSPHInput) {
     setVectorRegisterAngularMode(REGISTER_X, ang3Dx);
     setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
     temporaryInformation = TI_VECTOR;
-  } else
-  if(validCYLInput) {
+  }
+  else if(validCYLInput) {
     setVectorRegisterAngularMode(REGISTER_X, ang3Dy);
     setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
     temporaryInformation = TI_VECTOR;
@@ -1853,22 +1854,22 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
   //now set the polar mode
   if(isRegisterMatrix2dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolar)) {
     ang2Dx = getRegisterAngularMode(REGISTER_X) & amAngleMask;
-  } else
-  if(isRegisterMatrix3dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH)) {
+  }
+  else if(isRegisterMatrix3dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH)) {
     ang3Dx = getRegisterAngularMode(REGISTER_X) & amAngleMask;
     ang3Dy = ang3Dx;
-  } else
-  if(isRegisterMatrix3dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL)) {
+  }
+  else if(isRegisterMatrix3dVector(REGISTER_X) && (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL)) {
     ang3Dy = getRegisterAngularMode(REGISTER_X) & amAngleMask;
   }
 
-  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+    linkToComplexMatrixRegister(TEMP_REGISTER_1, &matrixC);
     Xrows = matrixC.header.matrixRows;
     Xcols = matrixC.header.matrixColumns;
   } else {
-    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    linkToRealMatrixRegister(TEMP_REGISTER_1, &matrix);
     Xrows = matrix.header.matrixRows;
     Xcols = matrix.header.matrixColumns;
   }
@@ -1910,11 +1911,12 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
   //assuming 2 elements, clearing X and preparing Y
 
   if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
-    convertRealToResultRegister(const_0, REGISTER_X,amNone);
+    convertRealToResultRegister(const_0, REGISTER_X, amNone);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  } else {
+    convertRealToResultRegister(const_0, REGISTER_X, amNone);
+  }
+  else {
     convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
@@ -1924,8 +1926,9 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
-      convertRealToResultRegister(const_0, REGISTER_X,amNone);
-    } else {
+      convertRealToResultRegister(const_0, REGISTER_X, amNone);
+    }
+    else {
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
@@ -1939,25 +1942,26 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
     convertAngleFromTo(&theta, amRadian, ang2Dx, &ctxtReal39);
     realToReal34(&magnitude, &matrix.matrixElements[0]);
-    realToReal34(&theta    , &matrix.matrixElements[1]);
-  } else
-  if((constVector == VECT_CR_zyx || constVector == VECT_CR_zxy) && (ang3Dy != amNone && ang3Dx == amNone)) {           // CYL
+    realToReal34(&theta,     &matrix.matrixElements[1]);
+  }
+  else if((constVector == VECT_CR_zyx || constVector == VECT_CR_zxy) && (ang3Dy != amNone && ang3Dx == amNone)) {           // CYL
     real_t theta, magnitude, zz;
     convert3DtoCYL(&matrix, &magnitude, &theta, &zz, ang3Dy, &ctxtReal39);
     realToReal34(&magnitude, &matrix.matrixElements[0]);
-    realToReal34(&theta    , &matrix.matrixElements[1]);
-    realToReal34(&zz       , &matrix.matrixElements[2]);
-  } else
-  if((constVector == VECT_CR_zyx || constVector == VECT_CR_zxy) && (ang3Dy != amNone && ang3Dx != amNone)) {           // SPH
+    realToReal34(&theta,     &matrix.matrixElements[1]);
+    realToReal34(&zz,        &matrix.matrixElements[2]);
+  }
+  else if((constVector == VECT_CR_zyx || constVector == VECT_CR_zxy) && (ang3Dy != amNone && ang3Dx != amNone)) {           // SPH
     real_t theta, theta2, magnitude;
     convert3DtoSPH(&matrix, &magnitude, &theta, &theta2, ang3Dx, &ctxtReal39);
     realToReal34(&magnitude, &matrix.matrixElements[0]);
 //    realToReal34(constVector == VECT_CR_zxy ? &theta  : &theta2, &matrix.matrixElements[2]);
   //  realToReal34(constVector == VECT_CR_zxy ? &theta2 : &theta , &matrix.matrixElements[1]);
     if(constVector == VECT_CR_zxy) {
-      realToReal34(&theta , &matrix.matrixElements[2]);
+      realToReal34(&theta,  &matrix.matrixElements[2]);
       realToReal34(&theta2, &matrix.matrixElements[1]);
-    } else {
+    }
+    else {
       realToReal34(&theta2, &matrix.matrixElements[2]);
       realToReal34(&theta , &matrix.matrixElements[1]);
     }
@@ -1968,8 +1972,8 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
                   vecCreate[constVector].y == elements-1-i ? REGISTER_Y : \
                   vecCreate[constVector].z == elements-1-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
-      real34Copy(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]), REGISTER_REAL34_DATA(rg));
+      real34Copy(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]), REGISTER_IMAG34_DATA(rg));
       setRegisterAngularMode(rg, getComplexRegisterAngularMode(TEMP_REGISTER_1) | getComplexRegisterPolarMode(TEMP_REGISTER_1));
     }
     else {

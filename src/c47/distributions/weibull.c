@@ -34,8 +34,7 @@
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
-    else if(realIsZero(shape) || realIsNegative(shape)
-            || realIsZero(scale) || realIsNegative(scale)) {
+    else if(realIsZero(shape) || realIsNegative(shape) || realIsZero(scale) || realIsNegative(scale)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b " STD_LESS_EQUAL " 0 or t " STD_LESS_EQUAL " 0", NULL, NULL);

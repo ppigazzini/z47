@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
- #if defINED(SAVE_SPACE_DM42_17C)
+ #if defined(SAVE_SPACE_DM42_17C)
   void fnParetoP   (uint16_t unusedButMandatoryParameter){}
   void fnParetoL   (uint16_t unusedButMandatoryParameter){}
   void fnParetoU   (uint16_t unusedButMandatoryParameter){}

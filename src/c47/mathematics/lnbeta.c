@@ -119,9 +119,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
   realAdd(xReal, yReal, rReal, realContext);  // r = x+y
 
-  if(_checkLnGammaArgs(&xflag, xReal, realContext)
-      && _checkLnGammaArgs(&yflag, yReal, realContext)
-      && _checkLnGammaArgs(&sflag, rReal, realContext)) {
+  if(_checkLnGammaArgs(&xflag, xReal, realContext) && _checkLnGammaArgs(&yflag, yReal, realContext) && _checkLnGammaArgs(&sflag, rReal, realContext)) {
     real_t gxReal, gxImag;  // LnGamma(x)
     real_t gyReal, gyImag;  // LnGamma(y)
     real_t gsReal, gsImag;  // LnGamma(x+y)
