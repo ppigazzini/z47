@@ -9122,6 +9122,200 @@ SPH_ret1:
     return (*validPolarInput || *valid2DRInput || *validSPHInput || *validCYLInput || *valid3DRInput);
   }
 
+
+static bool columnMinMaxReal(real34Matrix_t *matrix, bool calcMax) {
+    uint16_t r, res_r = 0;
+    real34_t res_val;
+    longInteger_t longIntVar;
+
+    const int16_t i = getIRegisterAsInt(true);
+    const int16_t j = getJRegisterAsInt(true);
+
+    realToReal34(calcMax ? const_minusInfinity : const_plusInfinity, &res_val);
+    if(i >= 0 && j >= 0 && i < matrix->header.matrixRows && j < matrix->header.matrixColumns) {
+      for(r = 0; r < matrix->header.matrixRows; ++r) {
+        if((!calcMax) && real34CompareLessThan(&matrix->matrixElements[r * matrix->header.matrixColumns + j], &res_val)) {
+          real34Copy(&matrix->matrixElements[r * matrix->header.matrixColumns + j], &res_val);
+          res_r = r;
+        }
+        else if(calcMax && real34CompareGreaterThan(&matrix->matrixElements[r * matrix->header.matrixColumns + j], &res_val)) {
+          real34Copy(&matrix->matrixElements[r * matrix->header.matrixColumns + j], &res_val);
+          res_r = r;
+        }
+      }
+
+      liftStack();
+      liftStack();
+
+      longIntegerInit(longIntVar);
+      uInt32ToLongInteger(res_r + 1, longIntVar);
+      convertLongIntegerToLongIntegerRegister(longIntVar, REGISTER_Y);
+      longIntegerFree(longIntVar);
+
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+      real34Copy(&res_val, REGISTER_REAL34_DATA(REGISTER_X));
+    }
+    else {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "rows %" PRIu16 " and/or %" PRIu16 " out of range.", i, j);
+        moreInfoOnError("In function columnMinMaxReal:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+
+    return true;
+  }
+
+  static bool columnMinMatrix(real34Matrix_t *matrix) {
+    return columnMinMaxReal(matrix, false);
+  }
+
+  static bool columnMaxMatrix(real34Matrix_t *matrix) {
+    return columnMinMaxReal(matrix, true);
+  }
+
+  static bool columnMinMaxComplex(complex34Matrix_t *matrix) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Cannot apply this function to %s", getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function columnMinMaxComplex:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+
+
+  static bool matrixFindReal(real34Matrix_t *matrix) {
+    real34_t searchVal;
+    uint16_t r, c;
+
+    switch(getRegisterDataType(REGISTER_X)) {
+      case dtShortInteger: {
+        real_t x;
+        convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+        realToReal34(&x, &searchVal);
+        break;
+      }
+
+      case dtLongInteger: {
+        convertLongIntegerRegisterToReal34(REGISTER_X, &searchVal);
+        break;
+      }
+
+      case dtReal34: {
+        if(getRegisterAngularMode(REGISTER_X) == amNone) {
+          real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &searchVal);
+        }
+        else {
+          temporaryInformation = TI_FALSE;
+          return true;
+        }
+        break;
+      }
+
+      case dtComplex34: {
+        if(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
+          real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &searchVal);
+        }
+        else {
+          temporaryInformation = TI_FALSE;
+          return true;
+        }
+        break;
+      }
+
+      default: {
+        temporaryInformation = TI_FALSE;
+        return true;
+      }
+    }
+
+    for(r = 0; r < matrix->header.matrixRows; ++r) {
+      for(c = 0; c < matrix->header.matrixColumns; ++c) {
+        if(real34CompareEqual(&matrix->matrixElements[r * matrix->header.matrixColumns + c], &searchVal)) {
+          setIRegisterAsInt(true, r);
+          setJRegisterAsInt(true, c);
+          temporaryInformation = TI_TRUE;
+          return true;
+        }
+      }
+    }
+
+    temporaryInformation = TI_FALSE;
+    return true;
+  }
+
+  static bool matrixFindComplex(complex34Matrix_t *matrix) {
+    real34_t searchValR, searchValI;
+    uint16_t r, c;
+
+    switch(getRegisterDataType(REGISTER_X)) {
+      case dtShortInteger: {
+        real_t x;
+        convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+        realToReal34(&x, &searchValR);
+        real34SetZero(&searchValI);
+        break;
+      }
+
+      case dtLongInteger: {
+        convertLongIntegerRegisterToReal34(REGISTER_X, &searchValR);
+        real34SetZero(&searchValI);
+        break;
+      }
+
+      case dtReal34: {
+        if(getRegisterAngularMode(REGISTER_X) == amNone) {
+          real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &searchValR);
+          real34SetZero(&searchValI);
+        }
+        else {
+          temporaryInformation = TI_FALSE;
+          return true;
+        }
+        break;
+      }
+
+      case dtComplex34: {
+        real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &searchValR);
+        real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), &searchValI);
+        break;
+      }
+
+      default: {
+        temporaryInformation = TI_FALSE;
+        return true;
+      }
+    }
+
+    for(r = 0; r < matrix->header.matrixRows; ++r) {
+      for(c = 0; c < matrix->header.matrixColumns; ++c) {
+        if(real34CompareEqual(VARIABLE_REAL34_DATA(&matrix->matrixElements[r * matrix->header.matrixColumns + c]), &searchValR) && real34CompareEqual(VARIABLE_IMAG34_DATA(&matrix->matrixElements[r * matrix->header.matrixColumns + c]), &searchValI)) {
+          setIRegisterAsInt(true, r);
+          setJRegisterAsInt(true, c);
+          temporaryInformation = TI_TRUE;
+          return true;
+        }
+      }
+    }
+
+    temporaryInformation = TI_FALSE;
+    return true;
+  }
+
+
+  void fnColumnMin(uint16_t unusedParamButMandatory) {
+    callByIndexedMatrix(columnMinMatrix, columnMinMaxComplex);
+  }
+
+  void fnColumnMax(uint16_t unusedParamButMandatory) {
+    callByIndexedMatrix(columnMaxMatrix, columnMinMaxComplex);
+  }
+
+  void fnMatrixFind(uint16_t unusedParamButMandatory) {
+    callByIndexedMatrix(matrixFindReal, matrixFindComplex);
+  }
+
 #if defined(OPTION_VECTOR)
 
 
