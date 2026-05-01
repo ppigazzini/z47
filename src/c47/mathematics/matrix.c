@@ -1177,7 +1177,8 @@ void fnRowColSum(uint16_t isRow) {
     innerLimit = isRow ? cols                : x.header.matrixRows;
     if(complexMatrixInit(&res, isRow ? outerLimit : 1, isRow ? 1 : outerLimit)) {
       for(uint16_t i = 0; i < outerLimit; ++i) {
-        realSetZero(&sumr); realSetZero(&sumi);
+        realSetZero(&sumr);
+        realSetZero(&sumi);
         for(uint16_t j = 0; j < innerLimit; ++j) {
           idx = isRow ? i * cols + j : j * cols + i;
           real34ToReal(VARIABLE_REAL34_DATA(x.matrixElements + idx), &elem);
@@ -1196,7 +1197,7 @@ void fnRowColSum(uint16_t isRow) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Ram full, 2f");
-        moreInfoOnError("In function fnRowColSum:",errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnRowColSum:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
@@ -2442,7 +2443,7 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
 void linkToRealMatrixRegister(calcRegister_t regist, real34Matrix_t *linkedMatrix) {
   linkedMatrix->header.matrixRows    = REGISTER_MATRIX_HEADER(regist)->matrixRows;
   linkedMatrix->header.matrixColumns = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
-  if((REGISTER_X <= regist && regist <= REGISTER_T) && isMatrixVector(linkedMatrix->header.matrixRows,linkedMatrix->header.matrixColumns)) {
+  if((REGISTER_X <= regist && regist <= REGISTER_T) && isMatrixVector(linkedMatrix->header.matrixRows, linkedMatrix->header.matrixColumns)) {
     linkedMatrix->header.mtag        = globalRegister[regist].tag;  // Get directly from register; this is only used for display of X-T registers, so it is hard coded to globalregisters
   }
   linkedMatrix->matrixElements       = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
@@ -4026,7 +4027,7 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
 
 // ============================================================================
 // Matrix square root
-#if !defINED(MATRIX_SQRT_USE_EIGEN)
+#if !defined(MATRIX_SQRT_USE_EIGEN)
 //   0 = Denman-Beavers iteration (iterative)
 //   1 = Eigendecomposition: Y = Q * sqrt(Lambda) * Q^-1 (single-shot, real eigenvalues, default
   #define MATRIX_SQRT_USE_EIGEN 1
@@ -5833,11 +5834,14 @@ static void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r
   #endif //OPTION_EIGEN_159
 
   {
-    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2; mr[1] = mr[0] + 2;
+    mr[0] = mat + ((size - 3) * size + (size - 3)) * 2;
+    mr[1] = mr[0] + 2;
     mr[2] = mr[1] + 2;
-    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2; mr[4] = mr[3] + 2;
+    mr[3] = mat + ((size - 2) * size + (size - 3)) * 2;
+    mr[4] = mr[3] + 2;
     mr[5] = mr[4] + 2;
-    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2; mr[7] = mr[6] + 2;
+    mr[6] = mat + ((size - 1) * size + (size - 3)) * 2;
+    mr[7] = mr[6] + 2;
     mr[8] = mr[7] + 2;
     for(int i = 0; i < 9; ++i) {
       mi[i] = mr[i] + 1;
@@ -7528,7 +7532,8 @@ if(iteration % 20 == 0) {
 
     #if defined(EIGENDEBUG)
       printf("\n=== CONDITION NUMBER CHECK ===\n");
-      printf("maxM: "); printRealToConsole(&maxM, "", ", tol: ");
+      printf("maxM: ");
+      printRealToConsole(&maxM, "", ", tol: ");
       printRealToConsole(&tol, "", "\n");
     #endif
     for(i = 1; i < size; i++) {
@@ -7541,7 +7546,7 @@ if(iteration % 20 == 0) {
       if(!realIsZero(&tmpM) && !realIsZero(&maxM) && realCompareLessThan(&tmpM, &tol)) {
         realMultiply(&maxM, &tol, &minM, realContext);
         #if defined(EIGENDEBUG)
-          printf("ILL-CONDITIONED: minM threshold = "); printRealToConsole(&minM, "", "\n");
+          printRealToConsole(&minM, "ILL-CONDITIONED: minM threshold = ", "\n");
           for(j = 1; j < size; j++) {
             real_t tmpM_check;
             complexMagnitude(eig + (j * size + j) * 2, eig + (j * size + j) * 2 + 1, &tmpM_check, realContext);
@@ -9075,7 +9080,7 @@ SPH_ret1:
   void V3err(int err) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "Err %d: 2D or 3D Vector required, not %s, %ix%i", err, getRegisterDataTypeName(REGISTER_X, true, false), REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+      sprintf(errorMessage, "Err %d: 2D or 3D Vector required, not %s, %ix%i", err, getRegisterDataTypeName(REGISTER_X, true, false), REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
       moreInfoOnError("In function V3RectoToSph/V3RectoToCyl:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -9123,9 +9128,9 @@ SPH_ret1:
   #define _3DCYL 1
   #define _3DSPH 2
   int isStack3DReadyConvertIfNot(int16_t mode, uint16_t constVector) {
-    uint32_t ang2Dx,ang2Dy,ang3Dx,ang3Dy,ang3Dz;
-    bool_t validPolarInput,valid2DRInput,validSPHInput,validCYLInput,valid3DRInput;
-    is_2D3D_Register_Ready(&ang2Dx,&ang2Dy,&ang3Dx,&ang3Dy,&ang3Dz,&validPolarInput,&valid2DRInput,&validSPHInput,&validCYLInput,&valid3DRInput,constVector);
+    uint32_t ang2Dx, ang2Dy, ang3Dx, ang3Dy, ang3Dz;
+    bool_t validPolarInput, valid2DRInput, validSPHInput, validCYLInput, valid3DRInput;
+    is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector);
     bool_t is_3D_Register_Ready = validSPHInput || validCYLInput || valid3DRInput;
 
     if(!is_3D_Register_Ready) {
@@ -9138,7 +9143,7 @@ SPH_ret1:
     }
 
     real_t xx;
-    if(!(getRegisterAsReal(REGISTER_X,&xx) && getRegisterAsReal(REGISTER_Y,&xx) && getRegisterAsReal(REGISTER_Z,&xx))) {
+    if(!(getRegisterAsReal(REGISTER_X, &xx) && getRegisterAsReal(REGISTER_Y, &xx) && getRegisterAsReal(REGISTER_Z, &xx))) {
       return false;
     }
 
@@ -9174,7 +9179,8 @@ SPH_ret1:
   void V3RectoToSph(uint16_t am) {
     if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && isStack3DReadyConvertIfNot(_3DSPH, VECT_CR_zyx)) {
       fnConvertStkToMx(VECT_CR_zyx);
-    } else {
+    }
+    else {
       angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         if(isRegisterMatrix3dVector(REGISTER_X)) {
@@ -9195,7 +9201,8 @@ SPH_ret1:
   void V3RectoToCyl(uint16_t am) {
     if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && isStack3DReadyConvertIfNot(_3DCYL, VECT_CR_zyx)) {
       fnConvertStkToMx(VECT_CR_zyx);
-    } else {
+    }
+    else {
       angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         if(isRegisterMatrix3dVector(REGISTER_X)) {

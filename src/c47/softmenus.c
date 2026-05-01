@@ -2742,8 +2742,7 @@ void showSoftmenuCurrentPart(void) {
   if(currentMenu() == -MNU_HOME) {
     changeToHOME();
   }
-  else
-  if(currentMenu() == -MNU_PFN) {
+  else if(currentMenu() == -MNU_PFN) {
     changeToPFN();
   }
 
@@ -2756,7 +2755,8 @@ void showSoftmenuCurrentPart(void) {
   bool_t dottedTopLine;
   #if defined(PC_BUILD) && ((VERBOSE_LEVEL > -1) || defined(PC_BUILD_TELLTALE))
     char tmp[200];
-    sprintf(tmp, "^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n", m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName); jm_show_comment(tmp);
+    sprintf(tmp, "^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n", m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);
+    jm_show_comment(tmp);
     printf("==>%s\n", tmp);
   #endif // PC_BUILD
 
@@ -2843,8 +2843,10 @@ void showSoftmenuCurrentPart(void) {
       }
     }
 
-    char itemName[16]; itemName[0]=0;
-    char showText[16]; showText[0]=0;
+    char itemName[16];
+    itemName[0] = 0;
+    char showText[16];
+    showText[0] = 0;
     videoMode_t vm = vmNormal;
     int8_t showCb = NOVAL;
     int16_t showValue = NOVAL;
@@ -3064,14 +3066,14 @@ void showSoftmenuCurrentPart(void) {
             //        +20000 -> no bottom line
             //        +30000 -> neither top nor bottom line
 
-            if( softmenu[m].menuItem  == -MNU_CONVS    || softmenu[m].menuItem  == -MNU_CONVANG  ||
-                softmenu[m].menuItem  == -MNU_CONVE    || softmenu[m].menuItem  == -MNU_CONVP    ||
-                softmenu[m].menuItem  == -MNU_CONVFP   || softmenu[m].menuItem  == -MNU_CONVM    ||
-                softmenu[m].menuItem  == -MNU_CONVX    || softmenu[m].menuItem  == -MNU_CONVV    ||
-                softmenu[m].menuItem  == -MNU_CONVA    || softmenu[m].menuItem  == -MNU_UNITCONV ||
-                softmenu[m].menuItem  == -MNU_MISC     || softmenu[m].menuItem  == -MNU_CONVHUM  ||
-                softmenu[m].menuItem  == -MNU_CONVYMMV || softmenu[m].menuItem  == -MNU_CONVCHEF ||
-                softmenu[m].menuItem  == -MNU_CONVTEMP ) {
+            if(softmenu[m].menuItem  == -MNU_CONVS    || softmenu[m].menuItem  == -MNU_CONVANG  ||
+               softmenu[m].menuItem  == -MNU_CONVE    || softmenu[m].menuItem  == -MNU_CONVP    ||
+               softmenu[m].menuItem  == -MNU_CONVFP   || softmenu[m].menuItem  == -MNU_CONVM    ||
+               softmenu[m].menuItem  == -MNU_CONVX    || softmenu[m].menuItem  == -MNU_CONVV    ||
+               softmenu[m].menuItem  == -MNU_CONVA    || softmenu[m].menuItem  == -MNU_UNITCONV ||
+               softmenu[m].menuItem  == -MNU_MISC     || softmenu[m].menuItem  == -MNU_CONVHUM  ||
+               softmenu[m].menuItem  == -MNU_CONVYMMV || softmenu[m].menuItem  == -MNU_CONVCHEF ||
+               softmenu[m].menuItem  == -MNU_CONVTEMP ) {
               showSoftkey2(indexOfItems[item%10000].itemSoftmenuName, x, y-currentFirstItem/6, vmNormal, (item/10000)==0 || (item/10000)==2, (item/10000)==0 || (item/10000)==1, showCb, showValue, showText);
             }
 
@@ -3086,7 +3088,7 @@ void showSoftmenuCurrentPart(void) {
 
             //softkey modifications
 
-            if((getSystemFlag(FLAG_G_DOUBLETAP) && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
+            if((getSystemFlag(FLAG_G_DOUBLETAP) && (BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
@@ -3095,8 +3097,10 @@ void showSoftmenuCurrentPart(void) {
           }
 
           if(softmenu[m].menuItem == -MNU_TIMERF && y == 0) {
-            char tmpp[16]; tmpp[0]=0;
-            char tmpq[16]; tmpq[0]=0;
+            char tmpp[16];
+            tmpp[0] = 0;
+            char tmpq[16];
+            tmpq[0] = 0;
             switch(item) {
               case ITM_TIMER_SIGMA_T: sprintf(tmpq, "%s", "[" STD_SIGMA "+]");     break;
               case ITM_TIMER_SIGMA_L: sprintf(tmpq, "%s", "[+]");                  break;

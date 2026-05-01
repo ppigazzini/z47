@@ -2408,7 +2408,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
       else if((lint)->_mp_size < 0) {                        \
         printf(" lint=-");                                   \
       }                                                      \
-      else printf(" lint=+");                                \
+      else {                                                 \
+        printf(" lint=+");                                   \
+      }                                                      \
       for(i=0; i<abs((lint)->_mp_size); i++) {               \
         printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
       }                                                      \
@@ -2430,7 +2432,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
       if(getRegisterLongIntegerSign(reg) == LI_ZERO) {                                                 \
         printf("lint=0");                                                                              \
       }                                                                                                \
-      else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
+      else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) {                                        \
+        printf("lint=-");                                                                              \
+      }                                                                                                \
       else {                                                                                           \
         printf("lint=+");                                                                              \
       }                                                                                                \

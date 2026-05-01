@@ -179,8 +179,7 @@ void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const r
     divComplexComplex75(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
   #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
   }
-  else
-  if(realContext->digits <= 159) {
+  else if(realContext->digits <= 159) {
     divComplexComplex159(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
   #endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
   }

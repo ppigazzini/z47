@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defINED(SAVE_SPACE_DM42_17C)
+#if defined(SAVE_SPACE_DM42_17C)
   void fnUniformP           (uint16_t discrete){}
   void fnUniformL           (uint16_t discrete){}
   void fnUniformU           (uint16_t discrete){}

@@ -1627,8 +1627,7 @@ continueWithOldDetections:
           if(calcModel == USER_R47fg_bk && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             btnClicked(w, "11");
           }
-          else
-          if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
+          else if(calcModel == USER_R47bk_fg && (calcMode == CM_NORMAL || calcMode == CM_NIM)) {
             btnClicked(w, "10");
           }
           break;
