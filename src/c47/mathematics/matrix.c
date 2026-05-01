@@ -161,8 +161,12 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rlimit) && realCompareLessEqual(&ry, &rlimit)) {
       if(!realCompareEqual(&ry, &rx)) {
-        if(isRow) realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
-        else      realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+        if(isRow) {
+          realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        }
+        else {
+          realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+        }
       }
     }
     else {
@@ -191,8 +195,12 @@ bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     b = realToInt32C47(&rx, NULL);
     if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rlimit) && realCompareLessEqual(&ry, &rlimit)) {
       if(!realCompareEqual(&ry, &rx)) {
-        if(isRow) complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
-        else      complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+        if(isRow) {
+          complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+        }
+        else {
+          complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+        }
       }
     }
     else {
@@ -3987,11 +3995,11 @@ void invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *res) {
 
 // ============================================================================
 // Matrix square root
-#ifndef MATRIX_SQRT_USE_EIGEN
+#if !defINED(MATRIX_SQRT_USE_EIGEN)
 //   0 = Denman-Beavers iteration (iterative)
 //   1 = Eigendecomposition: Y = Q * sqrt(Lambda) * Q^-1 (single-shot, real eigenvalues, default
   #define MATRIX_SQRT_USE_EIGEN 1
-#endif //MATRIX_SQRT_USE_EIGEN
+#endif // !MATRIX_SQRT_USE_EIGEN
 
 
 #if (MATRIX_SQRT_USE_EIGEN == 0)
@@ -4065,8 +4073,12 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
   }
 
   for(k = 0; k < MAX_ITER; ++k) {
-    if(Yinv.matrixElements) realMatrixFree(&Yinv);
-    if(Zinv.matrixElements) realMatrixFree(&Zinv);
+    if(Yinv.matrixElements) {
+      realMatrixFree(&Yinv);
+    }
+    if(Zinv.matrixElements) {
+      realMatrixFree(&Zinv);
+    }
 
     invertRealMatrix(&Y, &Yinv);
     if(!Yinv.matrixElements) {
@@ -4094,7 +4106,9 @@ static void sqrtRealMatrixDB(const real34Matrix_t *matrix, real34Matrix_t *res) 
       subtractRealMatrices(&YY, matrix, &YY);
       _euclideanNormRealMatrix(&YY, 2, &normVal, &ctxtReal39);
       if(realCompareLessThan(&normVal, const_1e_30)) {    // convergence check, using const_1e_30
-        if(converged) break;
+        if(converged) {
+          break;
+        ]
         converged = true;
       }
     }
@@ -4119,7 +4133,9 @@ cleanup:
     res->matrixElements = Y.matrixElements;
   }
   else {
-    if(Y.matrixElements) realMatrixFree(&Y);
+    if(Y.matrixElements) {
+      realMatrixFree(&Y);
+    }
     res->matrixElements = NULL;
     res->header.matrixRows = res->header.matrixColumns = 0;
   }
@@ -4305,8 +4321,12 @@ static bool_t verifySqrtMatrix(const real34Matrix_t *inputReal,    const real34M
     }
   }
 
-  if(inputCopy.matrixElements)  complexMatrixFree(&inputCopy);
-  if(resultCopy.matrixElements) complexMatrixFree(&resultCopy);
+  if(inputCopy.matrixElements)  {
+    complexMatrixFree(&inputCopy);
+  }
+  if(resultCopy.matrixElements) {
+    complexMatrixFree(&resultCopy);
+  }
 
   return verified;
 }
@@ -4454,7 +4474,9 @@ static void sqrtComplexMatrixDB(const complex34Matrix_t *matrix, complex34Matrix
       euclideanNormComplexMatrix(&YY, 2, &normVal34);
       real34ToReal(&normVal34, &normVal);
       if(realCompareLessThan(&normVal, const_1e_30)) {    // convergence check, using const_1e_30
-        if(converged) break;
+        if(converged) {
+          break;
+        }
         converged = true;
       }
     }
@@ -8921,8 +8943,14 @@ SPH_ret1:
       if(isRegisterMatrixVector(REGISTER_X)) {
         setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
         temporaryInformation = TI_VECTOR;
-      } else return false;
-    } else return false;
+      }
+      else {
+        return false;
+      }
+    }
+    else {
+      return false;
+    }
     return true;
   }
 
@@ -9010,8 +9038,14 @@ SPH_ret1:
           setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
           setVectorRegisterAngularMode(REGISTER_X, angleMode);
           temporaryInformation = TI_VECTOR;
-        } else V3err(1);
-      } else V3err(2);
+        }
+        else {
+          V3err(1);
+        }
+      }
+      else {
+        V3err(2);
+      }
     }
   }
 
@@ -9025,8 +9059,14 @@ SPH_ret1:
           setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
           setVectorRegisterAngularMode(REGISTER_X, angleMode);
           temporaryInformation = TI_VECTOR;
-        } else V3err(3);
-      } else V3err(4);
+        }
+        else {
+          V3err(3);
+        }
+      }
+      else {
+        V3err(4);
+      }
     }
   }
 

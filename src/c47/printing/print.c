@@ -4,10 +4,10 @@
 #include "c47.h"
 
 
-#ifdef IR_PRINTING
+#if defined(IR_PRINTING)
 
-  #define RETURN_IF_PRINT_OFF if (!getSystemFlag(FLAG_PRTACT)) return
-  #define BREAK_IF_EXIT  if (key_pop() == KEY_EXIT) break
+  #define RETURN_IF_PRINT_OFF do { if(!getSystemFlag(FLAG_PRTACT)) { return; } } while(0)
+  #define BREAK_IF_EXIT       do { if(key_pop() == KEY_EXIT)       { break;  } } while(0)
 
   //
   // Alias table for instruction names to get nice prints
@@ -322,7 +322,9 @@
   uint8_t charMap(uint16_t charCode) {
     uint8_t i;
     for(i=128; i<255; i++) {
-      if(hp82240CharMap[i] == (charCode & ~0x8000)) return (i);
+      if(hp82240CharMap[i] == (charCode & ~0x8000)) {
+        return (i);
+      }
     }
     return 0;
   }
@@ -438,29 +440,29 @@ void findlengths(unsigned short int posns[257], int smallp) {
   int i;
 
   posns[0] = 0;
-  for(i=0; i<256; i++)
+  for(i=0; i<256; i++) {
     posns[i+1] = posns[i] + charlengths(i + mask) - 1;
+  }
 }
 
 
 /* Determine the pixel length of the string if it were displayed
 */
-  int pixel_length(const char *s, int smallp)
-  {
+int pixel_length(const char *s, int smallp) {
   int len = 0;
   const int offset = smallp ? 256 : 0;
-  while (*s != '\0') {
-#ifdef INCLUDE_FONT_ESCAPE
-    if (s[0] == '\007') {
+  while(*s != '\0') {
+    #if defined(INCLUDE_FONT_ESCAPE)
+    if(s[0] == '\007') {
       len += s[1] & 0x1F;
       s += 3;
       continue;
     }
-#endif
+    #endif // INCLUDE_FONT_ESCAPE
     len += charlengths( (unsigned char) *s++ + offset );
   }
   return len;
-  }
+}
 
 
 void prepareNewLine(void) {
@@ -469,7 +471,7 @@ void prepareNewLine(void) {
   clearSystemFlag(FLAG_PRTACT);
   //finish_PRT(); // redraws the PRT annunciator
   printer_advance_buf(PRINT_GRA_LN);
-  while ( printer_busy_for (PRINT_GRA_LN) && i<50 ) { // return after 5.0s anyway
+  while(printer_busy_for(PRINT_GRA_LN) && i<50) { // return after 5.0s anyway
     sys_timer_start(0, 100);  // Timer 0: wake up for heartbeat
     sys_sleep();
     sys_timer_disable(0); // stop timer
@@ -484,21 +486,20 @@ void prepareNewLine(void) {
 /*
  *  Print to IR
  */
-void printIR( uint8_t c ) { // prints a single character
+void printIR(uint8_t c) { // prints a single character
   const print_modes_t mode = printerState.print_mode;
 
-  if ( c == '\n' && ( mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS ) ) {
+  if(c == '\n' && (mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS)) {
     // better LF for graphics printing
     sendByteIR( 0x04 );
   }
   else {
-    sendByteIR( c );
+    sendByteIR(c);
   }
   // Reset the CL_DROP timer to avoid missing double press on <- when tracing the CLX instruction
   if(fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING) {
     fnTimerStart(TO_CL_DROP, TO_CL_DROP, JM_CLRDROP_TIMER);
   }
-
 }
 
 
@@ -508,10 +509,12 @@ void printIR( uint8_t c ) { // prints a single character
  *                 0: \n    - standard LF
  *                 1: 0x04  - HP 82240 custom LF
  */
-void printAdvance( uint8_t nlMode ) {
+void printAdvance(uint8_t nlMode) {
   printerColumn = 0;
-  printIR( nlMode ? 0x04 : '\n' );
-  if (printerState.print_blank_line) printIR( nlMode ? 0x04 : '\n' );
+  printIR(nlMode ? 0x04 : '\n');
+  if(printerState.print_blank_line) {
+    printIR(nlMode ? 0x04 : '\n');
+  }
   prepareNewLine();
 }
 
@@ -519,36 +522,37 @@ void printAdvance( uint8_t nlMode ) {
 /*
  *  New line if tracing is active
  */
-static void advanceIfTrace()
-{
-  if ( printerColumn != 0 && getSystemFlag(FLAG_TRACE) ) {
-    printAdvance( 0 );
+static void advanceIfTrace(void) {
+  if(printerColumn != 0 && getSystemFlag(FLAG_TRACE)) {
+    printAdvance(0);
   }
 }
 
 //
 //  Move to column
 //
-void printTab( uint16_t col ) // pixel-aligned column
-{
-  if ( printerColumn > col ) {
-    printAdvance( 0 );
+void printTab(uint16_t col) { // pixel-aligned column
+  if(printerColumn > col) {
+    printAdvance(0);
   }
-  if ( printerColumn < col ) {
+  if(printerColumn < col) {
     uint16_t i, j;
     i = (col - 1 - printerColumn) % 7;
-    if ((i == 0) && (printerColumn == 0) && (col > 6)) i = 7;  // compensate for the first column being not printed
+    if(i == 0 && printerColumn == 0 && col > 6) {
+      i = 7;  // compensate for the first column being not printed
+    }
     printerColumn += i;
-    if ( i ) {
-      sendByteIR( 27 );
-      sendByteIR( i );
-      while ( i-- ) {
-      sendByteIR( 0 );
+    if(i) {
+      sendByteIR(27);
+      sendByteIR(i);
+      while(i--) {
+        sendByteIR(0);
       }
     }
     j = (col - 1 - printerColumn) / 7;
-    while ( j-- )
-      sendByteIR( ' ' );
+    while(j--) {
+      sendByteIR(' ');
+    }
     printerColumn = col;
   }
 }
@@ -556,12 +560,12 @@ void printTab( uint16_t col ) // pixel-aligned column
 //
 //  Print a graphic sequence
 //
-void printGraphic( uint8_t glen, const unsigned char *graphic ) {
-  if ( glen > 0 ) {
-    sendByteIR( 27 );
-    sendByteIR( glen );
-    while ( glen-- ) {
-      sendByteIR( *graphic++ );
+void printGraphic(uint8_t glen, const unsigned char *graphic) {
+  if(glen > 0) {
+    sendByteIR(27);
+    sendByteIR(glen);
+    while(glen--) {
+      sendByteIR(*graphic++);
     }
   }
 }
@@ -571,14 +575,18 @@ void printGraphic( uint8_t glen, const unsigned char *graphic ) {
 //
 void printGraphic8( uint8_t glen, const unsigned char *graphic ) {
   uint8_t len = glen + ((printerColumn == 0) || (printerColumn >= 160)? 1 : 2);
-  if ( glen > 0 ) {
-    sendByteIR( 27);    // Set bit image (82240 graphic character printing : ESC Xchar [Ci]
-    sendByteIR( len);
-    if(printerColumn != 0) sendByteIR(0);              // start with a blank columns
-    while ( glen-- ) {
-      sendByteIR( *graphic++ );
+  if(glen > 0) {
+    sendByteIR(27);    // Set bit image (82240 graphic character printing : ESC Xchar [Ci]
+    sendByteIR(len);
+    if(printerColumn != 0) {
+      sendByteIR(0);              // start with a blank columns
     }
-    if(printerColumn < 160) sendByteIR(0);             // end with a blank columns
+    while(glen--) {
+      sendByteIR(*graphic++);
+    }
+    if(printerColumn < 160) {
+      sendByteIR(0);             // end with a blank columns
+    }
     printerColumn += len;
   }
 }
@@ -587,16 +595,16 @@ void printGraphic8( uint8_t glen, const unsigned char *graphic ) {
 //  Print a 24-bit graphic sequence
 //
 void printGraphic24( uint8_t glen, const unsigned char *graphic ) {
-  if ( glen > 0 ) {
+  if(glen > 0) {
     printerColumn += glen;
-    sendByteIR( 27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
-    sendByteIR(  0);
-    sendByteIR( 42);
-    sendByteIR( 33);
-    sendByteIR( glen/3);
-    sendByteIR(  0);
-    while ( glen-- ) {
-      sendByteIR( *graphic++ );
+    sendByteIR(27);    // Set bit image (24 pin double density) : ESC NULL * 33 n1 n2 [d]
+    sendByteIR( 0);
+    sendByteIR(42);
+    sendByteIR(33);
+    sendByteIR(glen/3);
+    sendByteIR( 0);
+    while( glen--) {
+      sendByteIR(*graphic++);
     }
   }
 }
@@ -610,10 +618,10 @@ void printGlyph8(uint16_t charCode, const printerFont_t *font) {
   uint8_t  *data;
   const glyphPrinter_t *glyph;
 
-    glyphId = findPrinterGlyph(font, charCode);
-    glyph = (font->glyphs) + glyphId;
-    data = (uint8_t *)glyph->data;
-    printGraphic8(5, data);   // Print the glyph columns
+  glyphId = findPrinterGlyph(font, charCode);
+  glyph = (font->glyphs) + glyphId;
+  data = (uint8_t *)glyph->data;
+  printGraphic8(5, data);   // Print the glyph columns
 }
 
 //
@@ -625,90 +633,89 @@ void printMartelGlyph(uint16_t charCode) {
   const glyphMartelPrinter_t *glyph;
   const martelFont24_t *martelFont = &martelFont24;
 
-    glyphId = findMartelGlyph(martelFont, charCode);
-    if(glyphId == 255) {
-      printGlyph8(charCode, &printerFont8);  // Character not in the Martel high res font
-    }
-    else {
-      glyph = (martelFont->glyphs) + glyphId;
-      data = (uint8_t *)glyph->data;
-      printGraphic24(48, data);   // Print the glyph columns
-      printerColumn += 8;
-    }
+  glyphId = findMartelGlyph(martelFont, charCode);
+  if(glyphId == 255) {
+    printGlyph8(charCode, &printerFont8);  // Character not in the Martel high res font
+  }
+  else {
+    glyph = (martelFont->glyphs) + glyphId;
+    data = (uint8_t *)glyph->data;
+    printGraphic24(48, data);   // Print the glyph columns
+    printerColumn += 8;
+  }
 }
 
 //
 //  Print a glyph (Martel 24-bit graphic)
 //
 void printGlyph24(uint16_t charCode, const font_t *font) {
-    uint32_t col, row, row_scaled;
-    uint32_t graphic_byte;
-    int32_t  glyphId;
-    uint8_t   byte, *data;
-    const glyph_t *glyph;
-    unsigned char graphic[42];  // 3 bytes per column (20 rows) x 14 columns
+  uint32_t col, row, row_scaled;
+  uint32_t graphic_byte;
+  int32_t  glyphId;
+  uint8_t  byte, *data;
+  const glyph_t *glyph;
+  unsigned char graphic[42];  // 3 bytes per column (20 rows) x 14 columns
 
-    memset(graphic, 0, 42);
-    glyphId = findGlyph(font, charCode);
+  memset(graphic, 0, 42);
+  glyphId = findGlyph(font, charCode);
 
-    if(glyphId >= 0) {
-      glyph = (font->glyphs) + glyphId;
-    }
-    else if(glyphId == -1) {
-      generateNotFoundGlyph(-1, charCode);
-      glyph = &glyphNotFound;
-    }
-    else if(glyphId == -2) {
-      generateNotFoundGlyph(-2, charCode);
-      glyph = &glyphNotFound;
-    }
-    else {
-      glyph = NULL;
-    }
-    data = (uint8_t *)glyph->data;
+  if(glyphId >= 0) {
+    glyph = (font->glyphs) + glyphId;
+  }
+  else if(glyphId == -1) {
+    generateNotFoundGlyph(-1, charCode);
+    glyph = &glyphNotFound;
+  }
+  else if(glyphId == -2) {
+    generateNotFoundGlyph(-2, charCode);
+    glyph = &glyphNotFound;
+  }
+  else {
+    glyph = NULL;
+  }
+  data = (uint8_t *)glyph->data;
 
-    // Drawing the glyph on 24 rows
-    for(row=glyph->rowsGlyph + glyph->rowsBelowGlyph; row>glyph->rowsBelowGlyph; row--) {
-      // Drawing the columns of the glyph
-      int32_t bit = 7;
-      //row_scaled = (row + (row >> 1)) % 25;      // Scale 1.5
-      //row_scaled = ((row >> 1) + (row >> 2));    // Scale  .75
-      row_scaled = row;                          // Scale 1
-      for(col=0; col<glyph->colsGlyph; col++) {
-        if(bit == 7) {
-          byte = *(data++);
-        }
-        graphic_byte = col*3 + (24-row_scaled)/8 ;
-        if(byte & 0x80) { // MSB set
-          graphic[graphic_byte] = graphic[graphic_byte] | (1 << ((row_scaled-1) % 8));  // Set graphic pixel
-        }
-        else {
-          graphic[graphic_byte] = graphic[graphic_byte] & ~(1 << ((row_scaled-1) % 8));  // Clear graphic pixel
-        }
+  // Drawing the glyph on 24 rows
+  for(row=glyph->rowsGlyph + glyph->rowsBelowGlyph; row>glyph->rowsBelowGlyph; row--) {
+    // Drawing the columns of the glyph
+    int32_t bit = 7;
+    //row_scaled = (row + (row >> 1)) % 25;      // Scale 1.5
+    //row_scaled = ((row >> 1) + (row >> 2));    // Scale  .75
+    row_scaled = row;                          // Scale 1
+    for(col=0; col<glyph->colsGlyph; col++) {
+      if(bit == 7) {
+        byte = *(data++);
+      }
+      graphic_byte = col*3 + (24-row_scaled)/8 ;
+      if(byte & 0x80) { // MSB set
+        graphic[graphic_byte] = graphic[graphic_byte] | (1 << ((row_scaled-1) % 8));  // Set graphic pixel
+      }
+      else {
+        graphic[graphic_byte] = graphic[graphic_byte] & ~(1 << ((row_scaled-1) % 8));  // Clear graphic pixel
+      }
 
-        byte <<= 1;
+      byte <<= 1;
 
-        if(--bit == -1) {
-          bit = 7;
-        }
+      if(--bit == -1) {
+        bit = 7;
       }
     }
-    printGraphic24(42, graphic);
-    printerColumn += 14;
+  }
+  printGraphic24(42, graphic);
+  printerColumn += 14;
 }
 
 /*
 //
 //  Determine the length of a string in printer pixels based on the current mode.
 //
-static int buffer_width(const char *buff)
-{
+static int buffer_width(const char *buff) {
   const int mode = printerState.print_mode;
   unsigned int c;
   int l = 0;
 
-  while ((c = 0xff & *buff++) != '\0') {
-    switch (mode) {
+  while((c = 0xff & *buff++) != '\0') {
+    switch(mode) {
     default:
       l += 7;
       break;
@@ -728,10 +735,12 @@ static int buffer_width(const char *buff)
 //
 //  Wrap if line is full
 //
-static void wrap( int width ) {
-  if ( printerColumn + width > PAPER_WIDTH ) {
+static void wrap(int width) {
+  if(printerColumn + width > PAPER_WIDTH) {
     printAdvance (0);
-    if ( width == 7 ) width = 6;
+    if(width == 7) {
+      width = 6;
+    }
   }
   printerColumn += width;
 }
@@ -739,14 +748,13 @@ static void wrap( int width ) {
 //
 //  Print a complete line using character set translation
 //
-void printLine( const char *buff, int with_lf )
-{
+void printLine(const char *buff, int with_lf) {
   const int mode = printerState.print_mode;
   uint8_t c;
-//  unsigned short int posns[ 257 ];
-//  unsigned char pattern[ 6 ];  // Rows
-//  unsigned char i, j, m = 0;
-  unsigned char graphic[ PAPER_WIDTH ];  // Columns
+  //unsigned short int posns[257];
+  //unsigned char pattern[6];  // Rows
+  //unsigned char i, j, m = 0;
+  unsigned char graphic[PAPER_WIDTH];  // Columns
   unsigned char glen = 0;
   unsigned char w = 0;
 
@@ -754,18 +762,16 @@ void printLine( const char *buff, int with_lf )
   setPrinterSBI(true);
 
   // Print line
-  while ( ( c = *( (const unsigned char *) buff++ ) ) != '\0') {
-
+  while((c = *((const unsigned char *)buff++)) != '\0') {
     w= 0;
-    switch ( mode ) {
-
+    switch(mode) {
       case PMODE_DEFAULT:      // Mixed character and graphic printing
-        if ( c == 006 && *buff == 006 ) {
-      // merge small spaces
-       continue;
+        if(c == 006 && *buff == 6) {
+         // merge small spaces
+         continue;
         }
-        if( c & 0x80 ) {  // Unicode
-          uint16_t charCode = (c << 8) | *( (const unsigned char *) buff++ );
+        if(c & 0x80) {  // Unicode
+          uint16_t charCode = (c << 8) | *((const unsigned char *)buff++);
           c = charMap(charCode);
           if(c == 0) {  // Not in the 82240 roman character set, need to print graphic
             if(printerState.printer_model == PRINTER_HP) {
@@ -778,67 +784,64 @@ void printLine( const char *buff, int with_lf )
           }
           else {       // Character is in the 82240 roman character set
             w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-          wrap( w );
-          sendByteIR( c );
+            wrap(w);
+            sendByteIR(c);
           }
         }
         else {
-      // Use printer character set
-        w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
-        printGraphic( glen, graphic );
-        glen = 0;
-        wrap( w );
-        sendByteIR( c );
+          // Use printer character set
+          w = printerColumn == 0 || printerColumn == 160 ? 6 : 7;
+          printGraphic(glen, graphic);
+          glen = 0;
+          wrap(w);
+          sendByteIR(c);
         }
         break;
     }
   }
-  printGraphic( glen, graphic );
-  if ( with_lf ) {
-    printAdvance( 0 );
+  printGraphic(glen, graphic);
+  if(with_lf) {
+    printAdvance(0);
   }
 
   // Hide Print SBI
   setPrinterSBI(false);
-
 }
 
 //
 //  Print buffer right justified
 //
-void printJustified( const char *buff )
-{
+void printJustified(const char *buff) {
   print_modes_t pmode = printerState.print_mode;
   uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
                                         : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
   uint16_t paperWidth = PAPER_WIDTH;
 
-  if ( len >= paperWidth - printerColumn ) {
+  if(len >= paperWidth - printerColumn) {
     len = paperWidth - printerColumn;
   }
-  if ( len > 0 ) {
-    printTab( paperWidth - len);
+  if(len > 0) {
+    printTab(paperWidth - len);
   }
-  printLine( buff, 1 );
+  printLine(buff, 1);
 }
 
 //
 //  Print buffer justified on the left half of the paper line
 //
-void printJustifiedLeft( const char *buff )
-{
+void printJustifiedLeft(const char *buff) {
   print_modes_t pmode = printerState.print_mode;
   uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength( buff ) * 7 - 1
                                         : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
   uint16_t paperWidth = (PAPER_WIDTH / 2) - 7;
 
-  if ( len >= paperWidth - printerColumn ) {
+  if(len >= paperWidth - printerColumn) {
     len = paperWidth - printerColumn;
   }
-  if ( len > 0 ) {
-    printTab( paperWidth - len );
+  if(len > 0) {
+    printTab(paperWidth - len);
   }
-  printLine( buff, 0 );
+  printLine(buff, 0);
 }
 
 //
@@ -892,14 +895,16 @@ static void _real34ToPrintString(real34_t *real34, uint16_t amMode, char *realSt
   uint16_t i, j;
   uint16_t len = strlen(realString);
 
-  j =0;
+  j = 0;
   for(i = 0; i < len; i++) {
-    switch ((uint8_t) realString[i]) {
+    switch((uint8_t) realString[i]) {
       case 0x80:
         if(realString[i+1] == STD_CROSS[1]) {  // Exponent found
           realString[j++] = 'E';    // replace by E
           i += 3; // Skip x10
-          if(realString[i+1] == '+') i++;  // Skip the + sign in the exponent
+          if(realString[i+1] == '+') {
+            i++;  // Skip the + sign in the exponent
+          }
         }
         else if(realString[i+1] == STD_DEGREE[1]) {  // Degree found
           realString[j++] = 0X80;          // #DEGREE SIGN
@@ -1043,9 +1048,11 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
     //max_width -= 9;
   }
 
-  if ( label != NULL ) {
-    printLine( label, 0 );
-    if ( eq ) printLine( "=", 0 );
+  if(label != NULL) {
+    printLine(label, 0);
+    if(eq) {
+      printLine("=", 0);
+    }
   }
 
 //  dtLongInteger     =  0,  ///< Z arbitrary precision integer                    DONE
@@ -1061,15 +1068,15 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
 
   switch(getRegisterDataType((calcRegister_t) regist)) {
     case dtString:
-      strcpy(tmpString,REGISTER_STRING_DATA(regist));
-      if (where == LINE_FULL) {
-        addChrBothSides(34,tmpString);   //Add quotes only for standard print reg, not for print XY
+      strcpy(tmpString, REGISTER_STRING_DATA(regist));
+      if(where == LINE_FULL) {
+        addChrBothSides(34, tmpString);   //Add quotes only for standard print reg, not for print XY
       }
       break;
 
     case dtReal34:
       _real34ToPrintString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, max_len * 9);
-      _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
+      _realStringToPrint(tmpString, max_len);             // Fit the number on a single line
       break;
 
     case dtComplex34:
@@ -1091,15 +1098,15 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
       rows = matrixHeader->matrixRows;
       columns = matrixHeader->matrixColumns;
       sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Matrix ]", rows, columns);  //Matrix header
-      printJustified( tmpString );
+      printJustified(tmpString);
       for(i = 1; i <= rows; i++) {
         for(j = 1; j <= columns; j++) {
           sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i, j);  //Matrix element
-          printLine( tmpString, 0 );
+          printLine(tmpString, 0);
           real34Reduce(real34++, &reduced);
           _real34ToPrintString(&reduced, amNone, tmpString, max_len * 9);
-          _realStringToPrint(tmpString,max_len);             // Fit the number on a single line
-          printJustified( tmpString );
+          _realStringToPrint(tmpString, max_len);             // Fit the number on a single line
+          printJustified(tmpString);
         }
       }
       return;
@@ -1118,15 +1125,15 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
       rows = matrix->header.matrixRows;
       cols = matrix->header.matrixColumns;
       sprintf(tmpString, "[ %" PRIu16 "x%" PRIu16 " Cpx Matrix ]", rows, cols);  //Matrix header
-      printJustified( tmpString );
+      printJustified(tmpString);
       for(i = 0; i < rows; i++) {
         for(j = 0; j < cols; j++) {
           sprintf(tmpString, "%" PRIu16 ":%" PRIu16 "=", i+1, j+1);  //Matrix element
-          printLine( tmpString, 0 );
+          printLine(tmpString, 0);
           real34 = VARIABLE_REAL34_DATA(&matrix->matrixElements[i*cols+j]);
           imag34 = VARIABLE_IMAG34_DATA(&matrix->matrixElements[i*cols+j]);
           _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
-          printJustified( tmpString );
+          printJustified(tmpString);
         }
       }
       return;
@@ -1137,7 +1144,7 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
       break;
   }
 
-  if (( label == NULL ) && ((where == LINE_FULL) || (where == LINE_NOLF))) {     // Padding for PRX
+  if(label == NULL && (where == LINE_FULL || (where == LINE_NOLF))) {     // Padding for PRX
     uint16_t i, padding;
     uint16_t glen = stringGlyphLength(tmpString);
     if((where == LINE_NOLF) && (glen < 17)) {
@@ -1163,19 +1170,19 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
     }
   }
 
-  switch (where) {
+  switch(where) {
     case LINE_FULL:
     case LINE_RIGHT:
-      printJustified( tmpString );
+      printJustified(tmpString);
       break;
     case LINE_LEFT:
-      printJustifiedLeft( tmpString );
+      printJustifiedLeft(tmpString);
       break;
     case LINE_NOLF:
-      printLine( tmpString, 0 );
+      printLine(tmpString, 0);
       break;
     default:
-      printJustified( tmpString );
+      printJustified(tmpString);
   }
 }
 
@@ -1183,37 +1190,35 @@ void printReg( uint16_t regist, const char *label, bool_t eq, print_area_t where
 //
 //  Print the contents of an Alpha register, terminated by a LF
 //
-void printAlpha( const char *Alpha, printArgument_t arg )
-{
+void printAlpha(const char *Alpha, printArgument_t arg) {
   RETURN_IF_PRINT_OFF;
   advanceIfTrace();
-  if ( arg == PRINT_ALPHA_JUST ) {
-    printJustified( Alpha );
+  if(arg == PRINT_ALPHA_JUST) {
+    printJustified(Alpha);
   }
   else {
-    printLine( Alpha, arg == PRINT_ALPHA );
+    printLine(Alpha, arg == PRINT_ALPHA);
   }
 }
 
 //
 //  Send a LF to the printer
 //
-void print_lf() {
+void print_lf(void) {
   RETURN_IF_PRINT_OFF;
   advanceIfTrace();
-  printAdvance( 0 );
+  printAdvance(0);
 }
 
 
 //
 //  Print a single character or control code
 //
-void cmdPrint( uint16_t arg, printArgument_t op )
-{
-  char buff[ 4 ];
+void cmdPrint(uint16_t arg, printArgument_t op) {
+  char buff[4];
   char *line;
 
-  if (!getSystemFlag(FLAG_PRTACT)) {
+  if(!getSystemFlag(FLAG_PRTACT)) {
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
       displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
@@ -1224,47 +1229,46 @@ void cmdPrint( uint16_t arg, printArgument_t op )
     return;
   }
 
-  switch ( op ) {
-
-  case PRINT_BYTE:
-    // Transparent printing of bytes
-    printIR( arg ); // might be a line feed, so...
-    if (arg == '\n' || arg == 0x04)
-      prepareNewLine();
+  switch(op) {
+    case PRINT_BYTE:
+      // Transparent printing of bytes
+      printIR(arg); // might be a line feed, so...
+      if(arg == '\n' || arg == 0x04) {
+        prepareNewLine();
+      }
     break;
 
-  case PRINT_CHAR:
-    // Character printing, should depend on mode
-    line = buff;
-    if(arg & 0xff00) {
-      *line++ = (arg | 0x8000) >> 8;
-    }
-    *line++ = arg & 0xff;
-    *line = '\0';
-    printLine( buff, 0 );
-    break;
+    case PRINT_CHAR:
+      // Character printing, should depend on mode
+      line = buff;
+      if(arg & 0xff00) {
+        *line++ = (arg | 0x8000) >> 8;
+      }
+      *line++ = arg & 0xff;
+      *line = '\0';
+      printLine(buff, 0);
+      break;
 
-  case PRINT_TAB:
-    // Move to specific column
-    printTab( arg );
-    break;
+    case PRINT_TAB:
+      // Move to specific column
+      printTab(arg);
+      break;
 
-  default:
-    break;
+    default:
+      break;
   }
 }
 
 //
 //  Set print mode
 //
-void setPrintMode(uint8_t mode)
-{
+void setPrintMode(uint8_t mode) {
   // Set print mode: ESC NULL  !  n
   //                 27   0   33  n
-  sendByteIR( 27 );
-  sendByteIR(  0 );
-  sendByteIR( 33 );
-  sendByteIR( mode );
+  sendByteIR(27);
+  sendByteIR( 0);
+  sendByteIR(33);
+  sendByteIR(mode);
 }
 
 uint8_t reverse(uint8_t b) {
@@ -1277,8 +1281,7 @@ uint8_t reverse(uint8_t b) {
 //
 //  Print LCD screen
 //
-void printLcd()
-{
+void printLcd(void) {
   int32_t x, y;
   uint8_t * line_addr = 0;
   uint8_t data;
@@ -1304,11 +1307,11 @@ void printLcd()
     sendByteIR((x == 0 ? 0xf1 : 0xff));
     // print screen line
     for(y= SCREEN_HEIGHT-1; y>=0; y--) {
-        #if defined(DMCP_BUILD)
-          line_addr = lcd_line_addr(y);
-        #elif defined(PC_BUILD) // !DMCP_BUILD
-          // To be coded
-        #endif // DMCP_BUILD
+      #if defined(DMCP_BUILD)
+        line_addr = lcd_line_addr(y);
+      #elif defined(PC_BUILD) // !DMCP_BUILD
+        // To be coded
+      #endif // DMCP_BUILD
 
       for(i=2; i>= 0; i--) {
         offset = 3*x + i;
@@ -1340,14 +1343,13 @@ void printLcd()
 //
 //  Return the width of alpha to x
 //
-void cmdprintwidth(enum nilop op)
-{
+void cmdprintwidth(enum nilop op) {
   setX_int_sgn(buffer_width(Alpha), 0);
 }
 */
 
 
-static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
+static bool_t _printRegRange(uint16_t firstRegisterNo, uint16_t lastRegisterNo) {
   uint16_t regist;
   currentKeyCode = 255;
   if(firstRegisterNo <= lastRegisterNo) {
@@ -1373,10 +1375,10 @@ static bool_t _printRegRange(uint16_t firstRegisterNo,uint16_t lastRegisterNo) {
 //
 //  Trace error function
 //
-void printTraceErrorFunction  (int16_t func,  char *errorString) {
-
-  if((calcMode != CM_NORMAL) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) return;  // do Trace only in normal mode
-
+void printTraceErrorFunction(int16_t func, char *errorString) {
+  if((calcMode != CM_NORMAL) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) {
+    return;  // do Trace only in normal mode
+  }
   if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
     nameAlias(func, tmpString);
     strcat(tmpString, " ");
@@ -1385,7 +1387,8 @@ void printTraceErrorFunction  (int16_t func,  char *errorString) {
     leaveTamModeIfEnabled();
 
     #if defined(PC_BUILD)
-      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+      printf("**[DL]** Trace: %s\n", tmpString);
+      fflush(stdout);
     #endif // PC_BUILD
   }
 }
@@ -1393,12 +1396,13 @@ void printTraceErrorFunction  (int16_t func,  char *errorString) {
 //
 //  Trace errors
 //
-void printTraceError  (char *errorString) {
+void printTraceError(char *errorString) {
   if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
-    printLine( errorString, 1 );
+    printLine(errorString, 1);
 
     #if defined(PC_BUILD)
-      printf("**[DL]** Trace: %s\n",errorString);fflush(stdout);
+      printf("**[DL]** Trace: %s\n", errorString);
+      fflush(stdout);
     #endif // PC_BUILD
   }
 }
@@ -1413,11 +1417,12 @@ void printTraceX(uint16_t where) {
       print_lf();
     }
     else {
-      printReg(REGISTER_X, NULL, false, where, false );  // Print register X without name header
+      printReg(REGISTER_X, NULL, false, where, false);  // Print register X without name header
     }
 
     #if defined(PC_BUILD)
-      printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+      printf("**[DL]** Trace: %s\n", tmpString);
+      fflush(stdout);
     #endif // PC_BUILD
   }
 }
@@ -1444,7 +1449,7 @@ void printTraceMatElement(uint16_t where) {
       reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
       complex34Copy(&matrix->matrixElements[i * matrix->header.matrixColumns + j], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
     }
-    printReg(TEMP_REGISTER_1, NULL, false, where, false );  // Print temporary register 1 without name header
+    printReg(TEMP_REGISTER_1, NULL, false, where, false);  // Print temporary register 1 without name header
 
     #if defined(PC_BUILD)
       printf("**[DL]** printTraceMatElement where %d Trace: %s\n",where,tmpString);fflush(stdout);
@@ -1461,10 +1466,11 @@ void printTraceString(char *string, uint16_t where) {
   if((getSystemFlag(FLAG_TRACE)|| getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(lenInBytes), amNone);
     xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), string, lenInBytes);
-    printReg(TEMP_REGISTER_1, NULL, false, where, false );  // Print register X without name header
+    printReg(TEMP_REGISTER_1, NULL, false, where, false);  // Print register X without name header
 
     #if defined(PC_BUILD)
-      printf("**[DL]** printTraceString Trace: %s\n",tmpString);fflush(stdout);
+      printf("**[DL]** printTraceString Trace: %s\n", tmpString);
+      fflush(stdout);
     #endif // PC_BUILD
   }
 }
@@ -1473,7 +1479,9 @@ void printTraceString(char *string, uint16_t where) {
 //  Trace the temporary information
 //
 void printTraceTI() {
-  if(calcMode != CM_NORMAL) return;  // do Trace only in normal mode
+  if(calcMode != CM_NORMAL) {
+    return;  // do Trace only in normal mode
+  }
 
   if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
     if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) { // Not executing a program instruction
@@ -1487,9 +1495,10 @@ void printTraceTI() {
           break;
       }
       if(tmpString[0] != 0) {
-        printLine( tmpString, 1 );
+        printLine(tmpString, 1);
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
         #endif // PC_BUILD
       }
     }
@@ -1497,23 +1506,23 @@ void printTraceTI() {
 }
 
 void _getRegisterLabel(uint16_t registerNo, char *label) {
-        label[0] = 0;
-        if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
-          label[0] = letteredRegisterName((calcRegister_t)registerNo);
-          label[1] = 0;
-        }
-        else if(registerNo < REGISTER_X) {
-          sprintf(label, "R%02d", registerNo);
-        }
-        else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
-          sprintf(label, "R.%03d", registerNo-100);
-        }
-        else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
-          sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
-        }
-        else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
-          sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
-        }
+  label[0] = 0;
+  if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
+    label[0] = letteredRegisterName((calcRegister_t)registerNo);
+    label[1] = 0;
+  }
+  else if(registerNo < REGISTER_X) {
+    sprintf(label, "R%02d", registerNo);
+  }
+  else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
+    sprintf(label, "R.%03d", registerNo-100);
+  }
+  else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
+    sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
+  }
+  else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
+    sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+  }
 }
 
 //
@@ -1522,9 +1531,10 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 void printPrompt(uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
-      printReg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
+      printReg(regist, NULL, false, LINE_LEFT, false);  // Print register left justified without name header
       #if defined(PC_BUILD)
-        printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+        printf("**[DL]** Trace: %s\n", tmpString);
+        fflush(stdout);
       #endif // PC_BUILD
     }
   }
@@ -1539,15 +1549,17 @@ void printViewAview(uint16_t func, uint16_t regist) {
       if(func == ITM_VIEW) {
         char label[16];
         _getRegisterLabel(regist, label);
-        printReg(regist, label, true, LINE_LEFT, false );  // Print register left justified with name header
+        printReg(regist, label, true, LINE_LEFT, false);  // Print register left justified with name header
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s=%s\n",label,tmpString);fflush(stdout);
+          printf("**[DL]** Trace: %s=%s\n",label, tmpString);
+          fflush(stdout);
         #endif // PC_BUILD
       }
       else {
-        printReg(regist, NULL, false, LINE_LEFT, false );  // Print register left justified without name header
+        printReg(regist, NULL, false, LINE_LEFT, false);  // Print register left justified without name header
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
         #endif // PC_BUILD
       }
     }
@@ -1567,7 +1579,9 @@ void printTrace(int16_t func, uint16_t param) {
   char traceBuffer[32];
 
   printerState.trace_done = true;
-  if(((calcMode != CM_NORMAL) && (calcMode != CM_MIM)) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) return;  // Trace only in normal mode
+  if(((calcMode != CM_NORMAL) && (calcMode != CM_MIM)) || ((tam.mode) && ((func == ITM_BACKSPACE) || (func == ITM_EXIT1)))) {
+    return;  // Trace only in normal mode
+  }
 
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM))&& getSystemFlag(FLAG_PRTACT)) {    // Trace or Norm mode and printer active
     if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) { // Not executing a program instruction
@@ -1575,17 +1589,19 @@ void printTrace(int16_t func, uint16_t param) {
         if(func == -MNU_DYNAMIC) {
           printJustified(userMenus[currentUserMenu].menuName);    // User Menu
           #if defined(PC_BUILD)
-            printf("**[DL]** Trace: %s\n",userMenus[currentUserMenu].menuName);fflush(stdout);
+            printf("**[DL]** Trace: %s\n", userMenus[currentUserMenu].menuName);
+            fflush(stdout);
           #endif // PC_BUILD
         }
         else {
           printJustified(indexOfItems[-func].itemSoftmenuName);   // Predefined Menu
           #if defined(PC_BUILD)
-            printf("**[DL]** Trace: %s\n",indexOfItems[-func].itemSoftmenuName);fflush(stdout);
+            printf("**[DL]** Trace: %s\n", indexOfItems[-func].itemSoftmenuName);
+            fflush(stdout);
           #endif // PC_BUILD
         }
       }
-      else if ((func != ITM_PRINTERADV) && (func != ITM_PRINTERX)) {           // Function (don't trace printer ADV nor PRX)
+      else if((func != ITM_PRINTERADV) && (func != ITM_PRINTERX)) {           // Function (don't trace printer ADV nor PRX)
         char buffer[16];
         xcopy(buffer, tmpString, 16);    // Save tmpString content for dynamic menus
         nameAlias(func, tmpString);
@@ -1625,13 +1641,17 @@ void printTrace(int16_t func, uint16_t param) {
                                               shuffleReg[(param & 0xc0) >> 6]);
           }
           else if((param >= FIRST_NAMED_VARIABLE) && (param <= LAST_NAMED_VARIABLE)) {
-            if(!tam.indirect) strcat(tmpString," ");
+            if(!tam.indirect) {
+              strcat(tmpString," ");
+            }
             strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
             strcat(tmpString, (char *)allNamedVariables[param - FIRST_NAMED_VARIABLE].variableName + 1);
             strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
           }
           else if((param >= FIRST_NAMED_RESERVED_VARIABLE) && (param <= LAST_RESERVED_VARIABLE)) {
-            if(!tam.indirect) strcat(tmpString," ");
+            if(!tam.indirect) {
+              strcat(tmpString," ");
+            }
             strcat(tmpString,STD_LEFT_SINGLE_QUOTE);
             strcat(tmpString, (char *)allReservedVariables[param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
             strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
@@ -1685,51 +1705,62 @@ void printTrace(int16_t func, uint16_t param) {
           }
           else {
             if(param < 99) { // Global register from 00 to 99
-              if(!tam.indirect) strcat(tmpString," ");
+              if(!tam.indirect) {
+                strcat(tmpString," ");
+              }
               sprintf(traceBuffer, "%02u", param);
             }
             else if(param <= REGISTER_K) { // Lettered register from X to K
-              if(!tam.indirect) strcat(tmpString," ");
+              if(!tam.indirect) {
+                strcat(tmpString," ");
+              }
               sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_X + param - REGISTER_X].itemSoftmenuName);
             }
             else if(param <= REGISTER_W) { // Lettered register from M to S and E to W
-              if(!tam.indirect) strcat(tmpString," ");
+              if(!tam.indirect) {
+                strcat(tmpString," ");
+              }
               sprintf(traceBuffer, "%s", indexOfItems[ITM_REG_M + param - REGISTER_M].itemSoftmenuName);
             }
             else if((param >= FIRST_LOCAL_REGISTER) && (param <= LAST_LOCAL_REGISTER)) { // Local register from .00 to .98
-              if(!tam.indirect) strcat(tmpString," ");
+              if(!tam.indirect) {
+                strcat(tmpString," ");
+              }
               sprintf(traceBuffer, ".%02d", param - FIRST_LOCAL_REGISTER);
             }
           }
           strcat(tmpString, traceBuffer);
         }
         uint16_t width = stringGlyphLength( tmpString ) * 7 - 1;
-        if ( printerColumn + width > PAPER_WIDTH ) {
-          printAdvance (0);
+        if(printerColumn + width > PAPER_WIDTH) {
+          printAdvance(0);
         }
         printJustified(tmpString);
 
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
         #endif // PC_BUILD
       }
     }
     else if(getSystemFlag(FLAG_TRACE)) {  // Program running or single stepping - Trace mode only
       decodeOneStep_ALIAS(currentStep);
       if(func == ITM_LBL) {
-        printAdvance( 0 ); // Skip one line before printing the label
-        sprintf(traceBuffer, " %02d" , currentLocalStepNumber);
+        printAdvance(0); // Skip one line before printing the label
+        sprintf(traceBuffer, " %02d", currentLocalStepNumber);
         strcat(traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
         strcat(traceBuffer, tmpString);
         printJustified(traceBuffer);     // Current step & step number
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s\n",traceBuffer);fflush(stdout);
+          printf("**[DL]** Trace: %s\n", traceBuffer);
+          fflush(stdout);
         #endif // PC_BUILD
       }
       else {
         printJustified(tmpString);    // Current step
         #if defined(PC_BUILD)
-          printf("**[DL]** Trace: %s\n",tmpString);fflush(stdout);
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
         #endif // PC_BUILD
       }
     }
@@ -1741,12 +1772,12 @@ void nameAlias(uint16_t op, char *nameOp) {
   uint16_t i = 0;
   while(NamesAlias[i].item != LAST_ITEM) {
     if(NamesAlias[i].item == op) {
-      strcpy(nameOp,NamesAlias[i].name);
+      strcpy(nameOp, NamesAlias[i].name);
       return;
     }
     i++;
   }
-  strcpy(nameOp,indexOfItems[op].itemCatalogName);
+  strcpy(nameOp, indexOfItems[op].itemCatalogName);
 }
 
 
@@ -1755,185 +1786,187 @@ void nameAlias(uint16_t op, char *nameOp) {
 //  Start at the PC location
 //
 void printProgram(bool_t list, uint16_t lines) {
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // For details, see fnPem(). This is a modified copy.
-    //
-    currentKeyCode = 255;
-    uint16_t line, firstLine, lastLine;
-    uint8_t *step, *nextStep;
-    currentKeyCode = 255;
-    RETURN_IF_PRINT_OFF;
-    advanceIfTrace();
+  ///////////////////////////////////////////////////////////////////////////////////////
+  // For details, see fnPem(). This is a modified copy.
+  //
+  currentKeyCode = 255;
+  uint16_t line, firstLine, lastLine;
+  uint8_t *step, *nextStep;
+  currentKeyCode = 255;
+  RETURN_IF_PRINT_OFF;
+  advanceIfTrace();
 
-    firstDisplayedLocalStepNumber = 0;
-    if(!list) {
-      defineFirstDisplayedStep();
-      step = firstDisplayedStep;
-    }
-    else {
-      step = currentStep;
-    }
-    programListEnd           = false;
-    lastProgramListEnd       = false;
+  firstDisplayedLocalStepNumber = 0;
+  if(!list) {
+    defineFirstDisplayedStep();
+    step = firstDisplayedStep;
+  }
+  else {
+    step = currentStep;
+  }
+  programListEnd           = false;
+  lastProgramListEnd       = false;
 
+  print_lf();
+
+  if(!list) {  // Print Program (pr_PROG)
+    // Time and date header line
+    if(getSystemFlag(FLAG_TRACE)) { // Compact program format
+      printLine(" ", 0);            // add a space before the header
+    }
+    getTimeString(tmpString);
+    printLine(tmpString, 0);
+    printLine(" ", 0);
+    getDateString(tmpString);
+    printLine(tmpString, 1);
     print_lf();
 
-    if(!list) {  // Print Program (pr_PROG)
-      // Time and date header line
-      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-        printLine( " ", 0 );          // add a space before the header
+    if(firstDisplayedLocalStepNumber == 0) {
+      if(getSystemFlag(FLAG_TRACE)) { // Compact program format
+        printLine(" ", 0);            // add a space before the first line
       }
-      getTimeString(tmpString);
-      printLine( tmpString, 0 );
-      printLine( " ", 0 );
-      getDateString(tmpString);
-      printLine( tmpString, 1 );
-      print_lf();
-
-      if(firstDisplayedLocalStepNumber == 0) {
-        if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-           printLine( " ", 0 );          // add a space before the first line
-        }
-        sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
-        printLine( tmpString, 1 );
-        firstLine = 1;
-      }
-      else {
-        firstLine = 0;
-      }
-      lastLine = 9999;
+      sprintf(tmpString, "00 { %" PRIu32 "-Byte Prgm }", _getProgramSize());
+      printLine(tmpString, 1);
+      firstLine = 1;
     }
-    else {       // Print listing (pr_LIST)
-      firstLine = currentLocalStepNumber;
-      lastLine = firstLine + lines - 1;
+    else {
+      firstLine = 0;
     }
+    lastLine = 9999;
+  }
+  else {       // Print listing (pr_LIST)
+    firstLine = currentLocalStepNumber;
+    lastLine = firstLine + lines - 1;
+  }
 
-    int lineOffset = 0, lineOffsetTam = 0;
+  int lineOffset = 0, lineOffsetTam = 0;
 
-    bool_t  isLabel;
-    bool_t  startOfLine = true;
+  bool_t  isLabel;
+  bool_t  startOfLine = true;
 
-    for(line=firstLine; line<=lastLine; line++) {
-      nextStep = findNextStep(step);
-      isLabel = (*step == ITM_LBL);
+  for(line=firstLine; line<=lastLine; line++) {
+    nextStep = findNextStep(step);
+    isLabel = (*step == ITM_LBL);
 
-      //Line Number
-      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-        if(isLabel) {
-          if((line != 01) && !startOfLine) {
-            printAdvance( 0 ); // Print pending line
-          }
-          printAdvance( 0 ); // Skip one line before printing the label
-          sprintf(tmpString, " %02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-          strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
-          printLine( tmpString, 0 );
-        }
-        else if(!startOfLine) {
-          if( printerColumn + 14 <= PAPER_WIDTH ) {
-            printLine( "  ", 0 );
-          }
-          else {
-            printAdvance (0);
-          }
-        }
-      }
-      else {
-        sprintf(tmpString, "%02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-        strcat(tmpString, (isLabel ? STD_BLACK_RIGHT_TRIANGLE : " "));
-        printLine( tmpString, 0 );
-      }
-
-      //Decode instruction
-      decodeOneStep_ALIAS(step);
-
-      if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-        if ( printerColumn + stringGlyphLength(tmpString)*7 > PAPER_WIDTH + 2 ) {
-          printAdvance (0);
-        }
-        printLine( tmpString, isLabel );
-        startOfLine = isLabel;
-      }
-      else {
-        printLine( tmpString, 1 );
-      }
-
-      if(isAtEndOfProgram(step)) {
-        programListEnd = true;
-        if(*nextStep == 255 && *(nextStep + 1) == 255) {
-          lastProgramListEnd = true;
-        }
-        break;
-      }
-      if((*step == 255) && (*(step + 1) == 255)) {
-        programListEnd = true;
-        lastProgramListEnd = true;
-        break;
-      }
-      step = nextStep;
-      if(_exitKeyPressed()) break;
-    }
+    //Line Number
     if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
-       printAdvance( 0 );            // print remaining buffer content
+      if(isLabel) {
+        if((line != 01) && !startOfLine) {
+          printAdvance(0); // Print pending line
+        }
+        printAdvance(0); // Skip one line before printing the label
+        sprintf(tmpString, " %02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+        strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
+        printLine(tmpString, 0);
+      }
+      else if(!startOfLine) {
+        if(printerColumn + 14 <= PAPER_WIDTH) {
+          printLine("  ", 0);
+        }
+        else {
+          printAdvance(0);
+        }
+      }
     }
+    else {
+      sprintf(tmpString, "%02d" , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+      strcat(tmpString, (isLabel ? STD_BLACK_RIGHT_TRIANGLE : " "));
+      printLine(tmpString, 0);
+    }
+
+    //Decode instruction
+    decodeOneStep_ALIAS(step);
+
+    if(getSystemFlag(FLAG_TRACE)) {   // Compact program format
+      if(printerColumn + stringGlyphLength(tmpString)*7 > PAPER_WIDTH + 2 ) {
+        printAdvance(0);
+      }
+      printLine(tmpString, isLabel);
+      startOfLine = isLabel;
+    }
+    else {
+      printLine(tmpString, 1);
+    }
+
+    if(isAtEndOfProgram(step)) {
+      programListEnd = true;
+      if(*nextStep == 255 && *(nextStep + 1) == 255) {
+        lastProgramListEnd = true;
+      }
+      break;
+    }
+    if((*step == 255) && (*(step + 1) == 255)) {
+      programListEnd = true;
+      lastProgramListEnd = true;
+      break;
+    }
+    step = nextStep;
+    if(_exitKeyPressed()) {
+      break;
+    }
+  }
+  if(getSystemFlag(FLAG_TRACE)) { // Compact program format
+      printAdvance(0);            // print remaining buffer content
+  }
 }
 
 
 static uint16_t _getUnicodeValue(calcRegister_t regist) {
-    int32_t value;
+  int32_t value;
 
-    if(getRegisterDataType(regist) == dtReal34) {
-      real34_t maxValue34;
+  if(getRegisterDataType(regist) == dtReal34) {
+    real34_t maxValue34;
 
-      int32ToReal34(0x8000, &maxValue34);
-      if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if defined(PC_BUILD)
-          real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
-          sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
-          moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
-        #endif // PC_BUILD
-        return -1;
-      }
-      value = real34ToInt32(REGISTER_REAL34_DATA(regist));
-    }
-
-    else if(getRegisterDataType(regist) == dtLongInteger) {
-      longInteger_t lgInt;
-
-      convertLongIntegerRegisterToLongInteger(regist, lgInt);
-      if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, 0x8000) >= 0) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if defined(PC_BUILD)
-          longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
-          sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
-          moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
-        #endif // PC_BUILD
-        longIntegerFree(lgInt);
-        return -1;
-      }
-      longIntegerToUInt32(lgInt, value);
-      longIntegerFree(lgInt);
-    }
-
-    else if(getRegisterDataType(regist) == dtShortInteger) {
-      longInteger_t lgInt;
-
-      longIntegerInit(lgInt);
-      convertShortIntegerRegisterToLongInteger(regist, lgInt);
-      longIntegerToUInt32(lgInt, value);
-      longIntegerFree(lgInt);
-    }
-
-    else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    int32ToReal34(0x8000, &maxValue34);
+    if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist))) {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if defined(PC_BUILD)
-        sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
-        moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
+        real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
+        sprintf(tmpString, "x %" PRId16 " = %s:", regist, errorMessage);
+        moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
       return -1;
     }
+    value = real34ToInt32(REGISTER_REAL34_DATA(regist));
+  }
 
-    return value;
+  else if(getRegisterDataType(regist) == dtLongInteger) {
+    longInteger_t lgInt;
+
+    convertLongIntegerRegisterToLongInteger(regist, lgInt);
+    if(longIntegerCompareUInt(lgInt, 0) < 0 || longIntegerCompareUInt(lgInt, 0x8000) >= 0) {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      #if defined(PC_BUILD)
+        longIntegerToAllocatedString(lgInt, errorMessage, ERROR_MESSAGE_LENGTH);
+        sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
+        moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", NULL);
+      #endif // PC_BUILD
+      longIntegerFree(lgInt);
+      return -1;
+    }
+    longIntegerToUInt32(lgInt, value);
+    longIntegerFree(lgInt);
+  }
+
+  else if(getRegisterDataType(regist) == dtShortInteger) {
+    longInteger_t lgInt;
+
+    longIntegerInit(lgInt);
+    convertShortIntegerRegisterToLongInteger(regist, lgInt);
+    longIntegerToUInt32(lgInt, value);
+    longIntegerFree(lgInt);
+  }
+
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if defined(PC_BUILD)
+      sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
+      moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", NULL);
+    #endif // PC_BUILD
+    return -1;
+  }
+
+  return value;
 }
 #endif // IR_PRINTING
 
@@ -1944,78 +1977,78 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
 
 // Printer On/Off
 void fnP_PrinterOnOff(uint16_t op) {
-    //#if defined(IR_PRINTING)
-      if(op == PRON) {
-        printerState.print_on    = true;
-        setSystemFlag(FLAG_PRTACT);
-        fnSetFlag(FLAG_PRTEN);
-      }
-      else if(op == PROFF) {
-        printerState.print_on    = false;
-        clearSystemFlag(FLAG_PRTACT);
-        fnClearFlag(FLAG_PRTEN);
-      }
-    //#endif //IR_PRINTING
+  //#if defined(IR_PRINTING)
+    if(op == PRON) {
+      printerState.print_on = true;
+      setSystemFlag(FLAG_PRTACT);
+      fnSetFlag(FLAG_PRTEN);
+    }
+    else if(op == PROFF) {
+      printerState.print_on = false;
+      clearSystemFlag(FLAG_PRTACT);
+      fnClearFlag(FLAG_PRTEN);
+    }
+  //#endif //IR_PRINTING
 }
 
 // Printer Mode
 void fnP_PrinterMode(uint16_t mode) {
-    //#if defined(IR_PRINTING)
-      if(mode == MAN) {
-        fnClearFlag(FLAG_NORM);
-        fnClearFlag(FLAG_TRACE);
-      }
-      else if(mode == NORM) {
-        fnSetFlag(FLAG_NORM);
-        fnClearFlag(FLAG_TRACE);
-      }
-      else if(mode == TRACE) {
-        fnClearFlag(FLAG_NORM);
-        fnSetFlag(FLAG_TRACE);
-      }
-      else if(mode == STRACE) {
-        fnSetFlag(FLAG_NORM);
-        fnSetFlag(FLAG_TRACE);
-      }
-    //#endif //IR_PRINTING
+  //#if defined(IR_PRINTING)
+    if(mode == MAN) {
+      fnClearFlag(FLAG_NORM);
+      fnClearFlag(FLAG_TRACE);
+    }
+    else if(mode == NORM) {
+      fnSetFlag(FLAG_NORM);
+      fnClearFlag(FLAG_TRACE);
+    }
+    else if(mode == TRACE) {
+      fnClearFlag(FLAG_NORM);
+      fnSetFlag(FLAG_TRACE);
+    }
+    else if(mode == STRACE) {
+      fnSetFlag(FLAG_NORM);
+      fnSetFlag(FLAG_TRACE);
+    }
+  //#endif //IR_PRINTING
 }
 
 // Printer model selection
 void fnSetPrinter(uint16_t model) {
-    //#if defined(IR_PRINTING)
-      printerState.printer_model    = model;
-    //#endif //IR_PRINTING
+  //#if defined(IR_PRINTING)
+    printerState.printer_model = model;
+  //#endif //IR_PRINTING
 }
 
 // Get printer line delay
 void fnP_GetDelay(uint16_t unusedButMandatoryParameter) {
-    #if defined(IR_PRINTING)
-      longInteger_t delay;
+  #if defined(IR_PRINTING)
+    longInteger_t delay;
 
-      liftStack();
+    liftStack();
 
-      longIntegerInit(delay);
-      int32ToLongInteger(getLineDelay(), delay);
-      convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
-      longIntegerFree(delay);
-    #endif //IR_PRINTING
+    longIntegerInit(delay);
+    int32ToLongInteger(getLineDelay(), delay);
+    convertLongIntegerToLongIntegerRegister(delay, REGISTER_X);
+    longIntegerFree(delay);
+  #endif //IR_PRINTING
 }
 
 // Set printer line delay
 void fnP_SetDelay(uint16_t delay) {
-    #if defined(IR_PRINTING)
-      printerState.delay = delay;
-      setLineDelay(delay);
-    #endif //IR_PRINTING
+  #if defined(IR_PRINTING)
+    printerState.delay = delay;
+    setLineDelay(delay);
+  #endif //IR_PRINTING
 }
 
 // Printer paper advance
 void fnP_Advance(uint16_t unusedButMandatoryParameter) {
-    #if defined(IR_PRINTING)  // Show Print SBI
-      setPrinterSBI(true);
-      print_lf();
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
+  #if defined(IR_PRINTING)  // Show Print SBI
+    setPrinterSBI(true);
+    print_lf();
+    setPrinterSBI(false);
+  #endif //IR_PRINTING
 }
 
 // Print program list
@@ -2027,11 +2060,11 @@ void fnP_PrinterList(uint16_t lines) {
 
 // Print byte
 void fnP_Byte(uint16_t byte) {
-    #if defined(IR_PRINTING)
-      setPrinterSBI(true);
-      cmdPrint( byte, PRINT_BYTE );
-      setPrinterSBI(false);
-    #endif //IR_PRINTING
+  #if defined(IR_PRINTING)
+    setPrinterSBI(true);
+    cmdPrint( byte, PRINT_BYTE );
+    setPrinterSBI(false);
+  #endif //IR_PRINTING
 }
 
 // Print a character using character set translation
@@ -2058,186 +2091,187 @@ void fnP_Tab(uint16_t column) {
 
 // Print User
 void fnP_User(uint16_t unusedButMandatoryParameter) {
-    #if defined(IR_PRINTING)
-      char label[16];
-      currentKeyCode = 255;
+  #if defined(IR_PRINTING)
+    char label[16];
+    currentKeyCode = 255;
 
-      if (!getSystemFlag(FLAG_PRTACT)) {
-        if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
-          displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if defined(PC_BUILD)
-            sprintf(errorMessage, "Printing is disabled");
-            moreInfoOnError("In function fnP_User:", errorMessage, NULL, NULL);
-          #endif // PC_BUILD
-        }
-        return;
+    if(!getSystemFlag(FLAG_PRTACT)) {
+      if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) {
+        displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if defined(PC_BUILD)
+          sprintf(errorMessage, "Printing is disabled");
+          moreInfoOnError("In function fnP_User:", errorMessage, NULL, NULL);
+        #endif // PC_BUILD
       }
-      // Print User variables
-      calcRegister_t variable;
-      bool_t userVariableFound = false;
-      for(int i=0; i<numberOfNamedVariables; i++) {
-        xcopy(label, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
-        label[allNamedVariables[i].variableName[0]] = 0;
-        if((compareString(label, "STATS", CMP_NAME) == 0) || (compareString(label, "HISTO", CMP_NAME) == 0) || (compareString(label, "Mat_A", CMP_NAME) == 0) ||
-           (compareString(label, "Mat_B", CMP_NAME) == 0) || (compareString(label, "Mat_X", CMP_NAME) == 0)) { // Don't include "STATS", "HISTO", "Mat_A", "Mat_B" and "Mat_X"
-          continue;
-        }
-        else {
-          variable =  findNamedVariable(label);
-          printReg(variable, label, true, LINE_FULL, false );
-          userVariableFound = true;
-          if(_exitKeyPressed()) {
-            return;
-          }
-        }
+      return;
+    }
+    // Print User variables
+    calcRegister_t variable;
+    bool_t userVariableFound = false;
+    for(int i=0; i<numberOfNamedVariables; i++) {
+      xcopy(label, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
+      label[allNamedVariables[i].variableName[0]] = 0;
+      if((compareString(label, "STATS", CMP_NAME) == 0) || (compareString(label, "HISTO", CMP_NAME) == 0) || (compareString(label, "Mat_A", CMP_NAME) == 0) ||
+         (compareString(label, "Mat_B", CMP_NAME) == 0) || (compareString(label, "Mat_X", CMP_NAME) == 0)) { // Don't include "STATS", "HISTO", "Mat_A", "Mat_B" and "Mat_X"
+        continue;
+      }
+      else {
+        variable =  findNamedVariable(label);
+        printReg(variable, label, true, LINE_FULL, false );
+        userVariableFound = true;
         if(_exitKeyPressed()) {
           return;
         }
       }
+      if(_exitKeyPressed()) {
+        return;
+      }
+    }
 
-      if(userVariableFound) print_lf();
+    if(userVariableFound) {
+      print_lf();
+    }
 
-      // Print User Program Labels
-      uint8_t *nextStep, *step = beginOfProgramMemory;
-      uint16_t programNumber = 1;
-      bool_t firstProgramLabel = true;
-      while(!isAtEndOfPrograms(step)) { // .END.
-        nextStep = findNextStep(step);
-        if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
-          if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
-            xcopy(label, step + 3, *(step+2));
-            label[*(step+2)] = 0;
-            printLine("LBL " STD_LEFT_SINGLE_QUOTE,0);
-            printLine(label, 0);
-            printLine(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
-            if(firstProgramLabel) {
-              sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
-              printJustified( tmpString );
-              firstProgramLabel = false;
-            }
-          }
-        }
-
-        if(isAtEndOfProgram(step)) { // END
-          printLine("END", !firstProgramLabel);
+    // Print User Program Labels
+    uint8_t *nextStep, *step = beginOfProgramMemory;
+    uint16_t programNumber = 1;
+    bool_t firstProgramLabel = true;
+    while(!isAtEndOfPrograms(step)) { // .END.
+      nextStep = findNextStep(step);
+      if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
+        if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
+          xcopy(label, step + 3, *(step+2));
+          label[*(step+2)] = 0;
+          printLine("LBL " STD_LEFT_SINGLE_QUOTE,0);
+          printLine(label, 0);
+          printLine(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);
           if(firstProgramLabel) {
             sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
             printJustified( tmpString );
+            firstProgramLabel = false;
           }
-          programNumber++;
-          firstProgramLabel = true;
-        }
-
-        step = nextStep;
-
-        if(_exitKeyPressed()) {
-          return;
         }
       }
 
-      printLine(".END.", 1);
+      if(isAtEndOfProgram(step)) { // END
+        printLine("END", !firstProgramLabel);
+        if(firstProgramLabel) {
+          sprintf(tmpString, "Prgm #%" PRIu16 "/%" PRIu16 "", programNumber, numberOfPrograms);
+          printJustified( tmpString );
+        }
+        programNumber++;
+        firstProgramLabel = true;
+      }
 
-    #endif //IR_PRINTING*
+      step = nextStep;
+
+      if(_exitKeyPressed()) {
+        return;
+      }
+    }
+
+    printLine(".END.", 1);
+
+  #endif //IR_PRINTING*
 }
 
 // Print LCD
 void fnP_LCD(uint16_t unusedButMandatoryParameter) {
-    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+  if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(IR_PRINTING)
-      return; // Not yet working for the 82240 printer
-      setPrinterSBI(true);
-      resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-      refreshScreen(80);
-      printLcd();
-      setPrinterSBI(false);
+    return; // Not yet working for the 82240 printer
+    setPrinterSBI(true);
+    resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+    refreshScreen(80);
+    printLcd();
+    setPrinterSBI(false);
     #endif //IR_PRINTING
-    }
-    else {                             // SNAP
-      fnSNAP(NOPARAM);
-    }
+  }
+  else {                             // SNAP
+    fnSNAP(NOPARAM);
+  }
 }
 
 
 // Print Alpha string
 void fnP_Alpha(uint16_t registerNo) {
-    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
-    #if defined(IR_PRINTING)
-      if (getRegisterDataType(registerNo) == dtString) {
-        printAlpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
-      }
-    #endif //IR_PRINTING
+  if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
+  #if defined(IR_PRINTING)
+    if(getRegisterDataType(registerNo) == dtString) {
+      printAlpha(REGISTER_STRING_DATA(registerNo), PRINT_ALPHA);
     }
-    else {                             // Print to file
-      if(calcMode != CM_AIM) {
-        #if defined(DMCP_BUILD)
-          beep(440, 50);
-          beep(4400, 50);
-          beep(440, 50);
-        #endif // DMCP_BUILD
-        return;
-      }
-      xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-      create_filename(".REGS.TSV");
-
-      #if (VERBOSE_LEVEL >= 1)
-        clearScreen(2);
-        print_linestr("Output Aim Buffer to drive:", true);
-        print_linestr(filename_csv, false);
-      #endif // VERBOSE_LEVEL >= 1
-
-      tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
-      xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-      //print_linestr(aimBuffer,false);
+  #endif //IR_PRINTING
+  }
+  else {                             // Print to file
+    if(calcMode != CM_AIM) {
+      #if defined(DMCP_BUILD)
+        beep(440, 50);
+        beep(4400, 50);
+        beep(440, 50);
+      #endif // DMCP_BUILD
+      return;
     }
+    xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
+    create_filename(".REGS.TSV");
+
+    #if (VERBOSE_LEVEL >= 1)
+      clearScreen(2);
+      print_linestr("Output Aim Buffer to drive:", true);
+      print_linestr(filename_csv, false);
+    #endif // VERBOSE_LEVEL >= 1
+
+    tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
+    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+    //print_linestr(aimBuffer, false);
+  }
 }
 
 
 
 void fnP_Regs (uint16_t registerNo) {
-
-    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(IR_PRINTING)
-      char label[16];
-      label[0] = 0;
-      if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
-        label[0] = letteredRegisterName((calcRegister_t)registerNo);
-        label[1] = 0;
-        }
-      else if(registerNo < REGISTER_X) {
-        sprintf(label, "R%02d", registerNo);
+  if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+  #if defined(IR_PRINTING)
+    char label[16];
+    label[0] = 0;
+    if(REGISTER_X <= registerNo && registerNo <= REGISTER_W) {
+      label[0] = letteredRegisterName((calcRegister_t)registerNo);
+      label[1] = 0;
       }
-      else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
-        sprintf(label, "R.%03d", registerNo-100);
-      }
-      else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
-        sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
-      }
-      else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
-        sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
-      }
-      printReg(registerNo, label, true, LINE_FULL, false );
-    #endif //IR_PRINTING
+    else if(registerNo < REGISTER_X) {
+      sprintf(label, "R%02d", registerNo);
     }
-    else {                             // Print to file
-      if(calcMode != CM_NORMAL) {
-        #if defined(DMCP_BUILD)
-          beep(440, 50);
-          beep(4400, 50);
-          beep(440, 50);
-        #endif // DMCP_BUILD
-        return;
-      }
-
-      create_filename(".REGS.TSV");
-
-      #if (VERBOSE_LEVEL >= 1)
-        clearScreen(3);
-        print_linestr("Output regs to drive:", true);
-        print_linestr(filename_csv, false);
-      #endif // VERBOSE_LEVEL >= 1
-
-      stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
+    else if(FIRST_LOCAL_REGISTER <= registerNo && registerNo <= LAST_LOCAL_REGISTER) {
+      sprintf(label, "R.%03d", registerNo-100);
     }
+    else if(FIRST_NAMED_VARIABLE <= registerNo && registerNo <= LAST_NAMED_VARIABLE) {
+      sprintf(label, "%s", (char *)allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName + 1);
+    }
+    else if(FIRST_NAMED_RESERVED_VARIABLE <= registerNo && registerNo <= LAST_RESERVED_VARIABLE) {
+      sprintf(label, "%s", (char *)allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+    }
+    printReg(registerNo, label, true, LINE_FULL, false );
+  #endif //IR_PRINTING
+  }
+  else {                             // Print to file
+    if(calcMode != CM_NORMAL) {
+      #if defined(DMCP_BUILD)
+        beep(440, 50);
+        beep(4400, 50);
+        beep(440, 50);
+      #endif // DMCP_BUILD
+      return;
+    }
+
+    create_filename(".REGS.TSV");
+
+    #if (VERBOSE_LEVEL >= 1)
+      clearScreen(3);
+      print_linestr("Output regs to drive:", true);
+      print_linestr(filename_csv, false);
+    #endif // VERBOSE_LEVEL >= 1
+
+    stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
+  }
 }
 
 TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICAL_SUMS] = {
@@ -2272,261 +2306,277 @@ TO_QSPI const summationRegisterName_t summationRegisterName[NUMBER_OF_STATISTICA
 };
 
 void fnP_Sigma(uint16_t unusedButMandatoryParameter) {
-    currentKeyCode = 255;
-    if(statisticalSumsPointer != NULL) {
-      if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-      #if defined(IR_PRINTING)
-        uint16_t regist;
-        if(!getSystemFlag(FLAG_PRTEN) && ((programRunStop == PGM_RUNNING) || (programRunStop == PGM_SINGLE_STEP))) {
-          displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if defined(PC_BUILD)
-            sprintf(errorMessage, "Printing is disabled");
-            moreInfoOnError("In function fnP_Sigma:", errorMessage, NULL, NULL);
-          #endif // PC_BUILD
+  currentKeyCode = 255;
+  if(statisticalSumsPointer != NULL) {
+    if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+    #if defined(IR_PRINTING)
+      uint16_t regist;
+      if(!getSystemFlag(FLAG_PRTEN) && ((programRunStop == PGM_RUNNING) || (programRunStop == PGM_SINGLE_STEP))) {
+        displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if defined(PC_BUILD)
+          sprintf(errorMessage, "Printing is disabled");
+          moreInfoOnError("In function fnP_Sigma:", errorMessage, NULL, NULL);
+        #endif // PC_BUILD
+        return;
+      }
+      for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
+        convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
+        printReg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL, true );
+        if(_exitKeyPressed()) {
           return;
         }
-        for(regist = 0; regist < NUMBER_OF_STATISTICAL_SUMS; regist++) {
-          convertRealToResultRegister(statisticalSumsPointer + regist, TEMP_REGISTER_1, amNone);
-          printReg(TEMP_REGISTER_1, summationRegisterName[regist].name, true, LINE_FULL, true );
-          if(_exitKeyPressed()) {
-            return;
-          }
-        }
-      #endif //IR_PRINTING
-      }
-      else {                             // Print to file
-      }
-    }
-    else {
-      displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fnP_Sigma:", "There is no statistical data available!", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-}
-
-
-void fnP_All_Regs(uint16_t option) {
-    if (getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
-    #if defined(IR_PRINTING)
-      bool_t exited;
-      uint16_t s, n;
-      switch(option) {
-        case PRN_ALL:
-          exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
-          if(exited) return;
-          exited = _printRegRange(0, 99);                   // Global registers
-          if(exited) return;
-          if(currentNumberOfLocalRegisters > 0){
-            exited = _printRegRange(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1);  // Local registers
-            if(exited) return;
-          }
-          if(numberOfNamedVariables > 0) {
-            exited = _printRegRange(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);  // Named Variablewss
-            if(exited) return;
-          }
-          break;
-
-        case PRN_REGS:
-          if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
-            _printRegRange(s, (s + n) -1);
-          }
-          else {
-            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          }
-          break;
-
-        case PRN_Xr:
-          printReg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
-          break;
-
-        case PRN_STK:
-          _printRegRange(getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T, REGISTER_X);
-          break;
-
-        case PRN_XYr:
-          switch(getRegisterDataType(REGISTER_X)) {
-            case dtLongInteger:
-            case dtReal34:
-            case dtShortInteger:
-            case dtString:
-            case dtDate:
-            case dtTime: {
-              switch(getRegisterDataType(REGISTER_Y)) {
-                case dtLongInteger:
-                case dtReal34:
-                case dtShortInteger:
-                case dtString:
-                case dtDate:
-                case dtTime: {
-                  printReg(REGISTER_X, NULL, false, LINE_LEFT, false );   // Print register X on the left half of the line
-                  printReg(REGISTER_Y, NULL, false, LINE_RIGHT, false );  // Print register Y on the right half of the line
-                  return;
-                }
-                default: {
-                  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-                  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                    sprintf(errorMessage, "invalid data type %s for register Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-                    moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
-                  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-                  return;
-                }
-              }
-              return;
-            }
-
-
-            case dtReal34Matrix: {
-              real34Matrix_t    x;
-              convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-
-              if(x.header.matrixColumns == 2) {
-                for(int i = 0; i < x.header.matrixRows; ++i) {
-                  reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-                  real34Copy(&x.matrixElements[i*2], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
-                  real34Copy(&x.matrixElements[i*2+1], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
-                }
-              }
-              else if(x.header.matrixRows == 2) {
-                for(int i = 0; i < x.header.matrixColumns; ++i) {
-                  reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
-                  real34Copy(&x.matrixElements[i], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
-                  real34Copy(&x.matrixElements[i + x.header.matrixColumns], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
-                }
-              }
-              else {
-                displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                  sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", x.header.matrixRows, x.header.matrixColumns);
-                  moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
-                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-              }
-              return;
-            }
-
-            case dtComplex34Matrix: {
-              complex34Matrix_t    xc;
-              convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &xc);
-
-              if(xc.header.matrixColumns == 2) {
-                for(int i = 0; i < xc.header.matrixRows; ++i) {
-                  reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-                  complex34Copy(&xc.matrixElements[i*2], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
-                  complex34Copy(&xc.matrixElements[i*2+1], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
-                }
-              }
-              else if(xc.header.matrixRows == 2) {
-                for(int i = 0; i < xc.header.matrixColumns; ++i) {
-                  reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-                  complex34Copy(&xc.matrixElements[i], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
-                  complex34Copy(&xc.matrixElements[i + xc.header.matrixColumns], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
-                  printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
-                }
-              }
-              else {
-                displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                  sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", xc.header.matrixRows, xc.header.matrixColumns);
-                  moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
-                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-              }
-              return;
-            }
-
-            default: {
-              displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                sprintf(errorMessage, "invalid data type %s for register X", getRegisterDataTypeName(REGISTER_X, true, false));
-                moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
-              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-              return;
-            }
-          }
-          break;
-
-        default: ;
       }
     #endif //IR_PRINTING
     }
     else {                             // Print to file
-      if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
-        #if defined(DMCP_BUILD)
-          beep(440, 50);
-          beep(4400, 50);
-          beep(440, 50);
-        #endif // DMCP_BUILD
-        return;
-      }
-
-      create_filename(".REGS.TSV");
-
-      #if (VERBOSE_LEVEL >= 1)
-        clearScreen(4);
-        print_linestr("Output regs to drive:", true);
-        print_linestr(filename_csv, false);
-      #endif // VERBOSE_LEVEL >= 1
-
-      uint16_t s, n;
-      switch(option) {
-        case PRN_ALL:
-          stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
-          stackregister_csv_out(0, 99, !ONELINE);
-          if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-          if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
-          break;
-
-        case PRN_REGS:
-          if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
-            stackregister_csv_out(s, (s + n) -1 , !ONELINE);
-          }
-          else {
-            displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          }
-          break;
-
-        case PRN_STK:
-          if(getSystemFlag(FLAG_SSIZE8)) {
-            stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
-          }
-          else {
-            stackregister_csv_out(REGISTER_X, REGISTER_T, !ONELINE);
-          }
-          break;
-
-        case PRN_GLOBALr:
-          stackregister_csv_out(0, 99, !ONELINE);
-          break;
-
-        case PRN_LOCALr:
-          if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
-          break;
-
-        case PRN_NAMEDr:
-          if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
-          break;
-
-        case PRN_Xr:
-          stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
-          break;
-
-        case PRN_TMP:
-          stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
-          break;
-
-        case PRN_XYr:
-          stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
-          break;
-
-        default: ;
-      }
     }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnP_Sigma:", "There is no statistical data available!", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+
+void fnP_All_Regs(uint16_t option) {
+  if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer
+  #if defined(IR_PRINTING)
+    bool_t exited;
+    uint16_t s, n;
+    switch(option) {
+      case PRN_ALL:
+        exited = _printRegRange(REGISTER_X, REGISTER_W);  // Lettered registers
+        if(exited) {
+          return;
+        }
+        exited = _printRegRange(0, 99);                   // Global registers
+        if(exited) {
+          return;
+        }
+        if(currentNumberOfLocalRegisters > 0){
+          exited = _printRegRange(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1);  // Local registers
+          if(exited) {
+            return;
+          }
+        }
+        if(numberOfNamedVariables > 0) {
+          exited = _printRegRange(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);  // Named Variablewss
+          if(exited) {
+            return;
+          }
+        }
+        break;
+
+      case PRN_REGS:
+        if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
+          _printRegRange(s, (s + n) -1);
+        }
+        else {
+          displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        }
+        break;
+
+      case PRN_Xr:
+        printReg(REGISTER_X, NULL, false, LINE_FULL, false );  // Print register X without name header
+        break;
+
+      case PRN_STK:
+        _printRegRange(getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T, REGISTER_X);
+        break;
+
+      case PRN_XYr:
+        switch(getRegisterDataType(REGISTER_X)) {
+          case dtLongInteger:
+          case dtReal34:
+          case dtShortInteger:
+          case dtString:
+          case dtDate:
+          case dtTime: {
+            switch(getRegisterDataType(REGISTER_Y)) {
+              case dtLongInteger:
+              case dtReal34:
+              case dtShortInteger:
+              case dtString:
+              case dtDate:
+              case dtTime: {
+                printReg(REGISTER_X, NULL, false, LINE_LEFT, false );   // Print register X on the left half of the line
+                printReg(REGISTER_Y, NULL, false, LINE_RIGHT, false );  // Print register Y on the right half of the line
+                return;
+              }
+              default: {
+                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  sprintf(errorMessage, "invalid data type %s for register Y", getRegisterDataTypeName(REGISTER_Y, true, false));
+                  moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+                #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                return;
+              }
+            }
+            return;
+          }
+
+
+          case dtReal34Matrix: {
+            real34Matrix_t    x;
+            convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+
+            if(x.header.matrixColumns == 2) {
+              for(int i = 0; i < x.header.matrixRows; ++i) {
+                reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+                real34Copy(&x.matrixElements[i*2], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
+                real34Copy(&x.matrixElements[i*2+1], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
+              }
+            }
+            else if(x.header.matrixRows == 2) {
+              for(int i = 0; i < x.header.matrixColumns; ++i) {
+                reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BYTES, amNone);
+                real34Copy(&x.matrixElements[i], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
+                real34Copy(&x.matrixElements[i + x.header.matrixColumns], REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
+              }
+            }
+            else {
+              displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", x.header.matrixRows, x.header.matrixColumns);
+                moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            }
+            return;
+          }
+
+          case dtComplex34Matrix: {
+            complex34Matrix_t    xc;
+            convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &xc);
+
+            if(xc.header.matrixColumns == 2) {
+              for(int i = 0; i < xc.header.matrixRows; ++i) {
+                reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+                complex34Copy(&xc.matrixElements[i*2], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );    // Print row i col 1 on the left half of the line
+                complex34Copy(&xc.matrixElements[i*2+1], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );   // Print row i col 2 on the right half of the line
+              }
+            }
+            else if(xc.header.matrixRows == 2) {
+              for(int i = 0; i < xc.header.matrixColumns; ++i) {
+                reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+                complex34Copy(&xc.matrixElements[i], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_LEFT, false );   // Print row 1 col i on the left half of the line
+                complex34Copy(&xc.matrixElements[i + xc.header.matrixColumns], REGISTER_COMPLEX34_DATA(TEMP_REGISTER_1));
+                printReg(TEMP_REGISTER_1, NULL, false, LINE_RIGHT, false );    // Print row 2 col i on the right half of the line
+              }
+            }
+            else {
+              displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "cannot print xy when matrix size is %d x %d", xc.header.matrixRows, xc.header.matrixColumns);
+                moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            }
+            return;
+          }
+
+          default: {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "invalid data type %s for register X", getRegisterDataTypeName(REGISTER_X, true, false));
+              moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            return;
+          }
+        }
+        break;
+
+      default: ;
+    }
+  #endif //IR_PRINTING
+  }
+  else {                             // Print to file
+    if(calcMode != CM_NORMAL && calcMode != CM_NO_UNDO) {
+      #if defined(DMCP_BUILD)
+        beep(440, 50);
+        beep(4400, 50);
+        beep(440, 50);
+      #endif // DMCP_BUILD
+      return;
+    }
+
+    create_filename(".REGS.TSV");
+
+    #if (VERBOSE_LEVEL >= 1)
+      clearScreen(4);
+      print_linestr("Output regs to drive:", true);
+      print_linestr(filename_csv, false);
+    #endif // VERBOSE_LEVEL >= 1
+
+    uint16_t s, n;
+    switch(option) {
+      case PRN_ALL:
+        stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
+        stackregister_csv_out(0, 99, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
+        break;
+
+      case PRN_REGS:
+        if((lastErrorCode = getRegParam(NULL, &s, &n, NULL)) == ERROR_NONE) {
+          stackregister_csv_out(s, (s + n) -1 , !ONELINE);
+        }
+        else {
+          displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        }
+        break;
+
+      case PRN_STK:
+        if(getSystemFlag(FLAG_SSIZE8)) {
+          stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
+        }
+        else {
+          stackregister_csv_out(REGISTER_X, REGISTER_T, !ONELINE);
+        }
+        break;
+
+      case PRN_GLOBALr:
+        stackregister_csv_out(0, 99, !ONELINE);
+        break;
+
+      case PRN_LOCALr:
+        if(currentNumberOfLocalRegisters > 0) {
+          stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        }
+        break;
+
+      case PRN_NAMEDr:
+        if(numberOfNamedVariables > 0) {
+          stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
+        }
+        break;
+
+      case PRN_Xr:
+        stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
+        break;
+
+      case PRN_TMP:
+        stackregister_csv_out(TEMP_REGISTER_1, TEMP_REGISTER_1, !ONELINE);
+        break;
+
+      case PRN_XYr:
+        stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
+        break;
+
+      default: ;
+    }
+  }
 }
 
 
@@ -2547,7 +2597,9 @@ void fnP_PrintAllItems (uint16_t unusedButMandatoryParameter) {
         printTab( 97 );
         sprintf(tmpString, "%s ", indexOfItems[item].itemSoftmenuName);
         printLine(tmpString,1);
-        if(_exitKeyPressed()) break;
+        if(_exitKeyPressed()) {
+          break;
+        }
       }
       temporaryInformation = TI_PRINT_COMPLETE;
     }

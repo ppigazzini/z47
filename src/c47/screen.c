@@ -5202,14 +5202,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
 
             char preserveErrorMessage[ERROR_MESSAGE_LENGTH];
-            xcopy(preserveErrorMessage,errorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
-            if ((regist == REGISTER_Z || regist == REGISTER_T) && !runningOnSimOrUSB) {
-                real34MatrixToDisplayString(regist, tmpString);
+            xcopy(preserveErrorMessage, errorMessage, ERROR_MESSAGE_LENGTH); // maintain the errormessage string, which is used for TI's earlier.
+            if((regist == REGISTER_Z || regist == REGISTER_T) && !runningOnSimOrUSB) {
+              real34MatrixToDisplayString(regist, tmpString);
             }
-            else if (!vectorToDisplayString(regist, tmpString)) {
-                real34MatrixToDisplayString(regist, tmpString);
+            else if(!vectorToDisplayString(regist, tmpString)) {
+              real34MatrixToDisplayString(regist, tmpString);
             }
-            xcopy(errorMessage,preserveErrorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
+            xcopy(errorMessage, preserveErrorMessage, ERROR_MESSAGE_LENGTH); // maintain the errormessage string, which is used for TI's earlier.
 
 
 
@@ -5219,7 +5219,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
               w = stringWidth(tmpString, &standardFont, false, true);
               //Iteration to place ellipsis by eating away the left hand digtis not needed. This will be needed, if the maximum vector digits is increased to more than 9 fixed digits
               showString(tmpString, &standardFont, SCREEN_WIDTH - w - 0 + 2, baseY, vmNormal, false, true);
-            } else {
+            }
+            else {
               showString(tmpString, &numericFont, SCREEN_WIDTH - w - 1, baseY, vmNormal, false, true);
             }
           }
@@ -5633,7 +5634,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }                                                                               // battery powered
         }
         else {
-          clearScreen(7);                                                                  // USB powered
+          clearScreen(7);                                                                 // USB powered
           showSoftmenuCurrentPart();                                                      // USB powered
           fnPem(NOPARAM);                                                                 // USB powered
           displayShiftAndTamBuffer();                                                     // USB powered
@@ -5641,14 +5642,14 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         }
       #elif defined(PC_BUILD)
           #define TEST_BATTERY_POWERED_SIMULATION
-          #if defined (TEST_USB_POWERED_SIMULATION)
-            clearScreen(8);                                                                // this tests the USB powered option on sim
+          #if defined(TEST_USB_POWERED_SIMULATION)
+            clearScreen(8);                                                               // this tests the USB powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the USB powered option on sim
             fnPem(NOPARAM);                                                               // this tests the USB powered option on sim
             displayShiftAndTamBuffer();                                                   // this tests the USB powered option on sim
             refreshStatusBar();                                                           // this tests the USB powered option on sim
 
-          #elif defined (TEST_BATTERY_POWERED_SIMULATION)
+          #elif defined(TEST_BATTERY_POWERED_SIMULATION)
             if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
               clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);              // this tests the battery powered option on sim
               showSoftmenuCurrentPart();                                                  // this tests the battery powered option on sim
