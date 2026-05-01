@@ -172,7 +172,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       tmpString[CHARS_PER_LINE * ++line] = 0;
 
       // Rounding mode
-      strcpy(tmpString + CHARS_PER_LINE * ++line, "RM=");
+      strcpy(tmpString + CHARS_PER_LINE * ++line, "RMODE=");
       switch(roundingMode) {
         case RM_HALF_EVEN: {
           strcat(tmpString + CHARS_PER_LINE * line, STD_ONE_HALF "E");
