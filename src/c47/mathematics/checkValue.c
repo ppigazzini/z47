@@ -270,12 +270,12 @@ void fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 
 // PolRec suffix (hundredths for polar / rect options:
 // +0 is Rect
-// +1 is Polar    
-// +2 is 2D vector Polar      
-// +3 is 3D vector Spherical  
+// +1 is Polar
+// +2 is 2D vector Polar
+// +3 is 3D vector Spherical
 // +4 is 3D vector Cylindrical
 
-// +T/1000 means 
+// +T/1000 means
 // T=0=Non-Vector
 // T=1=RowVector
 // T=2=ColumnVector

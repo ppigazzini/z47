@@ -335,7 +335,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
           xcopy(string, "Configuration data", 19);
         }
 
-        
+
         break;
 
       default:
@@ -2673,9 +2673,9 @@ void createSubstrings(uint8_t number) {
             snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());   // [rho phi_z th_xy] PHYS
         } else {
           if(shrt)
-            snprintf(prefix, 50, "%s%s%s", STD_rho, STD_theta_m, STD_phi_m);   // [rho th_xy phi_z]          
+            snprintf(prefix, 50, "%s%s%s", STD_rho, STD_theta_m, STD_phi_m);   // [rho th_xy phi_z]
           else
-            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());   // [rho th_xy phi_z]          
+            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());   // [rho th_xy phi_z]
          }
       } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
        if(shrt)
@@ -3276,7 +3276,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         displayTemporaryInformationOnX(prefix);
       }
     #endif //IR_PRINTING
-      
+
       else if(temporaryInformation == TI_DEL_ALL_PRGMS && regist == REGISTER_X) {
         sprintf(tmpString, "%s", errorMessages[TI_All_user_prgms_deleted]);
         w = stringWidth(tmpString, &standardFont, true, true);
@@ -5168,11 +5168,11 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             //            else if(temporaryInformation == TI_VECTOR && displayVector && isRegisterMatrixVector(regist)) {
             //              tiVector(regist, prefix,  &prefixWidth);
             //            }
-            
+
             //else if(displayVector && isRegisterMatrixVector(regist)) {   //permanently display vector TI in X
             //  tiVector(regist, prefix,  &prefixWidth);
             //}
-            
+
             //combined
             else if(displayVector && isRegisterMatrixVector(regist)) {
               tiVector(regist, prefix,  &prefixWidth, temporaryInformation != TI_VECTOR);

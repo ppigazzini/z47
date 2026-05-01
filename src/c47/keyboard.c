@@ -3440,7 +3440,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
             #endif //PC_BUILD
             printTraceX(LINE_FULL);
           #endif //IR_PRINTING
-          
+
           if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterB\n");

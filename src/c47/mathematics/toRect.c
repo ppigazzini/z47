@@ -49,7 +49,7 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
         temporaryInformation = TI_VECTOR;
       return;
     }
-  } 
+  }
 #endif //OPTION_VECTOR
 
   dataTypeX = getRegisterDataType(REGISTER_X);

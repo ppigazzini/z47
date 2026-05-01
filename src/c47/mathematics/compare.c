@@ -379,7 +379,7 @@ end:
       cmpToResult(longIntegerCompare(xInt, rInt), mode);
       longIntegerFree(rInt);
       longIntegerFree(xInt);
-    } 
+    }
     break;
 
     /* ------------------------------------------------------------------------

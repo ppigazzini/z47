@@ -73,10 +73,10 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
   real_t sin_umu, cos_umu, t, r;
   int n = 0;
 
-  if((MU = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-    if((NU = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-      if((C = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-        if((D = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
+  if((MU = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+    if((NU = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+      if((C = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+        if((D = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
           #define mu(n) (MU + (n))
           #define nu(n) (NU + (n))
           #define c(n)  (C + (n))
@@ -86,19 +86,19 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
             realSetNaN(sn);
             realSetNaN(cn);
             realSetNaN(dn);
-            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
             return;
           }
           if(realCompareLessThan(m, const_1e_32)) {
             C47_WP34S_Cvt2RadSinCosTan(u, amRadian, sn, cn, NULL, realContext);
             realSetOne(dn);
-            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
             return;
           }
           realSubtract(m, const_1, &a, realContext);
@@ -107,10 +107,10 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
             realDivide(const_1, &b, cn, realContext);
             realMultiply(&a, cn, sn, realContext);
             realCopy(cn, dn);
-            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
             return;
           }
 
@@ -130,10 +130,10 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
             realSetZero(sn);
             realSetOne(cn);
             realSetOne(dn);
-            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
-            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+            freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
+            freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
             return;
           }
 
@@ -178,7 +178,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           #undef c
           #undef d
 
-          freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+          freeC47Blocks(D, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -186,7 +186,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
           realSetNaN(cn);
           realSetNaN(dn);
         }
-        freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+        freeC47Blocks(C, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -194,7 +194,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
         realSetNaN(cn);
         realSetNaN(dn);
       }
-      freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+      freeC47Blocks(NU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -202,7 +202,7 @@ static void _calc_real_elliptic(real_t *sn, real_t *cn, real_t *dn, const real_t
       realSetNaN(cn);
       realSetNaN(dn);
     }
-    freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+    freeC47Blocks(MU, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1008,7 +1008,7 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
     #define COS2_MU_I     (tmpVal + 23)
     #define M1            (tmpVal + 24)
 
-    if((tmpVal = allocC47Blocks(25 * REAL_SIZE_IN_BLOCKS))) {
+    if((tmpVal = allocC47Blocks(25 * REAL_SIZE_IN_BLOCKS(75)))) {
       bool_t           remainderNegative = realIsNegative(&phiRemainder);
       realContext_t *realContext2 = &ctxtReal51;
       realContext_t *realContext3 = &ctxtReal75;
@@ -1085,7 +1085,7 @@ void ellipticE(const real_t *phi, const real_t *psi, const real_t *m, real_t *re
         realChangeSign(resi);
       }
 
-      freeC47Blocks(tmpVal, 25 * REAL_SIZE_IN_BLOCKS);
+      freeC47Blocks(tmpVal, 25 * REAL_SIZE_IN_BLOCKS(75));
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1136,10 +1136,10 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
     TanhComplex(&k, &ki, res, resi, realContext);
     return;
   }
-  if((a = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-    if((ai = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-      if((b = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
-        if((bi = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS))) {
+  if((a = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+    if((ai = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+      if((b = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
+        if((bi = allocC47Blocks(ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75)))) {
           real_t k, ki, c, ci, s, si, q;
 
           realSetZero(res);
@@ -1181,28 +1181,28 @@ static void _jacobiZeta_Agm(const real_t *phi, const real_t *psi, const real_t *
             realMultiply(&s, const_1on2, &k, realContext);
             realMultiply(&si, const_1on2, &ki, realContext);
           }
-          freeC47Blocks(bi, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+          freeC47Blocks(bi, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
         }
         else {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           realSetNaN(res);
           realSetNaN(resi);
         }
-        freeC47Blocks(b, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+        freeC47Blocks(b, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
       }
       else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         realSetNaN(res);
         realSetNaN(resi);
       }
-      freeC47Blocks(ai, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+      freeC47Blocks(ai, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       realSetNaN(res);
       realSetNaN(resi);
     }
-    freeC47Blocks(a, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS);
+    freeC47Blocks(a, ELLIPTIC_N * REAL_SIZE_IN_BLOCKS(75));
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);

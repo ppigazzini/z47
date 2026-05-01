@@ -854,7 +854,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         if(nameOp[0] == 0) {
           if(textVersion == MODE_ALIAS) {
           #if defined(IR_PRINTING)
-            nameAlias(op, nameOp); 
+            nameAlias(op, nameOp);
           #endif //IR_PRINTING
           }
           else {
@@ -897,7 +897,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           if(nameOp[0] == 0) {
             if(textVersion == MODE_ALIAS) {
             #if defined(IR_PRINTING)
-              nameAlias(op, nameOp); 
+              nameAlias(op, nameOp);
             #endif //IR_PRINTING
             }
             else {

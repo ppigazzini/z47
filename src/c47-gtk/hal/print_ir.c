@@ -52,14 +52,14 @@ void sendByteIR( uint8_t c )
   udpAddress = g_inet_address_new_from_string(UDPHOST);
   guint16 udpPort = UDPPORT;
   g_assert(error == NULL);
-    
+
   //Socket address used by the printer simulators (Christoph Giesselink HP82240B simulator or WP34S GTK printer simulator)
   udpSocketAddress = g_inet_socket_address_new(udpAddress, udpPort);
   if(udpSocketAddress == NULL){
     printf("Error UDP socket address\n");
     exit(1);
   }
-    
+
   //Creates socket UDP IPV4
   udpSocket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, 17, &error);
   if(error != NULL) {
@@ -75,7 +75,7 @@ void sendByteIR( uint8_t c )
     exit(1);
   }
 
-  //Send character to the socket    
+  //Send character to the socket
   size_sent = g_socket_send(udpSocket, buffer, 1, NULL, &error);
   if(error != NULL) {
     printf("Error g_socket_send - domain: %d code: %d %s size_sent %lld\n", error->domain, error->code, error->message, (long long)size_sent);
@@ -84,7 +84,7 @@ void sendByteIR( uint8_t c )
 
   //Close the socket
   g_socket_close(udpSocket, NULL);
-  if(error != NULL) g_error_free(error);  
+  if(error != NULL) g_error_free(error);
 
 #endif //IR_PRINTING
 }
