@@ -9,7 +9,7 @@
 // VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.03.02a3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.03.02b0"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 // Version 0.109.02.07b11   Public Release C47 & R47
 // Version 0.109.02.07b12   Public Release C47 & R47 launch
@@ -21,7 +21,8 @@
 // Version 0.109.03.00b2    Public C47 & R47
 // Version 0.109.03.01b0    Public C47 & R47
 // Version 0.109.03.01b1    Public C47 & R47 bugfix version TVM
-// Version 0.109.03.02a0    Public C47 & R47 ALPHA version test vectors
+// Version 0.109.03.02a0    Public C47 & R47 ALPHA version test vectors only
+// Version 0.109.03.02b0    Public C47 & R47
 
 
 #if !defined(CALCMODEL)
@@ -153,17 +154,17 @@
 
 
 
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 9952) // ALL DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; NO VECTOR
+  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free 4984) // ALL DIST, Stripped X.FN menu; NO ELEC; SLOW FIN; NO VECTOR
          //  #define SAVE_SPACE_DM42_8F        //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
          // #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
          // #define SAVE_SPACE_DM42_15         //     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-         // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without Norml, StdNrmal & LogNrml distributions
-         // #define SAVE_SPACE_DM42_17         //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-         // #define SAVE_SPACE_DM42_17B        //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
-         // #define SAVE_SPACE_DM42_17C        //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
+         // #define SAVE_SPACE_DM42_16         //  1936 bytes // (1) Without Norml, StdNrmal & LogNrml distributions
+         // #define SAVE_SPACE_DM42_17B        //  7128 bytes // (2) Without cauchy, chi, expo, logis, t, weibull
+         // #define SAVE_SPACE_DM42_17         //  9672 bytes // (3) Without Poisson/Hyper/Binomial/Geometrical/f distributions
+         // #define SAVE_SPACE_DM42_17C        //  3208 bytes // (4) Without gev, Pareto, Uniform, Discr Uniform
     #define SAVE_SPACE_DM42_21_HP35            //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
@@ -173,57 +174,57 @@
     #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 648) // 10% DIST; ALL X.FN; ELEC; FAST FIN; NO VECTOR
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 1016) // Limited DIST; Full X.FN menu; NO ELEC; FAST FIN; NO VECTOR
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
          // #define SAVE_SPACE_DM42_12ELLIP    // 12888 bytes // Without ELLIPTIC
          // #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without X.FN BESSEL
          // #define SAVE_SPACE_DM42_12ORTHO    //  0744 bytes // Without X.FN ORTHO MENU
          // #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
          // #define SAVE_SPACE_DM42_15         //     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-         // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without Norml, StdNrmal & LogNrml distributions
-    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
+         // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
+    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
          // #undef OPTION_TVM_FORMULAS         //  2280 bytes // Use TVM analytical formulas where possible
          // #undef OPTION_TVM_NEWTON           //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-         // #undef OPTION_ELEC                 //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+    #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 10032) // 50% DIST, STRIPPED X.FN; NO ELEC; SLOW FIN; VECTOR; PRINTING
+  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free 12192) // Half DIST, STRIPPED X.FN menu; ELEC; SLOW FIN; // VECTOR Future
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
          // #define SAVE_SPACE_DM42_14         //   184 bytes // Without Load programming sample programs testPgms
          // #define SAVE_SPACE_DM42_15         //     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-         // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without Norml, StdNrmal & LogNrml distributions
-         // #define SAVE_SPACE_DM42_17         //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
+         // #define SAVE_SPACE_DM42_16         //  1936 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
+         // #define SAVE_SPACE_DM42_17B        //  7128 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
     #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-    #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
+         // #define OPTION_ELEC                //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
          // #undef OPTION_VECTOR               //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
-         // #undef  IR_PRINTING                // 10032 bytes // Remove IR printing for old hardware
+    #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 (free 33208) FOR GITLAB PIPELINE COMPILE
+  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 (free 26920) // Minimal, no options included, FOR GITLAB PIPELINE COMPILE
       //  #define SAVE_SPACE_DM42_8F           //  1216 bytes // Without Font Browsers
     #define SAVE_SPACE_DM42_12ELLIP            // 12888 bytes // Without ELLIPTIC
     #define SAVE_SPACE_DM42_12BESSEL           //  5168 bytes // Without X.FN BESSEL
     #define SAVE_SPACE_DM42_12ORTHO            //  0744 bytes // Without X.FN ORTHO MENU
     #define SAVE_SPACE_DM42_14                 //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15                 //     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_16                 //  1936 bytes // Without Norml, StdNrmal & LogNrml distributions
-    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without cauchy, chi, expo, logis, t, weibull
-    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without gev, Pareto, Uniform, Discr Uniform
+    #define SAVE_SPACE_DM42_16                 //  1936 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
+    #define SAVE_SPACE_DM42_17B                //  7128 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
+    #define SAVE_SPACE_DM42_17                 //  9672 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define SAVE_SPACE_DM42_17C                //  3208 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES// 240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
     #undef  OPTION_TVM_FORMULAS                //  2280 bytes // Use TVM analytical formulas where possible
