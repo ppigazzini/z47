@@ -1790,12 +1790,12 @@ static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns, bool_t is
     }
     if(isComplex) {
       linkToComplexMatrixRegister(REGISTER_X, &cmatrix);
-      realToReal34(const_1, VARIABLE_REAL34_DATA(&cmatrix.matrixElements[0]));
-      real34SetZero(VARIABLE_IMAG34_DATA(&cmatrix.matrixElements[0]));
+      realToReal34(const_1, VARIABLE_REAL34_DATA(cmatrix.matrixElements));
+      real34SetZero(VARIABLE_IMAG34_DATA(cmatrix.matrixElements));
     }
     else {
       linkToRealMatrixRegister(REGISTER_X,  &rmatrix);
-      realToReal34(const_1, &rmatrix.matrixElements[0]);
+      realToReal34(const_1, rmatrix.matrixElements);
     }
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
     return 1;
@@ -1842,8 +1842,8 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
           complex34Matrix_t cres;
           if(complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
             for(uint32_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; i++) {
-              real34Copy(&res.matrixElements[i],  VARIABLE_REAL34_DATA(&cres.matrixElements[i]));
-              real34Copy(&ires.matrixElements[i], VARIABLE_IMAG34_DATA(&cres.matrixElements[i]));
+              real34Copy(res.matrixElements + i,  VARIABLE_REAL34_DATA(cres.matrixElements + i));
+              real34Copy(ires.matrixElements + i, VARIABLE_IMAG34_DATA(cres.matrixElements + i));
             }
             convertComplex34MatrixToComplex34MatrixRegister(&cres, REGISTER_X);
             realMatrixFree(&ires);
@@ -7635,13 +7635,13 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
       for(j = 0; j < size && isDiagonal; ++j) {
         if(i != j) {
           if(isComplex) {
-            if(!real34IsZero(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[i * size + j])) ||
-               !real34IsZero(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]))) {
+            if(!real34IsZero(VARIABLE_REAL34_DATA(matrix->complexMatrix.matrixElements + i * size + j)) ||
+               !real34IsZero(VARIABLE_IMAG34_DATA(matrix->complexMatrix.matrixElements + i * size + j))) {
               isDiagonal = false;
             }
           }
           else {
-            if(!real34IsZero(&matrix->realMatrix.matrixElements[i * size + j])) {
+            if(!real34IsZero(matrix->realMatrix.matrixElements + i * size + j)) {
               isDiagonal = false;
             }
           }
@@ -7666,13 +7666,13 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
           // Tolerance-based match: |eig[k] - A[j][j]| <= max(|eig|, |A[j][j]|, 1) * 1e-30.
           // Exact equality fails when QR produces tiny numerical residuals (e.g. eigenvalue 0 emerges as ~1e-37) while diagonal entries are exact zeros from the input.
           real_t diagR, diagI, diff_r, diff_i;
-          real_t mag_eig, mag_diag, scale, eps, tol;
+          real_t mag_eig, mag_diag, scale, tol;
           if(isComplex) {
-            real34ToReal(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[j * size + j]), &diagR);
-            real34ToReal(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[j * size + j]), &diagI);
+            real34ToReal(VARIABLE_REAL34_DATA(matrix->complexMatrix.matrixElements + j * size + j), &diagR);
+            real34ToReal(VARIABLE_IMAG34_DATA(matrix->complexMatrix.matrixElements + j * size + j), &diagI);
           }
           else {
-            real34ToReal(&matrix->realMatrix.matrixElements[j * size + j], &diagR);
+            real34ToReal(matrix->realMatrix.matrixElements + j * size + j, &diagR);
             realSetZero(&diagI);
           }
           realSubtract(eig + (k * size + k) * 2,     &diagR, &diff_r, realContext);
@@ -7686,9 +7686,7 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
           if(realCompareLessThan(&scale, const_1)) {
             realCopy(const_1, &scale);
           }
-          realSetOne(&eps);
-          eps.exponent -= 30;
-          realMultiply(&scale, &eps, &tol, realContext);
+          realMultiply(&scale, const_1e_30, &tol, realContext);
           bool_t matches = isElementWithinTolerance(&diff_r, &diff_i, &tol, realContext);
           if(matches) {
             realCopy(const_1, r + (j * size + k) * 2);
@@ -7723,13 +7721,13 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
               for(i = 0; i < size; i++) {
                 if(isComplex) {
                   for(j = 0; j < size; j++) {
-                    real34ToReal(VARIABLE_REAL34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]), a + (i * (size + freeUnknowns) + j) * 2    );
-                    real34ToReal(VARIABLE_IMAG34_DATA(&matrix->complexMatrix.matrixElements[i * size + j]), a + (i * (size + freeUnknowns) + j) * 2 + 1);
+                    real34ToReal(VARIABLE_REAL34_DATA(matrix->complexMatrix.matrixElements + i * size + j), a + (i * (size + freeUnknowns) + j) * 2    );
+                    real34ToReal(VARIABLE_IMAG34_DATA(matrix->complexMatrix.matrixElements + i * size + j), a + (i * (size + freeUnknowns) + j) * 2 + 1);
                   }
                 }
                 else {
                   for(j = 0; j < size; j++) {
-                    real34ToReal(&matrix->realMatrix.matrixElements[i * size + j], a + (i * (size + freeUnknowns) + j) * 2);
+                    real34ToReal(matrix->realMatrix.matrixElements + i * size + j, a + (i * (size + freeUnknowns) + j) * 2);
                     realSetZero(a + (i * (size + freeUnknowns) + j) * 2 + 1);
                   }
                 }
@@ -7983,7 +7981,7 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
-        real34ToReal(&matrix->matrixElements[i], a + i * 2);
+        real34ToReal(matrix->matrixElements + i, a + i * 2);
         realSetZero(a + i * 2 + 1);
       }
 
@@ -8046,12 +8044,12 @@ static void realEigenvectors(const real34Matrix_t *matrix, real34Matrix_t *res, 
       // Write back
       if(matrix == res || realMatrixInit(res, size, size)) {
         for(i = 0; i < size * size; i++) {
-          realToReal34(r + i * 2, &res->matrixElements[i]);
+          realToReal34(r + i * 2, res->matrixElements + i);
         }
         if(isComplex && (ires != NULL)) {
           if(matrix == ires || res == ires || realMatrixInit(ires, size, size)) {
             for(i = 0; i < size * size; i++) {
-              realToReal34(r + i * 2 + 1, &ires->matrixElements[i]);
+              realToReal34(r + i * 2 + 1, ires->matrixElements + i);
             }
           }
           else {
@@ -8101,8 +8099,8 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
 
       // Convert real34 to real
       for(i = 0; i < size * size; i++) {
-        real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[i]), a + i * 2    );
-        real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[i]), a + i * 2 + 1);
+        real34ToReal(VARIABLE_REAL34_DATA(matrix->matrixElements + i), a + i * 2    );
+        real34ToReal(VARIABLE_IMAG34_DATA(matrix->matrixElements + i), a + i * 2 + 1);
       }
 
       // Calculate eigenvalues
@@ -8132,8 +8130,8 @@ static void complexEigenvectors(const complex34Matrix_t *matrix, complex34Matrix
       // Write back
       if(matrix == res || complexMatrixInit(res, size, size)) {
         for(i = 0; i < size * size; i++) {
-          realToReal34(r + i * 2,     VARIABLE_REAL34_DATA(&res->matrixElements[i]));
-          realToReal34(r + i * 2 + 1, VARIABLE_IMAG34_DATA(&res->matrixElements[i]));
+          realToReal34(r + i * 2,     VARIABLE_REAL34_DATA(res->matrixElements + i));
+          realToReal34(r + i * 2 + 1, VARIABLE_IMAG34_DATA(res->matrixElements + i));
         }
       }
       else {
