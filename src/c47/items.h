@@ -2810,9 +2810,9 @@
 #define ITM_CSUM                    2710
 #define MNU_TAMNORM                 2711
 #define ITM_M_CC                    2712
-#define ITM_2713                    2713
-#define ITM_2714                    2714
-#define ITM_2715                    2715 //spares for the matrix and vectors
+#define ITM_M_CMAX                  2713
+#define ITM_M_CMIN                  2714
+#define ITM_M_FIND                  2715
 
 #define ITM_AMORT_P1                2716
 #define ITM_AMORT_P2                2717
