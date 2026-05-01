@@ -136,51 +136,51 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-#if defined(OPTION_VECTOR)
-  #define VECCONV  -MNU_VECCONV
-  #define VECT     -MNU_VECT
-  #define VECCONV1 -MNU_VECCONV
-  #define VECT1    -MNU_VECT
-#else
-  #define VECCONV  ITM_VVDIST
-  #define VECT     ITM_VANGLE
-  #define VECCONV1 ITM_NULL
-  #define VECT1    ITM_NULL
+#if (defined(OPTION_VECTOR) && (CALCMODEL == USER_R47))
+  #define Mp1F6    -MNU_VECT
+  #define Mp2F6    -MNU_VECT
+  #define VF5      -MNU_VECCONV
+  #define VF6      ITM_CLSTK
+#elif (!defined(OPTION_VECTOR) && (CALCMODEL == USER_R47))
+  #define Mp1F6    ITM_NULL
+  #define Mp2F6    ITM_CLSTK
+  #define VF5      ITM_NULL
+  #define VF6      ITM_CLSTK
+#elif (defined(OPTION_VECTOR) && (CALCMODEL != USER_R47))
+  #define Mp1F6    -MNU_VECT
+  #define Mp2F6    -MNU_VECT
+  #define VF5      -MNU_VECCONV
+  #define VF6      ITM_DRG
+#elif (!defined(OPTION_VECTOR) && (CALCMODEL != USER_R47))
+  #define Mp1F6    ITM_NULL
+  #define Mp2F6    ITM_DRG
+  #define VF5      ITM_NULL
+  #define VF6      ITM_DRG
 #endif
 
 
 TO_QSPI const int16_t menu_MATX[]        = {
-                                             ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  VECT1,
+                                             ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  Mp1F6,
                                              ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMQ,            ITM_NULL,                    ITM_NULL,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   VECT,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_REGtoVEC,             ITM_VECtoREG,          ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
+                                             ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   Mp2F6,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_PNORM,                     ITM_UNITV,                  ITM_EIGVEC,               ITM_EIGVAL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_M_CONCAT,                  ITM_NULL,                   ITM_M_RR,                 ITM_M_CC,              ITM_NULL,                    ITM_INDEX,
+                                             ITM_M_CONCAT,                  ITM_M_RR,                   ITM_STOVEL,               ITM_RCLVEL,            ITM_M_CC,                    ITM_INDEX,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS                 };
 
 
 TO_QSPI const int16_t menu_VECT[]        = {
-  #if (CALCMODEL == USER_R47)
-                                             ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,           VECCONV1,                    ITM_CLSTK,
+                                             ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,           VF5,                         VF6,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001,
 
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_CLSTK,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VF5,                         VF6,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01
-  #else //USER_C47
-                                             ITM_toREC2,                    ITM_V3toSPH,                ITM_V3toCYL,              ITM_stkexV3,           VECCONV1,                    ITM_DRG,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001,
-
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_stkexV2,           VECCONV1,                    ITM_DRG,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01
-  #endif //USER_C47
                                           };
 
 
