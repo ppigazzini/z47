@@ -396,9 +396,7 @@ void resetHighResTracking(int *highResCount, bool_t *inHighResMode, double *cumu
 
 
 bool_t detectTrueDiscontinuity(double y0, double y1, double y2, double grad0, double grad1, double grad2, double yAvg, int count) {  // Distinguish between genuine discontinuities and normal peaks
-  if(real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) ||
-     ((getRegisterDataType(REGISTER_X) == dtComplex34) &&
-      (real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))))) {
+  if(real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) || ((getRegisterDataType(REGISTER_X) == dtComplex34) && (real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))))) {
     return true;
   }
   if(count < 4) {

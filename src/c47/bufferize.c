@@ -832,9 +832,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             }
           }
         }
-        else if(stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH-1 &&
-                 stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, true, true) < SCREEN_WIDTH * MAXLINES - 16 //0 means small standard font
-               ) {    //JM
+        else if(stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH-1 && stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, true, true) < SCREEN_WIDTH * MAXLINES - 16) { //0 means small standard font    //JM
           #if defined(TEXT_MULTILINE_EDIT)
             //JMCURSOR vv ADD THE CHARACTER MID-STRING =======================================================
             uint16_t ix = 0;
@@ -904,10 +902,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
         // NOP if not a single character input for search
         // or if we already have two characters in the search buffer
-        else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 &&
-                stringGlyphLength(asmBuffer) <= Scroll_Asm &&
-                item != ITM_CR && item != ITM_ROOT_SIGN &&
-                currentSoftmenuScrolls()) {
+        else if(stringGlyphLength(indexOfItems[item].itemSoftmenuName) == 1 && stringGlyphLength(asmBuffer) <= Scroll_Asm && item != ITM_CR && item != ITM_ROOT_SIGN && currentSoftmenuScrolls()) {
           #if defined(SCROLL_ASM)
             if(stringGlyphLength(asmBuffer) == 2) {  //2 glyphs <= 4 bytes
               xcopy(asmBuffer, asmBuffer + stringNextGlyphNoEndCheck_JM(asmBuffer, 0), 3);  //lalways leaving char 0 or 01, copy char nos '123' to '012' | or chars '234' to '012' of (01234) characters, including the terminating 0
@@ -951,7 +946,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
           refreshScreen(51);
           #if defined(IR_PRINTING)
-            printTrace(item,item);
+            printTrace(item, item);
             printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
@@ -960,7 +955,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
           refreshScreen(52);
           #if defined(IR_PRINTING)
-            printTrace(item,item);
+            printTrace(item, item);
             printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
@@ -969,7 +964,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
           refreshScreen(53);
           #if defined(IR_PRINTING)
-            printTrace(item,item);
+            printTrace(item, item);
             printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
@@ -978,7 +973,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
           refreshScreen(54);
           #if defined(IR_PRINTING)
-            printTrace(item,item);
+            printTrace(item, item);
             printTraceMatElement(LINE_FULL);
           #endif //IR_PRINTING
         }
@@ -1811,7 +1806,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         closeNim();
         if(calcMode != CM_NIM && lastErrorCode == 0) {
           #if defined(IR_PRINTING)
-            printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+            printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
           #endif //IR_PRINTING
           setSystemFlag(FLAG_ASLIFT);
           if(item == ITM_EXIT1) {
@@ -1933,7 +1928,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             setSystemFlag(FLAG_ASLIFT);
             #if defined(IR_PRINTING)
               printTraceX(LINE_NOLF);
-              printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+              printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
             #endif //IR_PRINTING
             return;
           }
@@ -1976,7 +1971,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               setSystemFlag(FLAG_ASLIFT);
               #if defined(IR_PRINTING)
                 printTraceX(LINE_NOLF);
-                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+                printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
               #endif //IR_PRINTING
             }
             else {
@@ -2013,7 +2008,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               setSystemFlag(FLAG_ASLIFT);
               #if defined(IR_PRINTING)
                 printTraceX(LINE_NOLF);
-                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+                printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
               #endif //IR_PRINTING
             }
             else {
@@ -2034,7 +2029,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           closeNim();
           fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
           #if defined(IR_PRINTING)
-            printTrace(ITM_DMS2,NOPARAM);
+            printTrace(ITM_DMS2, NOPARAM);
             printTraceX(LINE_FULL);
           #endif //IR_PRINTING
         }
@@ -2069,7 +2064,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               setSystemFlag(FLAG_ASLIFT);
               #if defined(IR_PRINTING)
                 printTraceX(LINE_NOLF);
-                printTrace(ITM_ENTER,NOPARAM);   // Close NIM ended with entering the value on the stack
+                printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
               #endif //IR_PRINTING
             }
             else {
@@ -2919,7 +2914,8 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     #if defined(IR_PRINTING)
       if((lastItem != ITM_ms) && (lastItem != ITM_dotD) && (lastItem != ITM_DRG)) {  // Avoid double tracing for functions changing X after closeNim
         #if defined(PC_BUILD)
-          printf("**[DL]** closeNim printTraceX lastItem %d\n",lastItem);fflush(stdout);
+          printf("**[DL]** closeNim printTraceX lastItem %d\n", lastItem);
+          fflush(stdout);
         #endif //PC_BUILD
         printTraceX(LINE_NOLF);
       }

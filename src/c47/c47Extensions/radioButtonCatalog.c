@@ -604,16 +604,16 @@ void use_base_glyphs(char* tmp1, int16_t xx) {              // Needs non-local v
   tmp1[0] = 0;
 
   if(xx <= 16) {
-    add_digitglyph_to_tmp2(tmp2, xx); stringCopy(tmp1, tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx);                         stringCopy(tmp1, tmp2);
   }
   else if(xx <= 99) {
-    add_digitglyph_to_tmp2(tmp2, xx / 10); stringCopy(tmp1,                          tmp2);
-    add_digitglyph_to_tmp2(tmp2, xx % 10); stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx / 10);                    stringCopy(tmp1,                          tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx % 10);                    stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
   }
   else if(xx <= 999) {
-    add_digitglyph_to_tmp2(tmp2,  xx / 100);         stringCopy(tmp1,                          tmp2);
-    add_digitglyph_to_tmp2(tmp2, (xx % 100) / 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
-    add_digitglyph_to_tmp2(tmp2, (xx % 100) % 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2,  xx / 100);                  stringCopy(tmp1,                          tmp2);
+    add_digitglyph_to_tmp2(tmp2, (xx % 100) / 10);            stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2, (xx % 100) % 10);            stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
   }
   else if(xx <= 9999) {
     add_digitglyph_to_tmp2(tmp2,   xx / 1000);                stringCopy(tmp1,                          tmp2);     //9876 > 9
