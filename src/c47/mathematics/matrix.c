@@ -1995,7 +1995,7 @@ void fnMatrixIdentity(uint16_t unusedButMandatoryParameter) {
   if(!getDimensionArg(&rows, &cols)) {
     return;
   }
-  if(rows != cols || rows == 0 || cols == 0) {
+  if(rows == 0 || cols == 0) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "not a square matrix (%" PRIu32 STD_CROSS "%" PRIu32 ")", rows, cols);
@@ -2011,8 +2011,9 @@ void fnMatrixIdentity(uint16_t unusedButMandatoryParameter) {
   //Initialize Memory for Matrix (zero-filled by realMatrixInit)
   if(initMatrixRegister(REGISTER_X, rows, cols, false)) {
     real34Matrix_t res;
+    const uint32_t n = rows < cols ? rows : cols;
     linkToRealMatrixRegister(REGISTER_X, &res);
-    for(uint16_t i = 0; i < rows; ++i) {
+    for(uint32_t i = 0; i < n; ++i) {
       real34SetOne(res.matrixElements + (i * rows + i));
     }
     setSystemFlag(FLAG_ASLIFT);
