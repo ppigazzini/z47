@@ -1346,6 +1346,18 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[0]" RX=ReMa:"M1,1[1]"
 
 
 
+; ################################################################### REAL MATRIX IDENTITY ####################################################################
+
+Func: fnMatrixIdentity
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RZ=Real:"37" RY=Real:"3" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RY=Real:"37" RX=ReMa:"M3,3[1,0,0, 0,1,0, 0,0,1]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RZ=Real:"38" RY=Real:"2" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RY=Real:"38" RX=ReMa:"M2,3[1,0, 0,1, 0,0]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RZ=Real:"39" RY=Real:"3" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RY=Real:"39" RX=ReMa:"M3,2[1,0,0, 0,1,0]"
+
 ; ################################################################## REAL MATRIX SQUARE ROOT ##################################################################
 
 Func: fnMatrixSquareRoot
