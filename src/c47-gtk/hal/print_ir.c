@@ -20,7 +20,7 @@
 //
 //  Get print line delay
 //
-uint32_t getLineDelay() {
+uint32_t getLineDelay(void) {
   return 0; // No delay on the simulator
 }
 
@@ -36,13 +36,12 @@ void setLineDelay(uint16_t delay) {
 //
 // Send Byte to over IR
 //
-void sendByteIR( uint8_t c )
-{
+void sendByteIR(uint8_t c) {
 #if defined(IR_PRINTING)
-  GError         * error = NULL;
-  GInetAddress   * udpAddress;
-  GSocketAddress * udpSocketAddress;
-  GSocket        * udpSocket;
+  GError         *error = NULL;
+  GInetAddress   *udpAddress;
+  GSocketAddress *udpSocketAddress;
+  GSocket        *udpSocket;
   gssize size_sent;
   gchar buffer[8];
 
@@ -69,7 +68,7 @@ void sendByteIR( uint8_t c )
   }
 
   //Connect socket
-  if (g_socket_connect(udpSocket, udpSocketAddress, NULL, &error) == FALSE) {
+  if(g_socket_connect(udpSocket, udpSocketAddress, NULL, &error) == FALSE) {
     printf("Error g_socket_connect - domain: %d code: %d %s\n", error->domain, error->code, error->message);
     g_error_free(error);
     exit(1);
@@ -84,33 +83,30 @@ void sendByteIR( uint8_t c )
 
   //Close the socket
   g_socket_close(udpSocket, NULL);
-  if(error != NULL) g_error_free(error);
+  if(error != NULL) {
+    g_error_free(error);
+  }
 
 #endif //IR_PRINTING
 }
 
-void printer_advance_buf ( int what )
-{
+void printer_advance_buf(int what) {
 }
 
-int printer_busy_for ( int what )
-{
-    return 0;
+int printer_busy_for(int what) {
+  return 0;
 }
 
-uint16_t printer_get_delay ()
-{
-    return 0;
+uint16_t printer_get_delay(void) {
+  return 0;
 }
 
-uint16_t printer_set_delay (uint16_t val)
-{
-    return 0;
+uint16_t printer_set_delay(uint16_t val) {
+  return 0;
 }
 
 /*
-uint8_t * lcd_line_addr ( int y)
-{
-    return 0;
+uint8_t *lcd_line_addr(int y) {
+  return 0;
 }
 */

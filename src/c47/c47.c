@@ -1208,8 +1208,7 @@ int convertKeyCode(int key) {
                             #endif //DM42_KEYCLICK
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_CURSOR);
         }
-        else
-        {
+        else {
                             #if defined(DM42_KEYCLICK)
                               keyClick(7);
                             #endif //DM42_KEYCLICK

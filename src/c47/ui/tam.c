@@ -631,9 +631,9 @@
       tryOoR = true;
     }
 
-    else if( ((REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W) ||
-              (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) &&
-              !tam.dot) {
+    else if(((REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W) ||
+             (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) &&
+             !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           #define LOCAL_LABEL 0            // Local label from A to J
@@ -916,7 +916,7 @@ printf("tam.value: %d\n", tam.value);
             else {
               #if defined(IR_PRINTING)
                 sprintf(errorMessage, "'%s'", buffer);
-                printTraceErrorFunction(tam.function,errorMessage);
+                printTraceErrorFunction(tam.function, errorMessage);
               #endif //IR_PRINTING
 
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
@@ -948,7 +948,7 @@ printf("tam.value: %d\n", tam.value);
             if(!tam.indirect) {
               #if defined(IR_PRINTING)
                 sprintf(errorMessage, "'%s'", buffer);
-                printTraceErrorFunction(tam.function,errorMessage);
+                printTraceErrorFunction(tam.function, errorMessage);
               #endif //IR_PRINTING
 
               displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
@@ -971,7 +971,7 @@ printf("tam.value: %d\n", tam.value);
           else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
             #if defined(IR_PRINTING)
               sprintf(errorMessage, "'%s'", buffer);
-              printTraceErrorFunction(tam.function,errorMessage);
+              printTraceErrorFunction(tam.function, errorMessage);
             #endif //IR_PRINTING
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1007,7 +1007,7 @@ printf("tam.value: %d\n", tam.value);
           else {
             #if defined(IR_PRINTING)
               sprintf(errorMessage, "'%s'", buffer);
-              printTraceErrorFunction(tam.function,errorMessage);
+              printTraceErrorFunction(tam.function, errorMessage);
             #endif //IR_PRINTING
 
             displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
@@ -1032,7 +1032,7 @@ printf("tam.value: %d\n", tam.value);
           else {
             #if defined(IR_PRINTING)
               sprintf(errorMessage, "'%s'", buffer);
-              printTraceErrorFunction(tam.function,errorMessage);
+              printTraceErrorFunction(tam.function, errorMessage);
             #endif //IR_PRINTING
 
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);

@@ -672,7 +672,7 @@ void resetKeytimers(void) {
 
   Standard procedure LONGPRESS:
 
-    | 800 | 800 | 800 |    ms     Monitored while LONGPRESSED
+     | 800 | 800 | 800 |    ms     Monitored while LONGPRESSED
   ___+-----|-----|-----|--> NOP    Press and time out to NOP
   ___+---x_|_____|_____|___        Press and release within Fx time. Fx selected upon release
   ___+-----|--x__|_____|___        Press and hold, release within f(Fx) time. f(Fx) selected upon release
@@ -1363,13 +1363,11 @@ uint8_t outKeyBufferDoubleClick(void) {
       strcat(line2, "S");
       showString(line2, &standardFont, SCREEN_WIDTH-11, 0, vmNormal, true, true);
     }
-    else
-    if( outDoubleclick == 2) {
+    else if( outDoubleclick == 2) {
       strcat(line2, "D");
       showString(line2, &standardFont, SCREEN_WIDTH-11, 0, vmNormal, true, true);
     }
-    else
-    if( outDoubleclick == 3) {
+    else if( outDoubleclick == 3) {
       strcat(line2, "T");
       showString(line2, &standardFont, SCREEN_WIDTH-11, 0, vmNormal, true, true);
     }
