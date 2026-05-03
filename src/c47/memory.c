@@ -38,7 +38,7 @@ bool_t isMemoryBlockAvailable(size_t sizeInBlocks, uint16_t numBlocks, float ext
   for(i=0; i<numberOfFreeMemoryRegions; i++) {
     const size_t thisBlockSize = freeMemoryRegions[i].sizeInBlocks;
 
-    if(thisBlockSize >= requiredForNBlocks) {
+    if(thisBlockSize >= requiredForNBlocks + extraSize) {
       return true;
     }
     if(thisBlockSize >= sizeInBlocks) {
