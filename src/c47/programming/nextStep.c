@@ -251,6 +251,9 @@ uint8_t *countLiteralBytes(uint8_t *step) {
 
 uint8_t *findNextStep(uint8_t *step) {
   if(step == NULL) {
+    #if !defined(DMCP_BUILD)
+      printf("\nIn function findNextStep: NULL step pointer!\n");
+    #endif // !DMCP_BUILD
     return NULL;
   }
   if(checkOpCodeOfStep(step, ITM_KEY)) {
@@ -269,6 +272,9 @@ uint8_t *findNextStep(uint8_t *step) {
 
 uint8_t *findKey2ndParam(uint8_t *step) {
   if(step == NULL) {
+    #if !defined(DMCP_BUILD)
+      printf("\nIn function findKey2ndParam: NULL step pointer!\n");
+    #endif // !DMCP_BUILD
     return NULL;
   }
   uint16_t op = *(step++);
@@ -331,6 +337,11 @@ uint8_t *findPreviousStep(uint8_t *step) {
     searchFromStep = nextStep;
     nextStep = findNextStep(searchFromStep);
   }
+  #if !defined(DMCP_BUILD)
+    if(nextStep == NULL) {
+      printf("\nIn function findPreviousStep: passed target without finding it!\n");
+    }
+  #endif // !DMCP_BUILD
 
   return searchFromStep;
 }
@@ -539,11 +550,15 @@ void fnSkip(uint16_t numberOfSteps) {
     uint8_t *tmpStep;
     tmpStep = currentStep;
     if(!isAtEndOfProgram(tmpStep) && !isAtEndOfPrograms(tmpStep)) {
-      ++currentLocalStepNumber;
-      currentStep = findNextStep(currentStep);
-      if(currentStep == NULL) {
+      uint8_t *next = findNextStep(currentStep);
+      if(next == NULL) {
+        #if !defined(DMCP_BUILD)
+          printf("\nIn function fnSkip: findNextStep returned NULL!\n");
+        #endif // !DMCP_BUILD
         break;
       }
+      ++currentLocalStepNumber;
+      currentStep = next;
     }
     else {
       break;
@@ -600,6 +615,9 @@ void defineCurrentStep(void) {
   for(uint16_t i = 1; i < currentLocalStepNumber; ++i) {
     uint8_t *next = findNextStep(currentStep);
     if(next == NULL) {
+      #if !defined(DMCP_BUILD)
+        printf("\nIn function defineCurrentStep: findNextStep returned NULL at step %u!\n", i);
+      #endif // !DMCP_BUILD
       break;
     }
     currentStep = next;
@@ -613,6 +631,9 @@ void defineFirstDisplayedStep(void) {
   for(uint16_t i = 1; i < firstDisplayedLocalStepNumber; ++i) {
     uint8_t *next = findNextStep(firstDisplayedStep);
     if(next == NULL) {
+      #if !defined(DMCP_BUILD)
+        printf("\nIn function defineFirstDisplayedStep: findNextStep returned NULL at step %u!\n", i);
+      #endif // !DMCP_BUILD
       break;
     }
     firstDisplayedStep = next;
