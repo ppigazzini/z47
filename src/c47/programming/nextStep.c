@@ -250,8 +250,15 @@ uint8_t *countLiteralBytes(uint8_t *step) {
 
 
 uint8_t *findNextStep(uint8_t *step) {
+  if(step == NULL) {
+    return NULL;
+  }
   if(checkOpCodeOfStep(step, ITM_KEY)) {
-    return findKey2ndParam(findKey2ndParam(step));
+    uint8_t *afterFirst = findKey2ndParam(step);
+    if(afterFirst == NULL) {
+      return NULL;
+    }
+    return findKey2ndParam(afterFirst);
   }
   else {
     return findKey2ndParam(step);
@@ -261,6 +268,9 @@ uint8_t *findNextStep(uint8_t *step) {
 
 
 uint8_t *findKey2ndParam(uint8_t *step) {
+  if(step == NULL) {
+    return NULL;
+  }
   uint16_t op = *(step++);
   if(op & 0x80) {
     op &= 0x7f;
@@ -317,7 +327,7 @@ uint8_t *findPreviousStep(uint8_t *step) {
   }
 
   nextStep = findNextStep(searchFromStep);
-  while(nextStep != step) {
+  while(nextStep != NULL && nextStep != step) {
     searchFromStep = nextStep;
     nextStep = findNextStep(searchFromStep);
   }
@@ -531,6 +541,9 @@ void fnSkip(uint16_t numberOfSteps) {
     if(!isAtEndOfProgram(tmpStep) && !isAtEndOfPrograms(tmpStep)) {
       ++currentLocalStepNumber;
       currentStep = findNextStep(currentStep);
+      if(currentStep == NULL) {
+        break;
+      }
     }
     else {
       break;
@@ -585,7 +598,11 @@ void fnCase(uint16_t regist) {
 void defineCurrentStep(void) {
   currentStep = programList[currentProgramNumber - 1].instructionPointer;
   for(uint16_t i = 1; i < currentLocalStepNumber; ++i) {
-    currentStep = findNextStep(currentStep);
+    uint8_t *next = findNextStep(currentStep);
+    if(next == NULL) {
+      break;
+    }
+    currentStep = next;
   }
 }
 
@@ -594,6 +611,10 @@ void defineCurrentStep(void) {
 void defineFirstDisplayedStep(void) {
   firstDisplayedStep = programList[currentProgramNumber - 1].instructionPointer;
   for(uint16_t i = 1; i < firstDisplayedLocalStepNumber; ++i) {
-    firstDisplayedStep = findNextStep(firstDisplayedStep);
+    uint8_t *next = findNextStep(firstDisplayedStep);
+    if(next == NULL) {
+      break;
+    }
+    firstDisplayedStep = next;
   }
 }
