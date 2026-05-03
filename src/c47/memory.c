@@ -26,18 +26,35 @@ uint32_t getFreeRamMemory(void) {
   }
 #endif // !DMCP_BUILD
 
-bool_t isMemoryBlockAvailable(size_t sizeInBlocks) {
+bool_t isMemoryBlockAvailable(size_t sizeInBlocks, uint16_t numBlocks, float extraFraction) {
   int i;
+  size_t extraSize              = (size_t)((float)sizeInBlocks * extraFraction);
+  size_t requiredForNBlocks     = sizeInBlocks * numBlocks;
+  size_t countOfBlocksOfSize    = 0;
+  bool_t haveOneBigBlockForAllN = false;
+  bool_t haveExtraBlock         = false;
 
   for(i=0; i<numberOfFreeMemoryRegions; i++) {
-    if(freeMemoryRegions[i].sizeInBlocks >= sizeInBlocks) {
+    size_t thisBlockSize = freeMemoryRegions[i].sizeInBlocks;
+
+    if(thisBlockSize >= sizeInBlocks) {
+      countOfBlocksOfSize++;
+    }
+    if(thisBlockSize >= requiredForNBlocks) {
+      haveOneBigBlockForAllN = true;
+    }
+    if(thisBlockSize >= extraSize) {
+      haveExtraBlock = true;
+    }
+    bool_t roomForAllNBlocks = (countOfBlocksOfSize >= numBlocks) || haveOneBigBlockForAllN;
+
+    if(roomForAllNBlocks && haveExtraBlock) {
       return true;
     }
   }
 
   return false;
 }
-
 
 
 
