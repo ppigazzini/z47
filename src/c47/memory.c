@@ -34,22 +34,34 @@ bool_t isMemoryBlockAvailable(size_t sizeInBlocks, uint16_t numBlocks, float ext
   bool_t haveOneBigBlockForAllN = false;
   bool_t haveExtraBlock         = false;
 
+  const size_t spaciousBlockSize = sizeInBlocks + extraSize;
   for(i=0; i<numberOfFreeMemoryRegions; i++) {
-    size_t thisBlockSize = freeMemoryRegions[i].sizeInBlocks;
+    const size_t thisBlockSize = freeMemoryRegions[i].sizeInBlocks;
 
+    if(thisBlockSize >= requiredForNBlocks) {
+      return true;
+    }
     if(thisBlockSize >= sizeInBlocks) {
       countOfBlocksOfSize++;
+      if(thisBlockSize >= spaciousBlockSize) {
+        // This block holds the desired block plus the extra space
+        haveExtraBlock = true;
+      }
+      if (countOfBlocksOfSize > numBlocks) {
+        // We've got enough blocks and one over for the extra space
+        return true;
+      }
+      if (countOfBlocksOfSize == numBlocks && haveExtraBlock) {
+        // We've found enough large blocks and already have the extra space
+        return true;
+      }
     }
-    if(thisBlockSize >= requiredForNBlocks) {
-      haveOneBigBlockForAllN = true;
-    }
-    if(thisBlockSize >= extraSize) {
+    else if(thisBlockSize >= extraSize) {
       haveExtraBlock = true;
-    }
-    bool_t roomForAllNBlocks = (countOfBlocksOfSize >= numBlocks) || haveOneBigBlockForAllN;
-
-    if(roomForAllNBlocks && haveExtraBlock) {
-      return true;
+      if (countOfBlocksOfSize >= numBlocks) {
+        // We've found enough large blocks and now have the extra space
+        return true;
+      }
     }
   }
 
