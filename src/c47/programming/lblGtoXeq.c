@@ -736,7 +736,7 @@ int16_t executeOneStep(uint8_t *step) {
   }
 
   #if defined(IR_PRINTING)
-    printTrace(op,NOPARAM);
+    printTrace(op, NOPARAM);
   #endif //IR_PRINTING
 
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)

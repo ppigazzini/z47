@@ -138,12 +138,12 @@ static void executeFunction(const char *data, int16_t item_);
         }
 
 //integral MNU_Sf
-        else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 4) {
+        else if((IS_EQN_INTEGRATE) && dynamicMenuItem == 4) {
           item = -MNU_Sf_TOOL;
         }
 
 //integral y to x
-        else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
+        else if((IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
           item = ITM_INTEGRAL_YX;
         }
 
@@ -1581,13 +1581,11 @@ endReturnTrue:
         commonShiftProcessing(ITM_SHIFTf);
         return ITM_NOP;
       }
-      else
-      if(((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg))) {
+      else if(((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg))) {
         commonShiftProcessing(ITM_SHIFTg);
         return ITM_NOP;
       }
-      else
-      if(((key->primary == KEY_fg     || ShiftOverride == KEY_fg))) {
+      else if(((key->primary == KEY_fg     || ShiftOverride == KEY_fg))) {
         commonShiftProcessing(KEY_fg);
         return ITM_NOP;
       }
@@ -1627,9 +1625,7 @@ endReturnTrue:
       Check_MultiPresses(&result, key_no);        //JM
       return result;
     }
-    else                                                                                                                        //JM^^
-
-    if(calcMode == CM_AIM || (catalog && catalog != CATALOG_MVAR && calcMode != CM_NIM) || calcMode == CM_EIM || tam.alpha || (calcMode == CM_ASSIGN && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+    else if(calcMode == CM_AIM || (catalog && catalog != CATALOG_MVAR && calcMode != CM_NIM) || calcMode == CM_EIM || tam.alpha || (calcMode == CM_ASSIGN && (previousCalcMode == CM_AIM || previousCalcMode == CM_EIM)) || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
       result = shiftF ? key->fShiftedAim :
                shiftG ? key->gShiftedAim :
                         key->primaryAim;
@@ -1854,9 +1850,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
             #if defined(IR_PRINTING)
-              printf("**[DL]** STOP program\n");fflush(stdout);
+              printf("**[DL]** STOP program\n");
+              fflush(stdout);
               refreshStatusBar();
-              printTrace(ITM_STOP,NOPARAM);   // STOP program
+              printTrace(ITM_STOP, NOPARAM);   // STOP program
             #endif //IR_PRINTING
           }
           else if(programRunStop == PGM_PAUSED) {
@@ -3436,7 +3433,8 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
 
           #if defined(IR_PRINTING)
             #if defined(PC_BUILD)
-              printf("**[DL]** fnKeyEnter printTraceX\n");fflush(stdout);
+              printf("**[DL]** fnKeyEnter printTraceX\n");
+              fflush(stdout);
             #endif //PC_BUILD
             printTraceX(LINE_FULL);
           #endif //IR_PRINTING
@@ -4503,9 +4501,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
-        else
-
-        if(currentSoftmenuScrolls()) {
+        else if(currentSoftmenuScrolls()) {
           menuUp();
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
@@ -4735,9 +4731,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
-        else
-
-        if(currentSoftmenuScrolls()) {
+        else if(currentSoftmenuScrolls()) {
           menuDown();
         }
         else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {

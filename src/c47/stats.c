@@ -772,9 +772,9 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
     }
     else {
       if(getRegisterDataType(regHisto) != dtReal34Matrix) {
-        return false;}
-      else
-      {
+        return false;
+      }
+      else {
         real34Matrix_t histo;
         linkToRealMatrixRegister(regHisto, &histo);
         *rows = histo.header.matrixRows;

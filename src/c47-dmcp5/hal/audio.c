@@ -134,9 +134,13 @@ void fnPlay(uint16_t regist) {
         frequency = real34ToUInt32(&m.matrixElements[i * cols]);
         ms_delay  = real34ToUInt32(&m.matrixElements[i * cols + 1]);
         volume    = real34ToUInt32(&m.matrixElements[i * cols + 2]);
-        if(cols == 3) fnSetVolume(volume);
+        if(cols == 3) {
+          fnSetVolume(volume);
+        }
         _Buzz(frequency, ms_delay);
-        if(ms_delay > 0) sys_delay(ms_delay/8);  // delay between two notes: note duration/8
+        if(ms_delay > 0) {
+          sys_delay(ms_delay/8);  // delay between two notes: note duration/8
+        }
         while(!key_empty()) {
           if(key_pop() == KEY_EXIT) {          // exit if user press EXIT
             key_pop_all ();

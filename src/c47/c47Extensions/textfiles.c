@@ -27,7 +27,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
       case dtString:
       case dtShortInteger:
         copyRegisterToClipboardString(regist, clipboardString, false);
-        addChrBothSides(34,clipboardString);   //JMCSV
+        addChrBothSides(34, clipboardString);   //JMCSV
         break;
 
       case dtReal34Matrix: {

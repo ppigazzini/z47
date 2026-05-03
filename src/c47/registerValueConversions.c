@@ -463,8 +463,8 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) + 99;
       }
     }
-    else //FLAG_MDY //FLAG_DMY
-    if(real34CompareGreaterEqual(&part3, const34_100)) {
+    //FLAG_MDY //FLAG_DMY
+    else if(real34CompareGreaterEqual(&part3, const34_100)) {
       lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) + 99;
     }
 

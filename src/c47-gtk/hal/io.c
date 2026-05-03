@@ -122,7 +122,9 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
     case ioPathLoadStateFile:
       current_dir = g_get_current_dir();
       strcpy(base_dir, current_dir);
-      if(create_dir("./" STATE_DIR) != 0) return FILE_ERROR;
+      if(create_dir("./" STATE_DIR) != 0) {
+        return FILE_ERROR;
+      }
       strcat(base_dir, "/" STATE_DIR);
       if(path == ioPathSaveStateFile) {
         ret = file_selection_screen("Save State File", base_dir, "*"STATE_EXT, 1, 1, filename);
