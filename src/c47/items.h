@@ -2298,8 +2298,8 @@
 #define MNU_YESNO                   2244
 #define ITM_YES                     2245
 #define ITM_NO                      2246
-#define ITM_RCLVEL                  2247
-#define ITM_STOVEL                  2248
+#define ITM_RCLVEL_OLD              2247
+#define ITM_STOVEL_OLD              2248
 #define ITM_RCLELPLUS               2249
 #define ITM_STOELPLUS               2250
 
@@ -2827,8 +2827,8 @@
 
 #define ITM_MIDENT                  2726
 #define ITM_M_SQRT                  2727
-#define ITM_2728                    2728
-#define ITM_2729                    2729
+#define ITM_RCLVEL                  2728
+#define ITM_STOVEL                  2729
 #define ITM_2730                    2730
 #define ITM_2731                    2731 //spares for Matrix/Vector
 
