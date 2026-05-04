@@ -678,13 +678,13 @@ bool_t validateName(const char *name) {
   }
 
   // Check for the 1st character
-  if(                                          compareChar(name, STD_A                   ) < 0) {
+  if(                                          compareChar(name, STD_A                   ) < 0) {    //    \x41
     return false;
   }
-  if(compareChar(name, STD_Z          ) > 0 && compareChar(name, STD_a                   ) < 0) {
+  if(compareChar(name, STD_Z          ) > 0 && compareChar(name, STD_a                   ) < 0) {    //    \x5a      \x61
     return false;
   }
-  if(compareChar(name, STD_z          ) > 0 && compareChar(name, STD_A_GRAVE             ) < 0) {
+  if(compareChar(name, STD_z          ) > 0 && compareChar(name, STD_A_GRAVE             ) < 0) {    //    \x7a      \x80\xc0
     return false;
   }
   if(                                          compareChar(name, STD_CROSS               ) ==0) {
@@ -693,16 +693,19 @@ bool_t validateName(const char *name) {
   if(                                          compareChar(name, STD_DIVIDE              ) ==0) {
     return false;
   }
-  if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {
+  if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {     //   \x81\x7e   \x83\x90 
     return false;
   }
-  if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0) {
+  if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0
+       && compareChar(name, STD_UP_ARROW            ) !=0                                              //   \xa1\x91
+       && compareChar(name, STD_DOWN_ARROW          ) !=0                                              //   \xa1\x93
+                                                                                              ) {     //   \x83\xe1   \xa2\x96
     return false;
   }
-  if(compareChar(name, STD_SUB_mu     ) > 0 && compareChar(name, STD_SUP_a               ) < 0) {
+  if(compareChar(name, STD_SUB_mu     ) > 0 && compareChar(name, STD_SUP_a               ) < 0) {     //   \xa2\x98   \xa4\x82
     return false;
   }
-  if(compareChar(name, STD_SUB_Z      ) > 0                                                   ) {
+  if(compareChar(name, STD_SUB_Z      ) > 0                                                   ) {     //   \xa4\xe9
     return false;
   }
 
