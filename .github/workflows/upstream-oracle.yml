@@ -1,0 +1,840 @@
+name: host-platform-parity
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+      - github_ci
+  push:
+    branches:
+      - main
+      - github_ci
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate-toolchain:
+    name: Validate pinned Zig toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "linux_sha256=$ZIG_X86_64_LINUX_SHA256" >> "$GITHUB_OUTPUT"
+      - name: Validate toolchain manifest against ziglang.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://ziglang.org/download/index.json -o zig-index.json
+          grep -F "\"${{ steps.toolchain.outputs.version }}\"" zig-index.json
+          grep -F "\"${{ steps.toolchain.outputs.linux_sha256 }}\"" zig-index.json
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+
+  source-manifest:
+    name: Verify imported upstream pin and source manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Verify pinned upstream ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          git merge-base --is-ancestor "$UPSTREAM_COMMIT" HEAD
+      - name: Write source manifest artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          git ls-files -s -- . \
+            ':(exclude)build.zig' \
+            ':(exclude).github/**' > upstream-source.index
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: upstream-source-index
+          path: upstream-source.index
+
+  linux-host-parity:
+    name: Linux host parity build, test, generated outputs, app smoke run
+    needs:
+      - validate-toolchain
+      - source-manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: xlsxio-ref
+        name: Resolve xlsxio upstream HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+      - id: xlsxio-cache
+        name: Restore Linux xlsxio helper cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/xlsxio-prefix
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          restore-keys: |
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-
+      - name: Install host build prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y git pkgconf build-essential cmake zip
+          sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
+          sudo apt-get install -qq -y xvfb libminizip-dev libpulse-dev
+      - name: Build xlsxio helper
+        if: steps.xlsxio-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
+          cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
+          cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Run Linux host build and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build sim
+          zig build simr47
+          xvfb-run --auto-servernum zig build test
+          zig build generated
+      - name: Run Linux simulator smoke launch
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          status=0
+          if timeout 10s xvfb-run --auto-servernum ./zig-out/bin/c47 >"$RUNNER_TEMP/c47-linux-smoke.log" 2>&1; then
+            status=0
+          else
+            status=$?
+          fi
+          if [[ "$status" -ne 0 && "$status" -ne 124 ]]; then
+            cat "$RUNNER_TEMP/c47-linux-smoke.log"
+            exit "$status"
+          fi
+      - name: Compare refreshed generated artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- \
+            src/generated/softmenuCatalogs.h \
+            src/generated/constantPointers.c \
+            src/generated/constantPointers.h \
+            src/generated/constantPointers2.c \
+            src/generated/rasterFontsData.c \
+            res/testPgms/testPgms.bin
+      - name: Hash golden artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum \
+            src/generated/softmenuCatalogs.h \
+            src/generated/constantPointers.c \
+            src/generated/constantPointers.h \
+            src/generated/constantPointers2.c \
+            src/generated/rasterFontsData.c \
+            res/testPgms/testPgms.bin > golden-artifacts.sha256
+      - id: linux_package_meta
+        name: Set Linux artifact metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          upstream_short="${UPSTREAM_COMMIT:0:12}"
+          echo "upstream_url=$UPSTREAM_REPOSITORY_URL" >> "$GITHUB_OUTPUT"
+          echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "upstream_short=$upstream_short" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=z47-linux-$upstream_short" >> "$GITHUB_OUTPUT"
+      - name: Stage Linux simulator artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_dir="ci-artifacts/release"
+          package_dir="$release_dir/c47-linux"
+          rm -rf "$release_dir"
+          mkdir -p "$package_dir/res"
+          cp zig-out/bin/c47 zig-out/bin/r47 "$package_dir/"
+          cp -r res/PROGRAMS "$package_dir/res/"
+          cp -r res/STATE "$package_dir/res/"
+          cp res/c47_pre.css "$package_dir/res/"
+          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
+          cp res/c47.xpm "$package_dir/res/"
+          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
+
+          python3 .github/project/generate-simulator-notice-artifacts.py \
+            --platform linux \
+            --package-dir "$package_dir" \
+            --upstream-source-repository-url "${{ steps.linux_package_meta.outputs.upstream_url }}" \
+            --upstream-source-commit "${{ steps.linux_package_meta.outputs.upstream_commit }}" \
+            --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
+            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+
+          cat >> "$package_dir/SOURCE" <<EOF
+          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_commit=${GITHUB_SHA}
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          find "$package_dir" -type f | sed "s#^$release_dir/##" | sort > "$release_dir/PACKAGE-CONTENTS.txt"
+          cat > "$release_dir/BUILD-METADATA.txt" <<EOF
+          ref=${GITHUB_REF}
+          sha=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          upstream_url=${{ steps.linux_package_meta.outputs.upstream_url }}
+          upstream_commit=${{ steps.linux_package_meta.outputs.upstream_commit }}
+          upstream_license_file=COPYING
+          source_manifest_file=SOURCE
+          xlsxio_url=https://github.com/brechtsanders/xlsxio.git
+          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_license_file=LICENSE.txt
+          spdx_inventory_file=THIRD-PARTY.spdx.json
+          third_party_inventory_file=THIRD-PARTY.spdx.json
+          platform_notice_root=repo-notices/linux
+          linux_runtime_library_inventory_file=repo-notices/linux/LINUX-RUNTIME-LIBRARIES.txt
+          linux_runtime_notice_summary_file=repo-notices/linux/LINUX-LIBRARY-NOTICES.txt
+          linux_runtime_notice_dir=repo-notices/linux/licenses
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          package_dir=$(basename "$package_dir")
+          artifact_name=${{ steps.linux_package_meta.outputs.artifact_name }}
+          EOF
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.linux_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-host-parity-artifacts
+          path: |
+            golden-artifacts.sha256
+            src/generated/softmenuCatalogs.h
+            src/generated/constantPointers.c
+            src/generated/constantPointers.h
+            src/generated/constantPointers2.c
+            src/generated/rasterFontsData.c
+            res/testPgms/testPgms.bin
+
+  macos-host-build:
+    name: macOS dedicated runner build, test, generated outputs, app smoke run
+    needs:
+      - validate-toolchain
+      - source-manifest
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: xlsxio-ref
+        name: Resolve xlsxio upstream HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+      - id: xlsxio-cache
+        name: Restore macOS xlsxio helper cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/xlsxio-prefix
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          restore-keys: |
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-
+      - name: Install macOS host prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          brew install pkgconf cmake freetype gmp gtk+3 minizip expat
+      - name: Build xlsxio helper
+        if: steps.xlsxio-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
+          cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
+          cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Run macOS host build and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+          zig build sim
+          zig build simr47
+          zig build test
+          zig build generated
+      - name: Run macOS simulator smoke launch
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+          ln -sfn "$PWD/res" zig-out/bin/res
+          ./zig-out/bin/c47 >"$RUNNER_TEMP/c47-macos-smoke.log" 2>&1 &
+          pid=$!
+          sleep 5
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat "$RUNNER_TEMP/c47-macos-smoke.log"
+            wait "$pid"
+            exit 1
+          fi
+          kill "$pid" 2>/dev/null || true
+          wait "$pid" || true
+      - id: macos_package_meta
+        name: Set macOS artifact metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          upstream_short="${UPSTREAM_COMMIT:0:12}"
+          echo "upstream_url=$UPSTREAM_REPOSITORY_URL" >> "$GITHUB_OUTPUT"
+          echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "upstream_short=$upstream_short" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=z47-macos-$upstream_short" >> "$GITHUB_OUTPUT"
+      - name: Stage macOS simulator artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          release_dir="ci-artifacts/release"
+          package_dir="$release_dir/c47-macos"
+          rm -rf "$release_dir"
+          mkdir -p "$package_dir/res"
+          cp zig-out/bin/c47 zig-out/bin/r47 "$package_dir/"
+          cp -r res/PROGRAMS "$package_dir/res/"
+          cp -r res/STATE "$package_dir/res/"
+          cp res/c47_pre.css "$package_dir/res/"
+          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
+          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
+
+          python3 .github/project/generate-simulator-notice-artifacts.py \
+            --platform macos \
+            --package-dir "$package_dir" \
+            --upstream-source-repository-url "${{ steps.macos_package_meta.outputs.upstream_url }}" \
+            --upstream-source-commit "${{ steps.macos_package_meta.outputs.upstream_commit }}" \
+            --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
+            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+
+          cat >> "$package_dir/SOURCE" <<EOF
+          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_commit=${GITHUB_SHA}
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          find "$package_dir" -type f | sed "s#^$release_dir/##" | sort > "$release_dir/PACKAGE-CONTENTS.txt"
+          cat > "$release_dir/BUILD-METADATA.txt" <<EOF
+          ref=${GITHUB_REF}
+          sha=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          upstream_url=${{ steps.macos_package_meta.outputs.upstream_url }}
+          upstream_commit=${{ steps.macos_package_meta.outputs.upstream_commit }}
+          upstream_license_file=COPYING
+          source_manifest_file=SOURCE
+          xlsxio_url=https://github.com/brechtsanders/xlsxio.git
+          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_license_file=LICENSE.txt
+          spdx_inventory_file=THIRD-PARTY.spdx.json
+          third_party_inventory_file=THIRD-PARTY.spdx.json
+          platform_notice_root=repo-notices/macos
+          macos_runtime_library_inventory_file=repo-notices/macos/MACOS-RUNTIME-LIBRARIES.txt
+          macos_runtime_notice_summary_file=repo-notices/macos/MACOS-LIBRARY-NOTICES.txt
+          macos_runtime_notice_dir=repo-notices/macos/licenses
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          package_dir=$(basename "$package_dir")
+          artifact_name=${{ steps.macos_package_meta.outputs.artifact_name }}
+          EOF
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.macos_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-host-build:
+    name: Windows dedicated runner build, test, generated outputs, app smoke run
+    needs:
+      - validate-toolchain
+      - source-manifest
+    runs-on: windows-latest
+    steps:
+      - name: Disable automatic CRLF conversion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global core.autocrlf input
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+        with:
+          msystem: UCRT64
+          path-type: inherit
+          update: true
+          install: >-
+            git
+            make
+            python
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-expat
+            mingw-w64-ucrt-x86_64-freetype
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-gmp
+            mingw-w64-ucrt-x86_64-gtk3
+            mingw-w64-ucrt-x86_64-minizip
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: xlsxio-ref
+        name: Resolve xlsxio upstream HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+      - id: xlsxio-cache
+        name: Restore Windows xlsxio helper cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/xlsxio-prefix
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          restore-keys: |
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-
+      - name: Build xlsxio helper
+        if: steps.xlsxio-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          temp_root="$(cygpath -u "$RUNNER_TEMP")"
+          prefix="$temp_root/xlsxio-prefix"
+          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$temp_root/xlsxio"
+          cmake -G Ninja -S "$temp_root/xlsxio" -B "$temp_root/xlsxio/build" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$prefix"
+          cmake --build "$temp_root/xlsxio/build" --parallel
+          cmake --install "$temp_root/xlsxio/build"
+      - name: Run Windows host build and tests
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
+          export PATH="$prefix/bin:$PATH"
+          zig build sim
+          zig build simr47
+          zig build test
+          zig build generated
+      - name: Run Windows simulator smoke launch
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
+          export PATH="$prefix/bin:$PATH"
+          app_path="zig-out/bin/c47.exe"
+          if [[ ! -x "$app_path" ]]; then
+            app_path="zig-out/bin/c47"
+          fi
+          "$app_path" >"$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke.log" 2>&1 &
+          pid=$!
+          sleep 5
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat "$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke.log"
+            wait "$pid"
+            exit 1
+          fi
+          kill "$pid" 2>/dev/null || true
+          wait "$pid" || true
+      - id: windows_package_meta
+        name: Set Windows artifact metadata
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          upstream_short="${UPSTREAM_COMMIT:0:12}"
+          echo "upstream_url=$UPSTREAM_REPOSITORY_URL" >> "$GITHUB_OUTPUT"
+          echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "upstream_short=$upstream_short" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=z47-windows-$upstream_short" >> "$GITHUB_OUTPUT"
+      - name: Stage Windows simulator artifact
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          release_dir="ci-artifacts/release"
+          package_dir="$release_dir/c47-windows"
+          runtime_prefix="${MINGW_PREFIX:-${MSYSTEM_PREFIX:-/ucrt64}}"
+          runtime_bin="$runtime_prefix/bin"
+          helper_bin="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix/bin"
+
+          copy_tree_if_exists() {
+            local src="$1"
+            local dest="$2"
+            if [[ -d "$src" ]]; then
+              mkdir -p "$(dirname "$dest")"
+              cp -R "$src" "$dest"
+            fi
+          }
+
+          copy_runtime_file() {
+            local source_path="$1"
+            local dest_path="$2"
+
+            if [[ ! -f "$source_path" ]]; then
+              echo "Missing GTK runtime file: $source_path" >&2
+              exit 1
+            fi
+
+            mkdir -p "$(dirname "$dest_path")"
+            cp "$source_path" "$dest_path"
+          }
+
+          copy_runtime_dll() {
+            local source_path="$1"
+
+            copy_runtime_file "$source_path" "$package_dir/$(basename "$source_path")"
+          }
+
+          resolve_runtime_dlls() {
+            find "$package_dir" -type f \( -name '*.exe' -o -name '*.dll' \) -print0 \
+              | xargs -0 -r ldd \
+              | awk -v runtime_bin="$runtime_bin/" -v helper_bin="$helper_bin/" '
+                  $2 == "=>" && $3 == "not" {
+                    missing = 1
+                    next
+                  }
+                  $3 ~ ("^" runtime_bin) && $3 ~ /\.dll$/ { print $3; next }
+                  $3 ~ ("^" helper_bin) && $3 ~ /\.dll$/ { print $3; next }
+                  $1 ~ ("^" runtime_bin) && $1 ~ /\.dll$/ { print $1; next }
+                  $1 ~ ("^" helper_bin) && $1 ~ /\.dll$/ { print $1; next }
+                  END {
+                    if (missing) exit 1
+                  }
+                ' \
+              | sort -u
+          }
+
+          relativize_cache_paths() {
+            local cache_file="$1"
+            [[ -f "$cache_file" ]] || return 0
+            PACKAGE_ROOT_POSIX="$package_root_posix" PACKAGE_ROOT_WIN="$package_root_win" \
+              perl -0pi -e 's/\Q$ENV{PACKAGE_ROOT_WIN}\E/./g; s/\Q$ENV{PACKAGE_ROOT_POSIX}\E/./g' "$cache_file"
+          }
+
+          rm -rf "$release_dir"
+          mkdir -p "$package_dir/res/testPgms" "$package_dir/res/tone"
+          package_root_posix="$(cd "$package_dir" && pwd)"
+          package_root_win="$(cd "$package_dir" && pwd -W)"
+          c47_binary="zig-out/bin/c47.exe"
+          r47_binary="zig-out/bin/r47.exe"
+          if [[ ! -f "$c47_binary" ]]; then
+            c47_binary="zig-out/bin/c47"
+          fi
+          if [[ ! -f "$r47_binary" ]]; then
+            r47_binary="zig-out/bin/r47"
+          fi
+          cp "$c47_binary" "$package_dir/c47.exe"
+          cp "$r47_binary" "$package_dir/r47.exe"
+          for helper in gspawn-win64-helper.exe gspawn-win64-helper-console.exe; do
+            if [[ -f "$runtime_bin/$helper" ]]; then
+              cp "$runtime_bin/$helper" "$package_dir/"
+            fi
+          done
+          runtime_paths=(
+            "etc/fonts"
+            "etc/gtk-3.0"
+            "lib/gdk-pixbuf-2.0"
+            "lib/gio/modules"
+            "lib/gtk-3.0"
+            "share/glib-2.0/schemas"
+            "share/gtk-3.0"
+            "share/icons/Adwaita"
+            "share/icons/hicolor"
+            "share/mime"
+            "share/themes"
+          )
+
+          for rel_path in "${runtime_paths[@]}"; do
+            copy_tree_if_exists "$runtime_prefix/$rel_path" "$package_dir/$rel_path"
+          done
+
+          runtime_tools=(
+            "gdk-pixbuf-query-loaders.exe"
+            "gio-querymodules.exe"
+            "glib-compile-schemas.exe"
+            "gtk-query-immodules-3.0.exe"
+          )
+
+          for tool_name in "${runtime_tools[@]}"; do
+            if [[ -f "$runtime_bin/$tool_name" ]]; then
+              cp "$runtime_bin/$tool_name" "$package_dir/"
+            fi
+          done
+
+          previous_dlls=""
+          while :; do
+            dlls="$(resolve_runtime_dlls)"
+            if [[ -z "$dlls" ]]; then
+              echo "Failed to resolve runtime DLLs from staged Windows package contents" >&2
+              exit 1
+            fi
+            if [[ "$dlls" == "$previous_dlls" ]]; then
+              break
+            fi
+            previous_dlls="$dlls"
+            while IFS= read -r dll; do
+              [[ -n "$dll" ]] || continue
+              copy_runtime_dll "$dll"
+            done <<< "$dlls"
+          done
+
+          gdk_loader_dir="$(find "$package_dir/lib/gdk-pixbuf-2.0" -type d -path '*/loaders' | head -n 1 || true)"
+          if [[ -n "$gdk_loader_dir" && -x "$runtime_bin/gdk-pixbuf-query-loaders.exe" ]]; then
+            mapfile -d '' -t gdk_loader_dlls < <(find "$gdk_loader_dir" -maxdepth 1 -type f -name '*.dll' -print0 | LC_ALL=C sort -z)
+            if (( ${#gdk_loader_dlls[@]} > 0 )); then
+              "$runtime_bin/gdk-pixbuf-query-loaders.exe" "${gdk_loader_dlls[@]}" > "$(dirname "$gdk_loader_dir")/loaders.cache"
+              relativize_cache_paths "$(dirname "$gdk_loader_dir")/loaders.cache"
+            fi
+          fi
+
+          gtk_im_dir="$(find "$package_dir/lib/gtk-3.0" -type d -path '*/immodules' | head -n 1 || true)"
+          if [[ -n "$gtk_im_dir" && -x "$runtime_bin/gtk-query-immodules-3.0.exe" ]]; then
+            mapfile -d '' -t gtk_im_dlls < <(find "$gtk_im_dir" -maxdepth 1 -type f -name '*.dll' -print0 | LC_ALL=C sort -z)
+            if (( ${#gtk_im_dlls[@]} > 0 )); then
+              "$runtime_bin/gtk-query-immodules-3.0.exe" "${gtk_im_dlls[@]}" > "$(dirname "$gtk_im_dir")/immodules.cache"
+              relativize_cache_paths "$(dirname "$gtk_im_dir")/immodules.cache"
+            fi
+          fi
+
+          if [[ -d "$package_dir/lib/gio/modules" && -x "$runtime_bin/gio-querymodules.exe" ]]; then
+            "$runtime_bin/gio-querymodules.exe" "$package_dir/lib/gio/modules"
+            relativize_cache_paths "$package_dir/lib/gio/modules/giomodule.cache"
+          fi
+
+          if [[ -d "$package_dir/share/glib-2.0/schemas" && -x "$runtime_bin/glib-compile-schemas.exe" ]]; then
+            "$runtime_bin/glib-compile-schemas.exe" "$package_dir/share/glib-2.0/schemas"
+          fi
+
+          mapfile -t runtime_caches < <(find "$package_dir" -type f \( -name 'loaders.cache' -o -name 'immodules.cache' -o -name 'giomodule.cache' \) | LC_ALL=C sort)
+          if (( ${#runtime_caches[@]} > 0 )); then
+            if grep -F "$package_root_posix" "${runtime_caches[@]}" >/dev/null; then
+              echo "Packaged runtime cache still contains runner POSIX path" >&2
+              exit 1
+            fi
+            if grep -F "$package_root_win" "${runtime_caches[@]}" >/dev/null; then
+              echo "Packaged runtime cache still contains runner Windows path" >&2
+              exit 1
+            fi
+          fi
+
+          cp -r res/PROGRAMS "$package_dir/res/"
+          cp -r res/STATE "$package_dir/res/"
+          cp res/c47_pre.css "$package_dir/res/"
+          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
+          cp res/testPgms/testPgms.bin "$package_dir/res/testPgms/"
+          if [[ -f res/testPgms/testPgms.txt ]]; then
+            cp res/testPgms/testPgms.txt "$package_dir/res/testPgms/"
+          fi
+          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
+          cp res/tone/*.wav "$package_dir/res/tone/"
+          cp res/c47.reg res/r47.reg "$package_dir/"
+          cp .github/project/windows/c47.cmd .github/project/windows/r47.cmd "$package_dir/"
+
+          python3 .github/project/generate-simulator-notice-artifacts.py \
+            --platform windows \
+            --package-dir "$package_dir" \
+            --upstream-source-repository-url "${{ steps.windows_package_meta.outputs.upstream_url }}" \
+            --upstream-source-commit "${{ steps.windows_package_meta.outputs.upstream_commit }}" \
+            --xlsxio-source-repository-url https://github.com/brechtsanders/xlsxio.git \
+            --xlsxio-source-commit "${{ steps.xlsxio-ref.outputs.sha }}"
+
+          cat >> "$package_dir/SOURCE" <<EOF
+          z47_repository_url=https://github.com/${{ github.repository }}
+          z47_commit=${GITHUB_SHA}
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          created_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          find "$package_dir" -type f | sed "s#^$release_dir/##" | sort > "$release_dir/PACKAGE-CONTENTS.txt"
+          cat > "$release_dir/BUILD-METADATA.txt" <<EOF
+          ref=${GITHUB_REF}
+          sha=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          upstream_url=${{ steps.windows_package_meta.outputs.upstream_url }}
+          upstream_commit=${{ steps.windows_package_meta.outputs.upstream_commit }}
+          upstream_license_file=COPYING
+          source_manifest_file=SOURCE
+          xlsxio_url=https://github.com/brechtsanders/xlsxio.git
+          xlsxio_commit=${{ steps.xlsxio-ref.outputs.sha }}
+          xlsxio_license_file=LICENSE.txt
+          spdx_inventory_file=THIRD-PARTY.spdx.json
+          third_party_inventory_file=THIRD-PARTY.spdx.json
+          platform_notice_root=repo-notices/windows
+          windows_gtk_runtime_dirs=etc/fonts,etc/gtk-3.0,lib/gdk-pixbuf-2.0,lib/gio/modules,lib/gtk-3.0,share/glib-2.0/schemas,share/gtk-3.0,share/icons/Adwaita,share/icons/hicolor,share/mime,share/themes
+          windows_gtk_runtime_tools=gdk-pixbuf-query-loaders.exe,gio-querymodules.exe,glib-compile-schemas.exe,gtk-query-immodules-3.0.exe
+          windows_runtime_launcher_files=c47.cmd,r47.cmd
+          windows_dll_inventory_file=repo-notices/windows/WINDOWS-RUNTIME-DLLS.txt
+          windows_dll_notice_summary_file=repo-notices/windows/WINDOWS-DLL-NOTICES.txt
+          windows_dll_notice_dir=repo-notices/windows/licenses
+          zig_version=${{ steps.toolchain.outputs.version }}
+          runner_os=${RUNNER_OS}
+          runner_arch=${RUNNER_ARCH}
+          package_dir=$(basename "$package_dir")
+          artifact_name=${{ steps.windows_package_meta.outputs.artifact_name }}
+          EOF
+      - name: Inspect packaged Windows simulator imports
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          inspect_imports() {
+            local app="$1"
+            echo "== ${app} =="
+            objdump -p "$app" | awk '/DLL Name:/ { print $3 }'
+            if objdump -p "$app" | grep -Eiq 'DLL Name: msvcrt\.dll'; then
+              echo "Unexpected direct msvcrt.dll import in $app" >&2
+              exit 1
+            fi
+          }
+
+          package_dir="ci-artifacts/release/c47-windows"
+          inspect_imports "$package_dir/c47.exe"
+          inspect_imports "$package_dir/r47.exe"
+          mapfile -t svg_loaders < <(find "$package_dir/lib/gdk-pixbuf-2.0" -type f -iname 'pixbufloader_svg.dll' | LC_ALL=C sort)
+          if (( ${#svg_loaders[@]} > 0 )); then
+            if [[ ! -f "$package_dir/librsvg-2-2.dll" ]]; then
+              echo "Packaged SVG pixbuf loader is present, but librsvg-2-2.dll is missing from the package root" >&2
+              exit 1
+            fi
+            for loader in "${svg_loaders[@]}"; do
+              inspect_imports "$loader"
+            done
+          fi
+      - name: Run relocated packaged Windows launcher smoke
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          smoke_root="$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke"
+          log_path="$(cygpath -u "$RUNNER_TEMP")/c47-windows-package-smoke.log"
+          rm -rf "$smoke_root"
+          cp -R ci-artifacts/release/c47-windows "$smoke_root"
+          (
+            cd "$smoke_root"
+            cmd //c c47.cmd >"$log_path" 2>&1 &
+            pid=$!
+            sleep 5
+            if ! kill -0 "$pid" 2>/dev/null; then
+              cat "$log_path"
+              wait "$pid"
+              exit 1
+            fi
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" || true
+          )
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.windows_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
