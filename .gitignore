@@ -1,3 +1,9 @@
+# z47 project files
+/.zig-cache
+/zig-out
+/__DEV/
+__pycache__
+
 # C47 project specific files
 /build
 /build.sim
@@ -17,11 +23,7 @@
 backup.bin
 backup.cfg
 backupR47.cfg
-<<<<<<< HEAD
 wp43.sav
-=======
-wp43.sav    
->>>>>>> master
 wp43.dat
 c47.sav
 c47.dat

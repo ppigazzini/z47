@@ -1,0 +1,47 @@
+name: upstream-drift
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Compare pinned upstream with current upstream HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          if ! current_commit="$(git ls-remote "$UPSTREAM_REPOSITORY_URL" HEAD | awk '{print $1}')"; then
+            {
+              echo "Pinned upstream commit: $UPSTREAM_COMMIT"
+              echo "Current upstream HEAD: unavailable"
+              echo "Status: query failed"
+            } > upstream-drift.txt
+            echo "::warning::Unable to query current upstream HEAD"
+            exit 0
+          fi
+          {
+            echo "Pinned upstream commit: $UPSTREAM_COMMIT"
+            echo "Current upstream HEAD: $current_commit"
+          } > upstream-drift.txt
+          if [[ "$current_commit" != "$UPSTREAM_COMMIT" ]]; then
+            echo "Status: upstream has moved" >> upstream-drift.txt
+            echo "::warning::Upstream HEAD moved to $current_commit"
+          else
+            echo "Status: pinned commit still matches upstream HEAD" >> upstream-drift.txt
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: upstream-drift
+          path: upstream-drift.txt
