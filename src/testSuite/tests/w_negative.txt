@@ -1,0 +1,90 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        Lambert W                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnWnegative
+
+
+
+;=======================================
+; W_1(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"0"
+Out: EC=5 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"1"
+
+
+
+
+;=======================================
+; W_1(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W_1(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W_1(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; W_1(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W_1(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W_1(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W_1(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0.36"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.36" RX=Real:"-1.222770133978505953142938073423862"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.1" RX=Real:"-3.577152063957297218409391963511995"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-0.1":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.1":DEG RX=Real:"-3.577152063957297218409391963511995"
+
+
+
+;=======================================
+; W_1(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-0.36 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-0.36 i 0" RX=Cplx:"-1.222770133978505953142938073423862 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-0.1 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-0.1 i 0" RX=Cplx:"-3.577152063957297218409391963511995 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 1"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"0 i 1"

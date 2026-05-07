@@ -1,0 +1,168 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                     LnBeta(x, y)                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnLnBeta
+
+
+
+;************************************************************************************************************************************************************
+; LnBeta(Long Integer, *) -> Real or Complex
+;************************************************************************************************************************************************************
+
+;=======================================
+; LnBeta(Long Integer, Long Integer) --> Real
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"15"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"15" RX=Real:"-35.41123435355763102677355412880863"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"15" RX=LonI:"50"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"50" RX=Real:"-35.41123435355763102677355412880863"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"1" RX=LonI:"1"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.0"
+
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"-15"
+Out: EC=1  FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"-15"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"-50" RX=LonI:"-15"
+Out: EC=1 FL_CPXRES=1 FL_ASLIFT=1  RY=LonI:"-50" RX=LonI:"-15"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"-50" RX=LonI:"0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"-50" RX=LonI:"0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"0" RX=LonI:"0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"0" RX=LonI:"0"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"0" RX=LonI:"10"
+Out: EC=1  FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"0" RX=LonI:"10"
+
+;=======================================
+; LnBeta(Long Integer, Real) --> Real & Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=Real:"15.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.0" RX=Real:"-35.41123435355763102677355412880863"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"15" RX=Real:"50.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50.0" RX=Real:"-35.41123435355763102677355412880863"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"1" RX=Real:"1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1.0" RX=Real:"0.0"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"10" RX=Real:"0.5"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"-0.5664327963975939348818063377286140"
+
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"50" RX=Real:"-15.0"
+Out: EC=1  FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"50" RX=Real:"-15.0"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"-50" RX=Real:"-15.0"
+Out: EC=1 FL_CPXRES=1 FL_ASLIFT=1  RY=LonI:"-50" RX=Real:"-15.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=Real:"0.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"50" RX=Real:"0.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"-50" RX=Real:"0.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"-50" RX=Real:"0.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"0" RX=Real:"0.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"0" RX=Real:"0.0"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"0" RX=Real:"10.0"
+Out: EC=1  FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"0" RX=Real:"10.0"
+
+;=======================================
+; LnBeta(Long Integer, Complex) --> Complex
+;=======================================
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"123" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"-36.04924351070564984212984388047165 i -2.621089585298211333963271507239546"
+
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"-123" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"NaN i +Nan"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=LonI:"0" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"NaN i +Nan"
+
+;************************************************************************************************************************************************************
+; LnBeta(Real, *) -> Real or Complex
+;************************************************************************************************************************************************************
+
+;=======================================
+; LnBeta(Real, Long Integer) --> Real & Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=LonI:"15"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"15" RX=Real:"-35.41123435355763102677355412880863"
+
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.0" RX=LonI:"15"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.0" RX=LonI:"15"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=LonI:"-15"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=LonI:"-15"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"0.0" RX=LonI:"15"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"0.0" RX=LonI:"15"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=LonI:"0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=LonI:"0"
+
+;=======================================
+; LnBeta(Real, Real) --> Real & Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=Real:"15.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.0" RX=Real:"-35.41123435355763102677355412880863"
+
+In:  WS=64 FL_CPXRES=1 FL_ASLIFT=1 RY=Real:"-50.1234" RX=Real:"15.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"15.0" RX=Cplx:"-31.19379570687159030800827500034934 i -160.2212253330794551615948125472546"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.1234" RX=Real:"15.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.1234" RX=Real:"15.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.0" RX=Real:"15.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"-50.0" RX=Real:"15.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=Real:"-15.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=Real:"-15.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"0.0" RX=Real:"15.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"0.0" RX=Real:"15.0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=Real:"0.0"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"50.0" RX=Real:"0.0"
+
+;=======================================
+; Beta(Real, Complex) --> Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Real:"7" RX=Cplx:"3 i 4"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"3 i 4" RX=Cplx:"-7.16102498600318100498134698050440433824180107095265031084107338 i -4.37645497999673892552318780301886964462806936167883025473876429"
+
+;************************************************************************************************************************************************************
+; Beta(Complex, *) -> Complex
+;************************************************************************************************************************************************************
+
+;=======================================
+; Beta(Complex, Complex) --> Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"4 i 3" RX=Cplx:"3 i 4"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"3 i 4" RX=Cplx:"-4.45006807474412508004433888919238669830995793595947657321263328 i -5.33327101880797400251873831334529227350105203981317521702342855"
+
+;=======================================
+; Beta(Complex, Real) --> Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"4 i 3" RX=Real:"7"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"7" RX=Cplx:"-7.46772820974434956950879500952213740086075984580953842855568811 i -3.02443802349483958756564605351459257905798108350033804280573797"
+
+;=======================================
+; Beta(Complex, Long Integer) --> Complex
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=Cplx:"4 i 3" RX=LonI:"7"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"7" RX=Cplx:"-7.46772820974434956950879500952213740086075984580953842855568811 i -3.02443802349483958756564605351459257905798108350033804280573797"

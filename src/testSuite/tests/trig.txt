@@ -1,0 +1,27 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**       arcsin(arccos(arctan(tan(cos(sin(9°))))))-9       **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+
+; Real version
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9"
+Func: fnSin
+Out:  EC=0
+Func: fnCos
+Out:  EC=0
+Func: fnTan
+Out:  EC=0
+Func: fnArctan
+Out:  EC=0
+Func: fnArccos
+Out:  EC=0
+Func: fnArcsin
+Out:  EC=0
+Func: fnSwapXY
+Out:  EC=0
+Func: fnSubtract
+In:   RX=Real:"9"
+Out:  EC=0 FL_CPXRES=0 RX=Real:"-6.2465e-29":DEG

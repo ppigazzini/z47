@@ -1,0 +1,116 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      unit vector                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnUnitVector
+
+
+
+;=======================================
+; unitVector(Long Integer) --> Error24
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"5"
+
+
+
+;=======================================
+; unitVector(Time)
+;=======================================
+
+
+
+;=======================================
+; unitVector(Date)
+;=======================================
+
+
+
+;=======================================
+; unitVector(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; unitVector(Real Matrix)
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M1,3[1,1,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,1,1]" RX=ReMa:"M1,3[0.577350269189625764509148780501957455648,0.577350269189625764509148780501957455648,0.577350269189625764509148780501957455648]"
+
+
+;=======================================
+; unitVector(Complex Matrix)
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M1,3[1i2,3i4,5i6]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[1i2,3i4,5i6]" RX=CxMa:"M1,3[0.104828483672191829577211163299255663764i0.209656967344383659154422326598511327528,0.314485451016575488731633489897766991293i0.419313934688767318308844653197022655057,0.524142418360959147886055816496278318821i0.628970902033150977463266979795533982585]"
+
+
+
+;=======================================
+; unitVector(Short Integer) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+
+
+
+;=======================================
+; unitVector(Real) --> Error24
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.0001"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"50"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"89.99999"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"5.32564":DMS
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-5.32564":GRAD
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN":RAD
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":DEG
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":MULTPI
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":RAD
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":RAD
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+
+;=======================================
+; unitVector(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"0.63212672747179388997500395594446479235650485369995907778387528 i -0.77486502077187638125968226857708587450152207872898209534797615"

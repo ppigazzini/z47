@@ -1,0 +1,64 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                 SHORT INTEGER | | ...                   **
+;**                 ... | | SHORT INTEGER                   **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnParallel
+
+
+
+;==================================================================
+; Short Integer || Long Integer      see in multiplication_longInteger.txt
+; Short Integer || Real              see in multiplication_real.txt
+; Short Integer || Complex           see in multiplication_complex.txt
+; Short Integer || Time              see in multiplication_time.txt
+; Short Integer || Date              see in multiplication_date.txt
+; Short Integer || String            see in multiplication_string.txt
+; Short Integer || Real Matrix       see in multiplication_realMatrix.txt
+; Short Integer || Complex Matrix    see in multiplication_complexMatrix.txt
+;==================================================================
+
+
+
+;=======================================
+; Short Integer || Short Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"12540#10" RX=ShoI:"10000#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"15.9796113411914622491239248168206" RL=ShoI:"10000#2"
+
+
+;=======================================
+; Short Integer || Real --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=Real:"123456"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=Real:"123456"
+
+In:  AM=DEG FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"2#10" RX=Real:"123.4":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.968102073365231259968102073365231" RL=Real:"123.4":DEG
+
+
+;=======================================
+; Real || Short Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"123456" RX=ShoI:"45247#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=ShoI:"45247#8"
+
+In:  AM=DEG FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"123.4":DEG RX=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.968102073365231259968102073365231" RL=ShoI:"2#10"
+
+
+;=======================================
+; Short Integer || Complex --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"12540#10" RX=Cplx:"123.456 i -6.78"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"122.2559873437728371461062527256244 i -6.648446080265072991460577555330888" RL=Cplx:"123.456 i -6.78"
+
+;=======================================
+; Complex || Short Integer --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Cplx:"123456 i -546" RX=ShoI:"45247#8"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"16549.22228024861990615034083682767 i -9.811040668487472775901252766012421" RL=ShoI:"45247#8"

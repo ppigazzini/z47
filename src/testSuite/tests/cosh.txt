@@ -1,0 +1,140 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          cosh                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnCosh
+
+
+
+;=======================================
+; cosh(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"74.209948524787844444106108044487714023868258589453172066091575"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"605"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"605" RX=Real:"2.7998293110958330698960856457790086626380084506050858348638298e262"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-595"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-595" RX=Real:"1.2711205407069717016503807475754516506872117364758988416941984e258"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
+
+
+
+;=======================================
+; cosh(Time)
+;=======================================
+
+
+
+;=======================================
+; cosh(Date)
+;=======================================
+
+
+
+;=======================================
+; cosh(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; cosh(Real Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,2,-3,4,-5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[1,1.54308063481524377847790562075706168260,3.76219569108363145956221347777374610829,10.0676619957777658419539360351158898368,27.3082328360164866292019896120670598225,74.2099485247878444441061080444877140239]"
+
+
+
+;=======================================
+; cosh(Complex Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[1,0.540302305868139717400936607442976603732,2.03272300701966552943634344849951426373i-3.05189779915180005751211568689510545289,-4.18962569096880723013255501961597372862i-9.10922789375533659797919726277886212133,-27.0349456030742246476948026682709134847i3.8511533348117775365633371230531245697,-48.5068594578445821052085488769850401951i-56.1571749251301892562086252440831510696]"
+
+
+
+;=======================================
+; cosh(Short Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"74.209948524787844444106108044487714023868258589453172066091575"
+
+
+
+
+;=======================================
+; cosh(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"1.000000005000000004166666668055555555803571428598985890654645"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"2592352764293536232043.7266614667426924137346467294155991479176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9.999999999" RX=Real:"11013.23290909009027052459917141747816647470421259469785954698"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":DEG RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":DMS RX=Real:"1.000000005000000004166666668055555555803571428598985890654645"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50":GRAD RX=Real:"2592352764293536232043.7266614667426924137346467294155991479176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9.999999999":RAD RX=Real:"11013.23290909009027052459917141747816647470421259469785954698"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
+
+
+
+;=======================================
+; cosh(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"61.904278206035530628208841392918516914607105448667143436852455 i -238.46976296148906374438545158606509502378790242901267069775277"

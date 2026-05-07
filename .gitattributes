@@ -1,0 +1,30 @@
+# Don't export certain files
+.gitattributes    export-ignore
+.gitignore        export-ignore
+.gitlab-ci.yml    export-ignore
+.gitmodules       export-ignore
+.readthedocs.yaml export-ignore
+
+# Fix line endings so they are consistent
+* text=auto
+
+*.c    text
+*.css  text
+*.csv  text
+*.h    text
+*.html text
+*.ld   text
+*.md   text
+*.py   text
+*.rst  text
+*.txt  text
+
+*.cbp binary
+*.bin binary
+*.bmp binary
+*.ods binary
+*.pdf binary
+*.png binary
+*.svg binary
+*.ttf binary
+*.xcf binary

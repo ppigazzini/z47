@@ -1,0 +1,153 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         gammaP                          **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnGammaX(1)
+
+
+
+;=======================================
+; gammaP(Long Integer, Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"1" RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.6321205588285576784044762298385391"
+
+
+
+;=======================================
+; gammaP(Long Integer, Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6321205588285576784044762298385391"
+
+
+
+;=======================================
+; gammaP(Real, Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=LonI:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"1" RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.6321205588285576784044762298385391"
+
+
+
+;=======================================
+; gammaP(Time)
+;=======================================
+
+
+
+;=======================================
+; gammaP(Date)
+;=======================================
+
+
+
+;=======================================
+; gammaP(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RY=Stri:"String test"
+
+
+
+;=======================================
+; gammaP(Real Matrix)
+;=======================================
+
+
+
+;=======================================
+; gammaP(Complex Matrix)
+;=======================================
+
+
+
+;=======================================
+; gammaP(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; gammaP(Real, Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"1" RX=Real:"0"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"0.5"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-1" RX=Real:"0.5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.1" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.3452791539814229705967640706373594"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.6826894921370858971704650912640758"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.8427007929497148693412206350826093"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.5" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.9167354833364495981450806795009064"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.9544997361036415855994347256669331"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.9856941215645703604741521935777493"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.9984345977419974503225001960216141"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"1"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"-1" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.09516258196404042683575094055356338"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3934693402873665763962004650088195"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6321205588285576784044762298385391"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1.5" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.7768698398515701710667195292359875"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8646647167633873081060005050275156"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9502129316321360570206575843499382"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9932620530009145329033639515768516"
+
+
+
+;=======================================
+; gammaP(Complex)
+;=======================================

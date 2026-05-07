@@ -1,0 +1,2061 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                   special results                       **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: AM=DEG SD=0 RMODE=0 SS=4
+
+
+;-------------------------------------------------------------------------
+; Flag D set and Flag I clear
+;-------------------------------------------------------------------------
+In:  FL_SPCRES=1 FL_CPXRES=0
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-inf"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-inf"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=LonI:"0"
+;Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+;In:  FL_ASLIFT=0 RX=Real:"0"
+;Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"inf"
+
+
+Func: fnGamma
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-100" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"0.999"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.999" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+
+Func: fnArccos
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-100" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.001" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1.001" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN":DEG
+
+
+Func: fnArcsin
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-100" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.001" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1.001" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN":DEG
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN":DEG
+
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-100" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.001" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1.001" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+
+Func: fnTan
+In:  FL_ASLIFT=0 RX=LonI:"90"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"90" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=LonI:"-90"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-90" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"90"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"90" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-90"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-90" RX=Real:"NaN"
+
+
+Func: fnCube
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+Func: fnCubeRoot
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+Func: fnArcsinh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+
+Func: fnArctan
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-90":DEG
+
+
+Func: fnTanh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-1"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-0"
+
+Func: fnExp
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+Func: fnExpM1
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-1"
+
+Func: fn10Pow
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+Func: fn2Pow
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+Func: fnSinc
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+
+Func: fnSquare
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"NaN"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"NaN"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=LonI:"-1"
+;Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"NaN"
+
+;In:  FL_ASLIFT=0 RX=Real:"-inf"
+;Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+;In:  FL_ASLIFT=0 RX=Real:"-10"
+;Out: EC=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"NaN"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"NaN"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"NaN"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+Func: fnSinc
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+
+Func: fnTanh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"
+
+
+Func: fnArctan
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"90":DEG
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=Real:"inf"
+;Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnExp
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnExpM1
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnSquare
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnSquareRoot
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+Func: fn10Pow
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+Func: fnCube
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnCubeRoot
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnSinh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnCosh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnArcsinh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+Func: fn2Pow
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+
+Func: fnCos
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnSin
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnTan
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+
+Func: fnAdd
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"99"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"99" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"99"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"99" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"99"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"99" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"99"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"99" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+
+Func: fnSubtract
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"99"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"99" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"99"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"99" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"99"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"99" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"99"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"99" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+
+Func: fnMultiply
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"5"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"-5"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-5" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-5" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"-5"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"5"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"5" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"5" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"-5" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-5" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"-5" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-5" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"5" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"5" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+
+
+Func: fnDivide
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-99" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"-99" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-99" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"-99" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+Func: fnXthRoot                     ;; F I =109=CPXRES=0    F D =104=DANGER=SPCRES=1
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-501"   ;1
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-501" RX=Real:"inf"   ;jm:1:0; -∞<x<0; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-502"   ;2
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-502" RX=Real:"inf"   ;jm:1:0; -∞<x<0; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-6.1"   ;3
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-6.1" RX=Real:"inf"   ;jm:1:0; -∞<x<0; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-1"   ;4
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"inf"   ;jm:1:0; -∞<x<0; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-0.5"   ;5
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"inf"   ;jm:1:0; -∞<x<0; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0.5"   ;6
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"1"   ;7
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"6.1"   ;8
+Out: EC=0 FL_ASLIFT=1 RL=Real:"6.1" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"502"   ;9
+Out: EC=0 FL_ASLIFT=1 RL=Real:"502" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"501"   ;10
+Out: EC=0 FL_ASLIFT=1 RL=Real:"501" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"   ;11
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"   ;jm:2:0; 0. <= x < ∞; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"inf"   ;12
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"0.5" RX=Real:"inf"   ;13
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"1" RX=Real:"inf"   ;14
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"6.1" RX=Real:"inf"   ;15
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"501" RX=Real:"inf"   ;16
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"502" RX=Real:"inf"   ;17
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"   ;18
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-inf"   ;19
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"0.5" RX=Real:"-inf"   ;20
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"1" RX=Real:"-inf"   ;21
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"6.1" RX=Real:"-inf"   ;22
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"501" RX=Real:"-inf"   ;23
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"502" RX=Real:"-inf"   ;24
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"   ;jm:3:0 <= y <= ∞ ; +- ∞; 1.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-501"   ;25
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-501" RX=Real:"0"   ;jm:4:∞ ; -∞ < x < 0; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-502"   ;26
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-502" RX=Real:"0"   ;jm:4:∞ ; -∞ < x < 0; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-6.1"   ;27
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-6.1" RX=Real:"0"   ;jm:4:∞ ; -∞ < x < 0; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-1"   ;28
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"0"   ;jm:4:∞ ; -∞ < x < 0; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-0.5"   ;29
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"0"   ;jm:4:∞ ; -∞ < x < 0; 0.
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0.5"   ;30
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"1"   ;31
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"6.1"   ;32
+Out: EC=0 FL_ASLIFT=1 RL=Real:"6.1" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"502"   ;33
+Out: EC=0 FL_ASLIFT=1 RL=Real:"502" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"501"   ;34
+Out: EC=0 FL_ASLIFT=1 RL=Real:"501" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"   ;35
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"   ;jm:5:∞ ; 0 <= x < ∞; ∞
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"   ;36
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-502" RX=Real:"inf"   ;37
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-501" RX=Real:"inf"   ;38
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-6.01" RX=Real:"inf"   ;39
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-1" RX=Real:"inf"   ;40
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-0.5" RX=Real:"inf"   ;41
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"   ;42
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-502" RX=Real:"-inf"   ;43
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-501" RX=Real:"-inf"   ;44
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-6.01" RX=Real:"-inf"   ;45
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-1" RX=Real:"-inf"   ;46
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-0.5" RX=Real:"-inf"   ;47
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"   ;jm:6:-∞ <= y < 0 ; +- ∞; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-1E6" RX=Real:"6.1"   ;48
+Out: EC=0 FL_ASLIFT=1 RL=Real:"6.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-502" RX=Real:"-6.1"   ;49
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-6.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-501" RX=Real:"1.1"   ;50
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-6.01" RX=Real:"-1.1"   ;51
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-1" RX=Real:"500.1"   ;52
+Out: EC=0 FL_ASLIFT=1 RL=Real:"500.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-0.5" RX=Real:"-500.1"   ;53
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-500.1" RX=Real:"NaN"   ;jm:7:-∞ < y < 0 ; non int; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"1"   ;54
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"-inf"   ;jm:8:-∞ ; odd x>0; -∞
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"3"   ;55
+Out: EC=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-inf"   ;jm:8:-∞ ; odd x>0; -∞
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"1001"   ;56
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1001" RX=Real:"-inf"   ;jm:8:-∞ ; odd x>0; -∞
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"100001"   ;57
+Out: EC=0 FL_ASLIFT=1 RL=Real:"100001" RX=Real:"-inf"   ;jm:8:-∞ ; odd x>0; -∞
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"2"   ;58
+Out: EC=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"NaN"   ;jm:9:-∞ ; even x>0; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"4"   ;59
+Out: EC=0 FL_ASLIFT=1 RL=Real:"4" RX=Real:"NaN"   ;jm:9:-∞ ; even x>0; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"1000"   ;60
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1000" RX=Real:"NaN"   ;jm:9:-∞ ; even x>0; NaN
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"100000"   ;61
+Out: EC=0 FL_ASLIFT=1 RL=Real:"100000" RX=Real:"NaN"   ;jm:9:-∞ ; even x>0; NaN
+
+
+
+Func: fnPower
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"5"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"6"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"6" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"6"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"6" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"5.6"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"5.6" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"6"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"6" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"6"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"6" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 RY=Real:"5.6" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"7" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"7" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+
+In:  FL_ASLIFT=0 RY=Real:"5.6" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"7" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"7" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+
+;-------------------------------------------------------------------------
+; Flag D clear and Flag I clear
+;-------------------------------------------------------------------------
+In:  FL_SPCRES=0 FL_CPXRES=0
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+In:  FL_ASLIFT=0 RX=Real:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-1"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+In:  FL_ASLIFT=0 RX=Real:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-1"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=LonI:"0"
+;Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+;In:  FL_ASLIFT=0 RX=Real:"0"
+;Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"1"
+
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"1"
+
+
+Func: fnGamma
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-100"
+
+In:  FL_ASLIFT=0 RX=Real:"0.999"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0.999"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArccos
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"100"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-100"
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArcsin
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"100"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-100"
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=LonI:"2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 RX=LonI:"100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"100"
+
+In:  FL_ASLIFT=0 RX=LonI:"-100"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-100"
+
+In:  FL_ASLIFT=0 RX=Real:"1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"-1.001"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-1.001"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnTan
+In:  FL_ASLIFT=0 RX=LonI:"90"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"90"
+
+In:  FL_ASLIFT=0 RX=LonI:"-90"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-90"
+
+In:  FL_ASLIFT=0 RX=Real:"90"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"90"
+
+In:  FL_ASLIFT=0 RX=Real:"-90"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-90"
+
+
+Func: fnCube
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+Func: fnCubeRoot
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArcsinh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArctan
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnTanh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+Func: fnExp
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+Func: fnExpM1
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+Func: fn10Pow
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+Func: fn2Pow
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+Func: fnSinc
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnSquare
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=LonI:"-2"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=LonI:"-1"
+;Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+;In:  FL_ASLIFT=0 RX=Real:"-inf"
+;Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+;In:  FL_ASLIFT=0 RX=Real:"-10"
+;Out: EC=1 FL_ASLIFT=0 RX=Real:"-10"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=LonI:"-1"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"-1"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-10"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10"
+
+
+Func: fnInvert
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+Func: fnSinc
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+
+Func: fnTanh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+
+Func: fnArctan
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+;Func: fnLn1PX
+;In:  FL_ASLIFT=0 RX=Real:"inf"
+;Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnExp
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnExpM1
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnSquare
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnSquareRoot
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fn10Pow
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnCube
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnCubeRoot
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnSinh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnCosh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnArcsinh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fnArccosh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+Func: fn2Pow
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+
+Func: fnCos
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnSin
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnTan
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+Func: fnArctanh
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnAdd
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"99"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"99"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"99"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"99"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"99"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"99"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"99"
+Out: EC=5 FL_ASLIFT=0 RX=LonI:"99"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnSubtract
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"99"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"99"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"99"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"99"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"99"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"99"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"99"
+Out: EC=5 FL_ASLIFT=0 RX=LonI:"99"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+Func: fnMultiply
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"5"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"5"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"5"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"5"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"-5"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"-5"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-5"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-5"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"-5"
+Out: EC=5 FL_ASLIFT=0 RX=LonI:"-5"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-5"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-5"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"5"
+Out: EC=5 FL_ASLIFT=0 RX=LonI:"5"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"5"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"5" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"5" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"-5" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-5" RX=Real:"-inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"-5" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"-5" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"5" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"5" RX=Real:"-inf"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+
+
+Func: fnDivide
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"-99" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"-99" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"99" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"99" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"-99" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"-99" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0
+
+
+Func: fnXthRoot                     ;; F I =109=CPXRES=0    F D =104=DANGER=SPCRES=0
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"inf"
+
+
+Func: fnPower
+In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RX=LonI:"0"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"-10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"10.2"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"
+Out: EC=5 FL_ASLIFT=0 RX=Real:"5"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"5"
+Out: EC=5 FL_ASLIFT=0 RX=LonI:"5"
+
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"6"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6"
+
+In:  FL_ASLIFT=0 RY=Real:"-inf" RX=LonI:"6"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"6"
+
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"5.6"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"5.6"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"6"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"6"
+
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"6"
+Out: EC=4 FL_ASLIFT=0 RX=LonI:"6"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+
+
+In:  FL_ASLIFT=0 RY=Real:"5.6" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"7" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"7" RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+
+In:  FL_ASLIFT=0 RY=Real:"5.6" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"7" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"7" RX=Real:"inf"
+Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+
+
+;-------------------------------------------------------------------------
+; Flag D set and Flag I set
+;-------------------------------------------------------------------------
+In:  FL_SPCRES=1 FL_CPXRES=1
+
+Func: fnSquareRoot
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"0 i inf"
+
+
+Func: fnSquare
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 99" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"99 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"99 i inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-99 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-99 i inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 99" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -99" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-99 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-99 i -inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"99 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"99 i -inf" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -99" RX=Cplx:"inf i 0"
+
+
+Func: fnXthRoot                      ;; F I =109=CPXRES=1    F D =104=DANGER=SPCRES=1
+In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"
+
+
+Func: fnCubeRoot
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-1e999 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-1e999 i 0" RX=Cplx:"-1e333 i 0"
+
+
+Func: fnCube
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 99" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"-inf i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"99 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"99 i inf" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-99 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-99 i inf" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"inf i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 99" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -99" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"inf i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-99 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-99 i -inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"99 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"99 i -inf" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"-inf i -inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -99"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -99" RX=Cplx:"inf i 0"
+
+
+Func: fnLn
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Cplx:"inf i 3.141592653589793238462643383279502884197169399375105820975"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"inf i 3.141592653589793238462643383279502884197169399375105820975"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"inf i 2.356194490192344928846982537459627163147877049531329365731"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"inf i 1.570796326794896619231321691639751442098584699687552910487"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"inf i 0.7853981633974483096156608458198757210492923498437764552437"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"inf i -0.7853981633974483096156608458198757210492923498437764552437"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"inf i -1.570796326794896619231321691639751442098584699687552910487"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"inf i -2.356194490192344928846982537459627163147877049531329365731"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
+
+Func: fnLnP1
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Cplx:"inf i 3.141592653589793238462643383279502884197169399375105820975"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"inf i 3.141592653589793238462643383279502884197169399375105820975"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"inf i 2.356194490192344928846982537459627163147877049531329365731"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-1 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-1 i inf" RX=Cplx:"inf i 1.570796326794896619231321691639751442098584699687552910487"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"inf i 0.7853981633974483096156608458198757210492923498437764552437"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"inf i -0.7853981633974483096156608458198757210492923498437764552437"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-1 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-1 i -inf" RX=Cplx:"inf i -1.570796326794896619231321691639751442098584699687552910487"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"inf i -2.356194490192344928846982537459627163147877049531329365731"
+
+In:  FL_ASLIFT=0 RX=Real:"-1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-1 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-1 i 0" RX=Cplx:"-inf i 0"
+
+Func: fnLog2
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Cplx:"inf i 4.532360141827193809627682945716666810171861467723795584186"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"inf i 4.532360141827193809627682945716666810171861467723795584186"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"inf i 3.39927010637039535722076220928750010762889610079284668814"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"inf i 2.266180070913596904813841472858333405085930733861897792093"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"inf i 1.133090035456798452406920736429166702542965366930948896047"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"inf i -1.133090035456798452406920736429166702542965366930948896047"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"inf i -2.266180070913596904813841472858333405085930733861897792093"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"inf i -3.39927010637039535722076220928750010762889610079284668814"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
+
+
+Func: fnLog10
+In:  FL_ASLIFT=0 RX=Real:"-inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Cplx:"inf i 1.364376353841841347485783625431355770210127483723925399901"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"inf i 1.364376353841841347485783625431355770210127483723925399901"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"inf i 1.023282265381381010614337719073516827657595612792944049926"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"inf i 0.68218817692092067374289181271567788510506374186196269995"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"inf i 0.3410940884604603368714459063578389425525318709309813499752"
+
+In:  FL_ASLIFT=0 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"inf i -0.3410940884604603368714459063578389425525318709309813499752"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"inf i -0.68218817692092067374289181271567788510506374186196269995"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"inf i -1.023282265381381010614337719073516827657595612792944049926"
+
+In:  FL_ASLIFT=0 RX=Real:"0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
+
+
+Func: fnExp
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"NaN i NaN"
+
+Func: fnExpM1
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"-1 i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"NaN i NaN"
+
+
+Func: fn2Pow
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"NaN i NaN"
+
+
+Func: fn10Pow
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"inf i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"0 i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i -inf" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 RX=Cplx:"-inf i -inf"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"-inf i -inf" RX=Cplx:"NaN i NaN"

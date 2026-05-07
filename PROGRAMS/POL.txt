@@ -1,0 +1,8 @@
+C47 Program file export, version 1
+0000: { Prgm #42: 20 bytes / 6 steps }
+0001:  LBL 'POL'
+0002:  BestF 510
+0003:  L.R.
+0004:  0
+0005:  x_circ
+0006:  END

@@ -1,0 +1,100 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    fractional part                      **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnFp
+
+
+
+;=======================================
+; fp(Long Integer) --> Long Integer
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"0"
+
+
+
+;=======================================
+; fp(Time)
+;=======================================
+
+
+
+;=======================================
+; fp(Date)
+;=======================================
+
+
+
+;=======================================
+; fp(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; fp(Real Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[1.1,-2.3,3.5,-5.7,7.8,-8.9]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1.1,-2.3,3.5,-5.7,7.8,-8.9]" RX=ReMa:"M2,3[0.1,-0.3,0.5,-0.7,0.8,-0.9]"
+
+
+
+;=======================================
+; fp(Complex Matrix)
+;=======================================
+
+
+
+;=======================================
+; fp(Short Integer) --> Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"0#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=3 IM=1COMPL RX=ShoI:"5#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"7#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=3 IM=SIGNMT RX=ShoI:"6#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"4#8"
+
+
+
+;=======================================
+; fp(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0.0001"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.99999" RX=Real:"0.99999"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"0.32564":DMS
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"-0.32564":GRAD
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+
+
+;=======================================
+; fp(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"6.2 i -7.6"

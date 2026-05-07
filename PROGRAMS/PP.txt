@@ -1,0 +1,22 @@
+C47 Program file export, version 1
+0000: { Prgm #43: 58 bytes / 20 steps }
+0001:  LBL 'PP'
+0002:  STO J
+0003:  DROP
+0004:  STO I
+0005:  DROP
+0006:  PGMSLV 'FF'
+0007:  0
+0008:  1
+0009:  SOLVE 'xx'
+0010:  RCL K
+0011:  RE
+0012:  RTN
+0013:  LBL 'FF'
+0014:  RCL I
+0015:  RCL J
+0016:  RCL 'xx'
+0017:  LINPOL
+0018:  STO K
+0019:  IM
+0020:  .END.

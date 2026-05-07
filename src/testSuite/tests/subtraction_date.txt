@@ -1,0 +1,122 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                       DATE - ...                        **
+;**                       ... - DATE                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSubtract
+
+
+
+;==================================================================
+; Date - Long Integer  see in subtraction_longInteger.txt
+; Date - Time          see in subtraction_time.txt
+;==================================================================
+
+
+
+;=======================================
+; Date - Date
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"2003.1020" RX=Date:"1970.0101"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1970.0101" RX=LonI:"12345"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"10.202003" RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=LonI:"12345"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"20.102003" RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=LonI:"12345"
+
+; Julian-Gregorian gap
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1582.1015" RX=Date:"1582.1004"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1582.1004" RX=LonI:"1"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2361222 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1752.0914" RX=Date:"1752.0902"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2361222 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1752.0902" RX=LonI:"1"
+
+; Leap years
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1500.0301" RX=Date:"1500.0228"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1500.0228" RX=LonI:"2"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1700.0301" RX=Date:"1700.0228"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1700.0228" RX=LonI:"1"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2361222 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1700.0301" RX=Date:"1700.0228"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2361222 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1700.0228" RX=LonI:"2"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"2000.0301" RX=Date:"2000.0228"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"2000.0228" RX=LonI:"2"
+
+
+
+;=======================================
+; Date - String
+;=======================================
+
+;=======================================
+; String - Date
+;=======================================
+
+
+
+;=======================================
+; Date - Real Matrix
+;=======================================
+
+;=======================================
+; Real Matrix - Date
+;=======================================
+
+
+
+;=======================================
+; Date - Complex Matrix
+;=======================================
+
+;=======================================
+; Complex Matrix - Date
+;=======================================
+
+
+
+;=======================================
+; Date - Short Integer
+;=======================================
+
+;=======================================
+; Short Integer - Date
+;=======================================
+
+
+
+;=======================================
+; Date - Real
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"2003.1021" RX=Real:"12345.67"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"1970.0101"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"10.212003" RX=Real:"12345.67"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"1.011970"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"21.102003" RX=Real:"12345.67"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"1.011970"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"2003.1021" RX=Real:"12345.67":Deg
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Date:"2003.1021" RX=Real:"12345.67":Deg
+
+;=======================================
+; Real - Date
+;=======================================
+
+
+
+;=======================================
+; Date - Complex
+;=======================================
+
+;=======================================
+; Complex - Date
+;=======================================

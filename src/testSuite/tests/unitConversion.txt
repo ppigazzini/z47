@@ -1,0 +1,1307 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                     unit conversions                    **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0
+
+;=============================================================
+; ENERGY CONVERSIONS
+;=============================================================
+
+; Wh → J (constFactorWhJ=26)
+Func: fnUnitConvert(26)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3600"
+
+; J → Wh (constFactorWhJ=26 | 0x8000)
+Func: fnUnitConvert(32794)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00027777777777777777777777777777777777777777777778"
+
+; cal → J (constFactorCalJ=9)
+Func: fnUnitConvert(9)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.1868"
+
+; J → cal (constFactorCalJ=9 | 0x8000)
+Func: fnUnitConvert(32777)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2388458966274959396197573325690265"
+
+; Btu → J (constFactorBtuJ=8)
+Func: fnUnitConvert(8)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1055.05585262"
+
+; J → Btu (constFactorBtuJ=8 | 0x8000)
+Func: fnUnitConvert(32776)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0009478171203133172000127850444756106"
+
+; eV → J (constFactoreVJ=134)
+Func: fnUnitConvert(134)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.602176634e-19"
+
+; J → eV (constFactorJeV=133 | 0x8000)
+Func: fnUnitConvert(32901)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.241509074460762607776240980930446e+18"
+
+; erg → J (constFactorErgJ=139 | 0x8000)
+Func: fnUnitConvert(32907)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1e-07"
+
+; J → erg (constFactorErgJ=139)
+Func: fnUnitConvert(139)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10000000"
+
+; foe → J (constFactorFoeJ=140 | 0x8000)
+Func: fnUnitConvert(32908)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1e+44"
+
+; J → foe (constFactorFoeJ=140)
+Func: fnUnitConvert(140)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1e-44"
+
+;=============================================================
+; MASS CONVERSIONS
+;=============================================================
+
+; lb → kg (constFactorLbKg=27)
+Func: fnUnitConvert(27)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.45359237"
+
+; kg → lb (constFactorLbKg=27 | 0x8000)
+Func: fnUnitConvert(32795)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.2046226218487758072297380134504296573564453125"
+
+; cwt → kg (constFactorCwtKg=11)
+Func: fnUnitConvert(11)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"50.80234544"
+
+; kg → cwt (constFactorCwtKg=11 | 0x8000)
+Func: fnUnitConvert(32779)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01968413055222121256455123226294884"
+
+; oz → g (constFactorOzG=28)
+Func: fnUnitConvert(28)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"28.349523125"
+
+; g → oz (constFactorOzG=28 | 0x8000)
+Func: fnUnitConvert(32796)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03527396194958041291567580821520433"
+
+; stone → kg (constFactorStoneKg=30)
+Func: fnUnitConvert(30)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.35029318"
+
+; kg → stone (constFactorStoneKg=30 | 0x8000)
+Func: fnUnitConvert(32798)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1574730444177697005164098581035907"
+
+; short cwt → kg (constFactorShortcwtKg=29)
+Func: fnUnitConvert(29)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"45.359237"
+
+; kg → short cwt (constFactorShortcwtKg=29 | 0x8000)
+Func: fnUnitConvert(32797)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.02204622621848775807229738013450270"
+
+; troy oz → g (constFactorTrozG=34)
+Func: fnUnitConvert(34)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"31.1034768"
+
+; g → troy oz (constFactorTrozG=34 | 0x8000)
+Func: fnUnitConvert(32802)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03215074656862798052210034602948311"
+
+; ton → kg (constFactorTonKg=32)
+Func: fnUnitConvert(32)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1016.0469088"
+
+; kg → ton (constFactorTonKg=32 | 0x8000)
+Func: fnUnitConvert(32800)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0009842065276110606282275616131474421"
+
+; short ton → kg (constFactorShorttonKg=31)
+Func: fnUnitConvert(31)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"907.18474"
+
+; kg → short ton (constFactorShorttonKg=31 | 0x8000)
+Func: fnUnitConvert(32799)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001102311310924387903614869006725135"
+
+; carat → g (constFactorCaratG=47)
+Func: fnUnitConvert(47)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2"
+
+; g → carat (constFactorCaratG=47 | 0x8000)
+Func: fnUnitConvert(32815)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"5"
+
+; kg → jin (constFactorJinKg=48)
+Func: fnUnitConvert(48)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2"
+
+; jin → kg (constFactorJinKg=48 | 0x8000)
+Func: fnUnitConvert(32816)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5"
+
+; kg → liang (constFactorJinKg=33)
+Func: fnUnitConvert(33)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"20"
+
+; liang → kg (constFactorJinKg=33 | 0x8000)
+Func: fnUnitConvert(32801)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.05"
+
+;=============================================================
+; LENGTH CONVERSIONS
+;=============================================================
+
+; mile → km (constFactorMiKm=38)
+Func: fnUnitConvert(38)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.609344"
+
+; km → mile (constFactorMiKm=38 | 0x8000)
+Func: fnUnitConvert(32806)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6213711922373339696174341843633182"
+
+; yard → m (constFactorYardM=43)
+Func: fnUnitConvert(43)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9144"
+
+; m → yard (constFactorYardM=43 | 0x8000)
+Func: fnUnitConvert(32811)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.09361329833770778652668416447844014494838145232"
+
+; pc → m (constFactorPcM=40)
+Func: fnUnitConvert(40)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.08567758149136727891393795779647161073192116041e+16"
+
+; m → pc (constFactorPcM=40 | 0x8000)
+Func: fnUnitConvert(32808)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.240779289444365023237687716352957e-17"
+
+; nmi → km (constFactorNmiKm=39)
+Func: fnUnitConvert(39)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.852"
+
+; km → nmi (constFactorNmiKm=39 | 0x8000)
+Func: fnUnitConvert(32807)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5399568034557235421166306695464363"
+
+; ft → m (constFactorFtM=12)
+Func: fnUnitConvert(12)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3048"
+
+; m → ft (constFactorFtM=12 | 0x8000)
+Func: fnUnitConvert(32780)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.28083989501312335958005249343832020997375328084"
+
+; ly → m (constFactorLyM=36)
+Func: fnUnitConvert(36)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.46073047258080000000000000000000000000000000000e+15"
+
+; m → ly (constFactorLyM=36 | 0x8000)
+Func: fnUnitConvert(32804)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.057000834024615463709460524485127e-16"
+
+; nmi → mi (constFactorNmiMi=68)
+Func: fnUnitConvert(68)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.15077944802354251173148810944086534637715740078"
+
+; mi → nmi (constFactorNmiMi=68 | 0x8000)
+Func: fnUnitConvert(32836)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8689762419006479481641468682505400"
+
+; inch → mm (constFactorInchMm=25)
+Func: fnUnitConvert(25)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"25.4"
+
+; mm → inch (constFactorInchMm=25 | 0x8000)
+Func: fnUnitConvert(32793)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03937007874015748031496062992125984251968503937"
+
+; au → m (constFactorAuM=6)
+Func: fnUnitConvert(6)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"149597870700"
+
+; m → au (constFactorAuM=6 | 0x8000)
+Func: fnUnitConvert(32774)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.684587122268445495995953370210636e-12"
+
+; li → m (constFactorLiM=55)
+Func: fnUnitConvert(55)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"500"
+
+; m → li (constFactorLiM=55 | 0x8000)
+Func: fnUnitConvert(32823)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.002"
+
+; yin → m (constFactorYinM=57 | 0x8000)
+Func: fnUnitConvert(32825)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"33.33333333333333333333333333333333"
+
+; m → yin (constFactorYinM=57)
+Func: fnUnitConvert(57)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03"
+
+; zhang → m (constFactorZhangM=59 | 0x8000)
+Func: fnUnitConvert(32827)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.333333333333333333333333333333333"
+
+; m → zhang (constFactorZhangM=59)
+Func: fnUnitConvert(59)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3"
+
+; cun → m (constFactorCunM=58 | 0x8000)
+Func: fnUnitConvert(32826)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03333333333333333333333333333333333"
+
+; m → cun (constFactorCunM=58)
+Func: fnUnitConvert(58)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"30"
+
+; chi → m (constFactorChiM=56 | 0x8000)
+Func: fnUnitConvert(32824)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3333333333333333333333333333333333"
+
+; m → chi (constFactorChiM=56)
+Func: fnUnitConvert(56)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3"
+
+; fen → m (constFactorFenM=60 | 0x8000)
+Func: fnUnitConvert(32828)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00333333333333333333333333333333333"
+
+; m → fen (constFactorFenM=60)
+Func: fnUnitConvert(60)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"300"
+
+; mile → m (constFactorMileM=42)
+Func: fnUnitConvert(42)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1609.344"
+
+; m → mile (constFactorMileM=42 | 0x8000)
+Func: fnUnitConvert(32810)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0006213711922373339696174341843633182"
+
+; survey ft US → m (constFactorSfeetM=13)
+Func: fnUnitConvert(13)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3048006096012192024384048768097536195072390144780289561"
+
+; m → survey ft US (constFactorSfeetM=13 | 0x8000)
+Func: fnUnitConvert(32781)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.280833333333333333333333333333333333333333333333333333"
+
+; point → mm (constFactorPointMm=41)
+Func: fnUnitConvert(41)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.35277777777777777777777777777777777777777777778"
+
+; mm → point (constFactorPointMm=41 | 0x8000)
+Func: fnUnitConvert(32809)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.83464566929133858267716535433070866141732283464"
+
+; nmi → m (constFactorNMiM=51)
+Func: fnUnitConvert(51)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1852"
+
+; m → nmi (constFactorNMiM=51 | 0x8000)
+Func: fnUnitConvert(32819)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0005399568034557235421166306695464363"
+
+; fathom → m (constFactorFathomM=50)
+Func: fnUnitConvert(50)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.8288"
+
+; m → fathom (constFactorFathomM=50 | 0x8000)
+Func: fnUnitConvert(32818)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.54680664916885389326334208223972"
+
+; inch → cm (constFactorInchCm=67)
+Func: fnUnitConvert(67)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.54"
+
+; cm → inch (constFactorInchCm=67 | 0x8000)
+Func: fnUnitConvert(32835)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3937007874015748031496062992125984251968503937"
+
+
+
+
+
+
+
+; furlong → m (constFactorFurtom=69)
+Func: fnUnitConvert(69)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"201.168"
+
+; m → furlong (constFactorFurtom=69 | 0x8000)
+Func: fnUnitConvert(32837)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.004970969537898671756939473474906546"
+
+;=============================================================
+; AREA CONVERSIONS
+;=============================================================
+
+; acre → ha (constFactorAcreHa=3)
+Func: fnUnitConvert(3)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.40468564224"
+
+; ha → acre (constFactorAcreHa=3 | 0x8000)
+Func: fnUnitConvert(32771)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.471053814671653422482439291988063"
+
+; ha → m² (constFactorHectareM2=53)
+Func: fnUnitConvert(53)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10000"
+
+; m² → ha (constFactorHectareM2=53 | 0x8000)
+Func: fnUnitConvert(32821)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0001"
+
+; mi² → km² (constFactorMi2Km2=61)
+Func: fnUnitConvert(61)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.589988110336"
+
+; km² → mi² (constFactorMi2Km2=61 | 0x8000)
+Func: fnUnitConvert(32829)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3861021585424458472628811393731348"
+
+; acre US → ha (constFactorAcreusHa=4)
+Func: fnUnitConvert(4)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.40468726098742520065685292660907902460966212255"
+
+; ha → acre US (constFactorAcreusHa=4 | 0x8000)
+Func: fnUnitConvert(32772)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.471043930466278951127435975920824"
+
+; m² → mu (constFactorMuM2=54)
+Func: fnUnitConvert(54)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0015"
+
+; mu → m² (constFactorMuM2=54 | 0x8000)
+Func: fnUnitConvert(32822)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"666.6666666666666666666666666666667"
+
+; nmi² → km² (constFactorNmi2Km2=62)
+Func: fnUnitConvert(62)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.429904"
+
+; km² → nmi² (constFactorNmi2Km2=62 | 0x8000)
+Func: fnUnitConvert(32830)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2915533495981228629139474457594148"
+
+; ft² → ha (constFactorFt2Hectare=0)
+Func: fnUnitConvert(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.290304e-06"
+
+; ha → ft² (constFactorFt2Hectare=0 | 0x8000)
+Func: fnUnitConvert(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"107639.104167097223083335055559"
+
+; ft² → m² (constFactorFt2M2=1)
+Func: fnUnitConvert(1)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.09290304"
+
+; m² → ft² (constFactorFt2M2=1 | 0x8000)
+Func: fnUnitConvert(32769)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10.7639104167097223083335055559"
+
+; ha → km² (constFactorHectareKm2=2)
+Func: fnUnitConvert(32770)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01"
+
+; km² → ha (constFactorHectareKm2=2 | 0x8000)
+Func: fnUnitConvert(2)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100"
+
+;=============================================================
+; VOLUME CONVERSIONS
+;=============================================================
+
+; in³ → mL (constFactorIn3Ml=122)
+Func: fnUnitConvert(122)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"16.387064"
+
+; L → gal US (constFactorGalusL=122 | 0x8000)
+Func: fnUnitConvert(32890)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.06102374409473228395275688189171654"
+
+; floz UK → in³ (constFactorFlozukIn3=14)
+Func: fnUnitConvert(14)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.73387145494763430471742833249446"
+
+; in³ → floz UK (constFactorFlozukIn3=14 | 0x8000)
+Func: fnUnitConvert(32782)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5767440239854468345325323519771937"
+
+; ft³ → L (constFactorFt3L=126)
+Func: fnUnitConvert(126)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"28.316846592"
+
+; L → ft³ (constFactorLFt3=125 | 0x8000)
+Func: fnUnitConvert(32893)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03531466672148859025043801035400263"
+
+; floz UK → mL (constFactorFlozukMl=15)
+Func: fnUnitConvert(15)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"28.4130625"
+
+; mL → floz UK (constFactorFlozukMl=15 | 0x8000)
+Func: fnUnitConvert(32783)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03519507972785404600436858927121988"
+
+; ft³ → gal UK (constFactorFt3Gluk=123)
+Func: fnUnitConvert(123)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.228835459042825812951349401353691"
+
+; gal UK → ft³ (constFactorGlukFt3=124 | 0x8000)
+Func: fnUnitConvert(32892)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1605436532358920652516137344902278"
+
+; gal UK → L (constFactorGalukL=19)
+Func: fnUnitConvert(19)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.54609"
+
+; L → gal UK (constFactorGalukL=19 | 0x8000)
+Func: fnUnitConvert(32787)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2199692482990877875273036829451243"
+
+; floz UK → gal UK (constFactorFzukGluk=130 | 0x8000)
+Func: fnUnitConvert(32898)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00625"
+
+; gal UK → floz UK (constFactorGlukFzuk=129)
+Func: fnUnitConvert(129)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"160"
+
+; barrel → m³ (constFactorBarrelM3=52)
+Func: fnUnitConvert(52)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.158987294928"
+
+; m³ → barrel (constFactorBarrelM3=52 | 0x8000)
+Func: fnUnitConvert(32820)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.289810770432105128092855276408631"
+
+; qt UK → L (constFactorQuartL=49)
+Func: fnUnitConvert(49)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.1365225"
+
+; L → qt UK (constFactorQuartL=49 | 0x8000)
+Func: fnUnitConvert(32817)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8798769931963511501092147317804971"
+
+; floz US → in³ (constFactorFlozukIn3=16)
+Func: fnUnitConvert(16)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.8046875"
+
+; in³ → floz US (constFactorFlozukIn3=16 | 0x8000)
+Func: fnUnitConvert(32784)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5541125541125541125541125541125541"
+
+; floz US → mL (constFactorFlozusMl=17)
+Func: fnUnitConvert(17)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"29.5735295625"
+
+; mL → floz US (constFactorFlozusMl=17 | 0x8000)
+Func: fnUnitConvert(32785)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03381402270184299716862718996597280"
+
+; ft³ → gal US (constFactorFt3toGalUS=18)
+Func: fnUnitConvert(18)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"7.48051948051948051948051948051948"
+
+; gal US → ft³ (constFactorFt3toGalUS=18 | 0x8000)
+Func: fnUnitConvert(32786)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1336805555555555555555555555555556"
+
+; gal US → L (constFactorGalusL=20)
+Func: fnUnitConvert(20)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.785411784"
+
+; L → gal US (constFactorGalusL=20 | 0x8000)
+Func: fnUnitConvert(32788)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2641720523581484153798999216091625"
+
+; floz US → gal US (constFactorFzusGlus=132 | 0x8000)
+Func: fnUnitConvert(32900)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0078125"
+
+; gal US → floz US (constFactorGlusFzus=131)
+Func: fnUnitConvert(131)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"128"
+
+; qt US → L (constFactorQtusL=128 | 0x8000)
+Func: fnUnitConvert(32896)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9463529460000032791979971657389227"
+
+; L → qt US (constFactorLQtus=127)
+Func: fnUnitConvert(127)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.05668820943259"
+
+;=============================================================
+; POWER CONVERSIONS
+;=============================================================
+
+; hp (electric) → W (constFactorHpeW=21)
+Func: fnUnitConvert(21)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"746"
+
+; W → hp electric (constFactorHpeW=21 | 0x8000)
+Func: fnUnitConvert(32789)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001340482573726541554959785522788204"
+
+; hp (UK) → W (constFactorHpukW=23)
+Func: fnUnitConvert(23)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"745.69987158227022"
+
+; W → hp UK (constFactorHpukW=23 | 0x8000)
+Func: fnUnitConvert(32791)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001341022089595027934323785572674645"
+
+; hp (metric) → W (constFactorHpmW=22)
+Func: fnUnitConvert(22)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"735.49875"
+
+; W → hp metric (constFactorHpmW=22 | 0x8000)
+Func: fnUnitConvert(32790)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001359621617303904323426790324252760"
+
+;=============================================================
+; FUEL ECONOMY CONVERSIONS (bidirectional)
+;=============================================================
+
+; km/Le → kWh/100km
+Func: fnKmletok100K(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"890.2598164469601598302627358228777"
+
+; kWh/100km → km/Le
+Func: fnKmletok100K(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"890.2598164469601598302627358228777"
+
+; mpg US → L/100km
+Func: fnL100Tomgus(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"235.2145833333333333333333333333333"
+
+; L/100km → mpg US
+Func: fnL100Tomgus(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"235.2145833333333333333333333333333"
+
+; mpge US → kWh/100mi
+Func: fnMgeustok100M(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3370"
+
+; kWh/100mi → mpge US
+Func: fnMgeustok100M(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3370"
+
+; kWh/100mi → kWh/100km (constFactorK100Ktok100M=85 | 0x8000)
+Func: fnUnitConvert(32853)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6213711922373339696174341843633182"
+
+; kWh/100km → kWh/100mi (constFactorK100Ktok100M=85)
+Func: fnUnitConvert(85)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.609344"
+
+; mpg UK → L/100km
+Func: fnL100Tomguk(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"282.4809363318221585938121371192237"
+
+; L/100km → mpg UK
+Func: fnL100Tomguk(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"282.4809363318221585938121371192237"
+
+; mpge UK → kWh/100mi
+Func: fnMgeuktok100M(0)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4047.201248951361113002759120697026"
+
+; kWh/100mi → mpge UK
+Func: fnMgeuktok100M(32768)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4047.201248951361113002759120697026"
+
+;=============================================================
+; ANGLE CONVERSIONS
+;=============================================================
+
+; deg → rad (divide by 180/pi)
+Func: fnCvtDegRad(32768)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=DEG
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01745329251994329576923690768488612713442834388"
+
+; rad → deg (multiply by 180/pi)
+Func: fnCvtDegRad(0)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=RAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"57.29577951308232087679815481410517033240547246686"
+
+; deg → grad (divide by 9/10)
+Func: fnCvtDegGrad(32768)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=DEG
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.11111111111111111111111111111111111111111111111"
+
+; grad → deg (multiply by 9/10)
+Func: fnCvtDegGrad(0)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=GRAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9"
+
+; grad → rad (divide by 200/pi)
+Func: fnCvtGradRad(32768)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=GRAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01570796326794896619231321691639751"
+
+; rad → grad (multiply by 200/pi)
+Func: fnCvtGradRad(0)
+In:  FL_ASLIFT=0 RX=Real:"1" AM=RAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"63.66197723675813430755350534900574"
+
+;=============================================================
+; SPEED CONVERSIONS
+;=============================================================
+
+; knot → km/h (constFactorNmiKm=39)
+Func: fnUnitConvert(39)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.852"
+
+; km/h → knot (constFactorNmiKm=39 | 0x8000)
+Func: fnUnitConvert(32807)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5399568034557235421166306695464363"
+
+; km/h → m/s (constFactorKmphmps=63)
+Func: fnUnitConvert(63)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.27777777777777777777777777777777777777777777778"
+
+; m/s → km/h (constFactorKmphmps=63 | 0x8000)
+Func: fnUnitConvert(32831)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.6"
+
+; RPM → deg/s (constFactorRpmDegps=64)
+Func: fnUnitConvert(64)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6"
+
+; deg/s → RPM (constFactorRpmDegps=64 | 0x8000)
+Func: fnUnitConvert(32832)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1666666666666666666666666666666667"
+
+; mph → km/h (constFactorMiKm=38)
+Func: fnUnitConvert(38)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.609344"
+
+; km/h → mph (constFactorMiKm=38 | 0x8000)
+Func: fnUnitConvert(32806)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6213711922373339696174341843633182"
+
+; mph → m/s (constFactorMphmps=65)
+Func: fnUnitConvert(65)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.44704"
+
+; m/s → mph (constFactorMphmps=65 | 0x8000)
+Func: fnUnitConvert(32833)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.236936292054402290622763063707946"
+
+; RPM → rad/s (constFactorRpmRadps=66)
+Func: fnUnitConvert(66)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1047197551196597746154214461093168"
+
+; rad/s → RPM (constFactorRpmRadps=62 | 0x8000)
+Func: fnUnitConvert(32834)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.549296585513720146133025802350862"
+
+; fps → km/h (constFactorFpstokph=78)
+Func: fnUnitConvert(78)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.09728"
+
+; km/h → fps (constFactorFpstokph=78 | 0x8000)
+Func: fnUnitConvert(32846)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9113444152814231554389034703995334"
+
+; fps → m/s (constFactorFpstomps=79)
+Func: fnUnitConvert(79)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.3048"
+
+; m/s → fps (constFactorFpstomps=79 | 0x8000)
+Func: fnUnitConvert(32847)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.28083989501312335958005249343832020997375328084"
+
+;=============================================================
+; PRESSURE & FORCE CONVERSIONS
+;=============================================================
+
+; mmHg → Pa (constFactorMmhgPa=37)
+Func: fnUnitConvert(37)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"133.3224"
+
+; Pa → mmHg (constFactorMmhgPa=37 | 0x8000)
+Func: fnUnitConvert(32805)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.007500615050434135599119127768477015"
+
+; inHg → Pa (constFactorInhgPa=24)
+Func: fnUnitConvert(24)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3386.38896"
+
+; Pa → inHg (constFactorInhgPa=24 | 0x8000)
+Func: fnUnitConvert(32792)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0002952998051352021889416979436408274"
+
+; lbf → N (constFactorLbfN=35)
+Func: fnUnitConvert(35)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.44822161526050000000000000000000000000000000000"
+
+; N → lbf (constFactorLbfN=35 | 0x8000)
+Func: fnUnitConvert(32803)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2248089430997104829100394134031775"
+
+; atm → Pa (constFactorAtmPa=5)
+Func: fnUnitConvert(5)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"101325"
+
+; Pa → atm (constFactorAtmPa=5 | 0x8000)
+Func: fnUnitConvert(32773)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.869232667160128300024673081667900e-06"
+
+; psi → Pa (constFactorPsiPa=44)
+Func: fnUnitConvert(44)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6894.75729316836133672267344534689069378138756277"
+
+; Pa → psi (constFactorPsiPa=44 | 0x8000)
+Func: fnUnitConvert(32812)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0001450377377302092151542410279511940"
+
+; bar → Pa (constFactorBarPa=7)
+Func: fnUnitConvert(7)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100000"
+
+; Pa → bar (constFactorBarPa=7 | 0x8000)
+Func: fnUnitConvert(32775)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00001"
+
+; torr → Pa (constFactorTorrPa=45)
+Func: fnUnitConvert(45)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"133.32236842105263157894736842105263178947368421"
+
+; Pa → torr (constFactorTorrPa=45 | 0x8000)
+Func: fnUnitConvert(32813)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.007500616827041697508018751542067604"
+
+;=============================================================
+; CHEF CONVERSIONS
+;=============================================================
+
+; ml → tsp UK (constFactorMlTspuk=108 | 0x8000)
+Func: fnUnitConvert(32876)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1689363826936994208209692285018554"
+
+; tsp UK → ml (constFactorMlTspuk=108)
+Func: fnUnitConvert(108)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"5.919388020833333333333333333333333"
+
+; ml → tbsp UK (constFactorMlTbspuk=106 | 0x8000)
+Func: fnUnitConvert(32874)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.05631212756456647360698974283395181"
+
+; tbsp UK → ml (constFactorMlTbspuk=106)
+Func: fnUnitConvert(106)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"17.7581640625"
+
+; ml → cup UK (constFactorCupukMl=92 | 0x8000)
+Func: fnUnitConvert(32860)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.003519507972785404600436858927121988"
+
+; cup UK → ml (constFactorCupukMl=92)
+Func: fnUnitConvert(92)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"284.130625"
+
+; floz UK → tsp UK (constFactorFzukTspuk=95)
+Func: fnUnitConvert(95)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.8"
+
+; tsp UK → floz UK (constFactorFzukTspuk=95 | 0x8000)
+Func: fnUnitConvert(32863)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2083333333333333333333333333333333"
+
+; floz UK → tbsp UK (constFactorFzukTbspuk=94)
+Func: fnUnitConvert(94)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.6"
+
+; tbsp UK → floz UK (constFactorFzukTbspuk=94 | 0x8000)
+Func: fnUnitConvert(32862)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.625"
+
+; floz UK → cup UK (constFactorFzukCupuk=93 | 0x8000)
+Func: fnUnitConvert(32861)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1"
+
+; cup UK → floz UK (constFactorFzukCupuk=93)
+Func: fnUnitConvert(93)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10"
+
+; ml → floz UK (constFactorFlozukMl=15)
+Func: fnUnitConvert(15)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"28.4130625"
+
+; floz UK → ml (constFactorFlozukMl=15 | 0x8000)
+Func: fnUnitConvert(32783)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03519507972785404600436858927121988"
+
+; ml → pint UK (constFactorMlPintuk=102 | 0x8000)
+Func: fnUnitConvert(32870)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001759753986392702300218429463560994"
+
+; pint UK → ml (constFactorMlPintuk=102)
+Func: fnUnitConvert(102)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"568.26125"
+
+; ml → quart UK (constFactorMlQt=103 | 0x8000)
+Func: fnUnitConvert(32871)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0008798769931963511501092147317804971"
+
+; quart UK → ml (constFactorMlQt=103)
+Func: fnUnitConvert(103)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1136.5225"
+
+; ml → tsp US (constFactorMlTspc=107 | 0x8000)
+Func: fnUnitConvert(32875)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2028841362110579830117631397958368"
+
+; tsp US → ml (constFactorMlTspc=107)
+Func: fnUnitConvert(107)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.92892159375"
+
+; ml → tbsp US (constFactorMlTbspc=105 | 0x8000)
+Func: fnUnitConvert(32873)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0676280454036859943372543799319456"
+
+; tbsp US → ml (constFactorMlTbspc=105)
+Func: fnUnitConvert(105)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"14.78676478125"
+
+; ml → cup US (constFactorMlCupc=99 | 0x8000)
+Func: fnUnitConvert(32867)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0042267528377303746460783987457466"
+
+; cup US → ml (constFactorMlCupc=99)
+Func: fnUnitConvert(99)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"236.5882365"
+
+; floz US → tsp US (constFactorFzusTspc=98)
+Func: fnUnitConvert(98)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6"
+
+; tsp US → floz US (constFactorFzusTspc=98 | 0x8000)
+Func: fnUnitConvert(32866)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1666666666666666666666666666666667"
+
+; floz US → tbsp US (constFactorFzusTbspc=97)
+Func: fnUnitConvert(97)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2"
+
+; tbsp US → floz US (constFactorFzusTbspc=97 | 0x8000)
+Func: fnUnitConvert(32865)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5"
+
+; floz US → cup US (constFactorFzusCupc=96 | 0x8000)
+Func: fnUnitConvert(32864)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.125"
+
+; cup US → floz US (constFactorFzusCupc=96)
+Func: fnUnitConvert(96)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"8"
+
+; ml → floz US (constFactorFlozusMl=17)
+Func: fnUnitConvert(17)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"29.5735295625"
+
+; floz US → ml (constFactorFlozusMl=17 | 0x8000)
+Func: fnUnitConvert(32785)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0338140227018429971686271899659728"
+
+; ml → pint US (constFactorMlPintlq=101 | 0x8000)
+Func: fnUnitConvert(32869)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0021133764188651873230391993728733"
+
+; pint US → ml (constFactorMlPintlq=101)
+Func: fnUnitConvert(101)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"473.176473"
+
+; ml → quart US (constFactorMlQtus=104 | 0x8000)
+Func: fnUnitConvert(32872)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00105668820943259366151959968643665"
+
+; quart US → ml (constFactorMlQtus=104)
+Func: fnUnitConvert(104)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"946.352946"
+
+;=============================================================
+; MISC CONVERSIONS
+;=============================================================
+
+; HR → HMS (hours to hours:minutes:seconds)
+Func: fnCvtHMSHR(0)
+In:  FL_ASLIFT=0 RX=Real:"1.5"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1.5" RX=Real:"1.3"
+
+; HMS → HR (hours:minutes:seconds to decimal hours)
+Func: fnCvtHMSHR(32768)
+In:  FL_ASLIFT=0 RX=Real:"1.30"
+Out: EC=0 FL_ASLIFT=1 RL=Time:"5400" RX=Real:"1.5"
+
+; lbf·ft → Nm (constFactorLbfftNm=10)
+Func: fnUnitConvert(10)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.3558179483314004"
+
+; Nm → lbf·ft (constFactorLbfftNm=10 | 0x8000)
+Func: fnUnitConvert(32778)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.7375621492772653638780820649710547"
+
+; field ratio → dB (multiply by 20)
+Func: fnCvtRatioDb(20)
+In:  FL_ASLIFT=0 RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"6.020599913279623904274777894489861"
+
+; dB → field ratio (divide by 20)
+Func: fnCvtDbRatio(20)
+In:  FL_ASLIFT=0 RX=Real:"3"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"1.412537544622754302155607863930241"
+
+; year → s (constFactorYearS=46)
+Func: fnUnitConvert(46)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"31556952"
+
+; s → year (constFactorYearS=46 | 0x8000)
+Func: fnUnitConvert(32814)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.168873850681143096456210346297070e-08"
+
+; power ratio → dB (multiply by 10)
+Func: fnCvtRatioDb(10)
+In:  FL_ASLIFT=0 RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"3.010299956639811952137388947244930"
+
+; dB → power ratio (divide by 10)
+Func: fnCvtDbRatio(10)
+In:  FL_ASLIFT=0 RX=Real:"3"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"1.995262314968879601352455396739536"
+
+;=============================================================
+; FFF+ CONVERSIONS
+;=============================================================
+
+; furlong → m (constFactorFurtom=69)
+Func: fnUnitConvert(69)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"201.168"
+
+; m → furlong (constFactorFurtom=69 | 0x8000)
+Func: fnUnitConvert(32837)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.004970969537898671756939473474906546"
+
+; fortnight → s (constFactorFtntos=70)
+Func: fnUnitConvert(70)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1209600"
+
+; s → fortnight (constFactorFtntos=70 | 0x8000)
+Func: fnUnitConvert(32838)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"8.26719576719576719576719576719576719576719576720e-07"
+
+; furlong/fortnight → m/s (constFactorFpftomps=71)
+Func: fnUnitConvert(71)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.000166309523809524"
+
+; m/s → furlong/fortnight (constFactorFpftomps=71 | 0x8000)
+Func: fnUnitConvert(32839)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6012.884753042226470568643616633694"
+
+; banana → inch (constFactorBananaInch=138)
+Func: fnUnitConvert(138)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"7.007874015748031496062992125984252"
+
+; inch → banana (constFactorBananaInch=138 | 0x8000)
+Func: fnUnitConvert(32906)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1426966292134831460674157303370787"
+
+; fir → kg (constFactorFirtokg=73)
+Func: fnUnitConvert(73)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"40.8233133"
+
+; kg → fir (constFactorFirtokg=73 | 0x8000)
+Func: fnUnitConvert(32841)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.02449580690943084230255264459389198"
+
+; furlong/fortnight → km/h (constFactorFpftokph=74)
+Func: fnUnitConvert(74)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.000598714285714286"
+
+; km/h → furlong/fortnight (constFactorFpftokph=74 | 0x8000)
+Func: fnUnitConvert(32842)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1670.245764733952913268544627080452"
+
+; banana → mm (constFactorBananamm=136)
+Func: fnUnitConvert(136)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"178"
+
+; mm → banana (constFactorBananamm=136 | 0x8000)
+Func: fnUnitConvert(32904)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.005617977528089887640449438202247191"
+
+; fir → lb (constFactorFirtolb=76)
+Func: fnUnitConvert(76)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"90.00000734139932"
+
+; lb → fir (constFactorFirtolb=76 | 0x8000)
+Func: fnUnitConvert(32844)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0111111102047655899809870772686962"
+
+; furlong/fortnight → mph (constFactorFpftomph=77)
+Func: fnUnitConvert(77)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00037202473418562"
+
+; mph → furlong/fortnight (constFactorFpftomph=77 | 0x8000)
+Func: fnUnitConvert(32845)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2687.993319016941169626843628342908"
+
+; brds → m (constFactorBrdstom=72)
+Func: fnUnitConvert(72)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00000001"
+
+; m → brds (constFactorBrdstom=72 | 0x8000)
+Func: fnUnitConvert(32840)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100000000"
+
+; brds → in (constFactorBrdstoin=75)
+Func: fnUnitConvert(75)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.000000393700787401575"
+
+; in → brds (constFactorBrdstoin=75 | 0x8000)
+Func: fnUnitConvert(32843)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2539999.999999998730000000000000635"

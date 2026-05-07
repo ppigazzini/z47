@@ -1,0 +1,124 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         year                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnYear
+
+
+
+;=======================================
+; year(Long Integer) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1234567"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"1234567"
+
+
+
+;=======================================
+; year(Time) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Time:"12:34:56.789"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Time:"12:34:56.789"
+
+
+
+;=======================================
+; year(Date) --> Long Integer
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Date:"1582.1015"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1582.1015" RX=LonI:"1582"
+
+
+
+;=======================================
+; year(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; year(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; year(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; year(Short Integer) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2compl RX=ShoI:"5#7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+
+
+;=======================================
+; year(Real) --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":DEG
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.0001":DEG
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1582.1015"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1582.1015" RX=LonI:"1582"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"10.151582"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10.151582" RX=LonI:"1582"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"15.101582"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15.101582" RX=LonI:"1582"
+
+; Wrong date: Julian-Gregorian gap
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1582.1010"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"1582.1010"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"10.101582"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"10.101582"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"10.101582"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"10.101582"
+
+; Wrong date: 29 February of non-leap year
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1900.0229"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"1900.0229"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2.291900"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2.291900"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"29.021900"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"29.021900"
+
+; Wrong date: 0 January
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2020.0100"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2020.0100"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.002020"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"1.002020"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.012020"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.012020"
+
+; Wrong date: 10 "Undecimber" (13th month)
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2000.1310"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2000.1310"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"13.102000"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"13.102000"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"10.132000"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 JG=2299161 EC=2 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"10.132000"
+
+
+;=======================================
+; year(Complex) --> Error24
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=24 FL_ASLIFT=0 RX=Cplx:"6.2 i -7.6"

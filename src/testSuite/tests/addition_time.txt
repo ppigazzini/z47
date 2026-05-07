@@ -1,0 +1,123 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      TIME + ...                         **
+;**                      ... + TIME                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnAdd
+
+
+
+;==================================================================
+; Time + Long Integer  see in addition_longInteger.txt
+;==================================================================
+
+
+
+;=======================================
+; Time + Time
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Time:"45247.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"45247.54264" RX=Time:"168704.33164"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"1:23:45.6789" RX=Time:"4:52:47.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"4:52:47.54264" RX=Time:"6:16:33.22154"
+
+
+
+;=======================================
+; Time + Date
+;=======================================
+
+;=======================================
+; Date + Time
+;=======================================
+
+
+
+;=======================================
+; Time + String
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 FL_TDM24=0 IM=2COMPL RY=Stri:"String test" RX=Time:"12:34:56"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"12:34:56" RX=Stri:"String test 12:34:56p.m."
+
+In: FL_ASLIFT=0 FL_CPXRES=0 FL_TDM24=1 IM=2COMPL RY=Stri:"String test" RX=Time:"12:34:56"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"12:34:56" RX=Stri:"String test 12:34:56"
+
+;=======================================
+; String + Time
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 FL_TDM24=0 IM=2COMPL RY=Time:"12:34:56" RX=Stri:"String test"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:" 12:34:56p.m.String test"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 FL_TDM24=1 IM=2COMPL RY=Time:"12:34:56" RX=Stri:"String test"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:" 12:34:56String test"
+
+
+
+;=======================================
+; Time + Real Matrix
+;=======================================
+
+;=======================================
+; Real Matrix + Time
+;=======================================
+
+
+
+;=======================================
+; Time + Complex Matrix
+;=======================================
+
+;=======================================
+; Complex Matrix + Time
+;=======================================
+
+
+
+;=======================================
+; Time + Short Integer
+;=======================================
+
+;=======================================
+; Short Integer + Time
+;=======================================
+
+
+
+;=======================================
+; Time + Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Real:"4.524754264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4.524754264" RX=Time:"139745.9043504"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"1:23:45.6789" RX=Real:"4.524754264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4.524754264" RX=Time:"5:55:14.7942504"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Real:"4.524754264":Deg
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Real:"4.524754264":Deg
+
+;=======================================
+; Real + Time
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"1.23456789" RX=Time:"45247.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"45247.54264" RX=Time:"49691.987044"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"1.23456789" RX=Time:"4:52:47.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"4:52:47.54264" RX=Time:"6:06:51.987044"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"1.23456789":Deg RX=Time:"45247.54264"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"1.23456789":Deg RX=Time:"45247.54264"
+
+
+
+;=======================================
+; Time + Complex
+;=======================================
+
+;=======================================
+; Complex + Time
+;=======================================

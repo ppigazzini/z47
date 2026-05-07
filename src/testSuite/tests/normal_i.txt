@@ -1,0 +1,104 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**           QF of normal (Gaussian) distribution          **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnNormalI
+
+
+
+;=======================================
+; normalI(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"0" RS=LonI:"1" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"0" RS=LonI:"1" RX=Real:"0.25"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"-0.6744897501960817432022270145413072"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"0" RS=LonI:"1" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"0.6744897501960817432022270145413072"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"0" RS=LonI:"1" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"-1.281551565544600466965103329448743"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"0" RS=LonI:"1" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1.281551565544600466965103329448743"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"1" RS=LonI:"1" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"1.674489750196081743202227014541307"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=LonI:"1" RS=LonI:"2" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"2.348979500392163486404454029082614"
+
+
+
+;=======================================
+; normalI(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; normalI(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; normalI(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; normalI(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; normalI(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; normalI(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; normalI(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"0.25"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"-0.6744897501960817432022270145413072"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"0.6744897501960817432022270145413072"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"-1.281551565544600466965103329448743"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"0" RS=Real:"1" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"1.281551565544600466965103329448743"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1" RS=Real:"1" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"1.674489750196081743202227014541307"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RM=Real:"1" RS=Real:"2" RX=Real:"0.75"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.75" RX=Real:"2.348979500392163486404454029082614"
+
+
+;=======================================
+; normalI(Complex) --> Error24
+;=======================================

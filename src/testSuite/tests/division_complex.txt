@@ -1,0 +1,57 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    COMPLEX / ...                        **
+;**                    ... / COMPLEX                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnDivide
+
+
+
+;==================================================================
+; Complex / Long Integer      see in division_longInteger.txt
+; Complex / Real              see in division_real.txt
+; Complex / Complex           see in division_complex.txt
+; Complex / Time              see in division_time.txt
+; Complex / Date              see in division_date.txt
+; Complex / String            see in division_string.txt
+; Complex / Real Matrix       see in division_realMatrix.txt
+; Complex / Complex Matrix    see in division_complexMatrix.txt
+; Complex / Short Integer     see in division_shortInteger.txt
+; Complex / Real              see in division_real.txt
+;==================================================================
+
+
+
+;=======================================
+; Complex / Complex --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"123.456 i -6.78" RX=Cplx:"-12540 i 7.541235"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-12540 i 7.541235" RX=Cplx:"-0.0098452976610031543389062829053730924644497397862711756995776511 i 5.3474914646678029325271436025790261140740473417726310130169023e-4"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"NaN i -6.78" RX=Cplx:"-12540 i 7.541235"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-12540 i 7.541235" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=1 FL_CPXRES=0 RY=Cplx:"123.456 i NaN" RX=Cplx:"-12540 i 7.541235"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-12540 i 7.541235" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"123.456 i -6.78" RX=Cplx:"NaN i 7.541235"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 7.541235" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=1 FL_CPXRES=0 RY=Cplx:"123.456 i -6.78" RX=Cplx:"-12540 i NaN"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-12540 i NaN" RX=Cplx:"NaN i NaN"
+
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Cplx:"2 i 3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 3" RX=Cplx:"inf i -inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i inf" RX=Cplx:"2 i 3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 3" RX=Cplx:"inf i inf"
+
+In:  FL_SPCRES=0

@@ -1,0 +1,87 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         ^ Mod                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnExpMod
+
+
+
+;=======================================
+; Long Integer ^ Long Integer Mod Long Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"4" RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"1"
+
+;=======================================
+; Long Integer ^ Long Integer Mod Short Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"4" RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=LonI:"1"
+
+;=======================================
+; Long Integer ^ Short Integer Mod Long Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=ShoI:"4#10" RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"1"
+
+;=======================================
+; Long Integer ^ Short Integer Mod Short Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=ShoI:"4#10" RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=LonI:"1"
+
+
+;=======================================
+; Short Integer ^ Long Integer Mod Long Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=ShoI:"3#10" RY=LonI:"4" RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"1"
+
+;=======================================
+; Short Integer ^ Long Integer Mod Short Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=ShoI:"3#10" RY=LonI:"4" RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=LonI:"1"
+
+;=======================================
+; Short Integer ^ Short Integer Mod Long Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=ShoI:"3#10" RY=ShoI:"4#10" RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"1"
+
+;=======================================
+; Short Integer ^ Short Integer Mod Short Integer --> Short Integer
+;=======================================
+In:  FL_ASLIFT=0 RZ=ShoI:"3#10" RY=ShoI:"4#10" RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=ShoI:"1#10"
+
+;=======================================
+; Error cases
+;=======================================
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=LonI:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=Real:"4" RX=LonI:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=LonI:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=LonI:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Real:"3" RY=LonI:"4" RX=LonI:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"3" RY=LonI:"4" RX=LonI:"5"
+
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=LonI:"3" RY=LonI:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=Real:"4" RX=LonI:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=LonI:"3" RY=Real:"4" RX=LonI:"5"
+
+In:  FL_ASLIFT=0 RZ=LonI:"3" RY=Real:"4" RX=Real:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=LonI:"3" RY=Real:"4" RX=Real:"5"
+
+In:  FL_ASLIFT=0 RZ=Stri:"String test" RY=Stri:"String test" RX=Stri:"String test"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Stri:"String test" RY=Stri:"String test" RX=Stri:"String test"

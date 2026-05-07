@@ -1,0 +1,92 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #46/46: 284 bytes / 80 steps } \par
+0001:    REGS\par
+\par
+0002:  LBL \u8216?NQ\u8217?\par
+0003:    STO \u8216?nn\u8217?\par
+0004:    4\par
+0005:    x> ? Y\par
+0006:      STOP\par
+0007:    R\u8595?\par
+0008:    10\par
+0009:    x< ? Y\par
+0010:      STOP\par
+0011:    TICKS\par
+0012:    STO \u8216?tt\u8217?\par
+0013:    0\par
+0014:    STO \u8216?xx\u8217?\par
+0015:    STO \u8216?cc\u8217?\par
+\par
+0016:  LBL A\par
+0017:    RCL \u8216?xx\u8217?\par
+0018:    RCL \u8216?nn\u8217?\par
+0019:    x= ? Y\par
+0020:      GTO \u8216?E\u8217?\par
+0021:    1\par
+0022:    STO+ \u8216?xx\u8217?\par
+0023:    RCL \u8216?nn\u8217?\par
+0024:    STO \u8594?\u8216?xx\u8217?\par
+\par
+0025:  LBL B\par
+0026:    1\par
+0027:    STO+ \u8216?cc\u8217?\par
+0028:    RCL \u8216?xx\u8217?\par
+0029:    STO \u8216?yy\u8217?\par
+\par
+0030:  LBL C\par
+0031:    1\par
+0032:    STO- \u8216?yy\u8217?\par
+0033:    RCL \u8216?yy\u8217?\par
+0034:    x= ? 0.\par
+0035:      GTO A\par
+0036:    RCL \u8594?\u8216?xx\u8217?\par
+0037:    RCL- \u8594?\u8216?yy\u8217?\par
+0038:    x= ? 0.\par
+0039:      GTO D\par
+0040:    |x|\par
+0041:    RCL \u8216?xx\u8217?\par
+0042:    RCL- \u8216?yy\u8217?\par
+0043:    x\u8800? ? Y\par
+0044:      GTO C\par
+\par
+0045:  LBL D\par
+0046:    DSE \u8594?\u8216?xx\u8217?\par
+0047:      GTO B\par
+0048:    DSE \u8216?xx\u8217?\par
+0049:      GTO D\par
+\par
+0050:  LBL \u8216?E\u8217?\par
+0051:    TICKS\par
+0052:    RCL- \u8216?tt\u8217?\par
+0053:    10\par
+0054:    \u247?\par
+0055:    STO \u8216?tt\u8217?\par
+0056:    0.001\par
+0057:    RCL\u215? \u8216?nn\u8217?\par
+0058:    1\par
+0059:    +\par
+0060:    STO \u8216?xx\u8217?\par
+0061:    CLSTK\par
+0062:    RCL \u8216?tt\u8217?\par
+0063:    \u8216?s\u8217?\par
+0064:    +\par
+0065:    \u8216?n=\u8217?\par
+0066:    RCL \u8216?cc\u8217?\par
+0067:    +\par
+0068:    \u8216?\u8217?\par
+0069:    \u8216?\u8594?\u8217?\par
+0070:  GTO \u8216?G\u8217?\par
+\par
+0071:  LBL \u8216?F\u8217?\par
+0072:    \u8216?,\u8217?\par
+\par
+0073:  LBL \u8216?G\u8217?\par
+0074:    RCL \u8594?\u8216?xx\u8217?\par
+0075:    +\par
+0076:    +\par
+0077:    ISG \u8216?xx\u8217?\par
+0078:      GTO \u8216?F\u8217?\par
+0079:  END\par
+}}

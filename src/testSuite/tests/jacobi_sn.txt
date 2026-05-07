@@ -1,0 +1,194 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    Sinus amplitudinis                   **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnJacobiSn
+
+
+
+;=======================================
+; sn(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.8414709848078965066525023216302990"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=Real:"1.570796326794896619231321691639751"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.570796326794896619231321691639751" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-0.8414709848078965066525023216302990"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.25" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.8226355781298623596762303386539765"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.8030018248956438876393973428189896"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-0.8030018248956438876393973428189896"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.75" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.7826328478392893284752533829097310"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.7615941559557648881194582826047936"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=Real:"0.9999999958776927636195928371382757"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"1" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-0.7615941559557648881194582826047936"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"2" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"2" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.6721019039743272118373769806426785"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"2" RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-0.6721019039743272118373769806426785"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"-1" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"-1" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.9076832214049461679282335927218570"
+
+
+
+;=======================================
+; sn(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; sn(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; sn(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; sn(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; sn(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; sn(Short Integer) --> Real
+;=======================================
+
+
+
+;=======================================
+; sn(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8414709848078965066525023216302990"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"1.570796326794896619231321691639751"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.570796326794896619231321691639751" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-0.8414709848078965066525023216302990"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.25" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8226355781298623596762303386539765"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.8030018248956438876393973428189896"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"1.854074677301371918433850347195260"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.854074677301371918433850347195260" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.5" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-0.8030018248956438876393973428189896"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0.75" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.7826328478392893284752533829097310"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.7615941559557648881194582826047936"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10" RX=Real:"0.9999999958776927636195928371382757"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-0.7615941559557648881194582826047936"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6721019039743272118373769806426785"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-0.6721019039743272118373769806426785"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9076832214049461679282335927218570"
+
+
+
+;=======================================
+; sn(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0" RX=Cplx:"0i1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=Cplx:"0i1.175201193643801456882381850595601"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"1" RX=Cplx:"0i1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=Cplx:"0i1.557407724654902230506974807458360"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Cplx:"0i1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=Cplx:"0i0.9076832214049461679282335927218570"

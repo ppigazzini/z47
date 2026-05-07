@@ -1,0 +1,122 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                       DATE + ...                        **
+;**                       ... + DATE                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnAdd
+
+
+
+;==================================================================
+; Date + Long Integer  see in addition_longInteger.txt
+; Date + Time          see in addition_time.txt
+;==================================================================
+
+
+
+;=======================================
+; Date + Date
+;=======================================
+
+
+
+;=======================================
+; Date + String
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1970.0101" RX=Stri:"String test"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"1970-01-01String test"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1.011970" RX=Stri:"String test"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"01/01/1970String test"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1.011970" RX=Stri:"String test"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"01.01.1970String test"
+
+;=======================================
+; String + Date
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Stri:"String test " RX=Date:"1970.0101"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1970.0101" RX=Stri:"String test 1970-01-01"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Stri:"String test " RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=Stri:"String test 01/01/1970"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Stri:"String test " RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=Stri:"String test 01.01.1970"
+
+
+
+;=======================================
+; Date + Real Matrix
+;=======================================
+
+;=======================================
+; Real Matrix + Date
+;=======================================
+
+
+
+;=======================================
+; Date + Complex Matrix
+;=======================================
+
+;=======================================
+; Complex Matrix + Date
+;=======================================
+
+
+
+;=======================================
+; Date + Short Integer
+;=======================================
+
+;=======================================
+; Short Integer + Date
+;=======================================
+
+
+
+;=======================================
+; Date + Real
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1970.0101" RX=Real:"12345.67"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"2003.1021"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1.011970" RX=Real:"12345.67"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"10.212003"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1.011970" RX=Real:"12345.67"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12345.67" RX=Date:"21.102003"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Date:"1970.0101" RX=Real:"12345.67":Deg
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Date:"1970.0101" RX=Real:"12345.67":Deg
+
+
+;=======================================
+; Real + Date
+;=======================================
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"12345.67" RX=Date:"1970.0101"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1970.0101" RX=Date:"2003.1021"
+
+In:  FL_YMD=0 FL_MDY=1 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"12345.67" RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=1 FL_DMY=0 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=Date:"10.212003"
+
+In:  FL_YMD=0 FL_MDY=0 FL_DMY=1 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"12345.67" RX=Date:"1.011970"
+Out: FL_YMD=0 FL_MDY=0 FL_DMY=1 EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Date:"1.011970" RX=Date:"21.102003"
+
+In:  FL_YMD=1 FL_MDY=0 FL_DMY=0 FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"12345.67":Deg RX=Date:"1970.0101"
+Out: FL_YMD=1 FL_MDY=0 FL_DMY=0 EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"12345.67":Deg RX=Date:"1970.0101"
+
+
+
+;=======================================
+; Date + Complex
+;=======================================
+
+;=======================================
+; Complex + Date
+;=======================================

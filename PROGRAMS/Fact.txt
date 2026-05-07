@@ -1,0 +1,17 @@
+C47 Program file export, version 1
+0000: { Prgm #12: 48 bytes / 15 steps }
+0001:  LBL 'ReMp261'
+0002:  LBL 'Fact'
+0003:  IP
+0004:  x> ? 1.
+0005:  GTO 00
+0006:  1.
+0007:  RTN
+0008:  LBL 00
+0009:  LocR 01
+0010:  STO .00
+0011:  DEC X
+0012:  XEQ 'Fact'
+0013:  RCL* .00
+0014:  RTN
+0015:  END

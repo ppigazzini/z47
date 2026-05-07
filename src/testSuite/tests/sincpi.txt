@@ -1,0 +1,157 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          sincpi                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSincpi
+
+
+
+;=======================================
+; sincpi(Long Integer) --> Real
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"0"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3605"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3605" RX=Real:"0"
+
+In:  AM=MULTPI FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-3595"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-3595" RX=Real:"0"
+
+In:  AM=DMS FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001" RX=Real:"0"
+
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-314159265358979323846264338327950300314159265358979323846264338327950"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-314159265358979323846264338327950300314159265358979323846264338327950" RX=Real:"0"
+
+
+
+;=======================================
+; sincpi(Time)
+;=======================================
+
+
+
+;=======================================
+; sincpi(Date)
+;=======================================
+
+
+
+;=======================================
+; sincpi(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; sincpi(Real Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,2,-3,4,-5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[1,0,0,0,0,0]"
+
+
+
+;=======================================
+; sincpi(Complex Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[1,3.67607791037497772069569749202826066651,0.73521558207499554413913949840565213330i-1.47043116414999108827827899681130426660,-13.1116687305364707467549640374245861720i19.6675030958047061201324460561368792580,236.663038660807733521252582970300520646i315.550718214410311361670110627067360861,-4452.47696812051585956715177216426464899i-5565.59621015064482445893971520533081123]"
+
+
+
+;=======================================
+; sincpi(Short Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"0"
+
+
+
+;=======================================
+; sincpi(Real) --> Real
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0.9999999835506594126919779728593888366342895938658835096197"
+;sincpi(0.0001r) = sinc(0.0001r * pi): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%290.0001+*+pi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%290.0001+*+pi%5C%2841%29%5D
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":RAD RX=Real:"0.9999999835506594126919779728593888366342895938658835096197"
+;sincpi(0.0001r) = sinc(0.0001r * pi): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%29Divide%5B0.0001%2C1%5Dpi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%29Divide%5B0.0001%2C1%5Dpi%5C%2841%29%5D
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0.9999999835506594126919779728593888366342895938658835096197"
+;sincpi(0.0001r) = sinc(0.0001r * pi): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%29Divide%5B0.0001%2C1%5Dpi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%29Divide%5B0.0001%2C1%5Dpi%5C%2841%29%5D
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":DEG RX=Real:"0.999999999994989244288381892526303417149060633118957794114"
+;sincpi(0.0001deg) = sinc(0.0001deg/180*pi * pi): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%29Divide%5B0.0001%2C180%5Dpi*pi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%29Divide%5B0.0001%2C180%5Dpi*pi%5C%2841%29%5D
+
+
+
+In:  AM=MULTPI FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0.9999999835506594126919779728593888366342895938658835096197"
+;sincpi(0.0001r) = sinc(0.0001r * pi): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%290.0001+*+pi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%290.0001+*+pi%5C%2841%29%5D
+
+In:  AM=DMS FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.3":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.3":RAD RX=Real:"0.8583936913341397750121085026240264909203952627756910774069"
+;sincpi(0.3r) = sinc(0.3 * pi radians): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%290.3+*+pi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%290.3+*+pi%5C%2841%29%5D
+
+
+
+In:  AM=DMS FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.01317860475906490261066314467742043":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.01317860475906490261066314467742043":MULTPI RX=Real:"0.9971827866434858251042763664595501"
+;sincpi(0.3 MULTPI) = sinc(0.3*pi * pi radians): https://www.wolframalpha.com/input?i=0.0607013079461058774956161435570412505261450781964946399580&assumption=%22ClashPrefs%22+-%3E+%7B%22Math%22%7D
+
+
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"999":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"999":DEG RX=Real:"-0.017886457798945930135930727839812450452279261222301395760"
+;sincpi(999 DEG) = sinc(999/180*pi * pi radians): https://www.wolframalpha.com/input?i2d=true&i=sin%5C%2840%29Divide%5B999%2C180%5Dpi*pi+radian%5C%2841%29+Divide%5B1%2C%5C%2840%29Divide%5B999%2C180%5Dpi*pi%5C%2841%29%5D
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":MULTPI RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+
+;=======================================
+; sincpi(Complex) --> Complex
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"1.973521294339502163534158665819178 i -2.419155134996809103687033203262218"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.973521294339502163534158665819178 i -2.419155134996809103687033203262218" RX=Cplx:"73.3076550878294156971708953322549789597463094254421726414706042134 i -70.726570283412479853918128651645784952300182964020567359461502805"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"5 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"5 i 0" RX=Cplx:"0 i 0"

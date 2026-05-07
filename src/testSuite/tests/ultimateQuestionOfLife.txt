@@ -1,0 +1,60 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**    The answer to the Ultimate Question of Life is 42    **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+
+; see https://forum.swissmicros.com/viewtopic.php?f=15&t=2235
+; and https://www.youtube.com/watch?v=zyG8Vlw5aAw
+
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 AM=DEG FL_ASLIFT=0 RY=LonI:"-80538738812075974" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnRollUp
+Out:  EC=0
+Out:  EC=0
+
+In: RY=LonI:"80435758145817515" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnRollUp
+Out:  EC=0
+Out:  EC=0
+
+In: RY=LonI:"12602123297335631" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnAdd
+Out:  EC=0
+Out:  EC=0 RX=LonI:"42"
+
+
+; The sum of 3 cubes giving 43 is much easier
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 AM=DEG FL_ASLIFT=0 RY=LonI:"12" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnRollUp
+Out:  EC=0
+Out:  EC=0
+
+In: RY=LonI:"8" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnRollUp
+Out:  EC=0
+Out:  EC=0
+
+In: RY=LonI:"-13" RX=LonI:"3"
+Func: fnPower
+Out:  EC=0
+
+Func: fnAdd
+Out:  EC=0
+Out:  EC=0 RX=LonI:"43"

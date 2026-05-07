@@ -1,0 +1,49 @@
+C47 Program file export, version 1
+0000: { Prgm #42: 118 bytes / 47 steps }
+0001:  LBL 'Binet'
+0002:  LocR 11
+0003:  STOCFG .02
+0004:  STOS .03
+0005:  CLSUM
+0006:  101
+0007:  STO .00
+0008:  STO .01
+0009:  LBL 'M1'
+0010:  RCL .01
+0011:  RCL .00
+0012:  -
+0013:  RCL .01
+0014:  XEQ 'CALCLP1'
+0015:  SUM+
+0016:  DSZ .00
+0017:  GTO 'M1'
+0018:  RCLS .03
+0019:  RCLCFG .02
+0020:  RTN
+0021:  LBL 'CALCLP1'
+0022:  DECR X
+0023:  /
+0024:  7
+0025:  *
+0026:  2
+0027:  -
+0028:  ENTER
+0029:  # 74 phi r.golden
+0030:  X<>Y
+0031:  Y^X
+0032:  X<>Y
+0033:  # 74 phi r.golden
+0034:  CHS
+0035:  X<>Y
+0036:  CHS
+0037:  Y^X
+0038:  -
+0039:  5
+0040:  SQRT
+0041:  /
+0042:  ENTER
+0043:  IM
+0044:  X<>Y
+0045:  RE
+0046:  RTN
+0047:  .END.

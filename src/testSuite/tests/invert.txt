@@ -1,0 +1,163 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      invert (1/x)                       **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnInvert
+
+
+
+;=======================================
+; 1 / Long Integer --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"0.2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=LonI:"-1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=LonI:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"0"
+
+
+
+;=======================================
+; 1 / Time
+;=======================================
+
+
+
+;=======================================
+; 1 / Date
+;=======================================
+
+
+
+;=======================================
+; 1 / String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; 1 / Real Matrix
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0.5,1,2,4,5,10]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,3[0.5,1,2,4,5,10]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[-2,1,1.5,-0.5]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,2[1,2,2,4]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
+
+
+
+;=======================================
+; 1 / Complex Matrix
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0.5,1,2,4,5,10]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,3[0.5,1,2,4,5,10]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[-0.5i0.4375,0.25i-0.1875,0.375i-0.3125,-0.125i0.0625]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+
+
+
+;=======================================
+; 1 / Short Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"0.2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#7" RX=ShoI:"1#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-1#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"-1#7" RX=ShoI:"-1#7"
+
+
+
+;=======================================
+; 1 / Real --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"10000"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"0.02"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.999999999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.999999999" RX=Real:"0.01111111111123456790123593964334706599603718962217819099580198"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"0.18777085946477794218159695360557604344266604577102470313427119"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"-0.18777085946477794218159695360557604344266604577102470313427119"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":MULTPI RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":GRAD RX=Real:"-0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0" RX=Real:"-inf"
+
+
+
+;=======================================
+; 1 / Complex --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"0.064449064449064449064449064449064449064449064449064449064449064 i +0.079002079002079002079002079002079002079002079002079002079002079"

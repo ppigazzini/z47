@@ -1,0 +1,140 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          sinh                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSinh
+
+
+
+;=======================================
+; sinh(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"74.20321057778875897700947199606456559961940900442581698066127"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"605"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"605" RX=Real:"2.7998293110958330698960856457790086626380084506050858348638298e262"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-595"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-595" RX=Real:"-1.2711205407069717016503807475754516506872117364758988416941983e258"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+
+
+;=======================================
+; sinh(Time)
+;=======================================
+
+
+
+;=======================================
+; sinh(Date)
+;=======================================
+
+
+
+;=======================================
+; sinh(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; sinh(Real Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,2,-3,4,-5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,2,-3,4,-5]" RX=ReMa:"M2,3[0,-1.17520119364380145688238185059560081516,3.62686040784701876766821398280126170489,-10.0178749274099018989745936194658280602,27.2899171971277524489082715907938185803,-74.2032105777887589770094719960645655996]"
+
+
+
+;=======================================
+; sinh(Complex Matrix)
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[0,0i-0.841470984807896506652502321630298999623,1.95960104142160589707035204998935827844i-3.16577851321616814674073461719190553838,4.16890695996656435075481305885375484357i9.15449914691142957346729954460983255916,-27.0168132580039344880975437549921522634i3.8537380379193773216175289404637306671,48.5024552417709127724974953626411138889i56.1622742202323497046628697205879237038]"
+
+
+
+;=======================================
+; sinh(Short Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"74.20321057778875897700947199606456559961940900442581698066127"
+
+
+
+
+;=======================================
+; sinh(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"1.0000000016666666675000000001984126984402557319249037999039605e-4"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"2592352764293536232043.7266614667426924137346467294155991479176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9.999999999" RX=Real:"11013.232863690160462639817850641146181523497684024435311708163"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":DEG RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":DMS RX=Real:"1.0000000016666666675000000001984126984402557319249037999039605e-4"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50":GRAD RX=Real:"2592352764293536232043.7266614667426924137346467294155991479176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9.999999999":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9.999999999":RAD RX=Real:"11013.232863690160462639817850641146181523497684024435311708163"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
+
+
+
+;=======================================
+; sinh(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"61.903768291613323355620984960713988217315656185239068929429946 i -238.47172728732495776240281548076859679543279877012533924894352"

@@ -1,0 +1,540 @@
+﻿Layout;Row;Column;Index;Primary;F-shift;G-shift;;Alpha
+;;;1;2;3;4;;5
+C43;1;1;C43.11;F1;;;;
+C43;1;2;C43.12;F2;;;;
+C43;1;3;C43.13;F3;;;;
+C43;1;4;C43.14;F4;;;;
+C43;1;5;C43.15;F4;;;;
+C43;1;6;C43.16;F6;;;;
+C43;2;1;C43.21;Sigma+;->I;a b/c;;A
+C43;2;2;C43.22;1/x;y^x;#;;B
+C43;2;3;C43.23;√x;x^2;.ms;;C
+C43;2;4;C43.24;LOG;10^x;.d;;D
+C43;2;5;C43.25;LN;e^x;->R;;E
+C43;2;6;C43.26;XEQ;alpha;->P;;F
+C43;3;1;C43.31;STO;|x|;angle;;G
+C43;3;2;C43.32;RCL;%;Delta %;;H
+C43;3;3;C43.33;RDN;pi;x√y;;I
+C43;3;4;C43.34;SIN;ASIN;GTO;;J
+C43;3;5;C43.35;COS;ACOS;LBL;;K
+C43;3;6;C43.36;TAN;ATAN;RTN;;L
+C43;4;1;C43.41;ENTER;COMPLEX;[ CPX ];;
+C43;4;2;C43.42;x <> y;LASTx;R Up;;M
+C43;4;3;C43.43;CHS;[ MODE ];[ STK ];;N
+C43;4;4;C43.44;EEX;[ DISP ];[ EXP ];;O
+C43;4;5;C43.45;<=;Undo;[ CLR ];;
+C43;5;1;C43.51;Up;Scroll Up;REGS;;
+C43;5;2;C43.52;7;[ EQN ];[ HOME ];;P
+C43;5;3;C43.53;8;[ ADV ];[ CNST ];;Q
+C43;5;4;C43.54;9;[ MATX ];[ X.FN ];;R
+C43;5;5;C43.55;÷;[ STAT ];[ SUM ];;S
+C43;6;1;C43.61;Dn;Scroll Dn;FLGS;;
+C43;6;2;C43.62;4;[ BASE ];[ CLK ];;T
+C43;6;3;C43.63;5;[ CONV ];[ UNIT ];;U
+C43;6;4;C43.64;6;[ FLAG ];[ BITS ];;V
+C43;6;5;C43.65;✕;[ PROB ];[ INTS ];;W
+C43;7;1;C43.71;f/g; ; ;;
+C43;7;2;C43.72;1;ASN;[ KEYS ];;X
+C43;7;3;C43.73;2;USER;[ LOOP ];;Y
+C43;7;4;C43.74;3;[ PART ];[ TEST ];;Z
+C43;7;5;C43.75;-;[ FIN ];[ alphaSTR ];;_
+C43;8;1;C43.81;EXIT;OFF;PRN;;
+C43;8;2;C43.82;0;VIEW;STOPW;;:
+C43;8;3;C43.83;.;SHOW;[ INFO ];;,
+C43;8;4;C43.84;R/S;PRGM;[ P.FN ];;？
+C43;8;5;C43.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+C43b;1;1;C43b.11;F1;;;;
+C43b;1;2;C43b.12;F2;;;;
+C43b;1;3;C43b.13;F3;;;;
+C43b;1;4;C43b.14;F4;;;;
+C43b;1;5;C43b.15;F4;;;;
+C43b;1;6;C43b.16;F6;;;;
+C43b;2;1;C43b.21; ;->I;a b/c;;A
+C43b;2;2;C43b.22;1/x;y^x;#;;B
+C43b;2;3;C43b.23;√x;x^2;.ms;;C
+C43b;2;4;C43b.24;LOG;10^x;.d;;D
+C43b;2;5;C43b.25;LN;e^x;->R;;E
+C43b;2;6;C43b.26;XEQ;alpha;->P;;F
+C43b;3;1;C43b.31;STO;|x|;angle;;G
+C43b;3;2;C43b.32;RCL;%;Delta %;;H
+C43b;3;3;C43b.33;RDN;pi;x√y;;I
+C43b;3;4;C43b.34;SIN;ASIN;GTO;;J
+C43b;3;5;C43b.35;COS;ACOS;LBL;;K
+C43b;3;6;C43b.36;TAN;ATAN;RTN;;L
+C43b;4;1;C43b.41;ENTER;COMPLEX;[ CPX ];;
+C43b;4;2;C43b.42;X <> Y;LASTx;[ STK ];;M
+C43b;4;3;C43b.43;CHS;[ MODE ];[ TRIG ];;N
+C43b;4;4;C43b.44;EEX;[ DISP ];[ EXP ];;O
+C43b;4;5;C43b.45;<=;Undo;[ CLR ];;
+C43b;5;1;C43b.51;Up;Scroll Up;REGS;;
+C43b;5;2;C43b.52;7;[ EQN ];[ HOME ];;P
+C43b;5;3;C43b.53;8;[ ADV ];[ CNST ];;Q
+C43b;5;4;C43b.54;9;[ MATX ];[ X.FN ];;R
+C43b;5;5;C43b.55;÷;[ STAT ];[ SUM ];;S
+C43b;6;1;C43b.61;Dn;Scroll Dn;FLGS;;
+C43b;6;2;C43b.62;4;[ BASE ];[ CLK ];;T
+C43b;6;3;C43b.63;5;[ CONV ];[ UNIT ];;U
+C43b;6;4;C43b.64;6;[ FLAG ];[ BITS ];;V
+C43b;6;5;C43b.65;✕;[ PROB ];[ INTS ];;W
+C43b;7;1;C43b.71;f/g; ; ;;
+C43b;7;2;C43b.72;1;ASN;[ KEYS ];;X
+C43b;7;3;C43b.73;2;USER;[ LOOP ];;Y
+C43b;7;4;C43b.74;3;[ PART ];[ TEST ];;Z
+C43b;7;5;C43b.75;-;[ FIN ];[ alphaSTR ];;_
+C43b;8;1;C43b.81;EXIT;OFF;PRN;;
+C43b;8;2;C43b.82;0;VIEW;STOPW;;:
+C43b;8;3;C43b.83;.;SHOW;[ INFO ];;,
+C43b;8;4;C43b.84;R/S;PRGM;[ P.FN ];;？
+C43b;8;5;C43b.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+WP43;1;1;WP43.11;F1;;;;
+WP43;1;2;WP43.12;F2;;;;
+WP43;1;3;WP43.13;F3;;;;
+WP43;1;4;WP43.14;F4;;;;
+WP43;1;5;WP43.15;F4;;;;
+WP43;1;6;WP43.16;F6;;;;
+WP43;2;1;WP43.21;1/x;a b/c;[ U-> ];;A
+WP43;2;2;WP43.22;[ EXP ];#;[ BIT ];;B
+WP43;2;3;WP43.23;TRI;d.ms;[ angle-> ];;C
+WP43;2;4;WP43.24;ln;.d;lg;;D
+WP43;2;5;WP43.25;e^x;h.ms;10^x;;E
+WP43;2;6;WP43.26;√x;alpha;[ alpha.FN ];;F
+WP43;3;1;WP43.31;STO;ASN;SAVE;;G
+WP43;3;2;WP43.32;RCL;RBR;VIEW;;H
+WP43;3;3;WP43.33;RDN;R Up;[ CPX ];;I
+WP43;3;4;WP43.34;CC;|x|;angle;;J
+WP43;3;5;WP43.35; f ; ;SNAP;;
+WP43;3;6;WP43.36; g ;USER; ;;
+WP43;4;1;WP43.41;ENTER;FILL;DROP Dn;;
+WP43;4;2;WP43.42;x <> y;x <>;[ STK ];;K
+WP43;4;3;WP43.43;+/-;Delta %;[ FIN ];;L
+WP43;4;4;WP43.44;E;DSP;[ DISP ];;M
+WP43;4;5;WP43.45;<=;Undo;[ CLR ];;
+WP43;5;1;WP43.51;÷;| |;MOD;;N
+WP43;5;2;WP43.52;7; ; ;;O
+WP43;5;3;WP43.53;8; ;MODE;;P
+WP43;5;4;WP43.54;9;LBL;RTN;;Q
+WP43;5;5;WP43.55;XEQ;GTO;[ FLAG ];; 
+WP43;6;1;WP43.61;✕;x!;[ PROB ];;R
+WP43;6;2;WP43.62;4;[ Sigma ];[ STAT ];;spc
+WP43;6;3;WP43.63;5;R<-;->P;;T
+WP43;6;4;WP43.64;6;TIMER;[ CLK ];;U
+WP43;6;5;WP43.65;Up;Scroll Up;SF;;
+WP43;7;1;WP43.71;-;[ INTS ];[ PART ];;V
+WP43;7;2;WP43.72;1;[ ADV ];[ EQN ];;W
+WP43;7;3;WP43.73;2;[ MATX ];[ X.FN ];;X
+WP43;7;4;WP43.74;3;pi;[ CONST ];;Y
+WP43;7;5;WP43.75;Dn;Scroll Dn;CF;;
+WP43;8;1;WP43.81;+;[ LOOP ];[ TEST ];;Z
+WP43;8;2;WP43.82;0;[ I/O ];[ PRINT ];;？
+WP43;8;3;WP43.83;.;SHOW;[ INFO ];;,
+WP43;8;4;WP43.84;R/S;P/R;P.FN;;spc
+WP43;8;5;WP43.85;EXIT;CATALOG;OFF;; 
+;;;;;;;;
+;;;;;;;;
+V43 LT;1;1;V43 LT.11;F1;;;;
+V43 LT;1;2;V43 LT.12;F2;;;;
+V43 LT;1;3;V43 LT.13;F3;;;;
+V43 LT;1;4;V43 LT.14;F4;;;;
+V43 LT;1;5;V43 LT.15;F4;;;;
+V43 LT;1;6;V43 LT.16;F6;;;;
+V43 LT;2;1;V43 LT.21;STO;->I;a b/c;;A
+V43 LT;2;2;V43 LT.22;RCL;y^x;#;;B
+V43 LT;2;3;V43 LT.23;1/x;x√y;.ms;;C
+V43 LT;2;4;V43 LT.24;√x;x^2;.d;;D
+V43 LT;2;5;V43 LT.25;LOG;10^x;->R;;E
+V43 LT;2;6;V43 LT.26;LN;e^x;->P;;F
+V43 LT;3;1;V43 LT.31; f ; ; ;;f
+V43 LT;3;2;V43 LT.32; g ; ; ;;g
+V43 LT;3;3;V43 LT.33;RDN;DRG;pi;;G
+V43 LT;3;4;V43 LT.34;SIN;ASIN;GTO;;H
+V43 LT;3;5;V43 LT.35;COS;ACOS;LBL;;I
+V43 LT;3;6;V43 LT.36;TAN;ATAN;RTN;;J
+V43 LT;4;1;V43 LT.41;ENTER;COMPLEX;[ CPX ];;
+V43 LT;4;2;V43 LT.42;x <> y;LASTx;[ STK ];;K
+V43 LT;4;3;V43 LT.43;CHS;|x|;angle;;L
+V43 LT;4;4;V43 LT.44;EEX;[ CONV ];[ EXP ];;M
+V43 LT;4;5;V43 LT.45;<=;Undo;[ CLR ];;
+V43 LT;5;1;V43 LT.51;XEQ;alpha;USER;;
+V43 LT;5;2;V43 LT.52;7;[ EQN ];[ HOME ];;N
+V43 LT;5;3;V43 LT.53;8;[ ADV ];[ CNST ];;O
+V43 LT;5;4;V43 LT.54;9;[ MATX ];[ X.FN ];;P
+V43 LT;5;5;V43 LT.55;÷;[ STAT ];[ SUM ];;Q
+V43 LT;6;1;V43 LT.61;Up;Scroll Up;REGS;;
+V43 LT;6;2;V43 LT.62;4;[ BASE ];[ CLK ];;R
+V43 LT;6;3;V43 LT.63;5;[ MODE ];[ UNIT ];;S
+V43 LT;6;4;V43 LT.64;6;[ FLAG ];[ BITS ];;T
+V43 LT;6;5;V43 LT.65;✕;[ PROB ];[ INTS ];;U
+V43 LT;7;1;V43 LT.71;Dn;Scroll Dn;FLGS;;
+V43 LT;7;2;V43 LT.72;1;ASN;[ KEYS ];;V
+V43 LT;7;3;V43 LT.73;2;[ DISP ];[ LOOP ];;W
+V43 LT;7;4;V43 LT.74;3;[ PART ];[ TEST ];;X
+V43 LT;7;5;V43 LT.75;-;[ FIN ];[ alphaSTR ];;Y
+V43 LT;8;1;V43 LT.81;EXIT;OFF;PRN;;
+V43 LT;8;2;V43 LT.82;0;VIEW;STOPW;;Z
+V43 LT;8;3;V43 LT.83;.;SHOW;[ INFO ];;,
+V43 LT;8;4;V43 LT.84;R/S;PRGM;[ P.FN ];;？
+V43 LT;8;5;V43 LT.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+V43 RT;1;1;V43 RT.11;F1;;;;
+V43 RT;1;2;V43 RT.12;F2;;;;
+V43 RT;1;3;V43 RT.13;F3;;;;
+V43 RT;1;4;V43 RT.14;F4;;;;
+V43 RT;1;5;V43 RT.15;F4;;;;
+V43 RT;1;6;V43 RT.16;F6;;;;
+V43 RT;2;1;V43 RT.21;√x;x^2;a b/c;;A
+V43 RT;2;2;V43 RT.22;LOG;10^x;#;;B
+V43 RT;2;3;V43 RT.23;LN;e^x;.ms;;C
+V43 RT;2;4;V43 RT.24;SIN;ASIN;.d;;D
+V43 RT;2;5;V43 RT.25;COS;ACOS;->R;;E
+V43 RT;2;6;V43 RT.26;TAN;ATAN;->P;;F
+V43 RT;3;1;V43 RT.31;STO;x√y;GTO;; 
+V43 RT;3;2;V43 RT.32;RCL;y^x;LBL;; 
+V43 RT;3;3;V43 RT.33;RDN;->I;RTN;;G
+V43 RT;3;4;V43 RT.34;1/x;DRG;pi;;H
+V43 RT;3;5;V43 RT.35; f ; ; ;;I
+V43 RT;3;6;V43 RT.36; g ; ; ;;J
+V43 RT;4;1;V43 RT.41;ENTER;COMPLEX;[ CPX ];;
+V43 RT;4;2;V43 RT.42;x <> y;LASTx;[ STK ];;K
+V43 RT;4;3;V43 RT.43;CHS;|x|;angle;;L
+V43 RT;4;4;V43 RT.44;EEX;[ CONV ];[ EXP ];;M
+V43 RT;4;5;V43 RT.45;<=;Undo;[ CLR ];;
+V43 RT;5;1;V43 RT.51;-;[ STAT ];[ SUM ];; 
+V43 RT;5;2;V43 RT.52;7;[ EQN ];[ HOME ];;N
+V43 RT;5;3;V43 RT.53;8;[ ADV ];[ CNST ];;O
+V43 RT;5;4;V43 RT.54;9;[ MATX ];[ X.FN ];;P
+V43 RT;5;5;V43 RT.55;XEQ;alpha;USER;;Q
+V43 RT;6;1;V43 RT.61;+;[ PROB ];[ INTS ];; 
+V43 RT;6;2;V43 RT.62;4;[ BASE ];[ CLK ];;R
+V43 RT;6;3;V43 RT.63;5;[ MODE ];[ UNIT ];;S
+V43 RT;6;4;V43 RT.64;6;[ FLAG ];[ BITS ];;T
+V43 RT;6;5;V43 RT.65;Up;Scroll Up;REGS;;U
+V43 RT;7;1;V43 RT.71;✕;[ FIN ];[ alphaSTR ];; 
+V43 RT;7;2;V43 RT.72;1;ASN;[ KEYS ];;V
+V43 RT;7;3;V43 RT.73;2;[ DISP ];[ LOOP ];;W
+V43 RT;7;4;V43 RT.74;3;[ PART ];[ TEST ];;X
+V43 RT;7;5;V43 RT.75;Dn;Scroll Dn;FLGS;;Y
+V43 RT;8;1;V43 RT.81;÷;[ CAT ];PRN;; 
+V43 RT;8;2;V43 RT.82;0;VIEW;STOPW;;Z
+V43 RT;8;3;V43 RT.83;.;SHOW;[ INFO ];;,
+V43 RT;8;4;V43 RT.84;R/S;PRGM;[ P.FN ];;？
+V43 RT;8;5;V43 RT.85;EXIT;OFF;[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+V43;1;1;V43.11;F1;;;;
+V43;1;2;V43.12;F2;;;;
+V43;1;3;V43.13;F3;;;;
+V43;1;4;V43.14;F4;;;;
+V43;1;5;V43.15;F4;;;;
+V43;1;6;V43.16;F6;;;;
+V43;2;1;V43.21;1/x;y^x;#;;A
+V43;2;2;V43.22;√x;x^2;.ms;;B
+V43;2;3;V43.23;LOG;10^x;.d;;C
+V43;2;4;V43.24;LN;e^x;a b/c;;D
+V43;2;5;V43.25; f ; ; ;; 
+V43;2;6;V43.26; g ; ; ;; 
+V43;3;1;V43.31;STO;|x|;angle;;E
+V43;3;2;V43.32;RCL;%;Delta %;;F
+V43;3;3;V43.33;RDN;pi;x√y;;G
+V43;3;4;V43.34;SIN;ASIN;GTO;;H
+V43;3;5;V43.35;COS;ACOS;LBL;;I
+V43;3;6;V43.36;TAN;ATAN;RTN;;J
+V43;4;1;V43.41;ENTER;COMPLEX;[ CPX ];; 
+V43;4;2;V43.42;x <> y;LASTx;R Up;;K
+V43;4;3;V43.43;CHS;[ MODE ];[ STK ];;L
+V43;4;4;V43.44;EEX;[ DISP ];[ EXP ];;M
+V43;4;5;V43.45;<=;Undo;[ CLR ];; 
+V43;5;1;V43.51;-;[ STAT ];[ SUM ];;N
+V43;5;2;V43.52;7;[ EQN ];[ HOME ];;O
+V43;5;3;V43.53;8;[ ADV ];[ CNST ];;P
+V43;5;4;V43.54;9;[ MATX ];[ X.FN ];;Q
+V43;5;5;V43.55;XEQ;alpha;USER;;R
+V43;6;1;V43.61;+;[ PROB ];[ INTS ];;S
+V43;6;2;V43.62;4;[ BASE ];[ CLK ];;T
+V43;6;3;V43.63;5;[ CONV ];[ UNIT ];;U
+V43;6;4;V43.64;6;[ FLAG ];[ BITS ];;V
+V43;6;5;V43.65;Up;Scroll Up;REGS;;Up
+V43;7;1;V43.71;✕;[ STK ];[ alphaSTR ];;W
+V43;7;2;V43.72;1;ASN;[ KEYS ];;X
+V43;7;3;V43.73;2;USER;[ LOOP ];;Y
+V43;7;4;V43.74;3;[ PART ];[ TEST ];;Z
+V43;7;5;V43.75;Dn;Scroll Dn;FLGS;;Dn
+V43;8;1;V43.81;÷;[ CAT ];PRN;;spc
+V43;8;2;V43.82;0;VIEW;STOPW;;:
+V43;8;3;V43.83;.;SHOW;[ INFO ];;,
+V43;8;4;V43.84;R/S;PRGM;[ P.FN ];;？
+V43;8;5;V43.85;EXIT;OFF;[ I/O ];;EXIT
+;;;;;;;;
+;;;;;;;;
+D43 old;1;1;D43 old.11;F1;;;;
+D43 old;1;2;D43 old.12;F2;;;;
+D43 old;1;3;D43 old.13;F3;;;;
+D43 old;1;4;D43 old.14;F4;;;;
+D43 old;1;5;D43 old.15;F4;;;;
+D43 old;1;6;D43 old.16;F6;;;;
+D43 old;2;1;D43 old.21;√x;x^2;a b/c;;A
+D43 old;2;2;D43 old.22;LOG;10^x;#;;B
+D43 old;2;3;D43 old.23;LN;e^x;.ms;;C
+D43 old;2;4;D43 old.24;SIN;ASIN;.d;;D
+D43 old;2;5;D43 old.25;COS;ACOS;->R;;E
+D43 old;2;6;D43 old.26;TAN;ATAN;->P;;F
+D43 old;3;1;D43 old.31;STO;x√y;GTO;;G
+D43 old;3;2;D43 old.32;RCL;y^x;LBL;;H
+D43 old;3;3;D43 old.33;RDN;->I;RTN;;I
+D43 old;3;4;D43 old.34;1/x;DRG;pi;;J
+D43 old;3;5;D43 old.35; f ; ; ;; 
+D43 old;3;6;D43 old.36; g ; ; ;; 
+D43 old;4;1;D43 old.41;ENTER;COMPLEX;[ CPX ];; 
+D43 old;4;2;D43 old.42;x <> y;LASTx;[ STK ];;K
+D43 old;4;3;D43 old.43;CHS;|x|;angle;;L
+D43 old;4;4;D43 old.44;EEX;[ CONV ];[ EXP ];;M
+D43 old;4;5;D43 old.45;<=;Undo;[ CLR ];; 
+D43 old;5;1;D43 old.51;XEQ;alpha;USER;; 
+D43 old;5;2;D43 old.52;7;[ EQN ];[ HOME ];;N
+D43 old;5;3;D43 old.53;8;[ ADV ];[ CNST ];;O
+D43 old;5;4;D43 old.54;9;[ MATX ];[ X.FN ];;P
+D43 old;5;5;D43 old.55;÷;[ STAT ];[ SUM ];;Q
+D43 old;6;1;D43 old.61;Up;Scroll Up;REGS;; 
+D43 old;6;2;D43 old.62;4;[ BASE ];[ CLK ];;R
+D43 old;6;3;D43 old.63;5;[ MODE ];[ UNIT ];;S
+D43 old;6;4;D43 old.64;6;[ FLAG ];[ BITS ];;T
+D43 old;6;5;D43 old.65;✕;[ PROB ];[ INTS ];;U
+D43 old;7;1;D43 old.71;Dn;Scroll Dn;FLGS;; 
+D43 old;7;2;D43 old.72;1;ASN;[ KEYS ];;V
+D43 old;7;3;D43 old.73;2;[ DISP ];[ LOOP ];;W
+D43 old;7;4;D43 old.74;3;[ PART ];[ TEST ];;X
+D43 old;7;5;D43 old.75;-;[ FIN ];[ alphaSTR ];;Y
+D43 old;8;1;D43 old.81;EXIT;OFF;[ I/O ];; 
+D43 old;8;2;D43 old.82;0;VIEW;STOPW;;Z
+D43 old;8;3;D43 old.83;.;SHOW;[ INFO ];;,
+D43 old;8;4;D43 old.84;R/S;PRGM;[ P.FN ];;？
+D43 old;8;5;D43 old.85;+;[ CAT ];PRN;;spc
+;;;;;;;;
+;;;;;;;;
+D43 new;1;1;D43 new.11;F1;;;;
+D43 new;1;2;D43 new.12;F2;;;;
+D43 new;1;3;D43 new.13;F3;;;;
+D43 new;1;4;D43 new.14;F4;;;;
+D43 new;1;5;D43 new.15;F4;;;;
+D43 new;1;6;D43 new.16;F6;;;;
+D43 new;2;1;D43 new.21;LOG;10^x;a b/c;;A
+D43 new;2;2;D43 new.22;LN;e^x;#;;B
+D43 new;2;3;D43 new.23;√x;x^2;.ms;;C
+D43 new;2;4;D43 new.24;SIN;ASIN;.d;;D
+D43 new;2;5;D43 new.25;COS;ACOS;->R;;E
+D43 new;2;6;D43 new.26;TAN;ATAN;->P;;F
+D43 new;3;1;D43 new.31;STO;->I;%;;G
+D43 new;3;2;D43 new.32;RCL;|x|;angle;;H
+D43 new;3;3;D43 new.33;RDN;x√y;R Up;;I
+D43 new;3;4;D43 new.34;1/x;y^x;pi;;J
+D43 new;3;5;D43 new.35; f ; ; ;; 
+D43 new;3;6;D43 new.36; g ; ; ;; 
+D43 new;4;1;D43 new.41;ENTER;COMPLEX;[ CPX ];; 
+D43 new;4;2;D43 new.42;x <> y;LASTx;[ STK ];;K
+D43 new;4;3;D43 new.43;CHS;DRG;[ CONV ];;L
+D43 new;4;4;D43 new.44;EEX;[ EXP ];[ DISP ];;M
+D43 new;4;5;D43 new.45;<=;Undo;[ CLR ];; 
+D43 new;5;1;D43 new.51;XEQ;alpha;USER;; 
+D43 new;5;2;D43 new.52;7;[ EQN ];[ HOME ];;N
+D43 new;5;3;D43 new.53;8;[ ADV ];[ CNST ];;O
+D43 new;5;4;D43 new.54;9;[ MATX ];[ X.FN ];;P
+D43 new;5;5;D43 new.55;÷;[ STAT ];[ SUM ];;Q
+D43 new;6;1;D43 new.61;Up;Scroll Up;REGS;; 
+D43 new;6;2;D43 new.62;4;[ BASE ];[ CLK ];;R
+D43 new;6;3;D43 new.63;5;GTO;[ UNIT ];;S
+D43 new;6;4;D43 new.64;6;[ FLAG ];[ BITS ];;T
+D43 new;6;5;D43 new.65;✕;[ PROB ];[ INTS ];;U
+D43 new;7;1;D43 new.71;Dn;Scroll Dn;FLGS;; 
+D43 new;7;2;D43 new.72;1;ASN;[ KEYS ];;V
+D43 new;7;3;D43 new.73;2;[ MODE ];[ LOOP ];;W
+D43 new;7;4;D43 new.74;3;[ PART ];[ TEST ];;X
+D43 new;7;5;D43 new.75;-;[ FIN ];[ alphaSTR ];;Y
+D43 new;8;1;D43 new.81;EXIT;OFF;[ I/O ];; 
+D43 new;8;2;D43 new.82;0;VIEW;STOPW;;Z
+D43 new;8;3;D43 new.83;.;SHOW;[ INFO ];;,
+D43 new;8;4;D43 new.84;R/S;PRGM;[ P.FN ];;？
+D43 new;8;5;D43 new.85;+;[ CAT ];PRN;;spc
+;;;;;;;;
+;;;;;;;;
+E43;1;1;E43.11;F1;;;;
+E43;1;2;E43.12;F2;;;;
+E43;1;3;E43.13;F3;;;;
+E43;1;4;E43.14;F4;;;;
+E43;1;5;E43.15;F4;;;;
+E43;1;6;E43.16;F6;;;;
+E43;2;1;E43.21;STO;->I;a b/c;;A
+E43;2;2;E43.22;RCL;y^x;#;;B
+E43;2;3;E43.23;1/x;x√y;.ms;;C
+E43;2;4;E43.24;√x;x^2;.d;;D
+E43;2;5;E43.25;LOG;10^x;->R;;E
+E43;2;6;E43.26;LN;e^x;->P;;F
+E43;3;1;E43.31; f ; ; ;;G
+E43;3;2;E43.32; g ; ; ;;H
+E43;3;3;E43.33;RDN;DRG;pi;;I
+E43;3;4;E43.34;SIN;ASIN;GTO;;J
+E43;3;5;E43.35;COS;ACOS;LBL;; 
+E43;3;6;E43.36;TAN;ATAN;RTN;; 
+E43;4;1;E43.41;ENTER;COMPLEX;[ CPX ];; 
+E43;4;2;E43.42;x <> y;LASTx;[ STK ];;K
+E43;4;3;E43.43;CHS;|x|;angle;;L
+E43;4;4;E43.44;EEX;[ CONV ];[ EXP ];;M
+E43;4;5;E43.45;<=;Undo;[ CLR ];; 
+E43;5;1;E43.51;XEQ;alpha;USER;; 
+E43;5;2;E43.52;7;[ EQN ];[ HOME ];;N
+E43;5;3;E43.53;8;[ ADV ];[ CNST ];;O
+E43;5;4;E43.54;9;[ MATX ];[ X.FN ];;P
+E43;5;5;E43.55;÷;[ STAT ];[ SUM ];;Q
+E43;6;1;E43.61;Up;Scroll Up;REGS;; 
+E43;6;2;E43.62;4;[ BASE ];[ CLK ];;R
+E43;6;3;E43.63;5;[ MODE ];[ UNIT ];;S
+E43;6;4;E43.64;6;[ FLAG ];[ BITS ];;T
+E43;6;5;E43.65;✕;[ PROB ];[ INTS ];;U
+E43;7;1;E43.71;Dn;Scroll Dn;FLGS;; 
+E43;7;2;E43.72;1;ASN;[ KEYS ];;V
+E43;7;3;E43.73;2;[ DISP ];[ LOOP ];;W
+E43;7;4;E43.74;3;[ PART ];[ TEST ];;X
+E43;7;5;E43.75;-;[ FIN ];[ alphaSTR ];;Y
+E43;8;1;E43.81;EXIT;OFF;PRN;; 
+E43;8;2;E43.82;0;VIEW;STOPW;;Z
+E43;8;3;E43.83;.;SHOW;[ INFO ];;,
+E43;8;4;E43.84;R/S;PRGM;[ P.FN ];;？
+E43;8;5;E43.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+N43;1;1;N43.11;F1;;;;
+N43;1;2;N43.12;F2;;;;
+N43;1;3;N43.13;F3;;;;
+N43;1;4;N43.14;F4;;;;
+N43;1;5;N43.15;F4;;;;
+N43;1;6;N43.16;F6;;;;
+N43;2;1;N43.21;SIN;ASIN;a b/c;;A
+N43;2;2;N43.22;COS;ACOS;#;;B
+N43;2;3;N43.23;TAN;ATAN;.ms;;C
+N43;2;4;N43.24;1/x;y^x;.d;;D
+N43;2;5;N43.25;√x;x^2;->I;;E
+N43;2;6;N43.26;Up;Scroll Up;REGS;;F
+N43;3;1;N43.31;STO;pi;%;;G
+N43;3;2;N43.32;RCL;|x|;angle;;H
+N43;3;3;N43.33;RDN;x√y;R up;;I
+N43;3;4;N43.34;LN;LOG;->R;;J
+N43;3;5;N43.35;e^x;10^x;->P;;K
+N43;3;6;N43.36;Dn;Scroll Dn;FLGS;;L
+N43;4;1;N43.41;ENTER;COMPLEX;[ CPX ];; 
+N43;4;2;N43.42;x <> y;LASTx;[ STK ];;M
+N43;4;3;N43.43;CHS;DRG;[ TRG ];;N
+N43;4;4;N43.44;EEX;[ EXP ];[ DISP ];;O
+N43;4;5;N43.45;<=;Undo;[ CLR ];; 
+N43;5;1;N43.51;XEQ;alpha;USER;; 
+N43;5;2;N43.52;7;GTO;[ HOME ];;P
+N43;5;3;N43.53;8;[ ADV ];[ CNST ];;Q
+N43;5;4;N43.54;9;[ MATX ];[ X.FN ];;R
+N43;5;5;N43.55;÷;[ STAT ];[ SUM ];;S
+N43;6;1;N43.61; f ; ; ;; 
+N43;6;2;N43.62;4;[ BASE ];[ CLK ];;T
+N43;6;3;N43.63;5;[ SETUP ];[ UNIT ];;U
+N43;6;4;N43.64;6;[ FLAG ];[ BITS ];;V
+N43;6;5;N43.65;✕;[ PROB ];[ INTS ];;W
+N43;7;1;N43.71; g ; ; ;; 
+N43;7;2;N43.72;1;ASN;[ KEYS ];;X
+N43;7;3;N43.73;2;[ EQN ];[ LOOP ];;Y
+N43;7;4;N43.74;3;[ PART ];[ TEST ];;Z
+N43;7;5;N43.75;-;[ FIN ];[ alphaSTR ];;_
+N43;8;1;N43.81;EXIT;OFF;PRN;; 
+N43;8;2;N43.82;0;VIEW;STOPW;;:
+N43;8;3;N43.83;.;SHOW;[ INFO ];;,
+N43;8;4;N43.84;R/S;PRGM;[ P.FN ];;？
+N43;8;5;N43.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+N43 R;1;1;N43 R.11;F1;;;;
+N43 R;1;2;N43 R.12;F2;;;;
+N43 R;1;3;N43 R.13;F3;;;;
+N43 R;1;4;N43 R.14;F4;;;;
+N43 R;1;5;N43 R.15;F4;;;;
+N43 R;1;6;N43 R.16;F6;;;;
+N43 R;2;1;N43 R.21;Up;Scroll Up;REGS;; 
+N43 R;2;2;N43 R.22;SIN;ASIN;a b/c;;A
+N43 R;2;3;N43 R.23;COS;ACOS;#;;B
+N43 R;2;4;N43 R.24;TAN;ATAN;.ms;;C
+N43 R;2;5;N43 R.25;LN;LOG;.d;;D
+N43 R;2;6;N43 R.26;e^x;10^x;->I;;E
+N43 R;3;1;N43 R.31;Dn;Scroll Dn;FLGS;; 
+N43 R;3;2;N43 R.32;STO; ; ;;F
+N43 R;3;3;N43 R.33;RCL; ; ;;G
+N43 R;3;4;N43 R.34;RDN; ; ;;H
+N43 R;3;5;N43 R.35;1/x; ; ;;I
+N43 R;3;6;N43 R.36;y^x; ; ;;J
+N43 R;4;1;N43 R.41;ENTER;COMPLEX;[ CPX ];;K
+N43 R;4;2;N43 R.42;x <> y;LASTx;R Up;;L
+N43 R;4;3;N43 R.43;CHS;[ MODE ];[ STK ];;M
+N43 R;4;4;N43 R.44;EEX;[ DISP ];[ EXP ];;N
+N43 R;4;5;N43 R.45;<=;Undo;[ CLR ];; 
+N43 R;5;1;N43 R.51;XEQ;alpha;USER;; 
+N43 R;5;2;N43 R.52;7;[ EQN ];[ HOME ];;O
+N43 R;5;3;N43 R.53;8;[ ADV ];[ CNST ];;P
+N43 R;5;4;N43 R.54;9;[ MATX ];[ X.FN ];;Q
+N43 R;5;5;N43 R.55;÷;[ STAT ];[ SUM ];;R
+N43 R;6;1;N43 R.61; f ; ; ;; 
+N43 R;6;2;N43 R.62;4;[ BASE ];[ CLK ];;S
+N43 R;6;3;N43 R.63;5;[ CONV ];[ UNIT ];;T
+N43 R;6;4;N43 R.64;6;[ FLAG ];[ BITS ];;U
+N43 R;6;5;N43 R.65;✕;[ PROB ];[ INTS ];;V
+N43 R;7;1;N43 R.71; g ; ; ;; 
+N43 R;7;2;N43 R.72;1;ASN;[ KEYS ];;W
+N43 R;7;3;N43 R.73;2;GTO;[ LOOP ];;X
+N43 R;7;4;N43 R.74;3;[ PART ];[ TEST ];;Y
+N43 R;7;5;N43 R.75;-;[ FIN ];[ alphaSTR ];;Z
+N43 R;8;1;N43 R.81;EXIT;OFF;PRN;; 
+N43 R;8;2;N43 R.82;0;VIEW;STOPW;;:
+N43 R;8;3;N43 R.83;.;SHOW;[ INFO ];;,
+N43 R;8;4;N43 R.84;R/S;PRGM;[ P.FN ];;？
+N43 R;8;5;N43 R.85;+;[ CAT ];[ I/O ];;spc
+;;;;;;;;
+;;;;;;;;
+D47;1;1;D47.11;F1;;;;
+D47;1;2;D47.12;F2;;;;
+D47;1;3;D47.13;F3;;;;
+D47;1;4;D47.14;F4;;;;
+D47;1;5;D47.15;F4;;;;
+D47;1;6;D47.16;F6;;;;
+D47;2;1;D47.21;LN;e^x;a b/c;;A
+D47;2;2;D47.22;LOG;10^x;#;;B
+D47;2;3;D47.23;√x;x^2;.ms;;C
+D47;2;4;D47.24;SIN;ASIN;.d;;D
+D47;2;5;D47.25;COS;ACOS;->R;;E
+D47;2;6;D47.26;TAN;ATAN;->P;;F
+D47;3;1;D47.31;STO;->I;%;;G
+D47;3;2;D47.32;RCL;|x|;angle;;H
+D47;3;3;D47.33;RDN;x√y;R Up;;I
+D47;3;4;D47.34;1/x;y^x;pi;;J
+D47;3;5;D47.35; f ; ; ;;
+D47;3;6;D47.36; g ; ; ;;
+D47;4;1;D47.41;ENTER;COMPLEX;[ CPX ];;
+D47;4;2;D47.42;x <> y;LASTx;[ STK ];;K
+D47;4;3;D47.43;CHS;DRG;[ TRG ];;L
+D47;4;4;D47.44;EEX;[ EXP ];[ DISP ];;M
+D47;4;5;D47.45;<=;Undo;[ CLR ];;
+D47;5;1;D47.51;XEQ;alpha;USER;;
+D47;5;2;D47.52;7;GTO;[ HOME ];;N
+D47;5;3;D47.53;8;[ EQN ];[ ADV ];;O
+D47;5;4;D47.54;9;[ MATX ];[ X.FN ];;P
+D47;5;5;D47.55;÷;[ STAT ];[ SUM ];;Q
+D47;6;1;D47.61;Up;Scroll Up;REGS;;
+D47;6;2;D47.62;4;[ alphaSTR ];[ PART ];;R
+D47;6;3;D47.63;5;[ INTS ];[ BITS ];;S
+D47;6;4;D47.64;6;[ BASE ];[ FLAG ];;T
+D47;6;5;D47.65;✕;[ PROB ];[ FIN ];;U
+D47;7;1;D47.71;Dn;Scroll Dn;FLGS;;
+D47;7;2;D47.72;1;ASN;[ KEYS ];;V
+D47;7;3;D47.73;2;[ SETUP ];[ CLK ];;W
+D47;7;4;D47.74;3;[ LOOP ];[ TEST ];;X
+D47;7;5;D47.75;-;[ UNIT ];[ CNST ];;Y
+D47;8;1;D47.81;EXIT;OFF;PRN;;
+D47;8;2;D47.82;0;VIEW;STOPW;;Z
+D47;8;3;D47.83;.;SHOW;[ INFO ];;,
+D47;8;4;D47.84;R/S;PRGM;[ P.FN ];;？
+D47;8;5;D47.85;+;[ CAT ];[ I/O ];;spc

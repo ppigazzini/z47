@@ -1,0 +1,122 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         10^x                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fn10Pow
+
+
+
+;=======================================
+; 10 ^ Long Integer --> Long Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"100000"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=Real:"0.00001"
+
+
+
+;=======================================
+; 10 ^ Time
+;=======================================
+
+
+
+;=======================================
+; 10 ^ Date
+;=======================================
+
+
+
+;=======================================
+; 10 ^ String
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; 10 ^ Real Matrix
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,-1,0.2,3,-4,0.5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,-1,0.2,3,-4,0.5]" RX=ReMa:"M2,3[1,0.1,1.58489319246111348520210137339150701327,1000,0.0001,3.16227766016837933199889354443271853372]"
+
+
+
+;=======================================
+; 10 ^ Complex Matrix
+;=======================================
+In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=CxMa:"M2,3[1,-0.668201510190312946242330696656142358212i-0.743980336957493187658416406875514368625,-66.8201510190312946242330696656142358212i-74.3980336957493187658416406875514368625,-0.000107013483558770207720865175285182394605i-0.000994257569413789687361619371909156021129,8112.14652839705902013971782701663907576i5847.48481843395154894261429590175350064,-9.77096228673233636876178613204470822760e-6i-2.12797932115290822526867517647758781202e-6]"
+
+
+
+;=======================================
+; 10 ^ Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"564355#7"
+
+
+
+;=======================================
+; 10 ^ Real --> Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564" RX=Real:"211660.58884001726966129217069345249708232979328358060586917852"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564" RX=Real:"4.7245451100764234683218100361283630892521122071069307114140379e-6"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"211660.58884001726966129217069345249708232979328358060586917852"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"4.7245451100764234683218100361283630892521122071069307114140379e-6"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
+
+
+
+;=======================================
+; 10 ^ Complex
+;=======================================

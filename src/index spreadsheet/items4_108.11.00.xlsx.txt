@@ -1,0 +1,40 @@
+items4_109.10.04.xlsx
+
+
+Point 1:
+items4_109.10.04.xlsx is not required in the project development flow and without it the project doesn’t stop or slow down. 
+
+Point 2:
+All info required for the compiler and for the project future are in the active c and h files. The spreadsheet is simply a good way to manage and interface the data.
+
+Point 3:
+The spreadsheet is the key to be able to manually transfer and compare items from code to Robberts spreadsheet doc efforts and to effectively check, monitor, compare and change or update new and old items alike.
+
+point 4:
+The output of defines in the h file and the complete array of names in the c file is generated from the table containing those same data points. Honestly not rocket science but lookups need painful accuracy in text spacing, and some Excel idiosyncrasiesplay a role to make it finnicky. So essentially it is just some lookups building the code.
+
+Point 5:
+A huge benefit that the one table contains all the data included in both h and c files in one sheet making subsequent lookups, sorting and Excel working possible.
+
+
+
+
+
+Never insert lines until you understand where the lookups are taken from.
+
+Consider very carefully pastes whether values or formulas. 
+
+Never change the two export tabs EXPORT.H and EXPORT.C unless you want to improve the auto functionality. They are read only. 
+
+Note that auto updating is off - you need to refresh the export tabs when needed before copying the text to the items.c and items.h files.
+
+A simple rule might be that for new items, copy a complete similar line in SOURCE to an existing blank line. 
+
+When adding new items, edit column P which is the item name and this gets transferred to the export.h tab.
+
+EXPORT.H tab column D gets copied to items.h, between line 13 and to just before and leaving the last line "#define LAST_ITEM                   nnnn". Edit the nnnn to the correct number.
+
+EXPORT.C tab column A gets copied to items.c, from line 1106 to just before the very last marker item. Edit the last marker item number manually to the correct number. 
+
+
+

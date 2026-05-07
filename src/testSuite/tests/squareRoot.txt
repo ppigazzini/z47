@@ -1,0 +1,152 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      square root                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSquareRoot
+
+
+
+;=======================================
+; sqrt(Long Integer) --> Long Integer or Real or Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"2.2360679774997896964091736687312762354406183596115257242708972"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1024"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1024" RX=LonI:"32"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"-5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-5" RX=Cplx:"0 i 2.2360679774997896964091736687312762354406183596115257242708972"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1024"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-1024"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"-1024"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-1024" RX=Cplx:"0 i 32"
+
+
+
+;=======================================
+; sqrt(Time)
+;=======================================
+
+
+
+;=======================================
+; sqrt(Date)
+;=======================================
+
+
+
+;=======================================
+; sqrt(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; sqrt(Real Matrix)
+;=======================================
+; Removed, replaced by matrix squareroot
+
+
+
+;=======================================
+; sqrt(Complex Matrix)
+;=======================================
+; Removed, replaced by matrix squareroot
+
+
+
+;=======================================
+; sqrt(Short Integer) --> ShoI
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"2#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-5#7"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"-5#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ShoI:"-5#7"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"-5#7" RX=Cplx:"0 i 2.2360679774997896964091736687312762354406183596115257242708972"
+
+
+
+;=======================================
+; sqrt(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0.01"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"7.0710678118654752440084436210484903928483593768847403658833987"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.99999" RX=Real:"9.4868324534588466610916259923540291134562260778398918556026979"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-50"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-50"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=1 RX=Real:"-50"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-50" RX=Cplx:"0 i 7.0710678118654752440084436210484903928483593768847403658833987"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"2.3077348201212374132278555058665315382314924412524385133539294"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-5.32564":GRAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Cplx:"0 i 2.3077348201212374132278555058665315382314924412524385133539294"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":MULTPI
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":MULTPI
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":GRAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
+
+
+
+;=======================================
+; sqrt(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"2.8291482700798293982137125940030007122809296874876405894019422 i -1.3431604275348836034547660235585587989476134207607343755620103"

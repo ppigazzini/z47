@@ -1,0 +1,85 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                COMPLEX MATRIX x ...                     **
+;**                ... x COMPLEX MATRIX                     **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnMultiply
+
+
+
+;==================================================================
+; Complex Matrix x Long Integer   see in multiplication_longInteger.txt
+; Complex Matrix x Time           see in multiplication_time.txt
+; Complex Matrix x Date           see in multiplication_date.txt
+; Complex Matrix x String         see in multiplication_string.txt
+; Complex Matrix x Real Matrix    see in multiplication_realMatrix.txt
+;==================================================================
+
+
+
+;=======================================
+; Complex Matrix x Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M2,4[13i14,15i16,17i18,19i20,21i22,23i24,25i26,27i28]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,4[13i14,15i16,17i18,19i20,21i22,23i24,25i26,27i28]" RX=CxMa:"M3,4[-40i190,-44i210,-48i230,-52i250,-48i470,-52i522,-56i574,-60i626,-56i750,-60i834,-64i918,-68i1002]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M2,4[1i2,3i4,5i6,7i8,9i10,11i12,13i14,15i16]" RX=CxMa:"M3,2[17i18,19i20,21i22,23i24,25i26,27i28]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=CxMa:"M2,4[1i2,3i4,5i6,7i8,9i10,11i12,13i14,15i16]" RX=CxMa:"M3,2[17i18,19i20,21i22,23i24,25i26,27i28]"
+
+
+
+;=======================================
+; Complex Matrix x Short Integer
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=ShoI:"1101#2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"1101#2" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+;=======================================
+; Short Integer x Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"1101#2" RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+
+
+;=======================================
+; Complex Matrix x Real
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"13"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"13" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"13":Deg
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"13":Deg RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Real:"13":MultPi
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"13":MultPi RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+;=======================================
+; Real x Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"13" RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"13":Deg RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"13":MultPi RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,2[13i26,39i52,65i78,91i104,117i130,143i156]"
+
+
+
+;=======================================
+; Complex Matrix x Complex
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Cplx:"13i14"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"13i14" RX=CxMa:"M3,2[-15i40,-17i94,-19i148,-21i202,-23i256,-25i310]"
+
+;=======================================
+; Complex x Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Cplx:"13i14" RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]" RX=CxMa:"M3,2[-15i40,-17i94,-19i148,-21i202,-23i256,-25i310]"

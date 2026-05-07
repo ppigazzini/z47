@@ -1,0 +1,179 @@
+# z47 project files
+/.zig-cache
+/zig-out
+/__DEV/
+__pycache__
+
+# C47 project specific files
+/build
+/build.sim
+/dep/gmp-6.2.1
+/wp43
+/c47
+/r47
+/testSuite
+/generate*
+/ttf2RasterFonts
+/wp43.exe
+/c47.exe
+/r47.exe
+/testSuite.exe
+/generate*.exe
+/ttf2RasterFonts.exe
+backup.bin
+backup.cfg
+backupR47.cfg
+wp43.sav
+wp43.dat
+c47.sav
+c47.dat
+*.s47
+*.zip
+!docs/appnotes/sources/
+!docs/appnotes/sources/*.zip
+!xfnToC47user.s47
+!xfnToR47user.s47
+20*.REGS.TSV
+20*.bmp
+tags
+/PROGRAMS
+/SAVFILES
+/src/generated
+
+# Over_score testing agent coding
+AGENTS.md
+
+# Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
+# Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode
+
+### CodeBlocks ###
+# specific to CodeBlocks IDE
+*.layout
+*.depend
+# generated directories
+bin/
+obj/
+
+### Linux ###
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Valgrind ###
+# Callgrind output files
+callgrind.out
+callgrind.out.*
+
+# Cachegrind output files
+cachegrind.out
+cachegrind.out.*
+
+# Massif output files
+massif.out
+massif.out.*
+
+# BBV output files
+bb.out
+bb.out.*
+
+
+
+### vscode ###
+/.vscode
+*.code-workspace
+
+### Windows ###
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# End of https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/meson
+# Edit at https://www.toptal.com/developers/gitignore?templates=meson
+
+### Meson ###
+# subproject directories
+/subprojects/*
+!/subprojects/*.wrap
+
+# Meson Directories
+meson-logs
+meson-private
+
+# Meson Files
+meson_benchmark_setup.dat
+meson_test_setup.dat
+sanitycheckcpp.cc     # C++ specific
+sanitycheckcpp.exe    # C++ specific
+
+# Ninja
+build.ninja
+.ninja_deps
+.ninja_logs
+
+# Misc
+compile_commands.json
+
+# End of https://www.toptal.com/developers/gitignore/api/meson

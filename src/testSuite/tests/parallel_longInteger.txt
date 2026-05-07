@@ -1,0 +1,146 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                LONG INTEGER | | ...                     **
+;**                ... | | LONG INTEGER                     **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnParallel
+
+
+
+;=======================================
+; Long Integer || Long Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"1" RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.6666666666666666666666666666666666666666666666666666666666667"
+
+In:  FL_ASLIFT=0 RY=LonI:"2200" RX=LonI:"4700"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4700" RX=Real:"1498.5507246376811594202898550724637681159420289855072463768116"
+
+
+
+;=======================================
+; Long Integer || Time --> Error 24
+;=======================================
+
+;=======================================
+; Time || Long Integer --> Error 24
+;=======================================
+
+
+
+;=======================================
+; Long Integer || Date --> Error 24
+;=======================================
+
+;=======================================
+; Date || Long Integer --> Error 24
+;=======================================
+
+
+
+;=======================================
+; Long Integer || String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"12540" RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+;=======================================
+; String || Long Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=LonI:"-1234"
+Out: EC=24 FL_ASLIFT=0 RX=LonI:"-1234"
+
+
+
+;=======================================
+; Long Integer || Real Matrix --> Error 24
+;=======================================
+
+;=======================================
+; Real Matrix || Long Integer --> Error 24
+;=======================================
+
+
+
+;=======================================
+; Long Integer || Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=LonI:"123456" RX=ShoI:"45247#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=ShoI:"45247#8"
+
+;=======================================
+; Short Integer || Long Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=LonI:"123456"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=LonI:"123456"
+
+
+
+;=======================================
+; Long Integer || Real --> Real
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"1" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.6666666666666666666666666666666666666666666666666666666666667"
+
+In:  FL_ASLIFT=0 RY=LonI:"2200" RX=Real:"4700"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4700" RX=Real:"1498.5507246376811594202898550724637681159420289855072463768116"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=Real:"0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":DEG RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=LonI:"1" RX=Real:"2":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2":DMS RX=Real:"0.6666666666666666666666666666666666666666666666666666666666667"
+
+In:  FL_ASLIFT=0 RY=LonI:"2200" RX=Real:"4700":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4700":GRAD RX=Real:"1498.5507246376811594202898550724637681159420289855072463768116"
+
+;=======================================
+; Real || Long Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"1" RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.6666666666666666666666666666666666666666666666666666666666667"
+
+In:  FL_ASLIFT=0 RY=Real:"2200" RX=LonI:"4700"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4700" RX=Real:"1498.5507246376811594202898550724637681159420289855072463768116"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"0":RAD RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  FL_ASLIFT=0 RY=Real:"1":MULTPI RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.6666666666666666666666666666666666666666666666666666666666667"
+
+In:  FL_ASLIFT=0 RY=Real:"2200":DEG RX=LonI:"4700"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4700" RX=Real:"1498.5507246376811594202898550724637681159420289855072463768116"
+
+
+
+;=======================================
+; Long Integer || Complex --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"7" RX=Cplx:"2 i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i -1" RX=Cplx:"1.6219512195121951219512195121951219512195121951219512195121951 i -0.5975609756097560975609756097560975609756097560975609756097561"
+
+;=======================================
+; Complex || Long Integer --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"0 i 0" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"2 i -1" RX=LonI:"7"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"7" RX=Cplx:"1.6219512195121951219512195121951219512195121951219512195121951 i -0.5975609756097560975609756097560975609756097560975609756097561"

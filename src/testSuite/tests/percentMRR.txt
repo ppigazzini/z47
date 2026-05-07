@@ -1,0 +1,103 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        %MRR                             **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnPercentMRR
+
+;=======================================
+; %MRR(Real, Real, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Real:"10.0" RY=Real:"2.0" RX=Real:"3.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"4.137974399241058684619101023111534"
+
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Real:"15.5" RY=Real:"25.5" RX=Real:"35.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"35.5" RX=Real:"2.157487853254044376198766539902267"
+
+;=======================================
+; %MRR(Long Integer, Long Integer, Long Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=LonI:"10" RY=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Real, Long Integer, Long Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Real:"10.0" RY=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Long Integer, Real, Long Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=LonI:"10" RY=Real:"2.0" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Long Integer, Long Integer, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=LonI:"10" RY=LonI:"2" RX=Real:"3.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Real, Real, Long Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Real:"10.0" RY=Real:"2.0" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Real, Long Integer, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=Real:"10.0" RY=LonI:"2" RX=Real:"3.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Long Integer, Real, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=LonI:"10" RY=Real:"2.0" RX=Real:"3.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; %MRR(Short Integer, Long Intger, Long Intger) --> Real
+;=======================================
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=ShoI:"10#10" RY=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"2" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"3#10" RX=Real:"4.137974399241058684619101023111534"
+
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=ShoI:"2#10" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+;=======================================
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=Stri:"ABC" RY=LonI:"2" RX=LonI:"3"
+Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=Stri:"ABC" RY=LonI:"2" RX=LonI:"3"
+
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=Stri:"ABC" RX=LonI:"3"
+Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=Stri:"ABC" RX=LonI:"3"
+
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"2" RX=Stri:"ABC"
+Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=LonI:"2" RX=Stri:"ABC"
+
+;=======================================
+; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"0" RX=LonI:"3"
+Out: EC=1 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=LonI:"0" RX=LonI:"3"
+
+In:  FL_ASLIFT=1 FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"0" RX=LonI:"0"
+Out: EC=1 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=LonI:"0" RX=LonI:"0"
+
+In:  FL_SPCRES=1
+
+In:  FL_ASLIFT=0 FL_CPXRES=0      RZ=LonI:"10" RY=LonI:"0" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0      RZ=LonI:"10" RY=LonI:"0" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  FL_SPCRES=0

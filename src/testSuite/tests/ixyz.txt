@@ -1,0 +1,85 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                       Ix(y, z)                          **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnIxyz
+
+;=======================================
+; Ixyz(Long Integer, Long Integer, Long Integer) --> Real
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"0" RY=LonI:"1" RZ=LonI:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"1"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"2" RY=LonI:"1" RZ=LonI:"1"
+Out: EC=1  FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"2" RY=LonI:"1" RZ=LonI:"1"
+
+
+;=======================================
+; Ixyz(Real, Long Integer, Long Integer) --> Real
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=LonI:"1" RZ=LonI:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.5"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=LonI:"1" RZ=LonI:"2"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.75"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=LonI:"1" RZ=LonI:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.875"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=LonI:"2" RZ=LonI:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.25"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=LonI:"2" RZ=LonI:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.6875"
+
+
+;=======================================
+; Ixyz(Real, Real, Real) --> Real
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=Real:"1" RZ=Real:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.5"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=Real:"1" RZ=Real:"2"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.75"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=Real:"1" RZ=Real:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.875"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=Real:"2" RZ=Real:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.25"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5" RY=Real:"2" RZ=Real:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.6875"
+
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"1" RZ=Real:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.25"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"1" RZ=Real:"2"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.4375"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"1" RZ=Real:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.578125"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"2" RZ=Real:"1"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.0625"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"2" RZ=Real:"3"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.26171875"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.25" RY=Real:"0.25" RZ=Real:"0.25"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.3977567783173558368923490882996221"
+
+
+;=======================================
+; Ixyz(String) --> Error 24
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"

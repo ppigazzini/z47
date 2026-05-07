@@ -1,0 +1,160 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      TIME / ...                         **
+;**                      ... / TIME                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnDivide
+
+
+
+;==================================================================
+; Time / Long Integer  see in division_longInteger.txt
+; Time / Complex       see in division_complex.txt
+;==================================================================
+
+
+
+;=======================================
+; Time / Time
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Time:"45247.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"45247.54264" RX=Real:"2.7284750021067663443832935630998943459971288288287029945102893"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"123456.789" RX=Time:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Time:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"123456.789" RX=Time:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Time:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"-123456.789" RX=Time:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456.789" RX=Time:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"-123456.789" RX=Time:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456.789" RX=Time:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"0" RX=Time:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=Time:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"0" RX=Time:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=Time:"0"
+
+
+
+;=======================================
+; Time / Date
+;=======================================
+
+;=======================================
+; Date / Time
+;=======================================
+
+
+
+;=======================================
+; Time / String
+;=======================================
+
+;=======================================
+; String / Time
+;=======================================
+
+
+
+;=======================================
+; Time / Real Matrix
+;=======================================
+
+;=======================================
+; Real Matrix / Time
+;=======================================
+
+
+
+;=======================================
+; Time / Complex Matrix
+;=======================================
+
+;=======================================
+; Complex Matrix / Time
+;=======================================
+
+
+
+;=======================================
+; Time / Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456" RX=ShoI:"45247#8" ;RX=19111
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"45247#8" RX=Time:"6.45994453456124744911307623881534194966249803777928941447334"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"123456" RX=ShoI:"0#9"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456" RX=ShoI:"0#9"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"123456" RX=ShoI:"0#9"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456" RX=ShoI:"0#9"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"-123456" RX=ShoI:"0#9"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456" RX=ShoI:"0#9"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"-123456" RX=ShoI:"0#9"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456" RX=ShoI:"0#9"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"0" RX=ShoI:"0#9"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=ShoI:"0#9"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"0" RX=ShoI:"0#9"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=ShoI:"0#9"
+
+;=======================================
+; Short Integer / Time
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"45247#8" RX=Time:"123456" ;RY=19111
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"123456" RX=Real:"557.28032659409020217729393468118195956454121306376360808709175738"
+
+
+
+;=======================================
+; Time / Real
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Real:"45247.54264"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"45247.54264" RX=Time:"2.7284750021067663443832935630998943459971288288287029945102893"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Time:"123456.789" RX=Real:"45247.54264":Deg
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Real:"45247.54264":Deg
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"123456.789" RX=Real:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"123456.789" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"123456.789" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"-123456.789" RX=Real:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456.789" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"-123456.789" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"-123456.789" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Time:"0" RX=Real:"0"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Time:"0" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Time:"0" RX=Real:"0"
+
+;=======================================
+; Real / Time
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"45247.54264" RX=Time:"123456.789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Time:"123456.789" RX=Real:"1319.4183553891070340408740097719534889247767492154684178607626025"
+
+
+
+;=======================================
+; Time / Complex
+;=======================================
+
+;=======================================
+; Complex / Time
+;=======================================

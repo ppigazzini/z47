@@ -1,0 +1,58 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**               COMPLEX MATRIX | | ...                    **
+;**               ... | | COMPLEX MATRIX                    **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnParallel
+
+
+
+;==================================================================
+; Complex Matrix || Long Integer   see in multiplication_longInteger.txt
+; Complex Matrix || Real           see in multiplication_real.txt
+; Complex Matrix || Complex        see in multiplication_complex.txt
+; Complex Matrix || Time           see in multiplication_time.txt
+; Complex Matrix || Date           see in multiplication_date.txt
+; Complex Matrix || String         see in multiplication_string.txt
+; Complex Matrix || Real Matrix    see in multiplication_realMatrix.txt
+;==================================================================
+
+
+
+;=======================================
+; Complex Matrix || Complex Matrix
+;=======================================
+
+
+
+;=======================================
+; Complex Matrix || Short Integer
+;=======================================
+
+;=======================================
+; Short Integer || Complex Matrix
+;=======================================
+
+
+
+;=======================================
+; Complex Matrix || Real
+;=======================================
+
+;=======================================
+; Real || Complex Matrix
+;=======================================
+
+
+
+;=======================================
+; Complex Matrix || Complex
+;=======================================
+
+;=======================================
+; Complex || Complex Matrix
+;=======================================

@@ -1,0 +1,146 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          erfc                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnErfc
+
+
+
+;=======================================
+; erfc(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"1.995322265018952734162069256367253"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"1.842700792949714869341220635082609"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.1572992070502851306587793649173907"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.004677734981047265837930743632747071"
+
+
+
+;=======================================
+; erfc(Time)
+;=======================================
+
+
+
+;=======================================
+; erfc(Date)
+;=======================================
+
+
+
+;=======================================
+; erfc(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; erfc(Real Matrix)
+;=======================================
+
+
+
+;=======================================
+; erfc(Complex Matrix)
+;=======================================
+
+
+
+;=======================================
+; erfc(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; erfc(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"1.995322265018952734162069256367253"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"1.842700792949714869341220635082609"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"0.8875370839817151077967249282560316"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.2" RX=Real:"0.7772974107895215458598609931998562"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0.4795001221869534623172533461080355"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1572992070502851306587793649173907"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.004677734981047265837930743632747071"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2.209049699858544137277612958232038E-5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4" RX=Real:"1.541725790028001885215967348688405E-8"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"1.537459794428034850188343485383379E-12"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6" RX=Real:"2.151973671249891311659335039918738E-17"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7" RX=Real:"4.183825607779414398614010223899932E-23"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"8" RX=Real:"1.122429717298292707996788844317028E-29"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"9" RX=Real:"4.137031746513810238053903467362525E-37"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10" RX=Real:"2.088487583762544757000786294957789E-45"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12" RX=Real:"1.356261169205904212780306156590418E-64"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"15"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"15" RX=Real:"7.212994172451206666565066558692927E-100"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"20"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"20" RX=Real:"5.395865611607900928934999167905346E-176"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"30"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"30" RX=Real:"2.564656203756111600033397277501447E-393"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"2.070920778841656048448447875165789E-1088"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"100" RX=Real:"6.405961424921732039021339148586394E-4346"
+
+
+
+;=======================================
+; erfc(Complex) --> Error
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"100i1"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"100i1"

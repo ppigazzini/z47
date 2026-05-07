@@ -1,0 +1,13 @@
+C47 Program file export, version 1
+0000: { Prgm #26: 55 bytes / 11 steps }
+0001:  LBL 'FreeFp'
+0002:  # 18 g`earth acc.earth
+0003:  -2
+0004:  /
+0005:  RCL* 'time'
+0006:  RCL+ 'v0'
+0007:  RCL* 'time'
+0008:  RCL+ 'h0'
+0009:  RCL- 'height'
+0010:  RTN
+0011:  END

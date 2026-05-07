@@ -1,0 +1,93 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**               QF of geometric distribution              **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnGeometricI
+
+
+
+;=======================================
+; geometricI(Long Integer) --> Real
+;=======================================
+
+
+
+;=======================================
+; geometricI(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; geometricI(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; geometricI(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; geometricI(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; geometricI(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; geometricI(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; geometricI(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"3"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"6"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"21"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.01" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"10"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.01" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"68"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.01" RX=Real:"0.9"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"229"
+
+
+
+;=======================================
+; geometricI(Complex) --> Error24
+;=======================================

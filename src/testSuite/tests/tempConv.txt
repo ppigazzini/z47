@@ -1,0 +1,165 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    temp conv part                       **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+
+; CtoF     ix =  0
+; FtoC     ix =  1
+; CtoK     ix =  2
+; KtoC     ix =  3
+; RAtoK    ix =  4
+; KtoRA    ix =  5
+; RAtoF    ix =  6
+; FtoRA    ix =  7
+; EVKBtoK  ix =  8
+; KtoEVKB  ix =  9
+; FtoK     ix = 10
+; KtoF     ix = 11
+
+
+Func: fnCvtTemp(0) ;CtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"212"
+
+Func: fnCvtTemp(1) ;FtoC
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"212" RX=Real:"100"
+
+Func: fnCvtTemp(2) ;CtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"373.15"
+
+Func: fnCvtTemp(3) ;KtoC
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"373.15" RX=Real:"100"
+
+Func: fnCvtTemp(4) ;RAtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"55.55555555555555555555555555555555555555555555555555"
+
+Func: fnCvtTemp(5) ;KtoRA
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"55.55555555555555555555555555555555555555555555555555" RX=Real:"100"
+
+Func: fnCvtTemp(6) ;RAtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"-359.67"
+
+Func: fnCvtTemp(7) ;FtoRA
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-359.67" RX=Real:"100"
+
+Func: fnCvtTemp(8) ;EVKBtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Real:"1.16045181215500826060787354352916635582251535328675137561655694293E6"
+
+Func: fnCvtTemp(9) ;KtoEVKB
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.16045181215500826060787354352916635582251535328675137561655694293E6" RX=Real:"100"
+
+Func: fnCvtTemp(10) ;FtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"32"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"32" RX=Real:"273.15"
+
+Func: fnCvtTemp(11) ;KtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"273.15" RX=Real:"32"
+
+
+
+
+
+Func: fnCvtTemp(0) ;CtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"32"
+
+Func: fnCvtTemp(1) ;FtoC
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"32" RX=Real:"0"
+
+Func: fnCvtTemp(2) ;CtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"273.15"
+
+Func: fnCvtTemp(3) ;KtoC
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"273.15" RX=Real:"0"
+
+Func: fnCvtTemp(4) ;RAtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.55555555555555555555555555555555555555555555555555"
+
+Func: fnCvtTemp(5) ;KtoRA
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.55555555555555555555555555555555555555555555555555" RX=Real:"1"
+
+Func: fnCvtTemp(6) ;RAtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"-458.67"
+
+Func: fnCvtTemp(7) ;FtoRA
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-458.67" RX=Real:"1"
+
+Func: fnCvtTemp(8) ;EVKBtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"1.16045181215500826060787354352916635582251535328675137561655694293E4"
+
+Func: fnCvtTemp(9) ;KtoEVKB
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1.16045181215500826060787354352916635582251535328675137561655694293E4" RX=Real:"1"
+
+Func: fnCvtTemp(10) ;FtoK
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"212"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"212" RX=Real:"373.15"
+
+Func: fnCvtTemp(11) ;KtoF
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"373.15" RX=Real:"212"
+
+
+
+;=======================================
+; fp(Time)
+;=======================================
+
+
+;=======================================
+; fp(Date)
+;=======================================
+
+
+;=======================================
+; fp(String) --> Error24
+;=======================================
+
+
+;=======================================
+; fp(Real Matrix)
+;=======================================
+
+
+;=======================================
+; fp(Complex Matrix)
+;=======================================
+
+
+;=======================================
+; fp(Short Integer) --> Short Integer
+;=======================================
+
+
+;=======================================
+; fp(Real) --> Real
+;=======================================
+
+
+;=======================================
+; fp(Complex) --> Complex
+;=======================================
+

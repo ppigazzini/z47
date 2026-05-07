@@ -1,0 +1,115 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    Inverse Lambert W                    **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnWinverse
+
+
+
+;=======================================
+; W^-1(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"14.77811219786130045446085492115002"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"2.718281828459045235360287471352662"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"-1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-1" RX=Real:"-0.3678794411714423215955237701614609"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"-2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"-2" RX=Real:"-0.2706705664732253837879989899449688"
+
+
+;=======================================
+; W^-1(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W^-1(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W^-1(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; W^-1(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W^-1(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W^-1(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; W^-1(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"14.77811219786130045446085492115002"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.718281828459045235360287471352662"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"-0.3678794411714423215955237701614609"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"-0.2706705664732253837879989899449688"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":DEG RX=Real:"0"
+
+
+
+;=======================================
+; W^-1(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"2 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"14.77811219786130045446085492115002 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"1 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i 0" RX=Cplx:"2.718281828459045235360287471352662 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"0 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-1 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-1 i 0" RX=Cplx:"-0.3678794411714423215955237701614609 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-2 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-2 i 0" RX=Cplx:"-0.2706705664732253837879989899449688 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i 1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 1" RX=Cplx:"-0.8414709848078965066525023216302990 i 0.5403023058681397174009366074429766"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"0 i -1"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i -1" RX=Cplx:"-0.8414709848078965066525023216302990 i -0.5403023058681397174009366074429766"

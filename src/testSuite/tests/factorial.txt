@@ -1,0 +1,123 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                      factorial !                        **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnFactorial
+
+
+
+;=======================================
+; factorial(Long Integer) --> Long Integer
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"45"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"45" RX=LonI:"119622220865480194561963161495657715064383733760000000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"451"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"451" RX=Real:"7.817492986337973293644656288931653E+1002"
+
+
+
+;=======================================
+; factorial(Time)
+;=======================================
+
+
+
+;=======================================
+; factorial(Date)
+;=======================================
+
+
+
+;=======================================
+; factorial(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; factorial(Real Matrix)
+;=======================================
+
+
+
+;=======================================
+; factorial(Complex Matrix)
+;=======================================
+
+
+
+;=======================================
+; factorial(Short Integer) --> Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#8" RX=ShoI:"170#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=8 IM=2COMPL FL_OVERFL=0 FL_CARRY=0 RX=ShoI:"6#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=1 FL_CARRY=0 RL=ShoI:"6#8" RX=ShoI:"320#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2COMPL FL_OVERFL=0 FL_CARRY=0 RX=ShoI:"0#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 FL_CARRY=0 RL=ShoI:"0#2" RX=ShoI:"1#2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2COMPL FL_OVERFL=0 FL_CARRY=0 RX=ShoI:"1#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 FL_CARRY=0 RL=ShoI:"1#2" RX=ShoI:"1#2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2COMPL FL_OVERFL=0 FL_CARRY=0 RX=ShoI:"20#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 FL_CARRY=0 RL=ShoI:"20#10" RX=ShoI:"2432902008176640000#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2COMPL RX=ShoI:"21#10"
+Out: EC=8 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"21#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 WS=64 IM=2COMPL RX=ShoI:"-1#10"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"-1#10"
+
+
+
+;=======================================
+; factorial(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"45"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"45" RX=Real:"119622220865480194561963161495657715064383733760000000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3.1" RX=Real:"6.8126228630166788679690500676397545100854693541418870153581056"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-3.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-3.1" RX=Real:"-4.6260982775728110601614949597163670050642371647661176582223839"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"211.13598684879991116840112854302517382023008855382603631608281"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"-0.092823884274579407865808232851777690972248476783570824903801507"
+
+
+;=======================================
+; factorial(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"-26.687204616760923642665367819436466866288560419845141767719036 i -0.6019934556957449319503825702850537615893851945711419210751746"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i 7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i 7.6" RX=Cplx:"-26.687204616760923642665367819436466866288560419845141767719036 i 0.6019934556957449319503825702850537615893851945711419210751746"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i -7.6" RX=Cplx:"-9.859410527227041014432008659666200447472029352315118968130094e-11 i 3.2965092001984442686285062033964969106978115374799650717121e-12"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-6.2 i 7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i 7.6" RX=Cplx:"-9.859410527227041014432008659666200447472029352315118968130094e-11 i -3.2965092001984442686285062033964969106978115374799650717121e-12"

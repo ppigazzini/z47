@@ -1,0 +1,76 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          gd                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnGd
+
+
+;=======================================
+; gd(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"1.5573206367260510221824217984759955188613216868781"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"-5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=Real:"-1.5573206367260510221824217984759955188613216868781"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"0.0"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"1138"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1138" RX=Real:"1.5707963267948966192313216916397514420985846996876"
+
+
+;=======================================
+; gd(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"5.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.0" RX=Real:"1.5573206367260510221824217984759955188613216868781"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"-5.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.0" RX=Real:"-1.5573206367260510221824217984759955188613216868781"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0" RX=Real:"0.0"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"113.123"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"113.123" RX=Real:"1.5707963267948966192313216916397514420985846996874"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1.5707963267948966192313216916397514420985846996875529104874722961"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"-1.5707963267948966192313216916397514420985846996875529104874722961"
+
+
+;=======================================
+; gd(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"5.0 i +0.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"5.0 i +0.0" RX=Cplx:"1.5573206367260510221824217984759955188613216868781 i +0.0"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"-5.0 i +0.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-5.0 i +0.0" RX=Cplx:"-1.5573206367260510221824217984759955188613216868781 i +0.0"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"0.0 i +0.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.0 i +0.0" RX=Cplx:"0.0 i +0.0"
+
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"12.12 i +2.12"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"12.12 i +2.12" RX=Cplx:"-4.7123832910932760648398455880162103272549515895136 i +0.000009296074638373011846298231169602567"
+
+;=======================================
+; Short Int --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=Real:"1.5573206367260510221824217984759955188613216868781"
+
+;=======================================
+; Errors
+;=======================================
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Stri:"Hello"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=1 RX=Stri:"Hello"
+

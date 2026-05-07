@@ -1,0 +1,995 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                     TVM                                 **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 FL_ENDPMT=1 SD=0 RMODE=0 IM=2compl SS=8 WS=64
+
+
+;todo:
+;fnEffToI
+;fnEff
+
+
+;all veriables, for reference: use by number
+;RESERVED_VARIABLE_FV,        2034
+;RESERVED_VARIABLE_IPONA,     2035
+;RESERVED_VARIABLE_NPPER,     2036
+;RESERVED_VARIABLE_PPERONA,   2037
+;RESERVED_VARIABLE_PMT,       2038
+;RESERVED_VARIABLE_PV,        2039
+;RESERVED_VARIABLE_CPERONA,   2043
+
+
+;Duncan's TVM problems, #P1;    N=456, i%/a=5.25, PV=270000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -1368.14835535057757212882816319868
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"456"
+In: V2035=Real:"5.25"
+In: V2039=Real:"270000"
+;;  V2038=Real ??
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1368.14835535057757212882816319868"
+;Wolframalpha Web: N[-(270000*(525/10000)/12)/(1 - (1 + (525/10000)/12)^(-456)), 40] = -1368.148355350577572128828163198680147827
+
+
+;Duncan's TVM problems, #P1b;    N=456, i%/a=??, PV=270000, PMT=-14584/12, FV=0, pp/a=12, cp/a=12; Expected answer = 4.373218372310086835354687826497751
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"456"
+;;  V2035=Real ??   ; solving for I%/a
+In: V2039=Real:"270000"
+In: V2038=Real:"-1215.333333333333333333333333333333333333333333333333333333333333"
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"4.373218372310086835354687826497751"
+;Python check iteration: 4.373218372310086835354687826497753
+
+
+;Duncan's TVM problems, #2 part1;    N=360, i%/a=15, PV=100000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -1264.444021565043387690640169724623
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"360"
+In: V2035=Real:"15"
+In: V2039=Real:"100000"
+;;  V2038=Real ??
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1264.444021565043387690640169724623"
+;Wolframalpha Web: N[-(100000*(15/100)/12)/(1 - (1 + (15/100)/12)^(-360)), 40] = -1264.444021565043387690640169724623382731
+
+
+;Duncan's TVM problems, #2 part2;    N=360, i%/a=12, PV=100000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -1028.612596925504426479618534056909
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"360"
+In: V2035=Real:"12"
+In: V2039=Real:"100000"
+;;  V2038=Real ??
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1028.612596925504426479618534056909"
+;Wolframalpha Web: N[-(100000*(12/100)/12)/(1 - (1 + (12/100)/12)^(-360)), 40] = -1028.612596925504426479618534056909207482
+
+
+;Duncan's TVM problems, #2 part3;    N=36, i%/a=15, PV=??, PMT=-235.831424639538961211021635667714, FV=0, pp/a=12, cp/a=12; Expected answer = 6803.092161985597113625555764464722
+Func: fnTvmVar(2039)   ;RESERVED_VARIABLE_PV
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"36"
+In: V2035=Real:"15"
+;;  V2039=Real ??
+In: V2038=Real:"-235.831424639538961211021635667714"
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"6803.092161985597113625555764464722"
+;Wolframalpha Web: N[(235831424639538961211021635667714/10^30)*(1 - (1 + (15/100)/12)^(-36))/((15/100)/12), 40] = 6803.092161985597113625555764464722125159
+
+
+;Duncan's TVM problems, #P3;    N=31536000, i%/a=10, PV=0, PMT=-0.01, FV=??, pp/a=31536000, cp/a=31536000; Expected answer = 331667.0066907768917803419084359626
+Func: fnTvmVar(2034)   ;RESERVED_VARIABLE_FV
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"31536000"
+In: V2035=Real:"10"
+In: V2039=Real:"0"
+;;  V2034=Real ??
+In: V2038=Real:"-0.01"
+In: V2037=Real:"31536000"
+In: V2043=Real:"31536000"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"331667.0066907768917803419084359626"
+;Wolframalpha Notebook: N[(1/100) * 315360000 * ((315360001 / 315360000)^31536000 - 1), 40] = 331667.00669077689178034190843596256140076447
+;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+;Duncan's TVM problems, #P4 Part 1;    N=480, i%/a=0, PV=100000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -208.3333333333333333333333333333333
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"480"
+In: V2035=Real:"0"
+In: V2039=Real:"100000"
+;;In: V2038=Real:"0"
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-208.3333333333333333333333333333333"
+
+
+;Duncan's TVM problems, #P4 Part 2;    N=480, i%/a=??, PV=100000, PMT=0, FV=0, pp/a=12, cp/a=12; Expected answer = iterate toward zero
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"480"
+In: V2035=Real:"0"
+In: V2039=Real:"100000"
+;;In: V2038=Real:"0"       From above
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-7.983367983367984007733887630459008E-34"
+;
+; correct answer is:                    -7.983367983367983367983367983367983 7919926e-34 Python
+; Brent:
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 874747921010624438E-34
+; Newton:
+; if tvm digit context is: 75 51 51 51: -7.983367983367983 559584199584195302E-34
+; If tvm digit context is: 75 75 75 75: -7.983367983367983367983367983367984 E-34
+;
+;
+; Details:
+; With the Brent solver -7.983367983367983367983367983367984E-34  All tvm=75, all solver=39
+;                       -7.983367983367983 874813995600624809E-34 All tvm=51, all solver=39
+;                       -7.983367983367983874747921010624438E-34  All tvm=51, except ctxtSolverTvmInv=75;  all solver=39
+;                       It does not help to make some of the TVM digits counts less. All 75 or all 51.
+;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+;Duncan's TVM problems, #P5;    N=10, i%/a=??, PV=50, PMT=-30, FV=400, pp/a=1, cp/a=1; Expected answer = 14.43587132807995697420470129887705
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"10"
+;;  V2035=Real ??
+In: V2039=Real:"50"
+In: V2038=Real:"-30"
+In: V2034=Real:"400"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"14.43587132807995697420470129887705"
+;Python 14.43587132807995697420470129887704 55108819
+
+;Duncan's TVM problems, #P5b with bias;    N=10, i%/a=??, PV=50, PMT=-30, FV=400, pp/a=1, cp/a=1; Expected answer = 53.17221326838472431046024137437116
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"10"
+In: V2035=Real:"50"
+In: V2039=Real:"50"
+In: V2038=Real:"-30"
+In: V2034=Real:"400"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"53.17221326838472431046024137437116"
+;Python 53.17221326838472431046024137437116 064378
+
+
+
+;Duncan's TVM problems, #P6 with 0 bias;    N=10, i%/a=??, PV=50, PMT=-30, FV=80, pp/a=1, cp/a=1; Expected answer = -36.89336987417774420723991401135426
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"10"
+In: V2035=Real:"-36"
+In: V2039=Real:"50"
+In: V2038=Real:"-30"
+In: V2034=Real:"80"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"-36.89336987417774420723991401135426"
+;Python TVM iteration = -36.8933698741777442072399140113542555399
+
+
+;Duncan's TVM problems, #P6b with bias;    N=10, i%/a=??, PV=50, PMT=-30, FV=80, pp/a=1, cp/a=1; Expected answer = 58.46195526622098709870320744645958
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"10"
+In: V2035=Real:"50"
+In: V2039=Real:"50"
+In: V2038=Real:"-30"
+In: V2034=Real:"80"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"58.46195526622098709870320744645958"
+
+
+;Duncan's TVM problems, #P7;    N=10, i%/a=??, PV=-100, PMT=10, FV=1.0E-10, pp/a=12, cp/a=12; Expected answer = 2.181818181815801652892565878287002E-10
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"10"
+In: V2035=Real:"0"
+In: V2039=Real:"-100"
+In: V2038=Real:"10"
+In: V2034=Real:"1.0E-10"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"2.181818181815801652892565878287002E-10"
+;TVM iteration check                        = 2.1818181818158016528925658782870022E-10
+
+
+;Duncan's TVM problems, #P8;    N=32, i%/a=??, PV=-999999, PMT=0, FV=1000000, pp/a=1, cp/a=1; Expected answer = 0.000003125001611329216004244745444268481
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+In: V2036=Real:"32"
+;;  V2035=Real ??
+In: V2039=Real:"-999999"
+In: V2038=Real:"0"
+In: V2034=Real:"1000000"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"0.000003125001611329216004244745444268481"
+
+
+;Duncan's TVM problems, #P9;    N=??, i%/a=25, PV=100000, PMT=-2083.333334, FV=0, pp/a=12, cp/a=12; Expected answer = 1060.303390000510007127328529884891
+Func: fnTvmVar(2036)   ;RESERVED_VARIABLE_NPPER
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+;;  V2036=Real ??
+In: V2035=Real:"25"
+In: V2039=Real:"100000"
+In: V2038=Real:"-2083.333334"
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"1060.303390000510007127328529884891"
+;Wolframalpha Web: N[-Log[1 - 100000 * 25 / (1200 * 2083333334/1000000)] / Log[1225/1200], 40] = 1060.303390000510007127328529884890618082
+
+
+;Duncan's TVM problems, #P10;    N=??, i%/a=25, PV=100000, PMT=-2040.816327, FV=0, pp/a=12, cp/a=12, BEGIN; Expected answer = 1076.31954436770664643510613104444
+Func: fnTvmVar(2036)   ;RESERVED_VARIABLE_NPPER
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=0
+;;  V2036=Real ??
+In: V2035=Real:"25"
+In: V2039=Real:"100000"
+In: V2038=Real:"-2040.816327"
+In: V2034=Real:"0"
+In: V2037=Real:"12"
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"1076.31954436770664643510613104444"
+;Wolframalpha Notebook: N[-Log[1 - 2500000000000 / (2040816327 * 1225)] / Log[1225/1200], 40] = 1076.319544367706646435106131044347483055157953654150
+;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+;Duncan's TVM problems, #P11 part 1;    N=525600, i%/a=0.166..., PV=0, PMT=-0.01, FV=??, pp/a=12, cp/a=12; NOTE: FV first, then I%/a; Expected answer = 5260.382426000326494014090357828463
+Func: fnTvmVar(2034)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+In: V2036=Real:"525600"
+In: V2035=Real:"0.1666666666666666666666666666666667"
+In: V2039=Real:"0"
+In: V2038=Real:"-0.01"
+;;  V2034=Real ??
+In: V2037=Real:"525600"
+In: V2043=Real:"525600"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"5260.382426000326494014090357828463"
+;Wolframalpha Notebook: N[(1/100) * (525600000000000000000000000000000000000000/1666666666666666666666666666666667) * ((525600001666666666666666666666666666666667/525600000000000000000000000000000000000000)^525600 - 1), 40] = 5260.3824260003264940140903578284627627805724675283551814095336
+;..
+;..continue
+;..
+;Duncan's TVM problems, #P11 part 2;    N=525600, i%/a=??, PV=0, PMT=-0.01, FV= from above, pp/a=525600, cp/a=525600; NOTE: FV first, then I%/a; Expected answer =
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+In: V2036=Real:"525600"
+;;In: V2035=Real:       ???
+In: V2039=Real:"0"
+In: V2038=Real:"-0.01"
+;;  V2034=Real          From previous step #P11 part 1
+In: V2037=Real:"525600"
+In: V2043=Real:"525600"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"0.1666666666666666666666666666666757"
+;Python iteration check to 34 digits, internal 100 digits: 0.166666666666666666666666666666667
+;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+;Duncan's TVM problems, #P12a part 1;    N=40, i%/a=??, PV=900, PMT=-400, FV=-1000, pp/a=1, cp/a=1, BEGIN; Expected answer = 80.00000000098450919907260317672220
+Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=0
+In: V2036=Real:"40"
+In: V2035=Real:"55"
+In: V2039=Real:"900"
+In: V2038=Real:"-400"
+In: V2034=Real:"-1000"
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"80.00000000098450919907260317672220"
+;TVM iteration: I%/a = 80.00000000098450919907260317672220394925590951192
+
+;Duncan's TVM problems, #P12a part 2;    N=40, i%/a=from above, PV=900, PMT=-400, FV=???, pp/a=1, cp/a=1, BEGIN; Expected answer = -999.9999999999999999999999999999993
+Func: fnTvmVar(2034)   ;RESERVED_VARIABLE_FV
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=0
+In: V2036=Real:"40"
+;;In: V2035=Real:"00000000"   FROM ABOVE
+In: V2039=Real:"900"
+In: V2038=Real:"-400"
+;;In: V2034=Real:??
+In: V2037=Real:"1"
+In: V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-999.9999999999999999999995988604358"
+;TVM calc: FV = −999.999999999999999999999999999999999999872
+;------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+;Robbert's sign test: n=60, I/a=10, PV=10000, PMT ?? -> -212.470 ; do again for PV = -10000, and ensure PMT result changes sign, FV = 0
+;······································································································································
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+;RESERVED_VARIABLE_NPPER,     2036
+In: V2036=Real:"60"
+;RESERVED_VARIABLE_IPONA,     2035
+In: V2035=Real:"10"
+;RESERVED_VARIABLE_PV,        2039
+In: V2039=Real:"10000"
+;RESERVED_VARIABLE_PMT,       2038
+;;  V2038=Real ??
+;RESERVED_VARIABLE_FV,        2034
+In: V2034=Real:"0"
+;RESERVED_VARIABLE_PPERONA,   2037
+In: V2037=Real:"12"
+;RESERVED_VARIABLE_CPERONA,   2043
+In: V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-212.4704471126827444695120706917064"
+;                        PV     I%/a          PPER            I%/a          PPER    N    Digits needed
+;Wolframalpha Web: N[-(10000*(1000/100 / 100)/12)/(1 - (1 + (1000/100 / 100)/12)^(-60)), 40]            =  -212.4704471126827444695120706917064 446756
+
+;Reverse the PV, and check if the PMT follows:
+;·············································
+Func: fnTvmVar(2038)   ;RESERVED_VARIABLE_PMT
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" FL_ENDPMT=1
+;RESERVED_VARIABLE_PV,        2039
+In: V2039=Real:"-10000"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"212.4704471126827444695120706917064"
+
+
+
+
+
+
+
+;=== TVM Unit Tests ===
+;Variables: FV=2034, I%/a=2035, N=2036, pp/a=2037, PMT=2038, PV=2039, cp/a=2043
+
+In: FL_ENDPMT=1
+
+;Test 1: Basic loan - solve PMT
+;N=12, i%/a=12, PV=1000, PMT=??, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"1000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-88.84878867834170733998783122788653"
+
+;Test 2: Flip PV sign - solve PMT
+;N=12, i%/a=12, PV=-1000, PMT=??, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"-1000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"88.84878867834170733998783122788653"
+
+;Test 3: With FV - solve PMT
+;N=12, i%/a=12, PV=1000, PMT=??, FV=-500, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"1000" V2034=Real:"-500" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-49.42439433917085366999391561394326"
+
+;Test 4: Solve PV
+;N=12, i%/a=12, PV=??, PMT=88.85, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2038=Real:"88.85" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"-1000.013633519109393764408471791821"
+
+;Test 5: Negative interest - solve PMT
+;N=12, i%/a=-12, PV=1000, PMT=??, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"-12" V2039=Real:"1000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-78.01644773057605206292892498866977"
+
+;Test 6: Both PV and FV negative - solve PMT
+;N=12, i%/a=12, PV=-1000, PMT=??, FV=-500, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"-1000" V2034=Real:"-500" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"128.2731830175125610099817468418298"
+
+;Test 7: Zero interest - solve PMT
+;N=12, i%/a=0, PV=1200, PMT=??, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"0" V2039=Real:"1200" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-100"
+
+;Test 8: Very small interest - solve PMT
+;N=10000, i%/a=1.2E-35, PV=1000, PMT=??, FV=0, pp/a=1, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10000" V2035=Real:"1.2E-35" V2039=Real:"1000" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-0.1"
+
+;Test 9: Solve FV from loan
+;N=12, i%/a=12, PV=1000, PMT=-88.85, FV=??, pp/a=12, cp/a=12
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"1000" V2038=Real:"-88.85" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"0.01536259058124741356988500000000000"
+
+;Test 10: Solve N
+;N=??, i%/a=12, PV=1000, PMT=-88.85, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"12" V2039=Real:"1000" V2038=Real:"-88.85" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"11.99982623227010647857753965386831"
+
+;Test 11: Annual payments with monthly compounding - solve PMT
+;N=10, i%/a=12, PV=10000, PMT=??, FV=0, pp/a=1, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"12" V2039=Real:"10000" V2034=Real:"0" V2037=Real:"1" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1819.570735422041707009402650840971"
+
+;Test 12: Quarterly payments with annual compounding - solve PMT
+;N=40, i%/a=8, PV=5000, PMT=??, FV=0, pp/a=4, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"40" V2035=Real:"8" V2039=Real:"5000" V2034=Real:"0" V2037=Real:"4" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-180.9455220556095636626016494447669"
+
+;Test 13: Savings (negative PV, positive FV) - solve PMT
+;N=120, i%/a=6, PV=0, PMT=??, FV=100000, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"120" V2035=Real:"6" V2039=Real:"0" V2034=Real:"100000" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-610.2050194164946523978893883098845"
+
+;Test 14: Large N with small interest - solve PMT
+;N=360, i%/a=4.5, PV=250000, PMT=??, FV=0, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"4.5" V2039=Real:"250000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1266.713274564701728308559295569298"
+
+;Test 15: Solve PV with negative PMT and positive FV
+;N=60, i%/a=7.2, PV=??, PMT=-500, FV=10000, pp/a=12, cp/a=12
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"60" V2035=Real:"7.2" V2038=Real:"-500" V2034=Real:"10000" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"18146.79281539362347603729698312658"
+
+;Test 16: Both positive PV and FV - solve PMT
+;N=24, i%/a=9, PV=5000, PMT=??, FV=1000, pp/a=12, cp/a=12
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"24" V2035=Real:"9" V2039=Real:"5000" V2034=Real:"1000" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-266.6084536750385670938810869448890"
+
+
+;=== TVM BEGIN Mode Tests ===
+
+In: FL_ENDPMT=0
+
+;Test B1: Basic loan BEGIN - solve PMT
+;N=12, i%/a=12, PV=1000, PMT=??, FV=0, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"1000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-87.96909770132842310889884279988765"
+
+;Test B2: Flip PV sign BEGIN - solve PMT
+;N=12, i%/a=12, PV=-1000, PMT=??, FV=0, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"-1000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"87.96909770132842310889884279988765"
+
+;Test B3: With FV BEGIN - solve PMT
+;N=12, i%/a=12, PV=1000, PMT=??, FV=-500, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"1000" V2034=Real:"-500" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-48.93504390016916204949892635043888"
+
+;Test B4: Zero interest BEGIN - solve PMT
+;N=12, i%/a=0, PV=1200, PMT=??, FV=0, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"0" V2039=Real:"1200" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-100"
+
+;Test B5: Solve PV BEGIN
+;N=12, i%/a=12, PV=??, PMT=88, FV=0, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2038=Real:"88" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"-1000.351285843313932670575407685504"
+
+;Test B6: Annual payments BEGIN - solve PMT
+;N=10, i%/a=12, PV=10000, PMT=??, FV=0, pp/a=1, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"12" V2039=Real:"10000" V2034=Real:"0" V2037=Real:"1" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-1614.776639465436869971654843913033"
+
+;Test B7: Savings BEGIN - solve PMT
+;N=120, i%/a=6, PV=0, PMT=??, FV=100000, pp/a=12, cp/a=12, BEGIN
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"120" V2035=Real:"6" V2039=Real:"0" V2034=Real:"100000" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-607.1691735487508979083476500595866"
+
+
+
+;=== Unity Scale Calibration Tests (all components near magnitude 1.0) ===
+
+;Test U1: Solve PMT - END mode, unity scale
+;N=10, i%/a=10, PV=5, PMT=??, FV=0, pp/a=1, cp/a=1, END
+In: FL_ENDPMT=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"10" V2039=Real:"5" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-0.8137269744125580381153578578740157"
+
+;Test U2: Solve PMT - BEGIN mode, unity scale
+;N=10, i%/a=10, PV=5, PMT=??, FV=0, pp/a=1, cp/a=1, BEGIN
+In: FL_ENDPMT=0
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"10" V2039=Real:"5" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-0.7397517949205073073775980526127416"
+
+;Test U3: Solve PV - END mode, unity scale
+;N=10, i%/a=10, PV=??, PMT=-0.8, FV=0, pp/a=1, cp/a=1, END
+In: FL_ENDPMT=1
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"10" V2038=Real:"-0.8" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"4.915653684563746021084770844169133"
+
+;Test U4: Solve FV - END mode, unity scale
+;N=10, i%/a=10, PV=5, PMT=-0.8, FV=??, pp/a=1, cp/a=1, END
+In: FL_ENDPMT=1
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"10" V2039=Real:"5" V2038=Real:"-0.8" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"-0.2187726197000000000000000000000000"
+
+;Test U5: Solve N - END mode, unity scale
+;N=??, i%/a=10, PV=5, PMT=-0.8, FV=0, pp/a=1, cp/a=1, END
+In: FL_ENDPMT=1
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"10" V2039=Real:"5" V2038=Real:"-0.8" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"10.29091808477754499437018598377730"
+
+;Test U6: Solve I% - END mode, unity scale
+;N=10, i%/a=??, PV=5, PMT=-0.8, FV=0, pp/a=1, cp/a=1, END
+In: FL_ENDPMT=1
+Func: fnTvmVar(2035)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2039=Real:"5" V2038=Real:"-0.8" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"9.605856411493579387948674983875140"
+
+
+
+
+;=== TVM Internal sign tests ===
+
+In: FL_ENDPMT=1
+
+;Test S1: Solve FV - negative PV, PMT=0, general case
+;NPPER=10, i%/a=5, PV=-1000, PMT=0, FV=??, pp/a=1, cp/a=1
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"5" V2039=Real:"-1000" V2038=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"1628.894626777441406250000000000000"
+
+;Test S2: Solve FV - negative PV with PMT, general case
+;NPPER=12, i%/a=12, PV=-1000, PMT=-50, FV=??, pp/a=12, cp/a=12
+Func: fnTvmVar(2034)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"12" V2035=Real:"12" V2039=Real:"-1000" V2038=Real:"-50" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2034=Real:"1760.950180791818323967206000000000"
+
+;Test S3: Solve PV - i%/a=0, PMT negative, ip=0 branch
+;NPPER=10, i%/a=0, PV=??, PMT=-100, FV=0, pp/a=1, cp/a=1
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"0" V2038=Real:"-100" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"1000"
+
+;Test S4: Solve PV - i%/a=0, PMT and FV both negative, ip=0 branch
+;NPPER=5, i%/a=0, PV=??, PMT=-200, FV=-500, pp/a=1, cp/a=1
+Func: fnTvmVar(2039)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"5" V2035=Real:"0" V2038=Real:"-200" V2034=Real:"-500" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2039=Real:"1500"
+
+;Test S5: Solve PMT - i%/a=0, PV+FV negative, ip=0 branch
+;NPPER=10, i%/a=0, PV=-2000, PMT=??, FV=500, pp/a=1, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"10" V2035=Real:"0" V2039=Real:"-2000" V2034=Real:"500" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"150"
+
+;Test S6: Solve PMT - i%/a=0, PV+FV negative, ip=0 branch
+;NPPER=20, i%/a=0, PV=-3000, PMT=??, FV=1000, pp/a=1, cp/a=1
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2036=Real:"20" V2035=Real:"0" V2039=Real:"-3000" V2034=Real:"1000" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"100"
+
+;Test S7: Solve NPPER - i%/a=0, (PV+FV)/PMT negative, ip=0 branch
+;NPPER=??, i%/a=0, PV=-1000, PMT=100, FV=0, pp/a=1, cp/a=1
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"0" V2039=Real:"-1000" V2038=Real:"100" V2034=Real:"0" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"10"
+
+;Test S8: Solve NPPER - PMT=0, standard sign convention PV<0 FV>0, PMT=0 branch
+;NPPER=??, i%/a=5, PV=-1000, PMT=0, FV=2000, pp/a=1, cp/a=1
+Func: fnTvmVar(2036)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04" V2035=Real:"5" V2039=Real:"-1000" V2038=Real:"0" V2034=Real:"2000" V2037=Real:"1" V2043=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2036=Real:"14.20669908289047413032023363185645"
+
+
+
+;===========================================================================
+;-=-=- AMORT -=-=-==-=-=-=-=-==-=-
+;===========================================================================
+
+
+; ╔══════════════════════════════════════════════════════════════════════════════╗
+; ║ AMORT verification: HP 30b vs C47 (verified matching results only)           ║
+; ╚══════════════════════════════════════════════════════════════════════════════╝
+; 
+; Block A  END mode   N=360  I/YR=6  PV=100000  FV=0  P/YR=C/YR=12
+;                     PMT (End solve) = -599.5505251527523945914612436844759
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     -5966.59    │    -5966.594589556309856946943730308004 │
+; │        │ ΣPRN  │     -1228.01    │    -1228.011712276718878150591193905707 │
+; │        │ BAL   │     98771.99    │    98771.98828772328112184940880609429  │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 13..24 │ ΣINT  │     -5890.85    │    (matches 30b to display precision)   │
+; │        │ ΣPRN  │     -1303.75    │    (matches)                            │
+; │        │ BAL   │     97468.24    │    (matches)                            │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..360 │ ΣINT  │   -115838.19    │   -115838.1890549908620529260477264113  │
+; │        │ ΣPRN  │   -100000.00    │   -99999.99999999999999999999999999998  │
+; │        │ BAL   │         0.00    │    1.510493562884100367564280638397E-29 │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..1   │ ΣINT  │      -500.00    │    (matches)                            │
+; │        │ ΣPRN  │       -99.55    │    (matches)                            │
+; │        │ BAL   │     99900.45    │    (matches)                            │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │360..360│ ΣINT  │        -2.98    │    (matches)                            │
+; │        │ ΣPRN  │      -596.57    │    (matches)                            │
+; │        │ BAL   │         0.00    │    (matches, tiny residual expected)    │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+; 
+; Block B  BEGIN mode N=360  I/YR=6  PV=100000  FV=0  P/YR=C/YR=12
+;                     PMT (Begin solve) = -596.5676867191566115337922822731104
+;                     HP convention: period 1 has zero interest
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..1   │ ΣINT  │         0.00    │    0                                    │
+; │        │ ΣPRN  │      -596.57    │    -596.5676867191566115337922822731104 │
+; │        │ BAL   │     99403.43    │    99403.4323132808433884662077177268896│
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..2   │ ΣINT  │      -497.0172  │    -497.0171615664042169423310385886344 │
+; │        │ ΣPRN  │      -696.1182  │    -696.1182118719090061252535259575864 │
+; │        │ BAL   │     99303.8818  │    99303.88178812809099387474647404241  │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     -5439.3977  │    -5439.397601548567021837754955530352 │
+; │        │ ΣPRN  │     -1719.4147  │    -1719.414639081312316567752431746973 │
+; │        │ BAL   │     98280.5953  │    98280.58536091868768343224756825303  │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+; 
+; Block C  END mode   N=60  I/YR=0  PV=30000  PMT=-500  FV=0  P/YR=C/YR=12
+;                     Interest-free loan (i=0 branch of amortBalAt)
+;                     All results are exact integers, no numerical residuals.
+; ┌────────┬───────┬─────────────────┬─────────────────────────────────────────┐
+; │ P1..P2 │ field │ HP 30b          │ C47                                     │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..12  │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -6000       │    -6000                                │
+; │        │ BAL   │     24000       │    24000                                │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 13..24 │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -6000       │    -6000                                │
+; │        │ BAL   │     18000       │    18000                                │
+; ├────────┼───────┼─────────────────┼─────────────────────────────────────────┤
+; │ 1..60  │ ΣINT  │     0           │    0                                    │
+; │        │ ΣPRN  │     -30000      │    -30000                               │
+; │        │ BAL   │     0           │    0                                    │
+; └────────┴───────┴─────────────────┴─────────────────────────────────────────┘
+
+
+
+;===========================================================================
+;AMORT test suite - verified results from C47 (matching HP 30b to display precision)
+;===========================================================================
+
+;---- Block A: END mode mortgage, N=360, I/YR=6, PV=100000 -----------------
+;Step A1: solve PMT (End mode)
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-599.5505251527523945914612436844759"
+
+;---- A.1: P1=1, P2=12 -----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5966.594589556309856946943730308004"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1228.011712276718878150591193905707"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98771.98828772328112184940880609429"
+
+;---- A.2: P1=13, P2=24 ----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"13"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"24"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5890.853514199104414548305567013195"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1303.752787633924320549229357200515"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"97468.23550008935680130017944889378"
+
+;---- A.3: P1=1, P2=360 (full loan) ----------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-115838.1890549908620529260477264113"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-99999.99999999999999999999999999998"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.510493562884100367564280638397331E-29"
+
+;---- Block B: BEGIN mode mortgage, same loan, HP convention ---------------
+;Step B1: solve PMT (Begin mode)
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+
+
+;---- B.1: P1=1, P2=1 (Begin, period 1 zero interest, single period) -------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-596.5676867191566115337922822731104"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"99403.4323132808433884662077177268896"
+
+;---- B.2: P1=1, P2=2 (Begin, period 1 zero interest, period 2 normal) -----
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-497.0171615664042169423310385886344"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-696.1182118719090061252535259575864"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"99303.88178812809099387474647404241"
+
+
+;---- B.3: P1=1, P2=12 (Begin, HP convention period 1 interest=0) ----------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5439.397601548567021837754955530352"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1719.414639081312316567752431746973"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98280.58536091868768343224756825303"
+
+
+;---- Block C: i=0 edge case, interest-free car loan, END mode -------------
+;Step C1: set up TVM state with i=0 and PMT=-500 directly
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"-500" V2036=Real:"60" V2035=Real:"0" V2039=Real:"30000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_ASLIFT=1 V2038=Real:"-500"
+
+;---- C.1: P1=1, P2=12 -----------------------------------------------------
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-6000"
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"24000"
+
+
+
+
+;=============================================================================
+
+
+
+
+
+;Test: AMORT Begin mode - mortgage, P1=1, P2=12
+;N=360, i%/a=6, PV=100000, PMT=-596.5676867..., FV=0, pp/a=12, cp/a=12, BEGIN mode
+;Begin-mode PMT from solving Block B setup.
+;Expected: INT=-5439.398, PRN=-1719.415, BAL=98280.595 (HP convention: period 1 interest=0)
+;Step 1: solve PMT in Begin mode to populate the register with full precision
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-5439.397601548567021837754955530352"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1719.414639081312316567752431746973"
+;Step 6: call fnAmortBal
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"98280.58536091868768343224756825303"
+
+
+
+;===========================================================================
+;Test: AMORT End mode - standard mortgage, full-loan payoff
+;N=360, i%/a=6, PV=100000, PMT=solve, FV=0, pp/a=12, cp/a=12, END mode
+;Exercises: End mode, large P2=N, full-loan BAL should be ~0, total interest
+;Identity: ΣINT + ΣPRN = 360 × PMT, BAL ≈ 0
+;Step 1: solve PMT in End mode
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-599.5505251527523945914612436844759"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=360
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-115838.189054990862052926047726411"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-99999.99999999999999999999999999998"
+;Step 6: call fnAmortBal (tiny residual, should be ~1.5e-29)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1.510493562884100367564280638397331E-29"
+
+
+
+;===========================================================================
+;Test: AMORT i=0 edge case - interest-free car loan
+;N=60, i%/a=0, PV=30000, PMT=-500, FV=0, pp/a=12, cp/a=12, END mode
+;Exercises: amortBalAt zero-interest branch (realIsZero(i)), expect ΣINT=0 exactly
+;Identity: ΣPRN = 12 × PMT, ΣINT = 0
+;Step 1: store PMT directly
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_ENDPMT=1 RX=Real:"-500" V2036=Real:"60" V2035=Real:"0" V2039=Real:"30000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_ASLIFT=1 V2038=Real:"-500"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt (exactly 0)
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+;Step 5: call fnAmortPrn (exactly -6000)
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-6000"
+;Step 6: call fnAmortBal (exactly 24000)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"24000"
+
+;===========================================================================
+;Test: AMORT mixed compounding - C/YR != P/YR
+;N=60, i%/a=12, PV=10000, PMT=solve, FV=0, pp/a=12, cp/a=2, END mode
+;Exercises: non-shortcut branch of amortPeriodicRate (Ln1P/ExpM1 path)
+;Monthly payments, semi-annual compounding.
+;Periodic rate: i = (1.06)^(1/6) - 1 = 0.009758794179192246...
+;Step 1: solve PMT
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=1 RX=Real:"1.01E+04" V2036=Real:"60" V2035=Real:"12" V2039=Real:"10000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-220.9845733033028243879325164829463"
+;Step 2: set P1=1
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=12
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=1 RX=Real:"12"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1088.934940299727205295652703402212"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-1562.879939339906687359537494393144"
+;Step 6: call fnAmortBal
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=1
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"8437.120060660093312640462505606856"
+
+;===========================================================================
+;Test: AMORT single period at tail of loan - Begin mode, P1=P2=360
+;N=360, i%/a=6, PV=100000, PMT=Begin-solve, FV=0, pp/a=12, cp/a=12, BEGIN mode
+;Exercises: single-period window at the end, Begin mode, p1>1 (closed form both ends)
+;Last period: tiny interest, principal nearly full PMT, BAL near 0
+;Step 1: solve PMT in Begin mode
+Func: fnTvmVar(2038)
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 FL_ENDPMT=0 RX=Real:"1.01E+04" V2036=Real:"360" V2035=Real:"6" V2039=Real:"100000" V2034=Real:"0" V2037=Real:"12" V2043=Real:"12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2038=Real:"-596.5676867191566115337922822731104"
+;Step 2: set P1=360
+Func: fnAmortP(1)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 3: set P2=360
+Func: fnAmortP(2)
+In: FL_ASLIFT=1 FL_ENDPMT=0 RX=Real:"360"
+Out: EC=0 FL_ASLIFT=1
+;Step 4: call fnAmortInt
+Func: fnAmortInt
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-2.967998441388838863352200409318773"
+;Step 5: call fnAmortPrn
+Func: fnAmortPrn
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-593.5996882777677726704400818637916"
+;Step 6: call fnAmortBal (tiny residual, ~3.7e-29)
+Func: fnAmortBal
+In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-3.694512097382730823235749296393496E-29"
+

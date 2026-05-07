@@ -1,0 +1,151 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                   Laguerre polynomial                   **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnLaguerreAlpha
+
+
+
+;=======================================
+; Ln(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=LonI:"1" RY=LonI:"1" RX=LonI:"10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=Real:"-8"
+
+
+
+
+;=======================================
+; Ln(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; Ln(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; Ln(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; Ln(Real Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; Ln(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; Ln(Short Integer) --> Error24
+;=======================================
+
+
+
+;=======================================
+; Ln(Real) --> Real
+;=======================================
+
+; Error case
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"-1" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"1" RY=Real:"-1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"-2" RY=Real:"1" RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RZ=Real:"-2" RY=Real:"1" RX=Real:"0"
+
+; Linear
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"12"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"4"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"2.5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"1.9"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"1" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1"
+
+; Quadratic
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"83"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"11"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"4.625"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"2.705"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"2" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5"
+
+; Cubic
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"430.6666666666666666666666666666667"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"25.33333333333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"7.520833333333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"4"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"3.419833333333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"3" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"-0.1666666666666666666666666666666667"
+
+; Quartic
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"-10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-10" RX=Real:"1855"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"52.33333333333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0.5" RX=Real:"11.35677083333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"0.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"4.049170833333333333333333333333333"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RZ=Real:"1" RY=Real:"4" RX=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"-0.7916666666666666666666666666666667"
+
+
+
+;=======================================
+; Ln(Complex) --> Error24
+;=======================================

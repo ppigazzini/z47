@@ -1,0 +1,121 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    STRING + ...                         **
+;**                    ... + STRING                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnAdd
+
+
+
+;==================================================================
+; String + Long Integer  see in addition_longInteger.txt
+; String + Real          see in addition_real.txt
+; String + Complex       see in addition_complex.txt
+; String + Time          see in addition_time.txt
+; String + Date          see in addition_date.txt
+;==================================================================
+
+
+
+;=======================================
+; String + String --> String
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Stri:"C47!"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"C47!" RX=Stri:"String test C47!"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890" RX=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890Stringtest34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890IJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890abcdefghijtring test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890"
+Out: EC=33 FL_CPXRES=0 FL_ASLIFT=0 RY=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890" RX=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890Stringtest34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890IJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890abcdefghijtring test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890"
+
+
+;=======================================
+; String + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Stri:"String test " RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=Stri:"String test [2\x80\xd73 Matrix]"
+
+;=======================================
+; Real Matrix + String
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=Stri:"String test"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"[2\x80\xd73 Matrix]String test"
+
+
+
+;=======================================
+; String + Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Stri:"String test " RX=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Stri:"String test [2\x80\xd73 \xa1\x02 Matrix]"
+
+;=======================================
+; Complex Matrix + String
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=Stri:"String test"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"[2\x80\xd73 \xa1\x02 Matrix]String test"
+
+
+
+;=======================================
+; String + Short Integer --> String
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=ShoI:"1234ABCD#16"
+Out: EC=0 FL_ASLIFT=1 RL=ShoI:"1234ABCD#16" RX=Stri:"String test 12\xa0\x0834\xa0\x08AB\xa0\x08CD\xa4\x6f"
+
+;=======================================
+; Short Integer + String --> String         ;JM
+;=======================================
+In:  FL_ASLIFT=0 RY=ShoI:"12540#9" RX=Stri:"String test"
+Out: EC=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:"12\xa0\x08540\xa4\x68String test"
+
+
+
+;=======================================
+; String + Real --> String
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.34"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.34" RX=Stri:"String test -12.34"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.34":DEG
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.34":DEG RX=Stri:"String test -12.34\x80\xb0"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":DMS
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":DMS RX=Stri:"String test -12\x80\xb020\xa0\x1944.44\xa0\x1d"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":GRAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":GRAD RX=Stri:"String test -12.345\xa0\x08678\x9d\x4d"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":RAD
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":RAD RX=Stri:"String test -12.345\xa0\x08678\x82\xB3"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":MULTPI
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":MULTPI RX=Stri:"String test -12.345\xa0\x08678\xac\x66"
+
+;=======================================
+; Real34 + String --> String                 ;JM
+;=======================================
+In:  FL_ASLIFT=0 RY=Real:"12540" RX=Stri:"String test"
+Out: EC=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:" 12\xa0\x08540.String test"
+
+In:  FL_ASLIFT=0 RY=Real:"12540":GRAD RX=Stri:"String test"
+Out: EC=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:" 12\xa0\x08540.\x9D\x4DString test"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"12540" RX=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ12345634567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ12345634567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ123 4567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ123456"
+Out: EC=33 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"12540" RX=Stri:"String test 34567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ12345634567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ12345634567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ123 4567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ1234567890ABCDEFGHIJ123456"
+
+
+
+;=======================================
+; String + Complex --> String
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Cplx:"-12.34 i 52"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Cplx:"-12.34 i 52" RX=Stri:"String test -12.34\xa0\x0a+52.\xa0\x0a\xa0\x0a\xa1\x48"
+
+;=======================================
+; Complex + String --> String              ;JM
+;=======================================
+In:  FL_ASLIFT=0 RY=Cplx:"12540 i 5" RX=Stri:"String test"
+Out: EC=0 FL_ASLIFT=1 RL=Stri:"String test" RX=Stri:" 12\xa0\x08540.\xa0\x0a+5.\xa0\x0a\xa0\x0a\xa1\x48String test"

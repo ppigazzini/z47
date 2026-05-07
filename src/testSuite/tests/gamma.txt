@@ -1,0 +1,133 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         gamma                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnGamma
+
+
+
+;=======================================
+; gamma(Long Integer) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"46"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"46" RX=Real:"119622220865480194561963161495657715064383733760000000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=LonI:"-5"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"-5"
+
+
+
+;=======================================
+; gamma(Time)
+;=======================================
+
+
+
+;=======================================
+; gamma(Date)
+;=======================================
+
+
+
+;=======================================
+; gamma(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; gamma(Real Matrix)
+;=======================================
+
+
+
+;=======================================
+; gamma(Complex Matrix)
+;=======================================
+
+
+
+;=======================================
+; gamma(Short Integer) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"24"
+
+
+
+;=======================================
+; gamma(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"1.77245385090551602729816748334114518279754945612238712821380778985"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"46"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"46" RX=Real:"119622220865480194561963161495657715064383733760000000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"12.36"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"12.36" RX=Real:"96711173.804679283764059550367208933471847423437567588886346282"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"54.32"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"54.32" RX=Real:"1.5290239239705496551132494690996954526783542339649495989632494e+70"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"NaN"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=Real:"4.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4.1" RX=Real:"6.8126228630166788679690500676397545100854693541418870153581056"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1.1" RX=Real:"9.714806382902903226339139415404370710634898046008847082267006"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-2.1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-2.1" RX=Real:"-4.6260982775728110601614949597163670050642371647661176582223839"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"6.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.32564":DMS RX=Real:"211.13598684879991116840112854302517382023008855382603631608281"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-4.32564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-4.32564":GRAD RX=Real:"-0.092823884274579407865808232851777690972248476783570824903801507"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  AM=DEG FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+
+;=======================================
+; gamma(Complex) --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"-1.6724066357653852921174882842654853012776480990051891929281362 i -2.1471425625020440567811763759197971050483081850017064173111305"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i 7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i 7.6" RX=Cplx:"-1.6724066357653852921174882842654853012776480990051891929281362 i 2.1471425625020440567811763759197971050483081850017064173111305"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i -7.6" RX=Cplx:"6.093866764725242894523990537978077455529755219944798767973533e-12 i -8.001596227759724236614650692262884769794185678880715436824347e-12"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"-6.2 i 7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-6.2 i 7.6" RX=Cplx:"6.0938667647252428945239905379780774555297552199447987679735327e-12 i 8.001596227759724236614650692262884769794185678880715436824347e-12"

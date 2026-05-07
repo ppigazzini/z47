@@ -1,0 +1,113 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        roundi                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnRoundi
+
+
+
+;=======================================
+; roundi(Long Integer) --> Long Integer
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"12345678901234567"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"12345678901234567" RX=LonI:"12345678901234567"
+
+
+
+;=======================================
+; roundi(Time) --> Error24
+;=======================================
+
+
+
+;=======================================
+; roundi(Date) --> Error24
+;=======================================
+
+
+
+;=======================================
+; roundi(String) --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; roundi(Real Matrix) --> Error24
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0.1,0.2,0.4,0.6,0.8,0.9]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0.1,0.2,0.4,0.6,0.8,0.9]" RX=ReMa:"M2,3[0,0,0,1,1,1]"
+
+
+
+;=======================================
+; roundi(Complex Matrix) --> Error24
+;=======================================
+
+
+
+;=======================================
+; roundi(Short Integer) --> Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"5#7"
+
+
+
+;=======================================
+; roundi(Real) --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=LonI:"0"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50.7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50.7" RX=LonI:"51"
+
+In:  AM=MULTPI FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.678910111213e50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.678910111213e50" RX=LonI:"567891011121300000000000000000000000000000000000000"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.999999999"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.999999999" RX=LonI:"90"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":DMS
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":DMS RX=LonI:"-5"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.72564":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.72564":GRAD RX=LonI:"-6"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"45":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"45":DEG RX=LonI:"45"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf":DEG
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":RAD
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":RAD
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+
+
+;=======================================
+; roundi(Complex) --> Error24
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"6.2 i -7.6"

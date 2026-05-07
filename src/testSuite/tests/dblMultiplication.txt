@@ -1,0 +1,154 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                           DBL x                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=16
+Func: fnDblMultiply
+
+
+
+;=======================================
+; Short Integer x Short Integer --> 2x Short Integer
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2compl RY=ShoI:"1234#16" RX=ShoI:"1111#16"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=2compl RL=ShoI:"1111#16" RX=ShoI:"136#16" RY=ShoI:"A974#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2compl RY=ShoI:"12345#10" RX=ShoI:"11111#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=2compl RL=ShoI:"11111#10" RX=ShoI:"2092#10" RY=ShoI:"-1553#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2compl RY=ShoI:"123456#8" RX=ShoI:"111111#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=2compl RL=ShoI:"111111#8" RX=ShoI:"23020#8" RY=ShoI:"164036#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2compl RY=ShoI:"1234#16" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=2compl RL=ShoI:"12345#10" RX=ShoI:"36D#16" RY=ShoI:"CD94#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=2compl RY=ShoI:"12345#10" RX=ShoI:"123456#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=2compl RL=ShoI:"123456#8" RX=ShoI:"-4284#10" RY=ShoI:"-9922#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=2compl RY=ShoI:"123456#8" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=2compl RL=ShoI:"12345#10" RX=ShoI:"167504#8" RY=ShoI:"154476#8"
+
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=1compl RY=ShoI:"1234#16" RX=ShoI:"1111#16"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=1compl RL=ShoI:"1111#16" RX=ShoI:"136#16" RY=ShoI:"A974#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=1compl RY=ShoI:"12345#10" RX=ShoI:"11111#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=1compl RL=ShoI:"11111#10" RX=ShoI:"2092#10" RY=ShoI:"-1552#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=1compl RY=ShoI:"123456#8" RX=ShoI:"111111#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=1compl RL=ShoI:"111111#8" RX=ShoI:"23020#8" RY=ShoI:"20626#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=1compl RY=ShoI:"1234#16" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=1compl RL=ShoI:"12345#10" RX=ShoI:"36D#16" RY=ShoI:"CD94#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=1compl RY=ShoI:"12345#10" RX=ShoI:"123456#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=1compl RL=ShoI:"123456#8" RX=ShoI:"-4282#10" RY=ShoI:"2422#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=1compl RY=ShoI:"123456#8" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=1compl RL=ShoI:"12345#10" RX=ShoI:"167505#8" RY=ShoI:"4566#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=1compl RY=ShoI:"0#10" RX=ShoI:"-0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=1compl RL=ShoI:"-0#10" RX=ShoI:"-0#10" RY=ShoI:"-0#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=1compl RY=ShoI:"-0#10" RX=ShoI:"-0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=1compl RL=ShoI:"-0#10" RX=ShoI:"0#10" RY=ShoI:"0#10"
+
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=unsign RY=ShoI:"1234#16" RX=ShoI:"1111#16"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=unsign RL=ShoI:"1111#16" RX=ShoI:"136#16" RY=ShoI:"A974#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=unsign RY=ShoI:"12345#10" RX=ShoI:"11111#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=unsign RL=ShoI:"11111#10" RX=ShoI:"2092#10" RY=ShoI:"63983#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=unsign RY=ShoI:"123456#8" RX=ShoI:"111111#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=unsign RL=ShoI:"111111#8" RX=ShoI:"57607#8" RY=ShoI:"164036#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=unsign RY=ShoI:"1234#16" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=unsign RL=ShoI:"12345#10" RX=ShoI:"36D#16" RY=ShoI:"CD94#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=unsign RY=ShoI:"12345#10" RX=ShoI:"123456#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=unsign RL=ShoI:"123456#8" RX=ShoI:"8061#10" RY=ShoI:"55614#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=unsign RY=ShoI:"123456#8" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=unsign RL=ShoI:"12345#10" RX=ShoI:"17575#8" RY=ShoI:"154476#8"
+
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=signmt RY=ShoI:"1234#16" RX=ShoI:"1111#16"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=signmt RL=ShoI:"1111#16" RX=ShoI:"136#16" RY=ShoI:"A974#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=signmt RY=ShoI:"12345#10" RX=ShoI:"11111#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=signmt RL=ShoI:"11111#10" RX=ShoI:"2092#10" RY=ShoI:"-31215#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=signmt RY=ShoI:"123456#8" RX=ShoI:"111111#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=signmt RL=ShoI:"111111#8" RX=ShoI:"1314#8" RY=ShoI:"64036#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=signmt RY=ShoI:"1234#16" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 IM=signmt RL=ShoI:"12345#10" RX=ShoI:"36D#16" RY=ShoI:"CD94#16"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=signmt RY=ShoI:"12345#10" RX=ShoI:"123456#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=signmt RL=ShoI:"123456#8" RX=ShoI:"-1889#10" RY=ShoI:"22846#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=signmt RY=ShoI:"123456#8" RX=ShoI:"12345#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=signmt RL=ShoI:"12345#10" RX=ShoI:"103541#8" RY=ShoI:"54476#8"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=signmt RY=ShoI:"0#10" RX=ShoI:"-0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=signmt RL=ShoI:"-0#10" RX=ShoI:"-0#10" RY=ShoI:"0#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=1 IM=signmt RY=ShoI:"-0#10" RX=ShoI:"-0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=signmt RL=ShoI:"-0#10" RX=ShoI:"0#10" RY=ShoI:"0#10"
+
+
+
+;=======================================
+; Short Integer x Long Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=LonI:"123456"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"45247#8" RX=LonI:"123456"
+
+;=======================================
+; Long Integer x Short Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=LonI:"123456" RX=ShoI:"45247#8"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"123456" RX=ShoI:"45247#8"
+
+
+;=======================================
+; String x Short Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=ShoI:"ABCD#16"
+Out: EC=24 FL_ASLIFT=0 RY=Stri:"String test " RX=ShoI:"ABCD#16"
+
+;=======================================
+; Short Integer x String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=ShoI:"12540#9" RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RY=ShoI:"12540#9" RX=Stri:"String test"
+
+
+;=======================================
+; Short Integer x Real --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=Real:"123456"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"45247#8" RX=Real:"123456"
+
+;=======================================
+; Real x Short Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"123456" RX=ShoI:"45247#8"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"123456" RX=ShoI:"45247#8"
+
+
+;=======================================
+; Short Integer x Complex --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"12540#10" RX=Cplx:"123.456 i -6.78"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"12540#10" RX=Cplx:"123.456 i -6.78"
+
+;=======================================
+; Complex x Short Integer --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Cplx:"123456 i -546" RX=ShoI:"45247#8"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"123456 i -546" RX=ShoI:"45247#8"

@@ -1,0 +1,210 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        C(y, x)                          **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnCyx
+
+;************************************************************************************************************************************************************
+; Cyx(Long Integer, *) -> ...
+;************************************************************************************************************************************************************
+
+;=======================================
+; Cyx(Long Integer, Long Integer) --> Long Integer
+;=======================================
+In:  WS=64 FL_ASLIFT=1 RY=LonI:"50" RX=LonI:"10"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=LonI:"10272278170"
+
+In:  WS=64 FL_ASLIFT=1 RY=LonI:"1" RX=LonI:"0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+
+In:  WS=64 FL_ASLIFT=1 RY=LonI:"420" RX=LonI:"401"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"401" RX=LonI:"377717533517032712984357551694520"
+
+;=======================================
+; Cyx(Long Integer, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=0  RY=LonI:"123" RX=Real:"10.1234"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10.1234" RX=Real:"201072704373923.4739096196823350037818055137134893291394366004785341655204960288061925999663419519930"
+
+;=======================================
+; Cyx(Long Integer, Complex) --> Complex
+;=======================================
+In:  FL_ASLIFT=0  RY=LonI:"123" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"-1.5111063777708194381908975388348698315932237657467e+14 i +1.4822515271542713006068277599475670113961159507927e+14"
+
+;=======================================
+; Cyx(Long Integer, Short Integer) --> Long Integer
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=LonI:"10" RX=ShoI:"5#10"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=LonI:"252"
+
+;************************************************************************************************************************************************************
+; Cyx(Real, *) -> ...
+;************************************************************************************************************************************************************
+
+;=======================================
+; Cyx(Real, Long Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=0  RY=Real:"123.456" RX=LonI:"10"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=Real:"155895589329233.18013918116700909347968439549952"
+
+;=======================================
+; Cyx(Real, Real) --> Real
+;=======================================
+In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Real:"5.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.0" RX=Real:"252.0"
+
+In:  FL_ASLIFT=0  RY=Real:"123.456" RX=Real:"10.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10.0" RX=Real:"155895589329233.18013918116700909347968439549952"
+
+In:  FL_ASLIFT=0  RY=Real:"123.456" RX=Real:"10.1234"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10.1234" RX=Real:"209053723016892.3084681888261178629801650081089171462966863226787381848159654802582332313207355648994"
+
+;=======================================
+; Cyx(Real, Complex) --> Complex
+;=======================================
+In:  FL_ASLIFT=0  RY=Real:"123.0" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"-1.5111063777708194381908975388348698315932237657467e+14 i +1.4822515271542713006068277599475670113961159507927e+14"
+
+;=======================================
+; Cyx(Real, Short Integer) --> Real
+;=======================================
+In:  FL_ASLIFT=0  FL_CPXRES=0 RY=Real:"123.456" RX=ShoI:"10#10"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"10#10" RX=Real:"155895589329233.18013918116700909347968439549952"
+
+;************************************************************************************************************************************************************
+; Cyx(Complex, *) -> ...
+;************************************************************************************************************************************************************
+
+;=======================================
+; Cyx(Complex, Long Integer) --> Complex
+;=======================================
+In:  FL_ASLIFT=0 RY=Cplx:"123.456 i +1.0" RX=LonI:"10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"10" RX=Cplx:"1.55399444025459371904301257947290299906679802870970017e+14 i 1.31018346137267838145421075957094243912666074074074074e+13"
+
+;=======================================
+; Cyx(Complex, Real) --> Complex
+;=======================================
+In:  FL_ASLIFT=0  FL_CPXRES=1 RY=Cplx:"123.456 i +1.0" RX=Real:"10.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"10.0" RX=Cplx:"1.55399444025459371904301257947290299906679802870970017e+14 i 1.31018346137267838145421075957094243912666074074074074e+13"
+
+;=======================================
+; Cyx(Complex, Short Integer) --> Complex
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"123.456 i +1.0" RX=ShoI:"10#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"10#10" RX=Cplx:"1.55399444025459371904301257947290299906679802870970017e+14 i 1.31018346137267838145421075957094243912666074074074074e+13"
+
+;=======================================
+; Cyx(Complex, Complex) --> Complex
+;=======================================
+In:  FL_ASLIFT=0  FL_CPXRES=1 RY=Cplx:"123.456 i +1.0" RX=Cplx:"10.0 i 0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.0 i 0" RX=Cplx:"1.55399444025459371904301257947290299906679802870970017e+14 i 1.31018346137267838145421075957094243912666074074074074e+13"
+
+;************************************************************************************************************************************************************
+; Cyx(Short Integer, *) -> ...
+;************************************************************************************************************************************************************
+
+;=======================================
+; Cyx(Short Integer, Long Integer) --> Long Integer
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=LonI:"5"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"252"
+
+;=======================================
+; Cyx(Short Integer, Real) --> Real
+;=======================================
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"5.0"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.0" RX=Real:"252.0"
+
+;=======================================
+; Cyx(Short Integer, Complex) --> Complex
+;=======================================
+In:  FL_ASLIFT=0  FL_CPXRES=1 RY=ShoI:"123#10" RX=Cplx:"10.1234 i +1.0"
+Out: EC=0  FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"10.1234 i +1.0" RX=Cplx:"-1.5111063777708194381908975388348698315932237657467e+14 i +1.4822515271542713006068277599475670113961159507927e+14"
+
+;=======================================
+; Cyx(Short Integer, Short Integer) --> Short Integer
+;=======================================
+In:  WS=8 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 IM=2COMPL RY=ShoI:"20#10" RX=ShoI:"10#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=1 RL=ShoI:"10#10" RX=ShoI:"-76#10"
+
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=ShoI:"5#10"
+Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=ShoI:"252#10"
+
+;************************************************************************************************************************************************************
+; Errors
+;************************************************************************************************************************************************************
+
+;=======================================
+; Error case: ERROR_OUT_OF_RANGE
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"451" RX=LonI:"10"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"10" RX=LonI:"86768429390920242680"
+
+In:  FL_ASLIFT=0 RY=LonI:"10" RX=LonI:"451"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"10" RX=LonI:"451"
+
+In:  FL_ASLIFT=0 RY=ShoI:"21#10" RX=ShoI:"2#10"
+Out: EC=0 FL_ASLIFT=1 RL=ShoI:"2#10" RX=ShoI:"210#10"
+
+In:  FL_ASLIFT=0 RY=ShoI:"2#10" RX=ShoI:"21#10"
+Out: EC=8 FL_ASLIFT=0 RY=ShoI:"2#10" RX=ShoI:"21#10"
+
+In:  FL_ASLIFT=0  RY=LonI:"3" RX=Real:"5"
+Out: EC=8  FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"3" RX=Real:"5"
+
+In:  FL_ASLIFT=0  RY=Real:"3" RX=LonI:"5"
+Out: EC=8  FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"3" RX=LonI:"5"
+
+In:  FL_ASLIFT=0  RY=Real:"3" RX=Real:"5"
+Out: EC=8  FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"3" RX=Real:"5"
+
+In:  FL_ASLIFT=0  RY=Real:"3" RX=ShoI:"5#8"
+Out: EC=8  FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"3" RX=ShoI:"5#8"
+
+In:  FL_ASLIFT=0  RY=ShoI:"3#8" RX=Real:"5"
+Out: EC=8  FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"3#8" RX=Real:"5"
+
+;=======================================
+; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+;=======================================
+In:  FL_ASLIFT=0  RY=LonI:"10" RX=LonI:"450"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"10" RX=LonI:"450"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
+Out: EC=8 FL_ASLIFT=0 RY=ShoI:"10#10" RX=LonI:"450"
+
+In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"10" RX=ShoI:"20#10"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
+Out: EC=8 FL_ASLIFT=0 RY=ShoI:"10#10" RX=ShoI:"20#10"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Stri:"ABC"
+Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
+
+;=======================================
+; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"-50" RX=LonI:"-10"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"-50" RX=LonI:"-10"
+
+In:  FL_ASLIFT=0 RY=LonI:"-50" RX=LonI:"10"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"-50" RX=LonI:"10"
+
+In:  FL_ASLIFT=0 RY=LonI:"50" RX=LonI:"-10"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"50" RX=LonI:"-10"
+
+In:  FL_ASLIFT=0 RY=ShoI:"-50#10" RX=LonI:"-10"
+Out: EC=8 FL_ASLIFT=0 RY=ShoI:"-50#10" RX=LonI:"-10"
+
+In:  FL_ASLIFT=0 RY=LonI:"50" RX=ShoI:"-10#10"
+Out: EC=8 FL_ASLIFT=0 RY=LonI:"50" RX=ShoI:"-10#10"
+
+In:  FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
+Out: EC=8 FL_ASLIFT=0 RY=ShoI:"-50#10" RX=ShoI:"-10#10"
+

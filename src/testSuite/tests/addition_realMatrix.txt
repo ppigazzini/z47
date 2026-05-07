@@ -1,0 +1,104 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                  REAL MATRIX + ...                      **
+;**                  ... + REAL MATRIX                      **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnAdd
+
+
+
+;==================================================================
+; Real Matrix + Long Integer  see in addition_longInteger.txt
+; Real Matrix + Time          see in addition_time.txt
+; Real Matrix + Date          see in addition_date.txt
+; Real Matrix + String        see in addition_string.txt
+;==================================================================
+
+
+
+;=======================================
+; Real Matrix + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[7,8,9,10,11,12]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[7,8,9,10,11,12]" RX=ReMa:"M2,3[8,10,12,14,16,18]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M3,2[7,8,9,10,11,12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M3,2[7,8,9,10,11,12]"
+
+
+
+;=======================================
+; Real Matrix + Complex Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=CxMa:"M2,3[7i8,9i10,11i12,13i14,15i16,17i18]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[7i8,9i10,11i12,13i14,15i16,17i18]" RX=CxMa:"M2,3[8i8,11i10,14i12,17i14,20i16,23i18]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=CxMa:"M3,2[7i8,9i10,11i12,13i14,15i16,17i18]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=CxMa:"M3,2[7i8,9i10,11i12,13i14,15i16,17i18]"
+
+;=======================================
+; Complex Matrix + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=ReMa:"M2,3[13,14,15,16,17,18]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,3[13,14,15,16,17,18]" RX=CxMa:"M2,3[14i2,17i4,20i6,23i8,26i10,29i12]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=ReMa:"M3,2[13,14,15,16,17,18]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=ReMa:"M3,2[13,14,15,16,17,18]"
+
+
+
+;=======================================
+; Real Matrix + Short Integer
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ShoI:"111#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"111#2" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+;=======================================
+; Short Integer + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"111#2" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+
+
+;=======================================
+; Real Matrix + Real
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"7":Deg
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7":Deg RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"7":MultPi
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7":MultPi RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+;=======================================
+; Real + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"7" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"7":Deg RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Real:"7":MultPi RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[8,9,10,11,12,13]"
+
+
+
+;=======================================
+; Real Matrix + Complex
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=Cplx:"7i8"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"7i8" RX=CxMa:"M2,3[8i8,9i8,10i8,11i8,12i8,13i8]"
+
+;=======================================
+; Complex + Real Matrix
+;=======================================
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=Cplx:"7i8" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,3[1,2,3,4,5,6]" RX=CxMa:"M2,3[8i8,9i8,10i8,11i8,12i8,13i8]"

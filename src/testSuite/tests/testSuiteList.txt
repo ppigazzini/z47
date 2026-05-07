@@ -1,0 +1,411 @@
+; Everything after a ; is a comment and is simply ignored
+; A line beginning with
+;   Func: the function to test
+;   Desc: description of the test case corresponding the next 'out'
+;   Desc_prefix: text preceding the test case description (until the next 'Desc_prefix')
+;   Desc_suffix: text following the test case description (until the next 'Desc_suffix')
+;   In:   specifies the input parameters
+;   Out:  specifies the expected output values
+;
+;   FL_n  Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or name: 0 or 1
+;   IM    Integer Mode: 1COMPL, 2COMPL, UNSIGN or SIGNMT
+;   AM    Angular Mode: DEG, DMS, GRAD, RAD, MULTPI
+;   SS    Stack Size: 4 or 8
+;   WS    Word Size: 0 to 64 (0 is the same as 64)
+;   RMODE Rounding mode: 0 to 6
+;   SD    Significant digits: 0 to 34
+;   EC    Error Code: 0=no error or form 1 to 28
+;   CM    Complex Mode: RECT or POLAR
+;   GAP   gap setting
+;   JG    The day Gregorian calendar was introduced: in JDN (2299161 in Europe)
+;   PGM   RPN programm to run
+;   Rn    Register n from 0 to 211
+;   Rx    Register x in A,B,C,D,I,J,K,L,T,X,Y,Z
+;      type after equal sign: LonI is a  Long Integer
+;                             Stri is a  String
+;                             ShoI is a  Short Integer
+;                             Real is a  34 digit Real
+;                             Cmpx is a  34 digit Complex
+;                             Time is a  Time, Seconds or H:MM:SS
+;                             Date is a  Date, Y.MD, M.DY, or D.MY
+;                                              setting follows the system flags
+;                             ReMa is a  34 digit Real matrix
+;                             CxMa is a  34 digit Complex matrix
+;      after the colon there is the value of the register between double quotes
+;      after the Real value there must be a colon followed by the angular mode
+;      special value infinity for Real is "inf" (lower case inf is mandatory)
+;      special value NaN for Real is "NaN"
+;      The decimal separator is a . or a ,
+;      A complex is always in rectangular mode: 2 reals separated by an i example "1.2i-3.4"
+;      A short integer is represented as on the calculator: "12345#7"
+;      to put a \ or a " in a string use: \\ or \" example: "double quote=\" backslash=\\"
+;      \x followed by 2 hexadecimal digits inserts the hexadecimal char in the string
+;      A matrix is represented like "M2,2[1,2,3,4]" being  [ 1 2
+;                                                            3 4 ], or
+;                                   "M3,1[1,2,3]" being [ 1
+;                                                         2
+;                                                         3 ]
+;      If any elements are "any" or "?", such elements will not be checked.
+;
+; ... at the end of a line means the line continues on the following line
+;
+; All letters can be written upper or lower case but the function names are case sensitive
+;
+; No space around the equal sign is allowed
+; No space around the colon between the register data type and the value is allowed
+; No space around the colon between the register value and the angular mode is allowed
+;
+; The current function to test is called before each Out: line
+;
+; This file is only a list of files containing the tests to perform
+
+initialSettings
+
+;debug
+
+ulp
+neighb
+min
+max
+tvm
+
+changeSign
+sign
+
+not
+and
+nand
+nor
+or
+xnor
+xor
+mirror
+shift_rotate
+
+addition_longInteger
+addition_time
+addition_date
+addition_string
+addition_realMatrix
+addition_complexMatrix
+addition_shortInteger
+addition_real
+addition_complex
+
+subtraction_longInteger
+subtraction_time
+subtraction_date
+subtraction_string
+subtraction_realMatrix
+subtraction_complexMatrix
+subtraction_shortInteger
+subtraction_real
+subtraction_complex
+
+multiplication_longInteger
+multiplication_time
+multiplication_date
+multiplication_string
+multiplication_realMatrix
+multiplication_complexMatrix
+multiplication_shortInteger
+multiplication_real
+multiplication_complex
+
+division_longInteger
+division_time
+division_date
+division_string
+division_realMatrix
+division_complexMatrix
+division_shortInteger
+division_real
+division_complex
+
+invert
+
+power_longInteger
+power_time
+power_date
+power_string
+power_realMatrix
+power_complexMatrix
+power_shortInteger
+power_real
+power_complex
+
+parallel_longInteger
+parallel_time
+parallel_date
+parallel_string
+parallel_realMatrix
+parallel_complexMatrix
+parallel_shortInteger
+parallel_real
+parallel_complex
+
+prime
+
+specialResults
+
+;Answer to the Ultimate Question of Life
+ultimateQuestionOfLife
+
+rectangularToPolarB
+polarToRectangularB
+
+ceil
+floor
+
+roundB
+roundiB
+
+idiv
+idivr
+modulo
+remainder
+
+mulmod
+expmod
+
+dblDivision
+dblDivisionRemainder
+dblMultiplication
+
+mant
+expt
+
+exp
+expMOne
+10pow
+2pow
+minusOnePow
+log10
+log2
+ln
+lnPOne
+eulersFormula
+eulersphi
+
+arccos
+arcsin
+arctan
+atan2
+
+cos
+sin
+tan
+sinc
+sincpi
+
+arccosh
+arcsinh
+arctanh
+
+cosh
+sinh
+tanh
+
+;The standard calculator performance test arcsin(arccos(arctan(tan(cos(sin(9°))))))-9
+trig
+
+xfn
+
+erf
+erfc
+
+conjugate
+reToCx
+cxToRe
+
+square
+squareRoot
+sqrt1Px2
+cube
+cubeRoot
+xthRoot
+
+lnGamma
+gamma
+factorial
+gammaP
+gammaQ
+gammaXyLower
+gammaXyUpper
+
+cyx
+pyx
+
+fractionalPart
+integerPart
+integerPartLonginteger
+integerPartShortinteger
+realPart
+imaginaryPart
+swapRealImaginary
+
+gcd
+lcm
+
+magnitude
+argument
+unitVector
+
+slvc
+slvq
+agm
+
+decomp
+;             jmhold
+
+dot
+cross
+
+matrix
+
+percent
+percentMRR
+percentT
+percentSigma
+percentPlusMG
+deltaPercent
+
+logxy
+lnbeta
+beta
+ixyz
+fib
+gd
+invGd
+
+bessel_j
+bessel_y
+
+zeta
+bn
+bn_star
+
+hermite
+hermite_p
+laguerre
+laguerre_alpha
+legendre
+chebyshev_t
+chebyshev_u
+
+w_positive
+w_negative
+w_inverse
+
+jToDT
+dToJ
+dtToJ
+year
+month
+day
+wday
+dateTo
+toDate
+xToDate
+
+HRtoTM
+HMStoTM
+toReal
+
+;Distributions
+stdnormal_p
+stdnormal_l
+stdnormal_r
+stdnormal_i
+
+normal_p
+normal_l
+normal_r
+normal_i
+
+t_p
+t_l
+t_r
+t_i
+
+chi2_p
+chi2_l
+chi2_r
+chi2_i
+
+f_p
+f_l
+f_r
+f_i
+
+logNormal_p
+logNormal_l
+logNormal_r
+logNormal_i
+
+cauchy_p
+cauchy_l
+cauchy_r
+cauchy_i
+
+exponential_p
+exponential_l
+exponential_r
+exponential_i
+
+logistic_p
+logistic_l
+logistic_r
+logistic_i
+
+weibull_p
+weibull_l
+weibull_r
+weibull_i
+
+negBinomial_p
+negBinomial_l
+negBinomial_r
+negBinomial_i
+
+geometric_p
+geometric_l
+geometric_r
+geometric_i
+
+hypergeometric_p
+hypergeometric_l
+hypergeometric_r
+hypergeometric_i
+
+binomial_p
+binomial_l
+binomial_r
+binomial_i
+
+poisson_p
+poisson_l
+poisson_r
+poisson_i
+
+; Elliptic
+jacobi_sn
+jacobi_cn
+jacobi_dn
+jacobi_am
+
+ellipticK
+ellipticE
+ellipticPi
+ellipticFphi
+ellipticEphi
+jacobi_zeta
+jacobi_audit
+
+LINPOL
+
+tempConv
+unitConversion
+constants
+
+programs

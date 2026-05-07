@@ -1,0 +1,126 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        (-1) ^                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnM1Pow
+
+
+
+;=======================================
+; (-1) ^ Long Integer --> Long Integer
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"-1"
+
+
+
+;=======================================
+; (-1) ^ Time
+;=======================================
+
+
+
+;=======================================
+; (-1) ^ Date
+;=======================================
+
+
+
+;=======================================
+; (-1) ^ String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; (-1) ^ Real Matrix
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,1,2,3,4,5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0,1,2,3,4,5]" RX=ReMa:"M2,3[1,-1,1,-1,1,-1]"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0.5,1,2,3,4,5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,3[0.5,1,2,3,4,5]" RX=CxMa:"M2,3[0 i 1,-1,1,-1,1,-1]"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0,1,2,3,4,0.5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M2,3[0,1,2,3,4,0.5]" RX=CxMa:"M2,3[1,-1,1,-1,1,0 i 1]"
+
+
+;=======================================
+; (-1) ^ Complex Matrix
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0,1,2,3,4,5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,1,2,3,4,5]" RX=CxMa:"M2,3[1,-1,1,-1,1,-1]"
+
+
+
+;=======================================
+; (-1) ^ Short Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=0 IM=2COMPL RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=0 RL=ShoI:"5#7" RX=ShoI:"-1#7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_OVERFL=0 IM=UNSIGN RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 FL_OVERFL=1 RL=ShoI:"5#7" RX=ShoI:"1#7"
+
+
+
+;=======================================
+; (-1) ^ Real --> Real
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.0001" RX=Cplx:"0.99999995065197840042441821224160031783743565930759200070629582 i 0.000314159260191266569297934647928899365864605758502910728160169"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"1"
+
+In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"49"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"49" RX=Real:"-1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.99999"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"89.99999" RX=Cplx:"0.99999999950651977998611919032110786941921152542176915246070334 i -0.000031415926530730219604831480207530718229880620110200772784852"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Cplx:"-0.52078317497868269427753364795033079990848259301530268612571582 i -0.85368898590711755961678871656860234608842254266552094153395735"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Cplx:"-0.52078317497868269427753364795033079990848259301530268612571582 i 0.85368898590711755961678871656860234608842254266552094153395735"
+
+; NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"NaN"
+
+; Infinity
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf":MULTPI
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":MULTPI RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":RAD RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"NaN"
+
+
+
+;=======================================
+; (-1) ^ Complex --> Complex
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"18932934559.43801463394942199384139689232768522485717855351 i 13755582137.37415871329009406015795491763018737447506409652"

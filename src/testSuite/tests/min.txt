@@ -1,0 +1,567 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                          min                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnMin
+
+;=================================================
+; min(Long Integer, Long Integer) --> Long Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=LonI:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
+
+
+
+;=================================================
+; min(Long Integer, Time) --> Error24
+;=================================================
+
+;=================================================
+; min(Time, Long Integer) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Long Integer, Date) --> Error24
+;=================================================
+
+;=================================================
+; min(Date, Long Integer) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Long Integer, String) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Stri:"gdfhgfdh"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"2" RY=Stri:"gdfhgfdh"
+
+;=================================================
+; min(String, Long Integer) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"gdfhgfdh" RY=LonI:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"gdfhgfdh" RY=LonI:"2"
+
+
+
+;=================================================
+; min(Long Integer, Real Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Real Matrix, Long Integer) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Long Integer, Complex Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex Matrix, Long Integer) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Long Integer, Short Integer) --> Long Integer or Short Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=ShoI:"2#10"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5" RY=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=LonI:"-5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=ShoI:"4#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"8" RY=ShoI:"4#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"8" RX=ShoI:"4#8"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=ShoI:"3#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
+
+;=================================================
+; min(Short Integer, Long Integer) --> Short Integer or Long Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#10" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#10" RX=ShoI:"2#10"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#10" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=LonI:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"4#8" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"4#8" RX=LonI:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#8" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#8" RX=ShoI:"2#8"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#7" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#7" RX=ShoI:"3#7"
+
+
+
+;=================================================
+; min(Long Integer, Real) --> Long Integer or Real
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"4" RY=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4" RX=Real:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"3":DEG
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"3" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"3"
+
+;=================================================
+; min(Real, Long Integer) --> Real or Long Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=LonI:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0" RY=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=LonI:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5" RY=LonI:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=LonI:"4"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3"
+
+
+
+;=================================================
+; min(Long Integer, Complex) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Cplx:"3 i 2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=LonI:"2" RY=Cplx:"3 i 2"
+
+;=================================================
+; min(Complex, Long Integer) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"3 i 2" RY=LonI:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"3 i 2" RY=LonI:"2"
+
+
+
+;=================================================
+; min(Time, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Date) --> Error24
+;=================================================
+
+;=================================================
+; min(Date, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, String) --> Error24
+;=================================================
+
+;=================================================
+; min(String, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Real Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Real Matrix, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Complex Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex Matrix, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Short Integer) --> Error24
+;=================================================
+
+;=================================================
+; min(Short Integer, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Real) --> Error24
+;=================================================
+
+;=================================================
+; min(Real, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Time, Complex) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex, Time) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, String) --> Error24
+;=================================================
+
+;=================================================
+; min(String, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Real Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Real Matrix, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Complex Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex Matrix, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Short Integer) --> Error24
+;=================================================
+
+;=================================================
+; min(Short Integer, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Real) --> Error24
+;=================================================
+
+;=================================================
+; min(Real, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Date, Complex) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex, Date) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(String, String) --> string
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"3 +*/i 2" RY=Stri:"gfhjjy i 2juytjuy"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"3 +*/i 2" RX=Stri:"3 +*/i 2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"gfhjjy i 2juytjuy" RY=Stri:"3 +*/i 2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Stri:"gfhjjy i 2juytjuy" RX=Stri:"3 +*/i 2"
+
+
+
+;=================================================
+; min(String, Real Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Real Matrix, String) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(String, Complex Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex Matrix, String) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(String, Short Integer) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"gdfhgfdh" RY=ShoI:"2#5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"gdfhgfdh" RY=ShoI:"2#5"
+
+;=================================================
+; min(Short Integer, String) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#13" RY=Stri:"gdfhgfdh"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"2#13" RY=Stri:"gdfhgfdh"
+
+
+
+;=================================================
+; min(String, Real) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"gdfhgfdh" RY=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"gdfhgfdh" RY=Real:"2"
+
+;=================================================
+; min(Real, String) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2" RY=Stri:"gdfhgfdh"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2" RY=Stri:"gdfhgfdh"
+
+
+
+;=================================================
+; min(String, Complex) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Stri:"3g jiku 2" RY=Cplx:"3 i 2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"3g jiku 2" RY=Cplx:"3 i 2"
+
+;=================================================
+; min(Complex, String) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"3 i 2" RY=Stri:"gfhjjy i 2juytjuy"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"3 i 2" RY=Stri:"gfhjjy i 2juytjuy"
+
+
+
+;=================================================
+; min(Real Matrix, Real Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Real Matrix, Complex Matrix) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex Matrix, Real Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Real Matrix, Short Integer) --> Error24
+;=================================================
+
+;=================================================
+; min(Short Integer, Real Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Real Matrix, Real) --> Error24
+;=================================================
+
+;=================================================
+; min(Real, Real Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Real Matrix, Complex) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex, Real Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Complex Matrix, Complex Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Complex Matrix, Short Integer) --> Error24
+;=================================================
+
+;=================================================
+; min(Short Integer, Complex Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Complex Matrix, Real) --> Error24
+;=================================================
+
+;=================================================
+; min(Real, Complex Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Complex Matrix, Complex) --> Error24
+;=================================================
+
+;=================================================
+; min(Complex, Complex Matrix) --> Error24
+;=================================================
+
+
+
+;=================================================
+; min(Short Integer, Short Integer) --> Short Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#5" RY=ShoI:"2#11"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#5" RX=ShoI:"2#11"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#6" RY=ShoI:"4#12"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#6" RX=ShoI:"3#6"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#7" RY=ShoI:"3#13"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#7" RX=ShoI:"3#7"
+
+
+
+;=================================================
+; min(Short Integer, Real) --> Short Integer or Real
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#7" RY=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#7" RX=ShoI:"2#7"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7" RY=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#11" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"2#11" RX=ShoI:"2#11"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"A#11" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"A#11" RX=Real:"3":DEG
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"3#11" RY=Real:"3":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"3#11" RX=ShoI:"3#11"
+
+;=================================================
+; min(Real, Short Integer) --> Real or Short Integer
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=ShoI:"2#3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=ShoI:"2#3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-3" RY=ShoI:"2#3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-3" RX=Real:"-3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=ShoI:"4#5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"7" RY=ShoI:"4#5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"7" RX=ShoI:"4#5"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=ShoI:"3#6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"3"
+
+
+
+;=================================================
+; min(Short Integer, Complex) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"2#5" RY=Cplx:"3 i 2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"2#5" RY=Cplx:"3 i 2"
+
+;=================================================
+; min(Complex, Short Integer) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"3 i 2" RY=ShoI:"2#13"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"3 i 2" RY=ShoI:"2#13"
+
+
+
+;=================================================
+; min(Real, Real) --> Real
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3":DEG RY=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3":DEG RX=Real:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3" RY=Real:"2":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2":DEG
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"3":DEG RY=Real:"3":GRAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3":DEG RX=Real:"3":DEG
+
+
+
+;=================================================
+; min(Real, Complex) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2" RY=Cplx:"3 i 2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"2" RY=Cplx:"3 i 2"
+
+;=================================================
+; min(Complex, Real) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"3 i 2" RY=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"3 i 2" RY=Real:"2"
+
+
+
+;=================================================
+; min(Complex, Complex) --> Error24
+;=================================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"3 i 2" RY=Cplx:"3 i 2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Cplx:"3 i 2" RY=Cplx:"3 i 2"

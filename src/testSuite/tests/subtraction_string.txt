@@ -1,0 +1,108 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    STRING - ...                         **
+;**                    ... - STRING                         **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSubtract
+
+
+
+;==================================================================
+; String - Long Integer  see in subtraction_longInteger.txt
+; String - Real          see in subtraction_real.txt
+; String - Complex       see in subtraction_complex.txt
+; String - Time          see in subtraction_time.txt
+; String - Date          see in subtraction_date.txt
+;==================================================================
+
+
+
+;=======================================
+; String - String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Stri:"C47!"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47!"
+
+
+
+;=======================================
+; String - Real Matrix --> Error24
+;=======================================
+
+;=======================================
+; Real Matrix - String --> Error24
+;=======================================
+
+
+
+;=======================================
+; String - Complex Matrix --> Error24
+;=======================================
+
+;=======================================
+; Complex Matrix - String --> Error24
+;=======================================
+
+
+
+;=======================================
+; String - Short Integer --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=ShoI:"1234ABCD#16"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"1234ABCD#16"
+
+;=======================================
+; Short Integer - String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=ShoI:"12540#9" RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; String - Real --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.34"
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.34"
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.34":DEG
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.34":DEG
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":DMS
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.345678":DMS
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":GRAD
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.345678":GRAD
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":RAD
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.345678":RAD
+
+In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":MULTPI
+Out: EC=24 FL_ASLIFT=0 RX=Real:"-12.345678":MULTPI
+
+;=======================================
+; Real - String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Real:"12540" RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+In:  FL_ASLIFT=0 RY=Real:"12540":GRAD RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+
+
+
+;=======================================
+; String - Complex --> Error24
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Cplx:"-12.34 i 52"
+Out: EC=24 FL_ASLIFT=0 RX=Cplx:"-12.34 i 52"
+
+;=======================================
+; Complex - String --> Error24
+;=======================================
+In:  FL_ASLIFT=0 RY=Cplx:"12540 i 5" RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
