@@ -5061,21 +5061,29 @@ static guint ui_settle_timer = 0;
 
 // Helper to clear the active flag after UI settles
 static gboolean clear_ui_active_flag(gpointer data) {
-    ui_is_active = FALSE;
-    ui_settle_timer = 0;
-    return FALSE;
+  ui_is_active = FALSE;
+  ui_settle_timer = 0;
+  return FALSE;
 }
 
 // Single handler for all UI events
 static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
-    ui_is_active = TRUE;
-    
-    if(ui_settle_timer) {
-        g_source_remove(ui_settle_timer);
-    }
-    ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
-    
-    return FALSE;  // Let event continue processing
+  static gint64 first_call_time = 0;
+
+  // Record first call time
+  if(first_call_time == 0) {
+      first_call_time = g_get_monotonic_time();
+  }
+  // Ignore events in first 500ms after startup
+  if((g_get_monotonic_time() - first_call_time) < 500000) {
+      return FALSE;
+  }
+  ui_is_active = TRUE;
+  if(ui_settle_timer) {
+      g_source_remove(ui_settle_timer);
+  }
+  ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
+  return FALSE;
 }
 
 
