@@ -17,24 +17,25 @@ static bool_t percentTReal(real_t *xReal, real_t *yReal, real_t *rReal, realCont
    */
   if(realIsZero(xReal) && realIsZero(yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, rReal);
+      realSetNaN(rReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fnPercentT:", "cannot divide x=0 by y=0", NULL, NULL);
+        moreInfoOnError("In function percentTReal:", "cannot divide x=0 by y=0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
   }
   else if(realIsZero(yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy((realIsPositive(xReal) ? const_plusInfinity : const_minusInfinity), rReal);
+      realSetPlusInfinity(rReal);
+      rReal->bits |= DECNEG*realIsNegative(xReal);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function fnPercentT:", "cannot divide a real by y=0", NULL, NULL);
+        moreInfoOnError("In function percentTReal:", "cannot divide a real by y=0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
@@ -63,11 +64,13 @@ void fnPercentT(uint16_t unusedButMandatoryParameter) {
   real_t xReal, yReal;
   real_t rReal;
 
-  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal)) {
     return;
+  }
 
-  if(!saveLastX())
+  if(!saveLastX()) {
     return;
+  }
 
   if(percentTReal(&xReal, &yReal, &rReal, &ctxtReal39)) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);

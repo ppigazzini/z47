@@ -39,6 +39,11 @@ endif
 # DMCP arguments
 add_project_arguments('-DDMCP_BUILD', native : false, language : 'c')
 add_project_arguments('-DOS32BIT',    native : false, language : 'c')
+if get_option('DMCPVERSION') == 'dmcp'
+  if get_option('DMCP_PACKAGE') != ''
+    add_project_arguments('-DDMCP_PACKAGE='+get_option('DMCP_PACKAGE'), language : 'c')
+  endif
+endif
 
 git = find_program('git')
 run_command(git, 'submodule', 'update', '--init', '--recursive', meson.project_source_root(), check: false)

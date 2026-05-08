@@ -12,6 +12,7 @@ TO_QSPI const char supDigit[24] = STD_SUP_0 STD_SUP_1 STD_SUP_2 STD_SUP_3 STD_SU
 TO_QSPI const char baseChars[36] = "??" STD_BASE_1 STD_BASE_2 STD_BASE_3 STD_BASE_4 STD_BASE_5 STD_BASE_6 STD_BASE_7 STD_BASE_8 STD_BASE_9 STD_BASE_10 STD_BASE_11 STD_BASE_12 STD_BASE_13 STD_BASE_14 STD_BASE_15 STD_BASE_16;
 TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir;
 
+
 #if !defined(DMCP_BUILD)
   void listPrograms(void) {
     uint16_t i, numberOfBytesInStep, stepNumber = 0, programNumber = 0;
@@ -31,38 +32,46 @@ TO_QSPI const char angleChars[12] = STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_
       nextStep = findNextStep(step);
       if(nextStep) {
         numberOfBytesInStep = (uint16_t)(nextStep - step);
-        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1); fflush(stdout);
+        printf("\n%02d  %4d  ", programNumber, ++stepNumber - programList[programNumber - 1].step + 1);
+        fflush(stdout);
 
         for(i=0; i<numberOfBytesInStep; i++) {
-          printf(" %02x", *(step + i)); fflush(stdout);
+          printf(" %02x", *(step + i));
+          fflush(stdout);
           if(i == 3 && numberOfBytesInStep > 4) {
             decodeOneStep(step);
             stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
             if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-              printf("   "); fflush(stdout);
+              printf("   ");
+              fflush(stdout);
             }
 
-            printf("   %s", tmpString + 2000); fflush(stdout);
+            printf("   %s", tmpString + 2000);
+            fflush(stdout);
           }
 
           if(i%4 == 3 && i != numberOfBytesInStep - 1) {
-            printf("\n          "); fflush(stdout);
+            printf("\n          ");
+            fflush(stdout);
           }
         }
 
         if(numberOfBytesInStep <= 4) {
           for(i=1; i<=4 - ((numberOfBytesInStep - 1) % 4); i++) {
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
           decodeOneStep(step);
           stringToUtf8(tmpString, (uint8_t *)(tmpString + 2000));
 
           if(!checkOpCodeOfStep(step, ITM_LBL) && !isAtEndOfProgram(step)) { // Not LBL and not END
-            printf("   "); fflush(stdout);
+            printf("   ");
+            fflush(stdout);
           }
 
-          printf("%s", tmpString + 2000); fflush(stdout);
+          printf("%s", tmpString + 2000);
+          fflush(stdout);
         }
       }
 
@@ -144,8 +153,8 @@ static void getIndirectVariable(uint8_t *stringAddress, const char *op) {
 }
 
 
-static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, uint16_t tamMax) {
-  uint8_t opParam = *(uint8_t *)(paramAddress++);
+static void decodeOp(uint8_t *paramAddress, uint16_t opCode, const char *op, uint16_t paramMode, uint16_t tamMax) {
+uint8_t  opParam   = *(uint8_t *)(paramAddress++);
 
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
@@ -156,7 +165,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
         sprintf(tmpString, "%s %c", op, 'A' + (opParam - 100));
       }
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));;
+        sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -239,8 +248,8 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       if(opParam < FLAG_X) { // Global flag from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= FLAG_K) { // Lettered flag from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - FLAG_X].itemSoftmenuName);
+      else if(FLAG_X <= opParam && opParam <= FLAG_K) { // Lettered flag from X to K
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_X]);
       }
       else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
@@ -249,7 +258,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
       else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - FLAG_M].itemSoftmenuName);
+        sprintf(tmpString, "%s %c", op, registerFlagLetters[opParam - FLAG_M + (FLAG_K - FLAG_X + 1)]);
       }
       else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
@@ -345,7 +354,11 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
           getIndirectVariable(paramAddress, op);
         }
         else {
-          sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+          if(opCode == ITM_PNORM && (opParam * 256) + *(paramAddress) == pNorm_inf_RNORM) {
+            sprintf(tmpString, "%s %s", op, STD_INFINITY "\0");
+          } else {
+            sprintf(tmpString, "%s %u", op, (opParam * 256) + *(paramAddress));
+          }
         }
       }
       break;
@@ -392,9 +405,9 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
 
     case PARAM_KEYG_KEYX: {
       uint8_t *secondParam = findKey2ndParam(paramAddress - 3);
-      decodeOp(secondParam + 1, indexOfItems[*secondParam].itemCatalogName, PARAM_LABEL, indexOfItems[*secondParam].tamMinMax & TAM_MAX_MASK);
+      decodeOp(secondParam + 1, *secondParam, indexOfItems[*secondParam].itemCatalogName, PARAM_LABEL, indexOfItems[*secondParam].tamMinMax & TAM_MAX_MASK);
       xcopy(tmpString + TMP_STR_LENGTH / 2, tmpString, stringByteLength(tmpString) + 1);
-      decodeOp(paramAddress - 1, op, PARAM_NUMBER_8, 21);
+      decodeOp(paramAddress - 1, *secondParam, op, PARAM_NUMBER_8, 21);
       tmpString[stringByteLength(tmpString) + 1] = 0;
       tmpString[stringByteLength(tmpString)    ] = ' ';
       xcopy(tmpString + stringByteLength(tmpString), tmpString + TMP_STR_LENGTH / 2, stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1);
@@ -465,12 +478,16 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
     else {
       if(!GROUPRIGHT_DISABLED && digit < -1 && (abs(digit) % GROUPWIDTH_RIGHT) == 1) {
         *(strPtr++) = gapChar1Right[0];
-        if(gapChar1Right[1] !=1) *(strPtr++) = gapChar1Right[1];
+        if(gapChar1Right[1] !=1) {
+          *(strPtr++) = gapChar1Right[1];
+        }
       }
       *(strPtr++) = *(srcStr++);
       if(!GROUPLEFT_DISABLED && digit > 1 && (digit % GROUPWIDTH_LEFT) == 1) {
         *(strPtr++) = gapChar1Left[0];
-        if(gapChar1Left[1]!=1) *(strPtr++) = gapChar1Left[1];
+        if(gapChar1Left[1]!=1) {
+          *(strPtr++) = gapChar1Left[1];
+        }
       }
     }
     --digit;
@@ -613,10 +630,10 @@ static void decodeLiteral(uint8_t *literalAddress) {
       getStringLabelOrVariableName(literalAddress);
       _decodeNumeral(tmpString, tmpStringLabelOrVariableName, false, NULL, NULL);
        switch(*(literalAddress - 1)) {
-          case STRING_ANGLE_RADIAN: strcat(tmpString,STD_SUP_r); break;
-          case STRING_ANGLE_GRAD:   strcat(tmpString,STD_SUP_g); break;
-          case STRING_ANGLE_DEGREE: strcat(tmpString,STD_DEGREE);break;
-          case STRING_ANGLE_MULTPI: strcat(tmpString,STD_SUP_pir); break;
+          case STRING_ANGLE_RADIAN: strcat(tmpString, STD_SUP_r);   break;
+          case STRING_ANGLE_GRAD:   strcat(tmpString, STD_SUP_g);   break;
+          case STRING_ANGLE_DEGREE: strcat(tmpString, STD_DEGREE);  break;
+          case STRING_ANGLE_MULTPI: strcat(tmpString, STD_SUP_pir); break;
           default: break;
         }
       break;
@@ -805,7 +822,6 @@ static void decodeRem(uint8_t *literalAddress) {
 }
 
 
-
 static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
   uint16_t op = *(step++);
   if(op & 0x80) {
@@ -823,16 +839,31 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
         if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
-          sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemCatalogName);
-          strcat(nameOp," ");
-          strcat(nameOp,indexOfItems[op].itemSoftmenuName);
+          sprintf(nameOp, "%2i", op - FIRST_CONSTANT + 1);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemCatalogName);
+          strcat(nameOp, " ");
+          strcat(nameOp, indexOfItems[op].itemSoftmenuName);
         }
-        if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
-        else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
-        if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
-        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
+        if(op == ITM_op_j) {
+          sprintf(nameOp, "op_%s", COMPLEX_UNIT);
+        }
+        else if(op == ITM_op_j_pol) {
+          sprintf(nameOp, "op_%s" STD_SUB_SUN, COMPLEX_UNIT);
+        }
+        if(nameOp[0] == 0) {
+          if(textVersion == MODE_ALIAS) {
+          #if defined(IR_PRINTING)
+            nameAlias(op, nameOp);
+          #endif //IR_PRINTING
+          }
+          else {
+            strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
+          }
+        }
+        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
+          expandConversionName(nameOp);
+        }
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
       }
@@ -856,16 +887,24 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
 
       default: {
         if(op == ITM_INTEGRAL) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
         }
-        else
-        if(op == ITM_INTEGRAL_YX) {
-          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
+        else if(op == ITM_INTEGRAL_YX) {
+          strcpy(nameOp, indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
-          if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
+          if(nameOp[0] == 0) {
+            if(textVersion == MODE_ALIAS) {
+            #if defined(IR_PRINTING)
+              nameAlias(op, nameOp);
+            #endif //IR_PRINTING
+            }
+            else {
+              strcpy(nameOp, indexOfItems[op].itemCatalogName);
+            }
+          }
         }
-        decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+        decodeOp(step, op, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       }
     }
   }
@@ -877,4 +916,8 @@ void decodeOneStep(uint8_t *step) {
 
 void decodeOneStep_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_RTF);
+}
+
+void decodeOneStep_ALIAS(uint8_t *step) {
+  _decodeOneStep(step, MODE_ALIAS);
 }

@@ -25,7 +25,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
       realSetPositiveSign(&x);
       WP34S_BesselJ(&n, &x, &r, &ctxtReal75);
       WP34S_Mod(&n, const_2, &a, &ctxtReal75);
-      realMultiply(&a, const_pi, &a, &ctxtReal75);
+      realMultiply(&a, const39_pi, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&r, &a, REGISTER_X);
@@ -60,11 +60,11 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       realSetPositiveSign(&x);
       WP34S_BesselY(&n, &x, &r, &ctxtReal75);
       WP34S_Mod(&n, const_2, &a, &ctxtReal75);
-      realMultiply(&a, const_pi, &b, &ctxtReal75);
+      realMultiply(&a, const39_pi, &b, &ctxtReal75);
       realMinus(&b, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
 
-      WP34S_Cvt2RadSinCosTan(&b, amRadian, NULL, &b, NULL, &ctxtReal75);
+      C47_WP34S_Cvt2RadSinCosTan(&b, amRadian, NULL, &b, NULL, &ctxtReal75);
       WP34S_BesselJ(&n, &x, &c, &ctxtReal75);
       realMultiply(&b, &c, &b, &ctxtReal75);
       realAdd(&b, &b, &b, &ctxtReal75);
@@ -95,34 +95,33 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
 
   realMultiply(alpha, const_2, &chi, realContext);
   realAdd(&chi, const_1, &chi, realContext);
-  realMultiply(&chi, const_piOn4, &chi, realContext);
+  realMultiply(&chi, const39_piOn4, &chi, realContext);
   mod2Pi(x, &tmp, realContext);
   realSubtract(&tmp, &chi, &tmp, realContext);
   mod2Pi(&tmp, &chi, realContext);
 
   if(is_y) {
-    WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, NULL, realContext);
   }
   else {
-    WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, NULL, realContext);
   }
 
   realMultiply(alpha, alpha, &mu, realContext);
   realMultiply(&mu, const_4, &mu, realContext);
 
-  realCopy(const_1, &p);
+  realSetOne(&p);
   realSubtract(&mu, const_1, &q, realContext);
   realMultiply(x, const_8, &z8, realContext);
   realDivide(&q, &z8, &q, realContext);
-  realCopy(const_1, &k21);
-  realCopy(&q, &nm), realCopy(const_1, &qq);
+  realSetOne(&k21);
+  realCopy(&q, &nm);
+  realSetOne(&qq);
   for(k = 2; k < 1000; ++k) {
-    #if !defined(TESTSUITE_BUILD)
-      int32_t loop = k;
-      if(monitorExit(&loop, "Iter: ")) {
-        break;
-      }
-    #endif //!TESTSUITE_BUILD
+    int32_t loop = k;
+    if(monitorExit(&loop, "Iter: ")) {
+      break;
+    }
 
     if(k % 2 == 0) {
       realCopy(&p, &pp);
@@ -146,7 +145,8 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
       realSubtract(k % 2 ? &q : &p, &nm, k % 2 ? &q : &p, realContext);
     }
 
-    realCopy(const_1, &tmp), tmp.exponent -= 73;
+    realSetOne(&tmp);
+    tmp.exponent -= 73;
     if(WP34S_RelativeError(&p, &pp, &tmp, realContext) && WP34S_RelativeError(&q, &qq, &tmp, realContext)) {
       break;
     }
@@ -161,7 +161,7 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
     realSubtract(&p, &q, &p, realContext);
   }
 
-  realDivide(const_2, const_pi, &q, realContext);
+  realDivide(const_2, const39_pi, &q, realContext);
   realDivide(&q, x, &q, realContext);
   realSquareRoot(&q, &q, realContext);
   realMultiply(&p, &q, res, realContext);
@@ -171,13 +171,15 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
 
 // Polynomial U[k] (based on Abramowitz and Stegun, p.366)
 #define NUMBER_OF_COEFF   100
-#define COEFF_BUFFER_SIZE_IN_BLOCKS (REAL_SIZE_IN_BLOCKS * NUMBER_OF_COEFF)
+#define COEFF_BUFFER_SIZE_IN_BLOCKS (REAL_SIZE_IN_BLOCKS(75) * NUMBER_OF_COEFF)
 static void u_k(uint32_t k, const real_t *coeff/*array*/, const real_t *t_r, const real_t *t_i, real_t *res_r, real_t *res_i, realContext_t *realContext) {
   real_t t_n_r, t_n_i, tmp_r, tmp_i;
   uint32_t i;
 
-  realCopy(t_r, &t_n_r), realCopy(t_i, &t_n_i);
-  realCopy(const_0, res_r), realCopy(const_0, res_i);
+  realCopy(t_r, &t_n_r);
+  realCopy(t_i, &t_n_i);
+  realSetZero(res_r);
+  realSetZero(res_i);
   for(i = 1; i < k; ++i) {
     mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
   }
@@ -201,21 +203,22 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
   if((coeff_current = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
     if((coeff_deriv = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
       if((coeff_next = allocC47Blocks(COEFF_BUFFER_SIZE_IN_BLOCKS))) {
-        realCopy(const_0, &prev_r), realCopy(const_0, &prev_i);
-        realCopy(even ? const_1 : const_0, res_r), realCopy(const_0, res_i);
+        realSetZero(&prev_r);
+        realSetZero(&prev_i);
+        realCopy(even ? const_1 : const_0, res_r);
+        realSetZero(res_i);
         realCopy(nu, &nu_k);
 
-        int32ToReal(24, &tmp);
-        realDivide(const_3, &tmp, &coeff_current[0], realContext);
-        realDivide(const_5, &tmp, &coeff_current[1], realContext);
+        realDivide(const_3, const_24, &coeff_current[0], realContext);
+        realDivide(const_5, const_24, &coeff_current[1], realContext);
         realChangeSign(&coeff_current[1]);
         for(i = 2; i < NUMBER_OF_COEFF; ++i) {
-          realZero(&coeff_current[i]);
+          realSetZero(&coeff_current[i]);
         }
 
         for(i = 0; i < NUMBER_OF_COEFF; ++i) {
-          realZero(&coeff_deriv[i]);
-          realZero(&coeff_next[i]);
+          realSetZero(&coeff_deriv[i]);
+          realSetZero(&coeff_next[i]);
         }
 
         for(i = 1; i < NUMBER_OF_COEFF; ++i) {
@@ -224,10 +227,13 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
            divComplexComplex(&tmp, &tmp2, &nu_k, const_0, &tmp, &tmp2, realContext);
            if((!realIsSpecial(&tmp)) && !realIsSpecial(&tmp2)) {
              int32ToReal((i % 2 == 1) ? odd : even, &coeff);
-             realMultiply(&tmp, &coeff, &tmp, realContext), realMultiply(&tmp2, &coeff, &tmp2, realContext);
-             realAdd(res_r, &tmp, res_r, realContext), realAdd(res_i, &tmp2, res_i, realContext);
+             realMultiply(&tmp, &coeff, &tmp, realContext);
+             realMultiply(&tmp2, &coeff, &tmp2, realContext);
+             realAdd(res_r, &tmp, res_r, realContext);
+             realAdd(res_i, &tmp2, res_i, realContext);
            }
-           realCopy(const_1, &tmp), tmp.exponent -= 73;
+           realSetOne(&tmp);
+           tmp.exponent -= 73;
            if(WP34S_RelativeError(res_r, &prev_r, &tmp, realContext) && WP34S_RelativeError(res_i, &prev_i, &tmp, realContext)) {
              break;
            }
@@ -336,7 +342,7 @@ static void bessel_asymptotic_large_order_hyp(const real_t *nu, const real_t *x,
   }
 
   // coefficient denominator
-  realMultiply(is_y ? const_piOn2_75 : const_2pi_75, nu, &tmp, realContext);
+  realMultiply(is_y ? const75_piOn2 : const75_2pi, nu, &tmp, realContext);
   realMultiply(&tmp, &tanh_alpha, &tmp, realContext);
   realSquareRoot(&tmp, &tmp, realContext);
   realDivide(&coefficient, &tmp, &coefficient, realContext);
@@ -351,7 +357,7 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
 
   // nu * sec(beta) = nu / cos(beta) = x
   realDivide(nu, x, &cos_beta, realContext);
-  WP34S_Acos(&cos_beta, &beta, realContext);
+  C47_WP34S_Acos(&cos_beta, &beta, realContext);
 
   realMultiply(&cos_beta, &cos_beta, &sin_beta, realContext); // cos²β
   realSubtract(const_1, &sin_beta, &sin_beta, realContext); // sin²β
@@ -359,7 +365,7 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
   realDivide(&sin_beta, &cos_beta, &tan_beta, realContext); // tanβ
 
   // coefficient
-  realDivide(const_2, const_pi, &coefficient, realContext);
+  realDivide(const_2, const39_pi, &coefficient, realContext);
   realDivide(&coefficient, nu, &coefficient, realContext);
   realDivide(&coefficient, &tan_beta, &coefficient, realContext);
   realSquareRoot(&coefficient, &coefficient, realContext);
@@ -367,13 +373,13 @@ static void bessel_asymptotic_large_order_trig(const real_t *nu, const real_t *x
   // psi = nu * (tan(beta) - beta) - pi/4
   realSubtract(&tan_beta, &beta, &psi, realContext);
   realMultiply(&psi, nu, &psi, realContext);
-  realSubtract(&psi, const_piOn4, &psi, realContext);
+  realSubtract(&psi, const39_piOn4, &psi, realContext);
   mod2Pi(&psi, &psi, realContext);
   if(is_y) {
-    WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, NULL, realContext);
   }
   else {
-    WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, NULL, realContext);
+    C47_WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, NULL, realContext);
   }
 
   realDivide(const_1, &tan_beta, &cot_beta, realContext);
@@ -404,9 +410,7 @@ static void plusMinus(bool_t subtracting, const real_t *a, const real_t *b, real
 }
 static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t descending, real_t *res, realContext_t *realContext) {
   real_t jnx, jn_1x, alpha, floor_nu;
-  #if !defined(TESTSUITE_BUILD)
-    int32_t loop = 0;
-  #endif //!TESTSUITE_BUILD
+  int32_t loop = 0;
 
   realToIntegralValue(nu, &floor_nu, DEC_ROUND_FLOOR, realContext);
   plusMinus(!descending, nu, &floor_nu, &alpha, realContext);
@@ -433,12 +437,10 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
     realCopy(&jnx, &jn_1x);
     realCopy(res, &jnx);
 
-    #if !defined(TESTSUITE_BUILD)
-      if(monitorExit(&loop, "Iter: ")) {
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-      }
-    #endif //!TESTSUITE_BUILD
+    if(monitorExit(&loop, "Iter: ")) {
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
   }
 }
 
@@ -447,8 +449,8 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
 static void digamma(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsAnInteger(x) && realCompareGreaterThan(x, const_0)) {
     real_t a, ar;
-    realMinus(const_gammaEM, res, realContext);
-    realCopy(const_1, &a);
+    realMinus(const39_gammaEM, res, realContext);
+    realSetOne(&a);
     while(realCompareLessThan(&a, x)) {
       realDivide(const_1, &a, &ar, realContext);
       realAdd(res, &ar, res, realContext);
@@ -456,7 +458,7 @@ static void digamma(const real_t *x, real_t *res, realContext_t *realContext) {
     }
   }
   else {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
 }
 
@@ -478,15 +480,13 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
   realDivide(&r, &q, &term, realContext);
   realCopy(&term, res);                        // first term in series
 
-  realZero(&m);
+  realSetZero(&m);
 
   for(n=0; n<1000; n++) {
-    #if !defined(TESTSUITE_BUILD)
-      int32_t loop = n;
-      if(monitorExit(&loop, "Iter: ")) {
-        break;
-      }
-    #endif //!TESTSUITE_BUILD
+    int32_t loop = n;
+    if(monitorExit(&loop, "Iter: ")) {
+      break;
+    }
 
     realMultiply(&term, &x2on4, &q, realContext);
     realAdd(&m, const_1, &m, realContext);     // m = m+1
@@ -502,7 +502,7 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
     }
     realCopy(&q, res);
   }
-  realCopy(const_NaN, res);
+  realSetNaN(res);
   return;
 }
 #endif // !SAVE_SPACE_DM42_12BESSEL
@@ -512,15 +512,15 @@ void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContex
   real_t a, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   if(realIsZero(x)) {
     if(realIsZero(alpha)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
-    realZero(res);
+    realSetZero(res);
     return;
   }
   realCopy(alpha, &a);
@@ -558,11 +558,9 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   real_t xon2, xon2n, x2on4;
   real_t k, npk, t, u, v, s, p, nf, absn;
   int32_t i, in, n_neg;
-  #if !defined(TESTSUITE_BUILD)
-    int32_t loop = 0;
-  #endif //!TESTSUITE_BUILD
+  int32_t loop = 0;
 
-  realDivide(const__1, const_pi, &factor, realContext);
+  realDivide(const__1, const39_pi, &factor, realContext);
 
   if(realIsNegative(n)) {
     realCopyAbs(n, &absn);
@@ -572,19 +570,19 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   else {
     n_neg = 0;
   }
-  in = realToInt32C47(n);
+  in = realToInt32C47(n, NULL);
 
-  realMultiply(x, const_1on2, &xon2, realContext);      // xon2 = x/2
+  realMultiply(x, const_1on2, &xon2, realContext); // xon2 = x/2
   realPower(&xon2, n, &xon2n, realContext);        // xon2n = (x/2)^n
   realMultiply(&xon2, &xon2, &x2on4, realContext); // x2on4 = +/- x^2/4
 
   if(in > 0) {
     realSubtract(n, const_1, &v, realContext);     // v = n-k-1 = n-1
-    realZero(&k);
+    realSetZero(&k);
     WP34S_Gamma(n, &p, realContext);               // p = (n-1)!
     realCopy(&p, &s);
     realMultiply(&p, n, &nf, realContext);         // nf = n!  (for later)
-    realCopy(const_1, &u);
+    realSetOne(&u);
     for(i = 1; i < in; i++) {
       realDivide(&p, &v, &t, realContext);
       realSubtract(&v, const_1, &v, realContext);
@@ -597,24 +595,24 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
     realDivide(&t, &xon2n, res, realContext);
   }
   else {
-    realZero(res);
-    realCopy(const_1, &nf);
+    realSetZero(res);
+    realSetOne(&nf);
   }
 
   WP34S_BesselJ(n, x, &u, realContext);
-  realDivide(&u, const_piOn2_75, &t, realContext);
+  realDivide(&u, const75_piOn2, &t, realContext);
 
   WP34S_Ln(&xon2, &u, realContext);
   realMultiply(&u, &t, &v, realContext);
   realAdd(res, &v, res, realContext);
 
   realChangeSign(&x2on4);
-  realAdd(n, const_1, &t, realContext);            // t = n+1
-  digamma(&t, &u, realContext);                    // u = Psi(n+1)
-  realSubtract(&u, const_egamma, &v, realContext); // v = psi(k+1) + psi(n+k+1)
-  realZero(&k);
+  realAdd(n, const_1, &t, realContext);              // t = n+1
+  digamma(&t, &u, realContext);                      // u = Psi(n+1)
+  realSubtract(&u, const39_egamma, &v, realContext); // v = psi(k+1) + psi(n+k+1)
+  realSetZero(&k);
   realCopy(n, &npk);
-  realDivide(const_1, &nf, &p, realContext);       // p = (x^2/4)^k/(k!(n+k)!)
+  realDivide(const_1, &nf, &p, realContext);         // p = (x^2/4)^k/(k!(n+k)!)
   realMultiply(&v, &p, &s, realContext);
 
   for(i = 0; i < 1000; i++) {
@@ -636,16 +634,14 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
     }
     realCopy(&u, &s);
 
-    #if !defined(TESTSUITE_BUILD)
-      if(monitorExit(&loop, "Iter: ")) {
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-      }
-    #endif //!TESTSUITE_BUILD
+    if(monitorExit(&loop, "Iter: ")) {
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
   }
   realMultiply(&s, &xon2n, &t, realContext);
 
-  realDivide(&t, const_pi, &u, realContext);
+  realDivide(&t, const39_pi, &u, realContext);
 
   realSubtract(res, &u, res, realContext);
   if(n_neg) {
@@ -659,15 +655,15 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
   real_t a, t, u, s, c, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   else if(realIsZero(x)) {
-    realCopy(const_minusInfinity, res);
+    realSetMinusInfinity(res);
     return;
   }
   else if(realIsInfinite(alpha) || realIsNegative(x)) {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
   }
   realCopy(alpha, &a);
@@ -680,8 +676,8 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
   realMultiply(&a, &gamma, &gamma, realContext);
   if(!realIsAnInteger(&a)) {
     WP34S_Mod(&a, const_2, &t, realContext);
-    realMultiply(&t, const_pi, &t, realContext);
-    WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, NULL, realContext);
+    realMultiply(&t, const39_pi, &t, realContext);
+    C47_WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, NULL, realContext);
     WP34S_BesselJ(&a, x, &t, realContext);
     realMultiply(&t, &c, &u, realContext);
     realMinus(&a, &c, realContext);

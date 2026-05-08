@@ -9,11 +9,10 @@
 #if !defined(STATUSBAR_H)
   #define STATUSBAR_H
 
-   #if defined (PC_BUILD)
+   #if defined(PC_BUILD)
     void mockupSB(void);
   #endif //PC_BUILD
 
-  #if !defined(TESTSUITE_BUILD)
   /**
    * Refreshes the status bar.
    */
@@ -118,5 +117,4 @@
 
 //  void showHideASB            (void);       //JM
 
-  #endif // !TESTSUITE_BUILD
 #endif // !STATUSBAR_H

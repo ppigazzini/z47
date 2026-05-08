@@ -11,7 +11,7 @@ void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
   // sin(a + ib) = sin(a)*cosh(b) + i*cos(a)*sinh(b)
   real_t sina, cosa, sinhb, coshb;
 
-  WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
+  C47_WP34S_Cvt2RadSinCosTan(real, amRadian, &sina, &cosa, NULL, realContext);
   WP34S_SinhCosh(imag, &sinhb, &coshb, realContext);
 
   realMultiply(&sina, &coshb, resReal, realContext);
@@ -19,31 +19,55 @@ void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
 }
 
 
-static void sinReal(void) {
+void sinCosReal(trigType_t trigType) {
   real_t x;
   const real_t *r = &x;
   angularMode_t xAngularMode;
 
-  if(!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
+  if(!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode, ifLongIntegerDoAngleReduction)) {
     return;
-  if(realIsSpecial(&x))
+  }
+
+  if(realIsSpecial(&x)) {
     r = const_NaN;
-  else
-    WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, &x, NULL, NULL, &ctxtReal75);
+  }
+  else {
+    if(trigType == trigSin) {
+      C47_WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, &x,   NULL, NULL, &ctxtReal75);
+    }
+    else {
+      C47_WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, NULL, &x,   NULL, &ctxtReal75);
+    }
+  }
   convertRealToResultRegister(r, REGISTER_X, amNone);
 }
 
 
-
-static void sinCplx(void) {
+void sinCosCplx(trigType_t trigType) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
 
-  sinComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
+  if(trigType == trigSin) {
+    sinComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
+  }
+  else {
+    cosComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
+  }
 
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+}
+
+
+static void sinReal(void) {
+  sinCosReal(trigSin);
+}
+
+
+static void sinCplx(void) {
+  sinCosCplx(trigSin);
 }
 
 

@@ -7,6 +7,8 @@
 #if !defined(SINH_H)
   #define SINH_H
 
-  void fnSinh   (uint16_t unusedButMandatoryParameter);
+  void sinhCoshReal(trigType_t trigType);
+  void sinhCoshCplx(trigType_t trigType);
+  void fnSinh      (uint16_t unusedButMandatoryParameter);
 
 #endif // !SINH_H

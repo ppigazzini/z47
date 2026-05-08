@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17B)
   void fnT_P   (uint16_t unusedButMandatoryParameter){}
   void fnT_L   (uint16_t unusedButMandatoryParameter){}
   void fnT_R   (uint16_t unusedButMandatoryParameter){}
@@ -19,12 +19,13 @@
 
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i))
-        goto err;
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i)) {
+      goto err;
+    }
 
     if(realIsZero(i) || realIsNegative(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -124,7 +125,7 @@
     realMultiply(&p, &i, &p, realContext);
     realSubtract(&q, &p, &p, realContext);
     realExp(&p, &p, realContext);
-    realMultiply(const_pi, nu, &q, realContext);
+    realMultiply(const39_pi, nu, &q, realContext);
     realSquareRoot(&q, &q, realContext);
     realDivide(&p, &q, res, realContext);
   }
@@ -176,7 +177,7 @@
   void WP34S_Cdfu_T(const real_t *x, const real_t *nu, real_t *res, realContext_t *realContext) {
     real_t xn;
 
-    realMultiply(x, const__1, &xn, realContext);
+    realMinus(x, &xn, realContext);
     cdf_t(&xn, nu, res, realContext);
   }
 
@@ -196,9 +197,8 @@
     realCopy(&p, &reg0);
     realSquareRoot(nu, &p, realContext);
     loops = 7;
-    int32ToReal(7, &q);
-    realAdd(&p, &q, &p, realContext);
-    realMultiply(nu, const__1, &q, realContext);
+    realAdd(&p, const_7, &p, realContext);
+    realMinus(nu, &q, realContext);
     realPower(&p, &q, &p, realContext);
     realMultiply(&p, const_1on4, &a, realContext);
     if(realCompareLessEqual(&reg0, &a)) {
@@ -206,7 +206,7 @@
       realMultiply(&reg0, &p, &q, realContext);
       realSubtract(const_1on4, const_1, &r, realContext);
       realAdd(&p, &r, &p, realContext);
-      realDivide(const_pi, &p, &p, realContext);
+      realDivide(const39_pi, &p, &p, realContext);
       realSquareRoot(&p, &p, realContext);
       realMultiply(&p, &q, &q, realContext);
       realDivide(const_1, nu, &r, realContext);
@@ -217,7 +217,7 @@
     else { // qf_t_tail
       WP34S_qf_q_est(&reg0, &p, NULL, realContext);
       realMultiply(&p, &p, &p, realContext);
-      realMultiply(const_eE, nu, &r, realContext);
+      realMultiply(const39_eE, nu, &r, realContext);
       realDivide(const_1, &r, &r, realContext);
       realAdd(&r, const_1, &r, realContext);
       realMultiply(&p, &r, &p, realContext);
@@ -258,7 +258,8 @@
       realChangeSign(&q);
       realAdd(&p, &q, &q, realContext);
       //SHOW_CONVERGENCE
-      realCopy(const_1, &r); r.exponent -= 32 /*14*/;
+      realSetOne(&r);
+      r.exponent -= 32 /*14*/;
       if(WP34S_RelativeError(&q, &p, &r, realContext)) {
         realCopy(&q, res);
         goto qf_t_exit;
@@ -266,7 +267,7 @@
       realCopy(&q, &p);
     } while(--loops > 0);
 
-    realCopy(const_NaN, res); // ERR 20
+    realSetNaN(res); // ERR 20
 
     qf_t_exit:
     if(neg) {
@@ -274,5 +275,5 @@
     }
   }
 
-#endif //SAVE_SPACE_DM42_15
+#endif //SAVE_SPACE_DM42_17B
 

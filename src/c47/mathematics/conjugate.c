@@ -11,9 +11,11 @@ static void conjRema(void) {
   complex34Matrix_t cMat;
 
   convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
-  if(getSystemFlag(FLAG_SPCRES))
-    for (uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i)
+  if(getSystemFlag(FLAG_SPCRES)) {
+    for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
       real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+    }
+  }
   convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
 }
 
@@ -33,8 +35,9 @@ static void conjCxma(void) {
 void conjCplx(void) {
   real_t r, i;
 
-  if(!getRegisterAsComplex(REGISTER_X, &r, &i))
-      return;
+  if(!getRegisterAsComplex(REGISTER_X, &r, &i)) {
+    return;
+  }
 
   realChangeSign(&i);
   if(realIsZero(&i) && !getSystemFlag(FLAG_SPCRES)) {
@@ -54,14 +57,18 @@ void conjCplx(void) {
 void fnConjugate(uint16_t unusedButMandatoryParameter) {
   uint32_t typex = getRegisterDataType(REGISTER_X);
 
-  if(!saveLastX())
+  if(!saveLastX()) {
     return;
+  }
 
-  if(typex == dtComplex34Matrix)
+  if(typex == dtComplex34Matrix) {
     conjCxma();
-  else if(typex == dtReal34Matrix)
+  }
+  else if(typex == dtReal34Matrix) {
     conjRema();
-  else
+  }
+  else {
     conjCplx();
+  }
 }
 

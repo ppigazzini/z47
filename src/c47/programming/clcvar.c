@@ -7,7 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   static void _clearVar(calcRegister_t regist) {
     switch(getRegisterDataType(regist)) {
       case dtLongInteger: {
@@ -20,13 +19,13 @@
 
       case dtReal34:
       case dtTime: {
-        real34Zero(REGISTER_REAL34_DATA(regist));
+        real34SetZero(REGISTER_REAL34_DATA(regist));
         break;
       }
 
       case dtComplex34: {
-        real34Zero(REGISTER_REAL34_DATA(regist));
-        real34Zero(REGISTER_IMAG34_DATA(regist));
+        real34SetZero(REGISTER_REAL34_DATA(regist));
+        real34SetZero(REGISTER_IMAG34_DATA(regist));
         break;
       }
 
@@ -45,7 +44,7 @@
         real34Matrix_t m;
         linkToRealMatrixRegister(regist, &m);
         for(uint32_t i = 0; i < m.header.matrixRows * m.header.matrixColumns; i++) {
-          real34Zero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
         }
         break;
       }
@@ -54,8 +53,8 @@
         complex34Matrix_t m;
         linkToComplexMatrixRegister(regist, &m);
         for(uint32_t i = 0; i < m.header.matrixRows * m.header.matrixColumns; i++) {
-          real34Zero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
-          real34Zero(VARIABLE_IMAG34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_REAL34_DATA(&m.matrixElements[i]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&m.matrixElements[i]));
         }
         break;
       }
@@ -87,7 +86,7 @@
       _clearVar(regKStoC(opParam));
     }
     else {
-      sprintf(tmpString, "\nIn function _executeWithIndirectRegister: " STD_RIGHT_ARROW " %u is not a valid parameter!", opParam);
+      sprintf(tmpString, "\nIn function _indirectRegister: " STD_RIGHT_ARROW " %u is not a valid parameter!", opParam);
     }
   }
 
@@ -305,16 +304,13 @@
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 
 
 void fnClCVar(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-    uint8_t *ptr = beginOfCurrentProgram;
+  uint8_t *ptr = beginOfCurrentProgram;
 
-    while(_processOneStep(ptr)) {
-      ptr = findNextStep(ptr);
-    }
-  #endif // !TESTSUITE_BUILD
+  while(_processOneStep(ptr)) {
+    ptr = findNextStep(ptr);
+  }
 }

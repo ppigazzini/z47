@@ -20,11 +20,13 @@
 
 #else
   static bool_t checkParamGeometric(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i)) {
       goto err;
+    }
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -113,10 +115,10 @@
     real_t p;
 
     if(realIsNegative(x) || (!realIsAnInteger(x))) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
-    realMultiply(p0, const__1, &p, realContext);
+    realMinus(p0, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
     realMultiply(x, &p, &p, realContext);
     realExp(&p, &p, realContext);
@@ -128,11 +130,11 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     realSubtract(const_1, p0, &q, realContext);
@@ -143,16 +145,16 @@
     real_t p, q;
 
     if(realCompareLessThan(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realToIntegralValue(x, &p, DEC_ROUND_FLOOR, realContext);
     realAdd(&p, const_1, &p, realContext);
-    realMultiply(p0, const__1, &q, realContext);
+    realMinus(p0, &q, realContext);
     WP34S_Ln1P(&q, &q, realContext);
     realMultiply(&p, &q, &p, realContext);
     WP34S_ExpM1(&p, res, realContext);
@@ -163,12 +165,12 @@
     real_t p, q;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
-    realMultiply(x, const__1, &p, realContext);
+    realMinus(x, &p, realContext);
     WP34S_Ln1P(&p, &p, realContext);
-    realMultiply(p0, const__1, &q, realContext);
+    realMinus(p0, &q, realContext);
     WP34S_Ln1P(&q, &q, realContext);
     realDivide(&p, &q, &p, realContext);
     realSubtract(&p, const_1, &p, realContext);
@@ -185,7 +187,7 @@
       case QF_DISCRETE_CDF_GEOMETRIC:      WP34S_Cdf_Geom(r, i, &q, &ctxtReal51);            break;
       case QF_DISCRETE_CDF_NEGBINOM:       cdf_NegBinomial2(r, i, j, &q, &ctxtReal51);       break;
       case QF_DISCRETE_CDF_HYPERGEOMETRIC: cdf_Hypergeometric2(r, i, j, k, &q, &ctxtReal75); break;
-      default:                             realZero(&q);
+      default:                             realSetZero(&q);
     }
     realAdd(&q, const_0, &q, realContext);
     if(realCompareLessThan(&q, p)) {

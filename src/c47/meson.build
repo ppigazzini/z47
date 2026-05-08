@@ -188,6 +188,9 @@ c47_src = files(
   'c47Extensions/xeqm.c',
   'memory.c',
   'plotstat.c',
+  'printing/print.c',
+  'printing/printerFont8.c',
+  'printing/martelFonts.c',
   'programming/clcvar.c',
   'programming/decode.c',
   'programming/input.c',
@@ -230,6 +233,12 @@ generateCatalogs_src = files(
   'items.c',
   'sort.c'
 )
+
+generateTestPgms_src = files(
+  'items.c',
+  'c47.c'
+)
+
 
 c47_inc = include_directories('.', '../generated')
 

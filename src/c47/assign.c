@@ -34,7 +34,7 @@ TO_QSPI const calcKey_t kbd_std_C47[37] = { //C47 Layout, in the default positio
   {63,                  ITM_5,                -MNU_UNITCONV,        -MNU_CLK,             ITM_5,                ITM_U,                ITM_u,                ITM_5,                ITM_5               },
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_V,                ITM_v,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_W,                ITM_w,                ITM_CROSS,            ITM_MULT            },
-  {71,                  KEY_fg,               KEY_fg,                KEY_fg,              KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
+  {71,                  KEY_fg,               ITM_NULL,              ITM_NULL,            KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
@@ -103,8 +103,8 @@ TO_QSPI const calcKey_t kbd_std_E47[37] = {
   {24,                  ITM_SQUAREROOTX,      ITM_SQUARE,           ITM_dotD,             ITM_ROOT_SIGN,        ITM_D,                ITM_d,                ITM_ROOT_SIGN,        ITM_REG_D           },
   {25,                  ITM_LOG10,            ITM_10x,              ITM_toREC2,           ITM_NULL,             ITM_E,                ITM_e,                ITM_LG_SIGN,          ITM_NULL            },
   {26,                  ITM_LN,               ITM_EXP,              ITM_toPOL2,           ITM_NULL,             ITM_F,                ITM_f,                ITM_LN_SIGN,          ITM_NULL            },
-  {31,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
-  {32,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {31,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
+  {32,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {33,                  ITM_Rdown,            ITM_Rup,              ITM_CONSTpi,          ITM_NULL,             ITM_G,                ITM_g,                ITM_pi,               ITM_NULL            },
   {34,                  ITM_sin,              ITM_arcsin,           ITM_op_j,             ITM_NULL,             ITM_H,                ITM_h,                ITM_SIN_SIGN,         ITM_NULL            },
   {35,                  ITM_cos,              ITM_arccos,           ITM_MAGNITUDE,        ITM_NULL,             ITM_I,                ITM_i,                ITM_COS_SIGN,         ITM_REG_I           },
@@ -146,8 +146,8 @@ TO_QSPI const calcKey_t kbd_std_V47[37] = {
   {22,                  ITM_SQUAREROOTX,      ITM_SQUARE,           ITM_HASH_JM,          ITM_ROOT_SIGN,        ITM_B,                ITM_b,                ITM_ROOT_SIGN,        ITM_REG_B           },
   {23,                  ITM_LOG10,            ITM_10x,              ITM_ms,               ITM_NULL,             ITM_C,                ITM_c,                ITM_LG_SIGN,          ITM_REG_C           },
   {24,                  ITM_LN,               ITM_EXP,              ITM_dotD,             ITM_NULL,             ITM_D,                ITM_d,                ITM_LN_SIGN,          ITM_REG_D           },
-  {25,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
-  {26,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {25,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
+  {26,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {31,                  ITM_STO,              ITM_MAGNITUDE,        ITM_ARG,              ITM_NULL,             ITM_E,                ITM_e,                ITM_VERTICAL_BAR,     ITM_NULL            },
   {32,                  ITM_RCL,              ITM_PC,               ITM_DELTAPC,          ITM_NULL,             ITM_F,                ITM_f,                ITM_DELTA,            ITM_2HEX            },
   {33,                  ITM_Rdown,            ITM_CONSTpi,          ITM_XTHROOT,          ITM_NULL,             ITM_G,                ITM_g,                ITM_pi,               ITM_NULL            },
@@ -209,12 +209,12 @@ TO_QSPI const calcKey_t kbd_std_N47[37] = {
   {53,                  ITM_8,                -MNU_EQN,             -MNU_ADV,             ITM_8,                ITM_P,                ITM_p,                ITM_8,                ITM_8               },
   {54,                  ITM_9,                -MNU_MATX,            -MNU_XFN,             ITM_9,                ITM_Q,                ITM_q,                ITM_9,                ITM_9               },
   {55,                  ITM_DIV,              -MNU_STAT,            -MNU_PLOTTING,        ITM_OBELUS,           ITM_R,                ITM_r,                ITM_OBELUS,           ITM_DIV             },
-  {61,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
+  {61,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
   {62,                  ITM_4,                -MNU_BASE,            -MNU_BITS,            ITM_4,                ITM_S,                ITM_s,                ITM_4,                ITM_4               },
   {63,                  ITM_5,                -MNU_UNITCONV,        -MNU_CLK,             ITM_5,                ITM_T,                ITM_t,                ITM_5,                ITM_5               },
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_U,                ITM_u,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_V,                ITM_v,                ITM_CROSS,            ITM_MULT            },
-  {71,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {71,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_W,                ITM_w,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                -MNU_PREF,            -MNU_ALPHAFN,         ITM_2,                ITM_X,                ITM_x,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Y,                ITM_y,                ITM_3,                ITM_3               },
@@ -242,8 +242,8 @@ TO_QSPI const calcKey_t kbd_std_D47[37] = {
   {32,                  ITM_RCL,              ITM_MAGNITUDE,        ITM_ARG,              ITM_NULL,             ITM_H,                ITM_h,                ITM_VERTICAL_BAR,     ITM_2HEX            },
   {33,                  ITM_Rdown,            ITM_XTHROOT,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_NULL,             ITM_REG_I           },
   {34,                  ITM_1ONX,             ITM_YX,               ITM_CONSTpi,          ITM_NULL,             ITM_J,                ITM_j,                ITM_CIRCUMFLEX,       ITM_REG_J           },
-  {35,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
-  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {35,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
+  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
   {43,                  ITM_CHS,              ITM_DRG,              -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
@@ -304,7 +304,7 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
   {63,                  ITM_5,                -MNU_UNITCONV,        -MNU_CLK,             ITM_5,                ITM_U,                ITM_u,                ITM_5,                ITM_5               },
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_V,                ITM_v,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_W,                ITM_w,                ITM_CROSS,            ITM_MULT            },
-  {71,                  KEY_fg,                KEY_fg,               KEY_fg,              KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
+  {71,                  KEY_fg,               ITM_NULL,              ITM_NULL,            KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
@@ -377,14 +377,14 @@ TO_QSPI const calcKey_t kbd_std_R47f_g[37] = {
   {32,                  ITM_RCL,              ITM_PC,               ITM_DELTAPC,          ITM_NULL,             ITM_H,                ITM_h,                ITM_DELTA,            ITM_REG_H           },
   {33,                  ITM_Rdown,            ITM_CONSTpi,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_pi,               ITM_REG_I           },
   {34,                  ITM_DRG,              ITM_USERMODE,         ITM_ASSIGN,           ITM_NULL,             ITM_J,                ITM_j,                ITM_op_j_char,        ITM_REG_J           },
-  {35,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
-  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {35,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
+  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
   {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
-  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
+  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_alpha,            ITM_omega,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
   {53,                  ITM_8,                ITM_cos,              ITM_arccos,           ITM_8,                ITM_O,                ITM_o,                ITM_8,                ITM_8               },
   {54,                  ITM_9,                ITM_tan,              ITM_arctan,           ITM_9,                ITM_P,                ITM_p,                ITM_9,                ITM_9               },
@@ -423,13 +423,13 @@ TO_QSPI const calcKey_t kbd_std_R47bk_fg[37] = {
   {33,                  ITM_Rdown,            ITM_CONSTpi,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_pi,               ITM_REG_I           },
   {34,                  ITM_DRG,              ITM_USERMODE,         ITM_ASSIGN,           ITM_NULL,             ITM_J,                ITM_j,                ITM_op_j_char,        ITM_REG_J           },
   {35,                  ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL            },
-  {36,                  KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
+  {36,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
   {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
-  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
+  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_alpha,            ITM_omega,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
   {53,                  ITM_8,                ITM_cos,              ITM_arccos,           ITM_8,                ITM_O,                ITM_o,                ITM_8,                ITM_8               },
   {54,                  ITM_9,                ITM_tan,              ITM_arctan,           ITM_9,                ITM_P,                ITM_p,                ITM_9,                ITM_9               },
@@ -469,14 +469,14 @@ TO_QSPI const calcKey_t kbd_std_R47fg_bk[37] = {
   {32,                  ITM_RCL,              ITM_PC,               ITM_DELTAPC,          ITM_NULL,             ITM_H,                ITM_h,                ITM_DELTA,            ITM_REG_H           },
   {33,                  ITM_Rdown,            ITM_CONSTpi,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_pi,               ITM_REG_I           },
   {34,                  ITM_DRG,              ITM_USERMODE,         ITM_ASSIGN,           ITM_NULL,             ITM_J,                ITM_j,                ITM_op_j_char,        ITM_REG_J           },
-  {35,                  KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
+  {35,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {36,                  ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL            },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
   {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
-  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
+  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_alpha,            ITM_omega,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
   {53,                  ITM_8,                ITM_cos,              ITM_arccos,           ITM_8,                ITM_O,                ITM_o,                ITM_8,                ITM_8               },
   {54,                  ITM_9,                ITM_tan,              ITM_arctan,           ITM_9,                ITM_P,                ITM_p,                ITM_9,                ITM_9               },
@@ -516,14 +516,14 @@ TO_QSPI const calcKey_t kbd_std_R47fg_g[37] = {
   {32,                  ITM_RCL,              ITM_PC,               ITM_DELTAPC,          ITM_NULL,             ITM_H,                ITM_h,                ITM_DELTA,            ITM_REG_H           },
   {33,                  ITM_Rdown,            ITM_CONSTpi,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_pi,               ITM_REG_I           },
   {34,                  ITM_DRG,              ITM_USERMODE,         ITM_ASSIGN,           ITM_NULL,             ITM_J,                ITM_j,                ITM_op_j_char,        ITM_REG_J           },
-  {35,                  KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
-  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
+  {35,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
+  {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
   {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
-  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
+  {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_alpha,            ITM_omega,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
   {53,                  ITM_8,                ITM_cos,              ITM_arccos,           ITM_8,                ITM_O,                ITM_o,                ITM_8,                ITM_8               },
   {54,                  ITM_9,                ITM_tan,              ITM_arctan,           ITM_9,                ITM_P,                ITM_p,                ITM_9,                ITM_9               },
@@ -605,8 +605,8 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
     kc[1] = (i % 10) + '0';
     kc[2] = 0;
     if(key->primary == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = false;
         assignToKey(kc);
@@ -616,16 +616,16 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
       }
     }
     if(key->fShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = true;
         shiftG = false;
         assignToKey(kc);
       }
     }
     if(key->gShifted == userItem) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
-      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl,userItemName, CMP_NAME) == 0))) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2), (uint8_t *)lbl);
+      if((lbl[0] != 0) && (deleteAllItems || (compareString(lbl, userItemName, CMP_NAME) == 0))) {
         shiftF = false;
         shiftG = true;
         assignToKey(kc);
@@ -644,10 +644,8 @@ void fnDeleteMenu(uint16_t id) {
     return;
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
-    #if !defined(TESTSUITE_BUILD)
-      removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
-    #endif // !TESTSUITE_BUILD
+    removeUserItemAssignments(-MNU_DYNAMIC, userMenus[id].menuName); // Remove assignments before deleting the user menu
+    removeUserMenuFromStack(id);                                     // Remove user menu from the stack before deleting it
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -664,12 +662,10 @@ void fnDeleteMenu(uint16_t id) {
   if(currentUserMenu > id) {
     --currentUserMenu;
   }
-  #if !defined(TESTSUITE_BUILD)
-    else if(currentUserMenu == id) {
-      showSoftmenu(-MNU_DYNAMIC);
-      popSoftmenu();
-    }
-  #endif // !TESTSUITE_BUILD
+  else if(currentUserMenu == id) {
+    showSoftmenu(-MNU_DYNAMIC);
+    popSoftmenu();
+  }
 }
 
 
@@ -679,17 +675,13 @@ void fnDeleteUserMenus(uint16_t confirmation) {
     setConfirmationMode(fnDeleteUserMenus);
   }
   else {
-    removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
-    #if !defined(TESTSUITE_BUILD)
-      removeUserMenuFromStack(numberOfUserMenus);         // Remove all user menus from the stack before deleting them
-    #endif // !TESTSUITE_BUILD
+    removeUserItemAssignments(-MNU_DYNAMIC, ""); // Remove all user menus assignments
+    removeUserMenuFromStack(numberOfUserMenus);  // Remove all user menus from the stack before deleting them
     freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
     userMenus = NULL;
     numberOfUserMenus = 0;
-    #if !defined(TESTSUITE_BUILD)
-      createHOME();
-      createPFN();
-    #endif // !TESTSUITE_BUILD
+    createHOME();
+    createPFN();
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_DEL_ALL_MENUS;
     }
@@ -711,10 +703,8 @@ void fnClearUserMenus(uint16_t confirmation) {
     for(i=0; i<numberOfUserMenus; i++) {
       memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));
     }
-    #if !defined(TESTSUITE_BUILD)
-      createHOME();
-      createPFN();
-    #endif // !TESTSUITE_BUILD
+    createHOME();
+    createPFN();
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_CLEAR_ALL_MENUS;
     }
@@ -812,7 +802,7 @@ void _assignItem(userMenuItem_t *menuItem) {
   else if(itemToBeAssigned >= ASSIGN_LABELS) {
     lblPtr                    = labelList[itemToBeAssigned - ASSIGN_LABELS].labelPointer;
     menuItem->item            = ITM_XEQ;
-    //printf("**[DL]** menuItem->item %d lblPtr %s\n",menuItem->item,lblPtr);fflush(stdout);
+    //printf("**[DL]** menuItem->item %d lblPtr %s\n", menuItem->item, lblPtr);fflush(stdout);
   }
   else if(itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
     lblPtr                    = allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName;
@@ -1088,45 +1078,52 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      xcopy(userMenus[numberOfUserMenus].menuName, name, sizeof(userMenus[0].menuName)); // Martin: changed size from stringByteLength(name) + 1 to sizeof(userMenus[0].menuName)
+      #if defined(PC_BUILD)
+      if(name == NULL) {
+        abortf("The parameter name is NULL!\n");
+      }
+      if(stringByteLength(name) + 1 > (int32_t)sizeof(userMenus[0].menuName)) {
+        char tmp[1000];
+        sprintf(tmp, "The string \"name\" <%s> is too long (%" PRId32 "+1 bytes) to be copied to userMenus[numberOfUserMenus].menuName (%" PRIi32 " bytes)\n",
+                                           name,              stringByteLength(name),                                                    (int32_t)sizeof(userMenus[0].menuName));
+        abortf(tmp);
+      }
+      #endif // PC_PUILD
+      xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
       ++numberOfUserMenus;
     }
     else {
       displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "the name %s", name);
-        moreInfoOnError("In function fnAssign:", errorMessage, "is already in use!", NULL);
+        moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnAssign:", "the menu", name, "does not follow the naming convention");
+      moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
 
 void assignEnterAlpha(void) {
-  #if !defined(TESTSUITE_BUILD)
-    tam.alpha = true;
-    setSystemFlag(FLAG_ALPHA);
-    aimBuffer[0] = 0;
-    tamEnterMode(ITM_ASSIGN);
-    calcModeAim(NOPARAM);
-  #endif // !TESTSUITE_BUILD
+  tam.alpha = true;
+  setSystemFlag(FLAG_ALPHA);
+  aimBuffer[0] = 0;
+  tamEnterMode(ITM_ASSIGN);
+  calcModeAim(NOPARAM);
 }
 
 
 void assignLeaveAlpha(void) {
-  #if !defined(TESTSUITE_BUILD)
-    tam.alpha = false;
-    clearSystemFlag(FLAG_ALPHA);
-    leaveTamModeIfEnabled();
-    alphaCursor = 0;
-    calcModeNormalGui();
-  #endif // !TESTSUITE_BUILD
+  tam.alpha = false;
+  clearSystemFlag(FLAG_ALPHA);
+  leaveTamModeIfEnabled();
+  alphaCursor = 0;
+  calcModeNormalGui();
 }
 
 
@@ -1272,8 +1269,8 @@ void assignGetName2(void) {
 
   if(!result) {
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", NULL);
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }

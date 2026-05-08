@@ -12,8 +12,8 @@
 
 void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext) {
   if(realIsZero(real) && realIsZero(imag)) {
-    realCopy(const_minusInfinity, lnReal);
-    realZero(lnImag);
+    realSetMinusInfinity(lnReal);
+    realSetZero(lnImag);
   }
   else {
     realRectangularToPolar(real, imag, lnReal, lnImag, realContext);
@@ -32,12 +32,13 @@ void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *l
 void lnReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsZero(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_minusInfinity, &x);
+      realSetMinusInfinity(&x);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -55,25 +56,29 @@ void lnReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    else if (realIsPositive(&x))
-      realCopy(const_plusInfinity, &x);
+    else if(realIsPositive(&x)) {
+      realSetPlusInfinity(&x);
+    }
     else if(getFlag(FLAG_CPXRES)) {
-      convertComplexToResultRegister(const_plusInfinity, const_pi, REGISTER_X);
+      convertComplexToResultRegister(const_plusInfinity, const39_pi, REGISTER_X);
       return;
-    } else
-      realCopy(const_NaN, &x);
-  } else {
+    }
+    else {
+      realSetNaN(&x);
+    }
+  }
+  else {
     if(realIsPositive(&x)) {
       WP34S_Ln(&x, &x, &ctxtReal39);
      }
     else if(getFlag(FLAG_CPXRES)) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
-      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const39_pi, REGISTER_X);
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_NaN, &x);
+      realSetNaN(&x);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -90,13 +95,14 @@ void lnReal(void) {
 void lnCplx(void) {
     real_t xReal, xImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
-      return;
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
+    return;
+  }
 
   if(realIsZero(&xReal) && realIsZero(&xImag)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(const_minusInfinity, &xReal);
-      realZero(&xImag);
+      realSetMinusInfinity(&xReal);
+      realSetZero(&xImag);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -105,8 +111,10 @@ void lnCplx(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  } else
+  }
+  else {
     lnComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39);
+  }
   convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 

@@ -10,8 +10,9 @@
 static void arccosCplx(void) {
   real_t a, b, real, imag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b)) {
     return;
+  }
 
   // arccos(z) = -i.ln(z + i.sqrt(1 - z²))
   // calculate i.sqrt(1 - z²)
@@ -39,8 +40,9 @@ static void arccosReal(void) {
   real_t x;
   const real_t *r = &x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realCompareAbsGreaterThan(&x, const_1)) {
     if(getFlag(FLAG_CPXRES)) {
@@ -59,7 +61,7 @@ static void arccosReal(void) {
     }
   }
   else {
-    WP34S_Acos(&x, &x, &ctxtReal39);
+    C47_WP34S_Acos(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
   convertRealToResultRegister(r, REGISTER_X, currentAngularMode);

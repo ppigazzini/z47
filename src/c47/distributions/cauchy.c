@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17B)
   void fnCauchyP              (uint16_t unusedButMandatoryParameter){}
   void fnCauchyL              (uint16_t unusedButMandatoryParameter){}
   void fnCauchyR              (uint16_t unusedButMandatoryParameter){}
@@ -21,13 +21,13 @@
 
 #else
   static bool_t checkParamCauchy(real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if( !getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_S, j))
+    if( !getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i) || !getRegisterAsReal(REGISTER_S, j)) {
       goto err;
+    }
 
     if(realIsZero(j) || realIsNegative(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -118,13 +118,13 @@
   void WP34S_Pdf_Cauchy(const real_t *x, const real_t *x0, const real_t *gamma, real_t *res, realContext_t *realContext) {
     WP34S_cdf_cauchy_xform(x, x0, gamma, res, realContext);
     if(realIsSpecial(res)) {
-      realZero(res); /* Can only be infinite which has zero probability */
+      realSetZero(res); /* Can only be infinite which has zero probability */
       return;
     }
     realMultiply(res, res, res, realContext);
     realAdd(res, const_1, res, realContext);
     realMultiply(res, gamma, res, realContext);
-    realMultiply(res, const_pi, res, realContext);
+    realMultiply(res, const39_pi, res, realContext);
     realDivide(const_1, res, res, realContext);
   }
 
@@ -141,11 +141,11 @@
 
     WP34S_cdf_cauchy_xform(x, x0, gamma, &p, realContext);
     if(realIsSpecial(&p)) {
-      realCopy(const_plusInfinity, res);
+      realSetPlusInfinity(res);
       return;
     }
-    WP34S_Atan(&p, &p, realContext);
-    realDivide(&p, const_pi, &p, realContext);
+    C47_WP34S_Atan(&p, &p, realContext);
+    realDivide(&p, const39_pi, &p, realContext);
     if(complementary) {
       realChangeSign(&p);
     }
@@ -161,10 +161,10 @@
     real_t p, s, c;
 
     realSubtract(x, const_1on2, &p, realContext);
-    realMultiply(&p, const_pi, &p, realContext);
-    WP34S_SinCosTanTaylor(&p, false, &s, &c, &p, realContext);
+    realMultiply(&p, const39_pi, &p, realContext);
+    C47_WP34S_SinCosTanTaylor(&p, false, &s, &c, &p, realContext);
     realMultiply(&p, gamma, &p, realContext);
     realAdd(&p, x0, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_15
+#endif //SAVE_SPACE_DM42_17B

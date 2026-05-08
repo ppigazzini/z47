@@ -409,6 +409,19 @@
 #define STD_z_CIRC                    "\x83\x8D"
 #define STD_u_CIRC2                   "\x83\xA2"
 
+#define STD_M_ALPHA                   "\x84\x50" //0450
+#define STD_N_ASTERISK                "\x84\x51" //0451
+#define STD_D_MINUS1                  "\x84\x52" //0452
+#define STD_K_ASTERISK                "\x84\x53" //0453
+#define STD_1_ASTERISK                "\x84\x54" //0454
+#define STD_EQUALS_SH                 "\x84\x55" //0455
+#define STD_P_2                       "\x84\x56" //0456
+#define STD_TRI_LHB_2                 "\x84\x57" //0457
+#define STD_TRI_RHB_2                 "\x84\x58" //0458
+
+#define STD_TRI_LHB                   "\xa5\xed" //25ED ◭ UP-POINTING TRIANGLE WITH LEFT HALF BLACK
+#define STD_TRI_RHB                   "\xa5\xee" //25EE ◮ UP-POINTING TRIANGLE WITH RIGHT HALF BLACK
+
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
 #define STD_SUP_BOLD_g                "\x9D\x4D"
@@ -423,12 +436,13 @@
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
-#define STD_CB_OFF                    "\xa6\x10"     // 2610
-#define STD_CB_ON                     "\xa6\x12"     // 2612
-#define STD_RB_OFF                    "\xa5\xef"     // 25ef
-#define STD_RB_ON                     "\xa9\xbf"     // 29bf
-#define STD_DIA_OFF                   "\xa5\xc7"     // 25c7
-#define STD_DIA_ON                    "\xa5\xc8"     // 25c8
+#define STD_CB_OFF                    "\xa6\x10"     // U+2610  U+2610 - ☐ BALLOT BOX (empty checkbox)
+#define STD_CB_ON                     "\xa6\x12"     // U+2612  U+2612 - ☒ BALLOT BOX WITH X (checkbox with X)
+#define STD_RB_OFF                    "\xa5\xef"     // U+25ef  U+25EF - ◯ LARGE CIRCLE (large outline circle)
+#define STD_RB_ON                     "\xa9\xbf"     // U+29bf  U+29BF - ⦿ CIRCLED BULLET (circle with filled center dot)
+#define STD_DIA_OFF                   "\xa5\xc7"     // U+25c7  U+25CF - ● BLACK CIRCLE (filled circle)
+#define STD_DIA_ON                    "\xa5\xc8"     // U+25c8  U+25C8 - ◈ WHITE DIAMOND CONTAINING BLACK SMALL DIAMOND
+
 
 
 #define STD_HP_PERIOD                 "\xa0\x24"     // 2024
@@ -525,7 +539,7 @@
 #define STD_BST                       "\xa1\xc9"
 #define STD_SST                       "\xa1\xcb"
 #define STD_HAMBURGER                 "\xa1\xcc"
-#define STD_UNDO                      "\xa1\xcd"
+#define STD_UNDO                      "\xa3\x8c"
 #define STD_HOLLOW_UP_ARROW           "\xa1\xe7"
 #define STD_HOLLOW_DOWN_ARROW         "\xa1\xe9"
 #define STD_COMPLEMENT                "\xa2\x01"
@@ -744,6 +758,7 @@
 #define STD_SUB_X                     "\xa4\xe7"
 #define STD_SUB_Y                     "\xa4\xe8"
 #define STD_SUB_Z                     "\xa4\xe9"
+#define STD_BLACK_RIGHT_TRIANGLE      "\xa5\xb6"
 #define STD_CHECK_MARK                "\xa7\x13"
 #define STD_YX                        "\xa9\xf0"
 #define STD_fg                        "\xa9\xf1"

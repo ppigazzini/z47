@@ -44,6 +44,24 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
     }
     return;
   }
+#if defined(OPTION_VECTOR)
+  else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix){
+    if(isRegisterMatrix3dVector(REGISTER_X)) {
+      setVectorRegisterPolarMode(REGISTER_X,
+        ((getVectorRegisterPolarMode(REGISTER_X) == 0) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL) ? amPolarSPH : 0 ));
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      return;
+    }
+    else if(isRegisterMatrix2dVector(REGISTER_X)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolar);
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      return;
+    }
+  }
+#endif //OPTION_VECTOR
+
+
+
   //X and Y are both only checked for REAL - symmetrical. Therefore clasRP does not play a role in the type checking even when swapped
   dataTypeX = getRegisterDataType(REGISTER_X);
   dataAtagX  = getRegisterAngularMode(REGISTER_X);
@@ -207,14 +225,14 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  +----+----+--------+------------+
     //  |NaN |any |NaN     |NaN         |   1
     //  |any |NaN |NaN     |NaN         |   2
-    realCopy(const_NaN, magnitude);
-    realCopy(const_NaN, theta);
+    realSetNaN(magnitude);
+    realSetNaN(theta);
     return;
   }
 
   // Real part is infinite
   if(realIsInfinite(&re)) {
-    realCopy(const_plusInfinity, magnitude);
+    realSetPlusInfinity(magnitude);
 
     if(realIsPositive(&re)) { // re = +inf
       //  +----+----+--------+------------+
@@ -226,14 +244,14 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
       //  |+∞  |+b  |∞       |0           |  26
       //  |+∞  |+∞  |∞       |π/4         |  27
       if(realIsInfinite(&im)) { // re = +inf  im = ±inf
-        realCopy(const_piOn4, theta);
+        realCopy(const39_piOn4, theta);
 
         if(realIsNegative(&im)) { // re = +inf  im = -inf
           realSetNegativeSign(theta);
         }
       }
       else { // re = +inf  im ≠ infinite
-        realZero(theta);
+        realSetZero(theta);
       }
     }
     else { // re = -inf
@@ -246,14 +264,14 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
       //  |-∞  |+b  |∞       |π           |   6
       //  |-∞  |+∞  |∞       |3π/4        |   7
       if(realIsInfinite(&im)) { // re = -inf  im = ±inf
-        realCopy(const_3piOn4, theta);
+        realCopy(const39_3piOn4, theta);
 
         if(realIsNegative(&im)) { // re = -inf  im = -inf
           realSetNegativeSign(theta);
         }
       }
       else { // re = -inf  im ≠ infinite
-        realCopy(const_pi, theta);
+        realCopy(const39_pi, theta);
       }
     }
 
@@ -271,8 +289,8 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  |-a  |-∞  |∞       |-π/2        |   8
     //  |0   |-∞  |∞       |-π/2        |  13
     //  |+a  |-∞  |∞       |-π/2        |  18
-    realCopy(const_plusInfinity, magnitude);
-    realCopy(const_piOn2, theta);
+    realSetPlusInfinity(magnitude);
+    realCopy(const39_piOn2, theta);
 
     if(realIsNegative(&im)) { // im = -inf
       realSetNegativeSign(theta);
@@ -290,12 +308,12 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     //  |0   |-b  |b       |-π/2        |  14
     //  |0   |+b  |b       |π/2         |  16
     if(realIsZero(&im)) { // re = 0  im = 0
-      realZero(magnitude);
-      realZero(theta);
+      realSetZero(magnitude);
+      realSetZero(theta);
     }
     else { // re = 0  im ≠ 0
       realCopyAbs(&im, magnitude);
-      realCopy(const_piOn2, theta); // 90°
+      realCopy(const39_piOn2, theta); // 90°
 
       if(realIsNegative(&im)) { // re = 0  im < 0
         realSetNegativeSign(theta); // -90°
@@ -315,10 +333,10 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     realCopyAbs(&re, magnitude);
 
     if(realIsNegative(&re)) { // re < 0  im = 0
-      realCopy(const_pi, theta); // 180°
+      realCopy(const39_pi, theta); // 180°
     }
     else { // re > 0  im = 0
-      realZero(theta); // 0°
+      realSetZero(theta); // 0°
     }
 
     return;
@@ -344,6 +362,6 @@ void realRectangularToPolar(const real_t *real, const real_t *imag, real_t *magn
     realSquareRoot(magnitude, magnitude, realContext);
 
     // Angle
-    WP34S_Atan2(&im, &re, theta, realContext);
+    C47_WP34S_Atan2(&im, &re, theta, realContext);
   }
 }

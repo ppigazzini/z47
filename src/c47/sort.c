@@ -51,9 +51,11 @@ static TO_QSPI uint16_t unSupSubStruckTable[] = {
 };
 
 static uint16_t _charCodeUnSupSubStruck(uint16_t charCode) {
-  for(unsigned int i = 0; i < nbrOfElements(unSupSubRanges); i++)
-    if(charCode >= unSupSubRanges[i].low && charCode < unSupSubRanges[i].low + unSupSubRanges[i].num)
+  for(unsigned int i = 0; i < nbrOfElements(unSupSubRanges); i++) {
+    if(charCode >= unSupSubRanges[i].low && charCode < unSupSubRanges[i].low + unSupSubRanges[i].num) {
       return charCode - unSupSubRanges[i].low + unSupSubRanges[i].base;
+    }
+  }
 
   for(unsigned int i = 0; i < nbrOfElements(unSupSubStruckTable); i += 2) {
     if(charCode == unSupSubStruckTable[i]) {

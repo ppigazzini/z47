@@ -77,7 +77,7 @@ void fnDropT(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnDropN(uint16_t number) {
-  for(int n = 0; n < min(8,number); n++) {
+  for(int n = 0; n < min(8, number); n++) {
     _Drop(REGISTER_X);
   }
 }
@@ -128,21 +128,21 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     currentLocalRegisters[regist - FIRST_LOCAL_REGISTER] = savedRegisterHeader;
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else if(regist <= LAST_LOCAL_REGISTER) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "local register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is not defined!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       sprintf(errorMessage, "register %d", regist);
       moreInfoOnError("In function _swapRegs:", errorMessage, "is unsupported!", NULL);
     }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -167,7 +167,7 @@ void fnSwapT(uint16_t regist) {
 
 
 void fnSwapN(uint16_t number) {
-  for(int n = 0; n < min(4,number); n++) {
+  for(int n = 0; n < min(4, number); n++) {
   _swapRegs(REGISTER_X + n, REGISTER_X + number + n);
   }
 }
@@ -238,13 +238,9 @@ void fnGetStackSize(uint16_t unusedButMandatoryParameter) {
 
 
 void saveForUndo(void) {
-                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "saveForUndo called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUGUNDO)
+                                  print_caller(NULL);
+                                #endif
   if(((calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_MIM) && thereIsSomethingToUndo) || calcMode == CM_NO_UNDO) {
     #if defined(DEBUGUNDO)
       if(thereIsSomethingToUndo) {
@@ -305,15 +301,15 @@ void saveForUndo(void) {
 
   lrSelectionUndo = lrSelection;
   if(statisticalSumsPointer == NULL) { // There are no statistical sums to save for undo
-    freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
     savedStatisticalSumsPointer = NULL;
   }
   else { // There are statistical sums to save for undo
     lrChosenUndo = lrChosen;
     if(savedStatisticalSumsPointer == NULL) {
-      savedStatisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+      savedStatisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
     }
-    xcopy(savedStatisticalSumsPointer, statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES);
+    xcopy(savedStatisticalSumsPointer, statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES(75));
   }
 
   thereIsSomethingToUndo = true;
@@ -332,13 +328,9 @@ failed:
 
 
 void fnUndo(uint16_t unusedButMandatoryParameter) {
-                                #if defined(PC_BUILD) && defined(DEBUGUNDO)
-                                  void *callstack[128];
-                                  int frames = backtrace(callstack, 128);
-                                  char **strs = backtrace_symbols(callstack, frames);
-                                  printf("%30s%42s%s\n", "", "fnUndo called from: ", strs[1]);
-                                  free(strs);
-                                #endif // PC_BUILD && ANALYSE_REFRESH
+                                #if defined(DEBUGUNDO)
+                                  print_caller(NULL);
+                                #endif
   if(thereIsSomethingToUndo) {
     undo();
   }
@@ -348,16 +340,12 @@ void fnUndo(uint16_t unusedButMandatoryParameter) {
 
 void undo(void) {
   #if defined(DEBUGUNDO)
+    print_caller("UNDO");
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
                                           printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
-                                          #include <execinfo.h>
-                                          void *callstack[128];
-                                          int frames = backtrace(callstack, 128);
-                                          char **strs = backtrace_symbols(callstack, frames);
-                                          printf("%30s%42s%s\n", "", "undo() called from: ", strs[1]);
-                                          free(strs);
+                                          print_caller(NULL);
                                         #endif // DEBUGUNDO
 
   const bool_t wasSolving = getSystemFlag(FLAG_SOLVING);
@@ -366,7 +354,9 @@ void undo(void) {
   const uint8_t lastErrorCodeMeM = lastErrorCode;
   lastErrorCode = ERROR_NONE;
   recallStatsMatrix();
-  if(lastErrorCode == ERROR_NONE) lastErrorCode = lastErrorCodeMeM;
+  if(lastErrorCode == ERROR_NONE) {
+    lastErrorCode = lastErrorCodeMeM;
+  }
 
   if(currentInputVariable != INVALID_VARIABLE) {
     if(currentInputVariable & 0x4000) {
@@ -404,16 +394,16 @@ void undo(void) {
 
   lrSelection = lrSelectionUndo;
   if(savedStatisticalSumsPointer == NULL) { // There are no statistical sums to restore
-    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
     statisticalSumsPointer = NULL;
     lrChosen = 0;
   }
   else { // There are statistical sums to restore
     lrChosen = lrChosenUndo;
     if(statisticalSumsPointer == NULL) {
-      statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+      statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
     }
-    xcopy(statisticalSumsPointer, savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES);
+    xcopy(statisticalSumsPointer, savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES(75));
   }
 
   SAVED_SIGMA_lastAddRem = SIGMA_NONE;
@@ -436,6 +426,6 @@ void undo(void) {
 
 void fillStackWithReal0(void) {
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(0);
 }

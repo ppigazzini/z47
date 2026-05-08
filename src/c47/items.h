@@ -505,8 +505,8 @@
 #define SFL_ALPHA                    477 // The SFL item names are not used
 #define SFL_alphaCAP                 478 // The SFL item names are not used
 #define SFL_RUNTIM                   479 // The SFL item names are not used
-#define SFL_RUNIO                    480 // The SFL item names are not used
-#define SFL_PRINTS                   481 // The SFL item names are not used
+#define SFL_AMORT_HP12C              480 // The SFL item names are not used
+#define SFL_spare                    481 // The SFL item names are not used
 #define SFL_TRACE                    482 // The SFL item names are not used
 #define SFL_USER                     483 // The SFL item names are not used
 #define SFL_LOWBAT                   484 // The SFL item names are not used
@@ -1010,12 +1010,12 @@
 #define ITM_US                       979
 #define ITM_NEG_EXCLAMATION_MARK     980
 #define ITM_ex                       981
-#define ITM_Max                      982
-#define ITM_Min                      983
-#define ITM_Config                   984
-#define ITM_Stack                    985
-#define ITM_dddEL                    986
-#define ITM_dddIJ                    987
+#define ITM_0982                     982
+#define ITM_0983                     983
+#define ITM_0984                     984
+#define ITM_0985                     985
+#define ITM_0986                     986
+#define ITM_0987                     987
 #define ITM_0P                       988
 #define ITM_1P                       989
 #define ITM_EXPONENT                 990
@@ -1754,7 +1754,7 @@
 #define ITM_ARG                     1706
 #define ITM_PRINTERXY               1707
 #define ITM_PRINTERADV              1708
-#define ITM_PRINTERCHAR             1709
+#define ITM_PRINTERCHAR_OLD         1709
 #define ITM_PRINTERDLAY             1710
 #define ITM_PRINTERLCD              1711
 #define ITM_PRINTERMODE             1712
@@ -1762,11 +1762,11 @@
 #define ITM_PRINTERR                1714
 #define ITM_PRINTERREGS             1715
 #define ITM_PRINTERSTK              1716
-#define ITM_PRINTERTAB              1717
+#define ITM_PRINTERTAB_OLD          1717
 #define ITM_PRINTERUSER             1718
 #define ITM_PRINTERWIDTH            1719
 #define ITM_PRINTERSIGMA            1720
-#define ITM_PRINTERHASH             1721
+#define ITM_PRINTERHASH_OLD         1721
 
 #define ITM_FBR                     1722
 
@@ -2098,12 +2098,12 @@
 #define ITM_ACTUSB                  2044
 #define MNU_CONVS                   2045
 #define MNU_CONVANG                 2046
-#define ITM_2047                    2047  //blank
+#define MNU_CONVTEMP                2047
 #define ITM_2048                    2048  //blank
 #define ITM_2049                    2049  //blank
 #define ITM_2050                    2050  //blank
 #define ITM_2051                    2051  //blank
-#define ITM_2052                    2052  //blank
+#define ITM_AMORT_HP12C             2052
 #define ITM_2TO10                   2053
 #define ITM_USER_HRESET             2054
 #define ITM_USER_PRESET             2055
@@ -2155,9 +2155,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_2104                    2104
-#define ITM_2105                    2105
-#define ITM_2106                    2106
+#define ITM_KtoM                    2104
+#define ITM_MtoK                    2105
+#define MNU_VECT                    2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
@@ -2298,8 +2298,8 @@
 #define MNU_YESNO                   2244
 #define ITM_YES                     2245
 #define ITM_NO                      2246
-#define ITM_RCLVEL                  2247
-#define ITM_STOVEL                  2248
+#define ITM_RCLVEL_OLD              2247
+#define ITM_STOVEL_OLD              2248
 #define ITM_RCLELPLUS               2249
 #define ITM_STOELPLUS               2250
 
@@ -2341,10 +2341,10 @@
 #define SFL_FGLNLIM                 2285 // The SFL item names are not used
 #define SFL_FGLNFUL                 2286 // The SFL item names are not used
 #define SFL_FGGR                    2287 // The SFL item names are not used
-#define SFL_2288                    2288 // The SFL item names are not used
-#define SFL_2289                    2289 // The SFL item names are not used
-#define SFL_2290                    2290 // The SFL item names are not used
-#define SFL_2291                    2291 // The SFL item names are not used
+#define SFL_3DPHYS                  2288 // The SFL item names are not used
+#define SFL_3DXYZ                   2289 // The SFL item names are not used
+#define SFL_PRTEN                   2290 // The SFL item names are not used
+#define SFL_NORM                    2291 // The SFL item names are not used
 #define SFL_2292                    2292 // The SFL item names are not used
 #define SFL_2293                    2293 // The SFL item names are not used
 #define SFL_2294                    2294 // The SFL item names are not used
@@ -2455,7 +2455,7 @@
 #define ITM_USER_R47bk_fg           2392
 #define ITM_USER_R47fg_bk           2393
 #define ITM_USER_R47fg_g            2394
-#define ITM_2395                    2395
+#define ITM_ELLIPSE                 2395
 
 #define ITM_ANGLEQ                  2396
 #define ITM_DATEQ                   2397
@@ -2540,13 +2540,13 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_CONCAT                  2473
+#define ITM_M_CONCAT                2473
 
-#define ITM_STKtoV3                 2474
+#define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475
-#define ITM_V3toSTK                 2476
+#define ITM_V3toSTK_M               2476
 #define ITM_V2toSTK                 2477
-#define ITM_VECtoSTK                2478
+#define ITM_2478                    2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481
@@ -2557,8 +2557,8 @@
 #define ITM_STOVEL1                 2485
 #define ITM_STOVEL2                 2486
 #define ITM_STOVEL3                 2487
-#define ITM_dddVEL                  2488
-#define ITM_dddIX                   2489
+#define ITM_STKtoV3_P               2488
+#define ITM_V3toSTK_P               2489
 #define ITM_V10                     2490
 #define ITM_V01                     2491
 #define ITM_CPXexV                  2492
@@ -2603,8 +2603,8 @@
 #define ITM_CONFIGQ                 2526
 #define ITM_ISREZQ                  2527
 #define ITM_ISIMZQ                  2528
-#define ITM_ISREQ                   2529
-#define ITM_ISIMQ                   2530
+#define ITM_ISRENZQ                 2529
+#define ITM_ISIMNZQ                 2530
 #define ITM_ISVECT2DQ               2531
 #define ITM_ISVECT3DQ               2532
 #define ITM_SI_Ki                   2533
@@ -2632,9 +2632,9 @@
 #define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
 #define ITM_RAD2_XFN                2555
-#define ITM_2556                    2556
+#define ITM_RDP_XFN                 2556
 
-#define MNU_2557                    2557
+#define ITM_RSD_XFN                 2557
 #define ITM_sin_XFN                 2558
 #define ITM_cos_XFN                 2559
 #define ITM_tan_XFN                 2560
@@ -2657,7 +2657,7 @@
 #define ITM_MOD_XFN                 2577
 #define ITM_MODANG_XFN              2578
 #define ITM_TO_XFN                  2579
-#define ITM_2580                    2580
+#define ITM_CHS_XFN                 2580
 #define ITM_2581                    2581
 #define ITM_DRG_XFN                 2582
 #define ITM_SQR_XFN                 2583
@@ -2669,9 +2669,9 @@
 #define ITM_3STO                    2588
 #define ITM_3RCL                    2589
 
-#define ITM_NDUP                    2590
-#define ITM_NSWAP                   2591
-#define ITM_NDROP                   2592
+#define ITM_NDUP_OLD                2590
+#define ITM_NSWAP_OLD               2591
+#define ITM_NDROP_OLD               2592
 #define ITM_2STO                    2593
 #define ITM_2RCL                    2594
 #define ITM_4SWAP                   2595
@@ -2679,8 +2679,8 @@
 
 #define MNU_XXFCNS                  2596
 #define MNU_MULTSTK                 2597
-#define ITM_2598                    2598
-#define ITM_2599                    2599
+#define ITM_MtoTH                   2598
+#define ITM_THtoM                   2599
 
 #define MNU_UNIFORM                 2600    // Uniform distributions
 #define ITM_UNIFORMP                2601
@@ -2703,13 +2703,136 @@
 #define ITM_2618                    2618
 #define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
 
+
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
 
 #define PROBMENUSTART2 MNU_UNIFORM
 #define PROBMENUEND2   ITM_2619
 
-#define LAST_ITEM                   2620
+#define ITM_NDUP                    2620
+#define ITM_NSWAP                   2621
+#define ITM_NDROP                   2622
+#define ITM_MATX_A_1                2623
+#define ITM_3R3P                    2624
+
+#define MNU_DEV                     2625
+#define ITM_SetHP35                 2626
+#define ITM_SetC47                  2627
+#define ITM_SetJM                   2628
+#define ITM_SetRJ                   2629
+#define ITM_2630                    2630
+#define ITM_2631                    2631
+#define ITM_2632                    2632
+#define ITM_2633                    2633
+#define ITM_2634                    2634
+#define ITM_2635                    2635
+#define ITM_2636                    2636
+#define ITM_2637                    2637
+#define MNU_TAMSTO_TVM              2638
+#define MNU_TAMRCL_TVM              2639
+#define ITM_STORCL_NPPER            2640
+#define ITM_STORCL_IPonA            2641
+#define ITM_STORCL_PV               2642
+#define ITM_STORCL_FV               2643
+#define ITM_STORCL_PMT              2644
+#define ITM_STORCL_PPERonA          2645
+#define ITM_STORCL_CPERonA          2646
+#define ITM_dddVEL1                 2647
+#define ITM_dddVEL2                 2648
+#define ITM_dddVEL3                 2649
+#define ITM_dddVEL                  2650
+#define ITM_dddIX                   2651
+#define ITM_dddEL                   2652
+#define ITM_dddIJ                   2653
+#define ITM_Max                     2654
+#define ITM_Min                     2655
+#define ITM_Config                  2656
+#define ITM_Stack                   2657
+
+#define ITM_ERGtoJ                  2658
+#define ITM_JtoERG                  2659
+#define ITM_FoetoJ                  2660
+#define ITM_JtoFoe                  2661
+
+#define ITM_LR_A0                   2662
+#define ITM_LR_A1                   2663
+#define ITM_LR_A2                   2664
+
+#define ITM_CtoK                    2665
+#define ITM_KtoC                    2666
+#define ITM_RAtoK                   2667
+#define ITM_KtoRA                   2668
+#define ITM_RAtoF                   2669
+#define ITM_FtoRA                   2670
+#define ITM_EVKBtoK                 2671
+#define ITM_KtoEVKB                 2672
+#define ITM_FtoK                    2673
+#define ITM_KtoF                    2674
+#define ITM_2675                    2675
+#define ITM_2676                    2676
+#define ITM_2677                    2677
+#define ITM_2678                    2678
+#define ITM_2679                    2679
+#define ITM_2680                    2680 //spares for the temp menu
+
+#define MNU_PRINTER                 2681
+#define ITM_PRINTERALPHA            2682
+#define ITM_PRINTERHP               2683
+#define ITM_PRINTERMARTEL           2684
+#define ITM_PRINTEROTHER            2685
+#define ITM_PRINTERDLAYQ            2686
+#define ITM_PRINTERON               2687
+#define ITM_PRINTEROFF              2688
+#define ITM_MAN                     2689
+#define ITM_NORM                    2690
+#define ITM_TRACE                   2691
+#define ITM_STRACE                  2692
+#define ITM_PRINTERLIST             2693
+#define ITM_PRINTERXFN              2694
+#define ITM_PRINTERCHAR             2695
+#define ITM_PRINTERTAB              2696
+#define ITM_PRINTERHASH             2697
+#define ITM_2698                    2698
+#define ITM_PRINT_ALL_ITEMS         2699 //spares for the print menu
+
+#define ITM_3DPHYS                  2700
+#define ITM_3DXYZ                   2701
+#define ITM_STKtoV3                 2702
+#define ITM_V3toSTK                 2703
+
+#define ITM_PNORM                   2704
+#define ITM_NNZ                     2705
+#define ITM_CNORM                   2706
+#define ITM_2707                    2707
+#define ITM_2708                    2708
+#define ITM_2709                    2709
+#define ITM_CSUM                    2710
+#define MNU_TAMNORM                 2711
+#define ITM_M_CC                    2712
+#define ITM_M_CMAX                  2713
+#define ITM_M_CMIN                  2714
+#define ITM_M_FIND                  2715
+
+#define ITM_AMORT_P1                2716
+#define ITM_AMORT_P2                2717
+#define ITM_AMORT_INT               2718
+#define ITM_AMORT_PRN               2719
+#define ITM_AMORT_BAL               2720
+#define ITM_AMORT_NXT               2721
+#define ITM_2722                    2722
+#define ITM_2723                    2723
+#define ITM_2724                    2724
+#define ITM_2725                    2725 //spares for TVM/AMORT
+
+#define ITM_MIDENT                  2726
+#define ITM_M_SQRT                  2727
+#define ITM_RCLVEL                  2728
+#define ITM_STOVEL                  2729
+#define ITM_2730                    2730
+#define ITM_2731                    2731 //spares for Matrix/Vector
+
+#define LAST_ITEM                   2732
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
