@@ -24,36 +24,54 @@ TO_QSPI void (* const Rdp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
  * \param[in] digits uint16_t
  * \return void
  ***********************************************/
+//Modified this function to not use temporary variables, in order to transparantly work with 159 and 1071 digits as well
+
 void roundToDecimalPlace(const real_t *source, real_t *destination, uint16_t digits, realContext_t *realContext) {
-  real_t val, tmp;
+  real_t sign, output;
   int32_t exponent;
 
   if(realIsZero(source) || realIsSpecial(source)) {
-    realCopy(source, destination);
+    if(source != destination) {
+      realCopy(source, destination);
+    }
     return;
   }
 
-  realCopy(source, &val);
-  exponent = val.digits + val.exponent - 1;
-  val.exponent -= exponent;
+  if(source != destination) {
+    realCopy(source, destination);
+  }
+
+  exponent = destination->digits + destination->exponent - 1;
+  destination->exponent -= exponent;
+
   while(1) { // in case of subnormal
-    realCopy(&val, &tmp);
-    if(realCompareAbsLessThan(&tmp, const_1)) {
-      ++val.exponent;
-      --exponent;
+    realCompare(destination, const_0, &sign, &ctxtReal4);
+    if(realIsNegative(&sign)) {
+      realCompare(destination, const__1, &output, realContext);
+      if(realIsPositive(&output)) {
+        ++destination->exponent;
+        --exponent;
+      }
+      else {
+        break;
+      }
     }
     else {
-      break;
+      realCompare(destination, const_1, &output, realContext);
+      if(realIsNegative(&output)) {
+        ++destination->exponent;
+        --exponent;
+      }
+      else {
+        break;
+      }
     }
   }
-  val.exponent += exponent;
 
-  val.exponent += digits;
-  realToIntegralValue(&val, &val, roundingModeTable[roundingMode], realContext);
-  val.exponent -= digits;
-
-  realCopy(&val, destination);
-  return;
+  destination->exponent += exponent;
+  destination->exponent += digits;
+  realToIntegralValue(destination, destination, roundingModeTable[roundingMode], realContext);
+  destination->exponent -= digits;
 }
 
 

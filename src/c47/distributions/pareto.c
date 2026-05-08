@@ -7,15 +7,26 @@
 
 #include "c47.h"
 
-bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t qf) {
-  if(!saveLastX())
-    return false;
+ #if defined(SAVE_SPACE_DM42_17C)
+  void fnParetoP   (uint16_t unusedButMandatoryParameter){}
+  void fnParetoL   (uint16_t unusedButMandatoryParameter){}
+  void fnParetoU   (uint16_t unusedButMandatoryParameter){}
+  void fnParetoI   (uint16_t unusedButMandatoryParameter){}
+  void fnPareto2P  (uint16_t unusedButMandatoryParameter){}
+  void fnPareto2L  (uint16_t unusedButMandatoryParameter){}
+  void fnPareto2U  (uint16_t unusedButMandatoryParameter){}
+  void fnPareto2I  (uint16_t unusedButMandatoryParameter){}
+#else
 
-  if(!getRegisterAsReal(REGISTER_X, x)
-      || (mu != NULL && !getRegisterAsReal(REGISTER_M, mu))
-      || !getRegisterAsReal(REGISTER_S, sigma)
-      || !getRegisterAsReal(REGISTER_Q, alpha))
+
+bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t qf) {
+  if(!saveLastX()) {
+    return false;
+  }
+
+  if(!getRegisterAsReal(REGISTER_X, x) || (mu != NULL && !getRegisterAsReal(REGISTER_M, mu)) || !getRegisterAsReal(REGISTER_S, sigma) || !getRegisterAsReal(REGISTER_Q, alpha)) {
     goto err;
+  }
 
   if(realIsZero(sigma) || realIsNegative(sigma)) {
     displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -24,7 +35,7 @@ bool_t checkParamGPD(real_t *x, real_t *mu, real_t *sigma, real_t *alpha, bool_t
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto err;
   }
-  if (!qf && realCompareLessThan(x, mu == NULL ? sigma : mu)) {
+  if(!qf && realCompareLessThan(x, mu == NULL ? sigma : mu)) {
     displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function checkParamGPD:", "cannot calculate for x < sigma/mu", NULL, NULL);
@@ -83,10 +94,10 @@ void fnParetoI(uint16_t unusedButMandatoryParameter) {
   real_t x, t, sigma, alpha;
 
   if(checkParamGPD(&x, NULL, &sigma, &alpha, true)) {
-    if ((realIsNegative(&x) && !realIsZero(&x)) ||
-            realCompareGreaterThan(&x, const_1)) {
-      realCopy(const_NaN, &x);
-    } else {
+    if((realIsNegative(&x) && !realIsZero(&x)) || realCompareGreaterThan(&x, const_1)) {
+      realSetNaN(&x);
+    }
+    else {
       realChangeSign(&x);
       WP34S_Ln1P(&x, &t, &ctxtReal39);
       realDivide(&t, &alpha, &x, &ctxtReal39);
@@ -150,10 +161,10 @@ void fnPareto2I(uint16_t unusedButMandatoryParameter) {
   real_t x, mu, sigma, alpha, t;
 
   if(checkParamGPD(&x, &mu, &sigma, &alpha, true)) {
-    if ((realIsNegative(&x) && !realIsZero(&x)) ||
-            realCompareGreaterThan(&x, const_1)) {
-      realCopy(const_NaN, &x);
-    } else {
+    if((realIsNegative(&x) && !realIsZero(&x)) || realCompareGreaterThan(&x, const_1)) {
+      realSetNaN(&x);
+    }
+    else {
       realChangeSign(&x);
       WP34S_Ln1P(&x, &t, &ctxtReal39);
       realDivide(&t, &alpha, &x, &ctxtReal39);
@@ -168,3 +179,4 @@ void fnPareto2I(uint16_t unusedButMandatoryParameter) {
   }
 }
 
+#endif // SAVE_SPACE_DM42_17C

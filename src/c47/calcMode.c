@@ -3,7 +3,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
   void fnOff(uint16_t unusedParamButMandatory) {
     shiftF = false;
     shiftG = false;
@@ -36,7 +35,9 @@
 
   void calcModeNormal(void) {
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeNormal"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeNormal");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
     calcMode = CM_NORMAL;
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {  //JM
@@ -58,12 +59,10 @@
 
   void calcModeAim(uint16_t unusedButMandatoryParameter) {
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeAim"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeAim");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
-
-    if(!tam.mode) {
-      showSoftmenu(-MNU_ALPHA);        //JM ALPHA-HOME  Change to initialize the menu stack. it was true.
-    }
 
     alphaCase = CAPS_AIM_DEFAULT;
     nextChar = NC_NORMAL;
@@ -79,6 +78,10 @@
       yCursor = Y_POSITION_OF_AIM_LINE + 6;
       cursorFont = &standardFont;
       cursorEnabled = true;
+    }
+
+    if(!tam.mode) {
+      showSoftmenu(-MNU_ALPHA);        //JM ALPHA-HOME  Change to initialize the menu stack. it was true.
     }
 
     if(softmenuStack[0].softmenuId == 0) { // MyMenu
@@ -194,7 +197,9 @@
       }
     }
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### enterAsmMode catalog=%d",catalog); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### enterAsmMode catalog=%d", catalog);
+      jm_show_comment(tmp);
     #endif // PC_BUILD
 
     if(catalog) {
@@ -243,7 +248,9 @@
       printf(">>> saveForUndo from gui: calcModeNim\n");
     #endif // DEBUGUNDO
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^### calcModeNim"); jm_show_comment(tmp);
+      char tmp[200];
+      sprintf(tmp, "^^^^### calcModeNim");
+      jm_show_comment(tmp);
     #endif // PC_BUILD
     saveForUndo();
     if(lastErrorCode == ERROR_RAM_FULL) {
@@ -258,15 +265,16 @@
     clearSystemFlag(FLAG_ALPHA);
 
     liftStack();
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_X));
     setRegisterAngularMode(REGISTER_X, amNone);
 
     aimBuffer[0] = 0;
     hexDigits = 0;
 
-    if(!checkHP) clearRegisterLine(NIM_REGISTER_LINE, true, true);
+    if(!checkHP) {
+      clearRegisterLine(NIM_REGISTER_LINE, true, true);
+    }
     xCursor = 1;
     cursorEnabled = true;
     cursorFont = &numericFont;
   }
-#endif // !TESTSUITE_BUILD

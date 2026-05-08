@@ -97,9 +97,8 @@
     constFactorL100Tomguk,
     constFactorMgeuktok100M,
     constFactorK100Mtomik,
-
     constFactorCupcFzus,
-    constFactorCupcMl,
+    constFactorCupcMl,          /*  90 */
     constFactorCupukFzuk,
     constFactorCupukMl,
     constFactorFzukCupuk,
@@ -109,7 +108,7 @@
     constFactorFzusTbspc,
     constFactorFzusTspc,
     constFactorMlCupc,
-    constFactorMlCupuk,
+    constFactorMlCupuk,         /* 100 */
     constFactorMlPintlq,
     constFactorMlPintuk,
     constFactorMlQt,
@@ -119,7 +118,7 @@
     constFactorMlTspc,
     constFactorMlTspuk,
     constFactorPintlqMl,
-    constFactorPintukMl,
+    constFactorPintukMl,        /* 110 */
     constFactorQtMl,
     constFactorQtusMl,
     constFactorTbspcFzus,
@@ -129,8 +128,7 @@
     constFactorTspcFzus,
     constFactorTspcMl,
     constFactorTspukFzuk,
-    constFactorTspukMl,
-
+    constFactorTspukMl,         /* 120 */
     constFactorMlIn3,
     constFactorIn3Ml,
     constFactorFt3Gluk,
@@ -139,19 +137,18 @@
     constFactorFt3L,
     constFactorLQtus,
     constFactorQtusL,
-
     constFactorGlukFzuk,
-    constFactorFzukGluk,
+    constFactorFzukGluk,        /* 130 */
     constFactorGlusFzus,
     constFactorFzusGlus,
-
     constFactoreVJ,
     constFactorJeV,
-
     constFactormmBanana,
     constFactorBananamm,
     constFactorInchBanana,
     constFactorBananaInch,
+    constFactorErgJ,
+    constFactorFoeJ,            /* 140 */
 
     constFactorEND              /* MUST be last */
   };
@@ -159,8 +156,7 @@
   void fnUnitConvert  (uint16_t multiplyDivide);
 
   // Temperature
-  void fnCvtCToF      (uint16_t unusedButMandatoryParameter);
-  void fnCvtFToC      (uint16_t unusedButMandatoryParameter);
+  void fnCvtTemp      (uint16_t ix);
 
   // ...
   void fnCvtRatioDb   (uint16_t tenOrTwenty);

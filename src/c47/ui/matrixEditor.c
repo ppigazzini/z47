@@ -9,7 +9,6 @@
 
 #define addFlag true
 
-#if !defined(TESTSUITE_BUILD)
   any34Matrix_t         openMatrixMIMPointer;
   bool_t                matEditMode;
   uint16_t              scrollRow;
@@ -68,10 +67,19 @@
   static bool_t decJComplex(complex34Matrix_t *matrix) {
     return decJReal((real34Matrix_t *)matrix);
   }
-#endif // !defined(TESTSUITE_BUILD)
 
 void fnEditMatrix(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
+  if(isRegisterMatrixVector((regist == NOPARAM) ? REGISTER_X : regist) && getVectorRegisterPolarMode((regist == NOPARAM) ? REGISTER_X : regist) != 0) {  //refuse editing a polar vector in the matrix editor
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType((regist == NOPARAM) ? REGISTER_X : regist));
+      moreInfoOnError("In function fnEditMatrix:", errorMessage, "Cannot edit polar format as a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
+  leaveTamModeIfEnabled();
+
   saveStatsMatrix();
   const uint16_t reg = (regist == NOPARAM) ? REGISTER_X : regist;
   if((getRegisterDataType(reg) == dtReal34Matrix) || (getRegisterDataType(reg) == dtComplex34Matrix)) {
@@ -86,20 +94,22 @@ void fnEditMatrix(uint16_t regist) {
     nimBufferDisplay[0] = 0;
     scrollRow = scrollColumn = 0;
     showMatrixEditor();
+    #if defined(IR_PRINTING)
+      refreshScreen(80);
+      printTraceMatElement(LINE_FULL);
+    #endif //IR_PRINTING
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
-    moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(reg));
+      moreInfoOnError("In function fnEditMatrix:", errorMessage, "is not a matrix.", "");
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnOldMatrix(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
@@ -107,70 +117,64 @@ void fnOldMatrix(uint16_t unusedParamButMandatory) {
     cursorEnabled = false;
 
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-        if(openMatrixMIMPointer.realMatrix.matrixElements) {
-          realMatrixFree(&openMatrixMIMPointer.realMatrix);
-        }
+      if(openMatrixMIMPointer.realMatrix.matrixElements) {
+        realMatrixFree(&openMatrixMIMPointer.realMatrix);
+      }
       convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &openMatrixMIMPointer.realMatrix);
     }
     else {
-        if(openMatrixMIMPointer.complexMatrix.matrixElements) {
-          complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
-        }
+      if(openMatrixMIMPointer.complexMatrix.matrixElements) {
+        complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
+      }
       convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &openMatrixMIMPointer.complexMatrix);
     }
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-    sprintf(errorMessage, "works in MIM only");
-    moreInfoOnError("In function fnOldMatrix:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "works in MIM only");
+      moreInfoOnError("In function fnOldMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToElement(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     runFunction(ITM_M_GOTO_ROW);
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToRow(uint16_t row) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     tmpRow = row;
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToRow:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnGoToColumn(uint16_t col) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     if(tmpRow == 0 || tmpRow > openMatrixMIMPointer.header.matrixRows || col == 0 || col > openMatrixMIMPointer.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "(%" PRIu16 ", %" PRIu16 ") out of range", tmpRow, col);
-        moreInfoOnError("In function putGoToColumn:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -187,12 +191,11 @@ void fnGoToColumn(uint16_t col) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnGoToColumn:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -207,22 +210,17 @@ void fnSetGrowMode(uint16_t growFlag) {
 
 
 void fnIncDecI(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decIReal : incIReal, (mode == DEC_FLAG) ? decIComplex : incIComplex);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 void fnIncDecJ(uint16_t mode) {
-  #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decJReal : incJReal, (mode == DEC_FLAG) ? decJComplex : incJComplex);
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void _fnInsRow(bool_t add) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
@@ -235,12 +233,11 @@ void _fnInsRow(bool_t add) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
-      moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+      moreInfoOnError("In function _fnInsRow:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -253,7 +250,6 @@ void fnAddRow(uint16_t unusedParamButMandatory) {
 
 
 void _fnInsCol(bool_t add) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
@@ -266,12 +262,11 @@ void _fnInsCol(bool_t add) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
-      moreInfoOnError("In function fnInsCol:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+      moreInfoOnError("In function _fnInsCol:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 void fnInsCol(uint16_t unusedParamButMandatory) {
@@ -283,7 +278,6 @@ void fnAddCol(uint16_t unusedParamButMandatory) {
 
 
 void fnDelRow(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(openMatrixMIMPointer.header.matrixRows > 1) {
@@ -298,17 +292,15 @@ void fnDelRow(uint16_t unusedParamButMandatory) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelRow:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
 void fnDelCol(uint16_t unusedParamButMandatory) {
-  #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(openMatrixMIMPointer.header.matrixColumns > 1) {
@@ -323,16 +315,14 @@ void fnDelCol(uint16_t unusedParamButMandatory) {
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "works in MIM only");
       moreInfoOnError("In function fnDelCol:", errorMessage, NULL, NULL);
-      #endif // PC_BUILD
-    }
-  #endif // !TESTSUITE_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 static int16_t getRegisterAsInt(bool_t asArrayPointer, calcRegister_t reg) {
   int16_t ret;
   longInteger_t tmp_lgInt;
@@ -494,10 +484,10 @@ void showMatrixEditor() {
   if(aimBuffer[0] == 0) {
     clearRegisterLine(NIM_REGISTER_LINE, true, true);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, toDisplayVectorMatrix);
+      showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, toDisplayVectorMatrix, !regXp);
     }
     else {
-      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR));
+      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR), !regXp);
     }
   }
   else {
@@ -558,18 +548,33 @@ void showMatrixEditor() {
 }
 
 void mimEnter(bool_t commit) {
+  bool_t realChanged = false;
   int cols = openMatrixMIMPointer.header.matrixColumns;
+#if defined(OPTION_VECTOR_EDIT)
+  int rows = openMatrixMIMPointer.header.matrixRows;
+  int tag  = openMatrixMIMPointer.header.mtag;
+#endif //OPTION_VECTOR_EDIT
   int16_t row = getIRegisterAsInt(true);
   int16_t col = getJRegisterAsInt(true);
 
   if(aimBuffer[0] != 0) {
+    #if defined(IR_PRINTING)
+      if(aimBuffer[0] == '+') {
+        printTraceString(aimBuffer + 1, LINE_NOLF);
+      }
+      else {
+        printTraceString(aimBuffer, LINE_NOLF);
+      }
+    #endif //IR_PRINTING
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+      real34_t real34tmp;
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
 
       switch(nimNumberPart) {
         case NP_FRACTION_DENOMINATOR:
         case NP_HP32SII_DENOMINATOR:
-          closeNimWithFraction(real34Ptr);
+          closeNimWithFraction(&real34tmp);
+          realChanged = true;
           break;
         case NP_COMPLEX_INT_PART:
         case NP_COMPLEX_FLOAT_PART:
@@ -589,7 +594,50 @@ void mimEnter(bool_t commit) {
           break;
         }
         default:
-          stringToReal34(aimBuffer, real34Ptr);
+          stringToReal34(aimBuffer, &real34tmp);
+          realChanged = true;
+      }
+
+      if(realChanged) {
+#if defined(OPTION_VECTOR_EDIT)
+        if(isMatrixVector(rows, cols)) {
+          if(isMatrix2dVectorPOL(rows, cols, tag)) {
+            real_t magnitude, theta;
+            int ang = (tag & 0x07) == amNone ? currentAngularMode : (tag & 0x07);
+            real34ToReal(&openMatrixMIMPointer.realMatrix.matrixElements[0], &magnitude);
+            real34ToReal(&openMatrixMIMPointer.realMatrix.matrixElements[1], &theta);
+            realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+            convertAngleFromTo(&theta, amRadian, ang, &ctxtReal39);
+            if(col == 0) {
+              real34ToReal(&real34tmp, &magnitude);
+            }
+            if(col == 1) {
+              real34ToReal(&real34tmp, &theta);
+            }
+            convertAngleFromTo(&theta, ang, amRadian, &ctxtReal39);
+            if(realCompareLessThan(&magnitude, const_0)) {
+              realSetPositiveSign(&magnitude);
+              realAdd(&theta, const_pi, &theta, &ctxtReal39);
+            }
+            realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+            realToReal34(&magnitude, &openMatrixMIMPointer.realMatrix.matrixElements[0]);
+            realToReal34(&theta,     &openMatrixMIMPointer.realMatrix.matrixElements[1]);
+          }
+          else if(isMatrix3dVectorSPH(rows, cols, tag)) {
+//add code for SPH editing           //
+          }
+          else if(isMatrix3dVectorCYL(rows, cols, tag)) {
+//add code for CYL editing           //
+          }
+          else {
+            real34Copy(&real34tmp, real34Ptr);
+          }
+        }
+        else
+#endif //OPTION_VECTOR_EDIT
+        {
+          real34Copy(&real34tmp, real34Ptr);
+        }
       }
     }
     else {
@@ -599,7 +647,7 @@ void mimEnter(bool_t commit) {
         case NP_FRACTION_DENOMINATOR:
         case NP_HP32SII_DENOMINATOR:
           closeNimWithFraction(VARIABLE_REAL34_DATA(complex34Ptr));
-          real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
+          real34SetZero(VARIABLE_IMAG34_DATA(complex34Ptr));
           break;
         case NP_COMPLEX_INT_PART:
         case NP_COMPLEX_FLOAT_PART:
@@ -610,7 +658,7 @@ void mimEnter(bool_t commit) {
           break;
         default:
           stringToReal34(aimBuffer, VARIABLE_REAL34_DATA(complex34Ptr));
-          real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
+          real34SetZero(VARIABLE_IMAG34_DATA(complex34Ptr));
       }
     }
 
@@ -624,9 +672,11 @@ void mimEnter(bool_t commit) {
   if(commit) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, matrixIndex);
+      setRegisterTag(matrixIndex, openMatrixMIMPointer.header.mtag);
     }
     else {
       convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, matrixIndex);
+      setRegisterTag(matrixIndex, openMatrixMIMPointer.header.mtag);
     }
   }
   updateMatrixHeightCache();
@@ -648,7 +698,7 @@ void mimAddNumber(int16_t item) {
   const int16_t col = getJRegisterAsInt(true);
 
   switch(item) {
-      case ITM_EXPONENT: {
+    case ITM_EXPONENT: {
       if(aimBuffer[0] == 0) {
         aimBuffer[0] = '+';
         aimBuffer[1] = '1';
@@ -658,9 +708,9 @@ void mimAddNumber(int16_t item) {
         _resetCursorPos();
       }
       break;
-      }
+    }
 
-      case ITM_PERIOD: {
+    case ITM_PERIOD: {
       if(aimBuffer[0] == 0) {
         aimBuffer[0] = '+';
         aimBuffer[1] = '0';
@@ -669,7 +719,7 @@ void mimAddNumber(int16_t item) {
         _resetCursorPos();
       }
       break;
-      }
+    }
 
     case ITM_0 :
     case ITM_1 :
@@ -680,7 +730,7 @@ void mimAddNumber(int16_t item) {
     case ITM_6 :
     case ITM_7 :
     case ITM_8 :
-      case ITM_9: {
+    case ITM_9: {
       if(aimBuffer[0] == 0) {
         aimBuffer[0] = '+';
         aimBuffer[1] = 0;
@@ -688,20 +738,20 @@ void mimAddNumber(int16_t item) {
         _resetCursorPos();
       }
       break;
-      }
+    }
 
-      case ITM_BACKSPACE: {
+    case ITM_BACKSPACE: {
       if(aimBuffer[0] == 0) {
         const int cols = openMatrixMIMPointer.header.matrixColumns;
         const int16_t row = getIRegisterAsInt(true);
         const int16_t col = getJRegisterAsInt(true);
 
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-          real34Zero(&openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+          real34SetZero(&openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
         }
         else {
-          real34Zero(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
-          real34Zero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
         setSystemFlag(FLAG_ASLIFT);
         return;
@@ -712,9 +762,9 @@ void mimAddNumber(int16_t item) {
         cursorEnabled = false;
       }
       break;
-      }
+    }
 
-      case ITM_CHS: {
+    case ITM_CHS: {
       if(aimBuffer[0] == 0) {
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
           real34ChangeSign(&openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
@@ -727,51 +777,54 @@ void mimAddNumber(int16_t item) {
         return;
       }
       break;
-      }
+    }
 
-      case ITM_op_j_pol:
-      case ITM_op_j:
-      case ITM_CC: {
-        if(aimBuffer[0] == 0) {
-          if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-            complex34Matrix_t cxma;
-            convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
-            realMatrixFree(&openMatrixMIMPointer.realMatrix);
-            convertComplex34MatrixToComplex34MatrixRegister(&cxma, matrixIndex);
-            if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
-              setRegisterTag(matrixIndex, currentAngularMode | amPolar);
-            }
-            openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
-            openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
-            openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
-          }
-          else {
-            complex34_t *elm = &openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col];
-            if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
-              real_t theta;
-              realCopy(const_piOn2, &theta);
-              convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
-              real34Copy(const34_1, VARIABLE_REAL34_DATA(elm));
-              real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
-            }
-            else {
-              real34Zero(VARIABLE_REAL34_DATA(elm));
-              real34Copy(const34_1, VARIABLE_IMAG34_DATA(elm));
-            }
-          }
-          return;
-        }
-      break;
-      }
-
-      case ITM_CONSTpi: {
+    case ITM_op_j_pol:
+    case ITM_op_j:
+    case ITM_CC: {
       if(aimBuffer[0] == 0) {
         if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-          realToReal34(const_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+          complex34Matrix_t cxma;
+          convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
+          realMatrixFree(&openMatrixMIMPointer.realMatrix);
+          convertComplex34MatrixToComplex34MatrixRegister(&cxma, matrixIndex);
+          if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
+            setRegisterTag(matrixIndex, currentAngularMode | amPolar);
+          }
+          openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
+          openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
+          openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
         }
         else {
-          realToReal34(const_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
-          real34Zero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          complex34_t *elm = &openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col];
+          if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
+            real_t theta;
+            realCopy(const39_piOn2, &theta);
+            convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
+            real34SetOne(VARIABLE_REAL34_DATA(elm));
+            real34Copy(&theta, VARIABLE_IMAG34_DATA(elm));
+          }
+          else {
+            real34SetZero(VARIABLE_REAL34_DATA(elm));
+            real34SetOne(VARIABLE_IMAG34_DATA(elm));
+          }
+        }
+        #if defined(IR_PRINTING)
+          printTrace(lastFunc, item);
+        #endif //IR_PRINTING
+        return;
+      }
+      break;
+    }
+
+    case ITM_CONSTpi: {
+      if(aimBuffer[0] == 0) {
+        if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+          realToReal34(const39_pi, &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col]);
+        }
+        else {
+          realToReal34(const39_pi, VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
+          real34SetZero(VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col]));
         }
       }
       else if(nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[strlen(aimBuffer) - 1] == 'i') {
@@ -779,12 +832,12 @@ void mimAddNumber(int16_t item) {
         reallyRunFunction(ITM_ENTER, NOPARAM);
       }
       return;
-      }
-
-      default: {
-      return;
-  }
     }
+
+    default: {
+      return;
+    }
+  }
   addItemToNimBuffer(item);
   calcMode = CM_MIM;
 }
@@ -803,7 +856,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
   }
   else {
     real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], &re1);
-    real34Zero(&im1);
+    real34SetZero(&im1);
   }
 
   mimEnter(true);
@@ -816,7 +869,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
   }
   else {
     real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j], &re);
-    real34Zero(&im);
+    real34SetZero(&im);
   }
   if(isComplex) {
     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
@@ -832,21 +885,21 @@ void mimRunFunction(int16_t func, uint16_t param) {
 
   switch(getRegisterDataType(REGISTER_X)) {
       case dtLongInteger: {
-      convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-      break;
+        convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        break;
       }
       case dtShortInteger: {
-      convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-      break;
+        convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        break;
       }
     case dtReal34:
-      case dtComplex34: {
-      break;
+        case dtComplex34: {
+        break;
       }
-      default: {
+    default: {
       lastErrorCode = ERROR_INVALID_DATA_TYPE_FOR_OP;
-  }
     }
+  }
 
   if(lastErrorCode == ERROR_NONE) {
     if(isComplex && getRegisterDataType(REGISTER_X) == dtComplex34) {
@@ -854,7 +907,7 @@ void mimRunFunction(int16_t func, uint16_t param) {
     }
     else if(isComplex) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_REAL34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
-      real34Zero(                                  VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
+      real34SetZero(                                  VARIABLE_IMAG34_DATA(&openMatrixMIMPointer.complexMatrix.matrixElements[i * openMatrixMIMPointer.header.matrixColumns + j]));
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) { // Convert to a complex matrix
       complex34Matrix_t cxma;
@@ -904,15 +957,15 @@ void mimRunFunction(int16_t func, uint16_t param) {
 
 void mimFinalize(void) {
   if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      if(openMatrixMIMPointer.realMatrix.matrixElements) {
+    if(openMatrixMIMPointer.realMatrix.matrixElements) {
       realMatrixFree(&openMatrixMIMPointer.realMatrix);
-  }
     }
+  }
   else if(getRegisterDataType(matrixIndex) == dtComplex34Matrix) {
-      if(openMatrixMIMPointer.complexMatrix.matrixElements) {
+    if(openMatrixMIMPointer.complexMatrix.matrixElements) {
       complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
-  }
     }
+  }
   matrixIndex = INVALID_VARIABLE;
 }
 
@@ -925,12 +978,116 @@ void mimRestore(void) {
   }
 }
 
+
+static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
+#if defined(OPTION_VECTOR)
+  if((getTagAngularMode(matrix->header.mtag)) != amNone) {
+    if(isMatrix3dVector(rows, cols)) {
+      if((is3dVectorPolarSPH(matrix->header.mtag)) && (j == 1 || j ==2)) {
+        *toBeAngle = getTagAngularMode(matrix->header.mtag);
+      }
+      else if((is3dVectorPolarCYL(matrix->header.mtag)) && (j == 1)) {
+        *toBeAngle = getTagAngularMode(matrix->header.mtag);
+      }
+    }
+    else if(isMatrix2dVector(rows, cols)) {
+      if((is2dVectorPolar(matrix->header.mtag)) && (j == 1)) {
+        *toBeAngle = getTagAngularMode(matrix->header.mtag);
+      }
+    }
+  }
+#endif //OPTION_VECTOR
+}
+
+
+
+static void extractVectorElement34(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle, uint16_t digits, real_t *aa, real_t *bb, real_t *cc) {
+#if defined(OPTION_VECTOR)
+  bool_t is2d    = isMatrix2dVector(rows, cols);
+  bool_t is3d    = isMatrix3dVector(rows, cols);
+  if(!is2d && !is3d) {
+    goto noPolarVector;
+  }
+
+  decContext c = ctxtReal39;
+  if(!getSystemFlag(FLAG_IRFRAC)) {
+    c.digits = digits + 3; //NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19); for vector element, at least two elements in vector, so no mor ethan 10+5 digits possible
+  }
+
+  if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
+    if(j == 0) {
+      convert3DtoSPH(matrix, aa, bb, cc, *toBeAngle, &c);   // Only do the expensive 3D conversion once, at the first element, j = 0; Store the results back to the caller storage aa, bb, cc and use cheap copying for bb and cc.
+    }
+    if(getSystemFlag(FLAG_3DPHYS)) {
+      switch(j) {
+        case 0: realToReal34(aa, element); break;
+        case 1: realToReal34(cc, element); break;
+        case 2: realToReal34(bb, element); break;
+        default:;
+      }
+    }
+    else {
+      switch(j) {
+        case 0: realToReal34(aa, element); break;
+        case 1: realToReal34(bb, element); break;
+        case 2: realToReal34(cc, element); break;
+        default:;
+      }
+    }
+
+    //printRealToConsole(aa, "SPH aa=", "\n");
+    //printRealToConsole(bb, "SPH bb=", "\n");
+    //printRealToConsole(cc, "SPH cc=", "\n");
+  }
+  else if((isMatrix3dVectorCYL(rows, cols, matrix->header.mtag))) {
+    if(j == 0) {
+      convert3DtoCYL(matrix, aa, bb, cc, *toBeAngle, &c);   // Only do the expensive 3D conversion once, at the first element, j = 0; Store the results back to the caller storage aa, bb, cc and use cheap copying for bb and cc.
+    }
+    switch(j) {
+      case 0: realToReal34(aa, element); break;
+      case 1: realToReal34(bb, element); break;
+      case 2: realToReal34(cc, element); break;
+      default:;
+    }
+    //printRealToConsole(aa, "CYL aa=", "\n");
+    //printRealToConsole(bb, "CYL bb=", "\n");
+    //printRealToConsole(cc, "CYL cc=", "\n");
+  }
+  else if((isMatrix2dVectorPOL(rows, cols, matrix->header.mtag))) {
+    if(j == 0) {
+      convert2DtoPOL(matrix, aa, bb, *toBeAngle, &c);      // Only do the expensive 2D conversion once, at the first element, j = 0; Store the results back to the caller storage aa & bb and use cheap copying for bb.
+    }
+    switch(j) {
+      case 0: realToReal34(aa, element); break;
+      case 1: realToReal34(bb, element); break;
+      default:;
+    }
+    //printRealToConsole(aa,"POL aa=","\n");
+    //printRealToConsole(bb,"POL bb=","\n");
+  }
+  else {
+noPolarVector:
+#endif //OPTION_VECTOR
+
+    real34Copy(&matrix->matrixElements[ii], element);
+    //printReal34ToConsole(element," RECT =","\n");
+#if defined(OPTION_VECTOR)
+  }
+#endif //OPTION_VECTOR
+}
+
+
+
+
+
 #define NUMERIC_FONT_HEIGHT_ (NUMERIC_FONT_HEIGHT - 4)        // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 #define STANDARD_FONT_HEIGHT_ (STANDARD_FONT_HEIGHT - 2)      // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 
-void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay) {
+void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
+  //printf("matrix->header.mtag = %d\n",matrix->header.mtag);
+  //printf("openMatrixMIMPointer.header.mtag) %d\n", openMatrixMIMPointer.header.mtag);
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
   int16_t X_POS = 0;
   int16_t totalWidth = 0, width = 0;
@@ -955,7 +1112,7 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t to
   }
 
   toDisplay |= forEditor || rows > 1;
-  strcpy(errorMessage,"[");
+  strcpy(errorMessage, "[");
 
   uint16_t maxCols = cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols;
   const uint16_t maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;
@@ -984,19 +1141,22 @@ smallFont:
   const bool_t leftEllipsis = (sCol > 0);
   int16_t digits;
 
-  if(prefixWidth > 0) {
+  if(!regXposition && prefixWidth > 0) {
     Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
   }
-  if(prefixWidth > 0 && font == &standardFont) {
+  if(!regXposition && prefixWidth > 0 && font == &standardFont) {
     Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
   }
 
+  bool_t allowIntegerDisplay = !(isMatrixVector(maxRows, maxCols) && (is3dVectorPolarSPH(matrix->header.mtag) || is3dVectorPolarCYL(matrix->header.mtag) || is2dVectorPolar(matrix->header.mtag)));
   for(int j = 0; j < maxCols; j++) {
-    allElementsInColAreIntegers[j]=true;
-    for(int i = 0; i < maxRows; i++) {
-      if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j])) {
-        allElementsInColAreIntegers[j]=false;
-        break;
+    allElementsInColAreIntegers[j] = allowIntegerDisplay;
+    if(allElementsInColAreIntegers[j]) {
+      for(int i = 0; i < maxRows; i++) {
+        if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) ){
+          allElementsInColAreIntegers[j]=false;
+          break;
+        }
       }
     }
   }
@@ -1048,12 +1208,29 @@ smallFont:
     baseWidth += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
   }
   baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+  baseWidth += 3;
 
-  if(prefixWidth > 0) {
+  char endChar[6];
+  endChar[0] = 0;
+  #if defined(OPTION_VECTOR)
+    strcpy(endChar, (isMatrix3dVectorCYL(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_c : \
+                    (isMatrix3dVectorSPH(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_s : \
+                    (isMatrix2dVectorPOL(rows, cols, matrix->header.mtag)) ? \
+                      "]" STD_SPACE_HAIR STD_SUP_p : \
+                      "]");
+  //printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
+  #else
+    strcpy(endChar, "]");
+  #endif //OPTION_VECTOR
+
+
+  if(!regXposition && prefixWidth > 0) {
     X_POS = prefixWidth;
   }
   else if(!forEditor) {
-    X_POS = SCREEN_WIDTH - ((colVector ? stringWidth("[]" STD_SUP_BOLD_T, font, true, true) : stringWidth("[]", font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
+    X_POS = SCREEN_WIDTH - 1 - ((colVector ? stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true) + stringWidth(STD_SUP_BOLD_T, font, true, true) : stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
   }
 
 if(toDisplay) {
@@ -1067,7 +1244,7 @@ if(toDisplay) {
         clearRegisterLine(REGISTER_T, true, true);
       }
   }
-  else if(prefixWidth > 0) {
+  else if(!regXposition && prefixWidth > 0) {
     clearRegisterLine(REGISTER_T, true, true);
       if(rows >= 2) {
         clearRegisterLine(REGISTER_Z, true, true);
@@ -1079,18 +1256,19 @@ if(toDisplay) {
         clearRegisterLine(REGISTER_X, true, true);
       }
   }
-}  
+}
   const uint16_t displayFormat1 = displayFormat;
   const uint8_t displayFormatDigits1 = displayFormatDigits;
 
 int16_t colX = 0;
+real_t aa, bb, cc;
 
   for(int i = 0; i < maxRows; i++) {
     if(toDisplay) {
       colX = stringWidth("[", font, true, true);
-      showString((maxRows == 1) ? "[" : (i == 0) ? STD_MAT_TL : (i + 1 == maxRows) ? STD_MAT_BL : STD_MAT_ML, font, X_POS + 1, Y_POS - (maxRows -1 - i) * fontHeight, vmNormal, true, false);
+      showString((maxRows == 1) ? "[" : (i == 0) ? STD_MAT_TL : (i + 1 == maxRows) ? STD_MAT_BL : STD_MAT_ML, font, X_POS + 5, Y_POS - (maxRows -1 - i) * fontHeight, vmNormal, false, false);
       if(leftEllipsis) {
-        showString(STD_ELLIPSIS " ", font, X_POS + stringWidth("[", font, true, true), Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+        showString(STD_ELLIPSIS " ", font, X_POS + 5 + stringWidth("[", font, true, true), Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
         colX += stringWidth(STD_ELLIPSIS " ", font, true, true);
       }
     }
@@ -1101,7 +1279,8 @@ int16_t colX = 0;
       if(allElementsInColAreIntegers[j]) {
         displayFormat = DF_FIX;
         displayFormatDigits = 0;
-      } else {
+      }
+      else {
         displayFormat = displayFormat1;
         displayFormatDigits = displayFormatDigits1;
       }
@@ -1111,10 +1290,20 @@ int16_t colX = 0;
         vm = vmNormal;
       }
       else {
-        real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], amNone, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+
+        uint8_t toBeAngle = amNone;
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
+        real34_t element;
+
+        if(displayFormat != DF_ALL) {
+          digits = 15;
+        }
+        extractVectorElement34(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle, digits, &aa, &bb, &cc);
+        real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], digits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+
         if(toDisplay) {
           if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
-            lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, LCD_EMPTY_VALUE);
+            lcd_fill_rect(X_POS + 5 + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, LCD_EMPTY_VALUE);
             vm = vmReverse;
           }
           else {
@@ -1124,24 +1313,25 @@ int16_t colX = 0;
       }
       if(toDisplay) {
         width = stringWidth(tmpString, font, true, true) + 1;
-        showString(tmpString, font, X_POS + colX + (((j == maxCols) && rightEllipsis) ? -stringWidth(" ", font, true, true) : (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j]), Y_POS - (maxRows -1 -i) * fontHeight, vm, true, false);
-        colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
+        showString(tmpString, font, X_POS + 5 + colX + (((j == maxCols) && rightEllipsis) ? -stringWidth(" ", font, true, true) : (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j]), Y_POS - (maxRows -1 -i) * fontHeight, vm, true, false);
+        colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true) - 1;
       } else {
         if(j > 0) {
-          strcat(errorMessage," ");
+          strcat(errorMessage, " ");
         }
-      strcat(errorMessage,tmpString);
+        strcat(errorMessage, tmpString);
       }
     }
 //end string creation
 
+//printf("AAAA: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
     if(toDisplay) {
-      showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+      showString((maxRows == 1) ? endChar : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       if(colVector == true) {
-        showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+        showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       }
     } else {
-      strcat(errorMessage,"]");
+      strcat(errorMessage, endChar);
       if(colVector == true) {
         strcat(errorMessage, STD_SUP_BOLD_T);
       }
@@ -1178,8 +1368,16 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   const int16_t exponentOutOfRange = 0x4000;
   bool_t noFix = false; const int16_t dspDigits = displayFormatDigits;
 
+  uint16_t startDigitCountDown = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2), 0) ), 10);
+  if(isMatrix3dVector(rows, cols)) {
+    startDigitCountDown = 5;
+  }
+  else if(isMatrix2dVector(rows, cols)) {
+    startDigitCountDown = 7;
+  }
+
   begin:
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = startDigitCountDown; k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }
@@ -1190,23 +1388,32 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 
     const uint16_t displayFormat1 = displayFormat;
     const uint8_t displayFormatDigits1 = displayFormatDigits;
+    real_t aa, bb, cc;
 
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         real34_t r34Val;
-        bool_t r34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol]);
-        real34Copy(&matrix->matrixElements[(i+sRow)*actualCols+j+sCol], &r34Val);
+//      real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
+
+        uint8_t toBeAngle = amNone;
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
+        uint16_t calcDigits = displayFormat == DF_ALL ? k : 15;
+        extractVectorElement34(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle, calcDigits, &aa, &bb, &cc);
+
+        bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
 
-        if(allElementsInColAreIntegers[j]) {
+        if(allElementsInColAreIntegers[j]){ // && !(maxRows == 1 && (maxCols == 2 || maxCols == 3))) {  //no integers needed in vector
           displayFormat = DF_FIX;
           displayFormatDigits = 0;
-        } else {
+        }
+        else {
           displayFormat = displayFormat1;
           displayFormatDigits = displayFormatDigits1;
         }
 
-        real34ToDisplayString(&r34Val, amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
+
+        real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, calcDigits, LIMITEXP, FRONTSPACE, cols*rows > 3 ? LIMITIRFRAC : LIGHTIRFRAC);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;
@@ -1293,7 +1500,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 }
 
 
-void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode) {
+void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode, bool_t regXposition) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
@@ -1348,10 +1555,10 @@ smallFont:
   bool_t leftEllipsis = (sCol > 0);
   int16_t digits;
 
-    if(prefixWidth > 0) {
+    if(!regXposition && prefixWidth > 0) {
       Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
     }
-    if(prefixWidth > 0 && font == &standardFont) {
+    if(!regXposition && prefixWidth > 0 && font == &standardFont) {
       Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
     }
 
@@ -1393,7 +1600,7 @@ smallFont:
     }
   baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
 
-    if(prefixWidth > 0) {
+    if(!regXposition && prefixWidth > 0) {
       X_POS = prefixWidth;
     }
     else if(!forEditor) {
@@ -1410,7 +1617,7 @@ smallFont:
         clearRegisterLine(REGISTER_T, true, true);
       }
   }
-  else if(prefixWidth > 0) {
+  else if(!regXposition && prefixWidth > 0) {
     clearRegisterLine(REGISTER_T, true, true);
       if(rows >= 2) {
         clearRegisterLine(REGISTER_Z, true, true);
@@ -1490,7 +1697,7 @@ smallFont:
       }
       colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
     }
-    showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+    showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth - 1, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
     if(colVector == true) {
       showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
     }
@@ -1533,7 +1740,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   }
   cpxUnitWidth = stringWidth(tmpString, font, true, true);
 
-  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2),0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
+  for(int k = max(min(displayFormatDigits*(displayFormat == DF_ALL ? 2 : 1), max((50/cols-2), 0) ), 10); k >= 1; k--) {                                    //HERE IS THE TIME WASTER - CYCLING THROUGH 15 PRECISIONS !! REDUCE SIGNIFICANTLY from 15 to settingx2 or setting
       if(displayFormat == DF_ALL) {
         *digits = k;
       }
@@ -1559,7 +1766,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_r[j] < rPadWidth_r[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_r[j] = rPadWidth_r[i * MATRIX_MAX_COLUMNS + j];
@@ -1589,7 +1796,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_i[j] < rPadWidth_i[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_i[j] = rPadWidth_i[i * MATRIX_MAX_COLUMNS + j];
@@ -1667,4 +1874,3 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   }
   return totalWidth;
 }
-#endif // !defined(TESTSUITE_BUILD)

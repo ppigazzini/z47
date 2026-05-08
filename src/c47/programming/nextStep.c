@@ -144,7 +144,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to K, and local registers from .00 to .98 OR value 0 OR value 1
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98 OR value 0 OR value 1
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
@@ -250,8 +250,18 @@ uint8_t *countLiteralBytes(uint8_t *step) {
 
 
 uint8_t *findNextStep(uint8_t *step) {
+  if(step == NULL) {
+    #if !defined(DMCP_BUILD)
+      printf("\nIn function findNextStep: NULL step pointer!\n");
+    #endif // !DMCP_BUILD
+    return NULL;
+  }
   if(checkOpCodeOfStep(step, ITM_KEY)) {
-    return findKey2ndParam(findKey2ndParam(step));
+    uint8_t *afterFirst = findKey2ndParam(step);
+    if(afterFirst == NULL) {
+      return NULL;
+    }
+    return findKey2ndParam(afterFirst);
   }
   else {
     return findKey2ndParam(step);
@@ -261,6 +271,12 @@ uint8_t *findNextStep(uint8_t *step) {
 
 
 uint8_t *findKey2ndParam(uint8_t *step) {
+  if(step == NULL) {
+    #if !defined(DMCP_BUILD)
+      printf("\nIn function findKey2ndParam: NULL step pointer!\n");
+    #endif // !DMCP_BUILD
+    return NULL;
+  }
   uint16_t op = *(step++);
   if(op & 0x80) {
     op &= 0x7f;
@@ -317,10 +333,15 @@ uint8_t *findPreviousStep(uint8_t *step) {
   }
 
   nextStep = findNextStep(searchFromStep);
-  while(nextStep != step) {
+  while(nextStep != NULL && nextStep != step) {
     searchFromStep = nextStep;
     nextStep = findNextStep(searchFromStep);
   }
+  #if !defined(DMCP_BUILD)
+    if(nextStep == NULL) {
+      printf("\nIn function findPreviousStep: passed target without finding it!\n");
+    }
+  #endif // !DMCP_BUILD
 
   return searchFromStep;
 }
@@ -328,7 +349,6 @@ uint8_t *findPreviousStep(uint8_t *step) {
 
 
 static void _showStep(void) {
-  #if !defined(TESTSUITE_BUILD)
     bool_t lblOrEnd;
     uint8_t *tmpStep;
 
@@ -365,7 +385,6 @@ static void _showStep(void) {
     }
 //    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -464,6 +483,15 @@ static void _sstInPem(void) {
   defineFirstDisplayedStep();
 }
 
+
+void showStep(void) {
+  temporaryInformation = TI_NO_INFO;
+  refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
+  refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
+  _showStep();
+}
+
+
 void fnSst(uint16_t unusedButMandatoryParameter) {
   screenUpdatingMode = SCRUPD_AUTO;
   if(calcMode == CM_PEM) {
@@ -488,10 +516,7 @@ void fnSst(uint16_t unusedButMandatoryParameter) {
     _sstInPem();
   }
   else {
-    temporaryInformation = TI_NO_INFO;
-    refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
-    refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
-    _showStep();
+    showStep();
     if(currentInputVariable != INVALID_VARIABLE) {
       if(currentInputVariable & 0x8000) {
         fnDropY(NOPARAM);
@@ -525,8 +550,15 @@ void fnSkip(uint16_t numberOfSteps) {
     uint8_t *tmpStep;
     tmpStep = currentStep;
     if(!isAtEndOfProgram(tmpStep) && !isAtEndOfPrograms(tmpStep)) {
+      uint8_t *next = findNextStep(currentStep);
+      if(next == NULL) {
+        #if !defined(DMCP_BUILD)
+          printf("\nIn function fnSkip: findNextStep returned NULL!\n");
+        #endif // !DMCP_BUILD
+        break;
+      }
       ++currentLocalStepNumber;
-      currentStep = findNextStep(currentStep);
+      currentStep = next;
     }
     else {
       break;
@@ -581,7 +613,14 @@ void fnCase(uint16_t regist) {
 void defineCurrentStep(void) {
   currentStep = programList[currentProgramNumber - 1].instructionPointer;
   for(uint16_t i = 1; i < currentLocalStepNumber; ++i) {
-    currentStep = findNextStep(currentStep);
+    uint8_t *next = findNextStep(currentStep);
+    if(next == NULL) {
+      #if !defined(DMCP_BUILD)
+        printf("\nIn function defineCurrentStep: findNextStep returned NULL at step %u!\n", i);
+      #endif // !DMCP_BUILD
+      break;
+    }
+    currentStep = next;
   }
 }
 
@@ -590,6 +629,13 @@ void defineCurrentStep(void) {
 void defineFirstDisplayedStep(void) {
   firstDisplayedStep = programList[currentProgramNumber - 1].instructionPointer;
   for(uint16_t i = 1; i < firstDisplayedLocalStepNumber; ++i) {
-    firstDisplayedStep = findNextStep(firstDisplayedStep);
+    uint8_t *next = findNextStep(firstDisplayedStep);
+    if(next == NULL) {
+      #if !defined(DMCP_BUILD)
+        printf("\nIn function defineFirstDisplayedStep: findNextStep returned NULL at step %u!\n", i);
+      #endif // !DMCP_BUILD
+      break;
+    }
+    firstDisplayedStep = next;
   }
 }

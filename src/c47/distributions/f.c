@@ -20,13 +20,13 @@
 
 #else
   static bool_t checkParamF(real_t *x, real_t *i, real_t *j) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_N, j))
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i) || !getRegisterAsReal(REGISTER_N, j)) {
       goto err;
+    }
 
     if(!(checkRegisterNoFP(i) || checkRegisterNoFP(j))) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -155,11 +155,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
 
@@ -175,11 +175,11 @@
     real_t p, q, r;
 
     if(realCompareLessEqual(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) { // assume x is positive here...
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
 
@@ -212,14 +212,13 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
   realDivide(const_2, &r, &r, realContext);
   realMultiply(&p, &p, &s, realContext);
   realSubtract(&s, const_3, &s, realContext);
-  int32ToReal(6, &q);
-  realDivide(&s, &q, &s, realContext);
+  realDivide(&s, const_6, &s, realContext);
   realAdd(&s, &r, &q, realContext);
   realSquareRoot(&q, &q, realContext);
   realMultiply(&q, &p, &q, realContext);
   realDivide(&q, &r, &q, realContext);
   realDivide(const_2, &r, &p, realContext);
-  realMultiply(&p, const_1on3, &p, realContext);
+  realMultiply(&p, const39_1on3, &p, realContext);
   realChangeSign(&p);
   realAdd(&p, &s, &p, realContext);
   realDivide(const_5, const_60, &r, realContext), r.exponent += 1;
@@ -262,7 +261,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
     f_nonnegative = true;
 
     r_iterations = 100;
-    realCopy(const_plusInfinity, &r_high);
+    realSetPlusInfinity(&r_high);
     realCopy(f_nonnegative ? const_0 : const_minusInfinity, &r_low);
 
     /* Initialisation done, now the main loop itself */
@@ -330,7 +329,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
       realCopyAbs(&r_w, &q);
       if(f_limitjump && realCompareGreaterEqual(&q, &r_maxstep)) {
         if(realCompareLessThan(&r_w, const_0)) { // qf_newton_neg_limit
-          realMultiply(&r_maxstep, const__1, &r_w, realContext);
+          realMinus(&r_maxstep, &r_w, realContext);
         }
         else { // qf_newton_fin_limit
           realCopy(&r_maxstep, &r_w);
@@ -371,7 +370,7 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
       }
       // qf_newton_again
     } while(--r_iterations > 0);
-    realCopy(const_NaN, res);
+    realSetNaN(res);
     return;
 
     /* Finished.  For discrete distributions, there is a bit more to do */

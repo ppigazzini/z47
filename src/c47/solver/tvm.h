@@ -13,5 +13,10 @@
   void fnEff         (uint16_t unusedButMandatoryParameter);
   void fnEffToI      (uint16_t unusedButMandatoryParameter);
 
-  void tvmEquation   (void);
+  void tvmEquation   (calcRegister_t variable, real_t *ioVal, real_t *derivative);
+  void fnAmortBal    (uint16_t unusedButMandatoryParameter);
+  void fnAmortPrn    (uint16_t unusedButMandatoryParameter);
+  void fnAmortInt    (uint16_t unusedButMandatoryParameter);
+  void fnAmortP      (uint16_t select);
+  void fnAmortNext   (uint16_t unusedButMandatoryParameter);
 #endif // !TVM_H

@@ -8,11 +8,14 @@
 #include "c47.h"
 
 static void doIP(real_t *x, enum rounding mode) {
-  if (realIsSpecial(x)) {
-    if (!getSystemFlag(FLAG_SPCRES))
+  if(realIsSpecial(x)) {
+    if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-  } else
+    }
+  }
+  else {
     realToIntegralValue(x, x, mode, &ctxtReal39);
+  }
 }
 
 
@@ -22,7 +25,7 @@ void integerPartNoOp(void) {
 void integerPartReal(enum rounding mode) {
   real_t x;
 
-  if (getRegisterAsReal(REGISTER_X, &x)) {
+  if(getRegisterAsReal(REGISTER_X, &x)) {
     doIP(&x, mode);
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
@@ -31,7 +34,7 @@ void integerPartReal(enum rounding mode) {
 void integerPartCplx(enum rounding mode) {
   real_t a, b;
 
-  if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
+  if(getRegisterAsComplex(REGISTER_X, &a, &b)) {
     doIP(&a, mode);
     doIP(&b, mode);
     convertComplexToResultRegister(&a, &b, REGISTER_X);

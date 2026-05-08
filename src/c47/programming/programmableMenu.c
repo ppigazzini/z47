@@ -7,7 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
 static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
   uint8_t stringLength = *(uint8_t *)(stringAddress++);
   xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
@@ -64,7 +63,7 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", tmpStringLabelOrVariableName);
-        moreInfoOnError("In function get2ndParamOfKey:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _get2ndParamOfKey:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
@@ -76,7 +75,7 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
   }
   else {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(tmpString, "\nIn function get2ndParamOfKey: %u is not a valid parameter!", opParam);
+      sprintf(tmpString, "\nIn function _get2ndParamOfKey: %u is not a valid parameter!", opParam);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   return INVALID_VARIABLE;
@@ -152,7 +151,7 @@ static void _setCaption(uint16_t keyNum) {
     char *ts = tmpString;
     switch(getRegisterDataType(REGISTER_X)) {
       case dtString: {
-        xcopy(tmpString, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
+        COPY_REGISTER_STRING_TO(tmpString, REGISTER_X);
         break;
       }
 
@@ -230,4 +229,3 @@ void keyXeq(uint16_t keyNum, uint16_t label) {
   _setCaption(keyNum);
   programmableMenu.itemParam[keyNum - 1] = label | 0x8000;
 }
-#endif // !TESTSUITE_BUILD

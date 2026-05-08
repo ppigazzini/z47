@@ -26,26 +26,30 @@ static bool_t checkArgs(const real_t *xReal, const real_t *xImag, const real_t *
    * Log(0, y) = NaN  y!=0
    */
   if(COMPLEX_IS_ZERO(xReal, xImag) && COMPLEX_IS_ZERO(yReal, yImag)) {
-    if (getFlag(FLAG_SPCRES))
+    if(getFlag(FLAG_SPCRES)) {
       convertRealToResultRegister(const_plusInfinity, REGISTER_X, amNone);
+    }
     else {
       displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
       EXTRA_INFO_MESSAGE("checkArgs", "cannot calculate LogXY with x=0 and y=0");
     }
   }
   else if(!COMPLEX_IS_ZERO(xReal, xImag) && COMPLEX_IS_ZERO(yReal, yImag)) {
-    if (getFlag(FLAG_SPCRES))
+    if(getFlag(FLAG_SPCRES)) {
       convertRealToResultRegister(const_minusInfinity, REGISTER_X, amNone);
+    }
     else {
       displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
       EXTRA_INFO_MESSAGE("checkArgs", "cannot calculate LogXY with x=0 and y!=0");
     }
   }
   else if(COMPLEX_IS_ZERO(xReal, xImag) && !COMPLEX_IS_ZERO(yReal, yImag)) {
-    if (getFlag(FLAG_SPCRES))
+    if(getFlag(FLAG_SPCRES)) {
       convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
-    else
+    }
+    else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    }
   }
   else {
     return true;
@@ -72,7 +76,7 @@ static void logxy(const real_t *xReal, const real_t *yReal, realContext_t *realC
           return;
         }
         else if(getFlag(FLAG_SPCRES)) {
-          realCopy(const_NaN, &rReal);
+          realSetNaN(&rReal);
         }
         else {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -80,8 +84,10 @@ static void logxy(const real_t *xReal, const real_t *yReal, realContext_t *realC
           return;
         }
       }
-    } else
+    }
+    else {
       WP34S_Logxy(yReal, xReal, &rReal, realContext);
+    }
     convertRealToResultRegister(&rReal, REGISTER_X, amNone);
   }
 }
@@ -90,13 +96,15 @@ static void logxy(const real_t *xReal, const real_t *yReal, realContext_t *realC
 static void logXYLongInt(void) {
   real_t x, y;
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   logxy(&x, &y, &ctxtReal39);
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34 && real34IsAnInteger(REGISTER_REAL34_DATA(REGISTER_X)))
+  if(getRegisterDataType(REGISTER_X) == dtReal34 && real34IsAnInteger(REGISTER_REAL34_DATA(REGISTER_X))) {
     convertReal34ToLongIntegerRegister(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_X, DEC_ROUND_DOWN);
+  }
 }
 
 
@@ -104,8 +112,9 @@ static void logXYShortInt(void) {
   real_t x, y;
   int32_t base = getRegisterShortIntegerBase(REGISTER_Y);
 
-  if (!getRegisterAsReal(REGISTER_Y, &y) || !getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_Y, &y) || !getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   logxy(&x, &y, &ctxtReal39);
 
@@ -129,17 +138,18 @@ static void logXYShortInt(void) {
 static void logXYReal(void) {
   real_t x, y;
 
-  if (!getRegisterAsReal(REGISTER_Y, &y) || !getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_Y, &y) || !getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
   logxy(&x, &y, &ctxtReal39);
 }
 
 static void logXYCplx(void) {
   real_t xReal, xImag, yReal, yImag, rReal, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)
-      || !getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(   !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag) || !getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
   if(checkArgs(&xReal, &xImag, &yReal, &yImag)) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
     convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);

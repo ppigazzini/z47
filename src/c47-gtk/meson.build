@@ -4,7 +4,8 @@ c47_gtk_src = files(
   'hal/audio.c',
   'hal/gui.c',
   'hal/lcd.c',
-  'hal/io.c')
+  'hal/io.c',
+  'hal/print_ir.c')
 
 override_opts = ['b_coverage=false']
 cflags        = []
@@ -33,12 +34,40 @@ endif
 # C47 Simulator
 #
 
+deps = [gtk_dep, gmp_dep, m_dep, pulse_dep]
+_c_args = []
+
+if host_machine.system() == 'linux'
+  _c_args += ['-D_GNU_SOURCE']
+endif
+
+have_dladdr = false
+cc = meson.get_compiler('c')
+
+if cc.has_function('dladdr', prefix : '#include <dlfcn.h>')
+  have_dladdr = true
+endif
+
+if not have_dladdr and host_machine.system() == 'linux'
+  libdl = cc.find_library('dl', required : false)
+  if libdl.found() and cc.has_function('dladdr',
+      prefix : '#include <dlfcn.h>',
+      dependencies : [libdl])
+    deps += libdl
+    have_dladdr = true
+  endif
+endif
+
+if have_dladdr
+  _c_args += ['-DHAVE_DLADDR=1']
+endif
+
 sim = executable('c47',
   sources             : decNumber_src + c47_src + c47_gtk_src + c47_gtk_rc + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
-  c_args              : ['-DCALCMODEL=USER_C47'],
+  c_args              : _c_args + ['-DCALCMODEL=USER_C47'],
   c_pch               : 'pch/c47-gtk_pch.h',
   include_directories : [decNumber_inc, c47_inc],
-  dependencies        : [gtk_dep, gmp_dep, m_dep, pulse_dep],
+  dependencies        : deps,
   native              : true,
   override_options    : ['b_lto=true'],
   win_subsystem       : 'windows'
@@ -52,10 +81,10 @@ alias_target('sim', sim)
 
 simr47 = executable('r47',
   sources             : decNumber_src + c47_src + c47_gtk_src + r47_gtk_rc + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
-  c_args              : ['-DCALCMODEL=USER_R47'],
+  c_args              : _c_args + ['-DCALCMODEL=USER_R47'],
   c_pch               : 'pch/c47-gtk_pch.h',
   include_directories : [decNumber_inc, c47_inc],
-  dependencies        : [gtk_dep, gmp_dep, m_dep, pulse_dep],
+  dependencies        : deps,
   native              : true,
   override_options    : ['b_lto=true'],
   win_subsystem       : 'windows'

@@ -10,8 +10,10 @@
 static void tanhReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
+
   if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -30,8 +32,9 @@ static void tanhCplx(void) {
   real_t xReal, xImag;
   real_t rReal, rImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
 
   TanhComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
@@ -47,13 +50,13 @@ uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
 
   if(realIsZero(xImag)) {
     WP34S_Tanh(xReal, rReal, &ctxtReal39);
-    realZero(rImag);
+    realSetZero(rImag);
   }
   else {
     WP34S_Tanh(xReal, rReal, &ctxtReal39);
-    WP34S_Cvt2RadSinCosTan(xImag, amRadian, &sina, &cosa, rImag, &ctxtReal39);
+    C47_WP34S_Cvt2RadSinCosTan(xImag, amRadian, &sina, &cosa, rImag, &ctxtReal39);
 
-    realCopy(const_1, &denomReal);
+    realSetOne(&denomReal);
     realMultiply(rReal, rImag, &denomImag, &ctxtReal39);
 
     divComplexComplex(rReal, rImag, &denomReal, &denomImag, rReal, rImag, &ctxtReal39);

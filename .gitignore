@@ -17,12 +17,18 @@
 backup.bin
 backup.cfg
 backupR47.cfg
+<<<<<<< HEAD
+wp43.sav
+=======
 wp43.sav    
+>>>>>>> master
 wp43.dat
 c47.sav
 c47.dat
 *.s47
 *.zip
+!docs/appnotes/sources/
+!docs/appnotes/sources/*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
 20*.REGS.TSV
@@ -31,6 +37,9 @@ tags
 /PROGRAMS
 /SAVFILES
 /src/generated
+
+# Over_score testing agent coding
+AGENTS.md
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode

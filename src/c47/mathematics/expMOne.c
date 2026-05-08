@@ -14,17 +14,17 @@ void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_
   if(realIsZero(imag)) {
     if(realIsInfinite(real) && realIsNegative(real)) {
       realCopy(const__1, resReal);
-      realZero(resImag);
+      realSetZero(resImag);
       return;
     }
     realExpM1(real, resReal, realContext);
-    realZero(resImag);
+    realSetZero(resImag);
     return;
   }
 
   if(realIsSpecial(real) || realIsSpecial(imag)) {
-    realCopy(const_NaN, resReal);
-    realCopy(const_NaN, resImag);
+    realSetNaN(resReal);
+    realSetNaN(resImag);
     return;
   }
 
@@ -56,8 +56,9 @@ void realExpM1(const real_t *x, real_t *res, realContext_t *realContext)
 static void expM1Real(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -76,8 +77,9 @@ static void expM1Real(void) {
 static void expM1Cplx(void) {
   real_t zReal, zImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
     return;
+  }
 
   expM1Complex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);

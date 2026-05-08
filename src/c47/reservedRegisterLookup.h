@@ -1,5 +1,5 @@
-/* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Library/Developer/CommandLineTools/usr/bin/gperf -C -G --null-strings -m 1000 -E -n -L ANSI-C -N lookupReservedVariableName -t  */
+/* ANSI-C code produced by gperf version 3.3 */
+/* Command-line: gperf -C -G --null-strings -m 1000 -E -n -L ANSI-C -N lookupReservedVariableName -t  */
 /* Computed positions: -k'1-3' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -26,12 +26,12 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 struct reservedRegister {
-    char name[6];
-    calcRegister_t reg;
+  char name[7];
+  calcRegister_t reg;
 };
 enum
   {
@@ -52,7 +52,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (register const char *str, register unsigned int len)
+hash (register const char *str, register size_t len)
 {
   TO_QSPI static const unsigned char asso_values[] =
     {
@@ -85,13 +85,22 @@ hash (register const char *str, register unsigned int len)
     };
   register unsigned int hval = 0;
 
-  switch (len)
-    {
+  switch(len) {
       default:
         hval += asso_values[(unsigned char)str[2]];
+#if (defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
+      [[fallthrough]];
+#elif (defined __GNUC__ && __GNUC__ >= 7) || (defined __clang__ && __clang_major__ >= 10)
+      __attribute__ ((__fallthrough__));
+#endif
       /*FALLTHROUGH*/
       case 2:
         hval += asso_values[(unsigned char)str[1]];
+#if (defined __cplusplus && (__cplusplus >= 201703L || (__cplusplus >= 201103L && defined __clang__ && __clang_major__ + (__clang_minor__ >= 9) > 3))) || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 202000L && ((defined __GNUC__ && __GNUC__ >= 10) || (defined __clang__ && __clang_major__ >= 9)))
+      [[fallthrough]];
+#elif (defined __GNUC__ && __GNUC__ >= 7) || (defined __clang__ && __clang_major__ >= 10)
+      __attribute__ ((__fallthrough__));
+#endif
       /*FALLTHROUGH*/
       case 1:
         hval += asso_values[(unsigned char)str[0]];
@@ -100,46 +109,53 @@ hash (register const char *str, register unsigned int len)
   return hval;
 }
 
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
 TO_QSPI static const struct reservedRegister wordlist[] =
   {
-    {"\241\223Y",   RESERVED_VARIABLE_LY},
-    {"\241\221Y",   RESERVED_VARIABLE_UY},
-    {"\241\223X",   RESERVED_VARIABLE_LX},
-    {"\241\221X",   RESERVED_VARIABLE_UX},
-    {"\241\223Lim", RESERVED_VARIABLE_LLIM},
-    {"\241\221Lim", RESERVED_VARIABLE_ULIM},
-    {"\241\223EST", RESERVED_VARIABLE_LEST},
-    {"\241\221EST", RESERVED_VARIABLE_UEST},
-    {"PPER/a",      RESERVED_VARIABLE_PPERONA},
-    {"PV",          RESERVED_VARIABLE_PV},
-    {"CPER/a",      RESERVED_VARIABLE_CPERONA},
-    {"ACC",         RESERVED_VARIABLE_ACC},
-    {"REALDF",      RESERVED_VARIABLE_REALDF},
-    {"NPPER",       RESERVED_VARIABLE_NPPER},
-    {"PMT",         RESERVED_VARIABLE_PMT},
-    {"ISM",         RESERVED_VARIABLE_ISM},
-    {"GRAMOD",      RESERVED_VARIABLE_GRAMOD},
-    {"FV",          RESERVED_VARIABLE_FV},
-    {"ADM",         RESERVED_VARIABLE_ADM},
-    {"D.MAX",       RESERVED_VARIABLE_DENMAX},
-    {"I%/a",        RESERVED_VARIABLE_IPONA},
-    {"#DEC",        RESERVED_VARIABLE_NDEC}
+    {"\241\223Y",RESERVED_VARIABLE_LY},
+    {"\241\221Y",RESERVED_VARIABLE_UY},
+    {"\241\223X",RESERVED_VARIABLE_LX},
+    {"\241\221X",RESERVED_VARIABLE_UX},
+    {"\241\223Lim",RESERVED_VARIABLE_LLIM},
+    {"\241\221Lim",RESERVED_VARIABLE_ULIM},
+    {"\241\223EST",RESERVED_VARIABLE_LEST},
+    {"\241\221EST",RESERVED_VARIABLE_UEST},
+    {"PPER/a",RESERVED_VARIABLE_PPERONA},
+    {"PV",RESERVED_VARIABLE_PV},
+    {"CPER/a",RESERVED_VARIABLE_CPERONA},
+    {"ACC",RESERVED_VARIABLE_ACC},
+    {"REALDF",RESERVED_VARIABLE_REALDF},
+    {"NPPER",RESERVED_VARIABLE_NPPER},
+    {"PMT",RESERVED_VARIABLE_PMT},
+    {"ISM",RESERVED_VARIABLE_ISM},
+    {"GRAMOD",RESERVED_VARIABLE_GRAMOD},
+    {"FV",RESERVED_VARIABLE_FV},
+    {"ADM",RESERVED_VARIABLE_ADM},
+    {"D.MAX",RESERVED_VARIABLE_DENMAX},
+    {"I%/a",RESERVED_VARIABLE_IPONA},
+    {"#DEC",RESERVED_VARIABLE_NDEC}
   };
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic pop
+#endif
 
-static const struct reservedRegister *
-lookupReservedVariableName (register const char *str, register unsigned int len)
+const struct reservedRegister *
+lookupReservedVariableName (register const char *str, register size_t len)
 {
-  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
+  if(len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      unsigned int key = hash (str, len);
+      register unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE)
+      if(key <= MAX_HASH_VALUE)
         {
           register const char *s = wordlist[key].name;
 
-          if (*str == *s && !memcmp (str + 1, s + 1, len))
+          if(s && *str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];
         }
     }
-  return 0;
+  return (struct reservedRegister *) 0;
 }

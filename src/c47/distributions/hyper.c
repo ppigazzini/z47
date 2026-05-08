@@ -22,17 +22,15 @@
   static bool_t checkParamHyper(real_t *x, real_t *k, real_t *j, real_t *i) {
     real_t xmin, xmax;
 
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_N, j)
-        || !getRegisterAsReal(REGISTER_Q, k)) {
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_M, i) || !getRegisterAsReal(REGISTER_N, j) || !getRegisterAsReal(REGISTER_Q, k)) {
       displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Values in register X, I, J and K must be of the real or long integer type");
-        moreInfoOnError("In function checkParamNegBinom:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function checkParamHyper:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
     }
@@ -41,7 +39,7 @@
     realAdd(j, k, &xmin, &ctxtReal39);
     realSubtract(&xmin, i, &xmin, &ctxtReal39);
     if(realIsNegative(&xmin)) {
-      realCopy(const_0, &xmin);
+      realSetZero(&xmin);
     }
     realCopy(realCompareLessThan(k, j) ? k : j, &xmax);
 
@@ -78,7 +76,7 @@
         pdf_Hypergeometric(&val, &spec, &samp, &batch, &ans, &ctxtReal39);
       }
       else {
-        realZero(&ans);
+        realSetZero(&ans);
       }
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
@@ -102,7 +100,7 @@
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnNegBinomialL:", "a parameter is invalid", NULL, NULL);
+          moreInfoOnError("In function fnHypergeometricL:", "a parameter is invalid", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
@@ -139,7 +137,7 @@
       if(realCompareLessThan(&val, const_0) || realCompareGreaterThan(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnNegBinomialI:", "the argument must be 0 " STD_LESS_EQUAL " x " STD_LESS_EQUAL " 1", NULL, NULL);
+          moreInfoOnError("In function fnHypergeometricI:", "the argument must be 0 " STD_LESS_EQUAL " x " STD_LESS_EQUAL " 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
           convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -150,7 +148,7 @@
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnNegBinomialI:", "WP34S_Qf_Binomial did not converge", NULL, NULL);
+          moreInfoOnError("In function fnHypergeometricI:", "WP34S_Qf_Binomial did not converge", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
           convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -180,7 +178,8 @@
     real_t a1, a2, a3, b1, b2, i, hypergeomPart, cvgTol;
     bool_t signHgp = false;
 
-    realCopy(const_1, &cvgTol), cvgTol.exponent -= realContext->digits - 2;
+    realSetOne(&cvgTol);
+    cvgTol.exponent -= realContext->digits - 2;
 
     // (n C (k+1)) ((N-n) C (K-k-1)) / (N C K)
     realCopy(n, &a), realAdd(x, const_1, &b, realContext);
@@ -191,7 +190,7 @@
     logCyxReal(&a, &b, &c, realContext), realSubtract(&binomPart, &c, &binomPart, realContext); // N C K
 
     // generalized hypergeometric function 3F2
-    realCopy(const_1, &a1);
+    realSetOne(&a1);
     realAdd(x, const_1, &a2, realContext);
     realAdd(&a2, const_1, &b1, realContext);
     realSubtract(&a2, n, &a3, realContext);
@@ -199,8 +198,8 @@
     realAdd(&b1, n0, &b2, realContext);
     realSubtract(&b2, k0, &b2, realContext);
     realSubtract(&b2, n, &b2, realContext);
-    realCopy(const_0, &hypergeomPart);
-    realCopy(const_1, &i);
+    realSetZero(&hypergeomPart);
+    realSetOne(&i);
 
     if(complementary) {
       realExp(&binomPart, &b, realContext);
@@ -217,7 +216,7 @@
         break;
       }
 
-      signHgp = (realIsNegative(&a1) ? 1 : 0) ^ (realIsNegative(&a2) ? 1 : 0) ^ (realIsNegative(&a3) ? 1 : 0) ^ (realIsNegative(&b1) ? 1 : 0) ^ (realIsNegative(&b2) ? 1 : 0);
+      signHgp = realIsNegative(&a1) ^ realIsNegative(&a2) ^ realIsNegative(&a3) ^ realIsNegative(&b1) ^ realIsNegative(&b2);
       realCopyAbs(&a1, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
       realCopyAbs(&a2, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
       realCopyAbs(&a3, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
@@ -254,7 +253,7 @@
 
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realSubtract(&p, const_1, &p, realContext);
@@ -286,7 +285,7 @@
     real_t mode, pdf, i, cdf, cdf0;
 
     if(realCompareLessThan(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 
@@ -294,7 +293,7 @@
 
     if(realCompareLessThan(x, &mode)) {
       realCopy(x, &i);
-      realCopy(const_0, &cdf);
+      realSetZero(&cdf);
       do {
         realCopy(&cdf, &cdf0);
         pdf_Hypergeometric(&i, k0, n, n0, &pdf, realContext);
@@ -312,7 +311,7 @@
     real_t mean, var, s;
 
     if(realCompareLessEqual(x, const_0)) {
-      realZero(res);
+      realSetZero(res);
       return;
     }
 

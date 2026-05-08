@@ -35,10 +35,11 @@ static void computePercentileSorted(real_t *data, uint16_t n, const real_t *p, r
   uInt32ToReal(n + 1, &d);
   realMultiply(&d, p, &t, &ctxtReal39);
   realToIntegralValue(&t, &d, DEC_ROUND_DOWN, &ctxtReal39);
-  k = realToInt32C47(&d);
+  k = realToInt32C47(&d, NULL);
 
-  if(k >= n)
+  if(k >= n) {
     realCopy(data + n - 1, percentile);
+  }
   else if(k < 1) {
     realCopy(data, percentile);
   }
@@ -110,15 +111,16 @@ static real_t *getXvalues(uint16_t *n) {
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
     return NULL;
   }
-  data = allocC47Blocks(rows * REAL_SIZE_IN_BLOCKS);
+  data = allocC47Blocks(rows * REAL_SIZE_IN_BLOCKS(75));
   if(data == NULL) {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     return NULL;
   }
   linkToRealMatrixRegister(regStats, &stats);
   cols = stats.header.matrixColumns;
-  for(i=0; i<rows; i++)
+  for(i=0; i<rows; i++) {
     real34ToReal(stats.matrixElements + i * cols, data + i);
+  }
   *n = rows;
   return data;
 }
@@ -156,7 +158,7 @@ static void doStatsOperation(void (*func)(real_t *data, uint16_t n, const real_t
       (*func)(data, n, arg, &x);
       convertRealToReal34ResultRegister(&x, REGISTER_Y);
 
-      freeC47Blocks(data, n * REAL_SIZE_IN_BLOCKS);
+      freeC47Blocks(data, n * REAL_SIZE_IN_BLOCKS(75));
       temporaryInformation = message;
       adjustResult(REGISTER_X, false, false, -1, -1, -1);
       adjustResult(REGISTER_Y, false, false, -1, -1, -1);
@@ -258,18 +260,19 @@ void fnIQRXY(uint16_t unusedButMandatoryParameter) {
 void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
   real_t p;
 
-  if(!getRegisterAsReal(REGISTER_X, &p))
+  if(!getRegisterAsReal(REGISTER_X, &p)) {
     return;
+  }
 
   // Range saturate if out of scope and scale away percentage
   if(realIsNegative(&p)) {
-    realZero(&p);
+    realSetZero(&p);
   }
   else if(realCompareLessThan(&p, const_100)) {
     p.exponent -= 2; // p = p / 100
   }
   else if(!realIsNaN(&p)) {
-    realCopy(const_1, &p);
+    realSetOne(&p);
   }
   fnDrop(NOPARAM);
   doStatsOperation(&computePercentileUnsorted, const_1, &p, TI_PCTILEX_PCTILEY);

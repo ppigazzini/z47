@@ -27,7 +27,7 @@ static bool_t _checkLnGammaArgs(int8_t *resultType, real_t *xReal, realContext_t
       EXTRA_INFO_MESSAGE("_checkLnGammaArgs", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of lnbeta when flag D is not set");
     }
     else {
-      realToReal34((real34IsPositive(xReal) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
+      realToReal34((realIsPositive(xReal) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
     }
 
     result = false;
@@ -88,7 +88,7 @@ static void _lnGammaComplex(real_t *xReal, real_t *rReal, real_t *rImag, realCon
   WP34S_Ln(xReal, xReal, realContext);
   realCopy(xReal, rReal);
   realToIntegralValue(rImag, rImag, DEC_ROUND_FLOOR, realContext);
-  realMultiply(rImag, const_pi, rImag, realContext);
+  realMultiply(rImag, const39_pi, rImag, realContext);
 }
 
 
@@ -119,16 +119,14 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
   realAdd(xReal, yReal, rReal, realContext);  // r = x+y
 
-  if(_checkLnGammaArgs(&xflag, xReal, realContext)
-      && _checkLnGammaArgs(&yflag, yReal, realContext)
-      && _checkLnGammaArgs(&sflag, rReal, realContext)) {
+  if(_checkLnGammaArgs(&xflag, xReal, realContext) && _checkLnGammaArgs(&yflag, yReal, realContext) && _checkLnGammaArgs(&sflag, rReal, realContext)) {
     real_t gxReal, gxImag;  // LnGamma(x)
     real_t gyReal, gyImag;  // LnGamma(y)
     real_t gsReal, gsImag;  // LnGamma(x+y)
 
     if(xflag==RESULT_TYPE_REAL) {
       _lnGammaReal(xReal, &gxReal, realContext);
-      realCopy(const_0, &gxImag);
+      realSetZero(&gxImag);
     }
     else {
       _lnGammaComplex(xReal, &gxReal, &gxImag, realContext);
@@ -136,7 +134,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
     if(yflag==RESULT_TYPE_REAL) {
       _lnGammaReal(yReal, &gyReal, realContext);
-      realCopy(const_0, &gyImag);
+      realSetZero(&gyImag);
     }
     else {
       _lnGammaComplex(yReal, &gyReal, &gyImag, realContext);
@@ -144,7 +142,7 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 
     if(sflag==RESULT_TYPE_REAL) {
       _lnGammaReal(rReal, &gsReal, realContext);
-      realCopy(const_0, &gsImag);
+      realSetZero(&gsImag);
     }
     else {
       _lnGammaComplex(rReal, &gsReal, &gsImag, realContext);
@@ -167,12 +165,13 @@ void LnBeta(const real_t *x, const real_t *y, real_t *res, realContext_t *realCo
   real_t rReal, rImag;
   real_t xx, yy;
 
-  realCopy(x, &xx); realCopy(y, &yy);
+  realCopy(x, &xx);
+  realCopy(y, &yy);
   if(_lnBetaReal(&xx, &yy, &rReal, &rImag, realContext) && realIsZero(&rImag)) {
     realCopy(&rReal, res);
   }
   else {
-    realCopy(const_NaN, res);
+    realSetNaN(res);
   }
 }
 
@@ -180,20 +179,22 @@ void LnBeta(const real_t *x, const real_t *y, real_t *res, realContext_t *realCo
 static void lnbetaReal(void) {
   real_t x, y, rReal, rImag;
 
-  if (getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y))
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
     if(_lnBetaReal(&x, &y, &rReal, &rImag, &ctxtReal39)) {
-      if(realIsZero(&rImag))
+      if(realIsZero(&rImag)) {
         convertRealToResultRegister(&rReal, REGISTER_X, amNone);
-      else
+      }
+      else {
         convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+      }
     }
+  }
 }
 
 static void lnbetaCplx(void)  {
   real_t xReal, xImag, yReal, yImag, rReal, rImag;
 
-  if (getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
-          && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+  if(getRegisterAsComplex(REGISTER_X, &xReal, &xImag) && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
     _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
     convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }

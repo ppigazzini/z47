@@ -6,6 +6,10 @@
 
   #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+  #if defined(LINUX)
+    #define _XOPEN_SOURCE                800 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
+  #endif // LINUX
+
   #include <assert.h>
   #include <ctype.h>
   #include <errno.h>
@@ -89,6 +93,7 @@
     #include "hal/gui.h"
     #include "hal/io.h"
     #include "hal/lcd.h"
+    #include "hal/print_ir.h"
     #include "integers.h"
     #include "items.h"
     #include "keyboard.h"
@@ -96,6 +101,7 @@
     #include "mathematics/mathematics.h"
     #include "memory.h"
     #include "plotstat.h"
+    #include "printing/print.h"
     #include "programming/programming.h"
     #include "recall.h"
     #include "registers.h"
@@ -119,9 +125,9 @@
     #if defined(TESTSUITE_BUILD)
       #include "testSuite.h"
     #endif //TESTSUITE_BUILD
-  #endif // PC_BUILD || DMCP_BUILD || TESTSUITE_BUILD
+  #endif // !GENERATE_CATALOGS && !GENERATE_CONSTANTS && !GENERATE_TESTPGMS
 
-  #if defined(GENERATE_CATALOGS)
+  #if defined(GENERATE_CATALOGS) || defined(GENERATE_TESTPGMS)
     #include <gmp.h>
 
     #include <gtk/gtk.h>
@@ -148,10 +154,11 @@
     #include "fonts.h"
     #include "items.h"
     #include "mathematics/mathematics.h"
+    #include "printing/print.h"
     #include "solver/solver.h"
     #include "sort.h"
     #include "stats.h"
-  #endif // GENERATE_CATALOGS
+  #endif // GENERATE_CATALOGS || GENERATE_TESTPGMS
 
   #if defined(GENERATE_CONSTANTS)
     #include <gtk/gtk.h>
@@ -191,40 +198,24 @@
     #include "items.h"
   #endif // GENERATE_TESTPGMS
 
-  // Variables for the simulator
-  #if !defined(GENERATE_CATALOGS)
-    extern uint16_t lastI;
-    extern uint16_t lastJ;
-    extern int16_t lastFunc;
-    extern int16_t lastParam;
-    extern char    lastTemp[16];
-  #endif // !GENERATE_CATALOGS
+  extern uint16_t               lastI;
+  extern uint16_t               lastJ;
+  extern int16_t                lastFunc;
+  extern int16_t                lastParam;
+  extern char                   lastTemp[16];
 
-  #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-    extern bool_t               debugMemAllocation;
+  #if defined(PC_BUILD)
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
     extern bool_t               swapCtrlCode;
-  #endif // PC_BUILD || TESTSUITE_BUILD
-
-  #if defined(PC_BUILD)
     extern bool_t               calcLandscape;
     extern bool_t               calcAutoLandscapePortrait;
     extern GtkWidget           *screen;
     extern GtkWidget           *frmCalc;
     extern int16_t              screenStride;
-    extern int16_t              debugWindow;
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
-    extern char                 debugString[10000];
-    #if (DEBUG_REGISTER_L == 1)
-      extern GtkWidget         *lblRegisterL1;
-      extern GtkWidget         *lblRegisterL2;
-    #endif // (DEBUG_REGISTER_L == 1)
-    #if (SHOW_MEMORY_STATUS == 1)
-      extern GtkWidget         *lblMemoryStatus;
-    #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
     extern int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
   #endif //PC_BUILD
@@ -233,7 +224,7 @@
   extern uint8_t calcModel;
 
   extern uint8_t             *lcd_buffer;
-  extern const int           KEY_X[7];
+  extern const int            KEY_X[7];
 
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
@@ -278,8 +269,6 @@
   extern const softmenu_t                softmenu[];
   extern const confirmationTI_t          confirmationTI[];
 
-  #define gammaLanczosCoefficients       ((real51_t *)const_gammaC01)
-
   // Variables stored in RAM
   extern bool_t                 fnAsnDisplayUSER;
   extern bool_t                 funcOK;
@@ -291,6 +280,8 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 shiftF;
   extern bool_t                 shiftG;
+  extern bool_t                 lastshiftF;
+  extern bool_t                 lastshiftG;
   extern bool_t                 showContent;
   extern bool_t                 rbr1stDigit;
   extern bool_t                 updateDisplayValueX;
@@ -341,15 +332,15 @@
   extern registerHeader_t      *currentLocalRegisters;
 
   #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has 32Kb for global variables
-    extern registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-    extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+    extern registerHeader_t     globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
+    extern freeMemoryRegion_t   freeMemoryRegions[MAX_FREE_REGIONS];
   #else // The new HW has only 16 KB for global variables, so some of them have to be moved elsewhere.
-    extern registerHeader_t      *globalRegister;
-    extern freeMemoryRegion_t    *freeMemoryRegions;
+    extern registerHeader_t    *globalRegister;
+    extern freeMemoryRegion_t  *freeMemoryRegions;
   #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(DMCP_BUILD)
-    extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
+    extern freeMemoryRegion_t   allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
   #endif // !DMCP_BUILD
 
   extern pcg32_random_t         pcg32_global;
@@ -468,6 +459,11 @@
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
+  extern uint8_t                multiEdLines;
+  extern uint8_t                yMultiLineEdOffset;
+  extern uint8_t                xMultiLineEdOffset;
+  extern uint16_t               current_cursor_x;
+  extern uint16_t               current_cursor_y;
   extern int16_t                alphaCursor;                  //DL
   extern int16_t                lastT_cursorPos;
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
@@ -484,7 +480,7 @@
   extern bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
   extern bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
   extern bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f and on g
-  extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
+  extern bool_t                 FN_timed_out_to_NOP_or_Executed; //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
   extern uint8_t                bcdDisplaySign;
@@ -512,6 +508,8 @@
   extern uint16_t               currentProgramNumber;
   extern uint16_t               lrSelection;
   extern uint16_t               lrSelectionUndo;
+  extern uint16_t               amortP1;
+  extern uint16_t               amortP2;
   extern uint16_t               lrChosen;
   extern uint16_t               lrChosenUndo;
   extern uint16_t               lastPlotMode;
@@ -529,13 +527,13 @@
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
   #if (REAL34_WIDTH_TEST == 1)
-    extern uint16_t               largeur;
+    extern uint16_t             largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
   extern int32_t                numberOfFreeMemoryRegions;
 
   #if !defined(DMCP_BUILD)
-    extern int32_t                numberOfAllocatedMemoryRegions;
+    extern int32_t              numberOfAllocatedMemoryRegions;
   #endif // !DMCP_BUILD
 
   extern int32_t                lgCatalogSelection;
@@ -592,22 +590,29 @@
   extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
   extern  char                  fileNameSelected[stateFileNameVarLength];
 
-  extern char         filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
-  extern uint32_t     mem__32;                                          //JM_CSV
-  extern bool_t       cancelFilename;
+  extern char                   filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
+  extern uint32_t               mem__32;                                          //JM_CSV
+  extern bool_t                 cancelFilename;
 
   extern uint8_t                firstDayOfWeek;
   extern uint8_t                firstWeekOfYearDay;
-  
+
+  //#if defined(IR_PRINTING)
+    extern printerState_t         printerState;
+    extern const printerFont_t    printerFont8;
+    extern const martelFont24_t   martelFont24;
+    extern uint16_t               printerColumn;
+  //#endif //IR_PRINTING
+
   #if defined(DMCP_BUILD)
-    extern bool_t              backToDMCP;
+    extern bool_t               backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
-    extern uint32_t            timeStampKey;                                      //dr - internal keyBuffer POC
+    extern uint32_t             timeStampKey;                                      //dr - internal keyBuffer POC
   #endif // BUFFER_CLICK_DETECTION
   //extern int                  keyAutoRepeat; // Key repetition
   //extern int16_t              previousItem;
-  extern uint32_t             nextTimerRefresh;
+  extern uint32_t               nextTimerRefresh;
 
-  int                         convertKeyCode(int key);
+  int                           convertKeyCode(int key);
   #endif // DMCP_BUILD
 #endif // !C47_H

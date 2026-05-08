@@ -7,8 +7,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
-
   static void _showProgress(const longInteger_t a) {
     #if ENABLE_SOLVER_PROGRESS == 1
         uint8_t savedDisplayFormatDigits = displayFormatDigits;
@@ -68,7 +66,7 @@
 
         loop--;
         if(checkHalfSec()) {
-          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
             _showProgress(resultLi);
           }
         }
@@ -83,7 +81,7 @@
         fnFillStack(NOPARAM);
 
         #if defined(VERBOSE_COUNTER)
-          printRegisterToConsole(REGISTER_X,"[f(",") ");
+          printRegisterToConsole(REGISTER_X, "[f(", ") ");
         #endif //VERBOSE_COUNTER
 
 
@@ -94,8 +92,8 @@
         }
 
         #if defined(VERBOSE_COUNTER)
-          printRegisterToConsole(REGISTER_X," = ","] ");
-          printLongIntegerToConsole(resultLi," + "," ");
+          printRegisterToConsole(REGISTER_X, " = ", "] ");
+          printLongIntegerToConsole(resultLi, " + ", " ");
         #endif //VERBOSE_COUNTER
 
         if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
@@ -114,7 +112,7 @@
         longIntegerFree(xLi);
 
         #if defined(VERBOSE_COUNTER)
-          printLongIntegerToConsole(resultLi,"= "," \n");
+          printLongIntegerToConsole(resultLi, "= ", " \n");
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
@@ -159,7 +157,7 @@ static bool_t _checkRegisters(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
-      moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return true;
   }
@@ -167,7 +165,7 @@ static bool_t _checkRegisters(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
-      moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return true;
   }
@@ -175,7 +173,7 @@ static bool_t _checkRegisters(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
-      moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function _checkRegisters:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return true;
   }
@@ -217,16 +215,11 @@ static void _checkiArgument(uint16_t label, bool_t prod) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void fnProgrammableiSum(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkiArgument(label, false);
-  #endif // !TESTSUITE_BUILD
+  _checkiArgument(label, false);
 }
 
 void fnProgrammableiProduct(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
-    _checkiArgument(label, true);
-  #endif // !TESTSUITE_BUILD
+  _checkiArgument(label, true);
 }

@@ -233,8 +233,9 @@ end1:
 static void cpyxReal(uint16_t combOrPerm) {
   real_t x, y;
 
-    if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
-    return;
+    if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
+      return;
+    }
 
   if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -264,9 +265,9 @@ static void cpyxCplx(uint16_t combOrPerm) {
   real_t xReal, xImag, yReal, yImag;
   real_t tReal, tImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
-      || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag) || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
     return;
+  }
 
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);

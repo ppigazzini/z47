@@ -11,19 +11,14 @@
    * This functions are borrowed from the WP34S project
    ******************************************************/
 
-  void   WP34S_Cvt2RadSinCosTan    (const real_t *angle, angularMode_t am, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
-  void   WP34S_SinCosTanTaylor     (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+  void   reduceAngleToRange        (real_t* angle, const real_t** angle45, const real_t** angle90, const real_t** angle180, angularMode_t* angularMode, int32_t savedContextDigits, realContext_t* realContext);
   void   C47_WP34S_Cvt2RadSinCosTan(const real_t *angle, angularMode_t am, real_t *sin, real_t *cos, real_t *tan, realContext_t *realContext);
-  void   C47_WP34S_SinCosTanTaylor (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian
+  void   C47_WP34S_SinCosTanTaylor (const real_t *angle, bool_t swap, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext); // angle in radian, only used in bessel.c & cauchy.c
   void   C47_WP34S_Asin            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   C47_WP34S_Acos            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   C47_WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   C47_WP34S_Atan2           (const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext);
 
-  void   WP34S_Atan            (const real_t *x, real_t *angle, realContext_t *realContext);
-  void   WP34S_Atan2           (const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext);
-  void   WP34S_Asin            (const real_t *x, real_t *angle, realContext_t *realContext);
-  void   WP34S_Acos            (const real_t *x, real_t *angle, realContext_t *realContext);
   void   WP34S_Factorial       (const real_t *x, real_t *res, realContext_t *realContext);
   void   WP34S_LnGamma         (const real_t *x, real_t *res, realContext_t *realContext);
   void   WP34S_Gamma           (const real_t *x, real_t *res, realContext_t *realContext);

@@ -30,6 +30,15 @@
 
   #define REGISTER_STRING_HEADER(a)                              ((strLgIntHeader_t     *)(getRegisterDataPointer(a)))
   #define REGISTER_STRING_DATA(a)                                ((char                 *)(getRegisterDataPointer(a) + sizeof(strLgIntHeader_t)))
+  // Safe copy of a register string: skips the copy if the register pointer is NULL. Used only where register string is both the source and length argument, which is the pattern GCC's flags on the Windows build
+  #define COPY_REGISTER_STRING_TO(dest, regist)                                  \
+    do {                                                                         \
+      void *regData_ = getRegisterDataPointer(regist);                           \
+      if(regData_ != NULL) {                                                     \
+        char *regStr_ = (char *)regData_ + sizeof(strLgIntHeader_t);             \
+        xcopy((dest), regStr_, stringByteLength(regStr_) + 1);                   \
+      }                                                                          \
+    } while(0)
 
   #define REGISTER_CONFIG_DATA(a)                                ((dtConfigDescriptor_t *)(getRegisterDataPointer(a)))
 
@@ -230,6 +239,7 @@
   void           printStringToConsole            (const char *str, const char *before, const char *after);
   void           printReal34ToConsole            (const real34_t *value, const char *before, const char *after);
   void           printRealToConsole              (const real_t *value, const char *before, const char *after);
+  void           printRealInfoToConsole          (const real_t *value, const char *name);
   void           printComplex34ToConsole         (const complex34_t *value, const char *before, const char *after);
 
   /**
@@ -253,7 +263,7 @@
   void           printRegisterDescriptorToConsole(calcRegister_t regist);
 
 
-  #define getRegisterAngularMode(reg)            getRegisterTag(reg)
+  #define getRegisterAngularMode(reg)            (getRegisterTag(reg) & amAngleMask)
   #define setRegisterAngularMode(reg, am)        setRegisterTag(reg, am)
   #define getRegisterShortIntegerBase(reg)       getRegisterTag(reg)
   #define setRegisterShortIntegerBase(reg, base) setRegisterTag(reg, base)
@@ -263,15 +273,15 @@
   #define getComplexRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
   #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))    // ok. amAngleMask = 15; amPolar = 16
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
-  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))    // Intended to maintain bits 0-3 for amAngle (amAngleMask), clear the polar bit 4, and then OR only the polar bit.
-
+  //#define setComplexRegisterPolarMode(reg, pm) setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))    // Intended to maintain bits 0-3 for amAngle (amAngleMask), clear the polar bit 4, and then OR only the polar bit.
+  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (((pm & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | (pm & amPolar))   // if polar bit clear, force angle to amNone; if set, preserve angle bits
   #define isXYRegisterMatrix                      ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) || (getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) )
 
 
   #define amPolarCYL 64  //  virtual bit, working in addition to the tag bit 4 = amPolar = 16; bit 5 usid by 32-bit pointer changes; real bits 6 & 7 spare. Real bits not used, in favour of these virtual logic bits,  as the register header also only has bits 0-4.
   #define amPolarSPH 128 //  virtual bit, see typeDefinitions.h, amPolar
-  #define isRegisterMatrix3dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
-  #define isRegisterMatrix2dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrix3dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows, REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrix2dVector(reg)          ((getRegisterDataType(reg) == dtReal34Matrix) && isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows, REGISTER_MATRIX_HEADER(reg)->matrixColumns))
   #define isRegisterMatrixVector(reg)            (isRegisterMatrix3dVector(reg) || isRegisterMatrix2dVector(reg))
   #define getVectorRegisterAngularMode(reg)      ((getRegisterDataType(reg) == dtReal34Matrix) ? (getTagAngularMode(getRegisterTag(reg)) & amAngleMask) : amNone) //maybe conditional on 2D 3D????
   #define setVectorRegisterAngularMode(reg, am)  (setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar)))                                      //note maybe conditional on Mx???
@@ -301,4 +311,5 @@
   void           fnRegSort                       (uint16_t unusedButMandatoryParameter);
   void           fnRegSwap                       (uint16_t unusedButMandatoryParameter);
   bool_t         isFunctionAllowingNewVariable   (uint16_t op);
+  uint8_t        getRegParam                     (bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
 #endif // !REGISTERS_H

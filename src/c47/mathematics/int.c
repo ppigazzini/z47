@@ -14,7 +14,7 @@ void fnCheckInteger(uint16_t mode) {
   if(getRegisterAsLongIntQuiet(REGISTER_X, x, &frac) != ERROR_NONE) {
     compareTypeErrorX();
   }
-  else if (frac) {
+  else if(frac) {
     SET_TI_TRUE_FALSE(mode == CHECK_INTEGER_FP);
   }
   else {

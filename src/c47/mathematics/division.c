@@ -67,29 +67,29 @@ void divComplexComplex75(const real_t *numerReal, const real_t *numerImag, const
   realCopy(denomImag, &d);
 
   if(realIsNaN(&a) || realIsNaN(&b) || realIsNaN(&c) || realIsNaN(&d)) {
-    realCopy(const_NaN, quotientReal);
-    realCopy(const_NaN, quotientImag);
+    realSetNaN(quotientReal);
+    realSetNaN(quotientImag);
     return;
   }
 
   if(realIsInfinite(&c) || realIsInfinite(&d)) {
     if(realIsInfinite(&a) || realIsInfinite(&b)) {
-      realCopy(const_NaN, quotientReal);
-      realCopy(const_NaN, quotientImag);
+      realSetNaN(quotientReal);
+      realSetNaN(quotientImag);
     }
     else {
-      realZero(quotientReal);
-      realZero(quotientImag);
+      realSetZero(quotientReal);
+      realSetZero(quotientImag);
     }
     return;
   }
 
   if(realIsInfinite(&a) && !realIsInfinite(&b)) {
-    realZero(&b);
+    realSetZero(&b);
   }
 
   if(realIsInfinite(&b) && !realIsInfinite(&a)) {
-    realZero(&a);
+    realSetZero(&a);
   }
 
 
@@ -112,56 +112,64 @@ void divComplexComplex75(const real_t *numerReal, const real_t *numerImag, const
 
 #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
 void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
-  real159_t realNumer, realDenom, a, b, c, d;
-  
-  realZero((real_t *)&realNumer); realZero((real_t *)&realDenom);
-  realZero((real_t *)&a); realZero((real_t *)&b);
-  realZero((real_t *)&c); realZero((real_t *)&d);
-  
-  realCopy(numerReal, (real_t *)&a);
-  realCopy(numerImag, (real_t *)&b);
-  realCopy(denomReal, (real_t *)&c);
-  realCopy(denomImag, (real_t *)&d);
-  
-  if(realIsNaN((real_t *)&a) || realIsNaN((real_t *)&b) || realIsNaN((real_t *)&c) || realIsNaN((real_t *)&d)) {
-    realCopy(const_NaN, quotientReal);
-    realCopy(const_NaN, quotientImag);
+  REAL_T_PTR(realNumer, 159);
+  REAL_T_PTR(realDenom, 159);
+  REAL_T_PTR(a, 159);
+  REAL_T_PTR(b, 159);
+  REAL_T_PTR(c, 159);
+  REAL_T_PTR(d, 159);
+
+  realSetZero(realNumer);
+  realSetZero(realDenom);
+  realSetZero(a);
+  realSetZero(b);
+  realSetZero(c);
+  realSetZero(d);
+
+  realCopy(numerReal, a);
+  realCopy(numerImag, b);
+  realCopy(denomReal, c);
+  realCopy(denomImag, d);
+
+  if(realIsNaN(a) || realIsNaN(b) || realIsNaN(c) || realIsNaN(d)) {
+    realSetNaN(quotientReal);
+    realSetNaN(quotientImag);
     return;
   }
-  
-  if(realIsInfinite((real_t *)&c) || realIsInfinite((real_t *)&d)) {
-    if(realIsInfinite((real_t *)&a) || realIsInfinite((real_t *)&b)) {
-      realCopy(const_NaN, quotientReal);
-      realCopy(const_NaN, quotientImag);
+
+  if(realIsInfinite(c) || realIsInfinite(d)) {
+    if(realIsInfinite(a) || realIsInfinite(b)) {
+      realSetNaN(quotientReal);
+      realSetNaN(quotientImag);
     }
     else {
-      realZero(quotientReal);
-      realZero(quotientImag);
+      realSetZero(quotientReal);
+      realSetZero(quotientImag);
     }
     return;
   }
-  
-  if(realIsInfinite((real_t *)&a) && !realIsInfinite((real_t *)&b)) {
-    realZero((real_t *)&b);
+
+  if(realIsInfinite(a) && !realIsInfinite(b)) {
+    realSetZero(b);
   }
-  if(realIsInfinite((real_t *)&b) && !realIsInfinite((real_t *)&a)) {
-    realZero((real_t *)&a);
+  if(realIsInfinite(b) && !realIsInfinite(a)) {
+    realSetZero(a);
   }
-  
+
   // Denominator: c² + d²
-  realMultiply((real_t *)&c, (real_t *)&c, (real_t *)&realDenom, realContext);
-  realFMA((real_t *)&d, (real_t *)&d, (real_t *)&realDenom, (real_t *)&realDenom, realContext);
-  
+  realMultiply(c, c, realDenom, realContext);
+  realFMA(d, d, realDenom, realDenom, realContext);
+
   // Real part: (a*c + b*d) / (c² + d²)
-  realMultiply((real_t *)&a, (real_t *)&c, (real_t *)&realNumer, realContext);
-  realFMA((real_t *)&b, (real_t *)&d, (real_t *)&realNumer, (real_t *)&realNumer, realContext);
-  realDivide((real_t *)&realNumer, (real_t *)&realDenom, quotientReal, realContext);
-  
+  realMultiply(a, c, realNumer, realContext);
+  realFMA(b, d, realNumer, realNumer, realContext);
+  realDivide(realNumer, realDenom, quotientReal, realContext);
+
   // Imaginary part: (b*c - a*d) / (c² + d²)
-  realMultiply((real_t *)&b, (real_t *)&c, (real_t *)&realNumer, realContext);
-  realChangeSign((real_t *)&a);
-  realFMA((real_t *)&a, (real_t *)&d, (real_t *)&realNumer, (real_t *)&realNumer, realContext);
-  realDivide((real_t *)&realNumer, (real_t *)&realDenom, quotientImag, realContext);
+  realMultiply(b, c, realNumer, realContext);
+  realChangeSign(a);
+  realFMA(a, d, realNumer, realNumer, realContext);
+  realDivide(realNumer, realDenom, quotientImag, realContext);
 }
 #endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
 
@@ -169,12 +177,13 @@ void divComplexComplex159(const real_t *numerReal, const real_t *numerImag, cons
 void divComplexComplex(const real_t *numerReal, const real_t *numerImag, const real_t *denomReal, const real_t *denomImag, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
   if(realContext->digits <= 75) {
     divComplexComplex75(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
-#if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
-  } else
-  if(realContext->digits <= 159) {
+  #if defined(OPTION_CUBIC_159) || defined(OPTION_SQUARE_159) || defined(OPTION_EIGEN_159)
+  }
+  else if(realContext->digits <= 159) {
     divComplexComplex159(numerReal, numerImag, denomReal, denomImag, quotientReal, quotientImag, realContext);
-#endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
-  } else {
+  #endif //OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159
+  }
+  else {
     sprintf(errorMessage, "Exceed digits :divComplexComplex: %d", (int)realContext->digits);
     displayBugScreen(errorMessage);
   }
@@ -191,14 +200,14 @@ void divRealComplex(const real_t *numerReal, const real_t *denomReal, const real
   realCopy(denomImag, &d);
 
   if(realIsNaN(&a) || realIsNaN(&c) || realIsNaN(&d)) {
-    realCopy(const_NaN, quotientReal);
-    realCopy(const_NaN, quotientImag);
+    realSetNaN(quotientReal);
+    realSetNaN(quotientImag);
     return;
   }
 
   if(realIsInfinite(&c) || realIsInfinite(&d)) {
-    realZero(quotientReal);
-    realZero(quotientImag);
+    realSetZero(quotientReal);
+    realSetZero(quotientImag);
     return;
   }
 
@@ -233,16 +242,16 @@ void divComplexReal(const real_t *numerReal, const real_t *numerImag, const real
  * \return void
  ***********************************************/
 void divLonILonI(void) {
-  longInteger_t x,y;
+  longInteger_t x, y;
 
   convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
   convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
 
   if(longIntegerIsZero(x)) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    convertLongIntegerToReal34(x,REGISTER_REAL34_DATA(REGISTER_X));
+    convertLongIntegerToReal34(x, REGISTER_REAL34_DATA(REGISTER_X));
     reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-    convertLongIntegerToReal34(y,REGISTER_REAL34_DATA(REGISTER_Y));
+    convertLongIntegerToReal34(y, REGISTER_REAL34_DATA(REGISTER_Y));
     divRealReal();
   }
   else {
@@ -403,7 +412,7 @@ void divRealLonI(void) {
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function divLonIReal:", "cannot divide 0 by 0", NULL, NULL);
+          moreInfoOnError("In function divRealLonI:", "cannot divide 0 by 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -414,7 +423,7 @@ void divRealLonI(void) {
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function divLonIReal:", "cannot divide a real34 by 0", NULL, NULL);
+          moreInfoOnError("In function divRealLonI:", "cannot divide a real34 by 0", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
     }
@@ -1096,7 +1105,7 @@ void divCxmaCxma(void) {
       displayCalcErrorMessage(ERROR_SINGULAR_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot divide by a singular matrix");
-        moreInfoOnError("In function divRemaRema:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function divCxmaCxma:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }

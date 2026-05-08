@@ -60,7 +60,7 @@ TO_QSPI const uint16_t refreshStateFlags[] = {       //these flags need to updat
   FLAG_CPXj, FLAG_POLAR, FLAG_LEAD0, FLAG_DENANY, FLAG_DENFIX, FLAG_SSIZE8,
   FLAG_MULTx, FLAG_ENGOVR, FLAG_ENDPMT, FLAG_HPRP, FLAG_MNUp1, FLAG_HPBASE,
   FLAG_NUMLOCK, FLAG_CPXMULT, FLAG_ERPN, FLAG_CARRY, FLAG_OVERFLOW, FLAG_FRCYC,
-  FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
+  FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_AMORT_HP12C, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
   FLAG_PBOX, FLAG_PCURVE, FLAG_PCROS, FLAG_PPLUS, FLAG_PLINE, FLAG_SCALE,
   FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGGR
 };
@@ -173,7 +173,7 @@ bool_t didSystemFlagChange(int32_t sf) {
     returnvalue = (systemFlags0Changed & ((uint64_t)1 << flag)) != 0;
     systemFlags0Changed &= ~((uint64_t)1 << flag);
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     returnvalue = (systemFlags1Changed & ((uint64_t)1 << (flag - 64))) != 0;
     systemFlags1Changed &= ~((uint64_t)1 << (flag - 64));
   }
@@ -190,7 +190,7 @@ void setSystemFlagChanged(int32_t sf) {  // only valid for labels from SETTING_.
   if(flag < 64) {
     systemFlags0Changed |= ((uint64_t)1 << (flag-0));
   }
-  else if (flag < 128) {
+  else if(flag < 128) {
     systemFlags1Changed |= ((uint64_t)1 << (flag-64));
   }
   else {
@@ -217,7 +217,6 @@ void forceSystemFlag(unsigned int sf, int set) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _setAlpha(void) {
   if(calcMode != CM_EIM) {
     calcModeAim(NOPARAM);
@@ -238,7 +237,6 @@ static void _clearAlpha(void) {
     calcModeNormal();
   }
 }
-#endif // TESTSUITE_BUILD
 
 
 
@@ -268,11 +266,11 @@ bool_t getFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       moreInfoOnError("In function getFlag:", "no local flags defined!", "", "");
     }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
@@ -333,12 +331,10 @@ void fnSetFlag(uint16_t flag) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    #if !defined(TESTSUITE_BUILD)
-      else if(flag == FLAG_ALPHA) {
-        leaveTamModeIfEnabled();
-        _setAlpha();
-      }
-    #endif // !TESTSUITE_BUILD
+    else if(flag == FLAG_ALPHA) {
+      leaveTamModeIfEnabled();
+      _setAlpha();
+    }
     else {
       setSystemFlag(flag);
     }
@@ -359,11 +355,11 @@ void fnSetFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     else {
       moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
     }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
@@ -371,7 +367,7 @@ void fnSetFlag(uint16_t flag) {
     globalFlags[flag/16] |= 1u << (flag%16);
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
@@ -381,7 +377,7 @@ void fnSetFlag(uint16_t flag) {
     }
     moreInfoOnError("In function fnSetFlag:", tmpString, "", "");
   }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -406,12 +402,10 @@ void fnClearFlag(uint16_t flag) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    #if !defined(TESTSUITE_BUILD)
-      else if(flag == FLAG_ALPHA) {
-        leaveTamModeIfEnabled();
-        _clearAlpha();
-      }
-    #endif // !TESTSUITE_BUILD
+    else if(flag == FLAG_ALPHA) {
+      leaveTamModeIfEnabled();
+      _clearAlpha();
+    }
     else {
       clearSystemFlag(flag);
     }
@@ -433,11 +427,11 @@ void fnClearFlag(uint16_t flag) {
       }
     }
 
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
        moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
@@ -445,7 +439,7 @@ void fnClearFlag(uint16_t flag) {
     globalFlags[flag/16] &= ~(1u << (flag%16));
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
@@ -455,7 +449,7 @@ void fnClearFlag(uint16_t flag) {
     }
     moreInfoOnError("In function fnClearFlag:", tmpString, "", "");
   }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -480,17 +474,15 @@ void fnFlipFlag(uint16_t flag) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-    #if !defined(TESTSUITE_BUILD)
-      else if(flag == FLAG_ALPHA) {
-        leaveTamModeIfEnabled();
-        if(getSystemFlag(FLAG_ALPHA)) {
-          _clearAlpha();
-        }
-        else {
-          _setAlpha();
-        }
+    else if(flag == FLAG_ALPHA) {
+      leaveTamModeIfEnabled();
+      if(getSystemFlag(FLAG_ALPHA)) {
+        _clearAlpha();
       }
-    #endif // !TESTSUITE_BUILD
+      else {
+        _setAlpha();
+      }
+    }
     else {
       flipSystemFlag(flag);
     }
@@ -511,11 +503,11 @@ void fnFlipFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
-    #if defined(PC_BUILD)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       else {
         moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
       }
-    #endif // PC_BUILD
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
   else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
@@ -523,7 +515,7 @@ void fnFlipFlag(uint16_t flag) {
     globalFlags[flag/16] ^=  1u << (flag%16);
   }
 
-  #if defined(PC_BUILD)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   else {
     if(flag < FLAG_M) {
       sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
@@ -533,7 +525,7 @@ void fnFlipFlag(uint16_t flag) {
     }
     moreInfoOnError("In function fnFlipFlag:", tmpString, "", "");
   }
-  #endif // PC_BUILD
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
@@ -637,6 +629,7 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_MNUp1,
   FLAG_HPBASE,
   FLAG_2TO10,
+  FLAG_AMORT_HP12C,
   FLAG_PROPFR,
   FLAG_PRTACT,
   FLAG_LEAD0,
@@ -665,13 +658,15 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_IRFRAC,
   FLAG_G_DOUBLETAP,
   FLAG_SHFT_4s,
-  FLAG_FGGR
+  FLAG_FGGR,
+  FLAG_TRACE,
+  FLAG_NORM
 };
 
 
 void SetSetting(uint16_t jmConfig) {
 
-  for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: {config_clear, config_set, flag}
+  for(uint_fast16_t i = 0; i < nbrOfElements(clearSetPairs); i++) {   // Clear/Set flag pairs: (config_clear, config_set, flag)
     if(jmConfig == clearSetPairs[i].clearConfig) {
       fnClearFlag(clearSetPairs[i].flag);
       fnRefreshState();

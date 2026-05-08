@@ -11,7 +11,7 @@ typedef bool bool_t;
 
 
 /**
- * \union multiplyDivide_t
+ * \enum multiplyDivide_t
    * Used for unit conversions.
    */
 typedef enum {
@@ -19,6 +19,16 @@ typedef enum {
   divide = 0x8000,
   invert = 0x4000
 } multiplyDivide_t;
+
+
+/**
+ * \enum trigType_t
+   * Used for trig functions.
+   */
+typedef enum {
+  trigSin,
+  trigCos
+} trigType_t;
 
 
 /**
@@ -80,6 +90,68 @@ typedef struct {
 
 
 /**
+ * \struct glyphPrinter_t
+ * Structure keeping the informations for one 82240 printer glyph.
+ */
+typedef struct {
+  uint16_t charCode;         ///< Unicode code point
+  char     data[5];          ///< Hexadecimal data representing the glyph (5 columns)
+                             ///< There are rowsGlyph x (colsGlyph rounded up to 8 bit boundary) bytes
+} glyphPrinter_t;
+
+
+/**
+ * \struct printerFont_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t        numberOfGlyphs; ///< Number of glyphs in the font
+  glyphPrinter_t  glyphs[];       ///< Pointer to the glyph description structure
+} printerFont_t;
+
+
+/**
+ * \struct glyphMartelPrinter_t
+ * Structure keeping the informations for one Martel printer glyph.
+ */
+typedef struct {
+  uint16_t charCode;         ///< Unicode code point
+  char     data[48];         ///< Hexadecimal data representing the glyph (16 columns x 24 pixels)
+                             ///< There are rowsGlyph x (colsGlyph rounded up to 8 bit boundary) bytes
+} glyphMartelPrinter_t;
+
+
+/**
+ * \struct martelFont24_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t        numberOfGlyphs; ///< Number of glyphs in the font
+  glyphMartelPrinter_t  glyphs[];       ///< Pointer to the glyph description structure
+} martelFont24_t;
+
+
+
+/**
+ * \struct nameAlias_t
+ * Font description.
+ */
+typedef struct {
+  uint16_t  item;       ///< Item number
+  char      name[16];    ///< 42s equivalent item name for printing
+} nameAlias_t;
+
+
+/**
+ * \struct summationRegisterName_t
+ * Font description.
+ */
+typedef struct {
+  char      name[16];    ///< summatioon register name
+} summationRegisterName_t;
+
+
+/**
  * \struct freeMemoryRegion_t
  * Keeps track of free memory regions.
  */
@@ -87,6 +159,7 @@ typedef struct {
   uint16_t blockAddress; ///< Address of the free memory region
   uint16_t sizeInBlocks; ///< Size in blocks of the free memory region
 } freeMemoryRegion_t;
+
 
 
 /**
@@ -591,6 +664,7 @@ typedef struct {
   bool_t     dot;
   bool_t     indirect;
   int16_t    digitsSoFar;
+  int16_t    value0;       // to store the initial value for indirection
   int16_t    value;
   int16_t    min;
   int16_t    max;
@@ -613,6 +687,20 @@ typedef struct {
   char      txt[4];              ///< lettered flag text to be displayed
   uint32_t  position;            ///< X position of the text
 } letteredFlagDisplay_t;
+
+
+/**
+ * \struct printerState_t
+   * Structure keeping the printer status
+   */
+typedef struct {
+  bool_t         print_on;               ///< Printing on/off
+  bool_t         trace_done;             ///< Printing on/off
+  uint8_t        print_blank_line;       ///< Print space between lines
+  print_modes_t  print_mode;             ///< printer modes
+  printerModel_t printer_model;          ///< printer model
+  uint16_t       delay;                  ///< printer line delay
+} printerState_t;
 
 
   #if defined(PC_BUILD)

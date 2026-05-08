@@ -21,12 +21,14 @@
 
 #else
   static bool_t checkParamPoisson(real_t *x, real_t *i) {
-    if(!saveLastX())
+    if(!saveLastX()) {
       return false;
+    }
 
-    if(!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_R, i))
-        goto err;
+    if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_R, i)) {
+      goto err;
+    }
+
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -91,7 +93,7 @@
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnGeometricI:", "the argument must be 0 < x < 1", NULL, NULL);
+          moreInfoOnError("In function fnPoissonI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
           convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
@@ -114,27 +116,26 @@
    * Returns a normal approximation in X.
    */
   void WP34S_normal_moment_approx(const real_t *prob, const real_t *var, const real_t *mean, real_t *res, realContext_t *realContext) {
-    real_t p, q, r;
+    real_t p, q;
 
     WP34S_qf_q_est(prob, &p, NULL, realContext);
     realMultiply(&p, &p, &q, realContext);
     realSubtract(&q, const_1, &q, realContext);
-    int32ToReal(6, &r);
-    realDivide(&q, &r, &q, realContext);
+    realDivide(&q, const_6, &q, realContext);
     realDivide(&q, var, &q, realContext);
     realAdd(&p, &q, &p, realContext);
     realMultiply(&p, var, &p, realContext);
     realAdd(&p, mean, res, realContext);
   }
 
-  /* One parameter Poission distribution
+  /* One parameter Poisson distribution
    * Real parameter lambda in I.
    */
   void WP34S_Pdf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p, q, r;
 
-    if(realIsNegative(x) /* poission1_param */ || (!realIsAnInteger(x) /* pdf_poisson_xout */)) {
-      realZero(res);
+    if(realIsNegative(x) /* poisson1_param */ || (!realIsAnInteger(x) /* pdf_poisson_xout */)) {
+      realSetZero(res);
       return;
     }
     WP34S_Ln(lambda, &p, realContext);
@@ -149,18 +150,18 @@
   void WP34S_Cdfu_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
+      realSetZero(res);
       return;
     }
     // cdfu_poisson_xout
     realToIntegralValue(x, &p, DEC_ROUND_CEILING, realContext);
     if(realCompareLessThan(&p, const_1)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     if(realIsInfinite(&p)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     WP34S_GammaP(lambda, &p, res, realContext, false, true);
@@ -169,8 +170,8 @@
   void WP34S_Cdf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
+      realSetZero(res);
       return;
     }
     // cdf_poisson_xout
@@ -183,11 +184,11 @@
 
     // cdf_poisson
     if(realCompareLessThan(x, const_0)) {
-      realCopy(const_0, res);
+      realSetZero(res);
       return;
     }
     if(realIsInfinite(x)) {
-      realCopy(const_1, res);
+      realSetOne(res);
       return;
     }
     realAdd(x, const_1, &p, realContext);
@@ -197,8 +198,8 @@
   void WP34S_Qf_Poisson(const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext) {
     real_t p, q;
 
-    if(realCompareLessEqual(lambda, const_0)) { // poission1_param
-      realZero(res);
+    if(realCompareLessEqual(lambda, const_0)) { // poisson1_param
+      realSetZero(res);
       return;
     }
 

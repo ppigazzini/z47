@@ -10,12 +10,18 @@
 static void arctanReal(void) {
   real_t x;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
   if(realIsInfinite(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      realCopy(realIsPositive(&x) ? const_90 : const__90, &x);
+      if(realIsNegative(&x)) {
+        realMinus(const_90, &x, &ctxtReal39);
+      }
+      else {
+        realCopy(const_90, &x);
+      }
       convertAngleFromTo(&x, amDegree, currentAngularMode, &ctxtReal39);
   }
   else {
@@ -27,7 +33,7 @@ static void arctanReal(void) {
     }
   }
   else {
-    WP34S_Atan(&x, &x, &ctxtReal39);
+    C47_WP34S_Atan(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
   convertRealToResultRegister(&x, REGISTER_X, currentAngularMode);
@@ -38,8 +44,9 @@ static void arctanReal(void) {
 static void arctanCplx(void) {
   real_t xReal, xImag, rReal, rImag;
 
-  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)) {
     return;
+  }
 
   ArctanComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 

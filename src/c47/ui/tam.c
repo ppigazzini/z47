@@ -3,7 +3,6 @@
 
 #include "c47.h"
 
-#if !defined(TESTSUITE_BUILD)
     TO_QSPI const int16_t StoOperations[][2] = {
       {ITM_ADD,      ITM_STOADD},
       {ITM_SUB,      ITM_STOSUB},
@@ -16,6 +15,9 @@
       {ITM_dddEL,    ITM_STOEL},
       {ITM_dddIJ,    ITM_STOIJ},
       {ITM_dddVEL,   ITM_STOVEL},
+      {ITM_dddVEL1,  ITM_STOVEL1},
+      {ITM_dddVEL2,  ITM_STOVEL2},
+      {ITM_dddVEL3,  ITM_STOVEL3},
       {ITM_dddIX,    ITM_INDEX}
     };
 
@@ -30,6 +32,9 @@
       {ITM_Stack,    ITM_RCLS},
       {ITM_dddEL,    ITM_RCLEL},
       {ITM_dddIJ,    ITM_RCLIJ},
+      {ITM_dddVEL1,  ITM_RCLVEL1},
+      {ITM_dddVEL2,  ITM_RCLVEL2},
+      {ITM_dddVEL3,  ITM_RCLVEL3},
       {ITM_dddVEL,   ITM_RCLVEL}
     };
 
@@ -237,7 +242,8 @@
     bool_t valueParameter = (tam.function == ITM_GTOP || isFunctionOldParam16(tam.function) || tam.function == ITM_SKIP || tam.function == ITM_BACK);
     char *forcedVar = NULL;
 
-    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n",item,tam.mode);fflush(stdout);
+    //printf("**[DL]** _tamProcessInput item %d tam.mode %d\n", item, tam.mode);
+    //fflush(stdout);
     // Shuffle is handled completely differently to everything else
     if(tam.mode == TM_SHUFFLE) {
       _tamHandleShuffle(item);
@@ -262,6 +268,18 @@
         return;
       }
     }
+
+    else if(tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_NNZ || item == ITM_CNORM || item == ITM_RNORM || item == ITM_ENORM || item == ITM_INFINITY)) {
+      switch(item) {
+        case ITM_NNZ:      tam.value = pNorm_0_NNZ     ; forceTry = true; break;
+        case ITM_CNORM:    tam.value = pNorm_1_CNORM   ; forceTry = true; break;
+        case ITM_ENORM:    tam.value = pNorm_2_ENORM   ; forceTry = true; break;
+        case ITM_RNORM:    tam.value = pNorm_inf_RNORM ; forceTry = true; break;
+        case ITM_INFINITY: tam.value = pNorm_inf_RNORM ; forceTry = true; break;
+        default:;
+      }
+    }
+
     else if(item == ITM_BACKSPACE) {
       if(tam.alpha) {
         if(stringByteLength(aimBuffer) != 0) {
@@ -319,6 +337,9 @@
           if(tam.function == ITM_DENMAX2) {
             showSoftmenu(-MNU_TAMNONREGMAX);
           }
+          else if(tam.function == ITM_PNORM) {
+            showSoftmenu(-MNU_TAMNORM);
+          }
           else {
             showSoftmenu(-MNU_TAMNONREG);
           }
@@ -333,7 +354,7 @@
           showSoftmenu(-MNU_TAMFLAG);
         }
         else if(tam.mode == TM_STORCL) {
-          showSoftmenu(item == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
+          showSoftmenu(item == ITM_STO ? (currentMenu() == -MNU_TVM ? -MNU_TAMSTO_TVM : -MNU_TAMSTO) : ((currentMenu() == -MNU_TVM || currentMenu() == -MNU_AMORT) ? -MNU_TAMRCL_TVM : -MNU_TAMRCL)); // -MNU_TAMSTORCL);
         }
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           showSoftmenu(-MNU_TAMLABEL);
@@ -410,7 +431,7 @@
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_MENU));
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE ||tam.mode == TM_MENU));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.keyInputFinished && tam.mode == TM_KEY);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && (tam.function == ITM_LBL || tam.function == ITM_GTOP));
       if(allowAlphaMode) {
@@ -433,6 +454,8 @@
           case -MNU_TAMVARONLY  :
           case -MNU_TAMSTO      :
           case -MNU_TAMRCL      :
+          case -MNU_TAMSTO_TVM  :
+          case -MNU_TAMRCL_TVM  :
           case -MNU_TAMMENU     :
           case -MNU_TAMINDIRECT :
             showSoftmenu(-MNU_TAMALPHA);
@@ -450,7 +473,10 @@
       hourGlassIconEnabled = false;
       return;
     }
-    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
+    else if(item==ITM_Max    || item==ITM_Min   ||
+            item==ITM_ADD    || item==ITM_SUB   || item==ITM_MULT  || item==ITM_DIV ||
+            item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ ||
+            item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_dddVEL1 && item <= ITM_dddVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {
           if(item == ITM_Max) { // UP
@@ -514,7 +540,7 @@
           }
 
 
-          else if(item == ITM_dddVEL || item == ITM_dddIX) {
+          else if(item == ITM_dddVEL || (item >= ITM_dddVEL1 && item <= ITM_dddVEL3) || item == ITM_dddIX) {
             tam.currentOperation = item;
             if(calcMode != CM_MIM
 //                && !tam.alpha && !tam.dot
@@ -599,53 +625,77 @@
     }
                                                                                                       //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
 
-    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
+    else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE ||(tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && ITM_a <= item && item <= ITM_l ) {
       tam.value = FIRST_LC_LOCAL_LABEL + item - ITM_a;
       forceTry = true;
       tryOoR = true;
     }
 
-    else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
+    else if(((REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W) ||
+             (FIRST_NAMED_RESERVED_VARIABLE <= indexOfItems[item].param && indexOfItems[item].param <= LAST_RESERVED_VARIABLE)) &&
+             !tam.dot) {
       if(!tam.digitsSoFar && !isFunctionOldParam16(tam.function) && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
-        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
-          switch(indexOfItems[item].param) {
-            // Local label from A to J
-            case REGISTER_A: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'A'; forceTry = true; tryOoR = true; break;
-            case REGISTER_B: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'B'; forceTry = true; tryOoR = true; break;
-            case REGISTER_C: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'C'; forceTry = true; tryOoR = true; break;
-            case REGISTER_D: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'D'; forceTry = true; tryOoR = true; break;
-            case REGISTER_E: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'E'; forceTry = true; tryOoR = true; break;
-            case REGISTER_F: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'F'; forceTry = true; tryOoR = true; break;
-            case REGISTER_G: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'G'; forceTry = true; tryOoR = true; break;
-            case REGISTER_H: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'H'; forceTry = true; tryOoR = true; break;
-            case REGISTER_I: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'I'; forceTry = true; tryOoR = true; break;
-            case REGISTER_J: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'J'; forceTry = true; tryOoR = true; break;
-            case REGISTER_K: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'K'; forceTry = true; tryOoR = true; break;
-            case REGISTER_L: tam.value = FIRST_UC_LOCAL_LABEL - 'A' + 'L'; forceTry = true; tryOoR = true; break;
-            // Global single letters alpha labels
-            case REGISTER_X: tam.alpha = true; aimBuffer[0] = 'X'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_Y: tam.alpha = true; aimBuffer[0] = 'Y'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_Z: tam.alpha = true; aimBuffer[0] = 'Z'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_T: tam.alpha = true; aimBuffer[0] = 'T'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_M: tam.alpha = true; aimBuffer[0] = 'M'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_N: tam.alpha = true; aimBuffer[0] = 'N'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_P: tam.alpha = true; aimBuffer[0] = 'P'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_Q: tam.alpha = true; aimBuffer[0] = 'Q'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_R: tam.alpha = true; aimBuffer[0] = 'R'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_S: tam.alpha = true; aimBuffer[0] = 'S'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_O: tam.alpha = true; aimBuffer[0] = 'O'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_U: tam.alpha = true; aimBuffer[0] = 'U'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_V: tam.alpha = true; aimBuffer[0] = 'V'; aimBuffer[1] = 0; forceTry = true; break;
-            case REGISTER_W: tam.alpha = true; aimBuffer[0] = 'W'; aimBuffer[1] = 0; forceTry = true; break;
+        if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
+          #define LOCAL_LABEL 0            // Local label from A to J
+          #define ALPHA_LABEL 1            // Global single letters alpha labels
+          static TO_QSPI const int16_t registerLookup[REGISTER_W - FIRST_LETTERED_REGISTER + 1][2] = {
+            [REGISTER_X - FIRST_LETTERED_REGISTER] = {'X', ALPHA_LABEL},
+            [REGISTER_Y - FIRST_LETTERED_REGISTER] = {'Y', ALPHA_LABEL},
+            [REGISTER_Z - FIRST_LETTERED_REGISTER] = {'Z', ALPHA_LABEL},
+            [REGISTER_T - FIRST_LETTERED_REGISTER] = {'T', ALPHA_LABEL},
+            [REGISTER_A - FIRST_LETTERED_REGISTER] = {'A', LOCAL_LABEL},
+            [REGISTER_B - FIRST_LETTERED_REGISTER] = {'B', LOCAL_LABEL},
+            [REGISTER_C - FIRST_LETTERED_REGISTER] = {'C', LOCAL_LABEL},
+            [REGISTER_D - FIRST_LETTERED_REGISTER] = {'D', LOCAL_LABEL},
+            [REGISTER_L - FIRST_LETTERED_REGISTER] = {'L', LOCAL_LABEL},
+            [REGISTER_I - FIRST_LETTERED_REGISTER] = {'I', LOCAL_LABEL},
+            [REGISTER_J - FIRST_LETTERED_REGISTER] = {'J', LOCAL_LABEL},
+            [REGISTER_K - FIRST_LETTERED_REGISTER] = {'K', LOCAL_LABEL},
+            [REGISTER_M - FIRST_LETTERED_REGISTER] = {'M', ALPHA_LABEL},
+            [REGISTER_N - FIRST_LETTERED_REGISTER] = {'N', ALPHA_LABEL},
+            [REGISTER_P - FIRST_LETTERED_REGISTER] = {'P', ALPHA_LABEL},
+            [REGISTER_Q - FIRST_LETTERED_REGISTER] = {'Q', ALPHA_LABEL},
+            [REGISTER_R - FIRST_LETTERED_REGISTER] = {'R', ALPHA_LABEL},
+            [REGISTER_S - FIRST_LETTERED_REGISTER] = {'S', ALPHA_LABEL},
+            [REGISTER_E - FIRST_LETTERED_REGISTER] = {'E', LOCAL_LABEL},
+            [REGISTER_F - FIRST_LETTERED_REGISTER] = {'F', LOCAL_LABEL},
+            [REGISTER_G - FIRST_LETTERED_REGISTER] = {'G', LOCAL_LABEL},
+            [REGISTER_H - FIRST_LETTERED_REGISTER] = {'H', LOCAL_LABEL},
+            [REGISTER_O - FIRST_LETTERED_REGISTER] = {'O', ALPHA_LABEL},
+            [REGISTER_U - FIRST_LETTERED_REGISTER] = {'U', ALPHA_LABEL},
+            [REGISTER_V - FIRST_LETTERED_REGISTER] = {'V', ALPHA_LABEL},
+            [REGISTER_W - FIRST_LETTERED_REGISTER] = {'W', ALPHA_LABEL}
+          };
+
+          int param = indexOfItems[item].param;
+          if(registerLookup[param - FIRST_LETTERED_REGISTER][1] == ALPHA_LABEL) {
+            tam.alpha = true;
+            aimBuffer[0] = registerLookup[param - FIRST_LETTERED_REGISTER][0];
+            aimBuffer[1] = 0;
+            forceTry = true;
+          }
+          else {
+            tam.value = FIRST_UC_LOCAL_LABEL - 'A' + registerLookup[param - FIRST_LETTERED_REGISTER][0];
+            forceTry = true;
+            tryOoR = true;
           }
         }
         else {
-          tam.value = indexOfItems[item].param;
-          tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
-          forceTry = true;
-          // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
-          // when determining if this is valid
-          tryOoR = true;
+          if(calcMode == CM_PEM && indexOfItems[item].param >= FIRST_RESERVED_VARIABLE && indexOfItems[item].param <= LAST_RESERVED_VARIABLE) {
+            tam.alpha = true;
+            strcpy(aimBuffer, (char *)(allReservedVariables[indexOfItems[item].param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1));
+            forceTry = true;
+          } else {
+            tam.value = indexOfItems[item].param;
+            tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
+#if defined(PC_BUILD)
+printf("tam.value: %d\n", tam.value);
+#endif // PC_BUILD
+            forceTry = true;
+            // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
+            // when determining if this is valid
+            tryOoR = true;
+          }
         }
       }
     }
@@ -772,6 +822,12 @@
       }
     }
     else if(!tam.alpha && !forcedVar) {
+
+      // Allow the exceptional large value through if pressed by a button
+      if(forceTry && tam.mode == TM_VALUE && currentMenu() == -MNU_TAMNORM && (item == ITM_RNORM || item == ITM_INFINITY)) {
+        max2 = pNorm_inf_RNORM + 1;
+      }
+
       // Check whether it is possible to add any more digits: if not, execute the function
       if((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2) && ((tam.mode != TM_MENU) || tam.indirect)) {
         int16_t value = tam.value;
@@ -781,6 +837,7 @@
           value += ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) ? FIRST_LOCAL_FLAG : FIRST_LOCAL_REGISTER);
         }
         if(tam.indirect && calcMode != CM_PEM) {
+          tam.value0 = value;
           value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
           run = (lastErrorCode == 0);
         }
@@ -848,6 +905,7 @@
         }
         else {
           value = findNamedVariable(buffer);
+          tam.value0 = value;
           if(calcMode != CM_PEM) {
             if(value != INVALID_VARIABLE) {
               value2 = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
@@ -856,6 +914,11 @@
               value = (value2 != FAILED_INDIRECTION ? value2 : INVALID_VARIABLE);
             }
             else {
+              #if defined(IR_PRINTING)
+                sprintf(errorMessage, "'%s'", buffer);
+                printTraceErrorFunction(tam.function, errorMessage);
+              #endif //IR_PRINTING
+
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", buffer);
@@ -883,6 +946,11 @@
           if(calcMode != CM_PEM) {
             leaveTamModeIfEnabled();
             if(!tam.indirect) {
+              #if defined(IR_PRINTING)
+                sprintf(errorMessage, "'%s'", buffer);
+                printTraceErrorFunction(tam.function, errorMessage);
+              #endif //IR_PRINTING
+
               displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
               #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
@@ -901,6 +969,10 @@
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function, errorMessage);
+            #endif //IR_PRINTING
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);
@@ -908,7 +980,7 @@
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
-        else if (calcMode != CM_PEM) {
+        else if(calcMode != CM_PEM) {
           reallyRunFunction(tamOperation(), value);
           leaveTamModeIfEnabled();
           return;
@@ -933,6 +1005,11 @@
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function, errorMessage);
+            #endif //IR_PRINTING
+
             displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a menu name", buffer);
@@ -953,6 +1030,11 @@
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
+            #if defined(IR_PRINTING)
+              sprintf(errorMessage, "'%s'", buffer);
+              printTraceErrorFunction(tam.function, errorMessage);
+            #endif //IR_PRINTING
+
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", buffer);
@@ -968,6 +1050,7 @@
         aimBuffer[0] = 0;
       }
       if(tam.indirect && value != INVALID_VARIABLE && calcMode != CM_PEM) {
+        tam.value0 = value;
         value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
         if(lastErrorCode != 0) {
           value = INVALID_VARIABLE;
@@ -1021,17 +1104,13 @@
       tam.max = 32766;
     }
 
-    if(func == ITM_CNST) {
-      tam.max = LAST_CONSTANT-FIRST_CONSTANT - 1;
-    }
-
     if(calcMode == CM_NIM) {
       if(func == ITM_toINT || func == ITM_HASH_JM) {
         lastIntegerBase = 0;
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         resetShiftState();
         leaveTamModeIfEnabled();
-        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer,'#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
+        while(stringByteLength(aimBuffer) > 1 && strchr(aimBuffer, '#') && aimBuffer[strlen(aimBuffer) - 1] != '#') {
           addItemToNimBuffer(ITM_BACKSPACE);
         }
         addItemToNimBuffer(func);
@@ -1076,6 +1155,12 @@
     tam.keyInputFinished = false;
 
     switch(tam.mode) {
+      case TM_VALUE_NORM:                                                //Changing over to TM_VALUE, used to add the menu buttons for inf, CNORM, RNORM, ENORM
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMNORM);
+        }
+        tam.mode = TM_VALUE;
+        break;
       case TM_VALUE_MAX:                                                 //Changing over to TM_VALUE, only used to add the max button for 0
         if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAMNONREGMAX);
@@ -1120,7 +1205,7 @@
 
       case TM_STORCL: {
         if(!catalog || catalog != CATALOG_MVAR) {
-          showSoftmenu(func == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
+          showSoftmenu(func == ITM_STO ? (currentMenu() == -MNU_TVM ? -MNU_TAMSTO_TVM : -MNU_TAMSTO) : ((currentMenu() == -MNU_TVM || currentMenu() == -MNU_AMORT) ? -MNU_TAMRCL_TVM : -MNU_TAMRCL)); // -MNU_TAMSTORCL);
         }
         break;
       }
@@ -1172,7 +1257,7 @@
       }
 
       default: {
-        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "calcModeTam", tam.mode, "tam.mode");
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "tamEnterMode", tam.mode, "tam.mode");
         displayBugScreen(errorMessage);
         return;
       }
@@ -1205,14 +1290,22 @@
 
 
   void leaveTamModeIfEnabled(void) {
-    if(!tam.mode) return;
+    if(!tam.mode) {
+      return;
+    }
     if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
       clearTamBuffer();
     }
 
+    if(((tam.mode == TM_STORCL) || (tam.function == ITM_VIEW) || (tam.function == ITM_AVIEW)) && (currentMenu() == -MNU_MVAR)) {
+      numberOfTamMenusToPop = 0;  // Don't pop the variable menu and keep the catalog value
+    }
+    else {
+      catalog = CATALOG_NONE;
+    }
+
     tam.alpha = false;
     tam.mode = 0;
-    catalog = CATALOG_NONE;
     clearSystemFlag(FLAG_ALPHA);
 
     if(numberOfTamMenusToPop > 0) {
@@ -1250,4 +1343,3 @@
     _tamProcessInput(item);
     _tamUpdateBuffer();
   }
-#endif // !TESTSUITE_BUILD
