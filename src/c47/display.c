@@ -3333,7 +3333,7 @@ static void showShortIntegerLine(calcRegister_t showRegis, int16_t tag, int16_t 
     dest = d;
     tmpString[d] = 0;
     if(dest != startOffset) {
-      strcat(tmpString + dest, "  ");                                   //space below the T:
+      strcat(tmpString + dest, "  ");
       dest += 2;
     }
     while(source < last && (dest - d) < SHOWLineSize - 2) {
@@ -3801,7 +3801,7 @@ goBreak1:
         showShortIntegerLine(showRegis, aa5, 4*SHOWLineSize, 2, false);  //actual base on line 4
 
         setRegisterTag(showRegis, aa);
-        break;       
+        break;
 
       case dtTime:
         //SHOW_reset();
