@@ -174,7 +174,7 @@
     #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 1016) // Limited DIST; Full X.FN menu; NO ELEC; FAST FIN; NO VECTOR
+  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free 1016) // Limited DIST; Full X.FN menu; NO ELEC; NO VECTOR
          // #define SAVE_SPACE_DM42_8F         //  1216 bytes // Without Font Browsers
          // #define SAVE_SPACE_DM42_12ELLIP    // 12888 bytes // Without ELLIPTIC
          // #define SAVE_SPACE_DM42_12BESSEL   //  5168 bytes // Without X.FN BESSEL
@@ -188,7 +188,7 @@
          // #define SAVE_SPACE_DM42_21_HP35    //     0 bytes // Without config file activations only. Not complete removal
          // #define SAVE_SPACE_DM42_24_PROFILES//   240 bytes // Without any dev profile shortcuts, and no JM, RJ & HP35
          // #undef OPTION_TVM_FORMULAS         //  2280 bytes // Use TVM analytical formulas where possible
-         // #undef OPTION_TVM_NEWTON           //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+          #undef  OPTION_TVM_NEWTON                  //  1864 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #undef  OPTION_ELEC                        //  ===> bytes // ELEC    5102 saving if VECTOR is not in; 1352 saving if VECTOR is in
     #undef  OPTION_VECTOR                      //  ===> bytes // Vector 11872 saving if ELEC   is not in; 8104 saving if ELEC is in
     #undef  IR_PRINTING                        // 10032 bytes // Remove IR printing for old hardware
