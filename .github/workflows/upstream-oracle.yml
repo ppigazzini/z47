@@ -76,7 +76,7 @@ jobs:
           path: upstream-source.index
 
   linux-host-parity:
-    name: Linux host parity build, test, generated outputs, app smoke run
+    name: Linux host parity, wrappers, generated outputs, app smoke run
     needs:
       - validate-toolchain
       - source-manifest
@@ -121,9 +121,11 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -qq -y git pkgconf build-essential cmake zip
+          sudo apt-get install -qq -y git pkgconf build-essential cmake meson ninja-build zip unzip python3-pip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
-          sudo apt-get install -qq -y xvfb libminizip-dev libpulse-dev
+          sudo apt-get install -qq -y xvfb libminizip-dev libpulse-dev doxygen gcc-arm-none-eabi
+          python3 -m pip install --user -r docs/code/requirements.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Build xlsxio helper
         if: steps.xlsxio-cache.outputs.cache-hit != 'true'
         shell: bash
@@ -133,27 +135,73 @@ jobs:
           cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_DOCUMENTATION:BOOL=OFF \
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
           cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
           cmake --install "$RUNNER_TEMP/xlsxio/build"
-      - name: Run Linux host build and tests
+      - name: Run Linux host build, tests, and generated artifacts
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          zig build sim
-          zig build simr47
+          zig build both
+          zig build testPgms
           xvfb-run --auto-servernum zig build test
           zig build generated
+      - name: Run Linux ASAN wrapper surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build both_asan
+          xvfb-run --auto-servernum zig build test_asan
+      - name: Run Linux docs surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build clean
+          zig build docs
+      - name: Run Linux firmware surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build dmcp
+          zig build dmcpr47
+          zig build dmcp5
+          zig build dmcp5r47
+      - name: Run Linux distribution surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export XVFB="xvfb-run --auto-servernum"
+          zig build dist_linux
+          zig build -Ddmcp-package=1 dist_dmcp
+          zig build -Ddmcp-package=2 dist_dmcp
+          zig build -Ddmcp-package=3 dist_dmcp
+          zig build dist_dmcpr47
+          zig build dist_dmcp5
+          zig build dist_dmcp5r47
       - name: Run Linux simulator smoke launch
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          smoke_dir="$RUNNER_TEMP/c47-linux-smoke"
+          rm -rf "$smoke_dir"
+          mkdir -p "$smoke_dir"
+          unzip -q zig-out/dist/c47-linux.zip -d "$smoke_dir"
+          cd "$smoke_dir/c47-linux"
           status=0
-          if timeout 10s xvfb-run --auto-servernum ./zig-out/bin/c47 >"$RUNNER_TEMP/c47-linux-smoke.log" 2>&1; then
+          if timeout 10s xvfb-run --auto-servernum ./c47-dist >"$RUNNER_TEMP/c47-linux-smoke.log" 2>&1; then
             status=0
           else
             status=$?
@@ -162,6 +210,13 @@ jobs:
             cat "$RUNNER_TEMP/c47-linux-smoke.log"
             exit "$status"
           fi
+      - name: Refresh tracked generated artifacts after clean-based lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build generated
       - name: Compare refreshed generated artifacts
         shell: bash
         run: |
@@ -202,14 +257,10 @@ jobs:
           release_dir="ci-artifacts/release"
           package_dir="$release_dir/c47-linux"
           rm -rf "$release_dir"
-          mkdir -p "$package_dir/res"
-          cp zig-out/bin/c47 zig-out/bin/r47 "$package_dir/"
-          cp -r res/PROGRAMS "$package_dir/res/"
-          cp -r res/STATE "$package_dir/res/"
-          cp res/c47_pre.css "$package_dir/res/"
-          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
-          cp res/c47.xpm "$package_dir/res/"
-          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
+          mkdir -p "$release_dir"
+          unzip -q zig-out/dist/c47-linux.zip -d "$release_dir"
+          mv "$package_dir/c47-dist" "$package_dir/c47"
+          mv "$package_dir/r47-dist" "$package_dir/r47"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform linux \
@@ -338,8 +389,7 @@ jobs:
           eval "$(brew shellenv)"
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
-          zig build sim
-          zig build simr47
+          zig build both
           zig build test
           zig build generated
       - name: Run macOS simulator smoke launch
@@ -520,8 +570,7 @@ jobs:
           set -euo pipefail
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
-          zig build sim
-          zig build simr47
+          zig build both
           zig build test
           zig build generated
       - name: Run Windows simulator smoke launch
