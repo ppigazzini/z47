@@ -2,6 +2,9 @@
 
 The [C47 project](https://gitlab.com/rpncalculators/c43) is a fork of the [WP43 project](https://gitlab.com/rpncalculators/wp43), adapted to work on a standard Swiss Micros DM42 calculator with the standard keyboard layout.
 
+The maintained build, firmware, docs, and packaging entrypoint for this repo is
+documented in [ZIG-README.md](ZIG-README.md).
+
 The two shifted key positions (f and g) on the calculator are supported by applying the infamous cycling shift behaviour to the DM42's single shift key, which means a custom faceplate or overlay is all that is needed to convert the DM42 hardware into a C47 calculator. No key stickers are required on a DM42.
 
 Building on the user experience of the legendary HP-42S, tapping into the unprecedented accuracy of the WP34S engine, and adding a quite few extra features of its own, the C47 is a thriving open source project aiming to make RPN calculators highly relevant for mathematicians, scientists and engineers of today.
