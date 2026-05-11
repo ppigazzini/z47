@@ -1,23 +1,45 @@
 # Zig Build Guide
 
-`build.zig` is the canonical z47 control plane.
+`build.zig` is the canonical z47 build entrypoint.
 
-Use `zig build ...` for simulator builds, tests, docs, firmware, and package
-assembly. The imported `Makefile`, Meson files, Ninja files, and CMake calls
-remain upstream audit inputs; they are no longer the maintained z47 entrypoint.
+Use `zig build ...` for simulator builds, tests, docs, firmware, and
+distribution packaging. The imported `Makefile` and Meson files remain audit
+surfaces, not the maintained z47 control plane.
 
 ## Pinned Toolchain
 
 - Zig version: `0.16.0`
 - This repo pins the toolchain in `.github/zig-toolchain.env`
-- Local validation in this iteration used `/home/usr00/.zig/zig-x86_64-linux-0.16.0/zig`
 
 ## Output Locations
 
-- Host simulator installs: `zig-out/bin/`
-- Docs HTML output: `zig-out/docs/code/html/`
-- Firmware installs: `zig-out/firmware/<target>/`
-- Distribution archives: `zig-out/dist/`
+- host simulator installs: `zig-out/bin/`
+- docs HTML output: `zig-out/docs/code/html/`
+- firmware installs: `zig-out/firmware/<target>/`
+- distribution archives: `zig-out/dist/`
+
+## Helper Layout
+
+- `build.zig` is now the small root entrypoint that parses options and wires
+  the build domains together
+- `zig_build/common.zig` owns shared source lists, C flag tables, and common
+  build helpers
+- `zig_build/host.zig` is the stable facade consumed by `build.zig`,
+  `zig_build/dist.zig`, and `zig_build/firmware.zig`
+- `zig_build/host/types.zig` owns the shared host-side data structures
+- `zig_build/host/context.zig` owns host context creation
+- `zig_build/host/generated.zig` owns version-header and generator output setup
+- `zig_build/host/builders.zig` owns simulator and host test executable builders
+- `zig_build/host/steps.zig` owns host step registration plus docs and clean
+- `zig_build/host/platform.zig` owns GTK, FreeType, Windows pkg-config, and
+  system path glue
+- `zig_build/firmware.zig` owns `forcecrc32`, the cross-GMP bootstrap,
+  firmware build orchestration, and the DMCP package matrix
+- `zig_build/dist.zig` owns distribution-step registration and packaging
+- `zig_build/zig_dist.py` is the z47-owned packaging helper used by the Zig
+  distribution steps
+- `tag2ver.py` intentionally remains at the repo root because the imported
+  `meson.build` still calls it directly
 
 ## Host Prerequisites
 
@@ -46,9 +68,6 @@ runtime.
 - Python packages from `docs/code/requirements.txt`
   (`sphinx`, `breathe`, and `furo`)
 
-If any of those are missing, the Zig step now fails immediately with the
-missing requirement instead of routing through Make or Meson.
-
 ## Firmware Prerequisites
 
 The DMCP and DMCP5 targets are Zig-owned, but they still retain the upstream C,
@@ -62,16 +81,19 @@ Required tools:
 - `python3`
 - `tar`
 - `make`
+- native `cc` or `gcc` for the GMP bootstrap
 
 Notes:
 
-- the firmware path now fails early with `missing required firmware tool: ...`
-  when the ARM toolchain is absent
-- the cross GMP archive is bootstrapped from upstream GMP sources inside the
-  Zig-owned step; that retained third-party bootstrap still uses upstream
-  Autoconf and Make internally
-- if `subprojects/gmp-6.2.1/` is absent, the build step fetches the GMP 6.2.1
-  tarball, verifies its SHA-256, and extracts it into the Zig cache
+- the firmware helper resolves SDK assets from `dep/DMCP_SDK` and
+  `dep/DMCP5_SDK`
+- the firmware helper uses the SDK startup and syscall sources from the
+  `dep/DMCP*_SDK/dmcp/` trees, the project linker scripts from
+  `src/c47-dmcp*/stm32_program.ld`, and the board HAL sources from
+  `src/c47-dmcp*/hal/`
+- the cross-GMP archive is bootstrapped from upstream GMP sources inside the
+  Zig-owned step; that retained bootstrap still uses upstream Autoconf and Make
+  internally
 
 ## Core Commands
 
@@ -151,11 +173,9 @@ zig build clean
 - `dist_linux` is meant to run on Linux hosts
 - `dist_macos` is meant to run on macOS hosts
 - `dist_windows` is meant to run on Windows hosts
-- those host-specific steps now fail explicitly on the wrong host OS instead of
-  silently delegating to upstream scripts
-- `dist` builds the current-host simulator archive plus all DMCP and DMCP5
-  firmware archives
-- `distS` currently aliases the same Zig-owned aggregate package sequence
+- those host-specific steps fail explicitly on the wrong host OS
+- `dist` builds the current-host archive plus all registered firmware archives
+- `distS` aliases the same Zig-owned aggregate package sequence
 
 ## DMCP Package Variants
 
@@ -170,8 +190,11 @@ zig build -Ddmcp-package=2 dmcpr47
 zig build -Ddmcp-package=3 dist_dmcp
 ```
 
-The dedicated archive helpers also exist as fixed targets:
+The dedicated fixed-package targets are:
 
+- `dmcp_pkg1`
+- `dmcp_pkg2`
+- `dmcp_pkg3`
 - `dist_dmcp_pkg1`
 - `dist_dmcp_pkg2`
 - `dist_dmcp_pkg3`
@@ -180,14 +203,17 @@ The dedicated archive helpers also exist as fixed targets:
 
 Verified locally:
 
-- `zig build both_asan --summary all`
-- `zig build test_asan --summary all`
-- `zig build dist_linux --summary all`
+- `zig build --help --summary none`
+- `zig build dist_linux --summary none`
+- `zig build test --summary none`
+  - `9530` tests passed and `0` failed
+- `zig build dmcp --summary none`
+- `zig build dmcp5 --summary none`
+  - both passed after restoring the firmware SDK, HAL, and linker-script path
+    helpers to the checked-in project layout
 
-Blocked locally by missing host tools:
+Validation note:
 
-- `zig build docs` because `doxygen` was not installed
-- `zig build dmcp` because `arm-none-eabi-gcc` was not installed
-
-That means the host packaging path is validated on Linux, while docs and
-firmware remain environment-blocked in this workspace rather than graph-blocked.
+- the commands had to run outside the VS Code terminal sandbox because the
+  sandbox wrapper failed before command execution with an invalid
+  `network.allowedDomains` setting and `ReadOnlyFileSystem`

@@ -1,0 +1,31 @@
+const std = @import("std");
+
+pub const CommonConfig = struct {
+    platform_define: []const u8,
+    word_size_define: []const u8,
+    raspberry: bool,
+    decnumber_fastmul: bool,
+    with_pulseaudio: bool,
+    needs_gnu_source: bool,
+    have_dladdr: bool,
+    needs_libdl: bool,
+};
+
+pub const GeneratedOutputs = struct {
+    raster_fonts_data: std.Build.LazyPath,
+    softmenu_catalogs: std.Build.LazyPath,
+    constant_pointers_c: std.Build.LazyPath,
+    constant_pointers_h: std.Build.LazyPath,
+    constant_pointers2_c: std.Build.LazyPath,
+    test_pgms_bin: std.Build.LazyPath,
+};
+
+pub const Context = struct {
+    host_target: std.Build.ResolvedTarget,
+    common: CommonConfig,
+    core_sources: [][]const u8,
+    gtk_sources: [][]const u8,
+    test_sources: [][]const u8,
+    version_headers_dir: std.Build.LazyPath,
+    generated: GeneratedOutputs,
+};
