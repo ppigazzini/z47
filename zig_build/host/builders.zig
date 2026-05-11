@@ -1,0 +1,131 @@
+const std = @import("std");
+const build_common = @import("../common.zig");
+const host_platform = @import("platform.zig");
+const host_types = @import("types.zig");
+
+pub fn addSimulator(
+    b: *std.Build,
+    host_target: std.Build.ResolvedTarget,
+    name: []const u8,
+    artifact_name: []const u8,
+    optimize: std.builtin.OptimizeMode,
+    core_sources: []const []const u8,
+    gtk_sources: []const []const u8,
+    common: host_types.CommonConfig,
+    version_headers_dir: std.Build.LazyPath,
+    generated: host_types.GeneratedOutputs,
+    calc_model: []const u8,
+    sanitize_c: ?std.zig.SanitizeC,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = artifact_name,
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    if (sanitize_c) |level| {
+        exe.root_module.sanitize_c = level;
+    }
+    if (host_target.result.os.tag == .windows) {
+        exe.subsystem = .Windows;
+    }
+    host_platform.addHostMacros(exe.root_module, common);
+    host_platform.addHostSystemPaths(exe.root_module, common);
+    if (common.needs_gnu_source) {
+        exe.root_module.addCMacro("_GNU_SOURCE", "1");
+    }
+    if (common.have_dladdr) {
+        exe.root_module.addCMacro("HAVE_DLADDR", "1");
+    }
+    exe.root_module.addCMacro("CALCMODEL", calc_model);
+    exe.root_module.addIncludePath(b.path("dep/decNumberICU"));
+    exe.root_module.addIncludePath(b.path("src/c47"));
+    exe.root_module.addIncludePath(b.path("src/c47-gtk"));
+    exe.root_module.addIncludePath(version_headers_dir);
+    exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
+    if (host_target.result.os.tag == .windows) {
+        exe.root_module.addWin32ResourceFile(.{
+            .file = b.path(b.fmt("src/c47-gtk/{s}-gtk.rc", .{name})),
+            .include_paths = &.{
+                b.path("src/c47"),
+                version_headers_dir,
+            },
+        });
+    }
+    exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
+    host_platform.linkGtk3(exe.root_module, common);
+    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    exe.root_module.linkSystemLibrary("m", .{});
+    if (common.needs_libdl) {
+        exe.root_module.linkSystemLibrary("dl", .{});
+    }
+    if (common.with_pulseaudio) {
+        exe.root_module.addCMacro("WITH_PULSEAUDIO", "1");
+        exe.root_module.linkSystemLibrary("libpulse-simple", .{ .use_pkg_config = .force, .needed = false });
+    }
+    return exe;
+}
+
+pub fn addTestSuite(
+    b: *std.Build,
+    host_target: std.Build.ResolvedTarget,
+    name: []const u8,
+    optimize: std.builtin.OptimizeMode,
+    core_sources: []const []const u8,
+    test_sources: []const []const u8,
+    common: host_types.CommonConfig,
+    version_headers_dir: std.Build.LazyPath,
+    generated: host_types.GeneratedOutputs,
+    sanitize_c: ?std.zig.SanitizeC,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = name,
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    if (sanitize_c) |level| {
+        exe.root_module.sanitize_c = level;
+    }
+    host_platform.addHostMacros(exe.root_module, common);
+    host_platform.addHostSystemPaths(exe.root_module, common);
+    exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
+    exe.root_module.addIncludePath(b.path("dep/decNumberICU"));
+    exe.root_module.addIncludePath(b.path("src/c47"));
+    exe.root_module.addIncludePath(b.path("src/testSuite"));
+    exe.root_module.addIncludePath(version_headers_dir);
+    exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
+    exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = b.path("src/testSuite"), .files = test_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
+    host_platform.linkGtk3(exe.root_module, common);
+    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    exe.root_module.linkSystemLibrary("m", .{});
+    return exe;
+}
