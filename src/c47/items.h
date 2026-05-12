@@ -2831,8 +2831,9 @@
 #define ITM_STOVEL                  2729
 #define ITM_2730                    2730
 #define ITM_2731                    2731 //spares for Matrix/Vector
+#define MNU_BASE2                   2732
 
-#define LAST_ITEM                   2732
+#define LAST_ITEM                   2733
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

@@ -813,7 +813,15 @@ TO_QSPI const int16_t menu_BASE[]        = { ITM_2HEX,                      ITM_
 
                                              ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_S64,                       ITM_S32,                    ITM_S16,                  ITM_S08,               ITM_FBYTE,                   ITM_FWORD,
-                                             ITM_U64,                       ITM_U32,                    ITM_U16,                  ITM_U08,              -MNU_BITSET,                  ITM_FF                        };
+                                             ITM_U64,                       ITM_U32,                    ITM_U16,                  ITM_U08,              -MNU_BITSET,                  ITM_FF,                        };
+
+TO_QSPI const int16_t menu_Base2[]       = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
+                                             ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_IDIV,                    ITM_MOD,
+                                             -MNU_BASE,                     ITM_SL,                     ITM_SR,                   ITM_2BIN,              ITM_2DEC,                    ITM_2HEX,
+
+                                             ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
+                                             ITM_CB_LEADING_ZERO,           ITM_OVERFLOW,               ITM_CARRY,                ITM_NULL,              ITM_BITSp2,                  ITM_NULL,
+                                             -MNU_BASE,                     ITM_NUMB,                   ITM_SB,                   ITM_CB,                -MNU_BITSET,                 ITM_BS                         };
 
 
 TO_QSPI const int16_t menu_BITSET[]      = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
@@ -1137,6 +1145,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 175 */  {.menuItem = -MNU_PRINTER,       .numItems = sizeof(menu_Printer       )/sizeof(int16_t), .softkeyItem = menu_Printer        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 176 */  {.menuItem = -MNU_VECT,          .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 177 */  {.menuItem = -MNU_TAMNORM,       .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 178 */  {.menuItem = -MNU_BASE2,         .numItems = sizeof(menu_Base2         )/sizeof(int16_t), .softkeyItem = menu_Base2          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
 /* 178 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
 
