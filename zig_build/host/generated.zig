@@ -97,7 +97,7 @@ pub fn addGeneratorSteps(
     const raster_fonts_gen = b.addExecutable(.{
         .name = "ttf2RasterFonts",
         .root_module = b.createModule(.{
-            .root_source_file = null,
+            .root_source_file = b.path("zig_build/tools/ttf2_raster_fonts.zig"),
             .target = host_target,
             .optimize = optimize,
             .link_libc = true,
@@ -105,7 +105,6 @@ pub fn addGeneratorSteps(
     });
     host_platform.addHostMacros(raster_fonts_gen.root_module, common);
     host_platform.addHostSystemPaths(raster_fonts_gen.root_module, common);
-    raster_fonts_gen.root_module.addCSourceFile(.{ .file = b.path("src/ttf2RasterFonts/ttf2RasterFonts.c"), .flags = build_common.font_generator_c_flags });
     host_platform.linkRasterFontsFreetype(raster_fonts_gen.root_module, common);
 
     const run_raster_fonts = b.addRunArtifact(raster_fonts_gen);
@@ -116,20 +115,16 @@ pub fn addGeneratorSteps(
     const generate_constants = b.addExecutable(.{
         .name = "generateConstants",
         .root_module = b.createModule(.{
-            .root_source_file = null,
+            .root_source_file = b.path("zig_build/tools/generate_constants.zig"),
             .target = host_target,
             .optimize = optimize,
             .link_libc = true,
         }),
     });
     host_platform.addHostMacros(generate_constants.root_module, common);
-    host_platform.addHostSystemPaths(generate_constants.root_module, common);
-    generate_constants.root_module.addCMacro("GENERATE_CONSTANTS", "1");
     generate_constants.root_module.addIncludePath(b.path("dep/decNumberICU"));
     generate_constants.root_module.addIncludePath(b.path("src/c47"));
     generate_constants.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    generate_constants.root_module.addCSourceFile(.{ .file = b.path("src/generateConstants/generateConstants.c"), .flags = build_common.generate_constants_c_flags });
-    host_platform.linkGtk3(generate_constants.root_module, common);
 
     const run_generate_constants = b.addRunArtifact(generate_constants);
     run_generate_constants.setCwd(b.path("."));
@@ -140,7 +135,7 @@ pub fn addGeneratorSteps(
     const generate_catalogs = b.addExecutable(.{
         .name = "generateCatalogs",
         .root_module = b.createModule(.{
-            .root_source_file = null,
+            .root_source_file = b.path("zig_build/tools/generate_catalogs.zig"),
             .target = host_target,
             .optimize = optimize,
             .link_libc = true,
@@ -153,7 +148,6 @@ pub fn addGeneratorSteps(
     generate_catalogs.root_module.addIncludePath(b.path("src/c47"));
     generate_catalogs.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     generate_catalogs.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = build_common.generate_catalogs_sources, .flags = core_c_flags });
-    generate_catalogs.root_module.addCSourceFile(.{ .file = b.path("src/generateCatalogs/generateCatalogs.c"), .flags = build_common.generate_catalogs_c_flags });
     generate_catalogs.root_module.addCSourceFile(.{ .file = raster_fonts_data, .flags = core_c_flags });
     host_platform.linkGtk3(generate_catalogs.root_module, common);
     generate_catalogs.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
@@ -165,7 +159,7 @@ pub fn addGeneratorSteps(
     const generate_testpgms = b.addExecutable(.{
         .name = "generateTestPgms",
         .root_module = b.createModule(.{
-            .root_source_file = null,
+            .root_source_file = b.path("zig_build/tools/generate_testpgms.zig"),
             .target = host_target,
             .optimize = optimize,
             .link_libc = true,
@@ -178,7 +172,6 @@ pub fn addGeneratorSteps(
     generate_testpgms.root_module.addIncludePath(b.path("src/c47"));
     generate_testpgms.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     generate_testpgms.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = build_common.generate_testpgms_sources, .flags = core_c_flags });
-    generate_testpgms.root_module.addCSourceFile(.{ .file = b.path("src/generateTestPgms/generateTestPgms.c"), .flags = build_common.generate_testpgms_c_flags });
     host_platform.linkGtk3(generate_testpgms.root_module, common);
     generate_testpgms.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
 
