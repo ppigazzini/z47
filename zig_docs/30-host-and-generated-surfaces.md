@@ -12,6 +12,7 @@ The current host-facing build graph owns all of these surfaces through
 `../zig_build/host/`:
 
 - desktop simulator builds for C47 and R47
+- focused rewrite-parity executables for the live Zig slices
 - grouped host regression lanes
 - native Zig C-sanitized host builds and tests
 - deterministic generator execution
@@ -50,17 +51,25 @@ Current public host simulator steps:
   sanitizing enabled
 
 The host build graph still compiles imported upstream C sources for the main
-simulator and GTK surfaces. The presence of a Zig-owned build graph does not
-mean the host simulator is already a pure-Zig application.
+simulator and GTK surfaces, but it now replaces the imported `stack.c` owner
+with `../zig_build/state/stack.zig` plus the explicit helper seam in
+`../zig_build/state/stack_runtime_helpers.c`. The presence of a Zig-owned build
+graph still does not mean the host simulator is already a pure-Zig application.
 
 ## Host Test Steps
 
 Current grouped host test steps:
 
 - `zig build logical_shortint_parity`
+- `zig build stack_state_parity`
 - `zig build test`
 - `zig build test_asan`
 - `zig build repeattest`
+
+`zig build stack_state_parity` compares the live Zig stack-state owner with the
+imported `stack.c` oracle against a fake runtime. `zig build test`,
+`zig build test_asan`, and `zig build repeattest` cover the broader retained
+host regression surface after that focused slice passes.
 
 `zig build test`, `zig build test_asan`, and `zig build repeattest` run both:
 

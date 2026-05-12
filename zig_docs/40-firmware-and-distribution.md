@@ -17,6 +17,9 @@ That means:
 - firmware targets are invoked through `zig build`
 - the firmware source and SDK inputs still come from imported upstream C and
   SwissMicros SDK trees
+- the live firmware graph now filters imported `src/c47/stack.c` and links the
+  Zig stack-state object plus `../zig_build/state/stack_runtime_helpers.c`
+  while the rest of the core remains retained C
 - the cross-GMP bootstrap still uses upstream Autoconf and Make internally
 - package creation is still more than compilation; it includes program, QSPI,
   map, and archive outputs
