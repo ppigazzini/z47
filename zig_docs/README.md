@@ -106,7 +106,7 @@ Maintainer entrypoints:
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build stack_state_parity`: focused parity lane for the live stack-state
   rewrite slice
-- `zig build register_metadata_parity`: focused parity lane for the live host
+- `zig build register_metadata_parity`: focused parity lane for the live
   register-metadata rewrite slice
 - `zig build test`: canonical grouped host regression lane
 - `zig build generated`: refreshes all tracked generated host artifacts
