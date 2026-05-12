@@ -69,8 +69,9 @@ Current grouped host test steps:
 
 `zig build stack_state_parity` compares the live Zig stack-state owner with the
 imported `stack.c` oracle against a fake runtime. `zig build
-register_metadata_parity` does the same for the live host register-metadata
-accessors against the imported `registers.c` oracle surface. `zig build test`,
+register_metadata_parity` does the same for the live register-metadata
+accessors against the imported `registers.c` oracle surface in the host lane.
+`zig build test`,
 `zig build test_asan`, and `zig build repeattest` cover the broader retained
 host regression surface after those focused slices pass.
 
