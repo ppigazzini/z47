@@ -368,7 +368,16 @@ jobs:
         run: |
           set -euo pipefail
           eval "$(brew shellenv)"
-          brew install pkgconf cmake freetype gmp gtk+3 minizip expat
+          formulae=(pkgconf cmake freetype gmp gtk+3 minizip expat)
+          missing_formulae=()
+          for formula in "${formulae[@]}"; do
+            if ! brew list --versions "$formula" >/dev/null 2>&1; then
+              missing_formulae+=("$formula")
+            fi
+          done
+          if [[ "${#missing_formulae[@]}" -gt 0 ]]; then
+            brew install "${missing_formulae[@]}"
+          fi
       - name: Build xlsxio helper
         if: steps.xlsxio-cache.outputs.cache-hit != 'true'
         shell: bash
