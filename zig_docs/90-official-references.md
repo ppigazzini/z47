@@ -30,7 +30,8 @@ flowchart TD
   historical `c43` name even though the project identifies itself as C47.
 - [README.md](../README.md): imported upstream project overview carried at the
   repo root.
-- [BUILD.md](../BUILD.md): maintained build-entrypoint summary for this repo.
+- [BUILD.md](../BUILD.md): imported upstream build-target summary carried at
+  the repo root.
 - [Makefile](../Makefile): imported upstream human-facing command surface.
 - [meson.build](../meson.build): imported upstream root build graph.
 - [dep/meson.build](../dep/meson.build): imported upstream dependency build

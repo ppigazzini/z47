@@ -37,7 +37,8 @@ or packaging logic.
 | `../zig_build/dist.zig` | host and firmware distribution step registration |
 | `../zig_build/zig_dist.py` | Python packaging helper used by the Zig distribution steps |
 | `../zig_build/tools/` | Zig-owned deterministic generator entrypoints |
-| `../zig_build/leaf/` | current parity-gated manual Zig rewrite slice |
+| `../zig_build/leaf/` | current parity-gated low-coupling Zig rewrite slice |
+| `../zig_build/state/` | current parity-gated stateful Zig rewrite slice |
 
 ## Build Graph Shape
 
@@ -49,7 +50,7 @@ flowchart TD
   D[firmware steps]
   E[distribution steps]
   F[generated outputs]
-  G[leaf rewrite objects]
+  G[leaf and state rewrite objects]
 
   A --> B
   B --> C
@@ -76,6 +77,7 @@ The live build graph currently exposes these step groups.
 - `both`
 - `both_asan`
 - `logical_shortint_parity`
+- `stack_state_parity`
 - `test`
 - `test_asan`
 - `repeattest`

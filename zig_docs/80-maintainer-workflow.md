@@ -4,7 +4,7 @@ This page explains how to keep the maintained docs aligned with the live,
 tracked repository surfaces.
 
 Use this page when a task changes the public maintainer contract documented in
-`zig_docs/`, `README.md`, `BUILD.md`, or `ZIG-README.md`.
+`zig_docs/`, `README.md`, or `ZIG-README.md`.
 
 ## Doc Stack At A Glance
 
@@ -12,7 +12,6 @@ Use this page when a task changes the public maintainer contract documented in
 | --- | --- | --- |
 | `zig_docs/` | stable maintainer docs for the live repo | build, rewrite, CI, package, or verification contracts changed |
 | `../README.md` | top-level project entrypoint | maintainers need a root docs pointer or short project-level note |
-| `../BUILD.md` | short build-entrypoint summary | the top-level build-routing contract changed |
 | `../ZIG-README.md` | short Zig build quick start | the main Zig entrypoint or doc routing changed |
 
 ## Promotion Workflow
@@ -40,8 +39,9 @@ Use one promotion workflow when a non-trivial change lands.
 ## When To Update Which Page
 
 - update `../README.md` when the top-level maintainer doc entrypoint changed
-- update `../BUILD.md` when the top-level build entrypoint summary changed
 - update `../ZIG-README.md` when the short Zig quick start changed
+- update [README.md](README.md) when the maintainer doc index, read order, or
+  page-routing contract changed
 - update [10-build-and-source-layout.md](10-build-and-source-layout.md) when
   entrypoints, pins, or build-layout guidance changed
 - update [20-zig-build-graph.md](20-zig-build-graph.md) when public targets,

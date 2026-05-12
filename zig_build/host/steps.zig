@@ -2,6 +2,7 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
+const stack_rewrites = @import("../state/stack_rewrites.zig");
 const host_types = @import("types.zig");
 
 const upstream_test_list = "src/testSuite/tests/testSuiteList.txt";
@@ -27,6 +28,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_C47",
         null,
     );
@@ -50,6 +52,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_R47",
         null,
     );
@@ -73,6 +76,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_C47",
         .full,
     );
@@ -88,6 +92,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_R47",
         .full,
     );
@@ -106,6 +111,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         null,
     );
 
@@ -123,6 +129,13 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_logical_shortint_parity.setCwd(b.path("."));
     const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical leaf-module parity suite");
     logical_shortint_parity_step.dependOn(&run_logical_shortint_parity.step);
+
+    const stack_state_parity = stack_rewrites.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
+    const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
+    run_stack_state_parity.setCwd(b.path("."));
+    const stack_state_parity_step = b.step("stack_state_parity", "Run the stack-state parity suite");
+    stack_state_parity_step.dependOn(&run_stack_state_parity.step);
+
     const run_test_suite = addTestSuiteRun(b, test_suite, upstream_test_list);
     const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
     const test_step = b.step("test", "Run the host test suite");
@@ -140,6 +153,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         .full,
     );
     const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, upstream_test_list);

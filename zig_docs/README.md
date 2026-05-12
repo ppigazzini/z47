@@ -104,6 +104,8 @@ rewrite status, CI routing, package identity, or verification rules.
 Maintainer entrypoints:
 
 - `zig build` or `zig build sim`: canonical host build entrypoint
+- `zig build stack_state_parity`: focused parity lane for the live stack-state
+  rewrite slice
 - `zig build test`: canonical grouped host regression lane
 - `zig build generated`: refreshes all tracked generated host artifacts
 - `zig build docs`: canonical docs build for `docs/code`

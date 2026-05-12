@@ -22,8 +22,9 @@ current upstream pin are already clear.
 - The imported `Makefile`, `meson.build`, and related upstream files remain in
   the tree as audit and rebase reference surfaces.
 - The current verified Zig-owned code slices are the deterministic generators
-  under `zig_build/tools/` and the short-integer logical leaf rewrite under
-  `zig_build/leaf/`.
+  under `zig_build/tools/`, the short-integer logical leaf rewrite under
+  `zig_build/leaf/`, and the live stack or undo owner rewrite under
+  `zig_build/state/`.
 
 ## What This Repository Is
 
@@ -87,12 +88,13 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 
 | Surface | Current state | Notes |
 | --- | --- | --- |
-| `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5` | existing C compiled by Zig | main calculator, simulator, and hardware code still come from the imported upstream tree |
+| `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5` | existing C compiled by Zig, with selected leaf and stack replacements | most calculator, simulator, and hardware code still comes from the imported upstream tree |
 | `dep/decNumberICU` | retained C dependency compiled by Zig | vendored decimal arithmetic library remains explicit |
 | GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependencies remain explicit |
 | `zig_build/tools/` generator entrypoints | manual Zig executables with narrow C boundaries | deterministic generators now run from Zig-owned entrypoints |
 | `zig_build/leaf/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling logical leaf modules have focused parity validation |
-| `zig_build/leaf/shortint_runtime.zig` plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
+| `zig_build/state/` stack rewrite slice | manual Zig rewrite with parity coverage | the exported `stack.c` owner now lives in Zig for the live host and firmware graphs |
+| `zig_build/leaf/shortint_runtime.zig`, `zig_build/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
 
 ## Runtime And Build Boundary Rules
 

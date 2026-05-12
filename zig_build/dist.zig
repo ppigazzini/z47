@@ -83,6 +83,7 @@ pub fn registerSteps(
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_C47",
         null,
     );
@@ -98,6 +99,7 @@ pub fn registerSteps(
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.stack_state_objects,
         "USER_R47",
         null,
     );

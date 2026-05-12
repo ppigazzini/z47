@@ -1,5 +1,6 @@
 const std = @import("std");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
+const stack_rewrites = @import("../state/stack_rewrites.zig");
 
 pub const CommonConfig = struct {
     platform_define: []const u8,
@@ -22,6 +23,7 @@ pub const GeneratedOutputs = struct {
 };
 
 pub const ShortIntLeafObjects = shortint_rewrites.RuntimeObjects;
+pub const StackStateObjects = stack_rewrites.RuntimeObjects;
 
 pub const Context = struct {
     host_target: std.Build.ResolvedTarget,
@@ -32,4 +34,5 @@ pub const Context = struct {
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
     shortint_leaf_objects: ShortIntLeafObjects,
+    stack_state_objects: StackStateObjects,
 };
