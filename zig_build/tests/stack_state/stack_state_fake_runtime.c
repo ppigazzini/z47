@@ -16,6 +16,11 @@ static namedVariableHeader_t fake_named_variables[MAX_FAKE_NAMED_VARIABLES];
 static registerHeader_t fake_local_registers[MAX_FAKE_LOCAL_REGISTERS];
 namedVariableHeader_t *allNamedVariables = fake_named_variables;
 registerHeader_t *currentLocalRegisters = fake_local_registers;
+char errorMessage[ERROR_MESSAGE_LENGTH];
+const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH] = {
+  "%s: no named variables",
+  "%s: register %d must be less than %d",
+};
 uint16_t numberOfNamedVariables = 0;
 uint8_t currentNumberOfLocalRegisters = 0;
 
@@ -40,6 +45,14 @@ real_t SAVED_SIGMA_LASTX = {{0}};
 real_t SAVED_SIGMA_LASTY = {{0}};
 
 static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
+
+#ifdef Z47_REGISTER_METADATA_RUNTIME
+#define getRegisterDataPointer z47_stack_parity_raw_getRegisterDataPointer
+#define setRegisterDataPointer z47_stack_parity_raw_setRegisterDataPointer
+#define getRegisterDataType z47_stack_parity_raw_getRegisterDataType
+#define getRegisterTag z47_stack_parity_raw_getRegisterTag
+#define setRegisterDataType z47_stack_parity_raw_setRegisterDataType
+#endif
 
 static registerHeader_t *mutableRegisterHeader(calcRegister_t reg) {
   if(reg <= LAST_GLOBAL_REGISTER) {
@@ -72,6 +85,17 @@ static uint16_t findSlot(const void *ptr) {
   }
 
   return 0;
+}
+
+uint16_t stackParityToC47MemPtr(const void *ptr) {
+  return findSlot(ptr);
+}
+
+void *stackParityToPcMemPtr(uint16_t ptr) {
+  if(ptr == C47_NULL || ptr >= MAX_FAKE_MEMORY_SLOTS) {
+    return NULL;
+  }
+  return fake_memory_slots[ptr].ptr;
 }
 
 static void freeSlot(uint16_t slot) {
@@ -320,6 +344,11 @@ void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char 
   (void)m2;
   (void)m3;
   (void)m4;
+}
+
+void displayBugScreen(const char *message) {
+  (void)message;
+  lastErrorCode = ERROR_OUT_OF_RANGE;
 }
 
 void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {

@@ -132,6 +132,7 @@ Public maintainer entrypoints currently exposed by `zig build --help` include:
 - `zig build both_asan`
 - `zig build logical_shortint_parity`
 - `zig build stack_state_parity`
+- `zig build register_metadata_parity`
 - `zig build test`
 - `zig build test_asan`
 - `zig build repeattest`
@@ -165,8 +166,8 @@ expects from a clean shell:
 3. Export the `xlsxio_xlsx2csv` helper and its runtime library path when the
    lane depends on generated artifacts, docs, or packaging.
 4. Run the smallest focused lane first, usually `zig build test`,
-  `zig build stack_state_parity`, `zig build generated`, `zig build docs`, or
-  one firmware target.
+  `zig build stack_state_parity`, `zig build register_metadata_parity`,
+  `zig build generated`, `zig build docs`, or one firmware target.
 5. Rerun the broader host or package lane only after the focused lane passes.
 
 ## Generated And Cleaned Surfaces
