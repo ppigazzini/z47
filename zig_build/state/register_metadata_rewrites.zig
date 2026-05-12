@@ -1,5 +1,20 @@
 const std = @import("std");
 
+pub const RuntimeObjects = struct {
+    register_metadata: *std.Build.Step.Compile,
+
+    pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
+        cmd.addArg("zig_build/state/register_metadata_runtime_helpers.c");
+        cmd.addArg("zig_build/state/registers_retained.c");
+        cmd.addArg("zig_build/state/registers_retained_wrappers.c");
+        cmd.addFileArg(self.register_metadata.getEmittedBin());
+    }
+};
+
+pub const RuntimeObjectOptions = struct {
+    unwind_tables: ?std.builtin.UnwindTables = null,
+};
+
 const replaced_core_sources = [_][]const u8{
     "registers.c",
 };
@@ -9,6 +24,7 @@ fn addRuntimeObject(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
+    options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     return b.addObject(.{
         .name = b.fmt("{s}-register-metadata", .{name_prefix}),
@@ -16,8 +32,30 @@ fn addRuntimeObject(
             .root_source_file = b.path("zig_build/state/register_metadata.zig"),
             .target = target,
             .optimize = optimize,
+            .unwind_tables = options.unwind_tables,
         }),
     });
+}
+
+pub fn addRuntimeObjects(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    name_prefix: []const u8,
+) RuntimeObjects {
+    return addRuntimeObjectsWithOptions(b, target, optimize, name_prefix, .{});
+}
+
+pub fn addRuntimeObjectsWithOptions(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    name_prefix: []const u8,
+    options: RuntimeObjectOptions,
+) RuntimeObjects {
+    return .{
+        .register_metadata = addRuntimeObject(b, target, optimize, name_prefix, options),
+    };
 }
 
 pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u8 {
@@ -44,7 +82,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix);
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
     module.addCSourceFile(.{ .file = b.path("zig_build/state/register_metadata_runtime_helpers.c"), .flags = c_flags });
     module.addCSourceFile(.{ .file = b.path("zig_build/state/registers_retained.c"), .flags = c_flags });
@@ -57,7 +95,7 @@ pub fn addParityExecutable(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity");
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const exe = b.addExecutable(.{
         .name = "register-metadata-parity",
         .root_module = b.createModule(.{
