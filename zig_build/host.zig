@@ -6,6 +6,7 @@ const host_types = @import("host/types.zig");
 
 pub const CommonConfig = host_types.CommonConfig;
 pub const GeneratedOutputs = host_types.GeneratedOutputs;
+pub const ShortIntLeafObjects = host_types.ShortIntLeafObjects;
 pub const Context = host_types.Context;
 
 pub fn prepareContext(
@@ -33,6 +34,7 @@ pub fn addSimulator(
     common: CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
+    shortint_leaf_objects: ShortIntLeafObjects,
     calc_model: []const u8,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
@@ -47,6 +49,7 @@ pub fn addSimulator(
         common,
         version_headers_dir,
         generated,
+        shortint_leaf_objects,
         calc_model,
         sanitize_c,
     );

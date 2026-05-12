@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("common.zig");
 const host_steps = @import("host.zig");
+const shortint_rewrites = @import("leaf/shortint_rewrites.zig");
 
 pub const Board = enum {
     dmcp,
@@ -50,6 +51,8 @@ const ArmGmpOutputs = struct {
     library: std.Build.LazyPath,
 };
 
+const ShortIntLeafObjects = shortint_rewrites.RuntimeObjects;
+
 const BuildPhase = enum {
     pre,
     final,
@@ -98,6 +101,10 @@ pub fn registerSteps(
     const forcecrc32 = addForceCrc32Tool(b, context.host_target, optimize);
     const arm_gmp_dmcp = addArmGmpBuild(b, .dmcp);
     const arm_gmp_dmcp5 = addArmGmpBuild(b, .dmcp5);
+    const firmware_leaf_optimize = defaultFirmwareLeafOptimize(optimize);
+    const firmware_leaf_options: shortint_rewrites.RuntimeObjectOptions = .{ .unwind_tables = .none };
+    const dmcp_shortint_leaf_objects = shortint_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_leaf_options);
+    const dmcp5_shortint_leaf_objects = shortint_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_leaf_options);
 
     const dmcp = addFirmwareBuild(b, .{
         .step_name = "dmcp",
@@ -108,7 +115,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, forcecrc32, decnumber_fastmul);
 
     const dmcpr47 = addFirmwareBuild(b, .{
         .step_name = "dmcpr47",
@@ -121,7 +128,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -131,7 +138,7 @@ pub fn registerSteps(
         .program_extension = ".pg5",
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5r47 = addFirmwareBuild(b, .{
         .step_name = "dmcp5r47",
@@ -142,7 +149,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
@@ -156,7 +163,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 
@@ -179,6 +186,13 @@ pub fn registerSteps(
         .dmcp5 = dmcp5,
         .dmcp5r47 = dmcp5r47,
         .dmcp_variants = dmcp_variants,
+    };
+}
+
+fn defaultFirmwareLeafOptimize(optimize: std.builtin.OptimizeMode) std.builtin.OptimizeMode {
+    return switch (optimize) {
+        .Debug => .ReleaseSmall,
+        else => optimize,
     };
 }
 
@@ -324,15 +338,16 @@ fn addFirmwareBuild(
     version_headers_dir: std.Build.LazyPath,
     generated: host_steps.GeneratedOutputs,
     arm_gmp: ArmGmpOutputs,
+    shortint_leaf_objects: ShortIntLeafObjects,
     forcecrc32: *std.Build.Step.Compile,
     decnumber_fastmul: bool,
 ) Build {
-    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, decnumber_fastmul, null);
+    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, decnumber_fastmul, null);
     const pre_qspi_bad = addObjcopyBinary(b, pre_build.elf, b.fmt("{s}_pre_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
     const pre_qspi = addModifyCrcStep(b, forcecrc32, pre_qspi_bad.path, b.fmt("{s}_pre_qspi.bin", .{config.program_name}));
     const generated_qspi_header = addGenerateQspiCrcStep(b, pre_qspi.path, config.generated_qspi_header_name);
 
-    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, decnumber_fastmul, generated_qspi_header.path);
+    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, decnumber_fastmul, generated_qspi_header.path);
     const flash = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_flash.bin", .{config.program_name}), .{ .section_mode = .remove });
     const program = addPgmChecksumStep(b, flash.path, b.fmt("{s}{s}", .{ config.program_name, config.program_extension }));
     const qspi_bad = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
@@ -363,6 +378,7 @@ fn addFirmwareElfBuild(
     version_headers_dir: std.Build.LazyPath,
     generated: host_steps.GeneratedOutputs,
     arm_gmp: ArmGmpOutputs,
+    shortint_leaf_objects: ShortIntLeafObjects,
     decnumber_fastmul: bool,
     generated_qspi_header: ?std.Build.LazyPath,
 ) ElfBuildOutputs {
@@ -404,6 +420,7 @@ fn addFirmwareElfBuild(
     cmd.addArg(firmwareSdkStartupSource(config.board));
     for (build_common.decnumber_sources) |source| cmd.addArg(b.fmt("dep/{s}", .{source}));
     for (core_sources) |source| cmd.addArg(b.fmt("src/c47/{s}", .{source}));
+    shortint_leaf_objects.addToCommand(cmd);
     for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(source);
     cmd.addFileArg(generated.raster_fonts_data);
     cmd.addFileArg(generated.constant_pointers_c);
@@ -427,6 +444,23 @@ fn addFirmwareElfBuild(
     cmd.addFileInput(arm_gmp.library);
 
     return .{ .elf = elf, .map = map };
+}
+
+fn resolveFirmwareTarget(b: *std.Build, board: Board) std.Build.ResolvedTarget {
+    return switch (board) {
+        .dmcp => b.resolveTargetQuery(.{
+            .cpu_arch = .thumb,
+            .os_tag = .freestanding,
+            .abi = .eabihf,
+            .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
+        }),
+        .dmcp5 => b.resolveTargetQuery(.{
+            .cpu_arch = .thumb,
+            .os_tag = .freestanding,
+            .abi = .eabihf,
+            .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m33 },
+        }),
+    };
 }
 
 fn addObjcopyBinary(
