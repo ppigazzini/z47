@@ -75,11 +75,23 @@ jobs:
           name: upstream-source-index
           path: upstream-source.index
 
+  zig-c-boundary-guard:
+    name: Verify curated Zig/C boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce approved Zig/C boundary files
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-zig-c-boundaries.sh
+
   linux-host-parity:
     name: Linux host parity, wrappers, generated outputs, app smoke run
     needs:
       - validate-toolchain
       - source-manifest
+      - zig-c-boundary-guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -132,8 +144,14 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
+          cmake_major="${cmake_version%%.*}"
+          cmake_policy_args=()
+          if [[ "$cmake_major" =~ ^[0-9]+$ && "$cmake_major" -ge 4 ]]; then
+            cmake_policy_args+=( -DCMAKE_POLICY_VERSION_MINIMUM=3.5 )
+          fi
           cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            "${cmake_policy_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_DOCUMENTATION:BOOL=OFF \
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
@@ -327,6 +345,7 @@ jobs:
     needs:
       - validate-toolchain
       - source-manifest
+      - zig-c-boundary-guard
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -385,8 +404,14 @@ jobs:
           set -euo pipefail
           eval "$(brew shellenv)"
           git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
+          cmake_major="${cmake_version%%.*}"
+          cmake_policy_args=()
+          if [[ "$cmake_major" =~ ^[0-9]+$ && "$cmake_major" -ge 4 ]]; then
+            cmake_policy_args+=( -DCMAKE_POLICY_VERSION_MINIMUM=3.5 )
+          fi
           cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            "${cmake_policy_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
           cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
@@ -500,6 +525,7 @@ jobs:
     needs:
       - validate-toolchain
       - source-manifest
+      - zig-c-boundary-guard
     runs-on: windows-latest
     steps:
       - name: Disable automatic CRLF conversion
@@ -567,8 +593,14 @@ jobs:
           temp_root="$(cygpath -u "$RUNNER_TEMP")"
           prefix="$temp_root/xlsxio-prefix"
           git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$temp_root/xlsxio"
+          cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
+          cmake_major="${cmake_version%%.*}"
+          cmake_policy_args=()
+          if [[ "$cmake_major" =~ ^[0-9]+$ && "$cmake_major" -ge 4 ]]; then
+            cmake_policy_args+=( -DCMAKE_POLICY_VERSION_MINIMUM=3.5 )
+          fi
           cmake -G Ninja -S "$temp_root/xlsxio" -B "$temp_root/xlsxio/build" \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            "${cmake_policy_args[@]}" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$prefix"
           cmake --build "$temp_root/xlsxio/build" --parallel
