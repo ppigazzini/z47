@@ -91,9 +91,9 @@ Purpose:
 Purpose:
 
 - build and test the host simulator surface on Linux
-- run `logical_shortint_parity`, `both`, `testPgms`, `test`, `generated`,
-  `both_asan`, `test_asan`, `docs`, firmware targets, and Linux distribution
-  packaging
+- run `logical_shortint_parity`, `stack_state_parity`, `both`, `testPgms`,
+  `test`, `generated`, `both_asan`, `test_asan`, `docs`, firmware targets,
+  and Linux distribution packaging
 - run a Linux simulator smoke launch from the packaged archive
 - refresh and diff tracked generated artifacts
 - upload the Linux package artifact and a second artifact containing the golden
@@ -104,7 +104,8 @@ Purpose:
 Purpose:
 
 - build and test the host simulator surface on macOS
-- run `logical_shortint_parity`, `both`, `test`, and `generated`
+- run `logical_shortint_parity`, `stack_state_parity`, `both`, `test`, and
+  `generated`
 - run a macOS simulator smoke launch from the built simulator artifact
 - stage and upload a macOS package artifact
 
@@ -118,7 +119,8 @@ Current platform detail:
 Purpose:
 
 - build and test the host simulator surface on Windows under MSYS2 UCRT64
-- run `logical_shortint_parity`, `both`, `test`, and `generated`
+- run `logical_shortint_parity`, `stack_state_parity`, `both`, `test`, and
+  `generated`
 - run a direct simulator smoke launch
 - build a relocatable Windows package with GTK runtime assets, launcher files,
   runtime caches, and notice metadata
@@ -148,7 +150,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
 | source manifest or upstream pin | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
-| Linux host parity | `zig build logical_shortint_parity && zig build both && zig build test && zig build generated` |
+| Linux host parity | `zig build logical_shortint_parity && zig build stack_state_parity && zig build both && zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | host package | run the matching `dist_<host>` target on the matching host OS |

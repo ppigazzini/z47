@@ -164,6 +164,7 @@ jobs:
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build logical_shortint_parity
+          zig build stack_state_parity
           zig build both
           zig build testPgms
           xvfb-run --auto-servernum zig build test
@@ -425,6 +426,7 @@ jobs:
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
           zig build logical_shortint_parity
+          zig build stack_state_parity
           zig build both
           zig build test
           zig build generated
@@ -614,6 +616,7 @@ jobs:
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
           zig build logical_shortint_parity
+          zig build stack_state_parity
           zig build both
           zig build test
           zig build generated
