@@ -38,6 +38,7 @@ flowchart TD
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
 | short-integer leaf rewrite parity | `../zig_build/leaf/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
 | stack-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
+| register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | host simulator and core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
 | native Zig C sanitizer lane | `../zig_build/host/steps.zig` | sanitized host build and tests | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
@@ -55,7 +56,7 @@ flowchart TD
 - generator or tracked generated-artifact change: `zig build generated --summary none`
 - host simulator, platform glue, or test-surface change:
   `zig build test --summary none`
-- boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none` or `zig build stack_state_parity --summary none` for the touched slice
+- boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, or `zig build register_metadata_parity --summary none` for the touched slice
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
@@ -68,10 +69,11 @@ match to the Linux CI lane, use this order after exporting the xlsxio helper:
 
 1. `zig build logical_shortint_parity --summary none`
 2. `zig build stack_state_parity --summary none`
-3. `zig build both --summary none`
-4. `zig build test --summary none`
-5. `zig build generated --summary none`
-6. `zig build both_asan --summary none`
+3. `zig build register_metadata_parity --summary none`
+4. `zig build both --summary none`
+5. `zig build test --summary none`
+6. `zig build generated --summary none`
+7. `zig build both_asan --summary none`
 7. `zig build test_asan --summary none`
 8. `zig build docs --summary none`
 9. `zig build dmcp --summary none`
