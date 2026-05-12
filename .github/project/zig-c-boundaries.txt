@@ -10,3 +10,4 @@ zig_build/tools/ttf2_raster_fonts.zig
 [extern-symbols]
 zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
+zig_build/leaf/shortint_runtime.zig

@@ -96,7 +96,15 @@ pub fn collectRelativeCFiles(b: *std.Build, root_path: []const u8) ![][]const u8
         if (entry.kind != .file) continue;
         if (!std.mem.endsWith(u8, entry.path, ".c")) continue;
         if (std.mem.eql(u8, entry.path, "reservedRegisterLookupGenerator.c")) continue;
-        try files.append(b.allocator, try b.allocator.dupe(u8, entry.path));
+
+        const relative_path = try b.allocator.dupe(u8, entry.path);
+        if (std.fs.path.sep != '/') {
+            for (relative_path) |*byte| {
+                if (byte.* == std.fs.path.sep) byte.* = '/';
+            }
+        }
+
+        try files.append(b.allocator, relative_path);
     }
 
     return try files.toOwnedSlice(b.allocator);
