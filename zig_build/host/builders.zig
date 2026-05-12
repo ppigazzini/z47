@@ -14,6 +14,7 @@ pub fn addSimulator(
     common: host_types.CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
+    shortint_leaf_objects: host_types.ShortIntLeafObjects,
     calc_model: []const u8,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
@@ -67,6 +68,9 @@ pub fn addSimulator(
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
+    exe.root_module.addObject(shortint_leaf_objects.logical_mask);
+    exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
+    exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
     host_platform.linkGtk3(exe.root_module, common);
     exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
     exe.root_module.linkSystemLibrary("m", .{});
@@ -90,6 +94,7 @@ pub fn addTestSuite(
     common: host_types.CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
+    shortint_leaf_objects: host_types.ShortIntLeafObjects,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (host_target.result.os.tag == .windows)
@@ -124,6 +129,9 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
+    exe.root_module.addObject(shortint_leaf_objects.logical_mask);
+    exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
+    exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
     host_platform.linkGtk3(exe.root_module, common);
     exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
     exe.root_module.linkSystemLibrary("m", .{});

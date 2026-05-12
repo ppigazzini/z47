@@ -23,7 +23,7 @@ mem = {
     "qspi"  : 1024 * (2048 if dmcp5 else 2048 - 12)
 }
 mode = 0
-sects = [ 0, 0, 0, 0, 0 ]
+sects = [ "", "", "", "", "" ]
 sizes = []
 
 # Read elf sections file
@@ -46,7 +46,8 @@ for line in f:
             sizes.append(int(f[5], 0))
     elif mode == 2:
         # Line is formatted as: "Segment# Sections" and we want the first section.
-        sects[int(f[0])] = f[1]
+        if len(f) > 1:
+            sects[int(f[0])] = f[1]
 
 # Compute section totals
 used = {
@@ -55,6 +56,8 @@ used = {
     "qspi"  : 0
 }
 for i in range(len(sizes)):
+    if sects[i] == "":
+        continue
     if sects[i] == ".rodata" or sects[i] == ".text":
         used["flash"] += sizes[i]
     elif sects[i] == ".data":

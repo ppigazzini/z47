@@ -1,7 +1,18 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
+const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const host_types = @import("types.zig");
+
+const upstream_test_list = "src/testSuite/tests/testSuiteList.txt";
+const z47_test_list = "zig_build/tests/testSuiteList_z47.txt";
+
+fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
+    const run_test_suite = b.addRunArtifact(test_suite);
+    run_test_suite.setCwd(b.path("."));
+    run_test_suite.addArg(list_path);
+    return run_test_suite;
+}
 
 pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) void {
     const sim = host_builders.addSimulator(
@@ -15,6 +26,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         "USER_C47",
         null,
     );
@@ -37,6 +49,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         "USER_R47",
         null,
     );
@@ -59,6 +72,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         "USER_C47",
         .full,
     );
@@ -73,6 +87,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         "USER_R47",
         .full,
     );
@@ -90,13 +105,29 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         null,
     );
-    const run_test_suite = b.addRunArtifact(test_suite);
-    run_test_suite.setCwd(b.path("."));
-    run_test_suite.addArg("src/testSuite/tests/testSuiteList.txt");
+
+    const logical_shortint_parity = shortint_rewrites.addParityExecutable(
+        b,
+        context.host_target,
+        optimize,
+        .{
+            .logical_mask = context.shortint_leaf_objects.logical_mask,
+            .logical_count_bits = context.shortint_leaf_objects.logical_count_bits,
+            .logical_set_clear_flip_bits = context.shortint_leaf_objects.logical_set_clear_flip_bits,
+        },
+    );
+    const run_logical_shortint_parity = b.addRunArtifact(logical_shortint_parity);
+    run_logical_shortint_parity.setCwd(b.path("."));
+    const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical leaf-module parity suite");
+    logical_shortint_parity_step.dependOn(&run_logical_shortint_parity.step);
+    const run_test_suite = addTestSuiteRun(b, test_suite, upstream_test_list);
+    const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
     const test_step = b.step("test", "Run the host test suite");
     test_step.dependOn(&run_test_suite.step);
+    test_step.dependOn(&run_test_suite_z47.step);
 
     const test_suite_asan = host_builders.addTestSuite(
         b,
@@ -108,16 +139,18 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
+        context.shortint_leaf_objects,
         .full,
     );
-    const run_test_suite_asan = b.addRunArtifact(test_suite_asan);
-    run_test_suite_asan.setCwd(b.path("."));
-    run_test_suite_asan.addArg("src/testSuite/tests/testSuiteList.txt");
+    const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, upstream_test_list);
+    const run_test_suite_asan_z47 = addTestSuiteRun(b, test_suite_asan, z47_test_list);
     const test_asan_step = b.step("test_asan", "Run the host test suite with native Zig C sanitizing");
     test_asan_step.dependOn(&run_test_suite_asan.step);
+    test_asan_step.dependOn(&run_test_suite_asan_z47.step);
 
     const repeattest_step = b.step("repeattest", "Run the host test suite incrementally");
     repeattest_step.dependOn(&run_test_suite.step);
+    repeattest_step.dependOn(&run_test_suite_z47.step);
 
     const update_fonts = b.addUpdateSourceFiles();
     update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, "src/generated/rasterFontsData.c");

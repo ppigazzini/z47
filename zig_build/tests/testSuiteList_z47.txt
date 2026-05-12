@@ -1,0 +1,3 @@
+; z47-owned host regression additions layered on top of the upstream suite.
+
+shortint_mask64_z47

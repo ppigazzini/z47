@@ -1,0 +1,16 @@
+;*************************************************************
+;** z47 overlay: short-integer mask64 regression coverage   **
+;*************************************************************
+
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnMaskr(64)
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=64
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"1111111111111111111111111111111111111111111111111111111111111111#2"
+
+
+Func: fnMaskl(64)
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=64
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"1111111111111111111111111111111111111111111111111111111111111111#2"
