@@ -30,6 +30,15 @@ typedef struct {
 } namedVariableHeader_t;
 
 typedef struct {
+  char Desc[28];
+} reservedVariableDescStr_t;
+
+typedef struct {
+  registerHeader_t header;
+  uint8_t reservedVariableName[8];
+} reservedVariableHeader_t;
+
+typedef struct {
   uint8_t bytes[16];
 } real34_t;
 
@@ -45,6 +54,7 @@ enum {
 };
 
 enum {
+  LI_POSITIVE = 2,
   amNone = 5,
 };
 
@@ -80,6 +90,9 @@ enum REG_NUMBERS {
   LAST_GLOBAL_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
   FIRST_NAMED_VARIABLE = 256,
   LAST_NAMED_VARIABLE = 1999,
+  FIRST_RESERVED_VARIABLE = 2000,
+  FIRST_NAMED_RESERVED_VARIABLE = 2026,
+  LAST_RESERVED_VARIABLE = 2047,
   INVALID_VARIABLE = 2199,
   FIRST_LOCAL_REGISTER = 7000,
   LAST_LOCAL_REGISTER = 7098,
@@ -87,8 +100,10 @@ enum REG_NUMBERS {
 
 enum {
   NUMBER_OF_GLOBAL_REGISTERS = 137,
+  NUMBER_OF_RESERVED_VARIABLES = LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1,
+  NUMBER_OF_LETTERED_VARIABLES = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE,
   NUMBER_OF_STATISTICAL_SUMS = 28,
-  MAX_FAKE_NAMED_VARIABLES = 4,
+  MAX_FAKE_NAMED_VARIABLES = 64,
   MAX_FAKE_LOCAL_REGISTERS = 4,
   MAX_FAKE_MEMORY_SLOTS = 256,
 };
@@ -108,8 +123,21 @@ enum {
 #define REAL_SIZE_IN_BYTES(digits) ((uint32_t)sizeof(real_t))
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
+#define C47_NULL 0
 #define EXTRA_INFO_ON_CALC_ERROR 0
 #define min(a, b) ((a) < (b) ? (a) : (b))
+#define ERROR_MESSAGE_LENGTH 256
+
+enum {
+  bugMsgNoNamedVariables = 0,
+  bugMsgRegistMustBeLessThan = 1,
+};
+
+uint16_t stackParityToC47MemPtr(const void *ptr);
+void *stackParityToPcMemPtr(uint16_t ptr);
+
+#define TO_PCMEMPTR(p) stackParityToPcMemPtr((uint16_t)(p))
+#define TO_C47MEMPTR(p) stackParityToC47MemPtr(p)
 
 #define getStackTop() z47_stack_runtime_get_stack_top()
 #define freeRegisterData(regist) freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
@@ -118,6 +146,9 @@ enum {
 extern registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
 extern namedVariableHeader_t *allNamedVariables;
 extern registerHeader_t *currentLocalRegisters;
+extern const reservedVariableHeader_t allReservedVariables[];
+extern char errorMessage[ERROR_MESSAGE_LENGTH];
+extern const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH];
 extern uint16_t numberOfNamedVariables;
 extern uint8_t currentNumberOfLocalRegisters;
 
@@ -172,6 +203,7 @@ void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegist
 void fnRecall(uint16_t reg);
 void recallStatsMatrix(void);
 void fnSigmaAddRem(uint16_t selection);
+void displayBugScreen(const char *message);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);

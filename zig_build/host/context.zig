@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
+const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
 const host_generated = @import("generated.zig");
 const host_platform = @import("platform.zig");
@@ -17,7 +18,8 @@ pub fn prepareContext(
     const common = try host_platform.resolveCommonConfig(b, host_target, raspberry, decnumber_fastmul);
     const core_sources = try build_common.collectRelativeCFiles(b, "src/c47");
     const core_sources_without_shortint = try shortint_rewrites.filterCoreSources(b, core_sources);
-    const core_sources_without_state = try stack_rewrites.filterCoreSources(b, core_sources_without_shortint);
+    const core_sources_without_register_metadata = try register_metadata_rewrites.filterCoreSources(b, core_sources_without_shortint);
+    const core_sources_without_state = try stack_rewrites.filterCoreSources(b, core_sources_without_register_metadata);
 
     return .{
         .host_target = host_target,

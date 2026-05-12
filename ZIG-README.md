@@ -35,6 +35,7 @@ Common entrypoints:
 zig build --help
 zig build sim
 zig build stack_state_parity
+zig build register_metadata_parity
 zig build test
 zig build generated
 zig build docs
