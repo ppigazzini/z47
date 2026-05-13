@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
+const memory_rewrites = @import("../state/memory_rewrites.zig");
 const host_platform = @import("platform.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const host_types = @import("types.zig");
@@ -69,6 +70,7 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/stack_runtime_helpers.c"), .flags = core_c_flags });
+    memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
@@ -135,6 +137,7 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/testSuite"), .files = test_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/stack_runtime_helpers.c"), .flags = core_c_flags });
+    memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });

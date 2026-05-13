@@ -107,6 +107,7 @@ pub fn registerSteps(
     const forcecrc32 = addForceCrc32Tool(b, context.host_target, optimize);
     const arm_gmp_dmcp = addArmGmpBuild(b, .dmcp);
     const arm_gmp_dmcp5 = addArmGmpBuild(b, .dmcp5);
+    const firmware_core_sources = addCoreSourceIfMissing(b, context.core_sources, "memory.c") catch @panic("OOM");
     const firmware_leaf_optimize = defaultFirmwareLeafOptimize(optimize);
     const firmware_leaf_options: shortint_rewrites.RuntimeObjectOptions = .{
         .strip = true,
@@ -158,7 +159,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, firmware_core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcpr47 = addFirmwareBuild(b, .{
         .step_name = "dmcpr47",
@@ -171,7 +172,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, firmware_core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -181,7 +182,7 @@ pub fn registerSteps(
         .program_extension = ".pg5",
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, firmware_core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5r47 = addFirmwareBuild(b, .{
         .step_name = "dmcp5r47",
@@ -192,7 +193,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, firmware_core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
@@ -206,7 +207,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, firmware_core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 
@@ -237,6 +238,29 @@ fn defaultFirmwareLeafOptimize(optimize: std.builtin.OptimizeMode) std.builtin.O
         .Debug => .ReleaseSmall,
         else => optimize,
     };
+}
+
+fn addCoreSourceIfMissing(
+    b: *std.Build,
+    core_sources: []const []const u8,
+    source_to_add: []const u8,
+) ![][]const u8 {
+    var sources = try std.ArrayList([]const u8).initCapacity(b.allocator, core_sources.len + 1);
+    errdefer sources.deinit(b.allocator);
+
+    var found = false;
+    for (core_sources) |source| {
+        try sources.append(b.allocator, source);
+        if (std.mem.eql(u8, source, source_to_add)) {
+            found = true;
+        }
+    }
+
+    if (!found) {
+        try sources.append(b.allocator, source_to_add);
+    }
+
+    return try sources.toOwnedSlice(b.allocator);
 }
 
 fn addForceCrc32Tool(
