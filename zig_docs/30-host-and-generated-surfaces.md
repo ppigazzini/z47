@@ -53,8 +53,13 @@ Current public host simulator steps:
 The host build graph still compiles imported upstream C sources for the main
 simulator and GTK surfaces, but it now replaces the imported `stack.c` owner
 with `../zig_build/state/stack.zig` plus the explicit helper seam in
-`../zig_build/state/stack_runtime_helpers.c`. The presence of a Zig-owned build
-graph still does not mean the host simulator is already a pure-Zig application.
+`../zig_build/state/stack_runtime_helpers.c`, replaces the exported register
+metadata accessors from `registers.c` with
+`../zig_build/state/register_metadata.zig`, and replaces the exported
+system-flag accessor and change-tracking surface from `flags.c` with
+`../zig_build/state/flags.zig` plus retained wrapper sources. The presence of a
+Zig-owned build graph still does not mean the host simulator is already a
+pure-Zig application.
 
 ## Host Test Steps
 
@@ -63,6 +68,7 @@ Current grouped host test steps:
 - `zig build logical_shortint_parity`
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
+- `zig build flags_parity`
 - `zig build test`
 - `zig build test_asan`
 - `zig build repeattest`
@@ -71,7 +77,9 @@ Current grouped host test steps:
 imported `stack.c` oracle against a fake runtime. `zig build
 register_metadata_parity` does the same for the live register-metadata
 accessors against the imported `registers.c` oracle surface in the host lane.
-`zig build test`,
+`zig build flags_parity` does the same for the exported system-flag accessor
+and change-tracking surface against the imported `flags.c` oracle, including
+refresh-state, clear-status-bar, and integer-base side effects. `zig build test`,
 `zig build test_asan`, and `zig build repeattest` cover the broader retained
 host regression surface after those focused slices pass.
 

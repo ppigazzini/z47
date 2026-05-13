@@ -19,7 +19,12 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
+    strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
+    stack_protector: ?bool = null,
+    stack_check: ?bool = null,
+    omit_frame_pointer: ?bool = null,
+    error_tracing: ?bool = null,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -43,7 +48,12 @@ fn addRuntimeObject(
             .root_source_file = b.path(root_source_file),
             .target = target,
             .optimize = optimize,
+            .strip = options.strip,
             .unwind_tables = options.unwind_tables,
+            .stack_protector = options.stack_protector,
+            .stack_check = options.stack_check,
+            .omit_frame_pointer = options.omit_frame_pointer,
+            .error_tracing = options.error_tracing,
         }),
     });
 }
@@ -112,7 +122,7 @@ pub fn addParityExecutable(
     });
     exe.root_module.addCSourceFile(.{
         .file = b.path("src/c47/logicalOps/countBits.c"),
-        .flags = &.{ "-DfnCountBits=oracle_fnCountBits" },
+        .flags = &.{"-DfnCountBits=oracle_fnCountBits"},
     });
     exe.root_module.addCSourceFile(.{
         .file = b.path("src/c47/logicalOps/setClearFlipBits.c"),

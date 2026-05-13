@@ -52,6 +52,8 @@ extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
+extern fn z47_stack_runtime_save_for_undo() void;
+extern fn z47_stack_runtime_undo() void;
 
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -140,6 +142,14 @@ pub fn restoreSavedSigmaLastXYAndAdd() void {
 
 pub fn real34SetZero(dest: ?*anyopaque) void {
     z47_stack_runtime_real34_set_zero(dest);
+}
+
+pub fn saveForUndoRetained() void {
+    z47_stack_runtime_save_for_undo();
+}
+
+pub fn undoRetained() void {
+    z47_stack_runtime_undo();
 }
 
 pub fn freeRegisterData(reg: calcRegister_t) void {

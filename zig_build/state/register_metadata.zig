@@ -1,3 +1,4 @@
+const builtin = @import("builtin");
 const runtime = @import("register_metadata_runtime.zig");
 
 const pointer_mask: runtime.register_descriptor_t = 0x0000ffff;
@@ -34,6 +35,10 @@ fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.
 }
 
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
+    if (builtin.target.os.tag == .freestanding) {
+        return runtime.retainedGetRegisterDataType(reg);
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -61,6 +66,10 @@ pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
 }
 
 pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
+    if (builtin.target.os.tag == .freestanding) {
+        return runtime.retainedGetRegisterDataPointer(reg);
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -88,6 +97,10 @@ pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
 }
 
 pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
+    if (builtin.target.os.tag == .freestanding) {
+        return runtime.retainedGetRegisterTag(reg);
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -115,6 +128,11 @@ pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
 }
 
 pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32) void {
+    if (builtin.target.os.tag == .freestanding) {
+        runtime.retainedSetRegisterDataType(reg, data_type, tag);
+        return;
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
@@ -151,6 +169,11 @@ pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, t
 }
 
 pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyopaque) void {
+    if (builtin.target.os.tag == .freestanding) {
+        runtime.retainedSetRegisterDataPointer(reg, mem_ptr);
+        return;
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
     const encoded = runtime.toC47MemPtr(mem_ptr);
 
@@ -183,6 +206,11 @@ pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*con
 }
 
 pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
+    if (builtin.target.os.tag == .freestanding) {
+        runtime.retainedSetRegisterTag(reg, tag);
+        return;
+    }
+
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
