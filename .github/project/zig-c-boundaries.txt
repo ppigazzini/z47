@@ -13,5 +13,6 @@ zig_build/tools/generate_testpgms.zig
 zig_build/leaf/shortint_runtime.zig
 zig_build/state/flags_runtime.zig
 zig_build/state/memory_runtime.zig
+zig_build/state/program_serialization_runtime.zig
 zig_build/state/register_metadata_runtime.zig
 zig_build/state/stack_runtime.zig
