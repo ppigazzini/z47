@@ -79,6 +79,7 @@ The live build graph currently exposes these step groups.
 - `logical_shortint_parity`
 - `stack_state_parity`
 - `register_metadata_parity`
+- `flags_parity`
 - `test`
 - `test_asan`
 - `repeattest`

@@ -128,16 +128,12 @@ jobs:
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
-      - name: Install host build prerequisites
+      - name: Install Linux xlsxio helper prerequisites
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -qq -y git pkgconf build-essential cmake meson ninja-build zip unzip python3-pip
-          sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
-          sudo apt-get install -qq -y xvfb libminizip-dev libpulse-dev doxygen gcc-arm-none-eabi
-          python3 -m pip install --user -r docs/code/requirements.txt
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
       - name: Build xlsxio helper
         if: steps.xlsxio-cache.outputs.cache-hit != 'true'
         shell: bash
@@ -157,6 +153,15 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
           cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
           cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Install remaining Linux host build prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -qq -y meson ninja-build zip unzip python3-pip
+          sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
+          sudo apt-get install -qq -y xvfb libpulse-dev doxygen gcc-arm-none-eabi
+          python3 -m pip install --user -r docs/code/requirements.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
         run: |
@@ -166,6 +171,7 @@ jobs:
           zig build logical_shortint_parity
           zig build stack_state_parity
           zig build register_metadata_parity
+          zig build flags_parity
           zig build both
           zig build testPgms
           xvfb-run --auto-servernum zig build test
@@ -385,12 +391,12 @@ jobs:
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
-      - name: Install macOS host prerequisites
+      - name: Install macOS xlsxio helper prerequisites
         shell: bash
         run: |
           set -euo pipefail
           eval "$(brew shellenv)"
-          formulae=(pkgconf cmake freetype gmp gtk+3 minizip expat)
+          formulae=(pkgconf cmake minizip expat)
           missing_formulae=()
           for formula in "${formulae[@]}"; do
             if ! brew list --versions "$formula" >/dev/null 2>&1; then
@@ -419,6 +425,21 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
           cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
           cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Install remaining macOS host prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          formulae=(freetype gmp gtk+3)
+          missing_formulae=()
+          for formula in "${formulae[@]}"; do
+            if ! brew list --versions "$formula" >/dev/null 2>&1; then
+              missing_formulae+=("$formula")
+            fi
+          done
+          if [[ "${#missing_formulae[@]}" -gt 0 ]]; then
+            brew install "${missing_formulae[@]}"
+          fi
       - name: Run macOS host build and tests
         shell: bash
         run: |
@@ -429,6 +450,7 @@ jobs:
           zig build logical_shortint_parity
           zig build stack_state_parity
           zig build register_metadata_parity
+          zig build flags_parity
           zig build both
           zig build test
           zig build generated
@@ -549,14 +571,9 @@ jobs:
           update: true
           install: >-
             git
-            make
-            python
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-expat
-            mingw-w64-ucrt-x86_64-freetype
             mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-gmp
-            mingw-w64-ucrt-x86_64-gtk3
             mingw-w64-ucrt-x86_64-minizip
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-pkgconf
@@ -611,6 +628,16 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$prefix"
           cmake --build "$temp_root/xlsxio/build" --parallel
           cmake --install "$temp_root/xlsxio/build"
+      - name: Install remaining Windows host prerequisites
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          pacman -S --noconfirm --needed \
+            make \
+            python \
+            mingw-w64-ucrt-x86_64-freetype \
+            mingw-w64-ucrt-x86_64-gmp \
+            mingw-w64-ucrt-x86_64-gtk3
       - name: Run Windows host build and tests
         shell: msys2 {0}
         run: |
@@ -620,6 +647,7 @@ jobs:
           zig build logical_shortint_parity
           zig build stack_state_parity
           zig build register_metadata_parity
+          zig build flags_parity
           zig build both
           zig build test
           zig build generated

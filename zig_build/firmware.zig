@@ -2,6 +2,7 @@ const std = @import("std");
 const build_common = @import("common.zig");
 const host_steps = @import("host.zig");
 const shortint_rewrites = @import("leaf/shortint_rewrites.zig");
+const flags_rewrites = @import("state/flags_rewrites.zig");
 const register_metadata_rewrites = @import("state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("state/stack_rewrites.zig");
 
@@ -54,6 +55,7 @@ const ArmGmpOutputs = struct {
 };
 
 const ShortIntLeafObjects = shortint_rewrites.RuntimeObjects;
+const FlagsStateObjects = flags_rewrites.RuntimeObjects;
 const RegisterMetadataObjects = register_metadata_rewrites.RuntimeObjects;
 const StackStateObjects = stack_rewrites.RuntimeObjects;
 
@@ -106,11 +108,42 @@ pub fn registerSteps(
     const arm_gmp_dmcp = addArmGmpBuild(b, .dmcp);
     const arm_gmp_dmcp5 = addArmGmpBuild(b, .dmcp5);
     const firmware_leaf_optimize = defaultFirmwareLeafOptimize(optimize);
-    const firmware_leaf_options: shortint_rewrites.RuntimeObjectOptions = .{ .unwind_tables = .none };
-    const firmware_register_metadata_options: register_metadata_rewrites.RuntimeObjectOptions = .{ .unwind_tables = .none };
-    const firmware_stack_options: stack_rewrites.RuntimeObjectOptions = .{ .unwind_tables = .none };
+    const firmware_leaf_options: shortint_rewrites.RuntimeObjectOptions = .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+    };
+    const firmware_flags_options: flags_rewrites.RuntimeObjectOptions = .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+    };
+    const firmware_register_metadata_options: register_metadata_rewrites.RuntimeObjectOptions = .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+    };
+    const firmware_stack_options: stack_rewrites.RuntimeObjectOptions = .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+    };
     const dmcp_shortint_leaf_objects = shortint_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_leaf_options);
     const dmcp5_shortint_leaf_objects = shortint_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_leaf_options);
+    const dmcp_flags_state_objects = flags_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_flags_options);
+    const dmcp5_flags_state_objects = flags_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
     const dmcp_register_metadata_objects = register_metadata_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_register_metadata_options);
     const dmcp5_register_metadata_objects = register_metadata_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_register_metadata_options);
     const dmcp_stack_state_objects = stack_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options);
@@ -125,7 +158,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcpr47 = addFirmwareBuild(b, .{
         .step_name = "dmcpr47",
@@ -138,7 +171,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -148,7 +181,7 @@ pub fn registerSteps(
         .program_extension = ".pg5",
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5r47 = addFirmwareBuild(b, .{
         .step_name = "dmcp5r47",
@@ -159,7 +192,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
@@ -173,7 +206,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 
@@ -349,17 +382,18 @@ fn addFirmwareBuild(
     generated: host_steps.GeneratedOutputs,
     arm_gmp: ArmGmpOutputs,
     shortint_leaf_objects: ShortIntLeafObjects,
+    flags_state_objects: FlagsStateObjects,
     register_metadata_objects: RegisterMetadataObjects,
     stack_state_objects: StackStateObjects,
     forcecrc32: *std.Build.Step.Compile,
     decnumber_fastmul: bool,
 ) Build {
-    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, null);
+    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, null);
     const pre_qspi_bad = addObjcopyBinary(b, pre_build.elf, b.fmt("{s}_pre_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
     const pre_qspi = addModifyCrcStep(b, forcecrc32, pre_qspi_bad.path, b.fmt("{s}_pre_qspi.bin", .{config.program_name}));
     const generated_qspi_header = addGenerateQspiCrcStep(b, pre_qspi.path, config.generated_qspi_header_name);
 
-    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, generated_qspi_header.path);
+    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, generated_qspi_header.path);
     const flash = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_flash.bin", .{config.program_name}), .{ .section_mode = .remove });
     const program = addPgmChecksumStep(b, flash.path, b.fmt("{s}{s}", .{ config.program_name, config.program_extension }));
     const qspi_bad = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
@@ -391,6 +425,7 @@ fn addFirmwareElfBuild(
     generated: host_steps.GeneratedOutputs,
     arm_gmp: ArmGmpOutputs,
     shortint_leaf_objects: ShortIntLeafObjects,
+    flags_state_objects: FlagsStateObjects,
     register_metadata_objects: RegisterMetadataObjects,
     stack_state_objects: StackStateObjects,
     decnumber_fastmul: bool,
@@ -434,6 +469,7 @@ fn addFirmwareElfBuild(
     cmd.addArg(firmwareSdkStartupSource(config.board));
     for (build_common.decnumber_sources) |source| cmd.addArg(b.fmt("dep/{s}", .{source}));
     for (core_sources) |source| cmd.addArg(b.fmt("src/c47/{s}", .{source}));
+    flags_state_objects.addToCommand(cmd);
     register_metadata_objects.addToCommand(cmd);
     cmd.addArg("zig_build/state/stack_runtime_helpers.c");
     shortint_leaf_objects.addToCommand(cmd);

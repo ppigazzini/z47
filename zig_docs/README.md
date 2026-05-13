@@ -108,6 +108,8 @@ Maintainer entrypoints:
   rewrite slice
 - `zig build register_metadata_parity`: focused parity lane for the live
   register-metadata rewrite slice
+- `zig build flags_parity`: focused parity lane for the live system-flag
+  accessor rewrite slice
 - `zig build test`: canonical grouped host regression lane
 - `zig build generated`: refreshes all tracked generated host artifacts
 - `zig build docs`: canonical docs build for `docs/code`

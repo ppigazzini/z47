@@ -228,80 +228,7 @@ pub export fn fnGetStackSize(unused_but_mandatory_parameter: u16) void {
 }
 
 pub export fn saveForUndo() void {
-    const blocked_mode = runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_MIM;
-    if ((blocked_mode and runtime.thereIsSomethingToUndo) or runtime.calcMode == runtime.CM_NO_UNDO) {
-        return;
-    }
-
-    runtime.clearRegister(runtime.TEMP_REGISTER_2_SAVED_STATS);
-    runtime.SAVED_SIGMA_lastAddRem = runtime.SIGMA_NONE;
-
-    runtime.savedSystemFlags0 = runtime.systemFlags0;
-    runtime.savedSystemFlags1 = runtime.systemFlags1;
-
-    if (runtime.currentInputVariable != runtime.INVALID_VARIABLE) {
-        if ((runtime.currentInputVariable & @as(u16, 0x8000)) != 0) {
-            runtime.currentInputVariable |= @as(u16, 0x4000);
-        } else {
-            runtime.currentInputVariable &= @as(u16, 0xbfff);
-        }
-    }
-
-    if ((runtime.entryStatus & @as(u8, 0x01)) != 0) {
-        runtime.entryStatus |= @as(u8, 0x02);
-    } else {
-        runtime.entryStatus &= @as(u8, 0xfd);
-    }
-
-    var reg = runtime.getStackTop();
-    while (true) {
-        runtime.copySourceRegisterToDestRegister(reg, runtime.SAVED_REGISTER_X - runtime.REGISTER_X + reg);
-        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-            break;
-        }
-        if (reg == runtime.REGISTER_X) {
-            break;
-        }
-        reg -= 1;
-    }
-    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-        goto_failed();
-        return;
-    }
-
-    runtime.copySourceRegisterToDestRegister(runtime.REGISTER_L, runtime.SAVED_REGISTER_L);
-    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-        goto_failed();
-        return;
-    }
-
-    runtime.lrSelectionUndo = runtime.lrSelection;
-    if (runtime.statisticalSumsPointer == null) {
-        runtime.freeC47Blocks(runtime.savedStatisticalSumsPointer, runtime.statisticalSumsBlocks());
-        runtime.savedStatisticalSumsPointer = null;
-    } else {
-        runtime.lrChosenUndo = runtime.lrChosen;
-        if (runtime.savedStatisticalSumsPointer == null) {
-            runtime.savedStatisticalSumsPointer = runtime.allocC47Blocks(runtime.statisticalSumsBlocks());
-        }
-        _ = runtime.xcopy(runtime.savedStatisticalSumsPointer, runtime.statisticalSumsPointer, runtime.statisticalSumsBytes());
-    }
-
-    runtime.thereIsSomethingToUndo = true;
-}
-
-fn goto_failed() void {
-    var reg = runtime.getStackTop();
-    while (true) {
-        runtime.clearRegister(runtime.SAVED_REGISTER_X - runtime.REGISTER_X + reg);
-        if (reg == runtime.REGISTER_X) {
-            break;
-        }
-        reg -= 1;
-    }
-    runtime.clearRegister(runtime.SAVED_REGISTER_L);
-    runtime.thereIsSomethingToUndo = false;
-    runtime.lastErrorCode = runtime.ERROR_RAM_FULL;
+    runtime.saveForUndoRetained();
 }
 
 pub export fn fnUndo(unused_but_mandatory_parameter: u16) void {
@@ -312,73 +239,7 @@ pub export fn fnUndo(unused_but_mandatory_parameter: u16) void {
 }
 
 pub export fn undo() void {
-    const was_solving = runtime.getSystemFlag(runtime.FLAG_SOLVING);
-    const was_inting = runtime.getSystemFlag(runtime.FLAG_INTING);
-
-    const last_error_code_mem = runtime.lastErrorCode;
-    runtime.lastErrorCode = runtime.ERROR_NONE;
-    runtime.recallStatsMatrix();
-    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        runtime.lastErrorCode = last_error_code_mem;
-    }
-
-    if (runtime.currentInputVariable != runtime.INVALID_VARIABLE) {
-        if ((runtime.currentInputVariable & @as(u16, 0x4000)) != 0) {
-            runtime.currentInputVariable |= @as(u16, 0x8000);
-        } else {
-            runtime.currentInputVariable &= @as(u16, 0x7fff);
-        }
-    }
-
-    if ((runtime.entryStatus & @as(u8, 0x02)) != 0) {
-        runtime.entryStatus |= @as(u8, 0x01);
-    } else {
-        runtime.entryStatus &= @as(u8, 0xfe);
-    }
-
-    if (runtime.SAVED_SIGMA_lastAddRem == runtime.SIGMA_PLUS and runtime.statisticalSumsPointer != null) {
-        runtime.fnSigmaAddRem(runtime.SIGMA_MINUS);
-    } else if (runtime.SAVED_SIGMA_lastAddRem == runtime.SIGMA_MINUS and runtime.statisticalSumsPointer != null) {
-        runtime.restoreSavedSigmaLastXYAndAdd();
-    }
-
-    runtime.systemFlags0 = runtime.savedSystemFlags0;
-    runtime.systemFlags1 = runtime.savedSystemFlags1;
-
-    var reg = runtime.getStackTop();
-    while (true) {
-        runtime.copySourceRegisterToDestRegister(runtime.SAVED_REGISTER_X - runtime.REGISTER_X + reg, reg);
-        if (reg == runtime.REGISTER_X) {
-            break;
-        }
-        reg -= 1;
-    }
-
-    runtime.copySourceRegisterToDestRegister(runtime.SAVED_REGISTER_L, runtime.REGISTER_L);
-
-    runtime.lrSelection = runtime.lrSelectionUndo;
-    if (runtime.savedStatisticalSumsPointer == null) {
-        runtime.freeC47Blocks(runtime.statisticalSumsPointer, runtime.statisticalSumsBlocks());
-        runtime.statisticalSumsPointer = null;
-        runtime.lrChosen = 0;
-    } else {
-        runtime.lrChosen = runtime.lrChosenUndo;
-        if (runtime.statisticalSumsPointer == null) {
-            runtime.statisticalSumsPointer = runtime.allocC47Blocks(runtime.statisticalSumsBlocks());
-        }
-        _ = runtime.xcopy(runtime.statisticalSumsPointer, runtime.savedStatisticalSumsPointer, runtime.statisticalSumsBytes());
-    }
-
-    runtime.SAVED_SIGMA_lastAddRem = runtime.SIGMA_NONE;
-    runtime.thereIsSomethingToUndo = false;
-    runtime.clearRegister(runtime.TEMP_REGISTER_2_SAVED_STATS);
-
-    if (was_solving != runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
-        runtime.flipSystemFlag(runtime.FLAG_SOLVING);
-    }
-    if (was_inting != runtime.getSystemFlag(runtime.FLAG_INTING)) {
-        runtime.flipSystemFlag(runtime.FLAG_INTING);
-    }
+    runtime.undoRetained();
 }
 
 pub export fn fillStackWithReal0() void {
