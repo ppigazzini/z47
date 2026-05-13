@@ -54,6 +54,7 @@ uint16_t z47_memory_runtime_get_ram_size_in_blocks(void);
 freeMemoryRegion_t z47_memory_runtime_get_free_region(uint16_t index);
 void z47_memory_runtime_set_free_region(uint16_t index, freeMemoryRegion_t region);
 uint16_t z47_memory_runtime_to_c47_mem_ptr(uint8_t *memPtr);
+size_t z47_memory_runtime_scale_extra_size(size_t sizeInBlocks, float extraFraction);
 void *z47_memory_runtime_copy_bytes(void *dest, const void *source, uint32_t n);
 void z47_memory_runtime_handle_resize_program_memory_out_of_memory(uint16_t deltaBlocks);
 void *z47_memory_runtime_alloc_gmp_bytes(size_t sizeInBytes);
