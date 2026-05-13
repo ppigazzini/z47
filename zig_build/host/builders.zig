@@ -1,7 +1,9 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
+const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
+const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
 const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
 const host_platform = @import("platform.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
@@ -19,6 +21,7 @@ pub fn addSimulator(
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
     shortint_leaf_objects: host_types.ShortIntLeafObjects,
+    keyboard_state_objects: host_types.KeyboardStateObjects,
     stack_state_objects: host_types.StackStateObjects,
     calc_model: []const u8,
     sanitize_c: ?std.zig.SanitizeC,
@@ -70,8 +73,11 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_retained.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/stack_runtime_helpers.c"), .flags = core_c_flags });
     memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
+    calc_state_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     program_serialization_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
@@ -81,6 +87,7 @@ pub fn addSimulator(
     exe.root_module.addObject(shortint_leaf_objects.logical_mask);
     exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
     exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
+    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
     exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
@@ -106,6 +113,7 @@ pub fn addTestSuite(
     version_headers_dir: std.Build.LazyPath,
     generated: host_types.GeneratedOutputs,
     shortint_leaf_objects: host_types.ShortIntLeafObjects,
+    keyboard_state_objects: host_types.KeyboardStateObjects,
     stack_state_objects: host_types.StackStateObjects,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
@@ -138,8 +146,11 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/testSuite"), .files = test_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_retained.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/stack_runtime_helpers.c"), .flags = core_c_flags });
     memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    calc_state_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     program_serialization_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
@@ -149,6 +160,7 @@ pub fn addTestSuite(
     exe.root_module.addObject(shortint_leaf_objects.logical_mask);
     exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
     exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
+    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
     exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });

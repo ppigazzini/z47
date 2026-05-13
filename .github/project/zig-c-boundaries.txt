@@ -11,7 +11,10 @@ zig_build/tools/ttf2_raster_fonts.zig
 zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
 zig_build/leaf/shortint_runtime.zig
+zig_build/state/calc_state_runtime.zig
+zig_build/state/keyboard_state_parity_runtime.zig
 zig_build/state/flags_runtime.zig
+zig_build/state/keyboard_state_runtime.zig
 zig_build/state/memory_runtime.zig
 zig_build/state/program_serialization_runtime.zig
 zig_build/state/register_metadata_runtime.zig

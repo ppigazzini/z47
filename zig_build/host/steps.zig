@@ -2,7 +2,9 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
+const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
+const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
 const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
@@ -32,6 +34,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_C47",
         null,
@@ -56,6 +59,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_R47",
         null,
@@ -80,6 +84,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_C47",
         .full,
@@ -96,6 +101,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_R47",
         .full,
@@ -115,6 +121,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         null,
     );
@@ -158,6 +165,18 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const memory_parity_step = b.step("memory_parity", "Run the memory-state parity suite");
     memory_parity_step.dependOn(&run_memory_parity.step);
 
+    const calc_state_parity = calc_state_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_calc_state_parity = b.addRunArtifact(calc_state_parity);
+    run_calc_state_parity.setCwd(b.path("."));
+    const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
+    calc_state_parity_step.dependOn(&run_calc_state_parity.step);
+
+    const keyboard_state_parity = keyboard_state_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
+    run_keyboard_state_parity.setCwd(b.path("."));
+    const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard-state parity suite");
+    keyboard_state_parity_step.dependOn(&run_keyboard_state_parity.step);
+
     const program_serialization_parity = program_serialization_rewrites.addParityExecutable(b, context.host_target, optimize);
     const run_program_serialization_parity = b.addRunArtifact(program_serialization_parity);
     run_program_serialization_parity.setCwd(b.path("."));
@@ -181,6 +200,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_leaf_objects,
+        context.keyboard_state_objects,
         context.stack_state_objects,
         .full,
     );
