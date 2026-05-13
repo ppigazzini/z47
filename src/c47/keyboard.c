@@ -2333,7 +2333,10 @@ RELEASE_END:
     }
   }
 
-  void processKeyAction(int16_t item) {
+#if !defined(Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME)
+#define Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME processKeyAction
+#endif
+  void Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME(int16_t item) {
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u screenUpdatingMode=%i\n", calcMode, item, programRunStop, lastErrorCode, SHOWMODE, screenUpdatingMode);
@@ -3291,6 +3294,7 @@ RELEASE_END:
       longIntegerFree(lgInt);
     #endif // (REAL34_WIDTH_TEST == 1)
   }
+#undef Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME
 
 
   static void menuUp(void) {
@@ -3374,7 +3378,10 @@ RELEASE_END:
 
 
 
-void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_ENTER_NAME)
+#define Z47_KEYBOARD_FN_KEY_ENTER_NAME fnKeyEnter
+#endif
+void Z47_KEYBOARD_FN_KEY_ENTER_NAME(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
     switch(calcMode) {
       case CM_NORMAL: {
@@ -3571,6 +3578,7 @@ ram_full:
     fnUndo(NOPARAM);
     return;
 }
+#undef Z47_KEYBOARD_FN_KEY_ENTER_NAME
 
 
 
@@ -3590,7 +3598,10 @@ ram_full:
 
 
 
-void fnKeyExit(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_EXIT_NAME)
+#define Z47_KEYBOARD_FN_KEY_EXIT_NAME fnKeyExit
+#endif
+void Z47_KEYBOARD_FN_KEY_EXIT_NAME(uint16_t unusedButMandatoryParameter) {
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_2);
@@ -4040,10 +4051,14 @@ undo_disabled:
 //    refreshScreen(128);
     return;
 }
+#undef Z47_KEYBOARD_FN_KEY_EXIT_NAME
 
 
 
-void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter' complex_Type=KEY_COMPLEX
+#if !defined(Z47_KEYBOARD_FN_KEY_CC_NAME)
+#define Z47_KEYBOARD_FN_KEY_CC_NAME fnKeyCC
+#endif
+void Z47_KEYBOARD_FN_KEY_CC_NAME(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter' complex_Type=KEY_COMPLEX
     doRefreshSoftMenu = true;     //dr
     bool_t polarOk, rectOk;
     // The switch statement is broken up here, due to multiple conditions.                      //JM
@@ -4171,10 +4186,14 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       }
     }
 }
+#undef Z47_KEYBOARD_FN_KEY_CC_NAME
 
 
 
-void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME)
+#define Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME fnKeyBackspace
+#endif
+void Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME(uint16_t unusedButMandatoryParameter) {
     uint16_t lg;
   #if !defined(SAVE_SPACE_DM42_10)
     uint8_t *nextStep;
@@ -4438,11 +4457,15 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
     }
     }
 }
+#undef Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME
 
 
 
 
-void fnKeyUp(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_UP_NAME)
+#define Z47_KEYBOARD_FN_KEY_UP_NAME fnKeyUp
+#endif
+void Z47_KEYBOARD_FN_KEY_UP_NAME(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
 
@@ -4658,10 +4681,14 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
     }
     }
 }
+#undef Z47_KEYBOARD_FN_KEY_UP_NAME
 
 
 
-void fnKeyDown(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_DOWN_NAME)
+#define Z47_KEYBOARD_FN_KEY_DOWN_NAME fnKeyDown
+#endif
+void Z47_KEYBOARD_FN_KEY_DOWN_NAME(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
 //--     if(SHOWMODE && currentMenu() != -MNU_EQN && !tam.mode) { //JMSHOW vv
@@ -4889,10 +4916,14 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
     }
     }
 }
+#undef Z47_KEYBOARD_FN_KEY_DOWN_NAME
 
 
 
-void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
+#if !defined(Z47_KEYBOARD_FN_KEY_DOTD_NAME)
+#define Z47_KEYBOARD_FN_KEY_DOTD_NAME fnKeyDotD
+#endif
+void Z47_KEYBOARD_FN_KEY_DOTD_NAME(uint16_t unusedButMandatoryParameter) {
     switch(calcMode) {
       case CM_NORMAL: {
         int32_t flag = getSystemFlag(FLAG_IRFRQ) ? FLAG_IRFRAC : FLAG_FRACT ;
@@ -4929,8 +4960,10 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
       }
     }
 }
+#undef Z47_KEYBOARD_FN_KEY_DOTD_NAME
 
 
+#if !defined(Z47_EXTERNAL_SET_LAST_KEY_CODE)
 void setLastKeyCode(int key) {             // key = 10      setLastKeyCode = 10-6 +30 = 34 row 3, col 4
   if(1 <= key && key <= 43) {              // key = 27      setLastKeyCode = 27-22+60 = 65 row 6, col 5
     if(key <=  6) {                        // key = 28 EXIT setLastKeyCode = 28-27+70 = 71 row 7, col 1
@@ -4959,3 +4992,4 @@ void setLastKeyCode(int key) {             // key = 10      setLastKeyCode = 10-
     }
   }
 }
+#endif
