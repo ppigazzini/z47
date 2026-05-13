@@ -1937,13 +1937,13 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
   uint64_t orgnumber, number, sign;
 
   //JM Pre-load X:
-  char str3[3];
-  j = 0;
-  str3[j] = displayString[j];
-  j++;
-  str3[j] = displayString[j];
-  j++;
-  str3[j] = displayString[j];
+  //char str3[3];
+  //j = 0;
+  //str3[j] = displayString[j];
+  //j++;
+  //str3[j] = displayString[j];
+  //j++;
+  //str3[j] = displayString[j];
 
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
   orgnumber = number;

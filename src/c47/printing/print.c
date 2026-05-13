@@ -1139,6 +1139,27 @@ void printReg(uint16_t regist, const char *label, bool_t eq, print_area_t where,
       return;
     }
 
+    case dtShortInteger: {
+      int16_t base, n;
+      uint64_t shortInt;
+      shortInt = *(REGISTER_SHORT_INTEGER_DATA(regist)) & shortIntegerMask;
+      base = getRegisterShortIntegerBase(regist);
+      n = ERROR_MESSAGE_LENGTH - 100;
+      sprintf(errorMessage + n--, "#%d", base);
+      if(shortInt == 0) {
+        errorMessage[n--] = '0';
+      }
+      else {
+        while(shortInt != 0) {
+          errorMessage[n--] = baseDigits[shortInt % base];
+          shortInt /= base;
+        }
+      }
+      n++;
+      strcpy(tmpString, errorMessage + n);
+      break;
+    }
+
     default:
       copyRegisterToClipboardString(regist, tmpString, true);
       break;
@@ -1179,6 +1200,7 @@ void printReg(uint16_t regist, const char *label, bool_t eq, print_area_t where,
       printJustifiedLeft(tmpString);
       break;
     case LINE_NOLF:
+    case LINE_ASIS:
       printLine(tmpString, 0);
       break;
     default:
@@ -1532,7 +1554,8 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 void printPrompt(uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
-      printReg(regist, NULL, false, LINE_LEFT, false);  // Print register left justified without name header
+      printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
+      print_lf();
       #if defined(PC_BUILD)
         printf("**[DL]** Trace: %s\n", tmpString);
         fflush(stdout);
@@ -1550,14 +1573,16 @@ void printViewAview(uint16_t func, uint16_t regist) {
       if(func == ITM_VIEW) {
         char label[16];
         _getRegisterLabel(regist, label);
-        printReg(regist, label, true, LINE_LEFT, false);  // Print register left justified with name header
+        printReg(regist, label, true, LINE_ASIS, false);  // Print register left justified with name header
+        print_lf();
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s=%s\n", label, tmpString);
           fflush(stdout);
         #endif // PC_BUILD
       }
       else {
-        printReg(regist, NULL, false, LINE_LEFT, false);  // Print register left justified without name header
+        printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
+        print_lf();
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
@@ -1657,7 +1682,7 @@ void printTrace(int16_t func, uint16_t param) {
             strcat(tmpString, (char *)allReservedVariables[param - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
             strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
           }
-          else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY) && !tam.indirect) {
+          else if((tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || func == ITM_XEQ) && !tam.indirect) {
             if(param < 99) { // Local label from 00 to 99
               sprintf(traceBuffer, " %02u", param);
             }
