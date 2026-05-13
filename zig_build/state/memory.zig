@@ -25,7 +25,7 @@ pub export fn getFreeRamMemory() u32 {
 
 pub export fn isMemoryBlockAvailable(sizeInBlocks: usize, numBlocks: u16, extraFraction: f32) bool {
     var index: i32 = 0;
-    const extra_size: usize = @intFromFloat(@as(f32, @floatFromInt(sizeInBlocks)) * extraFraction);
+    const extra_size = runtime.scaleExtraSize(sizeInBlocks, extraFraction);
     const num_blocks: usize = numBlocks;
     const required_for_n_blocks = sizeInBlocks * num_blocks;
     var count_of_blocks_of_size: usize = 0;
