@@ -316,6 +316,10 @@ uint16_t z47_memory_runtime_to_c47_mem_ptr(uint8_t *memPtr) {
   return memoryParityToC47MemPtr(memPtr);
 }
 
+size_t z47_memory_runtime_scale_extra_size(size_t sizeInBlocks, float extraFraction) {
+  return (size_t)((float)sizeInBlocks * extraFraction);
+}
+
 void *z47_memory_runtime_copy_bytes(void *dest, const void *source, uint32_t n) {
   copyBytesCalls++;
   lastCopyBytes = n;
