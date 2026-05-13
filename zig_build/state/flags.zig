@@ -11,6 +11,60 @@ const FlagAction = enum(u2) {
     flip = 2,
 };
 
+const ClearSetPair = struct {
+    clear_config: u16,
+    set_config: u16,
+    flag: u16,
+};
+
+const clear_set_pairs = [_]ClearSetPair{
+    .{ .clear_config = runtime.TF_H12, .set_config = runtime.TF_H24, .flag = runtime.FLAG_TDM24 },
+    .{ .clear_config = runtime.CU_I, .set_config = runtime.CU_J, .flag = runtime.FLAG_CPXj },
+    .{ .clear_config = runtime.PS_DOT, .set_config = runtime.PS_CROSS, .flag = runtime.FLAG_MULTx },
+    .{ .clear_config = runtime.SS_4, .set_config = runtime.SS_8, .flag = runtime.FLAG_SSIZE8 },
+    .{ .clear_config = runtime.CM_RECTANGULAR, .set_config = runtime.CM_POLAR, .flag = runtime.FLAG_POLAR },
+    .{ .clear_config = runtime.DO_SCI, .set_config = runtime.DO_ENG, .flag = runtime.FLAG_ENGOVR },
+};
+
+const flip_flags = [_]u16{
+    runtime.FLAG_HPRP,
+    runtime.FLAG_MNUp1,
+    runtime.FLAG_HPBASE,
+    runtime.FLAG_2TO10,
+    runtime.FLAG_AMORT_HP12C,
+    runtime.FLAG_PROPFR,
+    runtime.FLAG_PRTACT,
+    runtime.FLAG_LEAD0,
+    runtime.FLAG_CPXRES,
+    runtime.FLAG_SPCRES,
+    runtime.FLAG_ERPN,
+    runtime.FLAG_CARRY,
+    runtime.FLAG_OVERFLOW,
+    runtime.FLAG_FRCYC,
+    runtime.FLAG_CPXMULT,
+    runtime.FLAG_CPXPLOT,
+    runtime.FLAG_SHOWX,
+    runtime.FLAG_SHOWY,
+    runtime.FLAG_PBOX,
+    runtime.FLAG_PCURVE,
+    runtime.FLAG_PCROS,
+    runtime.FLAG_PPLUS,
+    runtime.FLAG_PLINE,
+    runtime.FLAG_SCALE,
+    runtime.FLAG_VECT,
+    runtime.FLAG_NVECT,
+    runtime.FLAG_TOPHEX,
+    runtime.FLAG_BCD,
+    runtime.FLAG_LARGELI,
+    runtime.FLAG_FRACT,
+    runtime.FLAG_IRFRAC,
+    runtime.FLAG_G_DOUBLETAP,
+    runtime.FLAG_SHFT_4s,
+    runtime.FLAG_FGGR,
+    runtime.FLAG_TRACE,
+    runtime.FLAG_NORM,
+};
+
 fn needsRefreshState(system_flag: u16) bool {
     return switch (system_flag) {
         0x8000,
@@ -92,6 +146,95 @@ fn maskedFlagFromSigned(sf: i32) i32 {
 
 fn maskedFlagFromUnsigned(sf: u16) i32 {
     return @as(i32, sf & 0x3fff);
+}
+
+fn isWriteProtectedSystemFlag(flag: u16) bool {
+    return (flag & 0x4000) != 0;
+}
+
+fn setUserFlag(flag: u16) void {
+    if (flag <= runtime.FLAG_K) {
+        const index: usize = @intCast(flag / 16);
+        const shift: u4 = @intCast(flag % 16);
+        runtime.globalFlags[index] |= @as(u16, 1) << shift;
+        return;
+    }
+
+    if (flag <= runtime.LAST_LOCAL_FLAG) {
+        if (runtime.currentLocalFlags != null) {
+            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(local_flag);
+                runtime.currentLocalFlags[0] |= @as(u32, 1) << shift;
+            }
+        }
+        return;
+    }
+
+    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
+        const extra_flag = flag - 99;
+        const index: usize = @intCast(extra_flag / 16);
+        const shift: u4 = @intCast(extra_flag % 16);
+        runtime.globalFlags[index] |= @as(u16, 1) << shift;
+    }
+}
+
+fn clearUserFlag(flag: u16) void {
+    if (flag <= runtime.FLAG_K) {
+        const index: usize = @intCast(flag / 16);
+        const shift: u4 = @intCast(flag % 16);
+        runtime.globalFlags[index] &= ~(@as(u16, 1) << shift);
+        return;
+    }
+
+    if (flag <= runtime.LAST_LOCAL_FLAG) {
+        if (runtime.currentLocalFlags != null) {
+            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(local_flag);
+                runtime.currentLocalFlags[0] &= ~(@as(u32, 1) << shift);
+            }
+        }
+        return;
+    }
+
+    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
+        const extra_flag = flag - 99;
+        const index: usize = @intCast(extra_flag / 16);
+        const shift: u4 = @intCast(extra_flag % 16);
+        runtime.globalFlags[index] &= ~(@as(u16, 1) << shift);
+    }
+}
+
+fn flipUserFlag(flag: u16) void {
+    if (flag <= runtime.FLAG_K) {
+        const index: usize = @intCast(flag / 16);
+        const shift: u4 = @intCast(flag % 16);
+        runtime.globalFlags[index] ^= @as(u16, 1) << shift;
+        return;
+    }
+
+    if (flag <= runtime.LAST_LOCAL_FLAG) {
+        if (runtime.currentLocalFlags != null) {
+            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(local_flag);
+                runtime.currentLocalFlags[0] ^= @as(u32, 1) << shift;
+            }
+        }
+        return;
+    }
+
+    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
+        const extra_flag = flag - 99;
+        const index: usize = @intCast(extra_flag / 16);
+        const shift: u4 = @intCast(extra_flag % 16);
+        runtime.globalFlags[index] ^= @as(u16, 1) << shift;
+    }
+}
+
+fn setTemporaryInformationTrueFalse(condition: bool) void {
+    runtime.temporaryInformation = runtime.TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
 fn setSystemFlagBit(system_flag: u16) void {
@@ -310,4 +453,254 @@ pub export fn forceSystemFlag(sf: u32, set: c_int) void {
     } else {
         clearSystemFlag(sf);
     }
+}
+
+pub export fn getFlag(flag: u16) bool {
+    if (builtin.target.os.tag == .freestanding) {
+        return false;
+    }
+
+    if ((flag & 0x8000) != 0) {
+        return getSystemFlag(@as(i32, @intCast(flag)));
+    }
+
+    if (flag <= runtime.FLAG_K) {
+        const index: usize = @intCast(flag / 16);
+        const shift: u4 = @intCast(flag % 16);
+        return (runtime.globalFlags[index] & (@as(u16, 1) << shift)) != 0;
+    }
+
+    if (flag <= runtime.LAST_LOCAL_FLAG) {
+        if (runtime.currentLocalFlags != null) {
+            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(local_flag);
+                return (runtime.currentLocalFlags[0] & (@as(u32, 1) << shift)) != 0;
+            }
+        }
+
+        return false;
+    }
+
+    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
+        const extra_flag = flag - 99;
+        const index: usize = @intCast(extra_flag / 16);
+        const shift: u4 = @intCast(extra_flag % 16);
+        return (runtime.globalFlags[index] & (@as(u16, 1) << shift)) != 0;
+    }
+
+    return false;
+}
+
+pub export fn fnGetSystemFlag(system_flag: u16) void {
+    runtime.temporaryInformation = if (getSystemFlag(@as(i32, @intCast(system_flag))))
+        runtime.TI_TRUE
+    else
+        runtime.TI_FALSE;
+}
+
+pub export fn fnSetFlag(flag: u16) void {
+    if ((flag & 0x8000) != 0) {
+        if (isWriteProtectedSystemFlag(flag)) {
+            runtime.handleWriteProtectedFlag();
+        } else if (flag == runtime.FLAG_ALPHA) {
+            runtime.leaveTamModeIfEnabled();
+            runtime.enterAlphaMode();
+        } else {
+            setSystemFlag(flag);
+        }
+        return;
+    }
+
+    setUserFlag(flag);
+}
+
+pub export fn fnClearFlag(flag: u16) void {
+    if ((flag & 0x8000) != 0) {
+        if (isWriteProtectedSystemFlag(flag)) {
+            runtime.handleWriteProtectedFlag();
+        } else if (flag == runtime.FLAG_ALPHA) {
+            runtime.leaveTamModeIfEnabled();
+            runtime.leaveAlphaMode();
+        } else {
+            clearSystemFlag(flag);
+        }
+        return;
+    }
+
+    clearUserFlag(flag);
+}
+
+pub export fn fnFlipFlag(flag: u16) void {
+    if ((flag & 0x8000) != 0) {
+        if (isWriteProtectedSystemFlag(flag)) {
+            runtime.handleWriteProtectedFlag();
+        } else if (flag == runtime.FLAG_ALPHA) {
+            runtime.leaveTamModeIfEnabled();
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_ALPHA)))) {
+                runtime.leaveAlphaMode();
+            } else {
+                runtime.enterAlphaMode();
+            }
+        } else {
+            flipSystemFlag(flag);
+        }
+        return;
+    }
+
+    flipUserFlag(flag);
+}
+
+pub export fn fnClFAll(confirmation: u16) void {
+    if (confirmation == runtime.NOT_CONFIRMED and runtime.programRunStop != runtime.PGM_RUNNING) {
+        runtime.requestClFAllConfirmation();
+        return;
+    }
+
+    for (&runtime.globalFlags) |*entry| {
+        entry.* = 0;
+    }
+
+    if (runtime.currentLocalFlags != null) {
+        runtime.currentLocalFlags[0] = 0;
+    }
+
+    runtime.temporaryInformation = if (runtime.programRunStop != runtime.PGM_RUNNING)
+        runtime.TI_CLEAR_ALL_FLAGS
+    else
+        runtime.TI_NO_INFO;
+    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+}
+
+pub export fn fnIsFlagClear(flag: u16) void {
+    setTemporaryInformationTrueFalse(!getFlag(flag));
+}
+
+pub export fn fnIsFlagSet(flag: u16) void {
+    setTemporaryInformationTrueFalse(getFlag(flag));
+}
+
+pub export fn fnIsFlagClearClear(flag: u16) void {
+    setTemporaryInformationTrueFalse(!getFlag(flag));
+    fnClearFlag(flag);
+}
+
+pub export fn fnIsFlagSetClear(flag: u16) void {
+    setTemporaryInformationTrueFalse(getFlag(flag));
+    fnClearFlag(flag);
+}
+
+pub export fn fnIsFlagClearSet(flag: u16) void {
+    setTemporaryInformationTrueFalse(!getFlag(flag));
+    fnSetFlag(flag);
+}
+
+pub export fn fnIsFlagSetSet(flag: u16) void {
+    setTemporaryInformationTrueFalse(getFlag(flag));
+    fnSetFlag(flag);
+}
+
+pub export fn fnIsFlagClearFlip(flag: u16) void {
+    setTemporaryInformationTrueFalse(!getFlag(flag));
+    fnFlipFlag(flag);
+}
+
+pub export fn fnIsFlagSetFlip(flag: u16) void {
+    setTemporaryInformationTrueFalse(getFlag(flag));
+    fnFlipFlag(flag);
+}
+
+pub export fn SetSetting(jm_config: u16) void {
+    for (clear_set_pairs) |pair| {
+        if (jm_config == pair.clear_config) {
+            fnClearFlag(pair.flag);
+            runtime.fnRefreshState();
+            return;
+        }
+
+        if (jm_config == pair.set_config) {
+            fnSetFlag(pair.flag);
+            runtime.fnRefreshState();
+            return;
+        }
+    }
+
+    for (flip_flags) |flag| {
+        if (jm_config == flag) {
+            fnFlipFlag(jm_config);
+            runtime.fnRefreshState();
+            return;
+        }
+    }
+
+    switch (jm_config) {
+        runtime.JC_NL => {
+            fnFlipFlag(runtime.FLAG_NUMLOCK);
+            runtime.showAlphaModeonGui();
+        },
+        runtime.FLAG_DENANY => {
+            fnFlipFlag(jm_config);
+            clearSystemFlag(runtime.FLAG_DENFIX);
+        },
+        runtime.FLAG_DENFIX => {
+            fnFlipFlag(jm_config);
+            clearSystemFlag(runtime.FLAG_DENANY);
+        },
+        runtime.FLAG_HOME_TRIPLE => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_HOME_TRIPLE)))) {
+                clearSystemFlag(runtime.FLAG_MYM_TRIPLE);
+            }
+        },
+        runtime.FLAG_MYM_TRIPLE => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_MYM_TRIPLE)))) {
+                clearSystemFlag(runtime.FLAG_HOME_TRIPLE);
+            }
+        },
+        runtime.FLAG_BASE_MYM => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_BASE_MYM)))) {
+                clearSystemFlag(runtime.FLAG_BASE_HOME);
+            }
+        },
+        runtime.FLAG_BASE_HOME => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_BASE_HOME)))) {
+                clearSystemFlag(runtime.FLAG_BASE_MYM);
+            }
+        },
+        runtime.FLAG_FGLNFUL => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_FGLNFUL)))) {
+                clearSystemFlag(runtime.FLAG_FGLNLIM);
+            }
+        },
+        runtime.FLAG_FGLNLIM => {
+            fnFlipFlag(jm_config);
+            if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_FGLNLIM)))) {
+                clearSystemFlag(runtime.FLAG_FGLNFUL);
+            }
+        },
+        runtime.ITM_DREAL => fnFlipFlag(runtime.FLAG_DREAL),
+        runtime.JC_UC => {
+            runtime.alphaCase = if (runtime.alphaCase == runtime.AC_LOWER)
+                runtime.AC_UPPER
+            else
+                runtime.AC_LOWER;
+        },
+        runtime.JC_SS => {
+            runtime.scrLock = switch (runtime.scrLock) {
+                runtime.NC_NORMAL => runtime.NC_SUBSCRIPT,
+                runtime.NC_SUBSCRIPT => runtime.NC_SUPERSCRIPT,
+                runtime.NC_SUPERSCRIPT => runtime.NC_NORMAL,
+                else => runtime.NC_NORMAL,
+            };
+            runtime.nextChar = runtime.scrLock;
+            runtime.showAlphaModeonGui();
+        },
+        else => {},
+    }
+
+    runtime.fnRefreshState();
 }
