@@ -978,6 +978,7 @@ void resetKeytimers(void) {
   //---------------------------------------------------------------
 
 
+#if !defined(Z47_EXTERNAL_KEYBOARD_TWEAK_REPLACEMENTS)
 bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
     *itemOut = item;
     if(lowerCaseSelected && (ITM_A <= item && item <= ITM_Z)) {
@@ -1068,6 +1069,7 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
   }
   return *item1 != 0;
 }
+#endif
 
 
 #if defined(DMCP_BUILD)                                           //vv dr - internal keyBuffer POC

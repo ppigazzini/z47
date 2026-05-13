@@ -1,4 +1,5 @@
 const std = @import("std");
+const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
 
@@ -23,6 +24,7 @@ pub const GeneratedOutputs = struct {
 };
 
 pub const ShortIntLeafObjects = shortint_rewrites.RuntimeObjects;
+pub const KeyboardStateObjects = keyboard_state_rewrites.RuntimeObjects;
 pub const StackStateObjects = stack_rewrites.RuntimeObjects;
 
 pub const Context = struct {
@@ -34,5 +36,6 @@ pub const Context = struct {
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
     shortint_leaf_objects: ShortIntLeafObjects,
+    keyboard_state_objects: KeyboardStateObjects,
     stack_state_objects: StackStateObjects,
 };
