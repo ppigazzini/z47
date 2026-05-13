@@ -173,6 +173,7 @@ jobs:
           zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
+          zig build program_serialization_parity
           zig build both
           zig build testPgms
           xvfb-run --auto-servernum zig build test
@@ -453,6 +454,7 @@ jobs:
           zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
+          zig build program_serialization_parity
           zig build both
           zig build test
           zig build generated
@@ -651,6 +653,7 @@ jobs:
           zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
+          zig build program_serialization_parity
           zig build both
           zig build test
           zig build generated
