@@ -2540,13 +2540,13 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_M_CONCAT                2473
+#define ITM_M_CONCATR               2473
 
 #define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475
 #define ITM_V3toSTK_M               2476
 #define ITM_V2toSTK                 2477
-#define ITM_2478                    2478
+#define ITM_M_CONCATB               2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481
@@ -2831,9 +2831,14 @@
 #define ITM_STOVEL                  2729
 #define ITM_2730                    2730
 #define ITM_2731                    2731 //spares for Matrix/Vector
-#define MNU_BASE2                   2732
+#define ITM_PGMPLT                  2732
+#define MNU_PLTf                    2733
+#define ITM_PLTf                    2734
+#define ITM_IMPLOT                  2735
+#define MNU_BASE2                   2736
+#define ITM_M_DIMNQ                 2737
 
-#define LAST_ITEM                   2733
+#define LAST_ITEM                   2738
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
