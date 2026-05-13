@@ -1,14 +1,12 @@
 const std = @import("std");
 
 pub const RuntimeObjects = struct {
-    stack_state: *std.Build.Step.Compile,
-
-    pub fn link(self: RuntimeObjects, module: *std.Build.Module) void {
-        module.addObject(self.stack_state);
-    }
+    flags_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.stack_state.getEmittedBin());
+        cmd.addArg("zig_build/state/flags_retained.c");
+        cmd.addArg("zig_build/state/flags_retained_wrappers.c");
+        cmd.addFileArg(self.flags_state.getEmittedBin());
     }
 };
 
@@ -22,7 +20,7 @@ pub const RuntimeObjectOptions = struct {
 };
 
 const replaced_core_sources = [_][]const u8{
-    "stack.c",
+    "flags.c",
 };
 
 fn addRuntimeObject(
@@ -33,9 +31,9 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     return b.addObject(.{
-        .name = b.fmt("{s}-stack-state", .{name_prefix}),
+        .name = b.fmt("{s}-flags-state", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/state/stack.zig"),
+            .root_source_file = b.path("zig_build/state/flags.zig"),
             .target = target,
             .optimize = optimize,
             .strip = options.strip,
@@ -65,7 +63,7 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .stack_state = addRuntimeObject(b, target, optimize, name_prefix, options),
+        .flags_state = addRuntimeObject(b, target, optimize, name_prefix, options),
     };
 }
 
@@ -85,14 +83,29 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
     return try filtered.toOwnedSlice(b.allocator);
 }
 
+pub fn addToModule(
+    b: *std.Build,
+    module: *std.Build.Module,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    name_prefix: []const u8,
+    c_flags: []const []const u8,
+) void {
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+
+    module.addCSourceFile(.{ .file = b.path("zig_build/state/flags_retained.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_build/state/flags_retained_wrappers.c"), .flags = c_flags });
+    module.addObject(runtime_object);
+}
+
 pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
-    runtime_objects: RuntimeObjects,
 ) *std.Build.Step.Compile {
+    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const exe = b.addExecutable(.{
-        .name = "stack-state-parity",
+        .name = "flags-parity",
         .root_module = b.createModule(.{
             .root_source_file = null,
             .target = target,
@@ -101,10 +114,10 @@ pub fn addParityExecutable(
         }),
     });
 
-    exe.root_module.addIncludePath(b.path("zig_build/tests/stack_state"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_fake_runtime.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_parity.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_oracle.c"), .flags = &.{} });
-    runtime_objects.link(exe.root_module);
+    exe.root_module.addIncludePath(b.path("zig_build/tests/flags"));
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/flags/flags_fake_runtime.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/flags/flags_oracle.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/flags/flags_parity.c"), .flags = &.{} });
+    exe.root_module.addObject(runtime_object);
     return exe;
 }

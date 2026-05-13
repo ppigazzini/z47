@@ -2,6 +2,7 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
+const flags_rewrites = @import("../state/flags_rewrites.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
 const host_types = @import("types.zig");
@@ -142,6 +143,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_register_metadata_parity.setCwd(b.path("."));
     const register_metadata_parity_step = b.step("register_metadata_parity", "Run the register-metadata parity suite");
     register_metadata_parity_step.dependOn(&run_register_metadata_parity.step);
+
+    const flags_parity = flags_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_flags_parity = b.addRunArtifact(flags_parity);
+    run_flags_parity.setCwd(b.path("."));
+    const flags_parity_step = b.step("flags_parity", "Run the system-flags parity suite");
+    flags_parity_step.dependOn(&run_flags_parity.step);
 
     const run_test_suite = addTestSuiteRun(b, test_suite, upstream_test_list);
     const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
