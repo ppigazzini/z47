@@ -2837,8 +2837,9 @@
 #define ITM_IMPLOT                  2735
 #define MNU_BASE2                   2736
 #define ITM_M_DIMNQ                 2737
+#define MNU_42                      2738
 
-#define LAST_ITEM                   2738
+#define LAST_ITEM                   2739
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

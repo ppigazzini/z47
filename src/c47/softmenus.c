@@ -17,6 +17,9 @@ TO_QSPI static const char bugScreenIdMustNotBe0[] = "In function showSoftmenu: i
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
+TO_QSPI const int16_t menu_42[]          = { ITM_M_DIMQ,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+
+
 TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_LOGICALOR,              ITM_LOGICALXOR,           ITM_LOGICALNOT,        ITM_MASKL,                   ITM_MASKR,
                                              ITM_LOGICALNAND,               ITM_LOGICALNOR,             ITM_LOGICALXNOR,          ITM_NUMB,              ITM_ZIP,                     ITM_UNZIP,
                                              ITM_SB,                        ITM_BS,                     ITM_BC,                   ITM_CB,                ITM_FF,                      ITM_FB,
@@ -120,9 +123,9 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_
                                              ITM_WHO,                       ITM_BATT,                   ITM_DISK,                 ITM_VOLQ,              ITM_MENUQ,                   ITM_LOADEDFILE,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_TYPEQ,                     ITM_M_DIMQ,                 ITM_M_DIMNQ,              ITM_NEIGHB,            ITM_ULP,                     ITM_RMODEQ,
+                                             ITM_TYPEQ,                     ITM_M_DIMNQ,                ITM_NEIGHB,               ITM_ULP,               ITM_SSIZE,                   ITM_RMODEQ,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          ITM_GETDMX,                  ITM_WSIZEQ,
-                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_SSIZE,                ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
+                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_IDIV,                      ITM_RMD,                    ITM_MOD,                  ITM_XMOD,              ITM_LINT,                    ITM_LCM,
@@ -161,15 +164,15 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  Mp1F6,
-                                             ITM_MIDENT,                    ITM_NULL,                   ITM_M_DIMQ,               ITM_M_DIMNQ,           ITM_M_DIM,                   ITM_M_DIM_GR,
-                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_M_CONCATB,               ITM_M_CONCATR,
+                                             ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMNQ,           ITM_M_CONCATB,               ITM_M_CONCATR,
+                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_NULL,                    ITM_NULL,
 
                                              ITM_M_INV,                     ITM_M_SQRT,                 ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   Mp2F6,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_PNORM,                     ITM_UNITV,                  ITM_EIGVEC,               ITM_EIGVAL,            ITM_M_LU,                    ITM_M_QR,
+                                             ITM_PNORM,                     ITM_UNITV,                  ITM_M_TRANSP,             ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_EIGVEC,               ITM_EIGVAL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_M_CMIN,                    ITM_M_CMAX,                 ITM_M_FIND,               ITM_M_RR,              ITM_M_CC,                    ITM_INDEX,
+                                             ITM_M_CMIN,                    ITM_M_CMAX,                 ITM_M_RR,                 ITM_M_CC,              ITM_M_FIND,                  ITM_INDEX,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS                 };
 
 
@@ -1146,8 +1149,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 176 */  {.menuItem = -MNU_VECT,          .numItems = sizeof(menu_VECT          )/sizeof(int16_t), .softkeyItem = menu_VECT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references.
 /* 177 */  {.menuItem = -MNU_TAMNORM,       .numItems = sizeof(menu_TamNorm       )/sizeof(int16_t), .softkeyItem = menu_TamNorm        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 178 */  {.menuItem = -MNU_BASE2,         .numItems = sizeof(menu_Base2         )/sizeof(int16_t), .softkeyItem = menu_Base2          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 179 */  {.menuItem = -MNU_42,            .numItems = sizeof(menu_42            )/sizeof(int16_t), .softkeyItem = menu_42             },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
-/* 178 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
+/* 180 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
 
 
 };
