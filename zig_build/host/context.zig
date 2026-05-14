@@ -12,6 +12,22 @@ const host_generated = @import("generated.zig");
 const host_platform = @import("platform.zig");
 const host_types = @import("types.zig");
 
+fn filterSourceByName(
+    b: *std.Build,
+    sources: []const []const u8,
+    excluded_name: []const u8,
+) ![][]const u8 {
+    var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, sources.len);
+    errdefer filtered.deinit(b.allocator);
+
+    for (sources) |source| {
+        if (std.mem.eql(u8, source, excluded_name)) continue;
+        try filtered.append(b.allocator, source);
+    }
+
+    return try filtered.toOwnedSlice(b.allocator);
+}
+
 pub fn prepareContext(
     b: *std.Build,
     optimize: std.builtin.OptimizeMode,
@@ -34,11 +50,13 @@ pub fn prepareContext(
     const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
     const generated = try host_generated.addGeneratorSteps(b, host_target, optimize, common);
 
+    const gtk_sources = try build_common.collectRelativeCFiles(b, "src/c47-gtk");
+
     return .{
         .host_target = host_target,
         .common = common,
         .core_sources = core_sources_without_keyboard_state,
-        .gtk_sources = try build_common.collectRelativeCFiles(b, "src/c47-gtk"),
+        .gtk_sources = try filterSourceByName(b, gtk_sources, "gtkGui.c"),
         .test_sources = try build_common.collectRelativeCFiles(b, "src/testSuite"),
         .version_headers_dir = version_headers_dir,
         .generated = generated,

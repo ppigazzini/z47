@@ -18,7 +18,7 @@ fn buildImpl(b: *std.Build) !void {
     const dmcp_package = b.option(u8, "dmcp-package", "Select the upstream DMCP package variant") orelse 4;
 
     const host_context = try host_steps.prepareContext(b, optimize, ci_commit_tag, raspberry, decnumber_fastmul);
-    host_steps.registerSteps(b, host_context, optimize);
+    const host_outputs = host_steps.registerSteps(b, host_context, optimize);
 
     const firmware_bundle = firmware_steps.registerSteps(
         b,
@@ -36,6 +36,7 @@ fn buildImpl(b: *std.Build) !void {
     try dist_steps.registerSteps(
         b,
         host_context,
+        host_outputs,
         firmware_bundle,
         ci_commit_tag,
         dist_version,

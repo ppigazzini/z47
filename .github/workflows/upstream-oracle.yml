@@ -232,7 +232,7 @@ jobs:
           unzip -q zig-out/dist/c47-linux.zip -d "$smoke_dir"
           cd "$smoke_dir/c47-linux"
           status=0
-          if timeout 10s xvfb-run --auto-servernum ./c47-dist >"$RUNNER_TEMP/c47-linux-smoke.log" 2>&1; then
+          if timeout 10s xvfb-run --auto-servernum ./c47 >"$RUNNER_TEMP/c47-linux-smoke.log" 2>&1; then
             status=0
           else
             status=$?
@@ -290,8 +290,6 @@ jobs:
           rm -rf "$release_dir"
           mkdir -p "$release_dir"
           unzip -q zig-out/dist/c47-linux.zip -d "$release_dir"
-          mv "$package_dir/c47-dist" "$package_dir/c47"
-          mv "$package_dir/r47-dist" "$package_dir/r47"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform linux \
@@ -663,26 +661,40 @@ jobs:
           zig build both
           zig build test
           zig build generated
+      - name: Build Windows release simulators for smoke and package lanes
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
+          export PATH="$prefix/bin:$PATH"
+          zig build -Doptimize=ReleaseFast both
       - name: Run Windows simulator smoke launch
         shell: msys2 {0}
         run: |
           set -euo pipefail
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
-          app_path="zig-out/bin/c47.exe"
-          if [[ ! -x "$app_path" ]]; then
-            app_path="zig-out/bin/c47"
-          fi
-          "$app_path" >"$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke.log" 2>&1 &
-          pid=$!
-          sleep 5
-          if ! kill -0 "$pid" 2>/dev/null; then
-            cat "$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke.log"
-            wait "$pid"
-            exit 1
-          fi
-          kill "$pid" 2>/dev/null || true
-          wait "$pid" || true
+          smoke_app() {
+            local stem="$1"
+            local app_path="zig-out/bin/${stem}.exe"
+            local log_path="$(cygpath -u "$RUNNER_TEMP")/${stem}-windows-smoke.log"
+            if [[ ! -x "$app_path" ]]; then
+              app_path="zig-out/bin/${stem}"
+            fi
+            "$app_path" >"$log_path" 2>&1 &
+            pid=$!
+            sleep 5
+            if ! kill -0 "$pid" 2>/dev/null; then
+              cat "$log_path"
+              wait "$pid"
+              exit 1
+            fi
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" || true
+          }
+
+          smoke_app c47
+          smoke_app r47
       - id: windows_package_meta
         name: Set Windows artifact metadata
         shell: msys2 {0}
@@ -916,6 +928,7 @@ jobs:
           windows_dll_inventory_file=repo-notices/windows/WINDOWS-RUNTIME-DLLS.txt
           windows_dll_notice_summary_file=repo-notices/windows/WINDOWS-DLL-NOTICES.txt
           windows_dll_notice_dir=repo-notices/windows/licenses
+          host_optimize=ReleaseFast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
@@ -955,21 +968,28 @@ jobs:
         run: |
           set -euo pipefail
           smoke_root="$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke"
-          log_path="$(cygpath -u "$RUNNER_TEMP")/c47-windows-package-smoke.log"
           rm -rf "$smoke_root"
           cp -R ci-artifacts/release/c47-windows "$smoke_root"
           (
             cd "$smoke_root"
-            cmd //c c47.cmd >"$log_path" 2>&1 &
-            pid=$!
-            sleep 5
-            if ! kill -0 "$pid" 2>/dev/null; then
-              cat "$log_path"
-              wait "$pid"
-              exit 1
-            fi
-            kill "$pid" 2>/dev/null || true
-            wait "$pid" || true
+            smoke_launcher() {
+              local launcher="$1"
+              local stem="${launcher%.cmd}"
+              local log_path="$(cygpath -u "$RUNNER_TEMP")/${stem}-windows-package-smoke.log"
+              cmd //c "$launcher" >"$log_path" 2>&1 &
+              pid=$!
+              sleep 5
+              if ! kill -0 "$pid" 2>/dev/null; then
+                cat "$log_path"
+                wait "$pid"
+                exit 1
+              fi
+              kill "$pid" 2>/dev/null || true
+              wait "$pid" || true
+            }
+
+            smoke_launcher c47.cmd
+            smoke_launcher r47.cmd
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

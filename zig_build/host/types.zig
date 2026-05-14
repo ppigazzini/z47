@@ -39,3 +39,8 @@ pub const Context = struct {
     keyboard_state_objects: KeyboardStateObjects,
     stack_state_objects: StackStateObjects,
 };
+
+pub const SimulatorOutputs = struct {
+    c47_bin: std.Build.LazyPath,
+    r47_bin: std.Build.LazyPath,
+};
