@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
+const host_platform = @import("platform.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
@@ -177,6 +178,27 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard-state parity suite");
     keyboard_state_parity_step.dependOn(&run_keyboard_state_parity.step);
 
+    const keyboard_statusbar_flags_regression = b.addExecutable(.{
+        .name = "keyboard-statusbar-flags-regression",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    host_platform.addHostMacros(keyboard_statusbar_flags_regression.root_module, context.common);
+    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("src/c47"));
+    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("zig_build/state"));
+    keyboard_statusbar_flags_regression.root_module.addCSourceFile(.{
+        .file = b.path("zig_build/tests/keyboard_statusbar_flags_regression.c"),
+        .flags = &.{},
+    });
+    const run_keyboard_statusbar_flags_regression = b.addRunArtifact(keyboard_statusbar_flags_regression);
+    run_keyboard_statusbar_flags_regression.setCwd(b.path("."));
+    const keyboard_statusbar_flags_regression_step = b.step("keyboard_statusbar_flags_regression", "Run the keyboard statusbar flag-clearing regression");
+    keyboard_statusbar_flags_regression_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
+
     const program_serialization_parity = program_serialization_rewrites.addParityExecutable(b, context.host_target, optimize);
     const run_program_serialization_parity = b.addRunArtifact(program_serialization_parity);
     run_program_serialization_parity.setCwd(b.path("."));
@@ -186,6 +208,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const run_test_suite = addTestSuiteRun(b, test_suite, upstream_test_list);
     const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
     const test_step = b.step("test", "Run the host test suite");
+    test_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
     test_step.dependOn(&run_test_suite.step);
     test_step.dependOn(&run_test_suite_z47.step);
 

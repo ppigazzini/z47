@@ -10,6 +10,7 @@ pub const RuntimeObjects = struct {
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addArg("zig_build/state/keyboard_state_runtime_helpers.c");
+        cmd.addArg("zig_build/state/keyboard_state_overlay.c");
         cmd.addArg("zig_build/state/keyboard_state_retained.c");
         cmd.addFileArg(self.keyboard_state.getEmittedBin());
     }
