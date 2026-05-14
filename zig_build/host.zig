@@ -10,6 +10,7 @@ pub const ShortIntLeafObjects = host_types.ShortIntLeafObjects;
 pub const KeyboardStateObjects = host_types.KeyboardStateObjects;
 pub const StackStateObjects = host_types.StackStateObjects;
 pub const Context = host_types.Context;
+pub const SimulatorOutputs = host_types.SimulatorOutputs;
 
 pub fn prepareContext(
     b: *std.Build,
@@ -21,8 +22,8 @@ pub fn prepareContext(
     return host_context.prepareContext(b, optimize, ci_commit_tag, raspberry, decnumber_fastmul);
 }
 
-pub fn registerSteps(b: *std.Build, context: Context, optimize: std.builtin.OptimizeMode) void {
-    host_steps.registerSteps(b, context, optimize);
+pub fn registerSteps(b: *std.Build, context: Context, optimize: std.builtin.OptimizeMode) SimulatorOutputs {
+    return host_steps.registerSteps(b, context, optimize);
 }
 
 pub fn addSimulator(

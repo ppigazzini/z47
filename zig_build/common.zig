@@ -76,10 +76,17 @@ pub fn addBashCommandFmt(b: *std.Build, comptime fmt: []const u8, args: anytype)
 }
 
 pub fn resolveBuildHostTarget(b: *std.Build) std.Build.ResolvedTarget {
-    if (b.graph.host.result.os.tag != .windows) return b.graph.host;
+    const host_target = b.graph.host;
+    const needs_baseline_cpu = switch (host_target.result.cpu.arch) {
+        .x86, .x86_64 => true,
+        else => false,
+    };
 
-    var query = std.Target.Query.fromTarget(&b.graph.host.result);
-    query.abi = .gnu;
+    if (!needs_baseline_cpu and host_target.result.os.tag != .windows) return host_target;
+
+    var query: std.Target.Query = .{};
+    if (needs_baseline_cpu) query.cpu_model = .baseline;
+    if (host_target.result.os.tag == .windows) query.abi = .gnu;
     return b.resolveTargetQuery(query);
 }
 
