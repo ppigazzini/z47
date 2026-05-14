@@ -22,7 +22,7 @@ fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path
     return run_test_suite;
 }
 
-pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) void {
+pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) host_types.SimulatorOutputs {
     const sim = host_builders.addSimulator(
         b,
         context.host_target,
@@ -271,8 +271,15 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     generated_step.dependOn(&update_catalogs.step);
     generated_step.dependOn(&update_testpgms.step);
 
+    const outputs: host_types.SimulatorOutputs = .{
+        .c47_bin = sim.getEmittedBin(),
+        .r47_bin = simr47.getEmittedBin(),
+    };
+
     addCleanStep(b);
     addDocsStep(b);
+
+    return outputs;
 }
 
 fn addCleanStep(b: *std.Build) void {

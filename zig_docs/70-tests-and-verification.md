@@ -41,12 +41,13 @@ flowchart TD
 | register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | system-flag rewrite parity | `../zig_build/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
 | keyboard stop-statusbar mask regression | `../zig_build/state/keyboard_state_overlay.c`, `../zig_build/state/keyboard_state_retained.c`, `../zig_build/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
-| host simulator and core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
+| host simulator UI boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build plus live X11 smoke when input or LCD paths move | `zig build sim --summary none` |
+| host core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
 | native Zig C sanitizer lane | `../zig_build/host/steps.zig` | sanitized host build and tests | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
 | docs surface under `docs/code` | `../docs/code/`, `../docs/code/requirements.txt` | Sphinx and Doxygen lane | `zig build docs --summary none` |
 | firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | smallest affected firmware target | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
-| host or firmware packages | `../zig_build/dist.zig`, `../zig_build/zig_dist.py` | matching distribution target | `zig build dist_linux --summary none` or matching host or firmware package target |
+| host or firmware packages | `../zig_build/dist.zig`, `../zig_build/zig_dist.py` | matching distribution target plus a fresh archive extraction when packaged runtime behavior matters | `zig build dist_linux --summary none` or matching host or firmware package target |
 
 ## Which Lane To Run First
 
@@ -57,13 +58,23 @@ flowchart TD
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
 - keyboard input or statusbar-flag handling change: `zig build keyboard_statusbar_flags_regression --summary none`, then `zig build test --summary none`
-- host simulator, platform glue, or test-surface change:
+- host simulator UI, GTK callback, or desktop platform-glue change:
+  `zig build sim --summary none`; if the change touches LCD paint or pointer
+  or keyboard dispatch, rerun the narrow live X11 smoke probe used during
+  diagnosis before broader lanes
+- host core or test-surface change:
   `zig build test --summary none`
 - boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, or `zig build flags_parity --summary none` for the touched slice
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
   target on the matching host OS
+- packaged host runtime change: after the matching `dist_<host>` target, unpack
+  a fresh `zig-out/dist/<archive>.zip` and run the packaged simulator from that
+  extraction instead of reusing an older `___TMP` tree
+- host package portability change on x86 or x86_64: verify the matching
+  `dist_<host>` target from a fresh archive extraction and confirm the packaged
+  simulator does not inherit runner-native CPU instructions from the build host
 
 ## Full Linux Pre-CI Sweep
 

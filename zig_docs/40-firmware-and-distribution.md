@@ -105,11 +105,22 @@ OS and one firmware archive per supported hardware or model combination.
 
 - `dist_linux`, `dist_macos`, and `dist_windows` fail explicitly on the wrong
   host OS.
+- The host package lanes stage the same simulator binaries produced by the
+  normal host build graph rather than compiling a separate dist-only host
+  executable pair.
+- On x86 and x86_64 hosts, `zig_build/common.zig` resolves the host package
+  target with a baseline CPU model instead of inheriting runner-native CPU
+  features, so Linux and Windows artifacts do not accidentally pick up BMI2 or
+  other newer instructions from the machine that built them.
 - The Windows package lane stages GTK runtime directories, runtime tools,
   launcher helpers, and import-checked DLLs in addition to the simulator
   executables.
 - The Linux and macOS package lanes publish simulator bundles together with the
   checked-out `res/` assets and generated notice metadata.
+- On Linux, the packaging helper strips the staged simulator copy before
+  archiving it, so a freshly extracted `zig-out/dist/c47-linux.zip` package can
+  differ in hash from `zig-out/bin/r47` while still carrying the same safe
+  non-BMI2 code path.
 
 ## DMCP Package Control
 

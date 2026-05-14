@@ -73,6 +73,8 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_button_signal_wrappers.c"), .flags = build_common.common_gtk_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_gui_retained.c"), .flags = build_common.common_gtk_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_overlay.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/keyboard_state_retained.c"), .flags = core_c_flags });

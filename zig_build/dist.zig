@@ -63,59 +63,21 @@ const firmware_package_specs = [_]FirmwarePackageSpec{
 pub fn registerSteps(
     b: *std.Build,
     context: host_steps.Context,
+    host_outputs: host_steps.SimulatorOutputs,
     bundle: firmware_steps.Bundle,
     ci_commit_tag: []const u8,
     dist_version: []const u8,
 ) !void {
-    const dist_host_optimize: std.builtin.OptimizeMode = if (context.host_target.result.os.tag == .linux)
-        .Debug
-    else
-        .ReleaseFast;
-    const dist_c47 = host_steps.addSimulator(
-        b,
-        context.host_target,
-        "c47",
-        "c47-dist",
-        dist_host_optimize,
-        context.core_sources,
-        context.gtk_sources,
-        context.common,
-        context.version_headers_dir,
-        context.generated,
-        context.shortint_leaf_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
-        "USER_C47",
-        null,
-    );
-    const dist_r47 = host_steps.addSimulator(
-        b,
-        context.host_target,
-        "r47",
-        "r47-dist",
-        dist_host_optimize,
-        context.core_sources,
-        context.gtk_sources,
-        context.common,
-        context.version_headers_dir,
-        context.generated,
-        context.shortint_leaf_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
-        "USER_R47",
-        null,
-    );
-
     const dist_step = b.step("dist", "Build the current-host distribution archive plus all DMCP package archives");
     const test_pgms_txt = b.path("res/testPgms/testPgms.txt");
-    const dist_testpgms_zip = addTestPgmsZipStep(b, dist_c47.getEmittedBin(), context.generated.test_pgms_bin, test_pgms_txt);
+    const dist_testpgms_zip = addTestPgmsZipStep(b, host_outputs.c47_bin, context.generated.test_pgms_bin, test_pgms_txt);
 
     const windows_stage_name = distDirName(b, "c47-windows", ci_commit_tag);
     const macos_stage_name = distDirName(b, "c47-macos", ci_commit_tag);
     const linux_stage_name = distDirName(b, "c47-linux", ci_commit_tag);
 
     const dist_windows_step: *std.Build.Step = if (context.host_target.result.os.tag == .windows) blk: {
-        const zip = addHostDistZipStep(b, "windows", "c47-windows.zip", windows_stage_name, dist_c47.getEmittedBin(), dist_r47.getEmittedBin(), context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
+        const zip = addHostDistZipStep(b, "windows", "c47-windows.zip", windows_stage_name, host_outputs.c47_bin, host_outputs.r47_bin, context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
         const install = b.addInstallFileWithDir(zip.path, .prefix, "dist/c47-windows.zip");
         const step = b.step("dist_windows", "Create the Windows distribution package with Zig-owned packaging");
         step.dependOn(&install.step);
@@ -123,7 +85,7 @@ pub fn registerSteps(
     } else addUnsupportedStep(b, "dist_windows", "dist_windows requires running zig build on a Windows host");
 
     const dist_macos_step: *std.Build.Step = if (context.host_target.result.os.tag == .macos) blk: {
-        const zip = addHostDistZipStep(b, "macos", "c47-macos.zip", macos_stage_name, dist_c47.getEmittedBin(), dist_r47.getEmittedBin(), context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
+        const zip = addHostDistZipStep(b, "macos", "c47-macos.zip", macos_stage_name, host_outputs.c47_bin, host_outputs.r47_bin, context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
         const install = b.addInstallFileWithDir(zip.path, .prefix, "dist/c47-macos.zip");
         const step = b.step("dist_macos", "Create the macOS distribution package with Zig-owned packaging");
         step.dependOn(&install.step);
@@ -131,7 +93,7 @@ pub fn registerSteps(
     } else addUnsupportedStep(b, "dist_macos", "dist_macos requires running zig build on a macOS host");
 
     const dist_linux_step: *std.Build.Step = if (context.host_target.result.os.tag == .linux) blk: {
-        const zip = addHostDistZipStep(b, "linux", "c47-linux.zip", linux_stage_name, dist_c47.getEmittedBin(), dist_r47.getEmittedBin(), context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
+        const zip = addHostDistZipStep(b, "linux", "c47-linux.zip", linux_stage_name, host_outputs.c47_bin, host_outputs.r47_bin, context.generated.test_pgms_bin, test_pgms_txt, dist_testpgms_zip.path, null);
         const install = b.addInstallFileWithDir(zip.path, .prefix, "dist/c47-linux.zip");
         const step = b.step("dist_linux", "Create the Linux distribution package with Zig-owned packaging");
         step.dependOn(&install.step);
