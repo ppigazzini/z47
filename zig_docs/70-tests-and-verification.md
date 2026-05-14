@@ -40,6 +40,7 @@ flowchart TD
 | stack-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
 | register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | system-flag rewrite parity | `../zig_build/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
+| keyboard stop-statusbar mask regression | `../zig_build/state/keyboard_state_overlay.c`, `../zig_build/state/keyboard_state_retained.c`, `../zig_build/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
 | host simulator and core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
 | native Zig C sanitizer lane | `../zig_build/host/steps.zig` | sanitized host build and tests | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
@@ -55,6 +56,7 @@ flowchart TD
 - build-graph step rename, option change, or output-path change:
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
+- keyboard input or statusbar-flag handling change: `zig build keyboard_statusbar_flags_regression --summary none`, then `zig build test --summary none`
 - host simulator, platform glue, or test-surface change:
   `zig build test --summary none`
 - boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, or `zig build flags_parity --summary none` for the touched slice
