@@ -180,6 +180,69 @@ wait_for_lcd_change() {
   return 1
 }
 
+wait_for_stable_lcd() {
+  local window_id="$1"
+  local baseline_hash="$2"
+  local label="$3"
+  local lcd_png=""
+  local current_hash=""
+  local dark_pixels=0
+  local stable_hash=""
+  local stable_count=0
+  local attempt
+
+  for attempt in $(seq 1 160); do
+    if lcd_png="$(capture_lcd "$window_id" "$label")" \
+      && current_hash="$(lcd_hash "$lcd_png")" \
+      && dark_pixels="$(lcd_dark_pixels "$lcd_png")" \
+      && [[ "$dark_pixels" =~ ^[0-9]+$ ]] \
+      && (( dark_pixels > 1000 )) \
+      && [[ "$current_hash" != "$baseline_hash" ]]; then
+      if [[ "$current_hash" == "$stable_hash" ]]; then
+        stable_count=$((stable_count + 1))
+      else
+        stable_hash="$current_hash"
+        stable_count=1
+      fi
+
+      if (( stable_count >= 3 )); then
+        printf '%s\n%s\n%s\n' "$lcd_png" "$current_hash" "$dark_pixels"
+        return 0
+      fi
+    fi
+
+    sleep 0.1
+  done
+
+  echo "LCD did not settle after '${label}' for '${window_title}'" >&2
+  return 1
+}
+
+probe_pointer_input() {
+  local window_id="$1"
+  local baseline_hash="$2"
+  local attempt
+  local coords
+
+  for attempt in $(seq 1 3); do
+    kill -0 "$app_pid" >/dev/null 2>&1 || return 1
+
+    for coords in "567 125" "567 125" "515 160"; do
+      xdotool mousemove --sync --window "$window_id" ${coords% *} ${coords#* }
+      xdotool click --window "$window_id" 1
+
+      if wait_for_lcd_change "$window_id" "$baseline_hash" "after-click-${attempt}"; then
+        return 0
+      fi
+
+      kill -0 "$app_pid" >/dev/null 2>&1 || return 1
+      sleep 0.2
+    done
+  done
+
+  return 1
+}
+
 start_xvfb
 
 export GDK_BACKEND=x11
@@ -208,13 +271,20 @@ mapfile -t after_key_info < <(wait_for_lcd_change "$window_id" "$before_hash" af
 after_key_hash="${after_key_info[1]}"
 after_key_dark_pixels="${after_key_info[2]}"
 
+mapfile -t settled_key_info < <(wait_for_stable_lcd "$window_id" "$before_hash" after-key-settled)
+[[ ${#settled_key_info[@]} -ge 3 ]] || {
+  echo "failed to capture stable LCD state after keyboard input for '${window_title}'" >&2
+  exit 1
+}
+after_key_hash="${settled_key_info[1]}"
+after_key_dark_pixels="${settled_key_info[2]}"
+
 kill -0 "$app_pid" >/dev/null 2>&1 || {
   echo "simulator died after keyboard input" >&2
   exit 1
 }
 
-xdotool mousemove --window "$window_id" 567 125 click 1
-mapfile -t after_click_info < <(wait_for_lcd_change "$window_id" "$after_key_hash" after-click)
+mapfile -t after_click_info < <(probe_pointer_input "$window_id" "$after_key_hash")
 [[ ${#after_click_info[@]} -ge 3 ]] || {
   echo "failed to capture LCD change after pointer input for '${window_title}'" >&2
   exit 1

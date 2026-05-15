@@ -13,7 +13,7 @@ Current tracked workflows:
 
 | Workflow file | Trigger | Purpose |
 | --- | --- | --- |
-| `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware, package, and boundary validation surface |
+| `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware, package, boundary, and monitored Zig master compatibility surface |
 | `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD |
 
 ## Workflow Graph
@@ -22,25 +22,27 @@ Current tracked workflows:
 flowchart TD
   A[push or pull request to main or github_ci]
   B[validate-toolchain]
-  C[source-manifest]
-  D[zig-c-boundary-guard]
-  E[linux-host-parity]
-  F[macos-host-build]
-  G[windows-host-build]
-  H[daily or manual upstream-drift]
+  C[zig-master-compatibility]
+  D[source-manifest]
+  E[zig-c-boundary-guard]
+  F[linux-host-parity]
+  G[macos-host-build]
+  H[windows-host-build]
+  I[daily or manual upstream-drift]
 
   A --> B
   A --> C
   A --> D
-  B --> E
-  C --> E
-  D --> E
+  A --> E
   B --> F
-  C --> F
   D --> F
+  E --> F
   B --> G
-  C --> G
   D --> G
+  E --> G
+  B --> H
+  D --> H
+  E --> H
 ```
 
 ## Shared CI Inputs
@@ -65,6 +67,23 @@ Purpose:
 - verify the pinned version and Linux SHA-256 against
   `https://ziglang.org/download/index.json`
 - install the pinned Zig version and verify `zig version`
+
+### `zig-master-compatibility`
+
+Purpose:
+
+- load the checked-in monitored Zig master snapshot from
+  `../.github/zig-toolchain.env`
+- install that monitored snapshot through the same setup action used for the
+  stable lane
+- run `zig build --help --summary none` and
+  `zig build logical_shortint_parity --summary none` as a narrow
+  forward-compatibility probe
+
+Current monitoring rule:
+
+- this job is `continue-on-error: true`, so it reports compatibility drift
+  without becoming the required merge gate
 
 ### `source-manifest`
 
@@ -153,6 +172,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | Workflow slice | Smallest local reproduction |
 | --- | --- |
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
+| monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none` |
 | source manifest or upstream pin | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
 | Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
