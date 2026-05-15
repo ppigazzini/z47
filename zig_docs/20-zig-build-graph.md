@@ -76,10 +76,16 @@ The live build graph currently exposes these step groups.
 - `simr47`
 - `both`
 - `both_asan`
+- `simulator_smoke`
 - `logical_shortint_parity`
 - `stack_state_parity`
 - `register_metadata_parity`
 - `flags_parity`
+- `memory_parity`
+- `program_serialization_parity`
+- `calc_state_parity`
+- `keyboard_state_parity`
+- `keyboard_statusbar_flags_regression`
 - `test`
 - `test_asan`
 - `repeattest`

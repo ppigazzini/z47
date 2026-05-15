@@ -62,6 +62,7 @@ repo root
 |- LIBRARY/
 |- BUILD.md
 |- README.md
+|- CONTRIBUTING.md
 |- ZIG-README.md
 |- Makefile
 |- meson.build
@@ -130,9 +131,16 @@ Public maintainer entrypoints currently exposed by `zig build --help` include:
 - `zig build simr47`
 - `zig build both`
 - `zig build both_asan`
+- `zig build simulator_smoke`
 - `zig build logical_shortint_parity`
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
+- `zig build flags_parity`
+- `zig build memory_parity`
+- `zig build program_serialization_parity`
+- `zig build calc_state_parity`
+- `zig build keyboard_state_parity`
+- `zig build keyboard_statusbar_flags_regression`
 - `zig build test`
 - `zig build test_asan`
 - `zig build repeattest`
@@ -152,8 +160,8 @@ Public maintainer entrypoints currently exposed by `zig build --help` include:
 - `zig build dist`
 - `zig build distS`
 
-The full grouped command list is documented in `../ZIG-README.md` and the live
-`zig build --help` output.
+The full grouped command list is documented in `../ZIG-README.md`,
+`20-zig-build-graph.md`, and the live `zig build --help` output.
 
 ## Local Start-To-End Pipeline
 
