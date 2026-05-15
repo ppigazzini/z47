@@ -73,6 +73,15 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     both_step.dependOn(&sim_install.step);
     both_step.dependOn(&simr47_install.step);
 
+    const simulator_smoke_cmd = build_common.addBashCommandFmt(b,
+        \\bash zig_build/host/simulator_smoke.sh zig-out/bin/c47 C47
+        \\bash zig_build/host/simulator_smoke.sh zig-out/bin/r47 R47
+    , .{});
+    simulator_smoke_cmd.step.dependOn(&sim_install.step);
+    simulator_smoke_cmd.step.dependOn(&simr47_install.step);
+    const simulator_smoke_step = b.step("simulator_smoke", "Run the Linux Xvfb-backed simulator smoke probe");
+    simulator_smoke_step.dependOn(&simulator_smoke_cmd.step);
+
     const sim_asan = host_builders.addSimulator(
         b,
         context.host_target,

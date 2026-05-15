@@ -92,9 +92,13 @@ Purpose:
 
 - build and test the host simulator surface on Linux
 - run `logical_shortint_parity`, `stack_state_parity`,
-  `register_metadata_parity`, `flags_parity`, `both`, `testPgms`, `test`,
+  `register_metadata_parity`, `flags_parity`, `memory_parity`,
+  `program_serialization_parity`, `calc_state_parity`,
+  `keyboard_state_parity`, `both`, `simulator_smoke`, `testPgms`, `test`,
   `generated`, `both_asan`, `test_asan`, `docs`, firmware targets, and Linux
   distribution packaging
+- run the checked-in Xvfb-backed simulator smoke lane for both host
+  simulators before the broader grouped host test lane
 - run a Linux simulator smoke launch from the packaged archive
 - refresh and diff tracked generated artifacts
 - upload the Linux package artifact and a second artifact containing the golden
@@ -151,7 +155,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
 | source manifest or upstream pin | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
-| Linux host parity | `zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build both && zig build test && zig build generated` |
+| Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | host package | run the matching `dist_<host>` target on the matching host OS |

@@ -159,7 +159,7 @@ jobs:
           set -euo pipefail
           sudo apt-get install -qq -y meson ninja-build zip unzip python3-pip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
-          sudo apt-get install -qq -y xvfb libpulse-dev doxygen gcc-arm-none-eabi
+          sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev doxygen gcc-arm-none-eabi
           python3 -m pip install --user -r docs/code/requirements.txt
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Run Linux host build, tests, and generated artifacts
@@ -177,6 +177,7 @@ jobs:
           zig build calc_state_parity
           zig build keyboard_state_parity
           zig build both
+          zig build simulator_smoke
           zig build testPgms
           xvfb-run --auto-servernum zig build test
           zig build generated

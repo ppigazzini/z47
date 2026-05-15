@@ -25,6 +25,11 @@ int16_t lastNimBufferItem = 0;
 int refreshScreenCalls = 0;
 int16_t lastRefreshScreenId = 0;
 int retainedProcessKeyActionCalls = 0;
+int retainedFnKeyEnterCalls = 0;
+int retainedFnKeyExitCalls = 0;
+int retainedFnKeyCCCalls = 0;
+int retainedFnKeyBackspaceCalls = 0;
+int retainedFnKeyUpCalls = 0;
 int retainedFnKeyDotDCalls = 0;
 int retainedFnKeyDownCalls = 0;
 
@@ -50,6 +55,11 @@ void keyboardStateReset(void) {
   refreshScreenCalls = 0;
   lastRefreshScreenId = 0;
   retainedProcessKeyActionCalls = 0;
+  retainedFnKeyEnterCalls = 0;
+  retainedFnKeyExitCalls = 0;
+  retainedFnKeyCCCalls = 0;
+  retainedFnKeyBackspaceCalls = 0;
+  retainedFnKeyUpCalls = 0;
   retainedFnKeyDotDCalls = 0;
   retainedFnKeyDownCalls = 0;
   keyboardFlags = 0;
@@ -74,6 +84,10 @@ void keyboardStateSetFlag(int32_t flag, bool_t enabled) {
   else {
     keyboardFlags &= ~mask;
   }
+}
+
+uint32_t keyboardStateFlags(void) {
+  return keyboardFlags;
 }
 
 bool_t getSystemFlag(int32_t flag) {
@@ -111,22 +125,27 @@ void z47_keyboard_state_retained_processKeyAction(int16_t item) {
 }
 
 void z47_keyboard_state_retained_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
+  retainedFnKeyEnterCalls++;
   (void)unusedButMandatoryParameter;
 }
 
 void z47_keyboard_state_retained_fnKeyExit(uint16_t unusedButMandatoryParameter) {
+  retainedFnKeyExitCalls++;
   (void)unusedButMandatoryParameter;
 }
 
 void z47_keyboard_state_retained_fnKeyCC(uint16_t unusedButMandatoryParameter) {
+  retainedFnKeyCCCalls++;
   (void)unusedButMandatoryParameter;
 }
 
 void z47_keyboard_state_retained_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
+  retainedFnKeyBackspaceCalls++;
   (void)unusedButMandatoryParameter;
 }
 
 void z47_keyboard_state_retained_fnKeyUp(uint16_t unusedButMandatoryParameter) {
+  retainedFnKeyUpCalls++;
   (void)unusedButMandatoryParameter;
 }
 
