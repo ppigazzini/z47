@@ -16,8 +16,9 @@ repo surfaces.
 - The authoritative upstream source repository is
   `https://gitlab.com/rpncalculators/c43.git`.
 - The repo root carries a pinned imported upstream working tree plus z47-owned
-  overlay files such as `build.zig`, `zig_build/`, `.github/`, `zig_docs/`,
-  this contributor note, and the root entrypoint docs.
+  overlay files such as `build.zig`, `zig_build/`, `zig_src/`,
+  `zig_bridge/`, `.github/`, `zig_docs/`, this contributor note, and the root
+  entrypoint docs.
 - `build.zig` is the sole supported build entrypoint for maintained z47 work.
 
 ## Branch And CI Policy

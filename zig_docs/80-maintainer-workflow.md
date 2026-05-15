@@ -30,6 +30,8 @@ Use one promotion workflow when a non-trivial change lands.
 
 - Document tracked repo surfaces, not ignored local worktrees or ignored build
   outputs.
+- Keep `zig_build/` documented as build-only, `zig_src/` as live runtime Zig,
+  and `zig_bridge/` as retained runtime bridge C.
 - Keep `zig_docs/` focused on durable maintainer contracts, not temporary notes
   or iteration detail.
 - Keep root entrypoint docs short and route detailed material into the numbered

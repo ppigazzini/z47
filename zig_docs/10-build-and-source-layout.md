@@ -13,6 +13,8 @@ the local maintainer flow.
 
 - `build.zig` is the canonical maintained entrypoint.
 - The repo-root `build.zig` stays small and routes work into `zig_build/`.
+- `zig_build/` is build-only; live runtime Zig lives under `zig_src/` and
+  retained runtime bridge C lives under `zig_bridge/`.
 - The imported `Makefile` and Meson files remain audit and parity references,
   not the maintained z47 control plane.
 - Host, docs, firmware, and packaging work all route through `zig build`.
@@ -30,10 +32,15 @@ repo root
 |  |- host/
 |  |- firmware.zig
 |  |- dist.zig
+|  |- tools/
 |  |- leaf/
 |  |- state/
-|  |- tools/
 |  `- zig_dist.py
+|- zig_src/
+|  |- leaf/
+|  `- state/
+|- zig_bridge/
+|  `- state/
 |- .github/
 |  |- zig-toolchain.env
 |  |- workflows/
@@ -102,6 +109,8 @@ Top-level z47-owned overlay paths:
 
 - `build.zig`
 - `zig_build/`
+- `zig_src/`
+- `zig_bridge/`
 - `.github/`
 - `zig_docs/`
 
@@ -119,9 +128,11 @@ Imported upstream-shaped paths consumed directly by the live build graph:
 
 Maintenance rule:
 
-- add new z47-owned build logic under `zig_build/` or `.github/`, not under
-  imported upstream-shaped directories unless the task is intentionally editing
-  the canonical imported owner path
+- add new z47-owned build logic under `zig_build/` or `.github/`
+- add new live runtime Zig under `zig_src/`
+- add new retained runtime bridge C under `zig_bridge/`
+- do not place new z47-owned files under imported upstream-shaped directories
+  unless the task is intentionally editing the canonical imported owner path
 
 ## Build Entry Points
 

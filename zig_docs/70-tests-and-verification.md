@@ -36,15 +36,15 @@ flowchart TD
 | toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | live `zig version` plus pinned manifest check | `zig build --help --summary none` after confirming the pinned version |
 | imported upstream pin and repo-root import contract | `../.github/project/upstream-pin.env` | ancestry check and source-manifest job | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
-| short-integer leaf rewrite parity | `../zig_build/leaf/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
-| stack-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
-| register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
-| system-flag rewrite parity | `../zig_build/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
-| memory-helper rewrite parity | `../zig_build/state/`, `../zig_build/tests/memory/` | focused parity executable | `zig build memory_parity --summary none` |
-| program-serialization rewrite parity | `../zig_build/state/`, `../zig_build/tests/program_serialization/` | focused parity executable | `zig build program_serialization_parity --summary none` |
-| calc-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
-| keyboard command-surface rewrite parity | `../zig_build/state/`, `../zig_build/tests/keyboard_state/` | focused parity executable covering the broader public keyboard command entrypoints | `zig build keyboard_state_parity --summary none` |
-| keyboard stop-statusbar mask regression | `../zig_build/state/keyboard_state_overlay.c`, `../zig_build/state/keyboard_state_retained.c`, `../zig_build/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
+| short-integer leaf rewrite parity | `../zig_src/leaf/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
+| stack-state rewrite parity | `../zig_src/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
+| register-metadata rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
+| system-flag rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
+| memory-helper rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/memory/` | focused parity executable | `zig build memory_parity --summary none` |
+| program-serialization rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/program_serialization/` | focused parity executable | `zig build program_serialization_parity --summary none` |
+| calc-state rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
+| keyboard command-surface rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/keyboard_state/` | focused parity executable covering the broader public keyboard command entrypoints | `zig build keyboard_state_parity --summary none` |
+| keyboard stop-statusbar mask regression | `../zig_bridge/state/keyboard_state_overlay.c`, `../zig_bridge/state/keyboard_state_retained.c`, `../zig_bridge/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
 | host simulator build boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build surface | `zig build sim --summary none` |
 | host simulator live behavior boundary | `../zig_build/host/`, `../zig_build/host/simulator_smoke.sh`, `../src/c47-gtk/` | live X11 smoke covering LCD, keyboard, and pointer behavior for both simulators | `zig build simulator_smoke --summary none` |
 | host core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |

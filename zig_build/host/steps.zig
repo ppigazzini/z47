@@ -198,7 +198,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     host_platform.addHostMacros(keyboard_statusbar_flags_regression.root_module, context.common);
     keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("src/c47"));
-    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("zig_build/state"));
+    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("zig_bridge/state"));
     keyboard_statusbar_flags_regression.root_module.addCSourceFile(.{
         .file = b.path("zig_build/tests/keyboard_statusbar_flags_regression.c"),
         .flags = &.{},
