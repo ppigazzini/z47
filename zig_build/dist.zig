@@ -69,7 +69,7 @@ pub fn registerSteps(
     dist_version: []const u8,
 ) !void {
     const dist_step = b.step("dist", "Build the current-host distribution archive plus all DMCP package archives");
-    const test_pgms_txt = b.path("res/testPgms/testPgms.txt");
+    const test_pgms_txt = build_common.upstreamPath(b, "res/testPgms/testPgms.txt");
     const dist_testpgms_zip = addTestPgmsZipStep(b, host_outputs.c47_bin, context.generated.test_pgms_bin, test_pgms_txt);
 
     const windows_stage_name = distDirName(b, "c47-windows", ci_commit_tag);

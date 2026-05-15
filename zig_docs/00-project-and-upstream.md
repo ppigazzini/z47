@@ -17,7 +17,9 @@ current upstream pin are already clear.
 - The GitLab path still uses the historical `c43` repository name even though
   the project identifies itself as C47.
 - The repo root currently carries the imported upstream working tree pinned at
-  commit `fbe727accf7e6b777d0541160bc35c97680b45a1`.
+  commit `b9ed834b63e64bde05274e5182abf1e9180af612`.
+- `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
+  current imported baseline still lives at repo root.
 - `build.zig` is the canonical maintained build entrypoint.
 - The imported `Makefile`, `meson.build`, and related upstream files remain in
   the tree as audit and rebase reference surfaces.
@@ -66,9 +68,15 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `fbe727accf7e6b777d0541160bc35c97680b45a1` |
+| `UPSTREAM_COMMIT` | `b9ed834b63e64bde05274e5182abf1e9180af612` |
+| `UPSTREAM_ROOT` | `.` |
 | `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-05-07` |
+| `UPSTREAM_PIN_UPDATED` | `2026-05-15` |
+
+The current `UPSTREAM_ROOT=.` value means the imported upstream tree is mounted
+at repo root today. That is the current baseline contract, not a promise that a
+future M13 topology pilot cannot move the imported root after the path and
+ownership blast radius stays bounded.
 
 That imported tree includes the main source, dependency, resource, packaging,
 and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
@@ -83,6 +91,7 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 | `zig_src/` | z47 overlay | live runtime Zig owners for parity-gated rewrite slices |
 | `zig_bridge/` | z47 overlay | retained helper C shims paired with live Zig runtime slices |
 | `.github/` and `.github/project/` | z47 overlay | CI workflows, toolchain pin, upstream pin, boundary guard, package helpers |
+| `../.github/project/source-ownership.txt` and `../.github/project/check-source-ownership.sh` | z47 overlay | tracked top-level ownership manifest plus CI guard for imported-root additions |
 | `zig_docs/` | z47 maintained docs | stable developer documentation for the live repo |
 | `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `meson_options.txt`, `tools/` | imported upstream baseline | canonical calculator sources, assets, legacy build graph, and helper tools |
 | `dep/DMCP_SDK` and `dep/DMCP5_SDK` | imported retained SDK inputs | SwissMicros hardware build inputs used by the Zig-owned firmware flow |
@@ -105,6 +114,9 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 - Fix shared calculator behavior in the canonical imported owner path or in an
   approved Zig rewrite slice, not in notes or generated output snapshots.
 - Keep the imported root tree rebase-friendly against `upstream/master`.
+- Keep `UPSTREAM_ROOT`, the tracked source-ownership manifest, and the
+  source-manifest workflow aligned when the imported baseline or top-level
+  ownership split changes.
 - Keep retained C libraries explicit in docs and code review. Do not imply a
   pure-Zig state while the build still links or compiles retained C.
 - Update `../.github/project/upstream-pin.env` and any affected maintainer docs

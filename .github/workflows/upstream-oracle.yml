@@ -86,23 +86,42 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Verify pinned upstream ancestry
+      - name: Verify pinned upstream commit is on upstream/master
         shell: bash
         run: |
           set -euo pipefail
           . ./.github/project/upstream-pin.env
-          git merge-base --is-ancestor "$UPSTREAM_COMMIT" HEAD
+          git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH"
+          git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD
       - name: Write source manifest artifact
         shell: bash
         run: |
           set -euo pipefail
-          git ls-files -s -- . \
-            ':(exclude)build.zig' \
-            ':(exclude).github/**' > upstream-source.index
+          mapfile -t imported_roots < <(bash .github/project/check-source-ownership.sh list-imported-roots)
+          git ls-files -s -- "${imported_roots[@]}" > upstream-source.index
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: upstream-source-index
           path: upstream-source.index
+
+  source-ownership-guard:
+    name: Verify tracked source ownership
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Fetch pinned upstream history for ownership diff base
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH"
+      - name: Enforce tracked source ownership rules
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-source-ownership.sh
 
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
@@ -120,6 +139,7 @@ jobs:
     needs:
       - validate-toolchain
       - source-manifest
+      - source-ownership-guard
       - zig-c-boundary-guard
     runs-on: ubuntu-latest
     steps:
@@ -413,6 +433,7 @@ jobs:
     needs:
       - validate-toolchain
       - source-manifest
+      - source-ownership-guard
       - zig-c-boundary-guard
     runs-on: macos-latest
     steps:
@@ -625,6 +646,7 @@ jobs:
     needs:
       - validate-toolchain
       - source-manifest
+      - source-ownership-guard
       - zig-c-boundary-guard
     runs-on: windows-latest
     steps:

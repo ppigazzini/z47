@@ -24,25 +24,30 @@ flowchart TD
   B[validate-toolchain]
   C[zig-master-compatibility]
   D[source-manifest]
-  E[zig-c-boundary-guard]
-  F[linux-host-parity]
-  G[macos-host-build]
-  H[windows-host-build]
-  I[daily or manual upstream-drift]
+  E[source-ownership-guard]
+  F[zig-c-boundary-guard]
+  G[linux-host-parity]
+  H[macos-host-build]
+  I[windows-host-build]
+  J[daily or manual upstream-drift]
 
   A --> B
   A --> C
   A --> D
   A --> E
-  B --> F
-  D --> F
-  E --> F
+  A --> F
   B --> G
   D --> G
   E --> G
+  F --> G
   B --> H
   D --> H
   E --> H
+  F --> H
+  B --> I
+  D --> I
+  E --> I
+  F --> I
 ```
 
 ## Shared CI Inputs
@@ -51,6 +56,7 @@ The workflow keeps its shared checked-in control data in these files:
 
 - `../.github/zig-toolchain.env`
 - `../.github/project/upstream-pin.env`
+- `../.github/project/source-ownership.txt`
 - `../.github/project/zig-c-boundaries.txt`
 - `../docs/code/requirements.txt`
 
@@ -89,14 +95,30 @@ Current monitoring rule:
 
 Purpose:
 
-- verify that the checked-out repo still descends from the pinned upstream
-  commit
+- verify that the pinned upstream commit is still reachable from the current
+  `upstream/master` tip
 - upload a source manifest artifact for the imported root tree
 
 Current source-manifest note:
 
-- the artifact intentionally excludes `build.zig` and `.github/**` so the
-  z47-owned control plane does not masquerade as imported upstream content
+- the artifact now takes its imported-root path list from
+  `../.github/project/source-ownership.txt`, so the published source manifest
+  and the ownership guard use the same tracked vocabulary
+
+### `source-ownership-guard`
+
+Purpose:
+
+- run `bash .github/project/check-source-ownership.sh`
+- verify that the tracked ownership manifest still covers the top-level tracked
+  tree
+- reject unapproved added files under imported upstream-shaped roots
+
+Current ownership-guard note:
+
+- the job fetches the configured upstream branch first so the guard can diff
+  branch-added imported-root files from the merge base between `HEAD` and the
+  pinned upstream commit even when the pin is ahead of the current branch tip
 
 ### `zig-c-boundary-guard`
 
@@ -166,6 +188,7 @@ Purpose:
 Current artifact classes include:
 
 - source-manifest artifact from `source-manifest`
+- source-ownership guard result from `source-ownership-guard`
 - Linux generated-artifact proof from `linux-host-parity`
 - packaged simulator artifacts named `z47-linux-<upstream_short>`,
   `z47-macos-<upstream_short>`, and `z47-windows-<upstream_short>`
@@ -189,7 +212,8 @@ Use the smallest local lane that matches the workflow slice you changed.
 | --- | --- |
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
 | monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none` |
-| source manifest or upstream pin | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
+| source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && bash .github/project/check-source-ownership.sh` |
+| tracked source ownership contract | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && bash .github/project/check-source-ownership.sh` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
 | Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
