@@ -1553,7 +1553,7 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 //
 void printInputPrompt(uint16_t func, uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
-    if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
+    if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP) && (programRunStop != PGM_WAITING))) { // No printing in a program if PRTEN cleared
       if(func == ITM_PROMPT) {
         printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
         print_lf();
