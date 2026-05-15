@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 
 pub const RuntimeObjects = struct {
     logical_mask: *std.Build.Step.Compile,
@@ -117,15 +118,15 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/logical_shortint_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/logical_shortint_parity.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{
-        .file = b.path("src/c47/logicalOps/mask.c"),
+        .file = build_common.upstreamPath(b, "src/c47/logicalOps/mask.c"),
         .flags = &.{ "-DfnMaskl=oracle_fnMaskl", "-DfnMaskr=oracle_fnMaskr" },
     });
     exe.root_module.addCSourceFile(.{
-        .file = b.path("src/c47/logicalOps/countBits.c"),
+        .file = build_common.upstreamPath(b, "src/c47/logicalOps/countBits.c"),
         .flags = &.{"-DfnCountBits=oracle_fnCountBits"},
     });
     exe.root_module.addCSourceFile(.{
-        .file = b.path("src/c47/logicalOps/setClearFlipBits.c"),
+        .file = build_common.upstreamPath(b, "src/c47/logicalOps/setClearFlipBits.c"),
         .flags = &.{
             "-DfnCb=oracle_fnCb",
             "-DfnSb=oracle_fnSb",

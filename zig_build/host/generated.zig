@@ -109,7 +109,7 @@ pub fn addGeneratorSteps(
 
     const run_raster_fonts = b.addRunArtifact(raster_fonts_gen);
     run_raster_fonts.setCwd(b.path("."));
-    run_raster_fonts.addArg("res/fonts");
+    run_raster_fonts.addArg(build_common.upstreamPathString(b, "res/fonts"));
     const raster_fonts_data = run_raster_fonts.addOutputFileArg("rasterFontsData.c");
 
     const generate_constants = b.addExecutable(.{
@@ -122,12 +122,13 @@ pub fn addGeneratorSteps(
         }),
     });
     host_platform.addHostMacros(generate_constants.root_module, common);
-    generate_constants.root_module.addIncludePath(b.path("dep/decNumberICU"));
-    generate_constants.root_module.addIncludePath(b.path("src/c47"));
-    generate_constants.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    generate_constants.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
 
     const run_generate_constants = b.addRunArtifact(generate_constants);
     run_generate_constants.setCwd(b.path("."));
+    run_generate_constants.addArgs(&.{ "--upstream-root", build_common.upstreamRootString(b) });
     const constant_pointers_c = run_generate_constants.addOutputFileArg("constantPointers.c");
     const constant_pointers_h = run_generate_constants.addOutputFileArg("constantPointers.h");
     const constant_pointers2_c = run_generate_constants.addOutputFileArg("constantPointers2.c");
@@ -144,10 +145,10 @@ pub fn addGeneratorSteps(
     host_platform.addHostMacros(generate_catalogs.root_module, common);
     host_platform.addHostSystemPaths(generate_catalogs.root_module, common);
     generate_catalogs.root_module.addCMacro("GENERATE_CATALOGS", "1");
-    generate_catalogs.root_module.addIncludePath(b.path("dep/decNumberICU"));
-    generate_catalogs.root_module.addIncludePath(b.path("src/c47"));
-    generate_catalogs.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    generate_catalogs.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = build_common.generate_catalogs_sources, .flags = core_c_flags });
+    generate_catalogs.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_catalogs.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    generate_catalogs.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    generate_catalogs.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = build_common.generate_catalogs_sources, .flags = core_c_flags });
     generate_catalogs.root_module.addCSourceFile(.{ .file = raster_fonts_data, .flags = core_c_flags });
     host_platform.linkGtk3(generate_catalogs.root_module, common);
     generate_catalogs.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
@@ -168,15 +169,16 @@ pub fn addGeneratorSteps(
     host_platform.addHostMacros(generate_testpgms.root_module, common);
     host_platform.addHostSystemPaths(generate_testpgms.root_module, common);
     generate_testpgms.root_module.addCMacro("GENERATE_TESTPGMS", "1");
-    generate_testpgms.root_module.addIncludePath(b.path("dep/decNumberICU"));
-    generate_testpgms.root_module.addIncludePath(b.path("src/c47"));
-    generate_testpgms.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    generate_testpgms.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = build_common.generate_testpgms_sources, .flags = core_c_flags });
+    generate_testpgms.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_testpgms.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    generate_testpgms.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    generate_testpgms.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = build_common.generate_testpgms_sources, .flags = core_c_flags });
     host_platform.linkGtk3(generate_testpgms.root_module, common);
     generate_testpgms.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
 
     const run_generate_testpgms = b.addRunArtifact(generate_testpgms);
     run_generate_testpgms.setCwd(b.path("."));
+    run_generate_testpgms.addArgs(&.{ "--upstream-root", build_common.upstreamRootString(b) });
     const test_pgms_bin = run_generate_testpgms.addOutputFileArg("testPgms.bin");
 
     return .{

@@ -129,6 +129,11 @@ fn doSave(save_type: u16) void {
 }
 
 pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
+    if (is_dmcp_build) {
+        runtime.retainedDoLoad(load_mode, s, n, d, load_type);
+        return;
+    }
+
     runtime.resetLoadContext();
 
     const ret = runtime.openLoad(load_type);
@@ -162,6 +167,11 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
 }
 
 pub export fn fnLoad(load_mode: u16) void {
+    if (is_dmcp_build) {
+        runtime.retainedFnLoad(load_mode);
+        return;
+    }
+
     runtime.showLoadingStatus();
     if (load_mode == runtime.LM_STATE_LOAD) {
         doLoad(runtime.LM_ALL, 0, 0, 0, runtime.stateLoad);
@@ -177,14 +187,18 @@ pub export fn fnLoadAuto() void {
 }
 
 pub export fn fnSaveAuto(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
-
     if (is_dmcp_build) {
-        doSave(runtime.autoSave);
+        runtime.retainedFnSaveAuto(unused_but_mandatory_parameter);
+        return;
     }
 }
 
 pub export fn fnSave(save_mode: u16) void {
+    if (is_dmcp_build) {
+        runtime.retainedFnSave(save_mode);
+        return;
+    }
+
     if (save_mode == runtime.SM_MANUAL_SAVE) {
         doSave(runtime.manualSave);
     } else if (save_mode == runtime.SM_STATE_SAVE) {

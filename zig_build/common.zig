@@ -1,5 +1,9 @@
 const std = @import("std");
 
+const upstream_pin_env_path = ".github/project/upstream-pin.env";
+
+var cached_upstream_root: ?[]const u8 = null;
+
 pub const decnumber_sources: []const []const u8 = &.{
     "decNumberICU/decContext.c",
     "decNumberICU/decDouble.c",
@@ -63,6 +67,35 @@ pub const StepFile = struct {
     step: *std.Build.Step,
     path: std.Build.LazyPath,
 };
+
+fn loadPinnedUpstreamRoot(b: *std.Build) []const u8 {
+    return commandOutput(b, &.{
+        "bash",
+        "-euo",
+        "pipefail",
+        "-c",
+        ". ./.github/project/upstream-pin.env && printf '%s' \"$UPSTREAM_ROOT\"",
+    }) orelse std.debug.panic("missing or unreadable UPSTREAM_ROOT in {s}", .{upstream_pin_env_path});
+}
+
+pub fn upstreamRootString(b: *std.Build) []const u8 {
+    if (cached_upstream_root) |root| return root;
+
+    const root = loadPinnedUpstreamRoot(b);
+    cached_upstream_root = root;
+    return root;
+}
+
+pub fn upstreamPathString(b: *std.Build, relative: []const u8) []const u8 {
+    const upstream_root = upstreamRootString(b);
+    if (std.mem.eql(u8, upstream_root, ".")) return relative;
+
+    return std.fs.path.join(b.allocator, &.{ upstream_root, relative }) catch @panic("OOM");
+}
+
+pub fn upstreamPath(b: *std.Build, relative: []const u8) std.Build.LazyPath {
+    return b.path(upstreamPathString(b, relative));
+}
 
 pub fn addBashCommand(b: *std.Build, script: []const u8) *std.Build.Step.Run {
     return addBashCommandFmt(b, "{s}", .{script});

@@ -12,7 +12,6 @@ const register_metadata_rewrites = @import("../state/register_metadata_rewrites.
 const stack_rewrites = @import("../state/stack_rewrites.zig");
 const host_types = @import("types.zig");
 
-const upstream_test_list = "src/testSuite/tests/testSuiteList.txt";
 const z47_test_list = "zig_build/tests/testSuiteList_z47.txt";
 
 fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
@@ -197,7 +196,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         }),
     });
     host_platform.addHostMacros(keyboard_statusbar_flags_regression.root_module, context.common);
-    keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("src/c47"));
+    keyboard_statusbar_flags_regression.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
     keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("zig_bridge/state"));
     keyboard_statusbar_flags_regression.root_module.addCSourceFile(.{
         .file = b.path("zig_build/tests/keyboard_statusbar_flags_regression.c"),
@@ -214,7 +213,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const program_serialization_parity_step = b.step("program_serialization_parity", "Run the program-serialization parity suite");
     program_serialization_parity_step.dependOn(&run_program_serialization_parity.step);
 
-    const run_test_suite = addTestSuiteRun(b, test_suite, upstream_test_list);
+    const run_test_suite = addTestSuiteRun(b, test_suite, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));
     const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
     const test_step = b.step("test", "Run the host test suite");
     test_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
@@ -236,7 +235,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.stack_state_objects,
         .full,
     );
-    const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, upstream_test_list);
+    const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));
     const run_test_suite_asan_z47 = addTestSuiteRun(b, test_suite_asan, z47_test_list);
     const test_asan_step = b.step("test_asan", "Run the host test suite with native Zig C sanitizing");
     test_asan_step.dependOn(&run_test_suite_asan.step);
@@ -247,24 +246,24 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     repeattest_step.dependOn(&run_test_suite_z47.step);
 
     const update_fonts = b.addUpdateSourceFiles();
-    update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, "src/generated/rasterFontsData.c");
+    update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, build_common.upstreamPathString(b, "src/generated/rasterFontsData.c"));
     const fonts_step = b.step("fonts", "Refresh rasterFontsData.c from the font generator");
     fonts_step.dependOn(&update_fonts.step);
 
     const update_constants = b.addUpdateSourceFiles();
-    update_constants.addCopyFileToSource(context.generated.constant_pointers_c, "src/generated/constantPointers.c");
-    update_constants.addCopyFileToSource(context.generated.constant_pointers_h, "src/generated/constantPointers.h");
-    update_constants.addCopyFileToSource(context.generated.constant_pointers2_c, "src/generated/constantPointers2.c");
+    update_constants.addCopyFileToSource(context.generated.constant_pointers_c, build_common.upstreamPathString(b, "src/generated/constantPointers.c"));
+    update_constants.addCopyFileToSource(context.generated.constant_pointers_h, build_common.upstreamPathString(b, "src/generated/constantPointers.h"));
+    update_constants.addCopyFileToSource(context.generated.constant_pointers2_c, build_common.upstreamPathString(b, "src/generated/constantPointers2.c"));
     const constants_step = b.step("constants", "Refresh generated constant pointer sources");
     constants_step.dependOn(&update_constants.step);
 
     const update_catalogs = b.addUpdateSourceFiles();
-    update_catalogs.addCopyFileToSource(context.generated.softmenu_catalogs, "src/generated/softmenuCatalogs.h");
+    update_catalogs.addCopyFileToSource(context.generated.softmenu_catalogs, build_common.upstreamPathString(b, "src/generated/softmenuCatalogs.h"));
     const catalogs_step = b.step("catalogs", "Refresh generated softmenu catalogs");
     catalogs_step.dependOn(&update_catalogs.step);
 
     const update_testpgms = b.addUpdateSourceFiles();
-    update_testpgms.addCopyFileToSource(context.generated.test_pgms_bin, "res/testPgms/testPgms.bin");
+    update_testpgms.addCopyFileToSource(context.generated.test_pgms_bin, build_common.upstreamPathString(b, "res/testPgms/testPgms.bin"));
     const testpgms_step = b.step("testpgms", "Refresh the generated test program image");
     testpgms_step.dependOn(&update_testpgms.step);
     const testPgms_step = b.step("testPgms", "Refresh the generated test program image");
@@ -309,6 +308,7 @@ fn addCleanStep(b: *std.Build) void {
 
 fn addDocsStep(b: *std.Build) void {
     const docs_build_root = b.getInstallPath(.prefix, "docs/code");
+    const docs_source_root = build_common.upstreamPathString(b, "docs/code");
     const cmd = build_common.addBashCommandFmt(b,
         \\for tool in python3 doxygen; do
         \\  command -v "$tool" >/dev/null 2>&1 || {{
@@ -322,8 +322,8 @@ fn addDocsStep(b: *std.Build) void {
         \\}}
         \\rm -rf '{s}'
         \\mkdir -p '{s}'
-        \\python3 -m sphinx -M html docs/code '{s}'
-    , .{ docs_build_root, docs_build_root, docs_build_root });
+        \\python3 -m sphinx -M html '{s}' '{s}'
+    , .{ docs_build_root, docs_build_root, docs_source_root, docs_build_root });
 
     const step = b.step("docs", "Build documentation with Zig-owned Sphinx orchestration");
     step.dependOn(&cmd.step);

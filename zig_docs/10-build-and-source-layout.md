@@ -15,6 +15,9 @@ the local maintainer flow.
 - The repo-root `build.zig` stays small and routes work into `zig_build/`.
 - `zig_build/` is build-only; live runtime Zig lives under `zig_src/` and
   retained runtime bridge C lives under `zig_bridge/`.
+- imported upstream paths route through `UPSTREAM_ROOT` in
+  `../.github/project/upstream-pin.env`; the current value `.` keeps the
+  imported baseline at repo root
 - The imported `Makefile` and Meson files remain audit and parity references,
   not the maintained z47 control plane.
 - Host, docs, firmware, and packaging work all route through `zig build`.
@@ -46,6 +49,8 @@ repo root
 |  |- workflows/
 |  `- project/
 |     |- upstream-pin.env
+|     |- source-ownership.txt
+|     |- check-source-ownership.sh
 |     |- zig-c-boundaries.txt
 |     `- check-zig-c-boundaries.sh
 |- zig_docs/
@@ -89,7 +94,9 @@ Checked-in build defaults currently come from these files:
 
 - `../.github/zig-toolchain.env`: pins Zig `0.16.0`
 - `../.github/project/upstream-pin.env`: pins the imported upstream commit and
-  repository URL
+  repository URL plus the current imported upstream root
+- `../.github/project/source-ownership.txt`: records the tracked top-level
+  z47-owned roots and imported-upstream roots used by CI and source manifests
 - `../.github/project/zig-c-boundaries.txt`: records the approved checked-in
   `@cImport` and direct `extern` boundary files
 - `../docs/code/requirements.txt`: pins the Python package set needed for
@@ -114,6 +121,11 @@ Top-level z47-owned overlay paths:
 - `.github/`
 - `zig_docs/`
 
+The tracked top-level ownership split used by CI lives in
+`../.github/project/source-ownership.txt`. The source-manifest job and the
+source-ownership guard both read from that manifest, so docs and CI use the
+same vocabulary for the current repo-root baseline.
+
 Imported upstream-shaped paths consumed directly by the live build graph:
 
 - `src/`
@@ -133,6 +145,8 @@ Maintenance rule:
 - add new retained runtime bridge C under `zig_bridge/`
 - do not place new z47-owned files under imported upstream-shaped directories
   unless the task is intentionally editing the canonical imported owner path
+- use a linked worktree when rehearsing an `upstream/master` refresh instead of
+  repurposing the active coding tree
 
 ## Build Entry Points
 

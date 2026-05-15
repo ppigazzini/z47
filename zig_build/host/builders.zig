@@ -55,24 +55,24 @@ pub fn addSimulator(
         exe.root_module.addCMacro("HAVE_DLADDR", "1");
     }
     exe.root_module.addCMacro("CALCMODEL", calc_model);
-    exe.root_module.addIncludePath(b.path("dep/decNumberICU"));
-    exe.root_module.addIncludePath(b.path("src/c47"));
-    exe.root_module.addIncludePath(b.path("src/c47-gtk"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47-gtk"));
     exe.root_module.addIncludePath(version_headers_dir);
     exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
     if (host_target.result.os.tag == .windows) {
         exe.root_module.addWin32ResourceFile(.{
-            .file = b.path(b.fmt("src/c47-gtk/{s}-gtk.rc", .{name})),
+            .file = build_common.upstreamPath(b, b.fmt("src/c47-gtk/{s}-gtk.rc", .{name})),
             .include_paths = &.{
-                b.path("src/c47"),
+                build_common.upstreamPath(b, "src/c47"),
                 version_headers_dir,
             },
         });
     }
-    exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_button_signal_wrappers.c"), .flags = build_common.common_gtk_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_gui_retained.c"), .flags = build_common.common_gtk_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
@@ -140,15 +140,15 @@ pub fn addTestSuite(
     host_platform.addHostMacros(exe.root_module, common);
     host_platform.addHostSystemPaths(exe.root_module, common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
-    exe.root_module.addIncludePath(b.path("dep/decNumberICU"));
-    exe.root_module.addIncludePath(b.path("src/c47"));
-    exe.root_module.addIncludePath(b.path("src/testSuite"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/testSuite"));
     exe.root_module.addIncludePath(version_headers_dir);
     exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
-    exe.root_module.addCSourceFiles(.{ .root = b.path("dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = b.path("src/c47"), .files = core_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = b.path("src/testSuite"), .files = test_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/testSuite"), .files = test_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });

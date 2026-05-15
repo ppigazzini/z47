@@ -104,8 +104,8 @@ fn configureHostModule(module: *std.Build.Module, config: HostModuleConfig) void
         module.addCMacro("HAVE_DLADDR", "1");
     }
 
-    module.addIncludePath(module.owner.path("dep/decNumberICU"));
-    module.addIncludePath(module.owner.path("src/c47"));
+    module.addIncludePath(build_common.upstreamPath(module.owner, "dep/decNumberICU"));
+    module.addIncludePath(build_common.upstreamPath(module.owner, "src/c47"));
     addGeneratedHeaderDirs(module, config.generated_headers);
 }
 
@@ -119,8 +119,8 @@ fn configureFirmwareModule(module: *std.Build.Module, config: FirmwareModuleConf
         module.addCMacro("DECNUMBER_FASTMUL", "1");
     }
 
-    module.addIncludePath(module.owner.path("dep/decNumberICU"));
-    module.addIncludePath(module.owner.path("src/c47"));
+    module.addIncludePath(build_common.upstreamPath(module.owner, "dep/decNumberICU"));
+    module.addIncludePath(build_common.upstreamPath(module.owner, "src/c47"));
     module.addIncludePath(module.owner.path(config.board_source_dir));
     module.addIncludePath(module.owner.path(config.sdk_include_dir));
     addGeneratedHeaderDirs(module, config.generated_headers);
@@ -150,9 +150,9 @@ pub fn addRuntimeObjectsWithOptions(
         .needs_gnu_source = true,
         .have_dladdr = true,
         .generated_headers = .{
-            .version_headers_dir = b.path("src/c47"),
-            .softmenu_catalogs_dir = b.path("src/c47"),
-            .constant_pointers_h_dir = b.path("src/c47"),
+            .version_headers_dir = build_common.upstreamPath(b, "src/c47"),
+            .softmenu_catalogs_dir = build_common.upstreamPath(b, "src/c47"),
+            .constant_pointers_h_dir = build_common.upstreamPath(b, "src/c47"),
         },
     }, options);
 }

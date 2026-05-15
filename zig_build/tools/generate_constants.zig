@@ -317,23 +317,24 @@ pub fn main(init: std.process.Init) !void {
     defer args.deinit();
 
     _ = args.next();
-    const output_c = args.next() orelse {
-        std.debug.print("Usage: generateConstants <c file> <h file> <c file2>\n", .{});
+    const parsed_args = parseUpstreamRoot(&args);
+    const output_c = parsed_args.first_positional orelse {
+        std.debug.print("Usage: generateConstants [--upstream-root <path>] <c file> <h file> <c file2>\n", .{});
         std.process.exit(1);
     };
     const output_h = args.next() orelse {
-        std.debug.print("Usage: generateConstants <c file> <h file> <c file2>\n", .{});
+        std.debug.print("Usage: generateConstants [--upstream-root <path>] <c file> <h file> <c file2>\n", .{});
         std.process.exit(1);
     };
     const output_c2 = args.next() orelse {
-        std.debug.print("Usage: generateConstants <c file> <h file> <c file2>\n", .{});
+        std.debug.print("Usage: generateConstants [--upstream-root <path>] <c file> <h file> <c file2>\n", .{});
         std.process.exit(1);
     };
 
     var arena = std.heap.ArenaAllocator.init(allocator);
     defer arena.deinit();
 
-    const parsed_constants = try parseConstants(arena.allocator());
+    const parsed_constants = try parseConstants(arena.allocator(), parsed_args.upstream_root);
 
     var ctxt_real34: realContext_t = undefined;
     var ctxt_real: realContext_t = undefined;
@@ -352,8 +353,7 @@ pub fn main(init: std.process.Init) !void {
     }
     try generator.finish();
 
-    const header_text = try std.fmt.allocPrint(
-        allocator,
+    const header_text = try std.fmt.allocPrint(allocator,
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -373,8 +373,7 @@ pub fn main(init: std.process.Init) !void {
     , .{ generator.external_declarations.items, generator.real_count });
     defer allocator.free(header_text);
 
-    const constants_text = try std.fmt.allocPrint(
-        allocator,
+    const constants_text = try std.fmt.allocPrint(allocator,
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -388,8 +387,7 @@ pub fn main(init: std.process.Init) !void {
     , .{generator.real_array.items});
     defer allocator.free(constants_text);
 
-    const real_t_array_text = try std.fmt.allocPrint(
-        allocator,
+    const real_t_array_text = try std.fmt.allocPrint(allocator,
         \\// SPDX-License-Identifier: GPL-3.0-only
         \\// SPDX-FileCopyrightText: Copyright The C47 Authors
         \\
@@ -408,8 +406,35 @@ pub fn main(init: std.process.Init) !void {
     try writeFile(output_c2, real_t_array_text);
 }
 
-fn parseConstants(allocator: std.mem.Allocator) ![]ParsedConstant {
-    const source = try readFileAlloc(allocator, "src/generateConstants/generateConstants.c");
+const ParsedArgs = struct {
+    upstream_root: []const u8,
+    first_positional: ?[]const u8,
+};
+
+fn parseUpstreamRoot(args: *std.process.Args.Iterator) ParsedArgs {
+    const next_arg = args.next() orelse return .{ .upstream_root = ".", .first_positional = null };
+    if (!std.mem.eql(u8, next_arg, "--upstream-root")) {
+        return .{ .upstream_root = ".", .first_positional = next_arg };
+    }
+
+    const upstream_root = args.next() orelse {
+        std.debug.print("missing value for --upstream-root\n", .{});
+        std.process.exit(1);
+    };
+
+    return .{ .upstream_root = upstream_root, .first_positional = args.next() };
+}
+
+fn upstreamPath(allocator: std.mem.Allocator, upstream_root: []const u8, relative: []const u8) ![]const u8 {
+    if (std.mem.eql(u8, upstream_root, ".")) return allocator.dupe(u8, relative);
+    return std.fs.path.join(allocator, &.{ upstream_root, relative });
+}
+
+fn parseConstants(allocator: std.mem.Allocator, upstream_root: []const u8) ![]ParsedConstant {
+    const source_path = try upstreamPath(allocator, upstream_root, "src/generateConstants/generateConstants.c");
+    defer allocator.free(source_path);
+
+    const source = try readFileAlloc(allocator, source_path);
 
     const start = std.mem.indexOf(u8, source, "void generateAllConstants(void)") orelse return error.MissingGenerateAllConstants;
     const body_open_rel = std.mem.indexOfScalar(u8, source[start..], '{') orelse return error.MissingFunctionBody;
