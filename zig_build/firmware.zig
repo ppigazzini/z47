@@ -177,8 +177,8 @@ pub fn registerSteps(
     const dmcp_flags_state_objects = flags_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_flags_options);
     const dmcp5_flags_state_objects = flags_rewrites.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
     const dmcp_keyboard_state_objects = keyboard_state_rewrites.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", .{
-        .board_source_dir = firmwareBoardSourceDir(.dmcp),
-        .sdk_include_dir = firmwareSdkIncludeDir(.dmcp),
+        .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp)),
+        .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp)),
         .board_macro = "OLD_HW",
         .decnumber_fastmul = decnumber_fastmul,
         .generated_headers = .{
@@ -195,8 +195,8 @@ pub fn registerSteps(
         .error_tracing = false,
     });
     const dmcp5_keyboard_state_objects = keyboard_state_rewrites.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", .{
-        .board_source_dir = firmwareBoardSourceDir(.dmcp5),
-        .sdk_include_dir = firmwareSdkIncludeDir(.dmcp5),
+        .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
+        .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp5)),
         .board_macro = "NEW_HW",
         .decnumber_fastmul = decnumber_fastmul,
         .generated_headers = .{
@@ -327,17 +327,21 @@ fn addForceCrc32Tool(
             .link_libc = true,
         }),
     });
-    exe.root_module.addCSourceFile(.{ .file = b.path("dep/forcecrc32.c"), .flags = build_common.common_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "dep/forcecrc32.c"), .flags = build_common.common_c_flags });
     return exe;
 }
 
 fn addArmGmpBuild(b: *std.Build, board: Board) ArmGmpOutputs {
-    const script =
+    const gmp_repo_source = build_common.upstreamPathString(b, "subprojects/gmp-6.2.1");
+    const script_prefix =
         \\board="$1"
         \\header_out="$2"
         \\lib_out="$3"
         \\work_dir="$(dirname "$lib_out")/gmp-work"
-        \\repo_source="$PWD/subprojects/gmp-6.2.1"
+        \\repo_source="$PWD/
+    ;
+    const script_suffix =
+        \\"
         \\source_dir="$repo_source"
         \\tarball="$work_dir/gmp-6.2.1.tar.bz2"
         \\download_urls=(
@@ -438,10 +442,11 @@ fn addArmGmpBuild(b: *std.Build, board: Board) ArmGmpOutputs {
         \\cp "$install_dir/include/gmp.h" "$header_out"
         \\cp "$install_dir/lib/libgmp.a" "$lib_out"
     ;
+    const script = std.fmt.allocPrint(b.allocator, "{s}{s}{s}", .{ script_prefix, gmp_repo_source, script_suffix }) catch @panic("OOM");
 
     const cmd = b.addSystemCommand(&.{ "bash", "-euo", "pipefail", "-c", script, "--" });
     cmd.setCwd(b.path("."));
-    cmd.addFileInput(b.path("subprojects/gmp-6.2.1.wrap"));
+    cmd.addFileInput(build_common.upstreamPath(b, "subprojects/gmp-6.2.1.wrap"));
     cmd.addArg(@tagName(board));
     const header = cmd.addOutputFileArg("gmp.h");
     const library = cmd.addOutputFileArg("libgmp.a");
@@ -531,10 +536,11 @@ fn addFirmwareElfBuild(
     if (calcmodel_define) |define| cmd.addArg(b.fmt("-DCALCMODEL={s}", .{define}));
     if (phase == .final) cmd.addArg(b.fmt("-D{s}", .{config.qspi_macro}));
 
-    cmd.addArg("-Idep/decNumberICU");
-    cmd.addArg("-Isrc/c47");
-    cmd.addArg(b.fmt("-I{s}", .{firmwareBoardSourceDir(config.board)}));
-    cmd.addArg(b.fmt("-I{s}", .{firmwareSdkIncludeDir(config.board)}));
+    cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "dep/decNumberICU")}));
+    cmd.addArg("-Izig_bridge");
+    cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, "src/c47")}));
+    cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareBoardSourceDir(config.board))}));
+    cmd.addArg(b.fmt("-I{s}", .{build_common.upstreamPathString(b, firmwareSdkIncludeDir(config.board))}));
     cmd.addPrefixedDirectoryArg("-I", version_headers_dir);
     cmd.addPrefixedDirectoryArg("-I", generated.softmenu_catalogs.dirname());
     cmd.addPrefixedDirectoryArg("-I", generated.constant_pointers_h.dirname());
@@ -547,10 +553,10 @@ fn addFirmwareElfBuild(
         cmd.addFileInput(header);
     }
 
-    cmd.addArg(firmwareSdkSyscallsSource(config.board));
-    cmd.addArg(firmwareSdkStartupSource(config.board));
-    for (build_common.decnumber_sources) |source| cmd.addArg(b.fmt("dep/{s}", .{source}));
-    for (core_sources) |source| cmd.addArg(b.fmt("src/c47/{s}", .{source}));
+    cmd.addArg(build_common.upstreamPathString(b, firmwareSdkSyscallsSource(config.board)));
+    cmd.addArg(build_common.upstreamPathString(b, firmwareSdkStartupSource(config.board)));
+    for (build_common.decnumber_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("dep/{s}", .{source})));
+    for (core_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("src/c47/{s}", .{source})));
     flags_state_objects.addToCommand(cmd);
     keyboard_state_objects.addToCommand(cmd);
     memory_state_objects.addToCommand(cmd);
@@ -560,14 +566,14 @@ fn addFirmwareElfBuild(
     cmd.addArg("zig_bridge/state/stack_runtime_helpers.c");
     shortint_leaf_objects.addToCommand(cmd);
     stack_state_objects.addToCommand(cmd);
-    for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(source);
+    for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(build_common.upstreamPathString(b, source));
     cmd.addFileArg(generated.raster_fonts_data);
     cmd.addFileArg(generated.constant_pointers_c);
     cmd.addFileArg(generated.constant_pointers2_c);
 
     for (firmware_common_link_flags) |flag| cmd.addArg(flag);
     for (firmwareLinkFlags(config.board)) |flag| cmd.addArg(flag);
-    cmd.addPrefixedFileArg("-T", b.path(firmwareBoardLinkerScript(config.board)));
+    cmd.addPrefixedFileArg("-T", build_common.upstreamPath(b, firmwareBoardLinkerScript(config.board)));
     const map_name = switch (phase) {
         .pre => b.fmt("{s}_pre.map", .{config.program_name}),
         .final => b.fmt("{s}.map", .{config.map_name}),
@@ -626,7 +632,7 @@ fn addModifyCrcStep(
     input: std.Build.LazyPath,
     basename: []const u8,
 ) build_common.StepFile {
-    const cmd = b.addSystemCommand(&.{ "bash", "tools/modify_crc" });
+    const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/modify_crc") });
     cmd.setCwd(b.path("."));
     cmd.addArtifactArg(forcecrc32);
     cmd.addFileArg(input);
@@ -635,7 +641,7 @@ fn addModifyCrcStep(
 }
 
 fn addGenerateQspiCrcStep(b: *std.Build, input: std.Build.LazyPath, basename: []const u8) build_common.StepFile {
-    const cmd = b.addSystemCommand(&.{ "bash", "tools/gen_qspi_crc" });
+    const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/gen_qspi_crc") });
     cmd.setCwd(b.path("."));
     cmd.addFileArg(input);
     const output = cmd.addOutputFileArg(basename);
@@ -643,7 +649,7 @@ fn addGenerateQspiCrcStep(b: *std.Build, input: std.Build.LazyPath, basename: []
 }
 
 fn addPgmChecksumStep(b: *std.Build, input: std.Build.LazyPath, basename: []const u8) build_common.StepFile {
-    const cmd = b.addSystemCommand(&.{ "bash", "tools/add_pgm_chsum" });
+    const cmd = b.addSystemCommand(&.{ "bash", build_common.upstreamPathString(b, "tools/add_pgm_chsum") });
     cmd.setCwd(b.path("."));
     cmd.addFileArg(input);
     const output = cmd.addOutputFileArg(basename);
@@ -659,7 +665,7 @@ fn addReadelfSectionSizesStep(b: *std.Build, input: std.Build.LazyPath, basename
 }
 
 fn addFirmwareSizeReportStep(b: *std.Build, board: Board, section_sizes: std.Build.LazyPath) *std.Build.Step.Run {
-    const cmd = b.addSystemCommand(&.{ "python3", "tools/size.py" });
+    const cmd = b.addSystemCommand(&.{ "python3", build_common.upstreamPathString(b, "tools/size.py") });
     cmd.setCwd(b.path("."));
     if (board == .dmcp5) cmd.addArg("dmcp5");
     cmd.addFileArg(section_sizes);

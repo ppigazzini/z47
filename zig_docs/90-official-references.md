@@ -28,8 +28,8 @@ flowchart TD
 - [C47 GitLab project](https://gitlab.com/rpncalculators/c43): authoritative
   upstream source repository consumed by z47. The path still uses the
   historical `c43` name even though the project identifies itself as C47.
-- [README.md](../README.md): maintained z47 root entrypoint for the checked-in
-  repo.
+- [README.md](../README.md): imported upstream project overview carried at the
+  repo root.
 - [BUILD.md](../BUILD.md): imported upstream build-target summary carried at
   the repo root.
 - [Makefile](../Makefile): imported upstream human-facing command surface.

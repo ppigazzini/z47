@@ -12,6 +12,10 @@ surfaces. They are not the maintained z47 control plane.
 Build orchestration lives under `zig_build/`. Live runtime Zig now lives under
 `zig_src/`, and retained runtime bridge C lives under `zig_bridge/`.
 
+Imported upstream paths now route through `UPSTREAM_ROOT` in
+`.github/project/upstream-pin.env`; the current value `.` means the imported
+baseline still lives at repo root.
+
 ## Start Here
 
 - [zig_docs/README.md](zig_docs/README.md): maintainer doc index and reading
@@ -45,6 +49,7 @@ zig build generated
 zig build docs
 zig build dmcp
 zig build dist_linux
+bash .github/project/check-source-ownership.sh
 ```
 
 ## Detailed Topics

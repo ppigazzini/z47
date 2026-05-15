@@ -19,6 +19,9 @@ repo surfaces.
   overlay files such as `build.zig`, `zig_build/`, `zig_src/`,
   `zig_bridge/`, `.github/`, `zig_docs/`, this contributor note, and the root
   entrypoint docs.
+- `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=.` for the current
+  repo-root imported baseline, and `.github/project/source-ownership.txt`
+  records the tracked top-level ownership split used by CI.
 - `build.zig` is the sole supported build entrypoint for maintained z47 work.
 
 ## Branch And CI Policy
@@ -30,6 +33,21 @@ repo surfaces.
   then land on `main` or `github_ci` on GitHub to trigger CI
 - GitHub CI is the primary validation surface; local checks should reproduce
   the smallest relevant CI lane before broader pushes
+
+## Upstream Refresh Flow
+
+When auditing or rehearsing an `upstream/master` refresh, use a linked worktree
+instead of repurposing the active coding tree.
+
+1. `git fetch upstream master`
+2. `git worktree add --detach ../z47-upstream-refresh upstream/master`
+3. Do the upstream audit, diff, or rebase rehearsal inside
+  `../z47-upstream-refresh` while leaving the active tree on your topic branch.
+4. `git worktree remove ../z47-upstream-refresh` when the refresh rehearsal is
+  complete.
+
+Keep tracked-doc updates focused on the main repository tree. Do not document
+ignored local worktrees as if they were tracked repo surfaces.
 
 ## Supported Build Entry Points
 
@@ -63,6 +81,9 @@ surfaces. They are not the maintained z47 control plane.
 - docs-only maintainer changes: verify each key claim against the live files,
   then rerun `zig build --help --summary none` when target names or options are
   described
+- imported-root layout, top-level ownership, or source-manifest changes: rerun
+  `zig build --help --summary none`, then
+  `bash .github/project/check-source-ownership.sh`
 - build-graph or target-surface changes: rerun `zig build --help --summary
   none`, then the smallest affected target
 - rewrite or boundary changes: rerun the focused parity or regression lane for

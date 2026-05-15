@@ -37,7 +37,7 @@ pub fn prepareContext(
 ) !host_types.Context {
     const host_target = build_common.resolveBuildHostTarget(b);
     const common = try host_platform.resolveCommonConfig(b, host_target, raspberry, decnumber_fastmul);
-    const core_sources = try build_common.collectRelativeCFiles(b, "src/c47");
+    const core_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/c47"));
     const core_sources_without_shortint = try shortint_rewrites.filterCoreSources(b, core_sources);
     const core_sources_without_register_metadata = try register_metadata_rewrites.filterCoreSources(b, core_sources_without_shortint);
     const core_sources_without_state = try stack_rewrites.filterCoreSources(b, core_sources_without_register_metadata);
@@ -50,14 +50,14 @@ pub fn prepareContext(
     const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
     const generated = try host_generated.addGeneratorSteps(b, host_target, optimize, common);
 
-    const gtk_sources = try build_common.collectRelativeCFiles(b, "src/c47-gtk");
+    const gtk_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/c47-gtk"));
 
     return .{
         .host_target = host_target,
         .common = common,
         .core_sources = core_sources_without_keyboard_state,
         .gtk_sources = try filterSourceByName(b, gtk_sources, "gtkGui.c"),
-        .test_sources = try build_common.collectRelativeCFiles(b, "src/testSuite"),
+        .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
         .version_headers_dir = version_headers_dir,
         .generated = generated,
         .shortint_leaf_objects = shortint_rewrites.addRuntimeObjects(b, host_target, optimize, "host"),

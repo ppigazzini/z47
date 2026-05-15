@@ -562,12 +562,13 @@ pub fn main(init: std.process.Init) !void {
     defer args.deinit();
 
     _ = args.next();
-    const output_path = args.next() orelse {
-        std.debug.print("Usage: generateTestPgms <output file>\n", .{});
+    const parsed_args = parseUpstreamRoot(&args);
+    const output_path = parsed_args.first_positional orelse {
+        std.debug.print("Usage: generateTestPgms [--upstream-root <path>] <output file>\n", .{});
         std.process.exit(1);
     };
 
-    const preprocessed = try preprocessSource(allocator, init);
+    const preprocessed = try preprocessSource(allocator, init, parsed_args.upstream_root);
     defer allocator.free(preprocessed);
 
     var arena = std.heap.ArenaAllocator.init(allocator);
@@ -578,9 +579,42 @@ pub fn main(init: std.process.Init) !void {
     try writeOutput(output_path, &generator);
 }
 
-fn preprocessSource(allocator: std.mem.Allocator, init: std.process.Init) ![]u8 {
+const ParsedArgs = struct {
+    upstream_root: []const u8,
+    first_positional: ?[]const u8,
+};
+
+fn parseUpstreamRoot(args: *std.process.Args.Iterator) ParsedArgs {
+    const next_arg = args.next() orelse return .{ .upstream_root = ".", .first_positional = null };
+    if (!std.mem.eql(u8, next_arg, "--upstream-root")) {
+        return .{ .upstream_root = ".", .first_positional = next_arg };
+    }
+
+    const upstream_root = args.next() orelse {
+        std.debug.print("missing value for --upstream-root\n", .{});
+        std.process.exit(1);
+    };
+
+    return .{ .upstream_root = upstream_root, .first_positional = args.next() };
+}
+
+fn upstreamPath(allocator: std.mem.Allocator, upstream_root: []const u8, relative: []const u8) ![]const u8 {
+    if (std.mem.eql(u8, upstream_root, ".")) return allocator.dupe(u8, relative);
+    return std.fs.path.join(allocator, &.{ upstream_root, relative });
+}
+
+fn preprocessSource(allocator: std.mem.Allocator, init: std.process.Init, upstream_root: []const u8) ![]u8 {
     try std.Io.Dir.cwd().createDirPath(init.io, preprocess_dir);
     try writeFile(preprocess_header_path, fake_c47_header);
+
+    const decnumber_include = try upstreamPath(allocator, upstream_root, "dep/decNumberICU");
+    defer allocator.free(decnumber_include);
+
+    const c47_include = try upstreamPath(allocator, upstream_root, "src/c47");
+    defer allocator.free(c47_include);
+
+    const source_path = try upstreamPath(allocator, upstream_root, preprocess_source_path);
+    defer allocator.free(source_path);
 
     var argv = try std.ArrayList([]const u8).initCapacity(allocator, 0);
     defer argv.deinit(allocator);
@@ -611,10 +645,10 @@ fn preprocessSource(allocator: std.mem.Allocator, init: std.process.Init) ![]u8 
         "-I",
         preprocess_dir,
         "-I",
-        "dep/decNumberICU",
+        decnumber_include,
         "-I",
-        "src/c47",
-        preprocess_source_path,
+        c47_include,
+        source_path,
     });
 
     const result = try std.process.run(allocator, init.io, .{

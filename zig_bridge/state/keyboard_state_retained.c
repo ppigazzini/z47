@@ -1,34 +1,25 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
-#define Z47_EXTERNAL_SET_LAST_KEY_CODE 1
-#define Z47_EXTERNAL_KEYBOARD_TWEAK_REPLACEMENTS 1
+#define setLastKeyCode z47_keyboard_state_retained_setLastKeyCode
+#define caseReplacements z47_keyboard_state_retained_caseReplacements
+#define keyReplacements z47_keyboard_state_retained_keyReplacements
+#define numlockReplacements z47_keyboard_state_retained_numlockReplacements
 
 #if defined(PC_BUILD)
-#define Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME z47_keyboard_state_retained_processKeyAction
-#define Z47_KEYBOARD_FN_KEY_ENTER_NAME z47_keyboard_state_retained_fnKeyEnter
-#define Z47_KEYBOARD_FN_KEY_EXIT_NAME z47_keyboard_state_retained_fnKeyExit
-#define Z47_KEYBOARD_FN_KEY_CC_NAME z47_keyboard_state_retained_fnKeyCC
-#define Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME z47_keyboard_state_retained_fnKeyBackspace
-#define Z47_KEYBOARD_FN_KEY_UP_NAME z47_keyboard_state_retained_fnKeyUp
-#define Z47_KEYBOARD_FN_KEY_DOWN_NAME z47_keyboard_state_retained_fnKeyDown
-#define Z47_KEYBOARD_FN_KEY_DOTD_NAME z47_keyboard_state_retained_fnKeyDotD
+#define processKeyAction z47_keyboard_state_retained_processKeyAction
+#define fnKeyEnter z47_keyboard_state_retained_fnKeyEnter
+#define fnKeyExit z47_keyboard_state_retained_fnKeyExit
+#define fnKeyCC z47_keyboard_state_retained_fnKeyCC
+#define fnKeyBackspace z47_keyboard_state_retained_fnKeyBackspace
+#define fnKeyUp z47_keyboard_state_retained_fnKeyUp
+#define fnKeyDown z47_keyboard_state_retained_fnKeyDown
+#define fnKeyDotD z47_keyboard_state_retained_fnKeyDotD
 #endif
 
 #define btnPressed z47_keyboard_state_retained_btnPressed
 #define btnClicked z47_keyboard_state_retained_btnClicked
 
 #include "../../src/c47/keyboard.c"
-
-#if defined(PC_BUILD)
-#undef Z47_KEYBOARD_FN_KEY_DOTD_NAME
-#undef Z47_KEYBOARD_FN_KEY_DOWN_NAME
-#undef Z47_KEYBOARD_FN_KEY_UP_NAME
-#undef Z47_KEYBOARD_FN_KEY_BACKSPACE_NAME
-#undef Z47_KEYBOARD_FN_KEY_CC_NAME
-#undef Z47_KEYBOARD_FN_KEY_EXIT_NAME
-#undef Z47_KEYBOARD_FN_KEY_ENTER_NAME
-#undef Z47_KEYBOARD_PROCESS_KEY_ACTION_NAME
-#endif
 
 #undef btnClicked
 #undef btnPressed
@@ -42,3 +33,18 @@ extern void btnClicked(void *unused, void *data);
 #endif
 
 #include "../../src/c47/c47Extensions/keyboardTweak.c"
+
+#undef numlockReplacements
+#undef keyReplacements
+#undef caseReplacements
+#undef setLastKeyCode
+#if defined(PC_BUILD)
+#undef fnKeyDotD
+#undef fnKeyDown
+#undef fnKeyUp
+#undef fnKeyBackspace
+#undef fnKeyCC
+#undef fnKeyExit
+#undef fnKeyEnter
+#undef processKeyAction
+#endif

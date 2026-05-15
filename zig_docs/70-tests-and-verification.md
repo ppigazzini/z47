@@ -34,7 +34,8 @@ flowchart TD
 | Contract surface | Source of truth | Focused verification surface | First rerun lane |
 | --- | --- | --- | --- |
 | toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | live `zig version` plus pinned manifest check | `zig build --help --summary none` after confirming the pinned version |
-| imported upstream pin and repo-root import contract | `../.github/project/upstream-pin.env` | ancestry check and source-manifest job | `git merge-base --is-ancestor <pinned-upstream> HEAD` |
+| imported upstream pin and repo-root import contract | `../.github/project/upstream-pin.env` | upstream-branch reachability check plus source-manifest job | `git fetch <upstream-url> <upstream-branch> && git merge-base --is-ancestor <pinned-upstream> FETCH_HEAD` |
+| tracked top-level ownership contract | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | source-ownership guard script | `git fetch <upstream-url> <upstream-branch> && bash .github/project/check-source-ownership.sh` |
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
 | short-integer leaf rewrite parity | `../zig_src/leaf/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
 | stack-state rewrite parity | `../zig_src/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
@@ -56,9 +57,15 @@ flowchart TD
 
 ## Which Lane To Run First
 
-- docs-only maintainer doc change rooted in `zig_docs/`, `README.md`, or
+- docs-only maintainer doc change rooted in `zig_docs/`, `CONTRIBUTING.md`, or
   `ZIG-README.md`: verify every key claim against live files, then rerun
-  `zig build --help --summary none` if target names or options are described
+  `zig build --help --summary none` if target names or options are described;
+  rerun `bash .github/project/check-source-ownership.sh` as well when the
+  change touches imported-root or tracked top-level ownership claims
+- imported-root layout, source-manifest, or top-level ownership change:
+  `zig build --help --summary none`, then
+  `bash .github/project/check-source-ownership.sh`, then the smallest affected
+  host or firmware target
 - build-graph step rename, option change, or output-path change:
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
@@ -93,34 +100,35 @@ When a change touches multiple active surfaces and you want the closest local
 match to the Linux CI lane, use this order after exporting the xlsxio helper:
 
 1. `bash .github/project/check-zig-c-boundaries.sh`
-2. `zig build logical_shortint_parity --summary none`
-3. `zig build stack_state_parity --summary none`
-4. `zig build register_metadata_parity --summary none`
-5. `zig build flags_parity --summary none`
-6. `zig build memory_parity --summary none`
-7. `zig build program_serialization_parity --summary none`
-8. `zig build calc_state_parity --summary none`
-9. `zig build keyboard_state_parity --summary none`
-10. `zig build both --summary none`
-11. `zig build simulator_smoke --summary none`
-12. `zig build testPgms --summary none`
-13. `xvfb-run --auto-servernum zig build test --summary none`
-14. `zig build generated --summary none`
-15. `zig build both_asan --summary none`
-16. `xvfb-run --auto-servernum zig build test_asan --summary none`
-17. `zig build docs --summary none`
-18. `zig build dmcp --summary none`
-19. `zig build dmcpr47 --summary none`
-20. `zig build dmcp5 --summary none`
-21. `zig build dmcp5r47 --summary none`
-22. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
-23. `zig build dist_dmcp --summary none`
-24. `zig build dist_dmcp_pkg1 --summary none`
-25. `zig build dist_dmcp_pkg2 --summary none`
-26. `zig build dist_dmcp_pkg3 --summary none`
-27. `zig build dist_dmcpr47 --summary none`
-28. `zig build dist_dmcp5 --summary none`
-29. `zig build dist_dmcp5r47 --summary none`
+2. `bash .github/project/check-source-ownership.sh`
+3. `zig build logical_shortint_parity --summary none`
+4. `zig build stack_state_parity --summary none`
+5. `zig build register_metadata_parity --summary none`
+6. `zig build flags_parity --summary none`
+7. `zig build memory_parity --summary none`
+8. `zig build program_serialization_parity --summary none`
+9. `zig build calc_state_parity --summary none`
+10. `zig build keyboard_state_parity --summary none`
+11. `zig build both --summary none`
+12. `zig build simulator_smoke --summary none`
+13. `zig build testPgms --summary none`
+14. `xvfb-run --auto-servernum zig build test --summary none`
+15. `zig build generated --summary none`
+16. `zig build both_asan --summary none`
+17. `xvfb-run --auto-servernum zig build test_asan --summary none`
+18. `zig build docs --summary none`
+19. `zig build dmcp --summary none`
+20. `zig build dmcpr47 --summary none`
+21. `zig build dmcp5 --summary none`
+22. `zig build dmcp5r47 --summary none`
+23. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
+24. `zig build dist_dmcp --summary none`
+25. `zig build dist_dmcp_pkg1 --summary none`
+26. `zig build dist_dmcp_pkg2 --summary none`
+27. `zig build dist_dmcp_pkg3 --summary none`
+28. `zig build dist_dmcpr47 --summary none`
+29. `zig build dist_dmcp5 --summary none`
+30. `zig build dist_dmcp5r47 --summary none`
 
 ## Generated Artifact Diff Contract
 

@@ -1,0 +1,41 @@
+# z47 tracked source ownership manifest
+#
+# Entries are repo-root paths. Keep every tracked top-level path classified in
+# exactly one of the first two sections.
+
+[z47-owned]
+.github
+.gitignore
+CONTRIBUTING.md
+ZIG-README.md
+build.zig
+zig_bridge
+zig_build
+zig_docs
+zig_src
+
+[imported-upstream]
+.gitattributes
+.gitlab-ci.yml
+.gitmodules
+.readthedocs.yaml
+BUILD.md
+COPYING
+LIBRARY
+Makefile
+PROGRAMS
+README.md
+dep
+dist
+distS
+docs
+meson.build
+meson_options.txt
+res
+src
+subprojects
+tag2ver.py
+tools
+
+[approved-z47-additions-under-imported]
+# Keep this section empty unless a reviewed exception is required.

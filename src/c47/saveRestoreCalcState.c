@@ -1703,7 +1703,6 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
 
 static void doSave(uint16_t saveType);
-void z47_calc_state_save_sections(void);
 
   void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
   #if defined(DMCP_BUILD)
@@ -1724,7 +1723,15 @@ void fnSave(uint16_t saveMode) {
 void doSave(uint16_t saveType) {
   printStatus(0, errorMessages[SAVING_STATE_FILE], force);
   ioFilePath_t path;
+  char tmpString[3000];           //The concurrent use of the global tmpString
+                                  //as target does not work while the source is at
+                                  //tmpRegisterString = tmpString + START_REGISTER_VALUE;
+                                  //Temporary solution is to use a local variable of sufficient length for the target.
+
   int ret;
+  calcRegister_t regist;
+  uint32_t i;
+  char yy1[35], yy2[35];
 
 #if defined(DMCP_BUILD)
   // Don't pass through if the power is insufficient
@@ -1757,21 +1764,6 @@ void doSave(uint16_t saveType) {
       return;
     }
   }
-
-  z47_calc_state_save_sections();
-
-  ioFileClose();
-  temporaryInformation = TI_SAVED;
-}
-
-void z47_calc_state_save_sections(void) {
-  char tmpString[3000];           //The concurrent use of the global tmpString
-                                  //as target does not work while the source is at
-                                  //tmpRegisterString = tmpString + START_REGISTER_VALUE;
-                                  //Temporary solution is to use a local variable of sufficient length for the target.
-  calcRegister_t regist;
-  uint32_t i;
-  char yy1[35], yy2[35];
 
   // SAV file version number
   //printHalfSecUpdate_Integer(force+1, "Version",configFileVersion);
@@ -2039,7 +2031,10 @@ void z47_calc_state_save_sections(void) {
         sprintf(tmpString, "printerLineDelay\n%"           PRIu16 "\n",     printerState.delay);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "END_OTHER_PARAM\n");                                                           save(tmpString, strlen(tmpString));
 
+  ioFileClose();
+
   hourGlassIconEnabled = false;
+  temporaryInformation = TI_SAVED;
 }
 
 
@@ -3207,39 +3202,6 @@ END_CONFIG:
     #endif // LOADDEBUG
     clearScreen(211); // implicit forceSBupdate();
   }
-
-void z47_calc_state_reset_load_context(void) {
-  savedCalcModel = 0;
-  loadedVersion = 0;
-}
-
-void z47_calc_state_set_saved_calc_model(uint16_t calcModelToSet) {
-  savedCalcModel = calcModelToSet;
-}
-
-uint16_t z47_calc_state_get_saved_calc_model(void) {
-  return savedCalcModel;
-}
-
-void z47_calc_state_set_loaded_version(uint32_t version) {
-  loadedVersion = version;
-}
-
-uint32_t z47_calc_state_get_loaded_version(void) {
-  return loadedVersion;
-}
-
-uint32_t z47_calc_state_get_version_allowed(void) {
-  return VersionAllowed;
-}
-
-uint32_t z47_calc_state_get_config_file_version(void) {
-  return configFileVersion;
-}
-
-bool_t z47_calc_state_restore_one_section(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, bool_t allowUserKeys) {
-  return restoreOneSection(loadMode, s, n, d, allowUserKeys);
-}
 
 
 
