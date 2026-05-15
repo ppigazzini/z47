@@ -244,9 +244,10 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export XVFB="xvfb-run --auto-servernum"
           zig build -Doptimize=ReleaseFast dist_linux
-          zig build -Ddmcp-package=1 dist_dmcp
-          zig build -Ddmcp-package=2 dist_dmcp
-          zig build -Ddmcp-package=3 dist_dmcp
+          zig build dist_dmcp
+          zig build dist_dmcp_pkg1
+          zig build dist_dmcp_pkg2
+          zig build dist_dmcp_pkg3
           zig build dist_dmcpr47
           zig build dist_dmcp5
           zig build dist_dmcp5r47
@@ -311,14 +312,16 @@ jobs:
           echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
           echo "upstream_short=$upstream_short" >> "$GITHUB_OUTPUT"
           echo "artifact_name=z47-linux-$upstream_short" >> "$GITHUB_OUTPUT"
+          echo "firmware_artifact_name=z47-firmware-$upstream_short" >> "$GITHUB_OUTPUT"
       - name: Stage Linux simulator artifact
         shell: bash
         run: |
           set -euo pipefail
           release_dir="ci-artifacts/release"
+          firmware_dir="ci-artifacts/firmware"
           package_dir="$release_dir/c47-linux"
-          rm -rf "$release_dir"
-          mkdir -p "$release_dir"
+          rm -rf "$release_dir" "$firmware_dir"
+          mkdir -p "$release_dir" "$firmware_dir"
           unzip -q zig-out/dist/c47-linux.zip -d "$release_dir"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
@@ -364,10 +367,33 @@ jobs:
           package_dir=$(basename "$package_dir")
           artifact_name=${{ steps.linux_package_meta.outputs.artifact_name }}
           EOF
+
+          cp zig-out/dist/c47-dmcp.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg1.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg2.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg3.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp5.zip "$firmware_dir/"
+          find "$firmware_dir" -maxdepth 1 -type f | sed "s#^$firmware_dir/##" | sort > "$firmware_dir/FIRMWARE-CONTENTS.txt"
+          cat > "$firmware_dir/BUILD-METADATA.txt" <<EOF
+          ref=${GITHUB_REF}
+          sha=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          upstream_url=${{ steps.linux_package_meta.outputs.upstream_url }}
+          upstream_commit=${{ steps.linux_package_meta.outputs.upstream_commit }}
+          firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
+          artifact_name=${{ steps.linux_package_meta.outputs.firmware_artifact_name }}
+          EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.linux_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.linux_package_meta.outputs.firmware_artifact_name }}
+          path: ci-artifacts/firmware/
           if-no-files-found: error
           retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -1009,7 +1035,8 @@ jobs:
           set -euo pipefail
           smoke_root="$(cygpath -u "$RUNNER_TEMP")/c47-windows-smoke"
           rm -rf "$smoke_root"
-          cp -R ci-artifacts/release/c47-windows "$smoke_root"
+          package_dir="ci-artifacts/release/c47-windows"
+          cp -R "$package_dir" "$smoke_root"
           (
             cd "$smoke_root"
             smoke_launcher() {

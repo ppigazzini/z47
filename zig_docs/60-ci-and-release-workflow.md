@@ -119,6 +119,10 @@ Purpose:
 - build the published Linux host archive with
   `zig build -Doptimize=ReleaseFast dist_linux` so the uploaded package matches
   the desktop release-size contract
+- build the C47 SwissMicros firmware zips through `dist_dmcp`,
+  `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`, and
+  upload those zip outputs as a second Linux artifact without changing the host
+  package publication shape
 - run the checked-in Xvfb-backed simulator smoke lane for both host
   simulators before the broader grouped host test lane
 - run a Linux simulator smoke launch from the packaged archive
@@ -165,6 +169,9 @@ Current artifact classes include:
 - Linux generated-artifact proof from `linux-host-parity`
 - packaged simulator artifacts named `z47-linux-<upstream_short>`,
   `z47-macos-<upstream_short>`, and `z47-windows-<upstream_short>`
+- Linux SwissMicros firmware artifact named `z47-firmware-<upstream_short>`
+  containing `c47-dmcp.zip`, `c47-dmcp-pkg1.zip`, `c47-dmcp-pkg2.zip`,
+  `c47-dmcp-pkg3.zip`, and `c47-dmcp5.zip`
 - the `upstream-drift` report artifact from the scheduled drift workflow
 
 Linux packaging also stages explicit build metadata, source provenance, and
@@ -188,6 +195,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | host package | run the matching `dist_<host>` target on the matching host OS; use `-Doptimize=ReleaseFast` when reproducing the published desktop host artifact size contract |
+| Linux firmware artifact publication | run `zig build dist_dmcp && zig build dist_dmcp_pkg1 && zig build dist_dmcp_pkg2 && zig build dist_dmcp_pkg3 && zig build dist_dmcp5`, then copy those zips into the firmware artifact staging directory |
 
 ## Upstream Drift Workflow
 
