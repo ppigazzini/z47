@@ -1,5 +1,5 @@
 const runtime = @import("keyboard_state_parity_runtime.zig");
-const shared = @import("keyboard_state_shared.zig").implementation(runtime);
+const shared = @import("z47_keyboard_state_shared").implementation(runtime);
 
 pub export fn processKeyAction(item: i16) void {
     shared.processKeyAction(item);

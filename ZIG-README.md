@@ -9,6 +9,9 @@ documentation.
 The imported `Makefile` and Meson files remain audit and parity-reference
 surfaces. They are not the maintained z47 control plane.
 
+Build orchestration lives under `zig_build/`. Live runtime Zig now lives under
+`zig_src/`, and retained runtime bridge C lives under `zig_bridge/`.
+
 ## Start Here
 
 - [zig_docs/README.md](zig_docs/README.md): maintainer doc index and reading

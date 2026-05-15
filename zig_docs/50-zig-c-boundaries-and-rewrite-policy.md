@@ -13,8 +13,8 @@ z47 uses three explicit implementation modes.
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
 | existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
-| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, runtime boundaries `zig_build/leaf/shortint_runtime.zig`, `zig_build/state/stack_runtime.zig`, `zig_build/state/register_metadata_runtime.zig`, and `zig_build/state/flags_runtime.zig` |
-| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators, `zig_build/leaf/` short-integer logical slice, and `zig_build/state/` stack-state, register-metadata, and system-flag slices |
+| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, runtime boundaries `zig_src/leaf/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, `zig_src/state/register_metadata_runtime.zig`, and `zig_src/state/flags_runtime.zig` |
+| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/` and `zig_src/state/` |
 
 ## Current Surface Classification
 
@@ -29,14 +29,15 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with approved `@cImport` boundary | raster font generator entrypoint |
-| `../zig_build/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer logical slice |
-| `../zig_build/state/stack.zig` and `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
-| `../zig_build/state/register_metadata.zig` and `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
-| `../zig_build/state/flags.zig` and `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
-| `../zig_build/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
-| `../zig_build/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
-| `../zig_build/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
-| `../zig_build/state/flags_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the system-flag slice |
+| `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer logical slice |
+| `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
+| `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
+| `../zig_src/state/flags.zig` plus `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
+| `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
+| `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
+| `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
+| `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
+| `../zig_src/state/flags_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the system-flag slice |
 
 ## Approved Checked-In Boundary Files
 
@@ -53,10 +54,15 @@ Current approved direct `extern` symbol files:
 
 - `zig_build/tools/generate_catalogs.zig`
 - `zig_build/tools/generate_testpgms.zig`
-- `zig_build/leaf/shortint_runtime.zig`
-- `zig_build/state/flags_runtime.zig`
-- `zig_build/state/register_metadata_runtime.zig`
-- `zig_build/state/stack_runtime.zig`
+- `zig_src/leaf/shortint_runtime.zig`
+- `zig_src/state/calc_state_runtime.zig`
+- `zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig`
+- `zig_src/state/flags_runtime.zig`
+- `zig_src/state/keyboard_state_runtime.zig`
+- `zig_src/state/memory_runtime.zig`
+- `zig_src/state/program_serialization_runtime.zig`
+- `zig_src/state/register_metadata_runtime.zig`
+- `zig_src/state/stack_runtime.zig`
 
 No other checked-in Zig file is allowed to introduce `@cImport` or direct
 `extern fn`, `extern const`, or `extern var` usage without updating the
@@ -71,7 +77,7 @@ Current guard behavior:
 1. load allowlisted files from `zig-c-boundaries.txt`
 2. verify each allowlisted file still matches the expected `@cImport` or
    direct-`extern` pattern
-3. scan all tracked `*.zig` files in the repository
+3. scan all current working-tree `*.zig` files that exist in the repository
 4. fail if a checked-in Zig file contains an unapproved `@cImport` or direct
    `extern` binding
 
@@ -85,12 +91,12 @@ The current checked-in manual Zig rewrite slices are intentionally narrow.
 Verified slices:
 
 - deterministic generators under `../zig_build/tools/`
-- short-integer logical leaf modules under `../zig_build/leaf/`
+- short-integer logical leaf modules under `../zig_src/leaf/`
 - stack mutation plus undo snapshot or restore ownership under
-  `../zig_build/state/`
-- register-metadata accessors under `../zig_build/state/`
+  `../zig_src/state/`
+- register-metadata accessors under `../zig_src/state/`
 - exported system-flag accessor and change-tracking logic under
-  `../zig_build/state/`
+  `../zig_src/state/`
 
 Not yet rewritten in broad verified form:
 

@@ -557,7 +557,7 @@ fn addFirmwareElfBuild(
     calc_state_objects.addToCommand(cmd);
     program_serialization_objects.addToCommand(cmd);
     register_metadata_objects.addToCommand(cmd);
-    cmd.addArg("zig_build/state/stack_runtime_helpers.c");
+    cmd.addArg("zig_bridge/state/stack_runtime_helpers.c");
     shortint_leaf_objects.addToCommand(cmd);
     stack_state_objects.addToCommand(cmd);
     for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(source);

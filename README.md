@@ -8,8 +8,8 @@ The authoritative upstream source repository is
 historical `c43` name even though the project identifies itself as C47.
 
 The repo root carries a pinned imported upstream working tree plus the z47-owned
-control plane under `build.zig`, `zig_build/`, `.github/`, `zig_docs/`, and the
-root maintainer docs.
+control plane under `build.zig`, `zig_build/`, `zig_src/`, `zig_bridge/`,
+`.github/`, `zig_docs/`, and the root maintainer docs.
 
 `build.zig` is the sole supported maintained build entry point. The imported
 `Makefile` and Meson files remain audit and parity-reference surfaces, not the
