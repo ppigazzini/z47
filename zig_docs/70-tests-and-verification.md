@@ -74,7 +74,10 @@ flowchart TD
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
   target on the matching host OS; use `-Doptimize=ReleaseFast` when
-  reproducing the published desktop host archive contract
+  reproducing the published desktop host archive contract; for Linux firmware
+  publication changes, use `dist_dmcp` plus the dedicated `dist_dmcp_pkg*`
+  steps instead of repeating `-Ddmcp-package` on the generic `dist_dmcp`
+  target
 - packaged host runtime change: after the matching `dist_<host>` target,
   unpack a fresh `zig-out/dist/<archive>.zip` and run the packaged simulator
   from that extraction instead of reusing an older `___TMP` tree; when the
@@ -111,12 +114,13 @@ match to the Linux CI lane, use this order after exporting the xlsxio helper:
 20. `zig build dmcp5 --summary none`
 21. `zig build dmcp5r47 --summary none`
 22. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
-23. `zig build -Ddmcp-package=1 dist_dmcp --summary none`
-24. `zig build -Ddmcp-package=2 dist_dmcp --summary none`
-25. `zig build -Ddmcp-package=3 dist_dmcp --summary none`
-26. `zig build dist_dmcpr47 --summary none`
-27. `zig build dist_dmcp5 --summary none`
-28. `zig build dist_dmcp5r47 --summary none`
+23. `zig build dist_dmcp --summary none`
+24. `zig build dist_dmcp_pkg1 --summary none`
+25. `zig build dist_dmcp_pkg2 --summary none`
+26. `zig build dist_dmcp_pkg3 --summary none`
+27. `zig build dist_dmcpr47 --summary none`
+28. `zig build dist_dmcp5 --summary none`
+29. `zig build dist_dmcp5r47 --summary none`
 
 ## Generated Artifact Diff Contract
 

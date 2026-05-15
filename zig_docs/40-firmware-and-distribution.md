@@ -102,6 +102,11 @@ Current package entrypoints:
 The distribution surface produces one host archive per supported desktop host
 OS and one firmware archive per supported hardware or model combination.
 
+The local `zig build dist_*` steps still emit generic zip names under
+`zig-out/dist/`. The Linux CI lane now uploads the C47 SwissMicros firmware zip
+outputs as a separate firmware artifact while keeping those checked-in build
+surface names unchanged.
+
 ## Host-Specific Packaging Notes
 
 - `dist_linux`, `dist_macos`, and `dist_windows` fail explicitly on the wrong
@@ -122,6 +127,9 @@ OS and one firmware archive per supported hardware or model combination.
   executables.
 - The Linux and macOS package lanes publish ReleaseFast simulator bundles
   together with the checked-out `res/` assets and generated notice metadata.
+- The Linux CI lane also uploads a separate firmware artifact containing the
+  C47 SwissMicros package zips produced by `dist_dmcp`, `dist_dmcp_pkg1`,
+  `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`.
 - On Linux and macOS, the packaging helper strips both staged simulator copies
   before archiving them, so a freshly extracted desktop host package can differ
   in hash from `zig-out/bin/c47` or `zig-out/bin/r47` while still carrying the
@@ -136,10 +144,14 @@ Examples:
 
 - `zig build -Ddmcp-package=1 dmcp`
 - `zig build -Ddmcp-package=2 dmcpr47`
-- `zig build -Ddmcp-package=3 dist_dmcp`
+- `zig build dist_dmcp_pkg3`
 
 Use the dedicated fixed-package steps when you want the package number encoded
 in the step name instead of passed as an option.
+
+The Linux CI firmware artifact keeps the default C47 DMCP package from
+`dist_dmcp` and uses `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, and `dist_dmcp_pkg3`
+so each smaller package variant is preserved instead of overwritten.
 
 ## Change Rules
 
