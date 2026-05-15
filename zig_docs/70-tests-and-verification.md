@@ -52,7 +52,7 @@ flowchart TD
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
 | docs surface under `docs/code` | `../docs/code/`, `../docs/code/requirements.txt` | Sphinx and Doxygen lane | `zig build docs --summary none` |
 | firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | smallest affected firmware target | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
-| host or firmware packages | `../zig_build/dist.zig`, `../zig_build/zig_dist.py` | matching distribution target plus a fresh archive extraction when packaged runtime behavior matters | `zig build dist_linux --summary none` or matching host or firmware package target |
+| host or firmware packages | `../zig_build/dist.zig`, `../zig_build/zig_dist.py` | matching distribution target plus a fresh archive extraction when packaged runtime behavior matters | `zig build -Doptimize=ReleaseFast dist_linux --summary none` for Linux host-release parity, or the matching host or firmware package target on the relevant platform |
 
 ## Which Lane To Run First
 
@@ -73,10 +73,13 @@ flowchart TD
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
-  target on the matching host OS
-- packaged host runtime change: after the matching `dist_<host>` target, unpack
-  a fresh `zig-out/dist/<archive>.zip` and run the packaged simulator from that
-  extraction instead of reusing an older `___TMP` tree
+  target on the matching host OS; use `-Doptimize=ReleaseFast` when
+  reproducing the published desktop host archive contract
+- packaged host runtime change: after the matching `dist_<host>` target,
+  unpack a fresh `zig-out/dist/<archive>.zip` and run the packaged simulator
+  from that extraction instead of reusing an older `___TMP` tree; when the
+  published host artifact size matters, pair that extraction with
+  `-Doptimize=ReleaseFast`
 - host package portability change on x86 or x86_64: verify the matching
   `dist_<host>` target from a fresh archive extraction and confirm the packaged
   simulator does not inherit runner-native CPU instructions from the build host
@@ -107,7 +110,7 @@ match to the Linux CI lane, use this order after exporting the xlsxio helper:
 19. `zig build dmcpr47 --summary none`
 20. `zig build dmcp5 --summary none`
 21. `zig build dmcp5r47 --summary none`
-22. `zig build dist_linux --summary none`
+22. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
 23. `zig build -Ddmcp-package=1 dist_dmcp --summary none`
 24. `zig build -Ddmcp-package=2 dist_dmcp --summary none`
 25. `zig build -Ddmcp-package=3 dist_dmcp --summary none`

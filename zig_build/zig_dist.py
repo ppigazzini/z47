@@ -257,9 +257,15 @@ def package_host(flavor: str, zip_out: Path, stage_name: str, c47_bin: Path, r47
     elif flavor == "linux":
         strip_tool = shutil.which("strip")
         if strip_tool is not None:
-            run_command([strip_tool, str(stage_dir / c47_bin.name)])
+            for host_bin in (c47_bin, r47_bin):
+                run_command([strip_tool, str(stage_dir / host_bin.name)])
         copy_file(REPO_ROOT / "res/c47.xpm", stage_dir / "res/c47.xpm")
-    elif flavor != "macos":
+    elif flavor == "macos":
+        strip_tool = shutil.which("strip")
+        if strip_tool is not None:
+            for host_bin in (c47_bin, r47_bin):
+                run_command([strip_tool, str(stage_dir / host_bin.name)])
+    else:
         fail(f"unsupported host package flavor: {flavor}")
 
     zip_tree(zip_out, stage_dir, stage_name)
