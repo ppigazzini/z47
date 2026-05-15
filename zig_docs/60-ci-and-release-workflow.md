@@ -116,6 +116,9 @@ Purpose:
   `keyboard_state_parity`, `both`, `simulator_smoke`, `testPgms`, `test`,
   `generated`, `both_asan`, `test_asan`, `docs`, firmware targets, and Linux
   distribution packaging
+- build the published Linux host archive with
+  `zig build -Doptimize=ReleaseFast dist_linux` so the uploaded package matches
+  the desktop release-size contract
 - run the checked-in Xvfb-backed simulator smoke lane for both host
   simulators before the broader grouped host test lane
 - run a Linux simulator smoke launch from the packaged archive
@@ -130,6 +133,8 @@ Purpose:
 - build and test the host simulator surface on macOS
 - run `logical_shortint_parity`, `stack_state_parity`,
   `register_metadata_parity`, `flags_parity`, `both`, `test`, and `generated`
+- rebuild `both` in `ReleaseFast` before the smoke and staging steps so the
+  uploaded macOS archive uses release host binaries
 - run a macOS simulator smoke launch from the built simulator artifact
 - stage and upload a macOS package artifact
 
@@ -145,6 +150,7 @@ Purpose:
 - build and test the host simulator surface on Windows under MSYS2 UCRT64
 - run `logical_shortint_parity`, `stack_state_parity`,
   `register_metadata_parity`, `flags_parity`, `both`, `test`, and `generated`
+- rebuild `both` in `ReleaseFast` before the direct smoke and staging lanes
 - run a direct simulator smoke launch
 - build a relocatable Windows package with GTK runtime assets, launcher files,
   runtime caches, and notice metadata
@@ -164,6 +170,9 @@ Current artifact classes include:
 Linux packaging also stages explicit build metadata, source provenance, and
 runtime notice inventory. Windows packaging additionally records staged GTK
 runtime directories, runtime tools, launcher files, and DLL notice inventory.
+The published desktop host artifacts now stage `ReleaseFast` simulator
+binaries, and the Unix package helper strips the staged simulator copies before
+archiving them.
 
 ## Local Reproduction Map
 
@@ -178,7 +187,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
-| host package | run the matching `dist_<host>` target on the matching host OS |
+| host package | run the matching `dist_<host>` target on the matching host OS; use `-Doptimize=ReleaseFast` when reproducing the published desktop host artifact size contract |
 
 ## Upstream Drift Workflow
 
