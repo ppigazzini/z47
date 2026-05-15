@@ -20,6 +20,8 @@ typedef struct {
   uint32_t read_line_calls;
   uint32_t restore_calls;
   uint32_t write_save_sections_calls;
+  uint32_t save_calc_calls;
+  uint32_t restore_calc_calls;
   uint16_t last_restore_load_mode;
   uint16_t last_restore_s;
   uint16_t last_restore_n;
@@ -56,6 +58,8 @@ void oracle_doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16
 void oracle_fnLoad(uint16_t loadMode);
 void oracle_fnSaveAuto(uint16_t unusedButMandatoryParameter);
 void oracle_fnLoadAuto(void);
+void oracle_saveCalc(void);
+void oracle_restoreCalc(void);
 
 void z47_calc_state_reset_load_context(void);
 void z47_calc_state_set_saved_calc_model(uint16_t saved_calc_model);
@@ -84,6 +88,8 @@ void z47_calc_state_runtime_show_saving_status(void);
 void z47_calc_state_runtime_show_loading_status(void);
 void z47_calc_state_runtime_write_save_sections(void);
 void z47_calc_state_runtime_finish_load_ui(uint16_t refreshCode);
+void z47_calc_state_runtime_save_calc(void);
+void z47_calc_state_runtime_restore_calc(void);
 
 extern uint8_t lastErrorCode;
 extern uint8_t previousErrorCode;

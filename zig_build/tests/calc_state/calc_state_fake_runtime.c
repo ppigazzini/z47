@@ -30,6 +30,8 @@ static uint32_t unwindCalls = 0;
 static uint32_t readLineCalls = 0;
 static uint32_t restoreCalls = 0;
 static uint32_t writeSaveSectionsCalls = 0;
+static uint32_t saveCalcCalls = 0;
+static uint32_t restoreCalcCalls = 0;
 static uint16_t lastRestoreLoadMode = 0;
 static uint16_t lastRestoreS = 0;
 static uint16_t lastRestoreN = 0;
@@ -66,6 +68,8 @@ void calcStateParityReset(void) {
   readLineCalls = 0;
   restoreCalls = 0;
   writeSaveSectionsCalls = 0;
+  saveCalcCalls = 0;
+  restoreCalcCalls = 0;
   lastRestoreLoadMode = 0;
   lastRestoreS = 0;
   lastRestoreN = 0;
@@ -135,6 +139,8 @@ void calcStateParityCapture(calc_state_snapshot_t *snapshot) {
   snapshot->read_line_calls = readLineCalls;
   snapshot->restore_calls = restoreCalls;
   snapshot->write_save_sections_calls = writeSaveSectionsCalls;
+  snapshot->save_calc_calls = saveCalcCalls;
+  snapshot->restore_calc_calls = restoreCalcCalls;
   snapshot->last_restore_load_mode = lastRestoreLoadMode;
   snapshot->last_restore_s = lastRestoreS;
   snapshot->last_restore_n = lastRestoreN;
@@ -314,4 +320,12 @@ void z47_calc_state_runtime_finish_load_ui(uint16_t refreshCode) {
   finishLoadUiCalls++;
   finishLoadUiRefreshCode = refreshCode;
   screenUpdatingMode &= (uint8_t)~SCRUPD_MANUAL_MENU;
+}
+
+void z47_calc_state_runtime_save_calc(void) {
+  saveCalcCalls++;
+}
+
+void z47_calc_state_runtime_restore_calc(void) {
+  restoreCalcCalls++;
 }
