@@ -9,9 +9,9 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_build/state/keyboard_state_runtime_helpers.c");
-        cmd.addArg("zig_build/state/keyboard_state_overlay.c");
-        cmd.addArg("zig_build/state/keyboard_state_retained.c");
+        cmd.addArg("zig_bridge/state/keyboard_state_runtime_helpers.c");
+        cmd.addArg("zig_bridge/state/keyboard_state_overlay.c");
+        cmd.addArg("zig_bridge/state/keyboard_state_retained.c");
         cmd.addFileArg(self.keyboard_state.getEmittedBin());
     }
 };
@@ -175,7 +175,7 @@ pub fn addHostRuntimeObjectsWithOptions(
     config: HostModuleConfig,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
-    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_build/state/keyboard_state.zig"), options);
+    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/state/keyboard_state.zig"), options);
     configureHostModule(object.root_module, config);
     return .{ .keyboard_state = object };
 }
@@ -198,7 +198,7 @@ pub fn addFirmwareRuntimeObjectsWithOptions(
     config: FirmwareModuleConfig,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
-    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_build/state/keyboard_state.zig"), options);
+    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/state/keyboard_state.zig"), options);
     configureFirmwareModule(object.root_module, config);
     return .{ .keyboard_state = object };
 }
@@ -224,7 +224,12 @@ pub fn addParityExecutable(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 ) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObjectWithIncludeDir(b, target, optimize, "parity", b.path("zig_build/state/keyboard_state_parity.zig"), .{});
+    const runtime_object = addRuntimeObjectWithIncludeDir(b, target, optimize, "parity", b.path("zig_build/tests/keyboard_state/keyboard_state_parity.zig"), .{});
+    runtime_object.root_module.addImport("z47_keyboard_state_shared", b.createModule(.{
+        .root_source_file = b.path("zig_src/state/keyboard_state_shared.zig"),
+        .target = target,
+        .optimize = optimize,
+    }));
     runtime_object.root_module.addIncludePath(b.path("zig_build/tests/keyboard_state"));
     const exe = b.addExecutable(.{
         .name = "keyboard-state-parity",

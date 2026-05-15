@@ -55,15 +55,16 @@ Current public host simulator steps:
 
 The host build graph still compiles imported upstream C sources for the main
 simulator and GTK surfaces, but it now replaces the imported `stack.c` owner
-with `../zig_build/state/stack.zig` plus the explicit helper seam in
-`../zig_build/state/stack_runtime_helpers.c`, replaces the exported register
+with `../zig_src/state/stack.zig` plus the explicit helper seam in
+`../zig_bridge/state/stack_runtime_helpers.c`, replaces the exported register
 metadata accessors from `registers.c` with
-`../zig_build/state/register_metadata.zig`, and replaces the exported
+`../zig_src/state/register_metadata.zig`, and replaces the exported
 system-flag accessor and change-tracking surface from `flags.c` with
-`../zig_build/state/flags.zig` plus retained wrapper sources. The current host
+`../zig_src/state/flags.zig` plus retained wrapper sources under
+`../zig_bridge/state/`. The current host
 lane also replaces the broader public keyboard command-entry surface with
-`../zig_build/state/keyboard_state.zig` while freestanding firmware keeps the
-retained owner through `../zig_build/state/keyboard_state_retained.c`.
+`../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
+retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
 
 The retained GTK boundary is still explicit: the imported
 `../src/c47-gtk/gtkGui.c` path enters the host build through

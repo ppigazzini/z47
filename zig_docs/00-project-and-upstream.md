@@ -22,9 +22,8 @@ current upstream pin are already clear.
 - The imported `Makefile`, `meson.build`, and related upstream files remain in
   the tree as audit and rebase reference surfaces.
 - The current verified Zig-owned code slices are the deterministic generators
-  under `zig_build/tools/`, the short-integer logical leaf rewrite under
-  `zig_build/leaf/`, and the live stack or undo owner rewrite under
-  `zig_build/state/`.
+  under `zig_build/tools/`, the live runtime Zig slices under `zig_src/`, and
+  the retained runtime bridge shims under `zig_bridge/`.
 
 ## What This Repository Is
 
@@ -36,6 +35,8 @@ In practice, that means this repo owns:
 
 - the repo-root `build.zig` control plane
 - the Zig build-domain code under `zig_build/`
+- the live runtime Zig owner paths under `zig_src/`
+- the retained runtime bridge or shim paths under `zig_bridge/`
 - GitHub Actions workflows, pins, and packaging helpers under `.github/`
 - the maintained developer-doc set under `zig_docs/`
 
@@ -78,7 +79,9 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 | Surface | Owner | Purpose |
 | --- | --- | --- |
 | `build.zig` | z47 overlay | repo-root option parsing and top-level step registration |
-| `zig_build/` | z47 overlay | host, firmware, distribution, generator, and rewrite build domains |
+| `zig_build/` | z47 overlay | host, firmware, distribution, generator, and rewrite build-registration domains |
+| `zig_src/` | z47 overlay | live runtime Zig owners for parity-gated rewrite slices |
+| `zig_bridge/` | z47 overlay | retained helper C shims paired with live Zig runtime slices |
 | `.github/` and `.github/project/` | z47 overlay | CI workflows, toolchain pin, upstream pin, boundary guard, package helpers |
 | `zig_docs/` | z47 maintained docs | stable developer documentation for the live repo |
 | `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `meson_options.txt`, `tools/` | imported upstream baseline | canonical calculator sources, assets, legacy build graph, and helper tools |
@@ -92,9 +95,10 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 | `dep/decNumberICU` | retained C dependency compiled by Zig | vendored decimal arithmetic library remains explicit |
 | GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependencies remain explicit |
 | `zig_build/tools/` generator entrypoints | manual Zig executables with narrow C boundaries | deterministic generators now run from Zig-owned entrypoints |
-| `zig_build/leaf/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling logical leaf modules have focused parity validation |
-| `zig_build/state/` stack rewrite slice | manual Zig rewrite with parity coverage | the exported `stack.c` owner now lives in Zig for the live host and firmware graphs |
-| `zig_build/leaf/shortint_runtime.zig`, `zig_build/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
+| `zig_src/leaf/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling logical leaf modules have focused parity validation |
+| `zig_src/state/` stateful rewrite slices | manual Zig rewrite with parity coverage | the exported stack, register-metadata, flags, memory, serialization, calc-state, and keyboard helper owners now live in Zig for the live graphs |
+| `zig_bridge/state/` retained helper shims | existing C compiled by Zig | retained runtime helper seams stay explicit beside the live Zig owners they support |
+| `zig_src/leaf/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
 
 ## Runtime And Build Boundary Rules
 

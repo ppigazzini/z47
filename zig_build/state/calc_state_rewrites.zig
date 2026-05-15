@@ -4,8 +4,8 @@ pub const RuntimeObjects = struct {
     calc_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_build/state/calc_state_runtime_helpers.c");
-        cmd.addArg("zig_build/state/calc_state_retained.c");
+        cmd.addArg("zig_bridge/state/calc_state_runtime_helpers.c");
+        cmd.addArg("zig_bridge/state/calc_state_retained.c");
         cmd.addFileArg(self.calc_state.getEmittedBin());
     }
 };
@@ -33,7 +33,7 @@ fn addRuntimeObject(
     return b.addObject(.{
         .name = b.fmt("{s}-calc-state", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/state/calc_state.zig"),
+            .root_source_file = b.path("zig_src/state/calc_state.zig"),
             .target = target,
             .optimize = optimize,
             .strip = options.strip,
@@ -93,8 +93,8 @@ pub fn addToModule(
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
-    module.addCSourceFile(.{ .file = b.path("zig_build/state/calc_state_runtime_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_build/state/calc_state_retained.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/calc_state_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/calc_state_retained.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 

@@ -78,8 +78,15 @@ require_allowlisted_match() {
 check_tree() {
     local violations=0
     local file
+    local path
 
-    mapfile -t zig_files < <(cd "$repo_root" && git ls-files -- '*.zig')
+    mapfile -t zig_files < <(
+        cd "$repo_root"
+        git ls-files --cached --modified --others --exclude-standard --deduplicate -- '*.zig' |
+            while IFS= read -r path; do
+                [[ -f "$path" ]] && printf '%s\n' "$path"
+            done
+    )
 
     for file in "${cimport_allowed[@]}"; do
         require_allowlisted_match "$file" '@cImport[[:space:]]*\(' '@cImport' || violations=1

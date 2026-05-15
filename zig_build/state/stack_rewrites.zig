@@ -35,7 +35,7 @@ fn addRuntimeObject(
     return b.addObject(.{
         .name = b.fmt("{s}-stack-state", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/state/stack.zig"),
+            .root_source_file = b.path("zig_src/state/stack.zig"),
             .target = target,
             .optimize = optimize,
             .strip = options.strip,

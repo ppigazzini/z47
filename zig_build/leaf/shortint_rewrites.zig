@@ -75,9 +75,9 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_build/leaf/logical_mask.zig", options),
-        .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_build/leaf/logical_count_bits.zig", options),
-        .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_build/leaf/logical_set_clear_flip_bits.zig", options),
+        .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/leaf/logical_mask.zig", options),
+        .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/leaf/logical_count_bits.zig", options),
+        .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/leaf/logical_set_clear_flip_bits.zig", options),
     };
 }
 

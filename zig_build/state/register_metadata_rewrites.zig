@@ -4,9 +4,9 @@ pub const RuntimeObjects = struct {
     register_metadata: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_build/state/register_metadata_runtime_helpers.c");
-        cmd.addArg("zig_build/state/registers_retained.c");
-        cmd.addArg("zig_build/state/registers_retained_wrappers.c");
+        cmd.addArg("zig_bridge/state/register_metadata_runtime_helpers.c");
+        cmd.addArg("zig_bridge/state/registers_retained.c");
+        cmd.addArg("zig_bridge/state/registers_retained_wrappers.c");
         cmd.addFileArg(self.register_metadata.getEmittedBin());
     }
 };
@@ -34,7 +34,7 @@ fn addRuntimeObject(
     return b.addObject(.{
         .name = b.fmt("{s}-register-metadata", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/state/register_metadata.zig"),
+            .root_source_file = b.path("zig_src/state/register_metadata.zig"),
             .target = target,
             .optimize = optimize,
             .strip = options.strip,
@@ -94,9 +94,9 @@ pub fn addToModule(
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
-    module.addCSourceFile(.{ .file = b.path("zig_build/state/register_metadata_runtime_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_build/state/registers_retained.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_build/state/registers_retained_wrappers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/register_metadata_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/registers_retained.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/registers_retained_wrappers.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 
@@ -119,7 +119,7 @@ pub fn addParityExecutable(
     exe.root_module.addIncludePath(b.path("zig_build/tests/register_metadata"));
     exe.root_module.addIncludePath(b.path("zig_build/tests/stack_state"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_fake_runtime.c"), .flags = &.{"-DZ47_REGISTER_METADATA_RUNTIME=1"} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/state/register_metadata_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/register_metadata_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/register_metadata/register_metadata_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/register_metadata/register_metadata_parity.c"), .flags = &.{} });
     exe.root_module.addObject(runtime_object);
