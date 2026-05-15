@@ -12,6 +12,7 @@ Use this page when a task changes the public maintainer contract documented in
 | --- | --- | --- |
 | `zig_docs/` | stable maintainer docs for the live repo | build, rewrite, CI, package, or verification contracts changed |
 | `../README.md` | top-level project entrypoint | maintainers need a root docs pointer or short project-level note |
+| `../CONTRIBUTING.md` | contributor workflow contract | branch policy, focused verification, or doc-promotion rules changed |
 | `../ZIG-README.md` | short Zig build quick start | the main Zig entrypoint or doc routing changed |
 
 ## Promotion Workflow
@@ -39,6 +40,8 @@ Use one promotion workflow when a non-trivial change lands.
 ## When To Update Which Page
 
 - update `../README.md` when the top-level maintainer doc entrypoint changed
+- update `../CONTRIBUTING.md` when branch policy, verification guidance, or
+  maintainer promotion rules changed
 - update `../ZIG-README.md` when the short Zig quick start changed
 - update [README.md](README.md) when the maintainer doc index, read order, or
   page-routing contract changed

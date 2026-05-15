@@ -49,6 +49,35 @@ jobs:
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
 
+  zig-master-compatibility:
+    name: Zig master compatibility monitor
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: master_toolchain
+        name: Load monitored Zig master metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_MASTER_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install monitored Zig master snapshot
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.master_toolchain.outputs.version }}
+      - name: Verify resolved monitored Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.master_toolchain.outputs.version }}"
+      - name: Probe build graph and narrow parity lane under monitored Zig master
+        shell: bash
+        run: |
+          set -euo pipefail
+          zig build --help --summary none
+          zig build logical_shortint_parity --summary none
+
   source-manifest:
     name: Verify imported upstream pin and source manifest
     runs-on: ubuntu-latest
