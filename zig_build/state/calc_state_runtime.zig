@@ -65,6 +65,8 @@ pub extern fn z47_calc_state_runtime_show_saving_status() void;
 pub extern fn z47_calc_state_runtime_show_loading_status() void;
 pub extern fn z47_calc_state_runtime_write_save_sections() void;
 pub extern fn z47_calc_state_runtime_finish_load_ui(refresh_code: u16) void;
+pub extern fn z47_calc_state_runtime_save_calc() void;
+pub extern fn z47_calc_state_runtime_restore_calc() void;
 
 pub inline fn resetLoadContext() void {
     z47_calc_state_reset_load_context();
@@ -168,4 +170,12 @@ pub inline fn writeSaveSections() void {
 
 pub inline fn finishLoadUi(refresh_code: u16) void {
     z47_calc_state_runtime_finish_load_ui(refresh_code);
+}
+
+pub inline fn saveCalcBackup() void {
+    z47_calc_state_runtime_save_calc();
+}
+
+pub inline fn restoreCalcBackup() void {
+    z47_calc_state_runtime_restore_calc();
 }

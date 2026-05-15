@@ -11,14 +11,16 @@ static int reportMismatch(const char *caseName, const calc_state_snapshot_t *exp
   }
 
   fprintf(stderr,
-          "%s mismatch\n"
-          "  expected: load=%u save=%u restore=%u save_sections=%u status=%u/%u allow=%d ti=%u finish=%u/%u cached=%d file=%s\n"
-          "  actual:   load=%u save=%u restore=%u save_sections=%u status=%u/%u allow=%d ti=%u finish=%u/%u cached=%d file=%s\n",
+      "%s mismatch\n"
+      "  expected: load=%u save=%u restore=%u save_sections=%u backup=%u/%u status=%u/%u allow=%d ti=%u finish=%u/%u cached=%d file=%s\n"
+      "  actual:   load=%u save=%u restore=%u save_sections=%u backup=%u/%u status=%u/%u allow=%d ti=%u finish=%u/%u cached=%d file=%s\n",
           caseName,
           expected->opened_load_path,
           expected->opened_save_path,
           expected->restore_calls,
           expected->write_save_sections_calls,
+      expected->save_calc_calls,
+      expected->restore_calc_calls,
           expected->show_saving_status_calls,
           expected->show_loading_status_calls,
           expected->last_allow_user_keys,
@@ -31,6 +33,8 @@ static int reportMismatch(const char *caseName, const calc_state_snapshot_t *exp
           actual->opened_save_path,
           actual->restore_calls,
           actual->write_save_sections_calls,
+          actual->save_calc_calls,
+          actual->restore_calc_calls,
           actual->show_saving_status_calls,
           actual->show_loading_status_calls,
           actual->last_allow_user_keys,
@@ -40,6 +44,36 @@ static int reportMismatch(const char *caseName, const calc_state_snapshot_t *exp
           actual->cached_dynamic_menu,
           actual->last_state_file_opened);
   return 1;
+}
+
+static int runSaveCalcEntryPointCase(void) {
+  calc_state_snapshot_t expected;
+  calc_state_snapshot_t actual;
+
+  calcStateParityReset();
+  oracle_saveCalc();
+  calcStateParityCapture(&expected);
+
+  calcStateParityReset();
+  saveCalc();
+  calcStateParityCapture(&actual);
+
+  return reportMismatch("saveCalc entrypoint", &expected, &actual);
+}
+
+static int runRestoreCalcEntryPointCase(void) {
+  calc_state_snapshot_t expected;
+  calc_state_snapshot_t actual;
+
+  calcStateParityReset();
+  oracle_restoreCalc();
+  calcStateParityCapture(&expected);
+
+  calcStateParityReset();
+  restoreCalc();
+  calcStateParityCapture(&actual);
+
+  return reportMismatch("restoreCalc entrypoint", &expected, &actual);
 }
 
 static int runFnSaveStateWrapperCase(void) {
@@ -162,6 +196,8 @@ static int runFnSaveAutoHostNoopCase(void) {
 int main(void) {
   int failures = 0;
 
+  failures += runSaveCalcEntryPointCase();
+  failures += runRestoreCalcEntryPointCase();
   failures += runFnSaveStateWrapperCase();
   failures += runDoLoadStateFileCase();
   failures += runFnLoadStateWrapperCase();

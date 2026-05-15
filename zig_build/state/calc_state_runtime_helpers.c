@@ -4,7 +4,17 @@
 
 #include "c47.h"
 
+void z47_calc_state_retained_saveCalc(void);
+void z47_calc_state_retained_restoreCalc(void);
 void z47_calc_state_save_sections(void);
+
+void z47_calc_state_runtime_save_calc(void) {
+  z47_calc_state_retained_saveCalc();
+}
+
+void z47_calc_state_runtime_restore_calc(void) {
+  z47_calc_state_retained_restoreCalc();
+}
 
 bool_t z47_calc_state_runtime_check_power(void) {
 #if defined(DMCP_BUILD)

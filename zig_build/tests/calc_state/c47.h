@@ -62,6 +62,8 @@ enum {
   SCRUPD_MANUAL_MENU = 0x04,
 };
 
+void saveCalc(void);
+void restoreCalc(void);
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType);
 void fnSave(uint16_t saveMode);
 void fnLoad(uint16_t loadMode);
