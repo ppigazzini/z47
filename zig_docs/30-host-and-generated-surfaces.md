@@ -12,6 +12,7 @@ The current host-facing build graph owns all of these surfaces through
 `../zig_build/host/`:
 
 - desktop simulator builds for C47 and R47
+- live X11 simulator smoke coverage for C47 and R47
 - focused rewrite-parity executables for the live Zig slices
 - grouped host regression lanes
 - native Zig C-sanitized host builds and tests
@@ -47,6 +48,8 @@ Current public host simulator steps:
 - `zig build sim`: builds the C47 simulator
 - `zig build simr47`: builds the R47 simulator
 - `zig build both`: builds both host simulators
+- `zig build simulator_smoke`: builds both host simulators and runs the
+  Xvfb-backed LCD, keyboard, and pointer smoke probe
 - `zig build both_asan`: builds both host simulators with native Zig C
   sanitizing enabled
 
@@ -57,9 +60,17 @@ with `../zig_build/state/stack.zig` plus the explicit helper seam in
 metadata accessors from `registers.c` with
 `../zig_build/state/register_metadata.zig`, and replaces the exported
 system-flag accessor and change-tracking surface from `flags.c` with
-`../zig_build/state/flags.zig` plus retained wrapper sources. The presence of a
-Zig-owned build graph still does not mean the host simulator is already a
-pure-Zig application.
+`../zig_build/state/flags.zig` plus retained wrapper sources. The current host
+lane also replaces the broader public keyboard command-entry surface with
+`../zig_build/state/keyboard_state.zig` while freestanding firmware keeps the
+retained owner through `../zig_build/state/keyboard_state_retained.c`.
+
+The retained GTK boundary is still explicit: the imported
+`../src/c47-gtk/gtkGui.c` path enters the host build through
+`../zig_build/host/gtk_gui_retained.c` and
+`../zig_build/host/gtk_button_signal_wrappers.c`. The presence of a Zig-owned
+build graph still does not mean the host simulator is already a pure-Zig
+application.
 
 ## Host Test Steps
 
@@ -69,6 +80,10 @@ Current grouped host test steps:
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
 - `zig build flags_parity`
+- `zig build memory_parity`
+- `zig build program_serialization_parity`
+- `zig build calc_state_parity`
+- `zig build keyboard_state_parity`
 - `zig build test`
 - `zig build test_asan`
 - `zig build repeattest`
@@ -79,9 +94,13 @@ register_metadata_parity` does the same for the live register-metadata
 accessors against the imported `registers.c` oracle surface in the host lane.
 `zig build flags_parity` does the same for the exported system-flag accessor
 and change-tracking surface against the imported `flags.c` oracle, including
-refresh-state, clear-status-bar, and integer-base side effects. `zig build test`,
-`zig build test_asan`, and `zig build repeattest` cover the broader retained
-host regression surface after those focused slices pass.
+refresh-state, clear-status-bar, and integer-base side effects. `zig build
+memory_parity`, `zig build program_serialization_parity`, `zig build
+calc_state_parity`, and `zig build keyboard_state_parity` extend the focused
+host parity coverage across the live stateful Zig slices, including the
+simulator-only backup path and the broader public keyboard command entrypoints.
+`zig build test`, `zig build test_asan`, and `zig build repeattest` cover the
+broader retained host regression surface after those focused slices pass.
 
 `zig build test`, `zig build test_asan`, and `zig build repeattest` run both:
 
