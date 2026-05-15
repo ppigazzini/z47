@@ -40,9 +40,13 @@ flowchart TD
 | stack-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
 | register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | system-flag rewrite parity | `../zig_build/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
+| memory-helper rewrite parity | `../zig_build/state/`, `../zig_build/tests/memory/` | focused parity executable | `zig build memory_parity --summary none` |
+| program-serialization rewrite parity | `../zig_build/state/`, `../zig_build/tests/program_serialization/` | focused parity executable | `zig build program_serialization_parity --summary none` |
 | calc-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
+| keyboard command-surface rewrite parity | `../zig_build/state/`, `../zig_build/tests/keyboard_state/` | focused parity executable covering the broader public keyboard command entrypoints | `zig build keyboard_state_parity --summary none` |
 | keyboard stop-statusbar mask regression | `../zig_build/state/keyboard_state_overlay.c`, `../zig_build/state/keyboard_state_retained.c`, `../zig_build/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
-| host simulator UI boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build plus live X11 smoke when input or LCD paths move | `zig build sim --summary none` |
+| host simulator build boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build surface | `zig build sim --summary none` |
+| host simulator live behavior boundary | `../zig_build/host/`, `../zig_build/host/simulator_smoke.sh`, `../src/c47-gtk/` | live X11 smoke covering LCD, keyboard, and pointer behavior for both simulators | `zig build simulator_smoke --summary none` |
 | host core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
 | native Zig C sanitizer lane | `../zig_build/host/steps.zig` | sanitized host build and tests | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
@@ -59,14 +63,13 @@ flowchart TD
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
 - calc-state or simulator backup-entrypoint change: `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
-- keyboard input or statusbar-flag handling change: `zig build keyboard_statusbar_flags_regression --summary none`, then `zig build test --summary none`
+- keyboard input, command-surface, or statusbar-flag change: `zig build keyboard_state_parity --summary none`; if the slice is limited to the stop-statusbar helper, rerun `zig build keyboard_statusbar_flags_regression --summary none`; then rerun `zig build simulator_smoke --summary none` and `zig build test --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
 - host simulator UI, GTK callback, or desktop platform-glue change:
-  `zig build sim --summary none`; if the change touches LCD paint or pointer
-  or keyboard dispatch, rerun the narrow live X11 smoke probe used during
-  diagnosis before broader lanes
+  `zig build sim --summary none`; if the change touches LCD paint, pointer
+  routing, or keyboard dispatch, rerun `zig build simulator_smoke --summary none`
 - host core or test-surface change:
   `zig build test --summary none`
-- boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, or `zig build flags_parity --summary none` for the touched slice
+- boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
@@ -83,21 +86,34 @@ flowchart TD
 When a change touches multiple active surfaces and you want the closest local
 match to the Linux CI lane, use this order after exporting the xlsxio helper:
 
-1. `zig build logical_shortint_parity --summary none`
-2. `zig build stack_state_parity --summary none`
-3. `zig build register_metadata_parity --summary none`
-4. `zig build flags_parity --summary none`
-5. `zig build both --summary none`
-6. `zig build test --summary none`
-7. `zig build generated --summary none`
-8. `zig build both_asan --summary none`
-9. `zig build test_asan --summary none`
-10. `zig build docs --summary none`
-11. `zig build dmcp --summary none`
-12. `zig build dmcpr47 --summary none`
-13. `zig build dmcp5 --summary none`
-14. `zig build dmcp5r47 --summary none`
-15. `zig build dist_linux --summary none`
+1. `bash .github/project/check-zig-c-boundaries.sh`
+2. `zig build logical_shortint_parity --summary none`
+3. `zig build stack_state_parity --summary none`
+4. `zig build register_metadata_parity --summary none`
+5. `zig build flags_parity --summary none`
+6. `zig build memory_parity --summary none`
+7. `zig build program_serialization_parity --summary none`
+8. `zig build calc_state_parity --summary none`
+9. `zig build keyboard_state_parity --summary none`
+10. `zig build both --summary none`
+11. `zig build simulator_smoke --summary none`
+12. `zig build testPgms --summary none`
+13. `xvfb-run --auto-servernum zig build test --summary none`
+14. `zig build generated --summary none`
+15. `zig build both_asan --summary none`
+16. `xvfb-run --auto-servernum zig build test_asan --summary none`
+17. `zig build docs --summary none`
+18. `zig build dmcp --summary none`
+19. `zig build dmcpr47 --summary none`
+20. `zig build dmcp5 --summary none`
+21. `zig build dmcp5r47 --summary none`
+22. `zig build dist_linux --summary none`
+23. `zig build -Ddmcp-package=1 dist_dmcp --summary none`
+24. `zig build -Ddmcp-package=2 dist_dmcp --summary none`
+25. `zig build -Ddmcp-package=3 dist_dmcp --summary none`
+26. `zig build dist_dmcpr47 --summary none`
+27. `zig build dist_dmcp5 --summary none`
+28. `zig build dist_dmcp5r47 --summary none`
 
 ## Generated Artifact Diff Contract
 

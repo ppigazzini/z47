@@ -109,6 +109,11 @@ extern int16_t lastNimBufferItem;
 extern int refreshScreenCalls;
 extern int16_t lastRefreshScreenId;
 extern int retainedProcessKeyActionCalls;
+extern int retainedFnKeyEnterCalls;
+extern int retainedFnKeyExitCalls;
+extern int retainedFnKeyCCCalls;
+extern int retainedFnKeyBackspaceCalls;
+extern int retainedFnKeyUpCalls;
 extern int retainedFnKeyDotDCalls;
 extern int retainedFnKeyDownCalls;
 
@@ -116,6 +121,7 @@ bool_t getSystemFlag(int32_t flag);
 void clearSystemFlag(uint32_t flag);
 void keyboardStateReset(void);
 void keyboardStateSetFlag(int32_t flag, bool_t enabled);
+uint32_t keyboardStateFlags(void);
 void runFunction(int16_t item);
 void addItemToNimBuffer(int16_t item);
 void refreshScreen(int16_t reason);
@@ -125,6 +131,12 @@ bool_t keyReplacements(int16_t item, int16_t *item1, bool_t NL, bool_t FSHIFT, b
 uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT, bool_t GSHIFT);
 void setLastKeyCode(int key);
 void processKeyAction(int16_t item);
+void fnKeyEnter(uint16_t unusedButMandatoryParameter);
+void fnKeyExit(uint16_t unusedButMandatoryParameter);
+void fnKeyCC(uint16_t unusedButMandatoryParameter);
+void fnKeyBackspace(uint16_t unusedButMandatoryParameter);
+void fnKeyUp(uint16_t unusedButMandatoryParameter);
+void fnKeyDown(uint16_t unusedButMandatoryParameter);
 void fnKeyDotD(uint16_t unusedButMandatoryParameter);
 
 bool_t oracle_caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut);
@@ -132,6 +144,12 @@ bool_t oracle_keyReplacements(int16_t item, int16_t *item1, bool_t NL, bool_t FS
 uint16_t oracle_numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT, bool_t GSHIFT);
 void oracle_setLastKeyCode(int key);
 void oracle_processKeyAction(int16_t item);
+void oracle_fnKeyEnter(uint16_t unusedButMandatoryParameter);
+void oracle_fnKeyExit(uint16_t unusedButMandatoryParameter);
+void oracle_fnKeyCC(uint16_t unusedButMandatoryParameter);
+void oracle_fnKeyBackspace(uint16_t unusedButMandatoryParameter);
+void oracle_fnKeyUp(uint16_t unusedButMandatoryParameter);
+void oracle_fnKeyDown(uint16_t unusedButMandatoryParameter);
 void oracle_fnKeyDotD(uint16_t unusedButMandatoryParameter);
 
 #endif
