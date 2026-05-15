@@ -3968,7 +3968,7 @@ void fnAview(uint16_t regist) {
 void fnPrompt(uint16_t regist) {
   _view(regist);
   #if defined(IR_PRINTING)
-    printPrompt(regist);
+    printInputPrompt(ITM_PROMPT, regist);
   #endif //IR_PRINTING
   fnStopProgram(NOPARAM);
 }

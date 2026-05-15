@@ -1549,17 +1549,34 @@ void _getRegisterLabel(uint16_t registerNo, char *label) {
 }
 
 //
-//  PROMPT printing
+//  INPUT and PROMPT printing
 //
-void printPrompt(uint16_t regist) {
+void printInputPrompt(uint16_t func, uint16_t regist) {
   if((getSystemFlag(FLAG_TRACE) || getSystemFlag(FLAG_NORM)) && getSystemFlag(FLAG_PRTACT)) {   // Trace or Norm mode and printer active
     if(getSystemFlag(FLAG_PRTEN) || ((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP))) { // No printing in a program if PRTEN cleared
-      printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
-      print_lf();
-      #if defined(PC_BUILD)
-        printf("**[DL]** Trace: %s\n", tmpString);
-        fflush(stdout);
-      #endif // PC_BUILD
+      if(func == ITM_PROMPT) {
+        printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
+        print_lf();
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
+        #endif // PC_BUILD
+      }
+      else {  // ITM_INPUT
+        char label[16];
+        uint16_t len;
+        _getRegisterLabel(regist, label);
+        len = strlen(label);
+        label[len++] = '?';
+        label[len] = 0;
+        printReg(regist, label, false, LINE_ASIS, false);  // Print register left justified with name header
+        print_lf();
+        #if defined(PC_BUILD)
+          printf("**[DL]** Trace: %s\n", tmpString);
+          fflush(stdout);
+        #endif // PC_BUILD
+        tmpString[0] = 0;
+      }
     }
   }
 }
@@ -1580,7 +1597,7 @@ void printViewAview(uint16_t func, uint16_t regist) {
           fflush(stdout);
         #endif // PC_BUILD
       }
-      else {
+      else {  // ITM_AVIEW
         printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
         print_lf();
         #if defined(PC_BUILD)
@@ -1757,6 +1774,9 @@ void printTrace(int16_t func, uint16_t param) {
           }
           strcat(tmpString, traceBuffer);
         }
+        else if((func == ITM_MENU) && (dynamicMenuItem >= 0)) {
+          xcopy(tmpString, programmableMenu.itemName[dynamicMenuItem], 16);
+        }
         uint16_t width = stringGlyphLength(tmpString) * 7 - 1;
         if(printerColumn + width > PAPER_WIDTH) {
           printAdvance(0);
@@ -1782,7 +1802,7 @@ void printTrace(int16_t func, uint16_t param) {
           fflush(stdout);
         #endif // PC_BUILD
       }
-      else {
+      else if (func >= 0) {  // Don't trace menu names during program execution
         printJustified(tmpString);    // Current step
         #if defined(PC_BUILD)
           printf("**[DL]** Trace: %s\n", tmpString);
