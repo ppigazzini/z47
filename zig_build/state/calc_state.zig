@@ -3,6 +3,21 @@ const runtime = @import("calc_state_runtime.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
+fn saveCalcHost() callconv(.c) void {
+    runtime.saveCalcBackup();
+}
+
+fn restoreCalcHost() callconv(.c) void {
+    runtime.restoreCalcBackup();
+}
+
+comptime {
+    if (!is_dmcp_build) {
+        @export(&saveCalcHost, .{ .name = "saveCalc" });
+        @export(&restoreCalcHost, .{ .name = "restoreCalc" });
+    }
+}
+
 const HeaderInfo = struct {
     saved_calc_model: u16 = 0,
     loaded_version: u32 = 0,

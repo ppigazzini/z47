@@ -40,6 +40,7 @@ flowchart TD
 | stack-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
 | register-metadata rewrite parity | `../zig_build/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | system-flag rewrite parity | `../zig_build/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
+| calc-state rewrite parity | `../zig_build/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
 | keyboard stop-statusbar mask regression | `../zig_build/state/keyboard_state_overlay.c`, `../zig_build/state/keyboard_state_retained.c`, `../zig_build/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
 | host simulator UI boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build plus live X11 smoke when input or LCD paths move | `zig build sim --summary none` |
 | host core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
@@ -57,6 +58,7 @@ flowchart TD
 - build-graph step rename, option change, or output-path change:
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
+- calc-state or simulator backup-entrypoint change: `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
 - keyboard input or statusbar-flag handling change: `zig build keyboard_statusbar_flags_regression --summary none`, then `zig build test --summary none`
 - host simulator UI, GTK callback, or desktop platform-glue change:
   `zig build sim --summary none`; if the change touches LCD paint or pointer

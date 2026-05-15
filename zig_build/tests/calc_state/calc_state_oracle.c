@@ -184,3 +184,11 @@ void oracle_fnLoadAuto(void) {
   oracle_doLoad(LM_ALL, 0, 0, 0, autoLoad);
   z47_calc_state_runtime_finish_load_ui(95);
 }
+
+void oracle_saveCalc(void) {
+  z47_calc_state_runtime_save_calc();
+}
+
+void oracle_restoreCalc(void) {
+  z47_calc_state_runtime_restore_calc();
+}
