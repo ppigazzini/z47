@@ -243,7 +243,7 @@ jobs:
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export XVFB="xvfb-run --auto-servernum"
-          zig build dist_linux
+          zig build -Doptimize=ReleaseFast dist_linux
           zig build -Ddmcp-package=1 dist_dmcp
           zig build -Ddmcp-package=2 dist_dmcp
           zig build -Ddmcp-package=3 dist_dmcp
@@ -357,6 +357,7 @@ jobs:
           linux_runtime_library_inventory_file=repo-notices/linux/LINUX-RUNTIME-LIBRARIES.txt
           linux_runtime_notice_summary_file=repo-notices/linux/LINUX-LIBRARY-NOTICES.txt
           linux_runtime_notice_dir=repo-notices/linux/licenses
+          host_optimize=ReleaseFast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
@@ -490,6 +491,14 @@ jobs:
           zig build both
           zig build test
           zig build generated
+      - name: Build macOS release simulators for smoke and package lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(brew shellenv)"
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+          zig build -Doptimize=ReleaseFast both
       - name: Run macOS simulator smoke launch
         shell: bash
         run: |
@@ -571,6 +580,7 @@ jobs:
           macos_runtime_library_inventory_file=repo-notices/macos/MACOS-RUNTIME-LIBRARIES.txt
           macos_runtime_notice_summary_file=repo-notices/macos/MACOS-LIBRARY-NOTICES.txt
           macos_runtime_notice_dir=repo-notices/macos/licenses
+          host_optimize=ReleaseFast
           zig_version=${{ steps.toolchain.outputs.version }}
           runner_os=${RUNNER_OS}
           runner_arch=${RUNNER_ARCH}
