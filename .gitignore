@@ -3,6 +3,12 @@
 /zig-out
 /__DEV/
 __pycache__
+./venv
+*.pyc
+*.pyo
+*.pyd
+pyproject.toml
+.pre-commit-config.yaml
 
 # C47 project specific files
 /build
