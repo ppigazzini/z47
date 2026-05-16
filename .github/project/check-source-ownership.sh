@@ -72,9 +72,34 @@ require_tracked_root() {
     fi
 }
 
+list_index_top_level_roots() {
+    git ls-files | awk -F/ '{print $1}' | sort -u
+}
+
 validate_manifest_coverage() {
+    local mode="${1:-head}"
     declare -A classified=()
+    declare -A observed=()
     local root
+
+    case "$mode" in
+        head)
+            while IFS= read -r root; do
+                [[ -z "$root" ]] && continue
+                observed[$root]=1
+            done < <(git ls-tree --name-only HEAD | sort)
+            ;;
+        worktree)
+            while IFS= read -r root; do
+                [[ -z "$root" ]] && continue
+                observed[$root]=1
+            done < <(list_index_top_level_roots)
+            ;;
+        *)
+            printf 'Unknown manifest coverage mode: %s\n' "$mode" >&2
+            exit 1
+            ;;
+    esac
 
     for root in "${z47_roots[@]}" "${imported_roots[@]}"; do
         if [[ -n "${classified[$root]+x}" ]]; then
@@ -82,17 +107,26 @@ validate_manifest_coverage() {
             exit 1
         fi
         classified[$root]=1
-        require_tracked_root "$root"
+        case "$mode" in
+            head)
+                require_tracked_root "$root"
+                ;;
+            worktree)
+                if [[ -z "${observed[$root]+x}" ]]; then
+                    printf 'Manifest entry is not present in the current tracked worktree: %s\n' "$root" >&2
+                    exit 1
+                fi
+                ;;
+        esac
     done
 
     local missing=0
-    while IFS= read -r root; do
-        [[ -z "$root" ]] && continue
+    for root in "${!observed[@]}"; do
         if [[ -z "${classified[$root]+x}" ]]; then
             printf 'Tracked top-level path is missing from %s: %s\n' "$manifest_file" "$root" >&2
             missing=1
         fi
-    done < <(git ls-tree --name-only HEAD | sort)
+    done
 
     if [[ "$missing" -ne 0 ]]; then
         exit 1
@@ -172,9 +206,16 @@ main() {
             print_roots "${z47_roots[@]}"
             ;;
         check)
-            validate_manifest_coverage
+            validate_manifest_coverage head
             check_added_imported_paths
             printf 'Tracked source ownership roots: z47=%d imported=%d approved-imported-additions=%d\n' \
+                "${#z47_roots[@]}" \
+                "${#imported_roots[@]}" \
+                "${#approved_imported_additions[@]}"
+            ;;
+        check-worktree)
+            validate_manifest_coverage worktree
+            printf 'Tracked source ownership roots (worktree): z47=%d imported=%d approved-imported-additions=%d\n' \
                 "${#z47_roots[@]}" \
                 "${#imported_roots[@]}" \
                 "${#approved_imported_additions[@]}"

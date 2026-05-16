@@ -48,6 +48,7 @@ zig build test
 zig build generated
 zig build docs
 zig build dmcp
+bash .github/project/check-zig-c-boundaries.sh
 zig build dist_linux
 bash .github/project/check-source-ownership.sh
 ```

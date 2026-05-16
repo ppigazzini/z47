@@ -11,8 +11,38 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+UPSTREAM_PIN_PATH = REPO_ROOT / ".github/project/upstream-pin.env"
+
+
+def load_upstream_root_value() -> str:
+    override = os.environ.get("UPSTREAM_ROOT")
+    if override:
+        return override
+
+    try:
+        for raw_line in UPSTREAM_PIN_PATH.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("UPSTREAM_ROOT="):
+                return line.split("=", 1)[1].strip()
+    except OSError as exc:
+        raise SystemExit(f"unable to read upstream pin file {UPSTREAM_PIN_PATH}: {exc}") from exc
+
+    raise SystemExit(f"missing UPSTREAM_ROOT in {UPSTREAM_PIN_PATH}")
+
+
+def resolve_repo_relative(path_value: str) -> Path:
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path.resolve()
+
+
+UPSTREAM_ROOT = load_upstream_root_value()
+UPSTREAM_SOURCE_ROOT = REPO_ROOT if UPSTREAM_ROOT == "." else resolve_repo_relative(UPSTREAM_ROOT)
 WIKI_URL = "https://gitlab.com/rpncalculators/c43.wiki.git"
-DIST_DOCS_DIR = REPO_ROOT / "res/dist-docs"
+DIST_DOCS_DIR = UPSTREAM_SOURCE_ROOT / "res/dist-docs"
 
 # Distribution archives need stable install notes even when CI has no checked-in
 # dist-doc overrides and no live wiki checkout.
@@ -103,13 +133,13 @@ See [the download page](https://47calc.com) for further details on how to order 
 }
 
 OFFIMG_DIRS = [
-    REPO_ROOT / "res/offimg/Egypt",
-    REPO_ROOT / "res/offimg/Norway",
-    REPO_ROOT / "res/offimg/Netherlands",
-    REPO_ROOT / "res/offimg/From WP43",
-    REPO_ROOT / "res/offimg/General",
-    REPO_ROOT / "res/offimg/HP related",
-    REPO_ROOT / "res/offimg/C47",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/Egypt",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/Norway",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/Netherlands",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/From WP43",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/General",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/HP related",
+    UPSTREAM_SOURCE_ROOT / "res/offimg/C47",
 ]
 
 
@@ -197,14 +227,14 @@ def stage_host_resources(stage_dir: Path, c47_bin: Path, r47_bin: Path | None = 
     copy_file(c47_bin, stage_dir / c47_bin.name)
     if r47_bin is not None:
         copy_file(r47_bin, stage_dir / r47_bin.name)
-    copy_tree(REPO_ROOT / "res/PROGRAMS", stage_dir / "res/PROGRAMS")
-    copy_tree(REPO_ROOT / "res/STATE", stage_dir / "res/STATE")
-    copy_file(REPO_ROOT / "res/c47_pre.css", stage_dir / "res/c47_pre.css")
-    copy_file(REPO_ROOT / "res/C47.png", stage_dir / "res/C47.png")
-    copy_file(REPO_ROOT / "res/C47short.png", stage_dir / "res/C47short.png")
-    copy_file(REPO_ROOT / "res/R47.png", stage_dir / "res/R47.png")
-    copy_file(REPO_ROOT / "res/R47short.png", stage_dir / "res/R47short.png")
-    copy_file(REPO_ROOT / "res/fonts/C47__StandardFont.ttf", stage_dir / "C47__StandardFont.ttf")
+    copy_tree(UPSTREAM_SOURCE_ROOT / "res/PROGRAMS", stage_dir / "res/PROGRAMS")
+    copy_tree(UPSTREAM_SOURCE_ROOT / "res/STATE", stage_dir / "res/STATE")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/c47_pre.css", stage_dir / "res/c47_pre.css")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/C47.png", stage_dir / "res/C47.png")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/C47short.png", stage_dir / "res/C47short.png")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/R47.png", stage_dir / "res/R47.png")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/R47short.png", stage_dir / "res/R47short.png")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/fonts/C47__StandardFont.ttf", stage_dir / "C47__StandardFont.ttf")
 
 
 def copy_testpgms_bundle(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, subdir: str) -> None:
@@ -249,17 +279,17 @@ def package_host(flavor: str, zip_out: Path, stage_name: str, c47_bin: Path, r47
     if flavor == "windows":
         tone_dir = stage_dir / "res/tone"
         tone_dir.mkdir(parents=True, exist_ok=True)
-        for wav in sorted((REPO_ROOT / "res/tone").glob("*.wav")):
+        for wav in sorted((UPSTREAM_SOURCE_ROOT / "res/tone").glob("*.wav")):
             copy_file(wav, tone_dir / wav.name)
-        copy_file(REPO_ROOT / "res/c47.reg", stage_dir / "c47.reg")
-        copy_file(REPO_ROOT / "res/c47.cmd", stage_dir / "c47.cmd")
+        copy_file(UPSTREAM_SOURCE_ROOT / "res/c47.reg", stage_dir / "c47.reg")
+        copy_file(UPSTREAM_SOURCE_ROOT / "res/c47.cmd", stage_dir / "c47.cmd")
         write_dist_doc("Installation-on-Windows.md", stage_dir / "readme.txt", wiki_dir)
     elif flavor == "linux":
         strip_tool = shutil.which("strip")
         if strip_tool is not None:
             for host_bin in (c47_bin, r47_bin):
                 run_command([strip_tool, str(stage_dir / host_bin.name)])
-        copy_file(REPO_ROOT / "res/c47.xpm", stage_dir / "res/c47.xpm")
+        copy_file(UPSTREAM_SOURCE_ROOT / "res/c47.xpm", stage_dir / "res/c47.xpm")
     elif flavor == "macos":
         strip_tool = shutil.which("strip")
         if strip_tool is not None:
@@ -278,9 +308,9 @@ def prepare_dm_base(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, tes
     offimg_dir = stage_dir / "offimg"
     for offimg_source in OFFIMG_DIRS:
         copy_tree_contents(offimg_source, offimg_dir)
-    copy_tree(REPO_ROOT / "res/PROGRAMS", stage_dir / "PROGRAMS")
-    copy_tree(REPO_ROOT / "res/STATE", stage_dir / "STATE")
-    copy_file(REPO_ROOT / "res/keymaps/keymap_DM42.bin", resources_dir / "keymap_DM42.bin")
+    copy_tree(UPSTREAM_SOURCE_ROOT / "res/PROGRAMS", stage_dir / "PROGRAMS")
+    copy_tree(UPSTREAM_SOURCE_ROOT / "res/STATE", stage_dir / "STATE")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_DM42.bin", resources_dir / "keymap_DM42.bin")
     copy_testpgms_bundle(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip, "resources")
 
 
@@ -293,7 +323,7 @@ def package_dmcp(zip_out: Path, stage_name: str, program: Path, qspi: Path, map_
     zip_file(stage_dir / "resources/C47.map.zip", map_file, map_file.name)
     write_dist_doc("Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir)
     if include_packages:
-        copy_file(REPO_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
+        copy_file(UPSTREAM_SOURCE_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 
@@ -304,7 +334,7 @@ def package_dmcpr47(zip_out: Path, stage_name: str, program: Path, qspi: Path, m
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
     copy_file(qspi, stage_dir / qspi.name)
-    copy_file(REPO_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "keymap_R47.bin")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "keymap_R47.bin")
     zip_file(stage_dir / "resources/R47.map.zip", map_file, map_file.name)
     write_dist_doc("Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir)
     zip_tree(zip_out, stage_dir, stage_name)
@@ -316,10 +346,10 @@ def package_dmcp5(zip_out: Path, stage_name: str, program: Path, map_file: Path,
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
-    copy_file(REPO_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
     zip_file(stage_dir / "resources/C47.map.zip", map_file, map_file.name)
-    copy_file(REPO_ROOT / "res/dmcp5/install_C47_on_DM42n.txt", stage_dir / "install_C47_on_DM42n.txt")
-    copy_file(REPO_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_C47_on_DM42n.txt", stage_dir / "install_C47_on_DM42n.txt")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 
@@ -329,13 +359,13 @@ def package_dmcp5r47(zip_out: Path, stage_name: str, program: Path, map_file: Pa
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
-    copy_file(REPO_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "resources/keymap_R47.bin")
-    copy_file(REPO_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "resources/keymap_R47.bin")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
     zip_file(stage_dir / "resources/R47.map.zip", map_file, map_file.name)
-    copy_file(REPO_ROOT / "res/dmcp5/install_R47_on_DM32.txt", stage_dir / "resources/install_R47_on_DM32.txt")
-    copy_file(REPO_ROOT / "res/dmcp5/update_R47.txt", stage_dir / "update_R47.txt")
-    copy_file(REPO_ROOT / "res/combo/R47_combo.py", stage_dir / "R47_combo.py")
-    copy_file(REPO_ROOT / "res/combo/DMCP5_flash_3.56.bin", stage_dir / "DMCP5_flash_3.56.bin")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_R47_on_DM32.txt", stage_dir / "resources/install_R47_on_DM32.txt")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/update_R47.txt", stage_dir / "update_R47.txt")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/combo/R47_combo.py", stage_dir / "R47_combo.py")
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/combo/DMCP5_flash_3.56.bin", stage_dir / "DMCP5_flash_3.56.bin")
     run_command([sys.executable, "R47_combo.py", version], cwd=stage_dir)
     (stage_dir / "R47_combo.py").unlink(missing_ok=True)
     (stage_dir / "DMCP5_flash_3.56.bin").unlink(missing_ok=True)

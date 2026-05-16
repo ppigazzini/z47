@@ -34,6 +34,9 @@ Use one promotion workflow when a non-trivial change lands.
 - Keep `../.github/project/source-ownership.txt`,
   `../.github/project/upstream-pin.env`, and the affected docs aligned when
   the imported-root or tracked top-level ownership contract changes.
+- Use `bash ../.github/project/check-source-ownership.sh check-worktree`
+  inside a linked-worktree layout pilot; keep the plain `check` command for
+  the maintained baseline and CI.
 - Keep `zig_docs/` focused on durable maintainer contracts, not temporary notes
   or iteration detail.
 - Keep tracked root maintainer docs short and route detailed material into the
@@ -54,6 +57,20 @@ Use a linked worktree when auditing or rehearsing an `upstream/master` refresh.
    complete.
 
 Do not treat ignored local worktrees as tracked documentation surfaces.
+
+## Nested-Upstream Pilot Flow
+
+Use the tracked M13 helper when you need to re-measure a nested `upstream/`
+candidate. The current stable recommendation is still no-go, so treat this as a
+pilot flow, not as the default maintainer layout.
+
+1. `bash ../.github/project/nested-upstream-pilot.sh prepare ../z47-m13-pilot <repo-relative-path ...>`
+2. Run `bash .github/project/check-source-ownership.sh check-worktree` inside
+  `../z47-m13-pilot`.
+3. Run the smallest relevant build or guard lane inside the pilot worktree.
+4. Use the helper report as the changed-path, rebase, and CI-clarity evidence.
+5. `bash ../.github/project/nested-upstream-pilot.sh cleanup ../z47-m13-pilot`
+  when the comparison is complete.
 
 ## When To Update Which Page
 
