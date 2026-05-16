@@ -5,6 +5,10 @@ Zig-first port workspace.
 
 These pages are code-facing maintainer docs, not end-user usage docs.
 
+The current live runtime Zig rewrites are intentionally narrow: short-integer
+leaf logic plus stack, register-metadata, flags, memory,
+program-serialization, calc-state, and keyboard-state ownership slices.
+
 These pages document tracked, maintained repo surfaces only. They do not define
 ignored local worktrees, ignored build outputs, or other ignored paths.
 
@@ -104,12 +108,24 @@ rewrite status, CI routing, package identity, or verification rules.
 Maintainer entrypoints:
 
 - `zig build` or `zig build sim`: canonical host build entrypoint
+- `zig build logical_shortint_parity`: focused parity lane for the live
+  short-integer leaf rewrite slice
 - `zig build stack_state_parity`: focused parity lane for the live stack-state
   rewrite slice
 - `zig build register_metadata_parity`: focused parity lane for the live
   register-metadata rewrite slice
 - `zig build flags_parity`: focused parity lane for the live system-flag
   accessor rewrite slice
+- `zig build memory_parity`: focused parity lane for the live memory rewrite
+  slice
+- `zig build program_serialization_parity`: focused parity lane for the live
+  program-serialization rewrite slice
+- `zig build calc_state_parity`: focused parity lane for the live calc-state
+  rewrite slice
+- `zig build keyboard_state_parity`: focused parity lane for the live keyboard
+  rewrite slice
+- `zig build keyboard_statusbar_flags_regression`: focused regression lane for
+  the current keyboard and flags interaction surface
 - `zig build test`: canonical grouped host regression lane
 - `zig build generated`: refreshes all tracked generated host artifacts
 - `zig build docs`: canonical docs build for `docs/code`

@@ -29,6 +29,9 @@ current upstream pin are already clear.
 - The current verified Zig-owned code slices are the deterministic generators
   under `zig_build/tools/`, the live runtime Zig slices under `zig_src/`, and
   the retained runtime bridge shims under `zig_bridge/`.
+- A Zig-owned control plane is not treated as success by itself. If added Zig
+  does not replace buggy or retired C owners or remove real legacy build debt,
+  it is extra maintenance cost.
 
 ## What This Repository Is
 
@@ -128,6 +131,9 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
   ownership split changes.
 - Keep retained C libraries explicit in docs and code review. Do not imply a
   pure-Zig state while the build still links or compiles retained C.
+- Treat new Zig build or orchestration code as justified only when it replaces
+  retained C owners, fixes a real build or platform defect, or deletes more
+  workflow debt than it adds.
 - Update `../.github/project/upstream-pin.env` and any affected maintainer docs
   together when the audited upstream pin changes.
 
