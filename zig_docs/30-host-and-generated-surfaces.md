@@ -20,6 +20,18 @@ The current host-facing build graph owns all of these surfaces through
 - tracked generated artifact refresh
 - Sphinx and Doxygen docs orchestration
 
+## Value Boundary
+
+This page records the live host build surface. It does not claim that the
+current amount of Zig host orchestration is valuable by itself.
+
+For this repo, a Zig-owned host layer earns its keep only when it replaces
+buggy or intentionally retired C owners, fixes real platform or packaging
+defects, or deletes more legacy build debt than it adds. If the same working
+imported C simulator and the same effective dependency story still remain in
+place, extra Zig orchestration is maintenance overhead rather than delivered
+user value.
+
 ## Retained Host Dependency Split
 
 Host simulator, generator, test, and host-package builds currently depend on:
@@ -157,6 +169,9 @@ replace the maintainer-facing `zig_docs/` set.
 - Keep new host build or platform glue inside `../zig_build/host/`.
 - Keep generated output ownership explicit through the public `zig build`
   update steps instead of standalone scripts.
+- Do not treat a Zig-owned host build layer as a success by itself. If a new
+  Zig host surface does not replace retained C owners, fix a real host defect,
+  or delete more legacy workflow debt than it adds, it is overhead.
 - Keep host dependency docs honest. Do not imply the host simulator is pure Zig
   while GTK, GMP, FreeType, and imported upstream C still participate in the
   build.
