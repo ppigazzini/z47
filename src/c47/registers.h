@@ -7,6 +7,18 @@
 #if !defined(REGISTERS_H)
   #define REGISTERS_H
 
+
+  typedef struct {
+    uint16_t    regist;
+    int32_t     lowerBound;
+    int32_t     upperBound;
+    const char *name;
+  } rangeCheckedVar_t;
+
+  extern const rangeCheckedVar_t rangeCheckedVars[];
+  extern const uint16_t          numRangeCheckedVars;
+
+
   /**
    * Returns the data type of a register.
    *

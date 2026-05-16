@@ -57,6 +57,12 @@ TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 };
 
 
+TO_QSPI const rangeCheckedVar_t rangeCheckedVars[] = {
+  {RESERVED_VARIABLE_GRAMOD,          0,          3, "GRAMOD"},
+  {RESERVED_VARIABLE_ISM,    SIM_UNSIGN, SIM_SIGNMT, "ISM"   },
+  {0,                                 0,          0, NULL    },  // terminator
+};
+
 
 TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in the same order as the reserved variables in item.c item 1165 and upwards
 /*  VAR_NO_X        0 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'X',  0,   0,   0,   0,   0,   0} },
@@ -87,7 +93,7 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_W       25 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'W',  0,   0,   0,   0,   0,   0} },
 /*  VAR_NO_ADM     26 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'A', 'D', 'M',  0,   0,   0,   0} },
 /*  VAR_NO_DENMAX  27 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {5, 'D', '.', 'M', 'A', 'X',  0,   0} },
-/*  VAR_NO_ISM     28 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'I', 'S', 'M',  0,   0,   0,   0} },
+/*  VAR_NO_ISM     28 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'I', 'S', 'M',  0,   0,   0,   0} },
 /*  VAR_NO_REALDF  29 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {6, 'R', 'E', 'A', 'L', 'D', 'F',  0} },
 /*  VAR_NO_NDEC    30 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {4, '#', 'D', 'E', 'C',  0,   0,   0} },
 /*  VAR_NO_ACC     31 */  { .header = {.pointerToRegisterData = 0,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'A', 'C', 'C',  0,   0,   0,   0} },
@@ -1415,6 +1421,21 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
   if(FIRST_RESERVED_VARIABLE <= destRegister && destRegister < FIRST_NAMED_RESERVED_VARIABLE) {
     destRegister = destRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
+  }
+  else if(destRegister == RESERVED_VARIABLE_ISM) {
+    longInteger_t longIntVar;
+    longIntegerInit(longIntVar);
+    convertLongIntegerRegisterToLongInteger(sourceRegister, longIntVar);
+    int32_t ismValue;
+    longIntegerToInt32(longIntVar, ismValue);
+    switch(ismValue) {
+      case 2:  shortIntegerMode = SIM_2COMPL; break;
+      case 1:  shortIntegerMode = SIM_1COMPL; break;
+      case 0:  shortIntegerMode = SIM_UNSIGN; break;
+      default: shortIntegerMode = SIM_SIGNMT; break;
+      }
+    longIntegerFree(longIntVar);
+    return;
   }
 
   if(FIRST_RESERVED_VARIABLE <= sourceRegister && sourceRegister < FIRST_NAMED_RESERVED_VARIABLE) {
