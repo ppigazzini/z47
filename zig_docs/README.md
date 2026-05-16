@@ -95,8 +95,8 @@ rewrite status, CI routing, package identity, or verification rules.
 2. Keep exploratory notes and unsettled claims out of the maintained docs while
   the code or workflow is still moving.
 3. After the implementation and focused validation settle, promote the stable
-   contract changes into every affected `zig_docs/` page and the lightweight
-   root entrypoints.
+  contract changes into every affected `zig_docs/` page and the lightweight
+  root entrypoints.
 4. Re-run the smallest relevant validation lane after the final doc edit.
 
 ## Build Entry Points
