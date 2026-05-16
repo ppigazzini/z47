@@ -12,6 +12,15 @@ surfaces. They are not the maintained z47 control plane.
 Build orchestration lives under `zig_build/`. Live runtime Zig now lives under
 `zig_src/`, and retained runtime bridge C lives under `zig_bridge/`.
 
+A Zig-owned build layer is not treated as value by itself in this repo. If a
+new Zig surface does not replace buggy or retired C owners, fix a real build or
+platform defect, or delete more legacy workflow debt than it adds, it is extra
+maintenance overhead.
+
+Current live runtime Zig owners are intentionally narrow: short-integer logical
+leaf code plus the stack, register-metadata, flags, memory,
+program-serialization, calc-state, and keyboard-state slices under `zig_src/`.
+
 Imported upstream paths now route through `UPSTREAM_ROOT` in
 `.github/project/upstream-pin.env`; the current value `.` means the imported
 baseline still lives at repo root.
@@ -41,9 +50,15 @@ Common entrypoints:
 ```sh
 zig build --help
 zig build sim
+zig build logical_shortint_parity
 zig build stack_state_parity
 zig build register_metadata_parity
 zig build flags_parity
+zig build memory_parity
+zig build program_serialization_parity
+zig build calc_state_parity
+zig build keyboard_state_parity
+zig build keyboard_statusbar_flags_regression
 zig build test
 zig build generated
 zig build docs
