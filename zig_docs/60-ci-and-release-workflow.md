@@ -26,28 +26,33 @@ flowchart TD
   D[source-manifest]
   E[source-ownership-guard]
   F[zig-c-boundary-guard]
-  G[linux-host-parity]
-  H[macos-host-build]
-  I[windows-host-build]
-  J[daily or manual upstream-drift]
+  G[workflow-imported-root-guard]
+  H[linux-host-parity]
+  I[macos-host-build]
+  J[windows-host-build]
+  K[daily or manual upstream-drift]
 
   A --> B
   A --> C
   A --> D
   A --> E
   A --> F
-  B --> G
-  D --> G
-  E --> G
-  F --> G
+  A --> G
   B --> H
   D --> H
   E --> H
   F --> H
+  G --> H
   B --> I
   D --> I
   E --> I
   F --> I
+  G --> I
+  B --> J
+  D --> J
+  E --> J
+  F --> J
+  G --> J
 ```
 
 ## Shared CI Inputs
@@ -57,11 +62,18 @@ The workflow keeps its shared checked-in control data in these files:
 - `../.github/zig-toolchain.env`
 - `../.github/project/upstream-pin.env`
 - `../.github/project/source-ownership.txt`
+- `../.github/project/workflow-imported-root-paths.sh`
 - `../.github/project/zig-c-boundaries.txt`
 - `../docs/code/requirements.txt`
 
 The host platform jobs also resolve the current upstream HEAD of the xlsxio
 helper repository and use that SHA in their cache keys.
+
+The workflow imported-root guard uses
+`../.github/project/workflow-imported-root-paths.sh` as the shared path
+vocabulary for docs install, generated-artifact proof, and host package
+staging. That keeps the workflow text aligned with `UPSTREAM_ROOT` instead of
+repeating repo-root imported paths ad hoc.
 
 ## Job Graph
 
@@ -126,6 +138,20 @@ Purpose:
 
 - run `bash .github/project/check-zig-c-boundaries.sh`
 - fail early if checked-in Zig boundary usage drifts from the approved allowlist
+
+### `workflow-imported-root-guard`
+
+Purpose:
+
+- run `bash .github/project/workflow-imported-root-paths.sh check-workflow`
+- fail early if workflow files reintroduce direct repo-root imported-path
+  literals for docs inputs, generated-artifact proof, or host package staging
+
+Current imported-root-guard note:
+
+- the helper resolves the workflow-owned imported inputs through the same
+  `UPSTREAM_ROOT` vocabulary used by the Zig build graph and the M13 pilot
+  tooling, and the guard keeps the remaining direct workflow references at zero
 
 ### `linux-host-parity`
 
@@ -214,6 +240,7 @@ Use the smallest local lane that matches the workflow slice you changed.
 | monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none` |
 | source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && bash .github/project/check-source-ownership.sh` |
 | tracked source ownership contract | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && bash .github/project/check-source-ownership.sh` |
+| workflow imported-root contract | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
 | Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
