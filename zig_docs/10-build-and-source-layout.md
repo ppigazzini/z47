@@ -102,6 +102,9 @@ Checked-in build defaults currently come from these files:
   repository URL plus the current imported upstream root
 - `../.github/project/source-ownership.txt`: records the tracked top-level
   z47-owned roots and imported-upstream roots used by CI and source manifests
+- `../.github/project/workflow-imported-root-paths.sh`: resolves the
+  workflow-owned imported-root paths used by docs install,
+  generated-artifact proof, and host package staging
 - `../.github/project/zig-c-boundaries.txt`: records the approved checked-in
   `@cImport` and direct `extern` boundary files
 - `../docs/code/requirements.txt`: pins the Python package set needed for
@@ -128,8 +131,10 @@ Top-level z47-owned overlay paths:
 
 The tracked top-level ownership split used by CI lives in
 `../.github/project/source-ownership.txt`. The source-manifest job and the
-source-ownership guard both read from that manifest, so docs and CI use the
-same vocabulary for the current repo-root baseline.
+source-ownership guard both read from that manifest, and the workflow
+imported-root guard reads `../.github/project/workflow-imported-root-paths.sh`,
+so docs and CI use tracked vocabulary files for the current repo-root
+baseline.
 
 Imported upstream-shaped paths consumed directly by the live build graph:
 

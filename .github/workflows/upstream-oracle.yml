@@ -134,6 +134,17 @@ jobs:
           set -euo pipefail
           bash .github/project/check-zig-c-boundaries.sh
 
+  workflow-imported-root-guard:
+    name: Verify workflow imported-root vocabulary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce shared workflow imported-root paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/workflow-imported-root-paths.sh check-workflow
+
   linux-host-parity:
     name: Linux host parity, wrappers, generated outputs, app smoke run
     needs:
@@ -141,6 +152,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
+      - workflow-imported-root-guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -209,7 +221,8 @@ jobs:
           sudo apt-get install -qq -y meson ninja-build zip unzip python3-pip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
           sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev doxygen gcc-arm-none-eabi
-          python3 -m pip install --user -r docs/code/requirements.txt
+          requirements_file="$(bash .github/project/workflow-imported-root-paths.sh docs-requirements)"
+          python3 -m pip install --user -r "$requirements_file"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
@@ -303,24 +316,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --exit-code -- \
-            src/generated/softmenuCatalogs.h \
-            src/generated/constantPointers.c \
-            src/generated/constantPointers.h \
-            src/generated/constantPointers2.c \
-            src/generated/rasterFontsData.c \
-            res/testPgms/testPgms.bin
+          mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
+          git diff --exit-code -- "${generated_artifacts[@]}"
       - name: Hash golden artifacts
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum \
-            src/generated/softmenuCatalogs.h \
-            src/generated/constantPointers.c \
-            src/generated/constantPointers.h \
-            src/generated/constantPointers2.c \
-            src/generated/rasterFontsData.c \
-            res/testPgms/testPgms.bin > golden-artifacts.sha256
+          mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
+          sha256sum "${generated_artifacts[@]}" > golden-artifacts.sha256
       - id: linux_package_meta
         name: Set Linux artifact metadata
         shell: bash
@@ -404,6 +407,19 @@ jobs:
           firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
           artifact_name=${{ steps.linux_package_meta.outputs.firmware_artifact_name }}
           EOF
+      - name: Stage generated-artifact proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          proof_dir="ci-artifacts/generated"
+          rm -rf "$proof_dir"
+          mkdir -p "$proof_dir"
+          cp golden-artifacts.sha256 "$proof_dir/"
+          while IFS= read -r generated_artifact; do
+            [[ -n "$generated_artifact" ]] || continue
+            mkdir -p "$proof_dir/$(dirname -- "$generated_artifact")"
+            cp "$generated_artifact" "$proof_dir/$generated_artifact"
+          done < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.linux_package_meta.outputs.artifact_name }}
@@ -419,14 +435,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: linux-host-parity-artifacts
-          path: |
-            golden-artifacts.sha256
-            src/generated/softmenuCatalogs.h
-            src/generated/constantPointers.c
-            src/generated/constantPointers.h
-            src/generated/constantPointers2.c
-            src/generated/rasterFontsData.c
-            res/testPgms/testPgms.bin
+          path: ci-artifacts/generated/
 
   macos-host-build:
     name: macOS dedicated runner build, test, generated outputs, app smoke run
@@ -435,6 +444,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
+      - workflow-imported-root-guard
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -583,13 +593,9 @@ jobs:
           release_dir="ci-artifacts/release"
           package_dir="$release_dir/c47-macos"
           rm -rf "$release_dir"
-          mkdir -p "$package_dir/res"
+          mkdir -p "$package_dir"
           cp zig-out/bin/c47 zig-out/bin/r47 "$package_dir/"
-          cp -r res/PROGRAMS "$package_dir/res/"
-          cp -r res/STATE "$package_dir/res/"
-          cp res/c47_pre.css "$package_dir/res/"
-          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
-          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
+          bash .github/project/workflow-imported-root-paths.sh stage-host-package-common "$package_dir"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
             --platform macos \
@@ -648,6 +654,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
+      - workflow-imported-root-guard
     runs-on: windows-latest
     steps:
       - name: Disable automatic CRLF conversion
@@ -859,7 +866,7 @@ jobs:
           }
 
           rm -rf "$release_dir"
-          mkdir -p "$package_dir/res/testPgms" "$package_dir/res/tone"
+          mkdir -p "$package_dir"
           package_root_posix="$(cd "$package_dir" && pwd)"
           package_root_win="$(cd "$package_dir" && pwd -W)"
           c47_binary="zig-out/bin/c47.exe"
@@ -964,17 +971,8 @@ jobs:
             fi
           fi
 
-          cp -r res/PROGRAMS "$package_dir/res/"
-          cp -r res/STATE "$package_dir/res/"
-          cp res/c47_pre.css "$package_dir/res/"
-          cp res/C47.png res/C47short.png res/R47.png res/R47short.png "$package_dir/res/"
-          cp res/testPgms/testPgms.bin "$package_dir/res/testPgms/"
-          if [[ -f res/testPgms/testPgms.txt ]]; then
-            cp res/testPgms/testPgms.txt "$package_dir/res/testPgms/"
-          fi
-          cp res/fonts/C47__StandardFont.ttf "$package_dir/"
-          cp res/tone/*.wav "$package_dir/res/tone/"
-          cp res/c47.reg res/r47.reg "$package_dir/"
+          bash .github/project/workflow-imported-root-paths.sh stage-host-package-common "$package_dir"
+          bash .github/project/workflow-imported-root-paths.sh stage-host-package-windows "$package_dir"
           cp .github/project/windows/c47.cmd .github/project/windows/r47.cmd "$package_dir/"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
