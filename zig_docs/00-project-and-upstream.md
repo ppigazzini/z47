@@ -20,6 +20,9 @@ current upstream pin are already clear.
   commit `b9ed834b63e64bde05274e5182abf1e9180af612`.
 - `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
   current imported baseline still lives at repo root.
+- M13 now keeps a tracked linked-worktree pilot helper at
+  `../.github/project/nested-upstream-pilot.sh`, but the measured recommendation
+  is no-go and the maintained baseline remains the repo-root import.
 - `build.zig` is the canonical maintained build entrypoint.
 - The imported `Makefile`, `meson.build`, and related upstream files remain in
   the tree as audit and rebase reference surfaces.
@@ -77,6 +80,12 @@ The current `UPSTREAM_ROOT=.` value means the imported upstream tree is mounted
 at repo root today. That is the current baseline contract, not a promise that a
 future M13 topology pilot cannot move the imported root after the path and
 ownership blast radius stays bounded.
+
+The M13 pilot is now closed with a no-go recommendation. The tracked helper at
+`../.github/project/nested-upstream-pilot.sh` remains available for future
+measurement, but the maintained layout still keeps the imported tree at repo
+root until CI path debt drops enough to improve clarity rather than only moving
+the same coupling under `upstream/`.
 
 That imported tree includes the main source, dependency, resource, packaging,
 and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,

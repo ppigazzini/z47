@@ -17,6 +17,10 @@ That means:
 - firmware targets are invoked through `zig build`
 - the firmware source and SDK inputs still come from imported upstream C and
   SwissMicros SDK trees
+- old-hardware package-specific save-space overrides now live in
+  `../zig_bridge/c47.h`, reached by adding `-Izig_bridge` ahead of imported
+  `../src/c47`, so z47-specific flash trims stay in the overlay instead of
+  imported `defines.h`
 - the live firmware graph now filters imported `src/c47/stack.c` and links the
   Zig stack-state object from `../zig_src/state/stack.zig` plus
   `../zig_bridge/state/stack_runtime_helpers.c`
@@ -152,6 +156,11 @@ in the step name instead of passed as an option.
 The Linux CI firmware artifact keeps the default C47 DMCP package from
 `dist_dmcp` and uses `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, and `dist_dmcp_pkg3`
 so each smaller package variant is preserved instead of overwritten.
+
+When a retained-state, keyboard-helper, or package-trim change must stay safe on
+old hardware, rerun `zig build dist_dmcp_pkg3 --summary none`; rerun
+`zig build dist_dmcp_pkg2 --summary none` as well when the change touches the
+package-2-only overlay trims.
 
 ## Change Rules
 

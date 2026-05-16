@@ -22,6 +22,9 @@ repo surfaces.
 - `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=.` for the current
   repo-root imported baseline, and `.github/project/source-ownership.txt`
   records the tracked top-level ownership split used by CI.
+- `.github/project/nested-upstream-pilot.sh` is the tracked M13 helper for
+  measuring a nested `upstream/` candidate in a linked worktree while the
+  maintained baseline stays at `UPSTREAM_ROOT=.`.
 - `build.zig` is the sole supported build entrypoint for maintained z47 work.
 
 ## Branch And CI Policy
@@ -48,6 +51,20 @@ instead of repurposing the active coding tree.
 
 Keep tracked-doc updates focused on the main repository tree. Do not document
 ignored local worktrees as if they were tracked repo surfaces.
+
+## Nested-Upstream Pilot Flow
+
+The current M13 recommendation is no-go: keep the repo-root import as the
+maintained baseline. When you need to re-measure that decision, use the tracked
+pilot helper instead of editing the maintained tree in place.
+
+1. `bash .github/project/nested-upstream-pilot.sh prepare ../z47-m13-pilot <repo-relative-path ...>`
+2. Run `bash .github/project/check-source-ownership.sh check-worktree` inside
+  `../z47-m13-pilot`.
+3. Run the smallest representative build or guard lane inside the pilot
+  worktree.
+4. `bash .github/project/nested-upstream-pilot.sh cleanup ../z47-m13-pilot`
+  when the comparison is complete.
 
 ## Supported Build Entry Points
 
@@ -83,7 +100,9 @@ surfaces. They are not the maintained z47 control plane.
   described
 - imported-root layout, top-level ownership, or source-manifest changes: rerun
   `zig build --help --summary none`, then
-  `bash .github/project/check-source-ownership.sh`
+  `bash .github/project/check-source-ownership.sh`; use
+  `bash .github/project/check-source-ownership.sh check-worktree` inside a
+  linked-worktree layout pilot before treating the candidate as valid
 - build-graph or target-surface changes: rerun `zig build --help --summary
   none`, then the smallest affected target
 - rewrite or boundary changes: rerun the focused parity or regression lane for

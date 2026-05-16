@@ -18,6 +18,11 @@ the local maintainer flow.
 - imported upstream paths route through `UPSTREAM_ROOT` in
   `../.github/project/upstream-pin.env`; the current value `.` keeps the
   imported baseline at repo root
+- `zig_build/zig_dist.py` now resolves imported packaging resources through
+  that same `UPSTREAM_ROOT` pin instead of assuming repo-root `res/` paths.
+- `../.github/project/nested-upstream-pilot.sh` is the tracked M13 helper for
+  measuring an `upstream/` candidate in a linked worktree without changing the
+  maintained baseline.
 - The imported `Makefile` and Meson files remain audit and parity references,
   not the maintained z47 control plane.
 - Host, docs, firmware, and packaging work all route through `zig build`.
@@ -147,6 +152,9 @@ Maintenance rule:
   unless the task is intentionally editing the canonical imported owner path
 - use a linked worktree when rehearsing an `upstream/master` refresh instead of
   repurposing the active coding tree
+- use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
+  a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
+  tree unless that pilot is explicitly promoted
 
 ## Build Entry Points
 

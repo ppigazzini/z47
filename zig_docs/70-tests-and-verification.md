@@ -69,14 +69,14 @@ flowchart TD
 - build-graph step rename, option change, or output-path change:
   `zig build --help --summary none`, then the smallest affected target
 - generator or tracked generated-artifact change: `zig build generated --summary none`
-- calc-state or simulator backup-entrypoint change: `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
+- calc-state or simulator backup-entrypoint change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice adds or moves retained C bindings, keep them in `zig_src/state/calc_state_runtime.zig` rather than `zig_src/state/calc_state.zig`; if the slice must stay firmware-safe, rerun `zig build dist_dmcp_pkg3 --summary none`, and rerun `zig build dist_dmcp_pkg2 --summary none` as well when package-2 overlay trims are part of the change
 - keyboard input, command-surface, or statusbar-flag change: `zig build keyboard_state_parity --summary none`; if the slice is limited to the stop-statusbar helper, rerun `zig build keyboard_statusbar_flags_regression --summary none`; then rerun `zig build simulator_smoke --summary none` and `zig build test --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
 - host simulator UI, GTK callback, or desktop platform-glue change:
   `zig build sim --summary none`; if the change touches LCD paint, pointer
   routing, or keyboard dispatch, rerun `zig build simulator_smoke --summary none`
 - host core or test-surface change:
   `zig build test --summary none`
-- boundary or rewrite-slice change: `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
+- boundary or rewrite-slice change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_shortint_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
