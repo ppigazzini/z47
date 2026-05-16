@@ -13,14 +13,14 @@ z47 uses three explicit implementation modes.
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
 | existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
-| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, runtime boundaries `zig_src/leaf/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, `zig_src/state/register_metadata_runtime.zig`, and `zig_src/state/flags_runtime.zig` |
+| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, plus runtime seams under `zig_src/leaf/shortint_runtime.zig` and `zig_src/state/*_runtime.zig` |
 | manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/` and `zig_src/state/` |
 
 ## Current Surface Classification
 
 | Surface | Current classification | Notes |
 | --- | --- | --- |
-| `../src/c47` core | existing C compiled by Zig, with selected leaf, stack, register-metadata, and system-flag replacements | broad stateful core still mostly remains imported C |
+| `../src/c47` core | existing C compiled by Zig, with selected leaf and state replacements | broad stateful core still mostly remains imported C |
 | `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C |
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
 | `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
@@ -33,11 +33,19 @@ z47 uses three explicit implementation modes.
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
+| `../zig_src/state/memory.zig` plus `../zig_build/state/memory_rewrites.zig` | manual Zig rewrite | parity-gated live memory-helper slice |
+| `../zig_src/state/program_serialization.zig` plus `../zig_build/state/program_serialization_rewrites.zig` | manual Zig rewrite | parity-gated live program-serialization slice |
+| `../zig_src/state/calc_state.zig` plus `../zig_build/state/calc_state_rewrites.zig` | manual Zig rewrite | parity-gated save or restore owner slice with retained firmware entrypoints routed through a runtime seam |
+| `../zig_src/state/keyboard_state.zig` plus `../zig_build/state/keyboard_state_rewrites.zig` | manual Zig rewrite | parity-gated keyboard helper and command-state slice while some firmware-sized public entrypoints still stay retained C |
 | `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
+| `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
 | `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
 | `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
 | `../zig_src/state/flags_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the system-flag slice |
+| `../zig_src/state/keyboard_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the keyboard-state slice |
+| `../zig_src/state/memory_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the memory slice |
+| `../zig_src/state/program_serialization_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the program-serialization slice |
 
 ## Approved Checked-In Boundary Files
 
@@ -84,6 +92,13 @@ Current guard behavior:
 The guard runs in CI through the `zig-c-boundary-guard` job in
 `../.github/workflows/upstream-oracle.yml`.
 
+Current maintainer finding:
+
+- when a rewrite slice already has a `*_runtime.zig` seam, keep any new direct
+  retained-C `extern` bindings there and call them through seam helpers from the
+  owner file; moving those bindings into the owner file itself is treated as
+  boundary drift and will fail the guard
+
 ## Rewrite Status That Matters
 
 The current checked-in manual Zig rewrite slices are intentionally narrow.
@@ -97,12 +112,18 @@ Verified slices:
 - register-metadata accessors under `../zig_src/state/`
 - exported system-flag accessor and change-tracking logic under
   `../zig_src/state/`
+- memory helper ownership under `../zig_src/state/`
+- program-serialization ownership under `../zig_src/state/`
+- calc-state save or restore ownership under `../zig_src/state/`, with retained
+  firmware entrypoints still reached through `../zig_src/state/calc_state_runtime.zig`
+- keyboard helper and command-state ownership under `../zig_src/state/`, with
+  retained public entrypoints still used where firmware size requires them
 
 Not yet rewritten in broad verified form:
 
 - broader flag-command and configuration control beyond the exported
-  system-flag accessor surface, memory helpers, save or restore surfaces
-  outside stack undo, and execution-state surfaces
+  system-flag accessor surface and the current helper-level owner slices
+- full keyboard public-entrypoint ownership on firmware-sized DMCP builds
 - GTK simulator implementation
 - broad firmware HAL or packaging logic
 
@@ -124,6 +145,8 @@ Current repo policy requires:
   build-system-owned or manually rewritten alternative is not practical yet.
 - Update `../.github/project/zig-c-boundaries.txt`, the guard expectations, and
   this page in the same change.
+- When a slice already has an approved `*_runtime.zig` seam, add new direct
+  retained-C bindings there instead of in the Zig owner file.
 - Keep the boundary file narrow and name the retained C surface it exposes.
 - Add or update the focused validation lane in
   [70-tests-and-verification.md](70-tests-and-verification.md) when the new
