@@ -22,6 +22,9 @@ repo surfaces.
 - `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=.` for the current
   repo-root imported baseline, and `.github/project/source-ownership.txt`
   records the tracked top-level ownership split used by CI.
+- `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
+  imported-root vocabulary used by docs install, generated-artifact proof, and
+  host package staging in GitHub Actions.
 - `.github/project/nested-upstream-pilot.sh` is the tracked M13 helper for
   measuring a nested `upstream/` candidate in a linked worktree while the
   maintained baseline stays at `UPSTREAM_ROOT=.`.
@@ -100,7 +103,8 @@ surfaces. They are not the maintained z47 control plane.
   described
 - imported-root layout, top-level ownership, or source-manifest changes: rerun
   `zig build --help --summary none`, then
-  `bash .github/project/check-source-ownership.sh`; use
+  `bash .github/project/check-source-ownership.sh`, then
+  `bash .github/project/workflow-imported-root-paths.sh check-workflow`; use
   `bash .github/project/check-source-ownership.sh check-worktree` inside a
   linked-worktree layout pilot before treating the candidate as valid
 - build-graph or target-surface changes: rerun `zig build --help --summary
@@ -108,7 +112,9 @@ surfaces. They are not the maintained z47 control plane.
 - rewrite or boundary changes: rerun the focused parity or regression lane for
   that slice before broader host or firmware checks
 - package, firmware, or release-proof changes: rerun the matching `dist_*` or
-  firmware target on the matching host OS when possible
+  firmware target on the matching host OS when possible, and rerun
+  `bash .github/project/workflow-imported-root-paths.sh check-workflow` when
+  the change touches workflow-owned imported inputs or package staging
 
 If a lane cannot run locally, record the exact blocker and the narrower file or
 workflow evidence that was checked instead.
@@ -118,9 +124,11 @@ workflow evidence that was checked instead.
 - keep `README.md` short and maintainer-facing
 - keep `ZIG-README.md` as the short Zig quick start
 - keep `zig_docs/` as the stable maintainer-doc surface for the live repo
-- update this file, `README.md`, `ZIG-README.md`, and the affected `zig_docs/`
-  pages in the same change when a public build, CI, packaging, or verification
-  contract changes
+- update this file, `ZIG-README.md`, and the affected `zig_docs/` pages in the
+  same change when a public build, CI, packaging, or verification contract
+  changes
+- update `README.md` when the maintainer-doc index, page-routing contract, or
+  top-level project framing changes
 - do not imply a pure-Zig result while retained C libraries or vendor code
   remain explicit dependencies
 

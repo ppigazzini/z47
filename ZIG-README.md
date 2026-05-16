@@ -51,6 +51,7 @@ zig build dmcp
 bash .github/project/check-zig-c-boundaries.sh
 zig build dist_linux
 bash .github/project/check-source-ownership.sh
+bash .github/project/workflow-imported-root-paths.sh check-workflow
 ```
 
 ## Detailed Topics

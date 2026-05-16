@@ -32,8 +32,10 @@ Use one promotion workflow when a non-trivial change lands.
 - Keep `zig_build/` documented as build-only, `zig_src/` as live runtime Zig,
   and `zig_bridge/` as retained runtime bridge C.
 - Keep `../.github/project/source-ownership.txt`,
-  `../.github/project/upstream-pin.env`, and the affected docs aligned when
-  the imported-root or tracked top-level ownership contract changes.
+  `../.github/project/upstream-pin.env`,
+  `../.github/project/workflow-imported-root-paths.sh`, and the affected docs
+  aligned when the imported-root or tracked top-level ownership contract
+  changes.
 - Use `bash ../.github/project/check-source-ownership.sh check-worktree`
   inside a linked-worktree layout pilot; keep the plain `check` command for
   the maintained baseline and CI.
@@ -82,15 +84,16 @@ pilot flow, not as the default maintainer layout.
 - update [00-project-and-upstream.md](00-project-and-upstream.md) when the
   imported-root pin, ownership vocabulary, or repo-baseline statement changed
 - update [10-build-and-source-layout.md](10-build-and-source-layout.md) when
-  entrypoints, pins, build-layout guidance, or source-ownership manifest usage
-  changed
+  entrypoints, pins, build-layout guidance, source-ownership manifest usage,
+  or workflow imported-root helper usage changed
 - update [20-zig-build-graph.md](20-zig-build-graph.md) when public targets,
   options, or build-domain ownership changed
 - update [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) when CI
-  jobs, artifacts, ownership guards, or local reproduction changed
+  jobs, artifacts, ownership guards, imported-root workflow guards, or local
+  reproduction changed
 - update [70-tests-and-verification.md](70-tests-and-verification.md) when the
-  smallest rerun lane, ownership guard, or generated-surface validation
-  contract changed
+  smallest rerun lane, ownership guard, workflow imported-root guard, or
+  generated-surface validation contract changed
 
 ## Maintenance Rules
 
