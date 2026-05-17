@@ -29,7 +29,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with approved `@cImport` boundary | raster font generator entrypoint |
-| `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
+| `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
 | `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated thin mathematics command-wrapper slice for `min`, `max`, `ceil`, `floor`, and `cosh` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
@@ -114,7 +114,9 @@ Verified slices:
 
 - deterministic generators under `../zig_build/tools/`
 - short-integer leaf modules under `../zig_src/leaf/`, including the live
-  `logicalOps/rotateBits.c` owner replacement
+  `logicalOps/rotateBits.c` owner replacement and the live boolean operator
+  owner replacements for `and.c`, `or.c`, `not.c`, `nand.c`, `nor.c`,
+  `xor.c`, and `xnor.c`
 - thin mathematics command-wrapper ownership under `../zig_src/mathematics/`,
   with retained helper entrypoints reached through
   `../zig_src/mathematics/math_command_wrappers_runtime.zig`

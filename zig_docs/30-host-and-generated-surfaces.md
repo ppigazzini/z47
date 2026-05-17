@@ -73,7 +73,9 @@ metadata accessors from `registers.c` with
 `../zig_src/state/register_metadata.zig`, and replaces the exported
 system-flag accessor and change-tracking surface from `flags.c` with
 `../zig_src/state/flags.zig` plus retained wrapper sources under
-`../zig_bridge/state/`. The current host
+`../zig_bridge/state/`. The current host lane also replaces the remaining
+short-integer boolean logical owners under `../src/c47/logicalOps/` with
+`../zig_src/leaf/logical_boolean_ops.zig`. The current host
 lane also replaces the broader public keyboard command-entry surface with
 `../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
 retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
@@ -91,6 +93,7 @@ Current grouped host test steps:
 
 - `zig build logical_shortint_parity`
 - `zig build rotate_bits_parity`
+- `zig build logical_boolean_ops_suite`
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
 - `zig build flags_parity`
@@ -104,6 +107,9 @@ Current grouped host test steps:
 
 `zig build rotate_bits_parity` compares the live Zig `rotateBits.c` owner
 replacement with the imported oracle against a fake runtime. `zig build
+logical_boolean_ops_suite` runs the host test harness against the focused
+`and`, `or`, `not`, `nand`, `nor`, `xor`, and `xnor` command corpus after the
+live Zig owner replacement for those files. `zig build
 stack_state_parity` compares the live Zig stack-state owner with the imported
 `stack.c` oracle against a fake runtime. `zig build register_metadata_parity`
 does the same for the live register-metadata accessors against the imported
