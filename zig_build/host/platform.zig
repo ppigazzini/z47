@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const host_types = @import("types.zig");
+const TranslateC = std.Build.Step.TranslateC;
 
 const HostSearchPathKind = enum {
     include,
@@ -12,6 +13,11 @@ const PkgConfigTokenKind = enum {
     library_path,
     define,
     library,
+};
+
+const TranslateCPkgConfigTokenKind = enum {
+    include,
+    define,
 };
 
 pub fn resolveCommonConfig(
@@ -103,6 +109,24 @@ pub fn linkRasterFontsFreetype(module: *std.Build.Module, common: host_types.Com
     }
 }
 
+pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_types.CommonConfig) void {
+    if (!std.mem.eql(u8, common.platform_define, "WIN32")) {
+        translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+        return;
+    }
+
+    if (addWindowsPkgConfigCFlagsTranslateC(translate_c, "freetype2")) {
+        return;
+    }
+
+    if (windowsHostPrefixFromOwner(translate_c.step.owner)) |prefix| {
+        translate_c.addSystemIncludePath(.{ .cwd_relative = translate_c.step.owner.fmt("{s}/include/freetype2", .{prefix}) });
+        return;
+    }
+
+    translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+}
+
 fn linkWindowsPkgConfigPackage(module: *std.Build.Module, package: []const u8) bool {
     const flags = build_common.commandOutput(module.owner, &.{ "pkg-config", "--cflags", "--libs", package }) orelse return false;
 
@@ -154,12 +178,54 @@ fn linkWindowsPkgConfigPackage(module: *std.Build.Module, package: []const u8) b
     return pending == null;
 }
 
+fn addWindowsPkgConfigCFlagsTranslateC(translate_c: *TranslateC, package: []const u8) bool {
+    const flags = build_common.commandOutput(translate_c.step.owner, &.{ "pkg-config", "--cflags", package }) orelse return false;
+
+    var tokens = std.mem.tokenizeAny(u8, flags, " \t\r\n");
+    var pending: ?TranslateCPkgConfigTokenKind = null;
+
+    while (tokens.next()) |token| {
+        if (pending) |kind| {
+            addTranslateCPkgConfigToken(translate_c, token, kind);
+            pending = null;
+            continue;
+        }
+
+        if (std.mem.eql(u8, token, "-I")) {
+            pending = .include;
+            continue;
+        }
+        if (std.mem.eql(u8, token, "-D")) {
+            pending = .define;
+            continue;
+        }
+
+        if (std.mem.startsWith(u8, token, "-I")) {
+            addTranslateCPkgConfigToken(translate_c, token[2..], .include);
+            continue;
+        }
+        if (std.mem.startsWith(u8, token, "-D")) {
+            addTranslateCPkgConfigToken(translate_c, token[2..], .define);
+            continue;
+        }
+    }
+
+    return pending == null;
+}
+
 fn addWindowsPkgConfigToken(module: *std.Build.Module, token: []const u8, kind: PkgConfigTokenKind) void {
     switch (kind) {
         .include => module.addSystemIncludePath(.{ .cwd_relative = token }),
         .library_path => module.addLibraryPath(.{ .cwd_relative = token }),
         .define => addPkgConfigDefine(module, token),
         .library => linkWindowsImportLibraryOrSystem(module, token),
+    }
+}
+
+fn addTranslateCPkgConfigToken(translate_c: *TranslateC, token: []const u8, kind: TranslateCPkgConfigTokenKind) void {
+    switch (kind) {
+        .include => translate_c.addSystemIncludePath(.{ .cwd_relative = token }),
+        .define => addTranslateCPkgConfigDefine(translate_c, token),
     }
 }
 
@@ -170,6 +236,15 @@ fn addPkgConfigDefine(module: *std.Build.Module, define: []const u8) void {
     }
 
     module.addCMacro(define, "1");
+}
+
+fn addTranslateCPkgConfigDefine(translate_c: *TranslateC, define: []const u8) void {
+    if (std.mem.indexOfScalar(u8, define, '=')) |eq| {
+        translate_c.defineCMacro(define[0..eq], define[eq + 1 ..]);
+        return;
+    }
+
+    translate_c.defineCMacro(define, "1");
 }
 
 fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8) void {
@@ -197,9 +272,12 @@ fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8)
     module.linkSystemLibrary(name, .{ .use_pkg_config = .no });
 }
 
-fn windowsHostPrefix(module: *std.Build.Module) ?[]const u8 {
-    const owner = module.owner;
+fn windowsHostPrefixFromOwner(owner: *std.Build) ?[]const u8 {
     return owner.graph.environ_map.get("MSYSTEM_PREFIX") orelse owner.graph.environ_map.get("MINGW_PREFIX");
+}
+
+fn windowsHostPrefix(module: *std.Build.Module) ?[]const u8 {
+    return windowsHostPrefixFromOwner(module.owner);
 }
 
 fn addHostSearchPaths(module: *std.Build.Module, paths: []const u8, comptime kind: HostSearchPathKind) void {
