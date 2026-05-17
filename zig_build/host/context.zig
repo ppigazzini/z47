@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
+const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
 const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
@@ -8,6 +9,7 @@ const memory_rewrites = @import("../state/memory_rewrites.zig");
 const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
+const tone_rewrites = @import("../ui/tone_rewrites.zig");
 const host_generated = @import("generated.zig");
 const host_platform = @import("platform.zig");
 const host_types = @import("types.zig");
@@ -46,6 +48,8 @@ pub fn prepareContext(
     const core_sources_without_program_serialization = try program_serialization_rewrites.filterCoreSources(b, core_sources_without_memory);
     const core_sources_without_calc_state = try calc_state_rewrites.filterCoreSources(b, core_sources_without_program_serialization);
     const core_sources_without_keyboard_state = try keyboard_state_rewrites.filterCoreSources(b, core_sources_without_calc_state);
+    const core_sources_without_math_command_wrappers = try math_command_wrapper_rewrites.filterCoreSources(b, core_sources_without_keyboard_state);
+    const core_sources_without_tone = try tone_rewrites.filterCoreSources(b, core_sources_without_math_command_wrappers);
 
     const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
     const generated = try host_generated.addGeneratorSteps(b, host_target, optimize, common);
@@ -55,7 +59,7 @@ pub fn prepareContext(
     return .{
         .host_target = host_target,
         .common = common,
-        .core_sources = core_sources_without_keyboard_state,
+        .core_sources = core_sources_without_tone,
         .gtk_sources = try filterSourceByName(b, gtk_sources, "gtkGui.c"),
         .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
         .version_headers_dir = version_headers_dir,
