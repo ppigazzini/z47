@@ -1,4 +1,5 @@
 const std = @import("std");
+const host_platform = @import("../host/platform.zig");
 
 pub const RuntimeObjects = struct {
     math_command_wrappers: *std.Build.Step.Compile,
@@ -135,7 +136,7 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_parity.c"), .flags = &.{} });
-    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    host_platform.linkGmp(exe.root_module, target);
     exe.root_module.addObject(runtime_object);
     return exe;
 }

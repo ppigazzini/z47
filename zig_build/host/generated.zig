@@ -209,7 +209,7 @@ pub fn addGeneratorSteps(
     generate_catalogs.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = build_common.generate_catalogs_sources, .flags = core_c_flags });
     generate_catalogs.root_module.addCSourceFile(.{ .file = raster_fonts_data, .flags = core_c_flags });
     host_platform.linkGtk3(generate_catalogs.root_module, common);
-    generate_catalogs.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    host_platform.linkGmp(generate_catalogs.root_module, host_target);
 
     const run_generate_catalogs = b.addRunArtifact(generate_catalogs);
     run_generate_catalogs.setCwd(b.path("."));
@@ -243,7 +243,7 @@ pub fn addGeneratorSteps(
     generate_testpgms.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     generate_testpgms.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = build_common.generate_testpgms_sources, .flags = core_c_flags });
     host_platform.linkGtk3(generate_testpgms.root_module, common);
-    generate_testpgms.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    host_platform.linkGmp(generate_testpgms.root_module, host_target);
 
     const run_generate_testpgms = b.addRunArtifact(generate_testpgms);
     run_generate_testpgms.setCwd(b.path("."));

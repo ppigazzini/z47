@@ -97,7 +97,7 @@ pub fn addSimulator(
     exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
-    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    host_platform.linkGmp(exe.root_module, host_target);
     exe.root_module.linkSystemLibrary("m", .{});
     if (common.needs_libdl) {
         exe.root_module.linkSystemLibrary("dl", .{});
@@ -172,7 +172,7 @@ pub fn addTestSuite(
     exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);
     host_platform.linkGtk3(exe.root_module, common);
-    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+    host_platform.linkGmp(exe.root_module, host_target);
     exe.root_module.linkSystemLibrary("m", .{});
     return exe;
 }
