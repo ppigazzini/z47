@@ -13,14 +13,14 @@ z47 uses three explicit implementation modes.
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
 | existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
-| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, plus runtime seams under `zig_src/leaf/shortint_runtime.zig` and `zig_src/state/*_runtime.zig` |
-| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/` and `zig_src/state/` |
+| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, plus runtime seams under `zig_src/leaf/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
+| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 
 ## Current Surface Classification
 
 | Surface | Current classification | Notes |
 | --- | --- | --- |
-| `../src/c47` core | existing C compiled by Zig, with selected leaf and state replacements | broad stateful core still mostly remains imported C |
+| `../src/c47` core | existing C compiled by Zig, with selected leaf, mathematics-wrapper, state, and UI replacements | broad stateful core still mostly remains imported C |
 | `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C |
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
 | `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
@@ -30,6 +30,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with approved `@cImport` boundary | raster font generator entrypoint |
 | `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer logical slice |
+| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated thin mathematics command-wrapper slice for `min`, `max`, `ceil`, `floor`, and `cosh` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
@@ -38,7 +39,10 @@ z47 uses three explicit implementation modes.
 | `../zig_src/state/calc_state.zig` plus `../zig_build/state/calc_state_rewrites.zig` | manual Zig rewrite | parity-gated save or restore owner slice with retained firmware entrypoints routed through a runtime seam |
 | `../zig_src/state/keyboard_state.zig` plus `../zig_build/state/keyboard_state_rewrites.zig` | manual Zig rewrite | parity-gated keyboard helper and command-state slice while some firmware-sized public entrypoints still stay retained C |
 | `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
+| `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone_rewrites.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
+| `../zig_bridge/ui/tone_runtime_helpers.c` | existing C compiled by Zig | retained target-specific refresh helper paired with the live Zig tone owner |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
+| `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command-wrapper slice |
 | `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
 | `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
 | `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
@@ -46,6 +50,7 @@ z47 uses three explicit implementation modes.
 | `../zig_src/state/keyboard_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the keyboard-state slice |
 | `../zig_src/state/memory_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the memory slice |
 | `../zig_src/state/program_serialization_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the program-serialization slice |
+| `../zig_src/ui/tone_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the UI tone slice |
 
 ## Approved Checked-In Boundary Files
 
@@ -63,6 +68,7 @@ Current approved direct `extern` symbol files:
 - `zig_build/tools/generate_catalogs.zig`
 - `zig_build/tools/generate_testpgms.zig`
 - `zig_src/leaf/shortint_runtime.zig`
+- `zig_src/mathematics/math_command_wrappers_runtime.zig`
 - `zig_src/state/calc_state_runtime.zig`
 - `zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig`
 - `zig_src/state/flags_runtime.zig`
@@ -71,6 +77,7 @@ Current approved direct `extern` symbol files:
 - `zig_src/state/program_serialization_runtime.zig`
 - `zig_src/state/register_metadata_runtime.zig`
 - `zig_src/state/stack_runtime.zig`
+- `zig_src/ui/tone_runtime.zig`
 
 No other checked-in Zig file is allowed to introduce `@cImport` or direct
 `extern fn`, `extern const`, or `extern var` usage without updating the
@@ -107,6 +114,9 @@ Verified slices:
 
 - deterministic generators under `../zig_build/tools/`
 - short-integer logical leaf modules under `../zig_src/leaf/`
+- thin mathematics command-wrapper ownership under `../zig_src/mathematics/`,
+  with retained helper entrypoints reached through
+  `../zig_src/mathematics/math_command_wrappers_runtime.zig`
 - stack mutation plus undo snapshot or restore ownership under
   `../zig_src/state/`
 - register-metadata accessors under `../zig_src/state/`
@@ -118,6 +128,9 @@ Verified slices:
   firmware entrypoints still reached through `../zig_src/state/calc_state_runtime.zig`
 - keyboard helper and command-state ownership under `../zig_src/state/`, with
   retained public entrypoints still used where firmware size requires them
+- tone command ownership under `../zig_src/ui/`, with target-specific display
+  refresh still routed through `../zig_src/ui/tone_runtime.zig` and the retained
+  helper `../zig_bridge/ui/tone_runtime_helpers.c`
 
 Not yet rewritten in broad verified form:
 

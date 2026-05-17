@@ -5,11 +5,13 @@ const host_platform = @import("platform.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
+const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
 const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
+const tone_rewrites = @import("../ui/tone_rewrites.zig");
 const host_types = @import("types.zig");
 
 const z47_test_list = "zig_build/tests/testSuiteList_z47.txt";
@@ -185,6 +187,18 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_keyboard_state_parity.setCwd(b.path("."));
     const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard-state parity suite");
     keyboard_state_parity_step.dependOn(&run_keyboard_state_parity.step);
+
+    const math_command_wrappers_parity = math_command_wrapper_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_math_command_wrappers_parity = b.addRunArtifact(math_command_wrappers_parity);
+    run_math_command_wrappers_parity.setCwd(b.path("."));
+    const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the thin math-command wrapper parity suite");
+    math_command_wrappers_parity_step.dependOn(&run_math_command_wrappers_parity.step);
+
+    const tone_parity = tone_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_tone_parity = b.addRunArtifact(tone_parity);
+    run_tone_parity.setCwd(b.path("."));
+    const tone_parity_step = b.step("tone_parity", "Run the tone UI parity suite");
+    tone_parity_step.dependOn(&run_tone_parity.step);
 
     const keyboard_statusbar_flags_regression = b.addExecutable(.{
         .name = "keyboard-statusbar-flags-regression",
