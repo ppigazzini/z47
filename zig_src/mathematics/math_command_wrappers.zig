@@ -349,6 +349,103 @@ fn tenPowCplx() callconv(.c) void {
     intPowCplx(runtime.z47_math_wrappers_const_ln10());
 }
 
+fn m1PowLonI() callconv(.c) void {
+    runtime.z47_math_wrappers_minus_one_power_long_integer();
+}
+
+fn m1PowShoI() callconv(.c) void {
+    var sign_exponent: i32 = undefined;
+    const exponent_value = runtime.WP34S_extract_value(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+        &sign_exponent,
+    );
+    const odd: i32 = @intCast(exponent_value & 1);
+
+    if (runtime.shortIntegerMode == runtime.SIM_UNSIGN and odd != 0) {
+        runtime.setSystemFlag(runtime.FLAG_OVERFLOW);
+    } else {
+        runtime.clearSystemFlag(runtime.FLAG_OVERFLOW);
+    }
+
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_build_value(1, odd);
+}
+
+fn m1PowReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var y: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) or runtime.realIsNaN(&x)) {
+        runtime.realSetNaN(&x);
+        runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+        return;
+    }
+
+    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+    runtime.WP34S_Mod(&x, runtime.z47_math_wrappers_const_2(), &x, &runtime.ctxtReal39);
+    if (runtime.realIsZero(&x)) {
+        runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_1(), runtime.REGISTER_X, runtime.amNone);
+    } else if (runtime.realCompareEqual(&x, runtime.z47_math_wrappers_const_1())) {
+        runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_minus_1(), runtime.REGISTER_X, runtime.amNone);
+    } else {
+        runtime.fnSetFlag(runtime.FLAG_CPXRES);
+        runtime.fnRefreshState();
+
+        runtime.realMultiply(&x, runtime.z47_math_wrappers_const_pi(), &x, &runtime.ctxtReal75);
+        eulersFormula(&x, runtime.z47_math_wrappers_const_0(), &x, &y, &runtime.ctxtReal39);
+
+        runtime.convertComplexToResultRegister(&x, &y, runtime.REGISTER_X);
+    }
+}
+
+fn m1PowCplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    runtime.fnSetFlag(runtime.FLAG_CPXRES);
+    runtime.fnRefreshState();
+    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+
+    _ = runtime.decimal128ToNumber(runtime.registerReal34Ptr(runtime.REGISTER_X), &z_real);
+    runtime.WP34S_Mod(&z_real, runtime.z47_math_wrappers_const_2(), &z_real, &runtime.ctxtReal39);
+
+    _ = runtime.decimal128ToNumber(runtime.registerImag34Ptr(runtime.REGISTER_X), &z_imag);
+    if (runtime.realIsZero(&z_imag)) {
+        if (runtime.realIsZero(&z_real)) {
+            runtime.convertComplexToResultRegister(
+                runtime.z47_math_wrappers_const_1(),
+                runtime.z47_math_wrappers_const_0(),
+                runtime.REGISTER_X,
+            );
+            return;
+        }
+
+        if (runtime.realCompareEqual(&z_real, runtime.z47_math_wrappers_const_1())) {
+            runtime.convertComplexToResultRegister(
+                runtime.z47_math_wrappers_const_minus_1(),
+                runtime.z47_math_wrappers_const_0(),
+                runtime.REGISTER_X,
+            );
+            return;
+        }
+    }
+
+    runtime.mulComplexReal(
+        &z_real,
+        &z_imag,
+        runtime.z47_math_wrappers_const_pi(),
+        &z_real,
+        &z_imag,
+        &runtime.ctxtReal75,
+    );
+    eulersFormula(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+}
+
 pub export fn eulersFormula(
     in_real: *const runtime.real_t,
     in_imag: *const runtime.real_t,
@@ -898,6 +995,12 @@ pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processIntRealComplexMonadicFunction(&tenPowReal, &tenPowCplx, &tenPowShoI, &tenPowLonI);
+}
+
+pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&m1PowReal, &m1PowCplx, &m1PowShoI, &m1PowLonI);
 }
 
 pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {

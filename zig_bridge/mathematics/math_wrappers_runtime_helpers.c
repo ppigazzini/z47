@@ -55,6 +55,23 @@ end:
   longIntegerFree(x);
 }
 
+void z47_math_wrappers_minus_one_power_long_integer(void) {
+  longInteger_t lgInt, exponent;
+
+  longIntegerInit(lgInt);
+  uInt32ToLongInteger(1u, lgInt);
+
+  convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
+  if(longIntegerIsOdd(exponent)) {
+    longIntegerChangeSign(lgInt);
+  }
+
+  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+
+  longIntegerFree(lgInt);
+  longIntegerFree(exponent);
+}
+
 int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue) {
   int32_t exponentSign;
   longInteger_t base, exponent;
@@ -138,6 +155,34 @@ const real_t *z47_math_wrappers_const_1(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_minus_1(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0x80, 1);
+    initialized = true;
+  }
+
+  return &value;
+}
+
+const real_t *z47_math_wrappers_const_2(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 2);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const_2;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_2e6(void) {
   static bool initialized = false;
   static real_t value;
@@ -179,6 +224,22 @@ const real_t *z47_math_wrappers_const_ln10(void) {
   return &value;
 #else
   return const39_ln10;
+#endif
+}
+
+const real_t *z47_math_wrappers_const_pi(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 3);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const39_pi;
 #endif
 }
 
