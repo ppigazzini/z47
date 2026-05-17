@@ -49,6 +49,9 @@ realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
 static real_t fake_const_nan_value;
+static real_t fake_const_one_value;
+static real_t fake_const_plus_infinity_value;
+static real_t fake_const_minus_infinity_value;
 const real_t *const_NaN = &fake_const_nan_value;
 
 static void setRegisterScalar(int32_t signed_value, uint8_t bits) {
@@ -131,6 +134,9 @@ void mathWrappersReset(void) {
   ctxtReal51.digits = 51;
   ctxtReal75.digits = 75;
   setFakeReal(&fake_const_nan_value, 0, 0x20);
+  setFakeReal(&fake_const_one_value, 1, 0);
+  setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
+  setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
 }
 
 void mathWrappersSetSaveLastXResult(bool_t result) {
@@ -463,6 +469,47 @@ decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decN
   (void)realContext;
   setFakeReal(result, fakeRealValue(lhs) * fakeRealValue(rhs), 0);
   return result;
+}
+
+decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
+  const int32_t rhs_value = fakeRealValue(rhs);
+
+  snapshot.dec_number_divide_calls++;
+  snapshot.dec_number_divide_lhs_value = fakeRealValue(lhs);
+  snapshot.dec_number_divide_rhs_value = rhs_value;
+  (void)realContext;
+  setFakeReal(result, rhs_value == 0 ? 0 : (fakeRealValue(lhs) * 100) / rhs_value, 0);
+  return result;
+}
+
+bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
+  const int32_t lhs_value = fakeRealValue(number1);
+  const int32_t rhs_value = fakeRealValue(number2);
+
+  snapshot.real_compare_abs_equal_calls++;
+  snapshot.real_compare_abs_equal_lhs_value = lhs_value;
+  snapshot.real_compare_abs_equal_rhs_value = rhs_value;
+  return (lhs_value < 0 ? -lhs_value : lhs_value) == (rhs_value < 0 ? -rhs_value : rhs_value);
+}
+
+void divRealComplex(const real_t *numer,
+                    const real_t *denomReal,
+                    const real_t *denomImag,
+                    real_t *quotientReal,
+                    real_t *quotientImag,
+                    realContext_t *realContext) {
+  snapshot.div_real_complex_calls++;
+  snapshot.div_real_complex_numer_value = fakeRealValue(numer);
+  snapshot.div_real_complex_denom_real_value = fakeRealValue(denomReal);
+  snapshot.div_real_complex_denom_imag_value = fakeRealValue(denomImag);
+  (void)realContext;
+  setFakeReal(quotientReal, fakeRealValue(numer) + fakeRealValue(denomReal), 0);
+  setFakeReal(quotientImag, fakeRealValue(numer) - fakeRealValue(denomImag), 0);
+}
+
+void fnInvertMatrix(uint16_t unusedButMandatoryParameter) {
+  snapshot.invert_matrix_calls++;
+  (void)unusedButMandatoryParameter;
 }
 
 void mulComplexComplex(const real_t *factor1Real,

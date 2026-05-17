@@ -22,6 +22,8 @@ pub const dtLongInteger: u32 = 0;
 pub const dtReal34: u32 = 1;
 pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
+pub const dtReal34Matrix: u32 = 6;
+pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
 
 pub const LI_ZERO: u32 = 0;
@@ -133,6 +135,17 @@ pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn divRealComplex(
+    numer: *const real_t,
+    denom_real: *const real_t,
+    denom_imag: *const real_t,
+    quotient_real: *real_t,
+    quotient_imag: *real_t,
+    real_context: *realContext_t,
+) void;
+pub extern fn fnInvertMatrix(unused_but_mandatory_parameter: u16) void;
 pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
@@ -141,7 +154,11 @@ pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
 pub extern fn z47_math_wrappers_square_long_integer() void;
 pub extern fn z47_math_wrappers_cube_long_integer() void;
+pub extern fn z47_math_wrappers_const_1() *const real_t;
+pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
+pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_report_sign_real_nan_error() void;
+pub extern fn z47_math_wrappers_report_invert_real_divide_by_zero_error() void;
 pub extern fn z47_math_wrappers_report_sinh_cosh_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_tanh_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_square_real_domain_error() void;
@@ -213,4 +230,8 @@ pub inline fn realSetPositiveSign(value: *real_t) void {
 
 pub inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberMultiply(result, lhs, rhs, real_context);
+}
+
+pub inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberDivide(result, lhs, rhs, real_context);
 }

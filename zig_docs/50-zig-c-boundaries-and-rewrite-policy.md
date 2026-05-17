@@ -31,7 +31,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with build-managed `translate-c` boundary | raster font generator entrypoint |
 | `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
-| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx` |
+| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx`, while the matrix fallback still routes through retained `fnInvertMatrix` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
@@ -127,9 +127,9 @@ Verified slices:
   owner replacements for `and.c`, `or.c`, `not.c`, `nand.c`, `nor.c`,
   `xor.c`, and `xnor.c`
 - mathematics command-wrapper ownership under `../zig_src/mathematics/`,
-  including the live `sign.c`, `changeSign.c`, `tanh.c`, `square.c`, and
-  `cube.c` owner replacements plus the earlier rounding and trig owners, with
-  retained helper entrypoints reached through
+  including the live `invert.c`, `sign.c`, `changeSign.c`, `tanh.c`,
+  `square.c`, and `cube.c` owner replacements plus the earlier rounding and
+  trig owners, with retained helper entrypoints reached through
   `../zig_src/mathematics/math_command_wrappers_runtime.zig`
 - stack mutation plus undo snapshot or restore ownership under
   `../zig_src/state/`

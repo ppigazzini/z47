@@ -18,6 +18,10 @@
 #include "../../../src/c47/mathematics/floor.c"
 #undef fnFloor
 
+#define fnInvert oracle_fnInvert
+#include "../../../src/c47/mathematics/invert.c"
+#undef fnInvert
+
 #define fnSign oracle_fnSign
 #include "../../../src/c47/mathematics/sign.c"
 #undef fnSign

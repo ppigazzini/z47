@@ -95,6 +95,21 @@ typedef struct {
   int32_t dec_number_multiply_rhs_value;
   uint8_t dec_number_multiply_rhs_bits;
 
+  uint32_t dec_number_divide_calls;
+  int32_t dec_number_divide_lhs_value;
+  int32_t dec_number_divide_rhs_value;
+
+  uint32_t real_compare_abs_equal_calls;
+  int32_t real_compare_abs_equal_lhs_value;
+  int32_t real_compare_abs_equal_rhs_value;
+
+  uint32_t div_real_complex_calls;
+  int32_t div_real_complex_numer_value;
+  int32_t div_real_complex_denom_real_value;
+  int32_t div_real_complex_denom_imag_value;
+
+  uint32_t invert_matrix_calls;
+
   uint32_t mul_complex_complex_calls;
   int32_t mul_complex_complex_factor1_real_value;
   int32_t mul_complex_complex_factor1_imag_value;
