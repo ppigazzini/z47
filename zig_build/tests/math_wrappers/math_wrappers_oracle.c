@@ -92,6 +92,18 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef realExp
 #undef realExpLimitCheck
 
+#define realPower2 oracle_realPower2
+#define intPowReal oracle_intPowReal
+#define intPowCplx oracle_intPowCplx
+#define realExp oracle_realExp
+#define fn2Pow oracle_fn2Pow
+#include "../../../src/c47/mathematics/2pow.c"
+#undef fn2Pow
+#undef realExp
+#undef intPowCplx
+#undef intPowReal
+#undef realPower2
+
 #define realPower10 oracle_realPower10
 #define intPowReal oracle_intPowReal
 #define intPowCplx oracle_intPowCplx
