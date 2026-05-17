@@ -246,6 +246,191 @@ fn tanCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
 }
 
+fn signReal() callconv(.c) void {
+    const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
+
+    if (runtime.real34IsNaN(x)) {
+        runtime.z47_math_wrappers_report_sign_real_nan_error();
+        return;
+    }
+
+    runtime.z47_math_wrappers_build_sign_result(
+        if (runtime.real34IsZero(x))
+            0
+        else if (runtime.real34IsNegative(x))
+            -1
+        else
+            1,
+    );
+}
+
+fn signCplx() callconv(.c) void {
+    runtime.unitVectorCplx();
+}
+
+fn signShoI() callconv(.c) void {
+    var sign_value: i32 = 0;
+    const value = runtime.WP34S_extract_value(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*, &sign_value);
+
+    runtime.z47_math_wrappers_build_sign_result(
+        if (value == 0)
+            0
+        else
+            2 * -sign_value + 1,
+    );
+}
+
+fn signLonI() callconv(.c) void {
+    const sign_result: i32 = switch (runtime.getRegisterLongIntegerSign(runtime.REGISTER_X)) {
+        runtime.LI_ZERO => 0,
+        runtime.LI_NEGATIVE => -1,
+        runtime.LI_POSITIVE => 1,
+        else => unreachable,
+    };
+
+    runtime.z47_math_wrappers_build_sign_result(sign_result);
+}
+
+fn chsZeroCheck(value: *runtime.real_t) void {
+    runtime.realChangeSign(value);
+    if (runtime.realIsZero(value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetPositiveSign(value);
+    }
+}
+
+pub export fn chsReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var mode = runtime.amNone;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
+        mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+    }
+
+    chsZeroCheck(&x);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, mode);
+}
+
+pub export fn chsCplx() callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        return;
+    }
+
+    chsZeroCheck(&a);
+    chsZeroCheck(&b);
+    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+}
+
+pub export fn chsShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intChs(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
+}
+
+fn chsLonI() callconv(.c) void {
+    runtime.z47_math_wrappers_change_sign_long_integer();
+}
+
+fn changeSignTime() void {
+    const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
+    x.bytes[15] ^= runtime.DECNEG;
+
+    if (runtime.real34IsZero(x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        x.bytes[15] &= 0x7f;
+    }
+}
+
+fn squareLonI() callconv(.c) void {
+    runtime.z47_math_wrappers_square_long_integer();
+}
+
+fn squareShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn squareReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_square_real_domain_error();
+        return;
+    }
+
+    runtime.realMultiply(&x, &x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn squareCplx() callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        return;
+    }
+
+    runtime.mulComplexComplex(&a, &b, &a, &b, &a, &b, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+}
+
+fn cubeLonI() callconv(.c) void {
+    runtime.z47_math_wrappers_cube_long_integer();
+}
+
+fn cubeShoI() callconv(.c) void {
+    const square = runtime.WP34S_intMultiply(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
+        square,
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn cubeReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var x_squared: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_cube_real_domain_error();
+        return;
+    }
+
+    runtime.realMultiply(&x, &x, &x_squared, &runtime.ctxtReal39);
+    runtime.realMultiply(&x_squared, &x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn cubeCplx() callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+    var real_square: runtime.real_t = undefined;
+    var imag_square: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        return;
+    }
+
+    runtime.mulComplexComplex(&a, &b, &a, &b, &real_square, &imag_square, &runtime.ctxtReal39);
+    runtime.mulComplexComplex(&real_square, &imag_square, &a, &b, &a, &b, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+}
+
 pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -318,4 +503,33 @@ pub export fn fnCosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&coshReal, &coshCplx);
+}
+
+pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&signReal, &signCplx, &signShoI, &signLonI);
+}
+
+pub export fn fnChangeSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
+        changeSignTime();
+        return;
+    }
+
+    runtime.processIntRealComplexMonadicFunction(&chsReal, &chsCplx, &chsShoI, &chsLonI);
+}
+
+pub export fn fnSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&squareReal, &squareCplx, &squareShoI, &squareLonI);
+}
+
+pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&cubeReal, &cubeCplx, &cubeShoI, &cubeLonI);
 }

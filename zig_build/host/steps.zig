@@ -203,7 +203,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const math_command_wrappers_parity = math_command_wrapper_rewrites.addParityExecutable(b, context.host_target, optimize);
     const run_math_command_wrappers_parity = b.addRunArtifact(math_command_wrappers_parity);
     run_math_command_wrappers_parity.setCwd(b.path("."));
-    const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the thin math-command wrapper parity suite");
+    const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the math-command wrapper parity suite");
     math_command_wrappers_parity_step.dependOn(&run_math_command_wrappers_parity.step);
 
     const constants_parity = constants_rewrites.addParityExecutable(b, context.host_target, optimize);

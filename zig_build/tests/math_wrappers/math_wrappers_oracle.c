@@ -18,6 +18,14 @@
 #include "../../../src/c47/mathematics/floor.c"
 #undef fnFloor
 
+#define fnSign oracle_fnSign
+#include "../../../src/c47/mathematics/sign.c"
+#undef fnSign
+
+#define fnChangeSign oracle_fnChangeSign
+#include "../../../src/c47/mathematics/changeSign.c"
+#undef fnChangeSign
+
 #define sinComplex oracle_sinComplex
 #define sinCosReal oracle_sinCosReal
 #define sinCosCplx oracle_sinCosCplx
@@ -56,3 +64,11 @@ uint8_t oracle_TanComplex(const real_t *xReal, const real_t *xImag, real_t *rRea
 #undef fnCosh
 #undef sinhCoshCplx
 #undef sinhCoshReal
+
+#define fnSquare oracle_fnSquare
+#include "../../../src/c47/mathematics/square.c"
+#undef fnSquare
+
+#define fnCube oracle_fnCube
+#include "../../../src/c47/mathematics/cube.c"
+#undef fnCube
