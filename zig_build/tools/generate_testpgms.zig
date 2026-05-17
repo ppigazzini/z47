@@ -1,32 +1,7 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
-const c = @cImport({
-    @cDefine("PC_BUILD", "1");
-    @cDefine("DECNUMBER_FASTMUL", "1");
-    switch (builtin.target.os.tag) {
-        .linux => @cDefine("LINUX", "1"),
-        .macos => @cDefine("OSX", "1"),
-        .windows => @cDefine("WIN32", "1"),
-        else => {},
-    }
-    if (builtin.target.ptrBitWidth() == 64) {
-        @cDefine("OS64BIT", "1");
-    } else {
-        @cDefine("OS32BIT", "1");
-    }
-
-    @cInclude("stdbool.h");
-    @cInclude("stdint.h");
-    @cInclude("stddef.h");
-    @cInclude("stdio.h");
-    @cInclude("defines.h");
-    @cInclude("decContext.h");
-    @cInclude("decNumber.h");
-    @cInclude("decQuad.h");
-    @cInclude("realType.h");
-    @cInclude("items.h");
-});
+const c = @import("c_bindings");
 
 const real34_t = c.decQuad;
 const last_item = 2732;
@@ -477,7 +452,7 @@ const Generator = struct {
 
     fn insertReal34BinaryLiteral(self: *Generator, s: []const u8) !void {
         var value: real34_t = undefined;
-        const c_string = try std.heap.page_allocator.dupeZ(u8, s);
+        const c_string = try std.heap.page_allocator.dupeSentinel(u8, s, 0);
         defer std.heap.page_allocator.free(c_string);
 
         try self.insertItem(c.ITM_LITERAL);
@@ -515,9 +490,9 @@ const Generator = struct {
     fn insertComplex34BinaryLiteral(self: *Generator, real: []const u8, imag: []const u8) !void {
         var real_value: real34_t = undefined;
         var imag_value: real34_t = undefined;
-        const c_real = try std.heap.page_allocator.dupeZ(u8, real);
+        const c_real = try std.heap.page_allocator.dupeSentinel(u8, real, 0);
         defer std.heap.page_allocator.free(c_real);
-        const c_imag = try std.heap.page_allocator.dupeZ(u8, imag);
+        const c_imag = try std.heap.page_allocator.dupeSentinel(u8, imag, 0);
         defer std.heap.page_allocator.free(c_imag);
 
         try self.insertItem(c.ITM_LITERAL);
@@ -1255,7 +1230,7 @@ fn emitLiteralForms(generator: *Generator) !void {
 
 fn writeOutput(path: []const u8, generator: *const Generator) !void {
     var size_of_programs: u32 = @intCast(generator.bytes().len);
-    const file_path = try std.heap.page_allocator.dupeZ(u8, path);
+    const file_path = try std.heap.page_allocator.dupeSentinel(u8, path, 0);
     defer std.heap.page_allocator.free(file_path);
 
     const file = c.fopen(file_path.ptr, "wb") orelse return error.FileOpenFailed;
@@ -1266,7 +1241,7 @@ fn writeOutput(path: []const u8, generator: *const Generator) !void {
 }
 
 fn writeFile(path: []const u8, contents: []const u8) !void {
-    const c_path = try std.heap.page_allocator.dupeZ(u8, path);
+    const c_path = try std.heap.page_allocator.dupeSentinel(u8, path, 0);
     defer std.heap.page_allocator.free(c_path);
 
     const file = c.fopen(c_path.ptr, "wb") orelse return error.FileOpenFailed;

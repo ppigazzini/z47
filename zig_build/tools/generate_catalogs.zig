@@ -1,10 +1,6 @@
 const std = @import("std");
 
-const c = @cImport({
-    @cInclude("stdbool.h");
-    @cInclude("stdint.h");
-    @cInclude("stdio.h");
-});
+const c = @import("c_bindings");
 
 const last_item = 2732;
 const max_number_of_items = 1200;
@@ -90,7 +86,7 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    const c_output_path = try allocator.dupeZ(u8, output_path);
+    const c_output_path = try allocator.dupeSentinel(u8, output_path, 0);
     defer allocator.free(c_output_path);
 
     const file = c.fopen(c_output_path.ptr, "wb") orelse return error.FileOpenFailed;

@@ -107,7 +107,7 @@ pub fn zeroReal() real_t {
         .digits = 1,
         .exponent = 0,
         .bits = 0,
-        .lsu = [_]u16{0} ** DECNUMUNITS,
+        .lsu = std.mem.zeroes([DECNUMUNITS]u16),
     };
 }
 

@@ -1,14 +1,7 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
-const c = @cImport({
-    @cInclude("stdio.h");
-    @cInclude("stdlib.h");
-    @cInclude("stdint.h");
-    @cInclude("ft2build.h");
-    @cInclude("freetype/freetype.h");
-    @cInclude("freetype/ftsnames.h");
-});
+const c = @import("c_bindings");
 
 const GeneratorError = std.mem.Allocator.Error || error{
     FileOpenFailed,
@@ -60,7 +53,7 @@ pub fn main(init: std.process.Init) !void {
     const glyph_ranks = try loadGlyphRanks(allocator, fonts_path);
     defer allocator.free(glyph_ranks);
 
-    const c_output_path = try dupeZ(allocator, output_path);
+    const c_output_path = try dupeCString(allocator, output_path);
     defer allocator.free(c_output_path);
 
     const output_file = c.fopen(c_output_path.ptr, "wb") orelse return error.FileOpenFailed;
@@ -91,7 +84,7 @@ fn loadGlyphRanks(allocator: std.mem.Allocator, fonts_path: []const u8) Generato
     const file = c.fopen(csv_path.ptr, "rb") orelse return error.FileOpenFailed;
     defer _ = c.fclose(file);
 
-    var line_buffer: [4096:0]u8 = [_:0]u8{0} ** 4096;
+    var line_buffer = std.mem.zeroes([4096:0]u8);
     if (c.fgets(@ptrCast(&line_buffer), line_buffer.len, file) == null) {
         return error.InvalidCsv;
     }
@@ -198,7 +191,7 @@ fn exportFont(
             try writeAll(output_file, ",\n\n");
         }
 
-        var glyph_name: [100:0]u8 = [_:0]u8{0} ** 100;
+        var glyph_name = std.mem.zeroes([100:0]u8);
         _ = c.FT_Get_Glyph_Name(face, glyph_index, @ptrCast(&glyph_name), glyph_name.len);
         const glyph_name_slice = std.mem.sliceTo(&glyph_name, 0);
 
@@ -380,14 +373,11 @@ fn writeHexEscape(output_file: *c.FILE, value: u8) GeneratorError!void {
 fn allocPrintZ(allocator: std.mem.Allocator, comptime fmt: []const u8, args: anytype) std.mem.Allocator.Error![:0]u8 {
     const text = try std.fmt.allocPrint(allocator, fmt, args);
     defer allocator.free(text);
-    return try dupeZ(allocator, text);
+    return try dupeCString(allocator, text);
 }
 
-fn dupeZ(allocator: std.mem.Allocator, text: []const u8) std.mem.Allocator.Error![:0]u8 {
-    const sentinel = try allocator.alloc(u8, text.len + 1);
-    @memcpy(sentinel[0..text.len], text);
-    sentinel[text.len] = 0;
-    return sentinel[0..text.len :0];
+fn dupeCString(allocator: std.mem.Allocator, text: []const u8) std.mem.Allocator.Error![:0]u8 {
+    return try allocator.dupeSentinel(u8, text, 0);
 }
 
 fn trimLineEnding(line: []const u8) []const u8 {

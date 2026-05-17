@@ -94,10 +94,13 @@ Purpose:
   `../.github/zig-toolchain.env`
 - install that monitored snapshot through the same setup action used for the
   stable lane
+- install the Linux xlsxio helper plus the host generator prerequisites needed
+  by generator-backed host builds
 - run `zig build --help --summary none` and
   `zig build logical_shortint_parity --summary none` plus
-  `zig build rotate_bits_parity --summary none` as narrow
-  forward-compatibility probes
+  `zig build rotate_bits_parity --summary none` plus
+  `zig build logical_boolean_ops_suite --summary none` as narrow
+  forward-compatibility probes for the generator-backed host lane
 
 Current monitoring rule:
 
@@ -159,8 +162,9 @@ Current imported-root-guard note:
 Purpose:
 
 - build and test the host simulator surface on Linux
-- run `logical_shortint_parity`, `rotate_bits_parity`, `stack_state_parity`,
-  `register_metadata_parity`, `flags_parity`, `memory_parity`,
+- run `logical_shortint_parity`, `rotate_bits_parity`,
+  `logical_boolean_ops_suite`, `stack_state_parity`, `register_metadata_parity`,
+  `flags_parity`, `memory_parity`,
   `program_serialization_parity`, `calc_state_parity`,
   `keyboard_state_parity`, `both`, `simulator_smoke`, `testPgms`, `test`,
   `generated`, `both_asan`, `test_asan`, `docs`, firmware targets, and Linux
@@ -184,8 +188,9 @@ Purpose:
 Purpose:
 
 - build and test the host simulator surface on macOS
-- run `logical_shortint_parity`, `rotate_bits_parity`, `stack_state_parity`,
-  `register_metadata_parity`, `flags_parity`, `both`, `test`, and `generated`
+- run `logical_shortint_parity`, `rotate_bits_parity`,
+  `logical_boolean_ops_suite`, `stack_state_parity`, `register_metadata_parity`,
+  `flags_parity`, `both`, `test`, and `generated`
 - rebuild `both` in `ReleaseFast` before the smoke and staging steps so the
   uploaded macOS archive uses release host binaries
 - run a macOS simulator smoke launch from the built simulator artifact
@@ -201,8 +206,9 @@ Current platform detail:
 Purpose:
 
 - build and test the host simulator surface on Windows under MSYS2 UCRT64
-- run `logical_shortint_parity`, `rotate_bits_parity`, `stack_state_parity`,
-  `register_metadata_parity`, `flags_parity`, `both`, `test`, and `generated`
+- run `logical_shortint_parity`, `rotate_bits_parity`,
+  `logical_boolean_ops_suite`, `stack_state_parity`, `register_metadata_parity`,
+  `flags_parity`, `both`, `test`, and `generated`
 - rebuild `both` in `ReleaseFast` before the direct smoke and staging lanes
 - run a direct simulator smoke launch
 - build a relocatable Windows package with GTK runtime assets, launcher files,
@@ -238,12 +244,12 @@ Use the smallest local lane that matches the workflow slice you changed.
 | Workflow slice | Smallest local reproduction |
 | --- | --- |
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
-| monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none && zig build rotate_bits_parity --summary none` |
+| monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, ensure `xlsxio_xlsx2csv` plus the Linux GTK, FreeType, and GMP generator prerequisites are available, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none && zig build rotate_bits_parity --summary none && zig build logical_boolean_ops_suite --summary none` |
 | source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && bash .github/project/check-source-ownership.sh` |
 | tracked source ownership contract | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && bash .github/project/check-source-ownership.sh` |
 | workflow imported-root contract | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
-| Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build rotate_bits_parity && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
+| Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build rotate_bits_parity && zig build logical_boolean_ops_suite && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | host package | run the matching `dist_<host>` target on the matching host OS; use `-Doptimize=ReleaseFast` when reproducing the published desktop host artifact size contract |

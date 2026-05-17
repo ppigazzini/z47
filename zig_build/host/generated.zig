@@ -3,6 +3,37 @@ const build_common = @import("../common.zig");
 const host_platform = @import("platform.zig");
 const host_types = @import("types.zig");
 
+const TranslateC = std.Build.Step.TranslateC;
+
+fn addHostTranslateC(
+    b: *std.Build,
+    header_path: []const u8,
+    host_target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    common: host_types.CommonConfig,
+) *TranslateC {
+    const translate_c = b.addTranslateC(.{
+        .root_source_file = b.path(header_path),
+        .target = host_target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    addTranslateCHostMacros(translate_c, common);
+    return translate_c;
+}
+
+fn addTranslateCHostMacros(translate_c: *TranslateC, common: host_types.CommonConfig) void {
+    translate_c.defineCMacro("PC_BUILD", "1");
+    translate_c.defineCMacro(common.platform_define, "1");
+    translate_c.defineCMacro(common.word_size_define, "1");
+    if (common.raspberry) {
+        translate_c.defineCMacro("RASPBERRY", "1");
+    }
+    if (common.decnumber_fastmul) {
+        translate_c.defineCMacro("DECNUMBER_FASTMUL", "1");
+    }
+}
+
 pub fn addVersionHeaders(b: *std.Build, ci_commit_tag: []const u8) !std.Build.LazyPath {
     const vcs_tag = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
@@ -103,6 +134,15 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
+    const raster_fonts_c_bindings = addHostTranslateC(
+        b,
+        "zig_build/tools/translate_c/ttf2_raster_fonts.h",
+        host_target,
+        optimize,
+        common,
+    );
+    raster_fonts_c_bindings.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+    raster_fonts_gen.root_module.addImport("c_bindings", raster_fonts_c_bindings.createModule());
     host_platform.addHostMacros(raster_fonts_gen.root_module, common);
     host_platform.addHostSystemPaths(raster_fonts_gen.root_module, common);
     host_platform.linkRasterFontsFreetype(raster_fonts_gen.root_module, common);
@@ -121,6 +161,16 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
+    const generate_constants_c_bindings = addHostTranslateC(
+        b,
+        "zig_build/tools/translate_c/generate_constants.h",
+        host_target,
+        optimize,
+        common,
+    );
+    generate_constants_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_constants_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    generate_constants.root_module.addImport("c_bindings", generate_constants_c_bindings.createModule());
     host_platform.addHostMacros(generate_constants.root_module, common);
     generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     generate_constants.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
@@ -142,6 +192,14 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
+    const generate_catalogs_c_bindings = addHostTranslateC(
+        b,
+        "zig_build/tools/translate_c/generate_catalogs.h",
+        host_target,
+        optimize,
+        common,
+    );
+    generate_catalogs.root_module.addImport("c_bindings", generate_catalogs_c_bindings.createModule());
     host_platform.addHostMacros(generate_catalogs.root_module, common);
     host_platform.addHostSystemPaths(generate_catalogs.root_module, common);
     generate_catalogs.root_module.addCMacro("GENERATE_CATALOGS", "1");
@@ -166,6 +224,17 @@ pub fn addGeneratorSteps(
             .link_libc = true,
         }),
     });
+    const generate_testpgms_c_bindings = addHostTranslateC(
+        b,
+        "zig_build/tools/translate_c/generate_testpgms.h",
+        host_target,
+        optimize,
+        common,
+    );
+    generate_testpgms_c_bindings.defineCMacro("GENERATE_TESTPGMS", "1");
+    generate_testpgms_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_testpgms_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    generate_testpgms.root_module.addImport("c_bindings", generate_testpgms_c_bindings.createModule());
     host_platform.addHostMacros(generate_testpgms.root_module, common);
     host_platform.addHostSystemPaths(generate_testpgms.root_module, common);
     generate_testpgms.root_module.addCMacro("GENERATE_TESTPGMS", "1");

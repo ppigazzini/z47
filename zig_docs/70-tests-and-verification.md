@@ -74,7 +74,7 @@ flowchart TD
   the smallest affected host or firmware target
 - build-graph step rename, option change, or output-path change:
   `zig build --help --summary none`, then the smallest affected target
-- generator or tracked generated-artifact change: `zig build generated --summary none`
+- generator or tracked generated-artifact change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build generated --summary none`, then `zig build logical_boolean_ops_suite --summary none`
 - calc-state or simulator backup-entrypoint change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice adds or moves retained C bindings, keep them in `zig_src/state/calc_state_runtime.zig` rather than `zig_src/state/calc_state.zig`; if the slice must stay firmware-safe, rerun `zig build dist_dmcp_pkg3 --summary none`, and rerun `zig build dist_dmcp_pkg2 --summary none` as well when package-2 overlay trims are part of the change
 - rotate, justify, byte-order, or zip-state leaf change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build rotate_bits_parity --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
 - short-integer logical boolean operator change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_boolean_ops_suite --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
