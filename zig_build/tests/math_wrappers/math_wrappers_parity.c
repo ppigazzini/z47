@@ -18,6 +18,7 @@ void fnTan(uint16_t unusedButMandatoryParameter);
 void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
 void fnTanh(uint16_t unusedButMandatoryParameter);
+void fnExp(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -34,6 +35,7 @@ void oracle_fnTan(uint16_t unusedButMandatoryParameter);
 void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
+void oracle_fnExp(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -206,6 +208,47 @@ static void configureTanhInfinityDanger(void) {
 static void configureTanhComplexImagZero(void) {
   configureTanhNominal();
   mathWrappersSetComplexInput(true, 2, 0, 0, 0);
+}
+
+static void configureExpReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureExpRealInfinity(void) {
+  configureExpReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureExpRealInfinityDanger(void) {
+  configureExpRealInfinity();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureExpRealNegativeInfinityDanger(void) {
+  configureExpReal();
+  mathWrappersSetRealInput(true, -9, 0x40);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureExpComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+}
+
+static void configureExpComplexImagZero(void) {
+  configureExpComplex();
+  mathWrappersSetComplexInput(true, 2, 0, 0, 0);
+}
+
+static void configureExpComplexSpecial(void) {
+  configureExpComplex();
+  mathWrappersSetComplexInput(true, 2, 0, 0, 0x40);
 }
 
 static void configureTanPoleNoDanger(void) {
@@ -448,6 +491,13 @@ int main(void) {
   failures += runCase("fnTanh/real_inf", oracle_fnTanh, fnTanh, 0, true, configureTanhInfinity);
   failures += runCase("fnTanh/real_inf_danger", oracle_fnTanh, fnTanh, 0, true, configureTanhInfinityDanger);
   failures += runCase("fnTanh/imag_zero", oracle_fnTanh, fnTanh, 0, true, configureTanhComplexImagZero);
+  failures += runCase("fnExp/real", oracle_fnExp, fnExp, 0, true, configureExpReal);
+  failures += runCase("fnExp/real_inf", oracle_fnExp, fnExp, 0, true, configureExpRealInfinity);
+  failures += runCase("fnExp/real_inf_danger", oracle_fnExp, fnExp, 0, true, configureExpRealInfinityDanger);
+  failures += runCase("fnExp/real_neg_inf_danger", oracle_fnExp, fnExp, 0, true, configureExpRealNegativeInfinityDanger);
+  failures += runCase("fnExp/complex", oracle_fnExp, fnExp, 0, true, configureExpComplex);
+  failures += runCase("fnExp/complex_imag_zero", oracle_fnExp, fnExp, 0, true, configureExpComplexImagZero);
+  failures += runCase("fnExp/complex_special", oracle_fnExp, fnExp, 0, true, configureExpComplexSpecial);
   failures += runCase("fnSquare/real", oracle_fnSquare, fnSquare, 0, true, configureSquareReal);
   failures += runCase("fnSquare/real_inf", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinity);
   failures += runCase("fnSquare/real_inf_danger", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinityDanger);

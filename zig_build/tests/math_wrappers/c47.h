@@ -115,7 +115,9 @@ enum {
 #define realIsSpecial(source) (((source)->bits & DECSPECIAL) != 0)
 #define realIsInfinite(source) (((source)->bits & DECINF) != 0)
 #define realIsNegative(source) (((source)->bits & 0x80) != 0)
+#define realIsPositive(source) (!realIsNegative(source))
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
+#define realCopy(source, destination) (*(destination) = *(source))
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
 #define realDivide(operand1, operand2, res, ctxt) decNumberDivide((res), (operand1), (operand2), (ctxt))
 
@@ -130,9 +132,13 @@ extern realContext_t ctxtReal51;
 extern realContext_t ctxtReal75;
 extern const real_t *const_NaN;
 
+#define const_0 z47_math_wrappers_const_0()
 #define const_1 z47_math_wrappers_const_1()
+#define const_2e6 z47_math_wrappers_const_2e6()
 #define const_plusInfinity z47_math_wrappers_const_plus_infinity()
 #define const_minusInfinity z47_math_wrappers_const_minus_infinity()
+
+#define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
 
 bool_t saveLastX(void);
 void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
@@ -173,7 +179,9 @@ void WP34S_SinhCosh(const real_t *x, real_t *sin_out, real_t *cos_out, realConte
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *real_context);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
+bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2);
 void realSetNaN(real_t *value);
 void realSetZero(real_t *value);
 void realSetOne(real_t *value);
@@ -206,9 +214,12 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 
+const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
+const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
+void z47_math_wrappers_report_exp_real_domain_error(void);
 
 uint32_t decQuadIsNaN(const decQuad *dq);
 uint32_t decQuadIsZero(const decQuad *dq);
