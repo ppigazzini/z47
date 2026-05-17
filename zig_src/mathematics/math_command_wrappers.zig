@@ -1,6 +1,8 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
+const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
+const long_integer_power_negative_exponent: i32 = -1;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -251,6 +253,71 @@ pub export fn expComplex(
     runtime.C47_WP34S_Cvt2RadSinCosTan(imag, runtime.amRadian, &sin_value, &cos_value, null, real_context);
     runtime.realMultiply(&exp_real, &cos_value, res_real, real_context);
     runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
+}
+
+pub export fn realPower10(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
+    realExp(res, res, real_context);
+}
+
+pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsSpecial(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_int_pow_real_domain_error();
+        return;
+    }
+
+    powf(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+    var factor: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        return;
+    }
+
+    runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
+    runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
+
+    realExp(&a, &factor, &runtime.ctxtReal39);
+    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
+    runtime.realMultiply(&factor, &a, &a, &runtime.ctxtReal39);
+    runtime.realMultiply(&factor, &b, &b, &runtime.ctxtReal39);
+
+    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+}
+
+fn tenPowLonI() callconv(.c) void {
+    if (runtime.z47_math_wrappers_small_base_power_long_integer(10) == long_integer_power_negative_exponent) {
+        tenPowReal();
+    }
+}
+
+fn tenPowShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_int10pow(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn tenPowReal() callconv(.c) void {
+    intPowReal(realPower10);
+}
+
+fn tenPowCplx() callconv(.c) void {
+    intPowCplx(runtime.z47_math_wrappers_const_ln10());
 }
 
 pub export fn eulersFormula(
@@ -790,6 +857,12 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
+}
+
+pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&tenPowReal, &tenPowCplx, &tenPowShoI, &tenPowLonI);
 }
 
 pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {

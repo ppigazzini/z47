@@ -53,6 +53,7 @@ static real_t fake_const_one_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 const real_t *const_NaN = &fake_const_nan_value;
+uint8_t lastErrorCode = 0;
 
 static void setRegisterScalar(int32_t signed_value, uint8_t bits) {
   register_scalar_magnitude = (uint32_t)(signed_value < 0 ? -signed_value : signed_value);
@@ -145,6 +146,7 @@ void mathWrappersReset(void) {
 
   trig_outputs.enabled = false;
   spcres_flag = false;
+  lastErrorCode = 0;
 
   ctxtReal39.digits = 39;
   ctxtReal51.digits = 51;
@@ -387,6 +389,12 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
   return true;
 }
 
+void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t lgInt) {
+  (void)reg;
+  mpz_init(lgInt);
+  mpz_set_si(lgInt, longint_input.value);
+}
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t reg) {
   snapshot.convert_long_integer_to_register_calls++;
   snapshot.convert_long_integer_to_register_value = (int32_t)mpz_get_si(lgInt);
@@ -474,6 +482,19 @@ void WP34S_SinhCosh(const real_t *x, real_t *sinOut, real_t *cosOut, realContext
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 60, 0);
+}
+
+void realPolarToRectangular(const real_t *magnitude,
+                            const real_t *angle,
+                            real_t *real,
+                            real_t *imag,
+                            realContext_t *realContext) {
+  snapshot.real_polar_to_rectangular_calls++;
+  snapshot.real_polar_to_rectangular_magnitude_value = fakeRealValue(magnitude);
+  snapshot.real_polar_to_rectangular_angle_value = fakeRealValue(angle);
+  (void)realContext;
+  setFakeReal(real, fakeRealValue(magnitude) + fakeRealValue(angle), 0);
+  setFakeReal(imag, fakeRealValue(magnitude) - fakeRealValue(angle), 0);
 }
 
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
@@ -595,6 +616,18 @@ uint64_t WP34S_intChs(uint64_t x) {
     return 0;
   }
   return x ^ (UINT64_C(1) << 63);
+}
+
+uint64_t WP34S_int10pow(uint64_t x) {
+  uint64_t exponent = WP34S_extract_value(x, NULL);
+  uint64_t result = 1;
+
+  snapshot.wp34s_int10pow_calls++;
+  snapshot.wp34s_int10pow_input = x;
+  while(exponent-- != 0) {
+    result *= 10;
+  }
+  return result;
 }
 
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {

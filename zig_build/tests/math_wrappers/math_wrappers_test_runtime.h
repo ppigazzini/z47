@@ -133,6 +133,10 @@ typedef struct {
   angularMode_t convert_angle_from_to_from_mode;
   angularMode_t convert_angle_from_to_to_mode;
 
+  uint32_t real_polar_to_rectangular_calls;
+  int32_t real_polar_to_rectangular_magnitude_value;
+  int32_t real_polar_to_rectangular_angle_value;
+
   uint32_t fn_set_flag_calls;
   int32_t fn_set_flag_last_flag;
 
@@ -146,6 +150,9 @@ typedef struct {
 
   uint32_t wp34s_int_chs_calls;
   uint64_t wp34s_int_chs_input;
+
+  uint32_t wp34s_int10pow_calls;
+  uint64_t wp34s_int10pow_input;
 
   uint32_t wp34s_int_multiply_calls;
   uint64_t wp34s_int_multiply_lhs;
