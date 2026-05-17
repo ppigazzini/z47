@@ -19,6 +19,7 @@ void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
 void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnExp(uint16_t unusedButMandatoryParameter);
+void fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -36,6 +37,7 @@ void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
+void oracle_fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -52,8 +54,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n"
-      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n",
+      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n"
+      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -80,7 +82,17 @@ static int reportMismatch(const char *name,
             expected->div_real_complex_denom_real_value,
             expected->div_real_complex_denom_imag_value,
             expected->invert_matrix_calls,
+          expected->mul_complex_i_calls,
+          expected->mul_complex_i_input_real_value,
+          expected->mul_complex_i_input_imag_value,
       expected->mul_complex_complex_calls,
+          expected->convert_angle_from_to_calls,
+          expected->convert_angle_from_to_input_value,
+          expected->convert_angle_from_to_from_mode,
+          expected->convert_angle_from_to_to_mode,
+          expected->fn_set_flag_calls,
+          expected->fn_set_flag_last_flag,
+          expected->fn_refresh_state_calls,
       expected->unit_vector_cplx_calls,
       expected->wp34s_int_chs_calls,
       expected->wp34s_int_multiply_calls,
@@ -117,7 +129,17 @@ static int reportMismatch(const char *name,
             actual->div_real_complex_denom_real_value,
             actual->div_real_complex_denom_imag_value,
             actual->invert_matrix_calls,
+          actual->mul_complex_i_calls,
+          actual->mul_complex_i_input_real_value,
+          actual->mul_complex_i_input_imag_value,
       actual->mul_complex_complex_calls,
+          actual->convert_angle_from_to_calls,
+          actual->convert_angle_from_to_input_value,
+          actual->convert_angle_from_to_from_mode,
+          actual->convert_angle_from_to_to_mode,
+          actual->fn_set_flag_calls,
+          actual->fn_set_flag_last_flag,
+          actual->fn_refresh_state_calls,
       actual->unit_vector_cplx_calls,
       actual->wp34s_int_chs_calls,
       actual->wp34s_int_multiply_calls,
@@ -249,6 +271,47 @@ static void configureExpComplexImagZero(void) {
 static void configureExpComplexSpecial(void) {
   configureExpComplex();
   mathWrappersSetComplexInput(true, 2, 0, 0, 0x40);
+}
+
+static void configureEulersFormulaReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 3, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureEulersFormulaRealAngle(void) {
+  configureEulersFormulaReal();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+}
+
+static void configureEulersFormulaRealInfinity(void) {
+  configureEulersFormulaReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureEulersFormulaRealInfinityDanger(void) {
+  configureEulersFormulaRealInfinity();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureEulersFormulaComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureEulersFormulaComplexInfinity(void) {
+  configureEulersFormulaComplex();
+  mathWrappersSetComplexInput(true, 2, 0x40, 3, 0);
+}
+
+static void configureEulersFormulaComplexInfinityDanger(void) {
+  configureEulersFormulaComplexInfinity();
+  mathWrappersSetFlagSpcRes(true);
 }
 
 static void configureTanPoleNoDanger(void) {
@@ -498,6 +561,13 @@ int main(void) {
   failures += runCase("fnExp/complex", oracle_fnExp, fnExp, 0, true, configureExpComplex);
   failures += runCase("fnExp/complex_imag_zero", oracle_fnExp, fnExp, 0, true, configureExpComplexImagZero);
   failures += runCase("fnExp/complex_special", oracle_fnExp, fnExp, 0, true, configureExpComplexSpecial);
+  failures += runCase("fnEulersFormula/real", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaReal);
+  failures += runCase("fnEulersFormula/real_angle", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealAngle);
+  failures += runCase("fnEulersFormula/real_inf", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealInfinity);
+  failures += runCase("fnEulersFormula/real_inf_danger", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealInfinityDanger);
+  failures += runCase("fnEulersFormula/complex", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaComplex);
+  failures += runCase("fnEulersFormula/complex_inf", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaComplexInfinity);
+  failures += runCase("fnEulersFormula/complex_inf_danger", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaComplexInfinityDanger);
   failures += runCase("fnSquare/real", oracle_fnSquare, fnSquare, 0, true, configureSquareReal);
   failures += runCase("fnSquare/real_inf", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinity);
   failures += runCase("fnSquare/real_inf_danger", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinityDanger);

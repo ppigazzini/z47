@@ -547,6 +547,14 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter) {
   (void)unusedButMandatoryParameter;
 }
 
+void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal, real_t *productImag) {
+  snapshot.mul_complex_i_calls++;
+  snapshot.mul_complex_i_input_real_value = fakeRealValue(inReal);
+  snapshot.mul_complex_i_input_imag_value = fakeRealValue(inImag);
+  setFakeReal(productReal, -fakeRealValue(inImag), 0);
+  setFakeReal(productImag, fakeRealValue(inReal), 0);
+}
+
 void mulComplexComplex(const real_t *factor1Real,
                        const real_t *factor1Imag,
                        const real_t *factor2Real,
@@ -600,6 +608,24 @@ uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
   snapshot.wp34s_int_multiply_lhs = y;
   snapshot.wp34s_int_multiply_rhs = x;
   return product | ((uint64_t)(sign_y ^ sign_x) << 63);
+}
+
+void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext) {
+  snapshot.convert_angle_from_to_calls++;
+  snapshot.convert_angle_from_to_input_value = fakeRealValue(angle);
+  snapshot.convert_angle_from_to_from_mode = fromAngularMode;
+  snapshot.convert_angle_from_to_to_mode = toAngularMode;
+  (void)realContext;
+  setFakeReal(angle, fakeRealValue(angle) + fromAngularMode - toAngularMode, angle->bits & 0x70);
+}
+
+void fnSetFlag(int32_t flag) {
+  snapshot.fn_set_flag_calls++;
+  snapshot.fn_set_flag_last_flag = flag;
+}
+
+void fnRefreshState(void) {
+  snapshot.fn_refresh_state_calls++;
 }
 
 void divComplexComplex(const real_t *numerReal,
