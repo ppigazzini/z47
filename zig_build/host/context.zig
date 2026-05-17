@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
+const constants_rewrites = @import("../leaf/constants_rewrites.zig");
 const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
@@ -49,7 +50,8 @@ pub fn prepareContext(
     const core_sources_without_calc_state = try calc_state_rewrites.filterCoreSources(b, core_sources_without_program_serialization);
     const core_sources_without_keyboard_state = try keyboard_state_rewrites.filterCoreSources(b, core_sources_without_calc_state);
     const core_sources_without_math_command_wrappers = try math_command_wrapper_rewrites.filterCoreSources(b, core_sources_without_keyboard_state);
-    const core_sources_without_tone = try tone_rewrites.filterCoreSources(b, core_sources_without_math_command_wrappers);
+    const core_sources_without_constants = try constants_rewrites.filterCoreSources(b, core_sources_without_math_command_wrappers);
+    const core_sources_without_tone = try tone_rewrites.filterCoreSources(b, core_sources_without_constants);
 
     const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
     const generated = try host_generated.addGeneratorSteps(b, host_target, optimize, common);
