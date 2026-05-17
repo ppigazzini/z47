@@ -5,17 +5,20 @@ pub const RuntimeObjects = struct {
     logical_mask: *std.Build.Step.Compile,
     logical_count_bits: *std.Build.Step.Compile,
     logical_set_clear_flip_bits: *std.Build.Step.Compile,
+    rotate_bits: *std.Build.Step.Compile,
 
     pub fn link(self: RuntimeObjects, module: *std.Build.Module) void {
         module.addObject(self.logical_mask);
         module.addObject(self.logical_count_bits);
         module.addObject(self.logical_set_clear_flip_bits);
+        module.addObject(self.rotate_bits);
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addFileArg(self.logical_mask.getEmittedBin());
         cmd.addFileArg(self.logical_count_bits.getEmittedBin());
         cmd.addFileArg(self.logical_set_clear_flip_bits.getEmittedBin());
+        cmd.addFileArg(self.rotate_bits.getEmittedBin());
     }
 };
 
@@ -31,6 +34,7 @@ pub const RuntimeObjectOptions = struct {
 const replaced_core_sources = [_][]const u8{
     "logicalOps/countBits.c",
     "logicalOps/mask.c",
+    "logicalOps/rotateBits.c",
     "logicalOps/setClearFlipBits.c",
 };
 
@@ -78,6 +82,7 @@ pub fn addRuntimeObjectsWithOptions(
     return .{
         .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/leaf/logical_mask.zig", options),
         .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/leaf/logical_count_bits.zig", options),
+        .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/leaf/rotate_bits.zig", options),
         .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/leaf/logical_set_clear_flip_bits.zig", options),
     };
 }
@@ -135,6 +140,49 @@ pub fn addParityExecutable(
             "-DfnBs=oracle_fnBs",
         },
     });
-    runtime_objects.link(exe.root_module);
+    exe.root_module.addObject(runtime_objects.logical_mask);
+    exe.root_module.addObject(runtime_objects.logical_count_bits);
+    exe.root_module.addObject(runtime_objects.logical_set_clear_flip_bits);
+    return exe;
+}
+
+pub fn addRotateBitsParityExecutable(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    rotate_bits_object: *std.Build.Step.Compile,
+) *std.Build.Step.Compile {
+    const exe = b.addExecutable(.{
+        .name = "rotate-bits-parity",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
+    exe.root_module.addIncludePath(b.path("zig_build/tests/rotate_bits"));
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/rotate_bits/rotate_bits_fake_runtime.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/rotate_bits/rotate_bits_parity.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{
+        .file = build_common.upstreamPath(b, "src/c47/logicalOps/rotateBits.c"),
+        .flags = &.{
+            "-DfnAsr=oracle_fnAsr",
+            "-DfnSl=oracle_fnSl",
+            "-DfnSr=oracle_fnSr",
+            "-DfnRl=oracle_fnRl",
+            "-DfnRr=oracle_fnRr",
+            "-DfnRlc=oracle_fnRlc",
+            "-DfnRrc=oracle_fnRrc",
+            "-DfnLj=oracle_fnLj",
+            "-DfnRj=oracle_fnRj",
+            "-DfnMirror=oracle_fnMirror",
+            "-DfnSwapEndian=oracle_fnSwapEndian",
+            "-DfnZip=oracle_fnZip",
+            "-DfnUnzip=oracle_fnUnzip",
+        },
+    });
+    exe.root_module.addObject(rotate_bits_object);
     return exe;
 }

@@ -80,6 +80,7 @@ The live build graph currently exposes these step groups.
 - `both_asan`
 - `simulator_smoke`
 - `logical_shortint_parity`
+- `rotate_bits_parity`
 - `stack_state_parity`
 - `register_metadata_parity`
 - `flags_parity`

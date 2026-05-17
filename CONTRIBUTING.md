@@ -78,6 +78,7 @@ Common maintainer entrypoints:
 - `zig build sim`
 - `zig build simulator_smoke`
 - `zig build logical_shortint_parity`
+- `zig build rotate_bits_parity`
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
 - `zig build flags_parity`
