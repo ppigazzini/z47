@@ -9,6 +9,10 @@ typedef struct {
   uint32_t save_last_x_calls;
   bool_t save_last_x_result;
 
+  uint32_t get_register_data_type_calls;
+  uint32_t get_register_tag_calls;
+  uint32_t get_register_data_pointer_calls;
+
   uint32_t register_min_calls;
   calcRegister_t register_min_reg1;
   calcRegister_t register_min_reg2;
@@ -55,6 +59,14 @@ typedef struct {
   int32_t get_register_as_complex_imag_value;
   uint8_t get_register_as_complex_imag_bits;
 
+  uint32_t get_register_as_longint_calls;
+  bool_t get_register_as_longint_result;
+  int32_t get_register_as_longint_value;
+
+  uint32_t convert_long_integer_to_register_calls;
+  int32_t convert_long_integer_to_register_value;
+  calcRegister_t convert_long_integer_to_register_dest;
+
   uint32_t convert_real_to_result_calls;
   int32_t convert_real_to_result_value;
   uint8_t convert_real_to_result_bits;
@@ -83,6 +95,25 @@ typedef struct {
   int32_t dec_number_multiply_rhs_value;
   uint8_t dec_number_multiply_rhs_bits;
 
+  uint32_t mul_complex_complex_calls;
+  int32_t mul_complex_complex_factor1_real_value;
+  int32_t mul_complex_complex_factor1_imag_value;
+  int32_t mul_complex_complex_factor2_real_value;
+  int32_t mul_complex_complex_factor2_imag_value;
+
+  uint32_t unit_vector_cplx_calls;
+
+  uint32_t wp34s_extract_value_calls;
+  uint64_t wp34s_extract_value_input;
+  int32_t wp34s_extract_value_sign;
+
+  uint32_t wp34s_int_chs_calls;
+  uint64_t wp34s_int_chs_input;
+
+  uint32_t wp34s_int_multiply_calls;
+  uint64_t wp34s_int_multiply_lhs;
+  uint64_t wp34s_int_multiply_rhs;
+
   uint32_t div_complex_complex_calls;
   int32_t div_complex_complex_numer_real_value;
   int32_t div_complex_complex_numer_imag_value;
@@ -98,13 +129,24 @@ typedef struct {
   calcRegister_t display_calc_error_last_register_line;
 
   uint32_t more_info_calls;
+
+  uint32_t final_register_data_type;
+  uint32_t final_register_tag;
+  int32_t final_register_real34_value;
+  uint8_t final_register_real34_bits;
+  uint64_t final_register_shortint_raw;
+  int32_t final_register_longint_value;
 } math_wrappers_snapshot_t;
 
 void mathWrappersReset(void);
 void mathWrappersSetSaveLastXResult(bool_t result);
+void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag);
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits);
+void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode);
 void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
+void mathWrappersSetShortIntegerInput(int64_t value);
+void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetFlagSpcRes(bool_t enabled);
 void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_value, int32_t tan_value);
 void mathWrappersCapture(math_wrappers_snapshot_t *snapshot);

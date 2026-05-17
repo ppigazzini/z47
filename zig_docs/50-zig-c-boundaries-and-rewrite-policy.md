@@ -30,7 +30,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with approved `@cImport` boundary | raster font generator entrypoint |
 | `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
-| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared trig-helper slice for `min`, `max`, `ceil`, `floor`, `sin`, `cos`, `tan`, `sinh`, and `cosh`, plus shared exports such as `sinComplex`, `cosComplex`, `TanComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx` |
+| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `square`, and `cube`, plus shared exports such as `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata_rewrites.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags_rewrites.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
@@ -40,10 +40,10 @@ z47 uses three explicit implementation modes.
 | `../zig_src/state/keyboard_state.zig` plus `../zig_build/state/keyboard_state_rewrites.zig` | manual Zig rewrite | parity-gated keyboard helper and command-state slice while some firmware-sized public entrypoints still stay retained C |
 | `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
 | `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone_rewrites.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
-| `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained extra-info and error-message shim paired with the mathematics command and trig-helper slice |
+| `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
 | `../zig_bridge/ui/tone_runtime_helpers.c` | existing C compiled by Zig | retained target-specific refresh helper paired with the live Zig tone owner |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
-| `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared trig-helper slice |
+| `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
 | `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
 | `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
 | `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
@@ -118,8 +118,9 @@ Verified slices:
   `logicalOps/rotateBits.c` owner replacement and the live boolean operator
   owner replacements for `and.c`, `or.c`, `not.c`, `nand.c`, `nor.c`,
   `xor.c`, and `xnor.c`
-- thin mathematics command-wrapper ownership under `../zig_src/mathematics/`,
-  with retained helper entrypoints reached through
+- mathematics command-wrapper ownership under `../zig_src/mathematics/`,
+  including the live `sign.c`, `changeSign.c`, `square.c`, and `cube.c`
+  owner replacements, with retained helper entrypoints reached through
   `../zig_src/mathematics/math_command_wrappers_runtime.zig`
 - stack mutation plus undo snapshot or restore ownership under
   `../zig_src/state/`
