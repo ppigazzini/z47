@@ -91,6 +91,7 @@ enum {
 #define STD_PLUS_MINUS "+/-"
 #define STD_INFINITY "inf"
 #define STD_DEGREE "deg"
+#define STD_SUP_BOLD_x "^x"
 
 #define REGISTER_X ((calcRegister_t)100)
 #define REGISTER_Y ((calcRegister_t)101)
@@ -106,10 +107,17 @@ enum {
 #define ifLongIntegerDoAngleReduction true
 
 #define longIntegerInit(op) mpz_init(op)
+#define uInt32ToLongInteger(source, destination) mpz_set_ui((destination), (source))
 #define int32ToLongInteger(source, destination) mpz_set_si((destination), (source))
+#define longIntegerSetPositiveSign(op) do { if(mpz_sgn((op)) < 0) mpz_neg((op), (op)); } while(0)
+#define longIntegerSign(op) mpz_sgn(op)
+#define longIntegerIsZero(op) (mpz_sgn(op) == 0)
+#define longIntegerIsOdd(op) mpz_odd_p(op)
 #define longIntegerChangeSign(op) ((op)->_mp_size = -((op)->_mp_size))
 #define longIntegerFree(op) mpz_clear(op)
+#define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
 #define longIntegerMultiply(op_y, op_x, result) mpz_mul((result), (op_y), (op_x))
+#define longIntegerSquare(op, result) mpz_mul((result), (op), (op))
 
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
@@ -132,12 +140,14 @@ extern realContext_t ctxtReal39;
 extern realContext_t ctxtReal51;
 extern realContext_t ctxtReal75;
 extern const real_t *const_NaN;
+extern uint8_t lastErrorCode;
 
-#define const_0 z47_math_wrappers_const_0()
-#define const_1 z47_math_wrappers_const_1()
-#define const_2e6 z47_math_wrappers_const_2e6()
-#define const_plusInfinity z47_math_wrappers_const_plus_infinity()
-#define const_minusInfinity z47_math_wrappers_const_minus_infinity()
+#define const_0 ((real_t *)z47_math_wrappers_const_0())
+#define const_1 ((real_t *)z47_math_wrappers_const_1())
+#define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
+#define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
+#define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
+#define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
 
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
 
@@ -164,6 +174,7 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *value);
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *angle_mode, bool_t reduce_longinteger_angle);
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
+void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void *getRegisterDataPointer(calcRegister_t reg);
 uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
@@ -171,6 +182,11 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, c
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
+void realPolarToRectangular(const real_t *magnitude,
+                            const real_t *angle,
+                            real_t *real,
+                            real_t *imag,
+                            realContext_t *real_context);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 angularMode_t mode,
                                 real_t *sin,
@@ -210,6 +226,7 @@ void mulComplexComplex(const real_t *factor1_real,
                        realContext_t *real_context);
 void unitVectorCplx(void);
 uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
+uint64_t WP34S_int10pow(uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
@@ -222,8 +239,11 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
 const real_t *z47_math_wrappers_const_2e6(void);
+const real_t *z47_math_wrappers_const_ln10(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
+int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue);
+void z47_math_wrappers_report_int_pow_real_domain_error(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
 void z47_math_wrappers_report_eulers_formula_complex_domain_error(void);
 void z47_math_wrappers_report_eulers_formula_real_domain_error(void);

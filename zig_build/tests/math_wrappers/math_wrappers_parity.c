@@ -19,6 +19,7 @@ void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
 void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnExp(uint16_t unusedButMandatoryParameter);
+void fn10Pow(uint16_t unusedButMandatoryParameter);
 void fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
@@ -37,6 +38,7 @@ void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
+void oracle_fn10Pow(uint16_t unusedButMandatoryParameter);
 void oracle_fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
@@ -271,6 +273,49 @@ static void configureExpComplexImagZero(void) {
 static void configureExpComplexSpecial(void) {
   configureExpComplex();
   mathWrappersSetComplexInput(true, 2, 0, 0, 0x40);
+}
+
+static void configure10PowReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configure10PowRealInfinity(void) {
+  configure10PowReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configure10PowRealInfinityDanger(void) {
+  configure10PowRealInfinity();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configure10PowComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+}
+
+static void configure10PowShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(3);
+}
+
+static void configure10PowLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 3);
+}
+
+static void configure10PowLongIntegerNegative(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
+  mathWrappersSetLongIntegerInput(true, -2);
 }
 
 static void configureEulersFormulaReal(void) {
@@ -561,6 +606,13 @@ int main(void) {
   failures += runCase("fnExp/complex", oracle_fnExp, fnExp, 0, true, configureExpComplex);
   failures += runCase("fnExp/complex_imag_zero", oracle_fnExp, fnExp, 0, true, configureExpComplexImagZero);
   failures += runCase("fnExp/complex_special", oracle_fnExp, fnExp, 0, true, configureExpComplexSpecial);
+  failures += runCase("fn10Pow/real", oracle_fn10Pow, fn10Pow, 0, true, configure10PowReal);
+  failures += runCase("fn10Pow/real_inf", oracle_fn10Pow, fn10Pow, 0, true, configure10PowRealInfinity);
+  failures += runCase("fn10Pow/real_inf_danger", oracle_fn10Pow, fn10Pow, 0, true, configure10PowRealInfinityDanger);
+  failures += runCase("fn10Pow/complex", oracle_fn10Pow, fn10Pow, 0, true, configure10PowComplex);
+  failures += runCase("fn10Pow/shortint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowShortInteger);
+  failures += runCase("fn10Pow/longint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongInteger);
+  failures += runCase("fn10Pow/longint_negative", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongIntegerNegative);
   failures += runCase("fnEulersFormula/real", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaReal);
   failures += runCase("fnEulersFormula/real_angle", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealAngle);
   failures += runCase("fnEulersFormula/real_inf", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealInfinity);

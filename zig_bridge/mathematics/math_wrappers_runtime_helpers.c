@@ -55,6 +55,57 @@ end:
   longIntegerFree(x);
 }
 
+int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue) {
+  int32_t exponentSign;
+  longInteger_t base, exponent;
+
+  longIntegerInit(base);
+  uInt32ToLongInteger(baseValue, base);
+  convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
+
+  longIntegerSetPositiveSign(base);
+
+  exponentSign = longIntegerSign(exponent);
+  longIntegerSetPositiveSign(exponent);
+
+  if(longIntegerIsZero(exponent)) {
+    uInt32ToLongInteger(1u, base);
+    convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
+    longIntegerFree(base);
+    longIntegerFree(exponent);
+    return 1;
+  }
+  else if(exponentSign == -1) {
+    longIntegerFree(base);
+    longIntegerFree(exponent);
+    return -1;
+  }
+
+  longInteger_t power;
+
+  longIntegerInit(power);
+  uInt32ToLongInteger(1u, power);
+
+  while(!longIntegerIsZero(exponent) && lastErrorCode == 0) {
+    if(longIntegerIsOdd(exponent)) {
+      longIntegerMultiply(power, base, power);
+    }
+
+    longIntegerDivideUInt(exponent, 2u, exponent);
+
+    if(!longIntegerIsZero(exponent)) {
+      longIntegerSquare(base, base);
+    }
+  }
+
+  convertLongIntegerToLongIntegerRegister(power, REGISTER_X);
+
+  longIntegerFree(power);
+  longIntegerFree(base);
+  longIntegerFree(exponent);
+  return 1;
+}
+
 static void z47_math_wrappers_init_constant(real_t *value, int32_t exponent, uint8_t bits, uint16_t lsu0) {
   memset(value, 0, sizeof(*value));
   value->digits = 1;
@@ -99,6 +150,22 @@ const real_t *z47_math_wrappers_const_2e6(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_ln10(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 10);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const39_ln10;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_plus_infinity(void) {
   static bool initialized = false;
   static real_t value;
@@ -127,6 +194,13 @@ void z47_math_wrappers_report_exp_real_domain_error(void) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function expReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag D is not set", NULL, NULL);
+#endif
+}
+
+void z47_math_wrappers_report_int_pow_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function intPowReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of 10^x when flag D is not set", NULL, NULL);
 #endif
 }
 

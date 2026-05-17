@@ -97,6 +97,13 @@ pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line:
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
+pub extern fn realPolarToRectangular(
+    magnitude: *const real_t,
+    angle: *const real_t,
+    real: *real_t,
+    imag: *real_t,
+    real_context: *realContext_t,
+) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
 pub extern fn processIntRealComplexMonadicFunction(
@@ -142,6 +149,7 @@ pub extern fn mulComplexComplex(
     real_context: *realContext_t,
 ) void;
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
+pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -169,8 +177,11 @@ pub extern fn z47_math_wrappers_cube_long_integer() void;
 pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
+pub extern fn z47_math_wrappers_const_ln10() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
+pub extern fn z47_math_wrappers_small_base_power_long_integer(base_value: u32) i32;
+pub extern fn z47_math_wrappers_report_int_pow_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_eulers_formula_complex_domain_error() void;
 pub extern fn z47_math_wrappers_report_eulers_formula_real_domain_error() void;
