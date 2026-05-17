@@ -463,9 +463,13 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   current_register_data_type = dtComplex34;
 }
 
-void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode) {
+void setRegisterTag(calcRegister_t reg, uint32_t tag) {
   (void)reg;
-  current_register_tag = (current_register_tag & ~amAngleMask) | (uint32_t)mode;
+  current_register_tag = tag;
+}
+
+void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode) {
+  setRegisterTag(reg, (current_register_tag & ~amAngleMask) | (uint32_t)mode);
 }
 
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {

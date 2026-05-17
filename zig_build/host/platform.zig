@@ -85,6 +85,10 @@ pub fn addHostMacros(module: *std.Build.Module, common: host_types.CommonConfig)
 pub fn addHostSystemPaths(module: *std.Build.Module, common: host_types.CommonConfig) void {
     if (!std.mem.eql(u8, common.platform_define, "WIN32")) return;
 
+    addWindowsHostSystemPaths(module);
+}
+
+fn addWindowsHostSystemPaths(module: *std.Build.Module) void {
     const owner = module.owner;
     if (owner.graph.environ_map.get("PKG_CONFIG_SYSTEM_INCLUDE_PATH")) |include_paths| {
         addHostSearchPaths(module, include_paths, .include);
@@ -125,6 +129,19 @@ pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_typ
     }
 
     translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+}
+
+pub fn linkGmp(module: *std.Build.Module, target: std.Build.ResolvedTarget) void {
+    if (target.result.os.tag != .windows) {
+        module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
+        return;
+    }
+
+    addWindowsHostSystemPaths(module);
+
+    if (!linkWindowsPkgConfigPackage(module, "gmp")) {
+        linkWindowsImportLibraryOrSystem(module, "gmp");
+    }
 }
 
 fn linkWindowsPkgConfigPackage(module: *std.Build.Module, package: []const u8) bool {
