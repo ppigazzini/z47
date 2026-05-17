@@ -1,11 +1,13 @@
 # Approved checked-in Zig/C boundary files.
 # Paths are repo-relative and consumed by check-zig-c-boundaries.sh.
 
+[translate-c-roots]
+zig_build/tools/translate_c/generate_constants.h
+zig_build/tools/translate_c/generate_catalogs.h
+zig_build/tools/translate_c/generate_testpgms.h
+zig_build/tools/translate_c/ttf2_raster_fonts.h
+
 [cimport]
-zig_build/tools/generate_constants.zig
-zig_build/tools/generate_catalogs.zig
-zig_build/tools/generate_testpgms.zig
-zig_build/tools/ttf2_raster_fonts.zig
 
 [extern-symbols]
 zig_build/tools/generate_catalogs.zig

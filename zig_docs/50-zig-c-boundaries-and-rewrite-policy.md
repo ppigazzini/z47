@@ -13,7 +13,7 @@ z47 uses three explicit implementation modes.
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
 | existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
-| explicit Zig or C boundary | checked-in `@cImport` or direct `extern` usage is allowed only in approved boundary files | generator boundary files under `zig_build/tools/`, plus runtime seams under `zig_src/leaf/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
+| explicit Zig or C boundary | checked-in `translate-c` root headers and direct `extern` usage are allowed only in approved boundary files; checked-in `@cImport` is currently avoided | generator boundary roots under `zig_build/tools/translate_c/`, plus runtime seams under `zig_src/leaf/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 | manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 
 ## Current Surface Classification
@@ -25,10 +25,11 @@ z47 uses three explicit implementation modes.
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
 | `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
 | GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependency stack |
-| `../zig_build/tools/generate_constants.zig` | manual Zig executable with approved `@cImport` boundary | deterministic generator entrypoint |
-| `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
-| `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with approved `@cImport` and `extern` boundary | deterministic generator entrypoint |
-| `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with approved `@cImport` boundary | raster font generator entrypoint |
+| `../zig_build/tools/translate_c/` | approved build-managed `translate-c` boundary roots | checked-in generator header roots consumed by `../zig_build/host/generated.zig` |
+| `../zig_build/tools/generate_constants.zig` | manual Zig executable with build-managed `translate-c` boundary | deterministic generator entrypoint |
+| `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
+| `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
+| `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with build-managed `translate-c` boundary | raster font generator entrypoint |
 | `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
 | `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `square`, and `cube`, plus shared exports such as `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
@@ -57,12 +58,16 @@ z47 uses three explicit implementation modes.
 
 The checked-in allowlist lives in `../.github/project/zig-c-boundaries.txt`.
 
-Current approved `@cImport` files:
+Current approved build-managed `translate-c` root files:
 
-- `zig_build/tools/generate_constants.zig`
-- `zig_build/tools/generate_catalogs.zig`
-- `zig_build/tools/generate_testpgms.zig`
-- `zig_build/tools/ttf2_raster_fonts.zig`
+- `zig_build/tools/translate_c/generate_constants.h`
+- `zig_build/tools/translate_c/generate_catalogs.h`
+- `zig_build/tools/translate_c/generate_testpgms.h`
+- `zig_build/tools/translate_c/ttf2_raster_fonts.h`
+
+Current approved checked-in `@cImport` files:
+
+- none
 
 Current approved direct `extern` symbol files:
 
@@ -91,11 +96,14 @@ allowlist and guard at the same time.
 Current guard behavior:
 
 1. load allowlisted files from `zig-c-boundaries.txt`
-2. verify each allowlisted file still matches the expected `@cImport` or
-   direct-`extern` pattern
-3. scan all current working-tree `*.zig` files that exist in the repository
-4. fail if a checked-in Zig file contains an unapproved `@cImport` or direct
-   `extern` binding
+2. verify each allowlisted `translate-c` root header still exists and still
+  exposes real C includes for the checked-in generator boundary
+3. verify each allowlisted checked-in Zig file still matches the expected
+  `@cImport` or direct-`extern` pattern
+4. scan all current working-tree `zig_build/tools/translate_c/*.h` roots plus
+  all tracked `*.zig` files that exist in the repository
+5. fail if a checked-in generator `translate-c` root header, checked-in
+  `@cImport`, or direct `extern` binding appears outside the approved lists
 
 The guard runs in CI through the `zig-c-boundary-guard` job in
 `../.github/workflows/upstream-oracle.yml`.
@@ -147,11 +155,15 @@ Not yet rewritten in broad verified form:
 
 ## `translate-c` Policy
 
-Treat `translate-c` and checked-in `@cImport` use as narrow boundary tools, not
-as a whole-project porting strategy.
+Treat build-managed `translate-c` roots and any remaining checked-in
+`@cImport` use as narrow boundary tools, not as a whole-project porting
+strategy.
 
 Current repo policy requires:
 
+- generator C translation to stay build-managed through explicit root headers
+  under `../zig_build/tools/translate_c/` and `Build.addTranslateC` wiring in
+  `../zig_build/host/generated.zig`
 - exact justification for every checked-in boundary file
 - build-managed integration through `addCSourceFiles`, `addCSourceFile`,
   `linkSystemLibrary`, or other explicit build-graph ownership where practical
@@ -159,8 +171,9 @@ Current repo policy requires:
 
 ## Rules For New Boundaries
 
-- Add new checked-in `@cImport` or direct `extern` usage only when a smaller
-  build-system-owned or manually rewritten alternative is not practical yet.
+- Add new checked-in `translate-c` root headers, checked-in `@cImport`, or
+  direct `extern` usage only when a smaller build-system-owned or manually
+  rewritten alternative is not practical yet.
 - Update `../.github/project/zig-c-boundaries.txt`, the guard expectations, and
   this page in the same change.
 - When a slice already has an approved `*_runtime.zig` seam, add new direct
