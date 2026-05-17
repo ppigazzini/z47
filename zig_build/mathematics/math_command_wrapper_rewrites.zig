@@ -25,6 +25,7 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/floor.c",
     "mathematics/2pow.c",
     "mathematics/10pow.c",
+    "mathematics/minusOnePow.c",
     "mathematics/exp.c",
     "mathematics/eulersFormula.c",
     "mathematics/invert.c",

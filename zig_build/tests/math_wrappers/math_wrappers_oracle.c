@@ -124,6 +124,12 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef eulersFormula
 #undef expComplex
 
+#define eulersFormula oracle_eulersFormula
+#define fnM1Pow oracle_fnM1Pow
+#include "../../../src/c47/mathematics/minusOnePow.c"
+#undef fnM1Pow
+#undef eulersFormula
+
 #define fnSquare oracle_fnSquare
 #include "../../../src/c47/mathematics/square.c"
 #undef fnSquare

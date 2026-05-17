@@ -101,8 +101,14 @@ enum {
 #define ERROR_NONE 0
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
 #define FLAG_CPXRES 0x8004
+#define FLAG_OVERFLOW 0x800c
 #define FLAG_SPCRES 0x8017
 #define NOPARAM 0
+
+#define SIM_UNSIGN 0
+#define SIM_1COMPL 1
+#define SIM_2COMPL 2
+#define SIM_SIGNMT 3
 
 #define ifLongIntegerDoAngleReduction true
 
@@ -123,6 +129,7 @@ enum {
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
 #define realIsSpecial(source) (((source)->bits & DECSPECIAL) != 0)
 #define realIsInfinite(source) (((source)->bits & DECINF) != 0)
+#define realIsNaN(source) (((source)->bits & (DECNAN | DECSNAN)) != 0)
 #define realIsNegative(source) (((source)->bits & 0x80) != 0)
 #define realIsPositive(source) (!realIsNegative(source))
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
@@ -141,16 +148,22 @@ extern realContext_t ctxtReal51;
 extern realContext_t ctxtReal75;
 extern const real_t *const_NaN;
 extern uint8_t lastErrorCode;
+extern uint8_t shortIntegerMode;
+extern angularMode_t currentAngularMode;
 
 #define const_0 ((real_t *)z47_math_wrappers_const_0())
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
+#define const__1 ((real_t *)z47_math_wrappers_const_minus_1())
+#define const_2 ((real_t *)z47_math_wrappers_const_2())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
+#define const39_pi ((real_t *)z47_math_wrappers_const_pi())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
 
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
+#define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 
 bool_t saveLastX(void);
 void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
@@ -182,12 +195,14 @@ uint32_t getRegisterTag(calcRegister_t reg);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
+void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode);
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
 void realPolarToRectangular(const real_t *magnitude,
                             const real_t *angle,
                             real_t *real,
                             real_t *imag,
                             realContext_t *real_context);
+void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *real_context);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 angularMode_t mode,
                                 real_t *sin,
@@ -196,9 +211,11 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 realContext_t *real_context);
 void WP34S_SinhCosh(const real_t *x, real_t *sin_out, real_t *cos_out, realContext_t *real_context);
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
+decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *real_context);
+bool_t realCompareEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2);
 void realSetNaN(real_t *value);
@@ -217,6 +234,12 @@ void divComplexComplex(const real_t *numer_real,
                        real_t *quotient_real,
                        real_t *quotient_imag,
                        realContext_t *real_context);
+void mulComplexReal(const real_t *factor1_real,
+                    const real_t *factor1_imag,
+                    const real_t *factor2,
+                    real_t *product_real,
+                    real_t *product_imag,
+                    realContext_t *real_context);
 void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal, real_t *productImag);
 void mulComplexComplex(const real_t *factor1_real,
                        const real_t *factor1_imag,
@@ -227,11 +250,14 @@ void mulComplexComplex(const real_t *factor1_real,
                        realContext_t *real_context);
 void unitVectorCplx(void);
 uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
+int64_t WP34S_build_value(uint64_t x, int32_t sign);
 uint64_t WP34S_int2pow(uint64_t x);
 uint64_t WP34S_int10pow(uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
+void setSystemFlag(int32_t flag);
+void clearSystemFlag(int32_t flag);
 void fnSetFlag(int32_t flag);
 void fnRefreshState(void);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
@@ -240,11 +266,15 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 
 const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
+const real_t *z47_math_wrappers_const_minus_1(void);
+const real_t *z47_math_wrappers_const_2(void);
 const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
+const real_t *z47_math_wrappers_const_pi(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
+void z47_math_wrappers_minus_one_power_long_integer(void);
 int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue);
 void z47_math_wrappers_report_int_pow_real_domain_error(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
@@ -257,6 +287,7 @@ uint32_t decQuadIsNegative(const decQuad *dq);
 
 #define REGISTER_SHORT_INTEGER_DATA(a) ((uint64_t *)(getRegisterDataPointer(a)))
 #define REGISTER_REAL34_DATA(a) ((real34_t *)(getRegisterDataPointer(a)))
+#define REGISTER_IMAG34_DATA(a) ((real34_t *)((uint8_t *)(getRegisterDataPointer(a)) + sizeof(real34_t)))
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
 
