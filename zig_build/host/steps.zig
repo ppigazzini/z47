@@ -141,16 +141,23 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         b,
         context.host_target,
         optimize,
-        .{
-            .logical_mask = context.shortint_leaf_objects.logical_mask,
-            .logical_count_bits = context.shortint_leaf_objects.logical_count_bits,
-            .logical_set_clear_flip_bits = context.shortint_leaf_objects.logical_set_clear_flip_bits,
-        },
+        context.shortint_leaf_objects,
     );
     const run_logical_shortint_parity = b.addRunArtifact(logical_shortint_parity);
     run_logical_shortint_parity.setCwd(b.path("."));
     const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical leaf-module parity suite");
     logical_shortint_parity_step.dependOn(&run_logical_shortint_parity.step);
+
+    const rotate_bits_parity = shortint_rewrites.addRotateBitsParityExecutable(
+        b,
+        context.host_target,
+        optimize,
+        context.shortint_leaf_objects.rotate_bits,
+    );
+    const run_rotate_bits_parity = b.addRunArtifact(rotate_bits_parity);
+    run_rotate_bits_parity.setCwd(b.path("."));
+    const rotate_bits_parity_step = b.step("rotate_bits_parity", "Run the rotate-bits parity suite");
+    rotate_bits_parity_step.dependOn(&run_rotate_bits_parity.step);
 
     const stack_state_parity = stack_rewrites.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
     const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
