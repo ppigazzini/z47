@@ -70,6 +70,8 @@ enum {
   dtReal34 = 1,
   dtComplex34 = 2,
   dtTime = 3,
+  dtReal34Matrix = 6,
+  dtComplex34Matrix = 7,
   dtShortInteger = 8,
 };
 
@@ -98,6 +100,7 @@ enum {
 #define ERROR_NONE 0
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
 #define FLAG_SPCRES 0x8017
+#define NOPARAM 0
 
 #define ifLongIntegerDoAngleReduction true
 
@@ -111,8 +114,10 @@ enum {
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
 #define realIsSpecial(source) (((source)->bits & DECSPECIAL) != 0)
 #define realIsInfinite(source) (((source)->bits & DECINF) != 0)
+#define realIsNegative(source) (((source)->bits & 0x80) != 0)
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
+#define realDivide(operand1, operand2, res, ctxt) decNumberDivide((res), (operand1), (operand2), (ctxt))
 
 #define real34ChangeSign(operand) ((operand)->bytes[15] ^= 0x80)
 #define real34SetPositiveSign(operand) ((operand)->bytes[15] &= 0x7f)
@@ -124,6 +129,10 @@ extern realContext_t ctxtReal39;
 extern realContext_t ctxtReal51;
 extern realContext_t ctxtReal75;
 extern const real_t *const_NaN;
+
+#define const_1 z47_math_wrappers_const_1()
+#define const_plusInfinity z47_math_wrappers_const_plus_infinity()
+#define const_minusInfinity z47_math_wrappers_const_minus_infinity()
 
 bool_t saveLastX(void);
 void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
@@ -163,9 +172,17 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
 void WP34S_SinhCosh(const real_t *x, real_t *sin_out, real_t *cos_out, realContext_t *real_context);
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
 void realSetNaN(real_t *value);
 void realSetZero(real_t *value);
 void realSetOne(real_t *value);
+void divRealComplex(const real_t *numer,
+                    const real_t *denom_real,
+                    const real_t *denom_imag,
+                    real_t *quotient_real,
+                    real_t *quotient_imag,
+                    realContext_t *real_context);
 void divComplexComplex(const real_t *numer_real,
                        const real_t *numer_imag,
                        const real_t *denom_real,
@@ -187,6 +204,11 @@ uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
+void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
+
+const real_t *z47_math_wrappers_const_1(void);
+const real_t *z47_math_wrappers_const_plus_infinity(void);
+const real_t *z47_math_wrappers_const_minus_infinity(void);
 
 uint32_t decQuadIsNaN(const decQuad *dq);
 uint32_t decQuadIsZero(const decQuad *dq);

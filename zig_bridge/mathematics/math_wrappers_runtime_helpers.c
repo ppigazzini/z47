@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <string.h>
+
 #include "c47.h"
 
 void z47_math_wrappers_build_sign_result(int32_t r) {
@@ -53,10 +55,61 @@ end:
   longIntegerFree(x);
 }
 
+static void z47_math_wrappers_init_constant(real_t *value, uint8_t bits, uint16_t lsu0) {
+  memset(value, 0, sizeof(*value));
+  value->digits = 1;
+  value->exponent = 0;
+  value->bits = bits;
+  value->lsu[0] = lsu0;
+}
+
+const real_t *z47_math_wrappers_const_1(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 1);
+    initialized = true;
+  }
+
+  return &value;
+}
+
+const real_t *z47_math_wrappers_const_plus_infinity(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0x40, 0);
+    initialized = true;
+  }
+
+  return &value;
+}
+
+const real_t *z47_math_wrappers_const_minus_infinity(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0xc0, 0);
+    initialized = true;
+  }
+
+  return &value;
+}
+
 void z47_math_wrappers_report_sign_real_nan_error(void) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function signReal:", "cannot use NaN as X input of SIGN", NULL, NULL);
+#endif
+}
+
+void z47_math_wrappers_report_invert_real_divide_by_zero_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function invertReal:", "cannot divide a real by 0", NULL, NULL);
 #endif
 }
 
