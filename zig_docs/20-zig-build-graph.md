@@ -87,6 +87,7 @@ The live build graph currently exposes these step groups.
 - `memory_parity`
 - `program_serialization_parity`
 - `calc_state_parity`
+- `math_command_wrappers_parity`
 - `keyboard_state_parity`
 - `keyboard_statusbar_flags_regression`
 - `test`

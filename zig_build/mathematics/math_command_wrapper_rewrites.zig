@@ -24,6 +24,7 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/ceil.c",
     "mathematics/floor.c",
     "mathematics/exp.c",
+    "mathematics/eulersFormula.c",
     "mathematics/invert.c",
     "mathematics/sign.c",
     "mathematics/changeSign.c",

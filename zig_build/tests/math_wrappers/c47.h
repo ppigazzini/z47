@@ -99,6 +99,7 @@ enum {
 #define ERR_REGISTER_LINE REGISTER_Z
 #define ERROR_NONE 0
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
+#define FLAG_CPXRES 0x8004
 #define FLAG_SPCRES 0x8017
 #define NOPARAM 0
 
@@ -169,6 +170,7 @@ uint32_t getRegisterTag(calcRegister_t reg);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
+void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 angularMode_t mode,
                                 real_t *sin,
@@ -198,6 +200,7 @@ void divComplexComplex(const real_t *numer_real,
                        real_t *quotient_real,
                        real_t *quotient_imag,
                        realContext_t *real_context);
+void mulComplexi(const real_t *inReal, const real_t *inImag, real_t *productReal, real_t *productImag);
 void mulComplexComplex(const real_t *factor1_real,
                        const real_t *factor1_imag,
                        const real_t *factor2_real,
@@ -210,6 +213,8 @@ uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
+void fnSetFlag(int32_t flag);
+void fnRefreshState(void);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
@@ -220,6 +225,8 @@ const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
+void z47_math_wrappers_report_eulers_formula_complex_domain_error(void);
+void z47_math_wrappers_report_eulers_formula_real_domain_error(void);
 
 uint32_t decQuadIsNaN(const decQuad *dq);
 uint32_t decQuadIsZero(const decQuad *dq);
