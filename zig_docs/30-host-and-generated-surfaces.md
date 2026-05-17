@@ -145,9 +145,13 @@ surfaces:
 | `testPgms` or `testpgms` | tracked generated test-program data refresh |
 | `generated` | all tracked generated refresh surfaces above |
 
-The generator entrypoints now live under `../zig_build/tools/`. They are
-Zig-owned executables, but some still use narrow approved C boundaries rather
-than full manual rewrites of every dependency they touch.
+The generator entrypoints now live under `../zig_build/tools/`. Their narrow C
+interop now enters through the checked-in `translate-c` root headers under
+`../zig_build/tools/translate_c/` and the build-managed translation steps in
+`../zig_build/host/generated.zig` rather than checked-in `@cImport` blocks in
+the generator Zig sources. The generator executables remain manual Zig owners
+even though retained decNumber, FreeType, and host-header surfaces still cross
+that explicit build-managed boundary.
 
 ## Docs Surface
 

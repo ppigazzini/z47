@@ -6,6 +6,7 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd -- "$script_dir/../.." && pwd)"
 allowlist_file="$script_dir/zig-c-boundaries.txt"
 
+declare -a translate_c_allowed=()
 declare -a cimport_allowed=()
 declare -a extern_allowed=()
 
@@ -32,6 +33,10 @@ load_allowlist() {
             "" | \#*)
                 continue
                 ;;
+            "[translate-c-roots]")
+                section="translate-c"
+                continue
+                ;;
             "[cimport]")
                 section="cimport"
                 continue
@@ -43,6 +48,9 @@ load_allowlist() {
         esac
 
         case "$section" in
+            translate-c)
+                translate_c_allowed+=("$line")
+                ;;
             cimport)
                 cimport_allowed+=("$line")
                 ;;
@@ -88,6 +96,18 @@ check_tree() {
             done
     )
 
+    mapfile -t translate_c_files < <(
+        cd "$repo_root"
+        git ls-files --cached --modified --others --exclude-standard --deduplicate -- 'zig_build/tools/translate_c/*.h' |
+            while IFS= read -r path; do
+                [[ -f "$path" ]] && printf '%s\n' "$path"
+            done
+    )
+
+    for file in "${translate_c_allowed[@]}"; do
+        require_allowlisted_match "$file" '#include[[:space:]]*[<"]' 'translate-c-root' || violations=1
+    done
+
     for file in "${cimport_allowed[@]}"; do
         require_allowlisted_match "$file" '@cImport[[:space:]]*\(' '@cImport' || violations=1
     done
@@ -112,6 +132,13 @@ check_tree() {
         fi
     done
 
+    for file in "${translate_c_files[@]}"; do
+        if ! contains_path "$file" "${translate_c_allowed[@]}"; then
+            printf 'Unapproved translate-c root header: %s\n' "$file" >&2
+            violations=1
+        fi
+    done
+
     if [[ "$violations" -ne 0 ]]; then
         exit 1
     fi
@@ -120,5 +147,6 @@ check_tree() {
 load_allowlist
 check_tree
 
+printf 'Approved translate-c roots: %s\n' "${#translate_c_allowed[@]}"
 printf 'Approved @cImport files: %s\n' "${#cimport_allowed[@]}"
 printf 'Approved extern-symbol files: %s\n' "${#extern_allowed[@]}"

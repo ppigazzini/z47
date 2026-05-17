@@ -71,10 +71,57 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.master_toolchain.outputs.version }}"
-      - name: Probe build graph and narrow parity lane under monitored Zig master
+      - id: xlsxio-ref
+        name: Resolve xlsxio upstream HEAD
         shell: bash
         run: |
           set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+      - id: xlsxio-cache
+        name: Restore Linux xlsxio helper cache for monitored Zig master
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/xlsxio-prefix
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          restore-keys: |
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-
+      - name: Install Linux xlsxio helper prerequisites for monitored Zig master
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
+      - name: Build xlsxio helper for monitored Zig master
+        if: steps.xlsxio-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
+          cmake_major="${cmake_version%%.*}"
+          cmake_policy_args=()
+          if [[ "$cmake_major" =~ ^[0-9]+$ && "$cmake_major" -ge 4 ]]; then
+            cmake_policy_args+=( -DCMAKE_POLICY_VERSION_MINIMUM=3.5 )
+          fi
+          cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
+            "${cmake_policy_args[@]}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_DOCUMENTATION:BOOL=OFF \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
+          cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
+          cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Install monitored Zig master host prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev libpulse-dev
+      - name: Probe build graph and generator-backed host lane under monitored Zig master
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build --help --summary none
           zig build logical_shortint_parity --summary none
           zig build rotate_bits_parity --summary none

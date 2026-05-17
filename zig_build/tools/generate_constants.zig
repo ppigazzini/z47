@@ -1,17 +1,6 @@
 const std = @import("std");
 
-const c = @cImport({
-    @cInclude("stdbool.h");
-    @cInclude("stdint.h");
-    @cInclude("stddef.h");
-    @cInclude("stdio.h");
-    @cInclude("stdlib.h");
-    @cInclude("string.h");
-    @cInclude("defines.h");
-    @cInclude("decContext.h");
-    @cInclude("decNumber.h");
-    @cInclude("decQuad.h");
-});
+const c = @import("c_bindings");
 
 const realContext_t = c.decContext;
 const real_t = c.decNumber;
@@ -254,11 +243,11 @@ const Generator = struct {
     fn emitRealConstant(self: *Generator, spec: RealConstant, ctxt_real: *realContext_t) !void {
         const max_digits = ((spec.digits + 2) / 6) * 6 + 3;
         const len_in_bytes = 10 + @sizeOf(c.decNumberUnit) * (max_digits / dec_digits_per_unit);
-        var storage: [max_real_words]u32 = [_]u32{0} ** max_real_words;
+        var storage = std.mem.zeroes([max_real_words]u32);
         const real_ptr: *real_t = @ptrCast(&storage[0]);
 
         ctxt_real.digits = @intCast(max_digits);
-        const c_value = try self.allocator.dupeZ(u8, spec.value);
+        const c_value = try self.allocator.dupeSentinel(u8, spec.value, 0);
         defer self.allocator.free(c_value);
 
         _ = c.decNumberFromString(real_ptr, c_value.ptr, ctxt_real);
@@ -290,7 +279,7 @@ const Generator = struct {
 
     fn emitReal34Constant(self: *Generator, spec: Real34Constant, ctxt_real34: *realContext_t) !void {
         var real34: real34_t = std.mem.zeroes(real34_t);
-        const c_value = try self.allocator.dupeZ(u8, spec.value);
+        const c_value = try self.allocator.dupeSentinel(u8, spec.value, 0);
         defer self.allocator.free(c_value);
 
         _ = c.decQuadFromString(&real34, c_value.ptr, ctxt_real34);
@@ -621,7 +610,7 @@ fn trimAscii(text: []const u8) []const u8 {
 }
 
 fn writeFile(path: []const u8, contents: []const u8) !void {
-    const c_path = try std.heap.page_allocator.dupeZ(u8, path);
+    const c_path = try std.heap.page_allocator.dupeSentinel(u8, path, 0);
     defer std.heap.page_allocator.free(c_path);
 
     const file = c.fopen(c_path.ptr, "wb") orelse return error.FileOpenFailed;
@@ -632,7 +621,7 @@ fn writeFile(path: []const u8, contents: []const u8) !void {
 }
 
 fn readFileAlloc(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
-    const c_path = try allocator.dupeZ(u8, path);
+    const c_path = try allocator.dupeSentinel(u8, path, 0);
     defer allocator.free(c_path);
 
     const file = c.fopen(c_path.ptr, "rb") orelse return error.FileOpenFailed;
