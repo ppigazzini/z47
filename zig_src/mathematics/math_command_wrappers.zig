@@ -2,6 +2,10 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
+fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
+    destination.* = source.*;
+}
+
 pub export fn sinComplex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
@@ -180,6 +184,75 @@ pub export fn TanhComplex(
     return runtime.ERROR_NONE;
 }
 
+fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *const runtime.real_t) void {
+    if (runtime.realIsNegative(x)) {
+        copyReal(result, zero);
+    } else {
+        copyReal(result, runtime.z47_math_wrappers_const_plus_infinity());
+    }
+}
+
+pub export fn realExpLimitCheck(
+    x: *const runtime.real_t,
+    result: *runtime.real_t,
+    zero: *const runtime.real_t,
+) callconv(.c) bool {
+    if (runtime.realIsSpecial(x)) {
+        if (runtime.realIsInfinite(x)) {
+            setExpLimitResult(x, result, zero);
+        } else {
+            runtime.realSetNaN(result);
+        }
+        return false;
+    }
+
+    if (runtime.realCompareAbsGreaterThan(x, runtime.z47_math_wrappers_const_2e6())) {
+        setExpLimitResult(x, result, zero);
+        return false;
+    }
+
+    return true;
+}
+
+pub export fn realExp(
+    x: *const runtime.real_t,
+    result: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    if (realExpLimitCheck(x, result, runtime.z47_math_wrappers_const_0())) {
+        _ = runtime.decNumberExp(result, x, real_context);
+    }
+}
+
+pub export fn expComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    var exp_real: runtime.real_t = undefined;
+    var sin_value: runtime.real_t = undefined;
+    var cos_value: runtime.real_t = undefined;
+
+    if (runtime.realIsZero(imag)) {
+        realExp(real, res_real, real_context);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    if (runtime.realIsSpecial(real) or runtime.realIsSpecial(imag)) {
+        runtime.realSetNaN(res_real);
+        runtime.realSetNaN(res_imag);
+        return;
+    }
+
+    realExp(real, &exp_real, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(imag, runtime.amRadian, &sin_value, &cos_value, null, real_context);
+    runtime.realMultiply(&exp_real, &cos_value, res_real, real_context);
+    runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
+}
+
 fn ceilReal() callconv(.c) void {
     runtime.integerPartReal(runtime.DEC_ROUND_CEILING);
 }
@@ -260,6 +333,34 @@ fn tanhCplx() callconv(.c) void {
 
     _ = TanhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
+}
+
+fn expReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_exp_real_domain_error();
+        return;
+    }
+
+    realExp(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn expCplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    expComplex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
 }
 
 fn tanReal() callconv(.c) void {
@@ -614,6 +715,12 @@ pub export fn fnTanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&tanhReal, &tanhCplx);
+}
+
+pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
 }
 
 pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {

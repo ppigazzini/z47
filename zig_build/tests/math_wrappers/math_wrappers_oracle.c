@@ -82,6 +82,16 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef fnTanh
 #undef TanhComplex
 
+#define realExpLimitCheck oracle_realExpLimitCheck
+#define realExp oracle_realExp
+#define expComplex oracle_expComplex
+#define fnExp oracle_fnExp
+#include "../../../src/c47/mathematics/exp.c"
+#undef fnExp
+#undef expComplex
+#undef realExp
+#undef realExpLimitCheck
+
 #define fnSquare oracle_fnSquare
 #include "../../../src/c47/mathematics/square.c"
 #undef fnSquare

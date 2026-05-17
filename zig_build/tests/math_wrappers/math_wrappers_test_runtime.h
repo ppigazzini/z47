@@ -99,9 +99,17 @@ typedef struct {
   int32_t dec_number_divide_lhs_value;
   int32_t dec_number_divide_rhs_value;
 
+  uint32_t dec_number_exp_calls;
+  int32_t dec_number_exp_input_value;
+  uint8_t dec_number_exp_input_bits;
+
   uint32_t real_compare_abs_equal_calls;
   int32_t real_compare_abs_equal_lhs_value;
   int32_t real_compare_abs_equal_rhs_value;
+
+  uint32_t real_compare_abs_greater_than_calls;
+  int32_t real_compare_abs_greater_than_lhs_value;
+  int32_t real_compare_abs_greater_than_rhs_value;
 
   uint32_t div_real_complex_calls;
   int32_t div_real_complex_numer_value;

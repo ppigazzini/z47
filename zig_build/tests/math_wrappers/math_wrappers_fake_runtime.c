@@ -79,10 +79,10 @@ static int64_t decodeShortInteger(uint64_t raw, int32_t *sign_value) {
   return negative ? -(int64_t)(raw & ~(UINT64_C(1) << 63)) : (int64_t)(raw & ~(UINT64_C(1) << 63));
 }
 
-static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
+static void setFakeRealWithExponent(real_t *value, int32_t signed_value, uint8_t bits, int32_t exponent) {
   memset(value, 0, sizeof(*value));
   value->digits = 1;
-  value->exponent = 0;
+  value->exponent = exponent;
   value->bits = bits;
   if(signed_value < 0) {
     value->bits |= 0x80;
@@ -93,8 +93,24 @@ static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
   }
 }
 
+static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
+  setFakeRealWithExponent(value, signed_value, bits, 0);
+}
+
 static int32_t fakeRealValue(const real_t *value) {
-  const int32_t magnitude = value->lsu[0];
+  int64_t magnitude = value->lsu[0];
+
+  if(value->exponent > 0) {
+    for(int32_t i = 0; i < value->exponent; ++i) {
+      magnitude *= 10;
+    }
+  }
+  else if(value->exponent < 0) {
+    for(int32_t i = 0; i < -value->exponent; ++i) {
+      magnitude /= 10;
+    }
+  }
+
   return (value->bits & 0x80) ? -magnitude : magnitude;
 }
 
@@ -482,6 +498,15 @@ decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNum
   return result;
 }
 
+decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *realContext) {
+  snapshot.dec_number_exp_calls++;
+  snapshot.dec_number_exp_input_value = fakeRealValue(rhs);
+  snapshot.dec_number_exp_input_bits = rhs->bits;
+  (void)realContext;
+  setFakeReal(result, fakeRealValue(rhs) + 70, 0);
+  return result;
+}
+
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
   const int32_t lhs_value = fakeRealValue(number1);
   const int32_t rhs_value = fakeRealValue(number2);
@@ -490,6 +515,16 @@ bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
   snapshot.real_compare_abs_equal_lhs_value = lhs_value;
   snapshot.real_compare_abs_equal_rhs_value = rhs_value;
   return (lhs_value < 0 ? -lhs_value : lhs_value) == (rhs_value < 0 ? -rhs_value : rhs_value);
+}
+
+bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
+  const int32_t lhs_value = fakeRealValue(number1);
+  const int32_t rhs_value = fakeRealValue(number2);
+
+  snapshot.real_compare_abs_greater_than_calls++;
+  snapshot.real_compare_abs_greater_than_lhs_value = lhs_value;
+  snapshot.real_compare_abs_greater_than_rhs_value = rhs_value;
+  return (lhs_value < 0 ? -lhs_value : lhs_value) > (rhs_value < 0 ? -rhs_value : rhs_value);
 }
 
 void divRealComplex(const real_t *numer,
