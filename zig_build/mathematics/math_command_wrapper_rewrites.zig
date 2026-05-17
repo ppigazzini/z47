@@ -4,6 +4,7 @@ pub const RuntimeObjects = struct {
     math_command_wrappers: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
+        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_helpers.c");
         cmd.addFileArg(self.math_command_wrappers.getEmittedBin());
     }
 };
@@ -22,6 +23,10 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/max.c",
     "mathematics/ceil.c",
     "mathematics/floor.c",
+    "mathematics/sin.c",
+    "mathematics/cos.c",
+    "mathematics/tan.c",
+    "mathematics/sinh.c",
     "mathematics/cosh.c",
 };
 
@@ -93,7 +98,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    _ = c_flags;
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = c_flags });
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
     module.addObject(runtime_object);
 }
@@ -115,6 +120,7 @@ pub fn addParityExecutable(
     });
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/math_wrappers"));
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_parity.c"), .flags = &.{} });
