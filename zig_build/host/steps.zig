@@ -4,6 +4,7 @@ const host_builders = @import("builders.zig");
 const host_platform = @import("platform.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
+const constants_rewrites = @import("../leaf/constants_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
 const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
@@ -204,6 +205,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_math_command_wrappers_parity.setCwd(b.path("."));
     const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the thin math-command wrapper parity suite");
     math_command_wrappers_parity_step.dependOn(&run_math_command_wrappers_parity.step);
+
+    const constants_parity = constants_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const run_constants_parity = b.addRunArtifact(constants_parity);
+    run_constants_parity.setCwd(b.path("."));
+    const constants_parity_step = b.step("constants_parity", "Run the constants-command parity suite");
+    constants_parity_step.dependOn(&run_constants_parity.step);
 
     const tone_parity = tone_rewrites.addParityExecutable(b, context.host_target, optimize);
     const run_tone_parity = b.addRunArtifact(tone_parity);
