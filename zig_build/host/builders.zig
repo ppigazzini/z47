@@ -93,6 +93,7 @@ pub fn addSimulator(
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
     exe.root_module.addObject(shortint_leaf_objects.logical_mask);
     exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
+    exe.root_module.addObject(shortint_leaf_objects.rotate_bits);
     exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
     exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);
@@ -169,6 +170,7 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
     exe.root_module.addObject(shortint_leaf_objects.logical_mask);
     exe.root_module.addObject(shortint_leaf_objects.logical_count_bits);
+    exe.root_module.addObject(shortint_leaf_objects.rotate_bits);
     exe.root_module.addObject(shortint_leaf_objects.logical_set_clear_flip_bits);
     exe.root_module.addObject(keyboard_state_objects.keyboard_state);
     exe.root_module.addObject(stack_state_objects.stack_state);

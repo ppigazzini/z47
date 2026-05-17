@@ -6,7 +6,8 @@ Zig-first port workspace.
 These pages are code-facing maintainer docs, not end-user usage docs.
 
 The current live runtime Zig rewrites are intentionally narrow: short-integer
-leaf logic plus stack, register-metadata, flags, memory,
+leaf logic, including the rotate or justify helpers, plus stack,
+register-metadata, flags, memory,
 program-serialization, calc-state, and keyboard-state ownership slices.
 
 These pages document tracked, maintained repo surfaces only. They do not define
@@ -110,6 +111,8 @@ Maintainer entrypoints:
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build logical_shortint_parity`: focused parity lane for the live
   short-integer leaf rewrite slice
+- `zig build rotate_bits_parity`: focused parity lane for the live rotate,
+  justify, byte-swap, zip, and unzip leaf owner slice
 - `zig build stack_state_parity`: focused parity lane for the live stack-state
   rewrite slice
 - `zig build register_metadata_parity`: focused parity lane for the live

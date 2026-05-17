@@ -90,6 +90,7 @@ application.
 Current grouped host test steps:
 
 - `zig build logical_shortint_parity`
+- `zig build rotate_bits_parity`
 - `zig build stack_state_parity`
 - `zig build register_metadata_parity`
 - `zig build flags_parity`
@@ -101,17 +102,19 @@ Current grouped host test steps:
 - `zig build test_asan`
 - `zig build repeattest`
 
-`zig build stack_state_parity` compares the live Zig stack-state owner with the
-imported `stack.c` oracle against a fake runtime. `zig build
-register_metadata_parity` does the same for the live register-metadata
-accessors against the imported `registers.c` oracle surface in the host lane.
-`zig build flags_parity` does the same for the exported system-flag accessor
-and change-tracking surface against the imported `flags.c` oracle, including
-refresh-state, clear-status-bar, and integer-base side effects. `zig build
-memory_parity`, `zig build program_serialization_parity`, `zig build
-calc_state_parity`, and `zig build keyboard_state_parity` extend the focused
-host parity coverage across the live stateful Zig slices, including the
-simulator-only backup path and the broader public keyboard command entrypoints.
+`zig build rotate_bits_parity` compares the live Zig `rotateBits.c` owner
+replacement with the imported oracle against a fake runtime. `zig build
+stack_state_parity` compares the live Zig stack-state owner with the imported
+`stack.c` oracle against a fake runtime. `zig build register_metadata_parity`
+does the same for the live register-metadata accessors against the imported
+`registers.c` oracle surface in the host lane. `zig build flags_parity` does
+the same for the exported system-flag accessor and change-tracking surface
+against the imported `flags.c` oracle, including refresh-state,
+clear-status-bar, and integer-base side effects. `zig build memory_parity`,
+`zig build program_serialization_parity`, `zig build calc_state_parity`, and
+`zig build keyboard_state_parity` extend the focused host parity coverage
+across the live stateful Zig slices, including the simulator-only backup path
+and the broader public keyboard command entrypoints.
 `zig build test`, `zig build test_asan`, and `zig build repeattest` cover the
 broader retained host regression surface after those focused slices pass.
 
