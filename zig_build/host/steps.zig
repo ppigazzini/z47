@@ -159,6 +159,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const rotate_bits_parity_step = b.step("rotate_bits_parity", "Run the rotate-bits parity suite");
     rotate_bits_parity_step.dependOn(&run_rotate_bits_parity.step);
 
+    const run_logical_boolean_ops_suite = addTestSuiteRun(b, test_suite, "zig_build/tests/testSuiteList_logical_boolean_ops.txt");
+    const logical_boolean_ops_suite_step = b.step("logical_boolean_ops_suite", "Run the logical boolean operator suite");
+    logical_boolean_ops_suite_step.dependOn(&run_logical_boolean_ops_suite.step);
+
     const stack_state_parity = stack_rewrites.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
     const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
     run_stack_state_parity.setCwd(b.path("."));

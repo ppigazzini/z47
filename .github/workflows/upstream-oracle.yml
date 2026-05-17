@@ -78,6 +78,7 @@ jobs:
           zig build --help --summary none
           zig build logical_shortint_parity --summary none
           zig build rotate_bits_parity --summary none
+          zig build logical_boolean_ops_suite --summary none
 
   source-manifest:
     name: Verify imported upstream pin and source manifest
@@ -233,6 +234,7 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build logical_shortint_parity
           zig build rotate_bits_parity
+          zig build logical_boolean_ops_suite
           zig build stack_state_parity
           zig build register_metadata_parity
           zig build flags_parity
@@ -541,6 +543,7 @@ jobs:
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
           zig build logical_shortint_parity
           zig build rotate_bits_parity
+          zig build logical_boolean_ops_suite
           zig build stack_state_parity
           zig build register_metadata_parity
           zig build flags_parity
@@ -750,6 +753,7 @@ jobs:
           export PATH="$prefix/bin:$PATH"
           zig build logical_shortint_parity
           zig build rotate_bits_parity
+          zig build logical_boolean_ops_suite
           zig build stack_state_parity
           zig build register_metadata_parity
           zig build flags_parity

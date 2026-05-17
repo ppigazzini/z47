@@ -40,6 +40,7 @@ flowchart TD
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
 | short-integer mask, count, and bit-toggle parity | `../zig_src/leaf/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
 | rotate, justify, mirror, byte-swap, zip, and unzip parity | `../zig_src/leaf/`, `../zig_build/tests/rotate_bits/` | focused parity executable covering the live `logicalOps/rotateBits.c` owner replacement | `zig build rotate_bits_parity --summary none` |
+| logical boolean operator rewrite regression | `../zig_src/leaf/`, `../zig_build/tests/testSuiteList_logical_boolean_ops.txt`, `../src/testSuite/tests/` | focused host test-suite list covering `and`, `or`, `not`, `nand`, `nor`, `xor`, and `xnor` after the live owner replacement | `zig build logical_boolean_ops_suite --summary none` |
 | stack-state rewrite parity | `../zig_src/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
 | register-metadata rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
 | system-flag rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
@@ -76,6 +77,7 @@ flowchart TD
 - generator or tracked generated-artifact change: `zig build generated --summary none`
 - calc-state or simulator backup-entrypoint change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice adds or moves retained C bindings, keep them in `zig_src/state/calc_state_runtime.zig` rather than `zig_src/state/calc_state.zig`; if the slice must stay firmware-safe, rerun `zig build dist_dmcp_pkg3 --summary none`, and rerun `zig build dist_dmcp_pkg2 --summary none` as well when package-2 overlay trims are part of the change
 - rotate, justify, byte-order, or zip-state leaf change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build rotate_bits_parity --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
+- short-integer logical boolean operator change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_boolean_ops_suite --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
 - thin mathematics command-wrapper change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build math_command_wrappers_parity --summary none`, then `zig build sim --summary none`; rerun `zig build -Ddmcp-package=3 dmcp --summary none` when the slice must remain firmware-safe
 - tone command-surface change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build tone_parity --summary none`, then `zig build sim --summary none`, then `zig build -Ddmcp-package=3 dmcp --summary none`
 - keyboard input, command-surface, or statusbar-flag change: `zig build keyboard_state_parity --summary none`; if the slice is limited to the stop-statusbar helper, rerun `zig build keyboard_statusbar_flags_regression --summary none`; then rerun `zig build simulator_smoke --summary none` and `zig build test --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
@@ -84,7 +86,7 @@ flowchart TD
   routing, or keyboard dispatch, rerun `zig build simulator_smoke --summary none`
 - host core or test-surface change:
   `zig build test --summary none`
-- boundary or rewrite-slice change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_shortint_parity --summary none`, `zig build rotate_bits_parity --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
+- boundary or rewrite-slice change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_shortint_parity --summary none`, `zig build rotate_bits_parity --summary none`, `zig build logical_boolean_ops_suite --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
 - docs/code change: `zig build docs --summary none`
 - firmware or linker-script change: smallest affected firmware target first
 - package or release-proof change: matching `dist_<host>` or firmware package
@@ -113,35 +115,36 @@ match to the Linux CI lane, use this order after exporting the xlsxio helper:
 3. `bash .github/project/workflow-imported-root-paths.sh check-workflow`
 4. `zig build logical_shortint_parity --summary none`
 5. `zig build rotate_bits_parity --summary none`
-6. `zig build stack_state_parity --summary none`
-7. `zig build register_metadata_parity --summary none`
-8. `zig build flags_parity --summary none`
-9. `zig build memory_parity --summary none`
-10. `zig build program_serialization_parity --summary none`
-11. `zig build calc_state_parity --summary none`
-12. `zig build math_command_wrappers_parity --summary none`
-13. `zig build tone_parity --summary none`
-14. `zig build keyboard_state_parity --summary none`
-15. `zig build both --summary none`
-16. `zig build simulator_smoke --summary none`
-17. `zig build testPgms --summary none`
-18. `xvfb-run --auto-servernum zig build test --summary none`
-19. `zig build generated --summary none`
-20. `zig build both_asan --summary none`
-21. `xvfb-run --auto-servernum zig build test_asan --summary none`
-22. `zig build docs --summary none`
-23. `zig build dmcp --summary none`
-24. `zig build dmcpr47 --summary none`
-25. `zig build dmcp5 --summary none`
-26. `zig build dmcp5r47 --summary none`
-27. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
-28. `zig build dist_dmcp --summary none`
-29. `zig build dist_dmcp_pkg1 --summary none`
-30. `zig build dist_dmcp_pkg2 --summary none`
-31. `zig build dist_dmcp_pkg3 --summary none`
-32. `zig build dist_dmcpr47 --summary none`
-33. `zig build dist_dmcp5 --summary none`
-34. `zig build dist_dmcp5r47 --summary none`
+6. `zig build logical_boolean_ops_suite --summary none`
+7. `zig build stack_state_parity --summary none`
+8. `zig build register_metadata_parity --summary none`
+9. `zig build flags_parity --summary none`
+10. `zig build memory_parity --summary none`
+11. `zig build program_serialization_parity --summary none`
+12. `zig build calc_state_parity --summary none`
+13. `zig build math_command_wrappers_parity --summary none`
+14. `zig build tone_parity --summary none`
+15. `zig build keyboard_state_parity --summary none`
+16. `zig build both --summary none`
+17. `zig build simulator_smoke --summary none`
+18. `zig build testPgms --summary none`
+19. `xvfb-run --auto-servernum zig build test --summary none`
+20. `zig build generated --summary none`
+21. `zig build both_asan --summary none`
+22. `xvfb-run --auto-servernum zig build test_asan --summary none`
+23. `zig build docs --summary none`
+24. `zig build dmcp --summary none`
+25. `zig build dmcpr47 --summary none`
+26. `zig build dmcp5 --summary none`
+27. `zig build dmcp5r47 --summary none`
+28. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
+29. `zig build dist_dmcp --summary none`
+30. `zig build dist_dmcp_pkg1 --summary none`
+31. `zig build dist_dmcp_pkg2 --summary none`
+32. `zig build dist_dmcp_pkg3 --summary none`
+33. `zig build dist_dmcpr47 --summary none`
+34. `zig build dist_dmcp5 --summary none`
+35. `zig build dist_dmcp5r47 --summary none`
 
 ## Generated Artifact Diff Contract
 

@@ -5,12 +5,14 @@ pub const RuntimeObjects = struct {
     logical_mask: *std.Build.Step.Compile,
     logical_count_bits: *std.Build.Step.Compile,
     logical_set_clear_flip_bits: *std.Build.Step.Compile,
+    logical_boolean_ops: *std.Build.Step.Compile,
     rotate_bits: *std.Build.Step.Compile,
 
     pub fn link(self: RuntimeObjects, module: *std.Build.Module) void {
         module.addObject(self.logical_mask);
         module.addObject(self.logical_count_bits);
         module.addObject(self.logical_set_clear_flip_bits);
+        module.addObject(self.logical_boolean_ops);
         module.addObject(self.rotate_bits);
     }
 
@@ -18,6 +20,7 @@ pub const RuntimeObjects = struct {
         cmd.addFileArg(self.logical_mask.getEmittedBin());
         cmd.addFileArg(self.logical_count_bits.getEmittedBin());
         cmd.addFileArg(self.logical_set_clear_flip_bits.getEmittedBin());
+        cmd.addFileArg(self.logical_boolean_ops.getEmittedBin());
         cmd.addFileArg(self.rotate_bits.getEmittedBin());
     }
 };
@@ -32,10 +35,17 @@ pub const RuntimeObjectOptions = struct {
 };
 
 const replaced_core_sources = [_][]const u8{
+    "logicalOps/and.c",
     "logicalOps/countBits.c",
     "logicalOps/mask.c",
+    "logicalOps/nand.c",
+    "logicalOps/nor.c",
+    "logicalOps/not.c",
+    "logicalOps/or.c",
     "logicalOps/rotateBits.c",
     "logicalOps/setClearFlipBits.c",
+    "logicalOps/xnor.c",
+    "logicalOps/xor.c",
 };
 
 fn addRuntimeObject(
@@ -82,6 +92,7 @@ pub fn addRuntimeObjectsWithOptions(
     return .{
         .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/leaf/logical_mask.zig", options),
         .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/leaf/logical_count_bits.zig", options),
+        .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/leaf/logical_boolean_ops.zig", options),
         .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/leaf/rotate_bits.zig", options),
         .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/leaf/logical_set_clear_flip_bits.zig", options),
     };
