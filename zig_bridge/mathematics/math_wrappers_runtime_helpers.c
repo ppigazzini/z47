@@ -55,12 +55,24 @@ end:
   longIntegerFree(x);
 }
 
-static void z47_math_wrappers_init_constant(real_t *value, uint8_t bits, uint16_t lsu0) {
+static void z47_math_wrappers_init_constant(real_t *value, int32_t exponent, uint8_t bits, uint16_t lsu0) {
   memset(value, 0, sizeof(*value));
   value->digits = 1;
-  value->exponent = 0;
+  value->exponent = exponent;
   value->bits = bits;
   value->lsu[0] = lsu0;
+}
+
+const real_t *z47_math_wrappers_const_0(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 0);
+    initialized = true;
+  }
+
+  return &value;
 }
 
 const real_t *z47_math_wrappers_const_1(void) {
@@ -68,7 +80,19 @@ const real_t *z47_math_wrappers_const_1(void) {
   static real_t value;
 
   if(!initialized) {
-    z47_math_wrappers_init_constant(&value, 0, 1);
+    z47_math_wrappers_init_constant(&value, 0, 0, 1);
+    initialized = true;
+  }
+
+  return &value;
+}
+
+const real_t *z47_math_wrappers_const_2e6(void) {
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 6, 0, 2);
     initialized = true;
   }
 
@@ -80,7 +104,7 @@ const real_t *z47_math_wrappers_const_plus_infinity(void) {
   static real_t value;
 
   if(!initialized) {
-    z47_math_wrappers_init_constant(&value, 0x40, 0);
+    z47_math_wrappers_init_constant(&value, 0, 0x40, 0);
     initialized = true;
   }
 
@@ -92,11 +116,18 @@ const real_t *z47_math_wrappers_const_minus_infinity(void) {
   static real_t value;
 
   if(!initialized) {
-    z47_math_wrappers_init_constant(&value, 0xc0, 0);
+    z47_math_wrappers_init_constant(&value, 0, 0xc0, 0);
     initialized = true;
   }
 
   return &value;
+}
+
+void z47_math_wrappers_report_exp_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function expReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag D is not set", NULL, NULL);
+#endif
 }
 
 void z47_math_wrappers_report_sign_real_nan_error(void) {

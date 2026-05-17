@@ -136,7 +136,9 @@ pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberExp(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn divRealComplex(
     numer: *const real_t,
     denom_real: *const real_t,
@@ -154,9 +156,12 @@ pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
 pub extern fn z47_math_wrappers_square_long_integer() void;
 pub extern fn z47_math_wrappers_cube_long_integer() void;
+pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
+pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
+pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_sign_real_nan_error() void;
 pub extern fn z47_math_wrappers_report_invert_real_divide_by_zero_error() void;
 pub extern fn z47_math_wrappers_report_sinh_cosh_real_domain_error() void;
