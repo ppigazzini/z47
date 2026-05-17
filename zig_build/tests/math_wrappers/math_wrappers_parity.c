@@ -9,6 +9,7 @@ void fnMin(uint16_t unusedButMandatoryParameter);
 void fnMax(uint16_t unusedButMandatoryParameter);
 void fnCeil(uint16_t unusedButMandatoryParameter);
 void fnFloor(uint16_t unusedButMandatoryParameter);
+void fnInvert(uint16_t unusedButMandatoryParameter);
 void fnSign(uint16_t unusedButMandatoryParameter);
 void fnChangeSign(uint16_t unusedButMandatoryParameter);
 void fnSin(uint16_t unusedButMandatoryParameter);
@@ -24,6 +25,7 @@ void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
 void oracle_fnCeil(uint16_t unusedButMandatoryParameter);
 void oracle_fnFloor(uint16_t unusedButMandatoryParameter);
+void oracle_fnInvert(uint16_t unusedButMandatoryParameter);
 void oracle_fnSign(uint16_t unusedButMandatoryParameter);
 void oracle_fnChangeSign(uint16_t unusedButMandatoryParameter);
 void oracle_fnSin(uint16_t unusedButMandatoryParameter);
@@ -48,8 +50,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n"
-      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n",
+      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n"
+      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxmul=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -65,6 +67,17 @@ static int reportMismatch(const char *name,
           expected->cvt2rad_calls,
           expected->wp34s_sinh_cosh_calls,
           expected->dec_number_multiply_calls,
+            expected->dec_number_divide_calls,
+            expected->dec_number_divide_lhs_value,
+            expected->dec_number_divide_rhs_value,
+            expected->real_compare_abs_equal_calls,
+            expected->real_compare_abs_equal_lhs_value,
+            expected->real_compare_abs_equal_rhs_value,
+            expected->div_real_complex_calls,
+            expected->div_real_complex_numer_value,
+            expected->div_real_complex_denom_real_value,
+            expected->div_real_complex_denom_imag_value,
+            expected->invert_matrix_calls,
       expected->mul_complex_complex_calls,
       expected->unit_vector_cplx_calls,
       expected->wp34s_int_chs_calls,
@@ -91,6 +104,17 @@ static int reportMismatch(const char *name,
           actual->cvt2rad_calls,
           actual->wp34s_sinh_cosh_calls,
           actual->dec_number_multiply_calls,
+            actual->dec_number_divide_calls,
+            actual->dec_number_divide_lhs_value,
+            actual->dec_number_divide_rhs_value,
+            actual->real_compare_abs_equal_calls,
+            actual->real_compare_abs_equal_lhs_value,
+            actual->real_compare_abs_equal_rhs_value,
+            actual->div_real_complex_calls,
+            actual->div_real_complex_numer_value,
+            actual->div_real_complex_denom_real_value,
+            actual->div_real_complex_denom_imag_value,
+            actual->invert_matrix_calls,
       actual->mul_complex_complex_calls,
       actual->unit_vector_cplx_calls,
       actual->wp34s_int_chs_calls,
@@ -205,6 +229,57 @@ static void configureTanPoleDanger(void) {
 static void configureSignReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
+}
+
+static void configureInvertReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureInvertRealZero(void) {
+  configureInvertReal();
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureInvertRealZeroDanger(void) {
+  configureInvertReal();
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureInvertRealNegativeZeroDanger(void) {
+  configureInvertReal();
+  mathWrappersSetRealInput(true, 0, 0x80);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureInvertRealInfinityDanger(void) {
+  configureInvertReal();
+  mathWrappersSetRealInput(true, -9, 0x40);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureInvertRealAbsOne(void) {
+  configureInvertReal();
+  mathWrappersSetRealInput(true, -1, 0);
+}
+
+static void configureInvertComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+}
+
+static void configureInvertRealMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureInvertComplexMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amNone);
 }
 
 static void configureSignRealNaN(void) {
@@ -341,6 +416,15 @@ int main(void) {
   failures += runCase("fnMax", oracle_fnMax, fnMax, 0, true, NULL);
   failures += runCase("fnCeil", oracle_fnCeil, fnCeil, 0, true, NULL);
   failures += runCase("fnFloor", oracle_fnFloor, fnFloor, 0, true, NULL);
+  failures += runCase("fnInvert/real", oracle_fnInvert, fnInvert, 0, true, configureInvertReal);
+  failures += runCase("fnInvert/real_zero", oracle_fnInvert, fnInvert, 0, true, configureInvertRealZero);
+  failures += runCase("fnInvert/real_zero_danger", oracle_fnInvert, fnInvert, 0, true, configureInvertRealZeroDanger);
+  failures += runCase("fnInvert/real_neg_zero_danger", oracle_fnInvert, fnInvert, 0, true, configureInvertRealNegativeZeroDanger);
+  failures += runCase("fnInvert/real_inf_danger", oracle_fnInvert, fnInvert, 0, true, configureInvertRealInfinityDanger);
+  failures += runCase("fnInvert/real_abs_one", oracle_fnInvert, fnInvert, 0, true, configureInvertRealAbsOne);
+  failures += runCase("fnInvert/complex", oracle_fnInvert, fnInvert, 0, true, configureInvertComplex);
+  failures += runCase("fnInvert/real_matrix", oracle_fnInvert, fnInvert, 0, true, configureInvertRealMatrix);
+  failures += runCase("fnInvert/complex_matrix", oracle_fnInvert, fnInvert, 0, true, configureInvertComplexMatrix);
   failures += runCase("fnSign/real", oracle_fnSign, fnSign, 0, true, configureSignReal);
   failures += runCase("fnSign/real_nan", oracle_fnSign, fnSign, 0, true, configureSignRealNaN);
   failures += runCase("fnSign/complex", oracle_fnSign, fnSign, 0, true, configureSignComplex);
