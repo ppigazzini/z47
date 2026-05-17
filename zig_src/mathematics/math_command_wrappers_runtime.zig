@@ -35,6 +35,7 @@ pub const ifLongIntegerDoAngleReduction = true;
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 
+pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_SPCRES: i32 = 0x8017;
 
 pub const DECNEG: u8 = 0x80;
@@ -90,9 +91,12 @@ pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
+pub extern fn fnSetFlag(flag: i32) void;
+pub extern fn fnRefreshState() void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
 pub extern fn processIntRealComplexMonadicFunction(
@@ -121,6 +125,12 @@ pub extern fn divComplexComplex(
     quotient_real: *real_t,
     quotient_imag: *real_t,
     real_context: *realContext_t,
+) void;
+pub extern fn mulComplexi(
+    in_real: *const real_t,
+    in_imag: *const real_t,
+    product_real: *real_t,
+    product_imag: *real_t,
 ) void;
 pub extern fn mulComplexComplex(
     factor1_real: *const real_t,
@@ -162,6 +172,8 @@ pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_eulers_formula_complex_domain_error() void;
+pub extern fn z47_math_wrappers_report_eulers_formula_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_sign_real_nan_error() void;
 pub extern fn z47_math_wrappers_report_invert_real_divide_by_zero_error() void;
 pub extern fn z47_math_wrappers_report_sinh_cosh_real_domain_error() void;

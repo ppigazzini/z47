@@ -118,11 +118,25 @@ typedef struct {
 
   uint32_t invert_matrix_calls;
 
+  uint32_t mul_complex_i_calls;
+  int32_t mul_complex_i_input_real_value;
+  int32_t mul_complex_i_input_imag_value;
+
   uint32_t mul_complex_complex_calls;
   int32_t mul_complex_complex_factor1_real_value;
   int32_t mul_complex_complex_factor1_imag_value;
   int32_t mul_complex_complex_factor2_real_value;
   int32_t mul_complex_complex_factor2_imag_value;
+
+  uint32_t convert_angle_from_to_calls;
+  int32_t convert_angle_from_to_input_value;
+  angularMode_t convert_angle_from_to_from_mode;
+  angularMode_t convert_angle_from_to_to_mode;
+
+  uint32_t fn_set_flag_calls;
+  int32_t fn_set_flag_last_flag;
+
+  uint32_t fn_refresh_state_calls;
 
   uint32_t unit_vector_cplx_calls;
 

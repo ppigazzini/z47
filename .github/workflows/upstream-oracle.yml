@@ -288,6 +288,7 @@ jobs:
           zig build memory_parity
           zig build program_serialization_parity
           zig build calc_state_parity
+          zig build math_command_wrappers_parity
           zig build keyboard_state_parity
           zig build both
           zig build simulator_smoke
@@ -597,6 +598,7 @@ jobs:
           zig build memory_parity
           zig build program_serialization_parity
           zig build calc_state_parity
+          zig build math_command_wrappers_parity
           zig build keyboard_state_parity
           zig build both
           zig build test
@@ -807,6 +809,7 @@ jobs:
           zig build memory_parity
           zig build program_serialization_parity
           zig build calc_state_parity
+          zig build math_command_wrappers_parity
           zig build keyboard_state_parity
           zig build both
           zig build test

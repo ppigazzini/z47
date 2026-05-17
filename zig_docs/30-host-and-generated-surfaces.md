@@ -100,6 +100,7 @@ Current grouped host test steps:
 - `zig build memory_parity`
 - `zig build program_serialization_parity`
 - `zig build calc_state_parity`
+- `zig build math_command_wrappers_parity`
 - `zig build keyboard_state_parity`
 - `zig build test`
 - `zig build test_asan`
@@ -117,10 +118,12 @@ does the same for the live register-metadata accessors against the imported
 the same for the exported system-flag accessor and change-tracking surface
 against the imported `flags.c` oracle, including refresh-state,
 clear-status-bar, and integer-base side effects. `zig build memory_parity`,
-`zig build program_serialization_parity`, `zig build calc_state_parity`, and
-`zig build keyboard_state_parity` extend the focused host parity coverage
-across the live stateful Zig slices, including the simulator-only backup path
-and the broader public keyboard command entrypoints.
+`zig build program_serialization_parity`, `zig build calc_state_parity`,
+`zig build math_command_wrappers_parity`, and `zig build keyboard_state_parity`
+extend the focused host parity coverage across the live stateful and math
+command-owner Zig slices, including the simulator-only backup path, the shared
+exp or Euler helper surface, and the broader public keyboard command
+entrypoints.
 `zig build test`, `zig build test_asan`, and `zig build repeattest` cover the
 broader retained host regression surface after those focused slices pass.
 

@@ -253,6 +253,75 @@ pub export fn expComplex(
     runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
 }
 
+pub export fn eulersFormula(
+    in_real: *const runtime.real_t,
+    in_imag: *const runtime.real_t,
+    out_real: *runtime.real_t,
+    out_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    runtime.mulComplexi(in_real, in_imag, &z_real, &z_imag);
+    expComplex(&z_real, &z_imag, out_real, out_imag, real_context);
+}
+
+fn finishEulersFormula(real: *const runtime.real_t, imag: *const runtime.real_t) void {
+    runtime.convertComplexToResultRegister(real, imag, runtime.REGISTER_X);
+    runtime.fnSetFlag(runtime.FLAG_CPXRES);
+    runtime.fnRefreshState();
+}
+
+fn eulersFormulaCplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&z_real) or runtime.realIsInfinite(&z_imag)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.z47_math_wrappers_report_eulers_formula_complex_domain_error();
+            return;
+        }
+
+        runtime.realSetNaN(&z_real);
+        runtime.realSetNaN(&z_imag);
+        finishEulersFormula(&z_real, &z_imag);
+        return;
+    }
+
+    eulersFormula(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal39);
+    finishEulersFormula(&z_real, &z_imag);
+}
+
+fn eulersFormulaReal() callconv(.c) void {
+    var c: runtime.real_t = undefined;
+    var i: runtime.real_t = undefined;
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &c)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&c) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_eulers_formula_real_domain_error();
+        return;
+    }
+
+    if (register_data_type == runtime.dtReal34) {
+        const x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+        if (x_angular_mode != runtime.amNone) {
+            runtime.convertAngleFromTo(&c, x_angular_mode, runtime.amRadian, &runtime.ctxtReal39);
+        }
+    }
+
+    eulersFormula(&c, runtime.z47_math_wrappers_const_0(), &c, &i, &runtime.ctxtReal39);
+    finishEulersFormula(&c, &i);
+}
+
 fn ceilReal() callconv(.c) void {
     runtime.integerPartReal(runtime.DEC_ROUND_CEILING);
 }
@@ -721,6 +790,12 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
+}
+
+pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&eulersFormulaReal, &eulersFormulaCplx);
 }
 
 pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {

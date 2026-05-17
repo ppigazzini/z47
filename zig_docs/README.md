@@ -125,6 +125,8 @@ Maintainer entrypoints:
   program-serialization rewrite slice
 - `zig build calc_state_parity`: focused parity lane for the live calc-state
   rewrite slice
+- `zig build math_command_wrappers_parity`: focused parity lane for the live
+  math command-wrapper rewrite slice
 - `zig build keyboard_state_parity`: focused parity lane for the live keyboard
   rewrite slice
 - `zig build keyboard_statusbar_flags_regression`: focused regression lane for
