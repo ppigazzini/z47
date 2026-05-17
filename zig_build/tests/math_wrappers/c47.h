@@ -3,6 +3,7 @@
 #ifndef Z47_MATH_WRAPPERS_C47_H
 #define Z47_MATH_WRAPPERS_C47_H
 
+#include <gmp.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,6 +11,14 @@
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
 typedef int32_t angularMode_t;
+
+typedef mpz_t longInteger_t;
+
+typedef struct {
+  uint8_t bytes[16];
+} decQuad;
+
+typedef decQuad real34_t;
 
 typedef struct {
   int32_t digits;
@@ -51,10 +60,28 @@ typedef realContext_t decContext;
 
 enum {
   amRadian = 0,
+  amDegree = 2,
   amNone = 5,
+  amAngleMask = 15,
+};
+
+enum {
+  dtLongInteger = 0,
+  dtReal34 = 1,
+  dtComplex34 = 2,
+  dtTime = 3,
+  dtShortInteger = 8,
+};
+
+enum {
+  LI_ZERO = 0,
+  LI_NEGATIVE = 1,
+  LI_POSITIVE = 2,
 };
 
 #define DECINF 0x40
+#define DECNAN 0x20
+#define DECSNAN 0x10
 #define DECSPECIAL 0x70
 
 #define EXTRA_INFO_ON_CALC_ERROR 1
@@ -74,12 +101,24 @@ enum {
 
 #define ifLongIntegerDoAngleReduction true
 
+#define longIntegerInit(op) mpz_init(op)
+#define int32ToLongInteger(source, destination) mpz_set_si((destination), (source))
+#define longIntegerChangeSign(op) ((op)->_mp_size = -((op)->_mp_size))
+#define longIntegerFree(op) mpz_clear(op)
+#define longIntegerMultiply(op_y, op_x, result) mpz_mul((result), (op_y), (op_x))
+
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
 #define realIsSpecial(source) (((source)->bits & DECSPECIAL) != 0)
 #define realIsInfinite(source) (((source)->bits & DECINF) != 0)
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
+
+#define real34ChangeSign(operand) ((operand)->bytes[15] ^= 0x80)
+#define real34SetPositiveSign(operand) ((operand)->bytes[15] &= 0x7f)
+#define real34IsNaN(source) decQuadIsNaN((const decQuad *)(source))
+#define real34IsZero(source) decQuadIsZero((const decQuad *)(source))
+#define real34IsNegative(source) decQuadIsNegative((const decQuad *)(source))
 
 extern realContext_t ctxtReal39;
 extern realContext_t ctxtReal51;
@@ -108,6 +147,11 @@ void integerPartCplx(enum rounding mode);
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value);
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *angle_mode, bool_t reduce_longinteger_angle);
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
+void *getRegisterDataPointer(calcRegister_t reg);
+uint32_t getRegisterDataType(calcRegister_t reg);
+uint32_t getRegisterTag(calcRegister_t reg);
+void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
@@ -126,9 +170,29 @@ void divComplexComplex(const real_t *numer_real,
                        real_t *quotient_real,
                        real_t *quotient_imag,
                        realContext_t *real_context);
+void mulComplexComplex(const real_t *factor1_real,
+                       const real_t *factor1_imag,
+                       const real_t *factor2_real,
+                       const real_t *factor2_imag,
+                       real_t *product_real,
+                       real_t *product_imag,
+                       realContext_t *real_context);
+void unitVectorCplx(void);
+uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
+uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
+uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
+
+uint32_t decQuadIsNaN(const decQuad *dq);
+uint32_t decQuadIsZero(const decQuad *dq);
+uint32_t decQuadIsNegative(const decQuad *dq);
+
+#define REGISTER_SHORT_INTEGER_DATA(a) ((uint64_t *)(getRegisterDataPointer(a)))
+#define REGISTER_REAL34_DATA(a) ((real34_t *)(getRegisterDataPointer(a)))
+#define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
+#define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
 
 void sinCosReal(trigType_t trigType);
 void sinCosCplx(trigType_t trigType);

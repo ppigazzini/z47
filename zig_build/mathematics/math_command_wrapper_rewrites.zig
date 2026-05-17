@@ -23,11 +23,15 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/max.c",
     "mathematics/ceil.c",
     "mathematics/floor.c",
+    "mathematics/sign.c",
+    "mathematics/changeSign.c",
     "mathematics/sin.c",
     "mathematics/cos.c",
     "mathematics/tan.c",
     "mathematics/sinh.c",
     "mathematics/cosh.c",
+    "mathematics/square.c",
+    "mathematics/cube.c",
 };
 
 fn addRuntimeObject(
@@ -124,6 +128,7 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_parity.c"), .flags = &.{} });
+    exe.root_module.linkSystemLibrary("gmp", .{ .use_pkg_config = .yes });
     exe.root_module.addObject(runtime_object);
     return exe;
 }

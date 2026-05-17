@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <gmp.h>
 #include <string.h>
 
 #include "math_wrappers_test_runtime.h"
 
 static math_wrappers_snapshot_t snapshot;
 static bool_t save_last_x_result = true;
+static uint32_t current_register_data_type = dtReal34;
+static uint32_t current_register_tag = amNone;
+
+static uint8_t register_slot[16];
+static uint32_t register_scalar_magnitude;
+static bool_t register_scalar_available = true;
 
 static struct {
   bool_t available;
@@ -25,6 +32,11 @@ static struct {
 } complex_input;
 
 static struct {
+  bool_t available;
+  int32_t value;
+} longint_input;
+
+static struct {
   bool_t enabled;
   real_t sin_value;
   real_t cos_value;
@@ -38,6 +50,31 @@ realContext_t ctxtReal51;
 realContext_t ctxtReal75;
 static real_t fake_const_nan_value;
 const real_t *const_NaN = &fake_const_nan_value;
+
+static void setRegisterScalar(int32_t signed_value, uint8_t bits) {
+  register_scalar_magnitude = (uint32_t)(signed_value < 0 ? -signed_value : signed_value);
+  register_slot[15] = bits;
+  if(signed_value < 0) {
+    register_slot[15] |= 0x80;
+  }
+}
+
+static int32_t fakeRegisterScalarValue(void) {
+  return (register_slot[15] & 0x80) ? -(int32_t)register_scalar_magnitude : (int32_t)register_scalar_magnitude;
+}
+
+static uint64_t encodeShortInteger(int64_t signed_value) {
+  const uint64_t magnitude = (uint64_t)(signed_value < 0 ? -signed_value : signed_value);
+  return magnitude | (signed_value < 0 ? (UINT64_C(1) << 63) : 0);
+}
+
+static int64_t decodeShortInteger(uint64_t raw, int32_t *sign_value) {
+  const bool_t negative = (raw >> 63) != 0;
+  if(sign_value != NULL) {
+    *sign_value = negative ? 1 : 0;
+  }
+  return negative ? -(int64_t)(raw & ~(UINT64_C(1) << 63)) : (int64_t)(raw & ~(UINT64_C(1) << 63));
+}
 
 static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
   memset(value, 0, sizeof(*value));
@@ -66,6 +103,12 @@ void mathWrappersReset(void) {
   snapshot.integer_part_cplx_mode = -1;
   snapshot.sinh_cosh_real_trig_type = -1;
   snapshot.sinh_cosh_cplx_trig_type = -1;
+  current_register_data_type = dtReal34;
+  current_register_tag = amNone;
+  memset(register_slot, 0, sizeof(register_slot));
+  register_scalar_available = true;
+  setRegisterScalar(7, 0);
+  *(uint64_t *)register_slot = encodeShortInteger(-3);
 
   real_input.available = true;
   setFakeReal(&real_input.value, 7, 0);
@@ -77,6 +120,9 @@ void mathWrappersReset(void) {
   complex_input.available = true;
   setFakeReal(&complex_input.real, 2, 0);
   setFakeReal(&complex_input.imag, 3, 0);
+
+  longint_input.available = true;
+  longint_input.value = -4;
 
   trig_outputs.enabled = false;
   spcres_flag = false;
@@ -92,9 +138,21 @@ void mathWrappersSetSaveLastXResult(bool_t result) {
   snapshot.save_last_x_result = result;
 }
 
+void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag) {
+  current_register_data_type = data_type;
+  current_register_tag = tag;
+}
+
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits) {
   real_input.available = available;
   setFakeReal(&real_input.value, value, bits);
+  register_scalar_available = available;
+  setRegisterScalar(value, bits);
+}
+
+void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
+  register_scalar_available = available;
+  setRegisterScalar(value, bits);
 }
 
 void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode) {
@@ -109,6 +167,15 @@ void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t r
   setFakeReal(&complex_input.imag, imag_value, imag_bits);
 }
 
+void mathWrappersSetShortIntegerInput(int64_t value) {
+  *(uint64_t *)register_slot = encodeShortInteger(value);
+}
+
+void mathWrappersSetLongIntegerInput(bool_t available, int32_t value) {
+  longint_input.available = available;
+  longint_input.value = value;
+}
+
 void mathWrappersSetFlagSpcRes(bool_t enabled) {
   spcres_flag = enabled;
 }
@@ -121,12 +188,36 @@ void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_v
 }
 
 void mathWrappersCapture(math_wrappers_snapshot_t *out) {
+  snapshot.final_register_data_type = current_register_data_type;
+  snapshot.final_register_tag = current_register_tag;
+  snapshot.final_register_real34_value = fakeRegisterScalarValue();
+  snapshot.final_register_real34_bits = register_slot[15];
+  snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
+  snapshot.final_register_longint_value = longint_input.value;
   *out = snapshot;
 }
 
 bool_t saveLastX(void) {
   snapshot.save_last_x_calls++;
   return save_last_x_result;
+}
+
+uint32_t getRegisterDataType(calcRegister_t reg) {
+  snapshot.get_register_data_type_calls++;
+  (void)reg;
+  return current_register_data_type;
+}
+
+uint32_t getRegisterTag(calcRegister_t reg) {
+  snapshot.get_register_tag_calls++;
+  (void)reg;
+  return current_register_tag;
+}
+
+void *getRegisterDataPointer(calcRegister_t reg) {
+  snapshot.get_register_data_pointer_calls++;
+  (void)reg;
+  return register_slot;
 }
 
 void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest) {
@@ -173,17 +264,27 @@ void processIntRealComplexMonadicFunction(void (*realf)(void),
                                          void (*shortintf)(void),
                                          void (*longintf)(void)) {
   snapshot.process_int_real_complex_monadic_calls++;
-  if(realf != NULL) {
-    realf();
-  }
-  if(complexf != NULL) {
-    complexf();
-  }
-  if(shortintf != NULL) {
-    shortintf();
-  }
-  if(longintf != NULL) {
-    longintf();
+  switch(current_register_data_type) {
+    case dtComplex34:
+      if(complexf != NULL) {
+        complexf();
+      }
+      break;
+    case dtShortInteger:
+      if(shortintf != NULL) {
+        shortintf();
+      }
+      break;
+    case dtLongInteger:
+      if(longintf != NULL) {
+        longintf();
+      }
+      break;
+    default:
+      if(realf != NULL) {
+        realf();
+      }
+      break;
   }
 }
 
@@ -204,6 +305,13 @@ void integerPartCplx(enum rounding mode) {
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
   snapshot.get_register_as_real_calls++;
   (void)reg;
+  if(current_register_data_type == dtTime) {
+    if(!register_scalar_available) {
+      return false;
+    }
+    setFakeReal(value, fakeRegisterScalarValue(), register_slot[15] & 0x70);
+    return true;
+  }
   if(!real_input.available) {
     return false;
   }
@@ -241,12 +349,40 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   return true;
 }
 
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  snapshot.get_register_as_longint_calls++;
+  snapshot.get_register_as_longint_result = longint_input.available;
+  snapshot.get_register_as_longint_value = longint_input.value;
+  (void)reg;
+  mpz_init(val);
+  if(fractional != NULL) {
+    *fractional = false;
+  }
+  if(!longint_input.available) {
+    return false;
+  }
+  mpz_set_si(val, longint_input.value);
+  return true;
+}
+
+void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t reg) {
+  snapshot.convert_long_integer_to_register_calls++;
+  snapshot.convert_long_integer_to_register_value = (int32_t)mpz_get_si(lgInt);
+  snapshot.convert_long_integer_to_register_dest = reg;
+  longint_input.value = (int32_t)mpz_get_si(lgInt);
+  current_register_data_type = dtLongInteger;
+  current_register_tag = longint_input.value < 0 ? LI_NEGATIVE : longint_input.value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
 void convertRealToResultRegister(const real_t *real, calcRegister_t reg, angularMode_t angleMode) {
   snapshot.convert_real_to_result_calls++;
   snapshot.convert_real_to_result_value = fakeRealValue(real);
   snapshot.convert_real_to_result_bits = real->bits;
   snapshot.convert_real_to_result_angle = angleMode;
   (void)reg;
+  current_register_data_type = dtReal34;
+  current_register_tag = (uint32_t)angleMode;
+  setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
 }
 
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t reg) {
@@ -256,6 +392,7 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   snapshot.convert_complex_to_result_imag_value = fakeRealValue(imag);
   snapshot.convert_complex_to_result_imag_bits = imag->bits;
   (void)reg;
+  current_register_data_type = dtComplex34;
 }
 
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
@@ -323,6 +460,61 @@ decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decN
   return result;
 }
 
+void mulComplexComplex(const real_t *factor1Real,
+                       const real_t *factor1Imag,
+                       const real_t *factor2Real,
+                       const real_t *factor2Imag,
+                       real_t *productReal,
+                       real_t *productImag,
+                       realContext_t *realContext) {
+  snapshot.mul_complex_complex_calls++;
+  snapshot.mul_complex_complex_factor1_real_value = fakeRealValue(factor1Real);
+  snapshot.mul_complex_complex_factor1_imag_value = fakeRealValue(factor1Imag);
+  snapshot.mul_complex_complex_factor2_real_value = fakeRealValue(factor2Real);
+  snapshot.mul_complex_complex_factor2_imag_value = fakeRealValue(factor2Imag);
+  (void)realContext;
+  setFakeReal(productReal, fakeRealValue(factor1Real) * fakeRealValue(factor2Real) - fakeRealValue(factor1Imag) * fakeRealValue(factor2Imag), 0);
+  setFakeReal(productImag, fakeRealValue(factor1Real) * fakeRealValue(factor2Imag) + fakeRealValue(factor1Imag) * fakeRealValue(factor2Real), 0);
+}
+
+void unitVectorCplx(void) {
+  snapshot.unit_vector_cplx_calls++;
+}
+
+uint64_t WP34S_extract_value(const uint64_t val, int32_t *const sign) {
+  snapshot.wp34s_extract_value_calls++;
+  snapshot.wp34s_extract_value_input = val;
+  snapshot.wp34s_extract_value_sign = ((val >> 63) != 0) ? 1 : 0;
+  if(sign != NULL) {
+    *sign = snapshot.wp34s_extract_value_sign;
+  }
+  return val & ~(UINT64_C(1) << 63);
+}
+
+uint64_t WP34S_intChs(uint64_t x) {
+  const uint64_t magnitude = x & ~(UINT64_C(1) << 63);
+
+  snapshot.wp34s_int_chs_calls++;
+  snapshot.wp34s_int_chs_input = x;
+  if(magnitude == 0) {
+    return 0;
+  }
+  return x ^ (UINT64_C(1) << 63);
+}
+
+uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
+  int32_t sign_y;
+  int32_t sign_x;
+  const uint64_t magnitude_y = WP34S_extract_value(y, &sign_y);
+  const uint64_t magnitude_x = WP34S_extract_value(x, &sign_x);
+  const uint64_t product = magnitude_y * magnitude_x;
+
+  snapshot.wp34s_int_multiply_calls++;
+  snapshot.wp34s_int_multiply_lhs = y;
+  snapshot.wp34s_int_multiply_rhs = x;
+  return product | ((uint64_t)(sign_y ^ sign_x) << 63);
+}
+
 void divComplexComplex(const real_t *numerReal,
                        const real_t *numerImag,
                        const real_t *denomReal,
@@ -355,6 +547,21 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
   snapshot.display_calc_error_last_code = error_code;
   snapshot.display_calc_error_last_message_reg_line = err_message_register_line;
   snapshot.display_calc_error_last_register_line = err_register_line;
+}
+
+uint32_t decQuadIsNaN(const decQuad *dq) {
+  (void)dq;
+  return (register_slot[15] & 0x30) != 0;
+}
+
+uint32_t decQuadIsZero(const decQuad *dq) {
+  (void)dq;
+  return register_scalar_magnitude == 0 && (register_slot[15] & 0x70) == 0;
+}
+
+uint32_t decQuadIsNegative(const decQuad *dq) {
+  (void)dq;
+  return (register_slot[15] & 0x80) != 0;
 }
 
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4) {
