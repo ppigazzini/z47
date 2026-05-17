@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
+const constants_rewrites = @import("../leaf/constants_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
 const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
@@ -87,6 +88,7 @@ pub fn addSimulator(
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     math_command_wrapper_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
+    constants_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     tone_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
@@ -161,6 +163,7 @@ pub fn addTestSuite(
     register_metadata_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     flags_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     math_command_wrapper_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    constants_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     tone_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
