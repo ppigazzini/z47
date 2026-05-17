@@ -150,6 +150,22 @@ const real_t *z47_math_wrappers_const_2e6(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_ln2(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 2);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const39_ln2;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_ln10(void) {
 #ifdef Z47_MATH_WRAPPERS_C47_H
   static bool initialized = false;

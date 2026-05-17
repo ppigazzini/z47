@@ -630,6 +630,18 @@ uint64_t WP34S_int10pow(uint64_t x) {
   return result;
 }
 
+uint64_t WP34S_int2pow(uint64_t x) {
+  uint64_t exponent = WP34S_extract_value(x, NULL);
+  uint64_t result = 1;
+
+  snapshot.wp34s_int2pow_calls++;
+  snapshot.wp34s_int2pow_input = x;
+  while(exponent-- != 0) {
+    result *= 2;
+  }
+  return result;
+}
+
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
   int32_t sign_y;
   int32_t sign_x;
