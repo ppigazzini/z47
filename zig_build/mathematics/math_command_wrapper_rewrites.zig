@@ -30,6 +30,7 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/tan.c",
     "mathematics/sinh.c",
     "mathematics/cosh.c",
+    "mathematics/tanh.c",
     "mathematics/square.c",
     "mathematics/cube.c",
 };

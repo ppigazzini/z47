@@ -110,6 +110,7 @@ pub extern fn decQuadIsZero(value: *const real34_t) u32;
 pub extern fn decQuadIsNegative(value: *const real34_t) u32;
 pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_SinhCosh(x: *const real_t, sin_out: ?*real_t, cos_out: ?*real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn divComplexComplex(
     numer_real: *const real_t,
     numer_imag: *const real_t,
@@ -133,6 +134,8 @@ pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn realSetNaN(value: *real_t) void;
+pub extern fn realSetZero(value: *real_t) void;
+pub extern fn realSetOne(value: *real_t) void;
 
 pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
@@ -140,6 +143,7 @@ pub extern fn z47_math_wrappers_square_long_integer() void;
 pub extern fn z47_math_wrappers_cube_long_integer() void;
 pub extern fn z47_math_wrappers_report_sign_real_nan_error() void;
 pub extern fn z47_math_wrappers_report_sinh_cosh_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_tanh_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_square_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_tan_real_pole_error() void;
 pub extern fn z47_math_wrappers_report_cube_real_domain_error() void;

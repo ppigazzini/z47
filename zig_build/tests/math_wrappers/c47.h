@@ -161,8 +161,11 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 real_t *tan,
                                 realContext_t *real_context);
 void WP34S_SinhCosh(const real_t *x, real_t *sin_out, real_t *cos_out, realContext_t *real_context);
+void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 void realSetNaN(real_t *value);
+void realSetZero(real_t *value);
+void realSetOne(real_t *value);
 void divComplexComplex(const real_t *numer_real,
                        const real_t *numer_imag,
                        const real_t *denom_real,
@@ -199,6 +202,7 @@ void sinCosCplx(trigType_t trigType);
 void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 void cosComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
 void sinhCoshReal(trigType_t trigType);
 void sinhCoshCplx(trigType_t trigType);
 

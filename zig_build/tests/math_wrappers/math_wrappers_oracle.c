@@ -22,9 +22,15 @@
 #include "../../../src/c47/mathematics/sign.c"
 #undef fnSign
 
+#define chsShoI oracle_chsShoI
+#define chsReal oracle_chsReal
+#define chsCplx oracle_chsCplx
 #define fnChangeSign oracle_fnChangeSign
 #include "../../../src/c47/mathematics/changeSign.c"
 #undef fnChangeSign
+#undef chsCplx
+#undef chsReal
+#undef chsShoI
 
 #define sinComplex oracle_sinComplex
 #define sinCosReal oracle_sinCosReal
@@ -64,6 +70,13 @@ uint8_t oracle_TanComplex(const real_t *xReal, const real_t *xImag, real_t *rRea
 #undef fnCosh
 #undef sinhCoshCplx
 #undef sinhCoshReal
+
+#define TanhComplex oracle_TanhComplex
+#define fnTanh oracle_fnTanh
+uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+#include "../../../src/c47/mathematics/tanh.c"
+#undef fnTanh
+#undef TanhComplex
 
 #define fnSquare oracle_fnSquare
 #include "../../../src/c47/mathematics/square.c"

@@ -141,7 +141,7 @@ pub fn addGeneratorSteps(
         optimize,
         common,
     );
-    raster_fonts_c_bindings.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+    host_platform.configureRasterFontsTranslateC(raster_fonts_c_bindings, common);
     raster_fonts_gen.root_module.addImport("c_bindings", raster_fonts_c_bindings.createModule());
     host_platform.addHostMacros(raster_fonts_gen.root_module, common);
     host_platform.addHostSystemPaths(raster_fonts_gen.root_module, common);
