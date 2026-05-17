@@ -21,6 +21,7 @@ void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnExp(uint16_t unusedButMandatoryParameter);
 void fn2Pow(uint16_t unusedButMandatoryParameter);
 void fn10Pow(uint16_t unusedButMandatoryParameter);
+void fnM1Pow(uint16_t unusedButMandatoryParameter);
 void fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
@@ -41,6 +42,7 @@ void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
 void oracle_fn2Pow(uint16_t unusedButMandatoryParameter);
 void oracle_fn10Pow(uint16_t unusedButMandatoryParameter);
+void oracle_fnM1Pow(uint16_t unusedButMandatoryParameter);
 void oracle_fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
@@ -58,8 +60,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n"
-      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d\n",
+      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d ovf=%d\n"
+      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d ovf=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -109,6 +111,7 @@ static int reportMismatch(const char *name,
           expected->final_register_real34_bits,
           (unsigned long long)expected->final_register_shortint_raw,
           expected->final_register_longint_value,
+            expected->final_overflow_flag,
       actual->final_register_data_type,
       actual->final_register_tag,
           actual->save_last_x_calls,
@@ -155,7 +158,8 @@ static int reportMismatch(const char *name,
           actual->final_register_real34_value,
           actual->final_register_real34_bits,
           (unsigned long long)actual->final_register_shortint_raw,
-          actual->final_register_longint_value);
+          actual->final_register_longint_value,
+          actual->final_overflow_flag);
   return 1;
 }
 
@@ -193,7 +197,9 @@ static void configureDefaultSurface(void) {
   mathWrappersSetTimeInput(true, 7, 0);
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetShortIntegerInput(-3);
+  mathWrappersSetShortIntegerMode(SIM_UNSIGN);
   mathWrappersSetLongIntegerInput(true, -4);
+  mathWrappersSetFlagOverflow(false);
 }
 
 static void configureTrigNominal(void) {
@@ -361,6 +367,74 @@ static void configure2PowLongIntegerNegative(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
   mathWrappersSetLongIntegerInput(true, -2);
+}
+
+static void configureM1PowRealZero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureM1PowRealOne(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureM1PowRealInfinity(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 9, 0x40);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureM1PowComplexZero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amDegree);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 0, 0, 0, 0);
+}
+
+static void configureM1PowComplexOne(void) {
+  configureM1PowComplexZero();
+  mathWrappersSetComplexInput(true, 1, 0, 0, 0);
+}
+
+static void configureM1PowComplexGeneral(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amDegree);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 1, 0, 2, 0);
+}
+
+static void configureM1PowShortIntegerUnsignedOdd(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerMode(SIM_UNSIGN);
+  mathWrappersSetFlagOverflow(false);
+  mathWrappersSetShortIntegerInput(3);
+}
+
+static void configureM1PowShortIntegerSignedEven(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerMode(SIM_2COMPL);
+  mathWrappersSetFlagOverflow(true);
+  mathWrappersSetShortIntegerInput(2);
+}
+
+static void configureM1PowLongIntegerOdd(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 3);
+}
+
+static void configureM1PowLongIntegerEven(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 4);
 }
 
 static void configureEulersFormulaReal(void) {
@@ -665,6 +739,16 @@ int main(void) {
   failures += runCase("fn10Pow/shortint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowShortInteger);
   failures += runCase("fn10Pow/longint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongInteger);
   failures += runCase("fn10Pow/longint_negative", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongIntegerNegative);
+  failures += runCase("fnM1Pow/real_zero", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealZero);
+  failures += runCase("fnM1Pow/real_one", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealOne);
+  failures += runCase("fnM1Pow/real_inf", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealInfinity);
+  failures += runCase("fnM1Pow/complex_zero", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowComplexZero);
+  failures += runCase("fnM1Pow/complex_one", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowComplexOne);
+  failures += runCase("fnM1Pow/complex_general", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowComplexGeneral);
+  failures += runCase("fnM1Pow/shortint_unsigned_odd", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowShortIntegerUnsignedOdd);
+  failures += runCase("fnM1Pow/shortint_signed_even", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowShortIntegerSignedEven);
+  failures += runCase("fnM1Pow/longint_odd", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowLongIntegerOdd);
+  failures += runCase("fnM1Pow/longint_even", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowLongIntegerEven);
   failures += runCase("fnEulersFormula/real", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaReal);
   failures += runCase("fnEulersFormula/real_angle", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealAngle);
   failures += runCase("fnEulersFormula/real_inf", oracle_fnEulersFormula, fnEulersFormula, 0, true, configureEulersFormulaRealInfinity);

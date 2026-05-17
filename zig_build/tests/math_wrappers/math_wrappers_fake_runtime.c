@@ -10,7 +10,7 @@ static bool_t save_last_x_result = true;
 static uint32_t current_register_data_type = dtReal34;
 static uint32_t current_register_tag = amNone;
 
-static uint8_t register_slot[16];
+static uint8_t register_slot[32];
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
 
@@ -44,10 +44,13 @@ static struct {
 } trig_outputs;
 
 static bool_t spcres_flag = false;
+static bool_t overflow_flag = false;
 
 realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
+uint8_t shortIntegerMode = SIM_UNSIGN;
+angularMode_t currentAngularMode = amNone;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_plus_infinity_value;
@@ -55,12 +58,31 @@ static real_t fake_const_minus_infinity_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
 
+static void setRegisterReal34(uint8_t *slot, int32_t signed_value, uint8_t bits) {
+  uint32_t magnitude = (uint32_t)(signed_value < 0 ? -signed_value : signed_value);
+
+  memset(slot, 0, sizeof(real34_t));
+  memcpy(slot, &magnitude, sizeof(magnitude));
+  slot[15] = bits;
+  if(signed_value < 0) {
+    slot[15] |= 0x80;
+  }
+}
+
+static int32_t fakeReal34Value(const real34_t *value) {
+  uint32_t magnitude = 0;
+
+  memcpy(&magnitude, value->bytes, sizeof(magnitude));
+  return (value->bytes[15] & 0x80) ? -(int32_t)magnitude : (int32_t)magnitude;
+}
+
 static void setRegisterScalar(int32_t signed_value, uint8_t bits) {
   register_scalar_magnitude = (uint32_t)(signed_value < 0 ? -signed_value : signed_value);
   register_slot[15] = bits;
   if(signed_value < 0) {
     register_slot[15] |= 0x80;
   }
+  setRegisterReal34(register_slot, signed_value, bits);
 }
 
 static int32_t fakeRegisterScalarValue(void) {
@@ -146,6 +168,9 @@ void mathWrappersReset(void) {
 
   trig_outputs.enabled = false;
   spcres_flag = false;
+  overflow_flag = false;
+  shortIntegerMode = SIM_UNSIGN;
+  currentAngularMode = amNone;
   lastErrorCode = 0;
 
   ctxtReal39.digits = 39;
@@ -155,6 +180,8 @@ void mathWrappersReset(void) {
   setFakeReal(&fake_const_one_value, 1, 0);
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
+  setRegisterReal34(register_slot, 2, 0);
+  setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
 }
 
 void mathWrappersSetSaveLastXResult(bool_t result) {
@@ -189,15 +216,25 @@ void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t r
   complex_input.available = available;
   setFakeReal(&complex_input.real, real_value, real_bits);
   setFakeReal(&complex_input.imag, imag_value, imag_bits);
+  setRegisterReal34(register_slot, real_value, real_bits);
+  setRegisterReal34(register_slot + sizeof(real34_t), imag_value, imag_bits);
 }
 
 void mathWrappersSetShortIntegerInput(int64_t value) {
   *(uint64_t *)register_slot = encodeShortInteger(value);
 }
 
+void mathWrappersSetShortIntegerMode(uint8_t mode) {
+  shortIntegerMode = mode;
+}
+
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value) {
   longint_input.available = available;
   longint_input.value = value;
+}
+
+void mathWrappersSetFlagOverflow(bool_t enabled) {
+  overflow_flag = enabled;
 }
 
 void mathWrappersSetFlagSpcRes(bool_t enabled) {
@@ -218,6 +255,7 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_real34_bits = register_slot[15];
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_longint_value = longint_input.value;
+  snapshot.final_overflow_flag = overflow_flag;
   *out = snapshot;
 }
 
@@ -425,6 +463,33 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   current_register_data_type = dtComplex34;
 }
 
+void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode) {
+  (void)reg;
+  current_register_tag = (current_register_tag & ~amAngleMask) | (uint32_t)mode;
+}
+
+void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+  const int32_t x_value = fakeRealValue(x);
+  const int32_t y_value = fakeRealValue(y);
+  int32_t remainder = 0;
+
+  (void)realContext;
+
+  if(y_value != 0) {
+    remainder = x_value % y_value;
+    if(remainder < 0) {
+      remainder += y_value < 0 ? -y_value : y_value;
+    }
+  }
+
+  setFakeReal(res, remainder, 0);
+}
+
+decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination) {
+  setFakeReal(destination, fakeReal34Value(source), source->bytes[15] & 0x70);
+  return destination;
+}
+
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 angularMode_t mode,
                                 real_t *sin,
@@ -538,6 +603,10 @@ bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
   return (lhs_value < 0 ? -lhs_value : lhs_value) == (rhs_value < 0 ? -rhs_value : rhs_value);
 }
 
+bool_t realCompareEqual(const real_t *number1, const real_t *number2) {
+  return fakeRealValue(number1) == fakeRealValue(number2) && ((number1->bits & 0x70) == (number2->bits & 0x70));
+}
+
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
   const int32_t lhs_value = fakeRealValue(number1);
   const int32_t rhs_value = fakeRealValue(number2);
@@ -593,6 +662,17 @@ void mulComplexComplex(const real_t *factor1Real,
   setFakeReal(productImag, fakeRealValue(factor1Real) * fakeRealValue(factor2Imag) + fakeRealValue(factor1Imag) * fakeRealValue(factor2Real), 0);
 }
 
+void mulComplexReal(const real_t *factor1Real,
+                    const real_t *factor1Imag,
+                    const real_t *factor2,
+                    real_t *productReal,
+                    real_t *productImag,
+                    realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(productReal, fakeRealValue(factor1Real) * fakeRealValue(factor2), 0);
+  setFakeReal(productImag, fakeRealValue(factor1Imag) * fakeRealValue(factor2), 0);
+}
+
 void unitVectorCplx(void) {
   snapshot.unit_vector_cplx_calls++;
 }
@@ -605,6 +685,10 @@ uint64_t WP34S_extract_value(const uint64_t val, int32_t *const sign) {
     *sign = snapshot.wp34s_extract_value_sign;
   }
   return val & ~(UINT64_C(1) << 63);
+}
+
+int64_t WP34S_build_value(uint64_t x, int32_t sign) {
+  return (int64_t)(x | ((uint64_t)(sign != 0) << 63));
 }
 
 uint64_t WP34S_intChs(uint64_t x) {
@@ -705,7 +789,31 @@ void realSetOne(real_t *value) {
 bool_t getSystemFlag(int32_t flag) {
   snapshot.get_system_flag_calls++;
   snapshot.get_system_flag_last_flag = flag;
-  return flag == FLAG_SPCRES ? spcres_flag : false;
+  if(flag == FLAG_SPCRES) {
+    return spcres_flag;
+  }
+  if(flag == FLAG_OVERFLOW) {
+    return overflow_flag;
+  }
+  return false;
+}
+
+void setSystemFlag(int32_t flag) {
+  if(flag == FLAG_SPCRES) {
+    spcres_flag = true;
+  }
+  if(flag == FLAG_OVERFLOW) {
+    overflow_flag = true;
+  }
+}
+
+void clearSystemFlag(int32_t flag) {
+  if(flag == FLAG_SPCRES) {
+    spcres_flag = false;
+  }
+  if(flag == FLAG_OVERFLOW) {
+    overflow_flag = false;
+  }
 }
 
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line) {
@@ -716,18 +824,18 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
 }
 
 uint32_t decQuadIsNaN(const decQuad *dq) {
-  (void)dq;
-  return (register_slot[15] & 0x30) != 0;
+  return (dq->bytes[15] & 0x30) != 0;
 }
 
 uint32_t decQuadIsZero(const decQuad *dq) {
-  (void)dq;
-  return register_scalar_magnitude == 0 && (register_slot[15] & 0x70) == 0;
+  uint32_t magnitude = 0;
+
+  memcpy(&magnitude, dq->bytes, sizeof(magnitude));
+  return magnitude == 0 && (dq->bytes[15] & 0x70) == 0;
 }
 
 uint32_t decQuadIsNegative(const decQuad *dq) {
-  (void)dq;
-  return (register_slot[15] & 0x80) != 0;
+  return (dq->bytes[15] & 0x80) != 0;
 }
 
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4) {

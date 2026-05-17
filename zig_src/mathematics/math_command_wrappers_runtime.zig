@@ -36,7 +36,10 @@ pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
+pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
+
+pub const SIM_UNSIGN: u8 = 0;
 
 pub const DECNEG: u8 = 0x80;
 const DECINF: u8 = 0x40;
@@ -71,6 +74,7 @@ pub const VoidCallback = ?*const fn () callconv(.c) void;
 pub extern var ctxtReal39: realContext_t;
 pub extern var ctxtReal51: realContext_t;
 pub extern var ctxtReal75: realContext_t;
+pub extern var shortIntegerMode: u8;
 
 pub extern fn saveLastX() bool;
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
@@ -91,8 +95,11 @@ pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
+pub extern fn setSystemFlag(flag: i32) void;
+pub extern fn clearSystemFlag(flag: i32) void;
 pub extern fn fnSetFlag(flag: i32) void;
 pub extern fn fnRefreshState() void;
+pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
@@ -148,14 +155,26 @@ pub extern fn mulComplexComplex(
     product_imag: *real_t,
     real_context: *realContext_t,
 ) void;
+pub extern fn mulComplexReal(
+    factor1_real: *const real_t,
+    factor1_imag: *const real_t,
+    factor2: *const real_t,
+    product_real: *real_t,
+    product_imag: *real_t,
+    real_context: *realContext_t,
+) void;
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
 pub extern fn WP34S_int2pow(x: u64) u64;
 pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
+pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
+pub extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberExp(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn divRealComplex(
@@ -177,11 +196,15 @@ pub extern fn z47_math_wrappers_square_long_integer() void;
 pub extern fn z47_math_wrappers_cube_long_integer() void;
 pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
+pub extern fn z47_math_wrappers_const_minus_1() *const real_t;
+pub extern fn z47_math_wrappers_const_2() *const real_t;
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_ln2() *const real_t;
 pub extern fn z47_math_wrappers_const_ln10() *const real_t;
+pub extern fn z47_math_wrappers_const_pi() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
+pub extern fn z47_math_wrappers_minus_one_power_long_integer() void;
 pub extern fn z47_math_wrappers_small_base_power_long_integer(base_value: u32) i32;
 pub extern fn z47_math_wrappers_report_int_pow_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;
@@ -210,8 +233,18 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
     return @ptrCast(ptr);
 }
 
+pub fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
+    const ptr = getRegisterDataPointer(reg) orelse unreachable;
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    return @ptrCast(bytes + @sizeOf(real34_t));
+}
+
 pub fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
+}
+
+pub fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
+    setRegisterTag(reg, @intCast(mode));
 }
 
 pub fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
