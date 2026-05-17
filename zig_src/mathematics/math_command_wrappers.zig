@@ -264,6 +264,15 @@ pub export fn realPower10(
     realExp(res, res, real_context);
 }
 
+pub export fn realPower2(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
+    realExp(res, res, real_context);
+}
+
 pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
     var x: runtime.real_t = undefined;
 
@@ -304,6 +313,26 @@ fn tenPowLonI() callconv(.c) void {
     if (runtime.z47_math_wrappers_small_base_power_long_integer(10) == long_integer_power_negative_exponent) {
         tenPowReal();
     }
+}
+
+fn twoPowLonI() callconv(.c) void {
+    if (runtime.z47_math_wrappers_small_base_power_long_integer(2) == long_integer_power_negative_exponent) {
+        twoPowReal();
+    }
+}
+
+fn twoPowShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_int2pow(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn twoPowReal() callconv(.c) void {
+    intPowReal(realPower2);
+}
+
+fn twoPowCplx() callconv(.c) void {
+    intPowCplx(runtime.z47_math_wrappers_const_ln2());
 }
 
 fn tenPowShoI() callconv(.c) void {
@@ -857,6 +886,12 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
+}
+
+pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&twoPowReal, &twoPowCplx, &twoPowShoI, &twoPowLonI);
 }
 
 pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {

@@ -151,6 +151,9 @@ typedef struct {
   uint32_t wp34s_int_chs_calls;
   uint64_t wp34s_int_chs_input;
 
+  uint32_t wp34s_int2pow_calls;
+  uint64_t wp34s_int2pow_input;
+
   uint32_t wp34s_int10pow_calls;
   uint64_t wp34s_int10pow_input;
 

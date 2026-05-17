@@ -145,6 +145,7 @@ extern uint8_t lastErrorCode;
 #define const_0 ((real_t *)z47_math_wrappers_const_0())
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
+#define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
@@ -226,6 +227,7 @@ void mulComplexComplex(const real_t *factor1_real,
                        realContext_t *real_context);
 void unitVectorCplx(void);
 uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
+uint64_t WP34S_int2pow(uint64_t x);
 uint64_t WP34S_int10pow(uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
@@ -239,6 +241,7 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
 const real_t *z47_math_wrappers_const_2e6(void);
+const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);

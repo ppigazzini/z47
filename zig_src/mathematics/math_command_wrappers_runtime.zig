@@ -149,6 +149,7 @@ pub extern fn mulComplexComplex(
     real_context: *realContext_t,
 ) void;
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
+pub extern fn WP34S_int2pow(x: u64) u64;
 pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
@@ -177,6 +178,7 @@ pub extern fn z47_math_wrappers_cube_long_integer() void;
 pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
+pub extern fn z47_math_wrappers_const_ln2() *const real_t;
 pub extern fn z47_math_wrappers_const_ln10() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
