@@ -1,0 +1,11 @@
+; Focused logical boolean operator regression suite.
+
+../../src/testSuite/tests/initialSettings
+
+../../src/testSuite/tests/and
+../../src/testSuite/tests/nand
+../../src/testSuite/tests/nor
+../../src/testSuite/tests/not
+../../src/testSuite/tests/or
+../../src/testSuite/tests/xnor
+../../src/testSuite/tests/xor
