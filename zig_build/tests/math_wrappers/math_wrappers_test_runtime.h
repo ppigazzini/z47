@@ -40,10 +40,73 @@ typedef struct {
   int32_t sinh_cosh_real_trig_type;
   uint32_t sinh_cosh_cplx_calls;
   int32_t sinh_cosh_cplx_trig_type;
+
+  uint32_t get_register_as_real_calls;
+  uint32_t get_register_as_real_angle_calls;
+  calcRegister_t get_register_as_real_angle_reg;
+  bool_t get_register_as_real_angle_reduce_longinteger;
+  int32_t get_register_as_real_angle_value;
+  uint8_t get_register_as_real_angle_bits;
+  angularMode_t get_register_as_real_angle_mode;
+
+  uint32_t get_register_as_complex_calls;
+  int32_t get_register_as_complex_real_value;
+  uint8_t get_register_as_complex_real_bits;
+  int32_t get_register_as_complex_imag_value;
+  uint8_t get_register_as_complex_imag_bits;
+
+  uint32_t convert_real_to_result_calls;
+  int32_t convert_real_to_result_value;
+  uint8_t convert_real_to_result_bits;
+  angularMode_t convert_real_to_result_angle;
+
+  uint32_t convert_complex_to_result_calls;
+  int32_t convert_complex_to_result_real_value;
+  uint8_t convert_complex_to_result_real_bits;
+  int32_t convert_complex_to_result_imag_value;
+  uint8_t convert_complex_to_result_imag_bits;
+
+  uint32_t cvt2rad_calls;
+  int32_t cvt2rad_input_value;
+  uint8_t cvt2rad_input_bits;
+  angularMode_t cvt2rad_mode;
+  uint8_t cvt2rad_requested_mask;
+
+  uint32_t wp34s_sinh_cosh_calls;
+  int32_t wp34s_sinh_cosh_input_value;
+  uint8_t wp34s_sinh_cosh_input_bits;
+  uint8_t wp34s_sinh_cosh_requested_mask;
+
+  uint32_t dec_number_multiply_calls;
+  int32_t dec_number_multiply_lhs_value;
+  uint8_t dec_number_multiply_lhs_bits;
+  int32_t dec_number_multiply_rhs_value;
+  uint8_t dec_number_multiply_rhs_bits;
+
+  uint32_t div_complex_complex_calls;
+  int32_t div_complex_complex_numer_real_value;
+  int32_t div_complex_complex_numer_imag_value;
+  int32_t div_complex_complex_denom_real_value;
+  int32_t div_complex_complex_denom_imag_value;
+
+  uint32_t get_system_flag_calls;
+  int32_t get_system_flag_last_flag;
+
+  uint32_t display_calc_error_calls;
+  uint8_t display_calc_error_last_code;
+  calcRegister_t display_calc_error_last_message_reg_line;
+  calcRegister_t display_calc_error_last_register_line;
+
+  uint32_t more_info_calls;
 } math_wrappers_snapshot_t;
 
 void mathWrappersReset(void);
 void mathWrappersSetSaveLastXResult(bool_t result);
+void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits);
+void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode);
+void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
+void mathWrappersSetFlagSpcRes(bool_t enabled);
+void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_value, int32_t tan_value);
 void mathWrappersCapture(math_wrappers_snapshot_t *snapshot);
 
 #endif
