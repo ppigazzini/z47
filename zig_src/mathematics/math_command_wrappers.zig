@@ -151,6 +151,35 @@ pub export fn TanComplex(
     return runtime.ERROR_NONE;
 }
 
+pub export fn TanhComplex(
+    x_real: *const runtime.real_t,
+    x_imag: *const runtime.real_t,
+    r_real: *runtime.real_t,
+    r_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) u8 {
+    var sin_value: runtime.real_t = undefined;
+    var cos_value: runtime.real_t = undefined;
+    var denom_real: runtime.real_t = undefined;
+    var denom_imag: runtime.real_t = undefined;
+
+    _ = real_context;
+
+    if (runtime.realIsZero(x_imag)) {
+        runtime.WP34S_Tanh(x_real, r_real, &runtime.ctxtReal39);
+        runtime.realSetZero(r_imag);
+    } else {
+        runtime.WP34S_Tanh(x_real, r_real, &runtime.ctxtReal39);
+        runtime.C47_WP34S_Cvt2RadSinCosTan(x_imag, runtime.amRadian, &sin_value, &cos_value, r_imag, &runtime.ctxtReal39);
+
+        runtime.realSetOne(&denom_real);
+        runtime.realMultiply(r_real, r_imag, &denom_imag, &runtime.ctxtReal39);
+        runtime.divComplexComplex(r_real, r_imag, &denom_real, &denom_imag, r_real, r_imag, &runtime.ctxtReal39);
+    }
+
+    return runtime.ERROR_NONE;
+}
+
 fn ceilReal() callconv(.c) void {
     runtime.integerPartReal(runtime.DEC_ROUND_CEILING);
 }
@@ -201,6 +230,36 @@ fn sinhReal() callconv(.c) void {
 
 fn sinhCplx() callconv(.c) void {
     sinhCoshCplx(runtime.trigSin);
+}
+
+fn tanhReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_tanh_real_domain_error();
+        return;
+    }
+
+    runtime.WP34S_Tanh(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn tanhCplx() callconv(.c) void {
+    var x_real: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+    var r_real: runtime.real_t = undefined;
+    var r_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag)) {
+        return;
+    }
+
+    _ = TanhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
 }
 
 fn tanReal() callconv(.c) void {
@@ -503,6 +562,12 @@ pub export fn fnCosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&coshReal, &coshCplx);
+}
+
+pub export fn fnTanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&tanhReal, &tanhCplx);
 }
 
 pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {

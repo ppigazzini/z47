@@ -449,6 +449,11 @@ void WP34S_SinhCosh(const real_t *x, real_t *sinOut, real_t *cosOut, realContext
   }
 }
 
+void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 60, 0);
+}
+
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
   snapshot.dec_number_multiply_calls++;
   snapshot.dec_number_multiply_lhs_value = fakeRealValue(lhs);
@@ -534,6 +539,14 @@ void divComplexComplex(const real_t *numerReal,
 
 void realSetNaN(real_t *value) {
   setFakeReal(value, 0, 0x20);
+}
+
+void realSetZero(real_t *value) {
+  setFakeReal(value, 0, 0);
+}
+
+void realSetOne(real_t *value) {
+  setFakeReal(value, 1, 0);
 }
 
 bool_t getSystemFlag(int32_t flag) {

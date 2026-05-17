@@ -16,6 +16,7 @@ void fnCos(uint16_t unusedButMandatoryParameter);
 void fnTan(uint16_t unusedButMandatoryParameter);
 void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
+void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -30,6 +31,7 @@ void oracle_fnCos(uint16_t unusedButMandatoryParameter);
 void oracle_fnTan(uint16_t unusedButMandatoryParameter);
 void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
+void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -158,6 +160,28 @@ static void configureSinhInfinity(void) {
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetFlagSpcRes(false);
   mathWrappersSetTrigOutputs(false, 0, 0, 0);
+}
+
+static void configureTanhNominal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureTanhInfinity(void) {
+  configureTanhNominal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureTanhInfinityDanger(void) {
+  configureTanhInfinity();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureTanhComplexImagZero(void) {
+  configureTanhNominal();
+  mathWrappersSetComplexInput(true, 2, 0, 0, 0);
 }
 
 static void configureTanPoleNoDanger(void) {
@@ -336,6 +360,10 @@ int main(void) {
   failures += runCase("fnSinh", oracle_fnSinh, fnSinh, 0, true, configureTrigNominal);
   failures += runCase("fnSinh", oracle_fnSinh, fnSinh, 0, true, configureSinhInfinity);
   failures += runCase("fnCosh", oracle_fnCosh, fnCosh, 0, true, configureTrigNominal);
+  failures += runCase("fnTanh", oracle_fnTanh, fnTanh, 0, true, configureTanhNominal);
+  failures += runCase("fnTanh/real_inf", oracle_fnTanh, fnTanh, 0, true, configureTanhInfinity);
+  failures += runCase("fnTanh/real_inf_danger", oracle_fnTanh, fnTanh, 0, true, configureTanhInfinityDanger);
+  failures += runCase("fnTanh/imag_zero", oracle_fnTanh, fnTanh, 0, true, configureTanhComplexImagZero);
   failures += runCase("fnSquare/real", oracle_fnSquare, fnSquare, 0, true, configureSquareReal);
   failures += runCase("fnSquare/real_inf", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinity);
   failures += runCase("fnSquare/real_inf_danger", oracle_fnSquare, fnSquare, 0, true, configureSquareRealInfinityDanger);
