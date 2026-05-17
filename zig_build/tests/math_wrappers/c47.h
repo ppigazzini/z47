@@ -192,6 +192,7 @@ void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t l
 void *getRegisterDataPointer(calcRegister_t reg);
 uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
+void setRegisterTag(calcRegister_t reg, uint32_t tag);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
