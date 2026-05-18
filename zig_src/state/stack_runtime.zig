@@ -5,8 +5,11 @@ pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_T: calcRegister_t = 103;
+pub const REGISTER_A: calcRegister_t = 104;
 pub const REGISTER_D: calcRegister_t = 107;
+pub const REGISTER_I: calcRegister_t = 109;
 pub const REGISTER_L: calcRegister_t = 108;
+pub const REGISTER_W: calcRegister_t = 125;
 
 pub const SAVED_REGISTER_X: calcRegister_t = 126;
 pub const SAVED_REGISTER_L: calcRegister_t = 134;
@@ -26,6 +29,9 @@ pub const FLAG_SOLVING: i32 = 0xc026;
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
 pub const ERROR_RAM_FULL: u8 = 11;
+
+pub const PGM_RUNNING: u8 = 1;
+pub const NOT_CONFIRMED: u16 = 9878;
 
 pub const SIGMA_NONE: i8 = 0;
 pub const SIGMA_PLUS: u16 = 1;
@@ -51,6 +57,7 @@ extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
 extern fn z47_stack_runtime_store_local_register_count_in_x() void;
+extern fn z47_stack_runtime_current_local_register_count() u8;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
@@ -74,6 +81,7 @@ pub extern fn fnRecall(reg: u16) void;
 pub extern fn recallStatsMatrix() void;
 pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
@@ -81,6 +89,7 @@ pub extern var calcMode: u8;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var lastErrorCode: u8;
 pub extern var entryStatus: u8;
+pub extern var programRunStop: u8;
 
 pub extern var lrSelection: u16;
 pub extern var lrSelectionUndo: u16;
@@ -141,8 +150,16 @@ pub fn storeLocalRegisterCountInX() void {
     z47_stack_runtime_store_local_register_count_in_x();
 }
 
+pub fn currentLocalRegisterCount() u8 {
+    return z47_stack_runtime_current_local_register_count();
+}
+
 pub fn restoreSavedSigmaLastXYAndAdd() void {
     z47_stack_runtime_restore_saved_sigma_last_xy_and_add();
+}
+
+pub fn retainedFnClearRegisters(confirmation: u16) void {
+    z47_registers_retained_fnClearRegisters(confirmation);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {

@@ -10,6 +10,7 @@ bool_t saveLastX(void);
 void saveForUndo(void);
 void undo(void);
 void fnGetLocR(uint16_t unusedButMandatoryParameter);
+void fnClearRegisters(uint16_t confirmation);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -26,6 +27,7 @@ bool_t oracle_saveLastX(void);
 void oracle_saveForUndo(void);
 void oracle_undo(void);
 void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
+void oracle_fnClearRegisters(uint16_t confirmation);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -120,6 +122,27 @@ static void setupGetLocRAsliftCase(void) {
   seedBasicStack();
   setSystemFlag(FLAG_ASLIFT);
   currentNumberOfLocalRegisters = 3;
+}
+
+static void setupClearRegistersCase(void) {
+  seedBasicStack();
+  seedRegister(0, 0x60);
+  seedRegister(REGISTER_A, 0x70);
+  seedRegister(REGISTER_I, 0x80);
+  stackParitySeedLocalRegister(0, dtReal34, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0x90}, REAL34_SIZE_IN_BLOCKS);
+  currentNumberOfLocalRegisters = 1;
+  clearSystemFlag(FLAG_SSIZE8);
+  programRunStop = 0;
+}
+
+static void setupClearRegistersRunningCase(void) {
+  setupClearRegistersCase();
+  programRunStop = PGM_RUNNING;
+}
+
+static void setupClearRegistersStack8Case(void) {
+  setupClearRegistersCase();
+  setSystemFlag(FLAG_SSIZE8);
 }
 
 static void captureAndCompare(const char *name, const stack_parity_snapshot_t *expected, const stack_parity_snapshot_t *actual, uint16_t arg, int *failures) {
@@ -247,6 +270,9 @@ int main(void) {
   failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);
+  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersCase, 1);
+  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersRunningCase, NOT_CONFIRMED);
+  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersStack8Case, 1);
 
   failures += runU16Case("fnDrop", oracle_fnDrop, fnDrop, setupDropCase, 0);
   failures += runU16Case("fnDropY", oracle_fnDropY, fnDropY, setupDropCase, 0);

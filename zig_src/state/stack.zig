@@ -32,6 +32,36 @@ pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
     }
 }
 
+pub export fn fnClearRegisters(confirmation: u16) void {
+    if (confirmation == runtime.NOT_CONFIRMED and runtime.programRunStop != runtime.PGM_RUNNING) {
+        runtime.retainedFnClearRegisters(confirmation);
+        return;
+    }
+
+    var reg: runtime.calcRegister_t = 0;
+    while (reg < runtime.REGISTER_X) : (reg += 1) {
+        runtime.clearRegister(reg);
+    }
+
+    var local_index: u8 = 0;
+    const local_count = runtime.currentLocalRegisterCount();
+    while (local_index < local_count) : (local_index += 1) {
+        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(local_index)));
+    }
+
+    if (!runtime.getSystemFlag(runtime.FLAG_SSIZE8)) {
+        reg = runtime.REGISTER_A;
+        while (reg <= runtime.REGISTER_D) : (reg += 1) {
+            runtime.clearRegister(reg);
+        }
+    }
+
+    reg = runtime.REGISTER_I;
+    while (reg <= runtime.REGISTER_W) : (reg += 1) {
+        runtime.clearRegister(reg);
+    }
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 
