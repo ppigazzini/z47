@@ -60,6 +60,7 @@ pub const CM_NO_UNDO: u8 = 16;
 
 extern fn z47_stack_runtime_get_stack_top() calcRegister_t;
 extern fn z47_stack_runtime_real34_size_in_blocks() u16;
+extern fn z47_stack_runtime_try_fn_to_real_complex_zero() bool;
 extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
 extern fn z47_stack_runtime_get_swap_target_descriptor(reg: u16, descriptor: *register_descriptor_t) bool;
@@ -101,6 +102,7 @@ pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_
 pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
 pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
 pub extern fn z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter: u16) void;
+pub extern fn z47_registers_retained_fnToReal(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
@@ -137,6 +139,10 @@ pub fn getStackTop() calcRegister_t {
 
 pub fn real34SizeInBlocks() u16 {
     return z47_stack_runtime_real34_size_in_blocks();
+}
+
+pub fn tryFnToRealComplexZero() bool {
+    return z47_stack_runtime_try_fn_to_real_complex_zero();
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
@@ -213,6 +219,10 @@ pub fn retainedClearRegister(reg: calcRegister_t) void {
 
 pub fn retainedFnRegCopy(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter);
+}
+
+pub fn retainedFnToReal(unused_but_mandatory_parameter: u16) void {
+    z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
 }
 
 pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {

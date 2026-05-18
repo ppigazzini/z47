@@ -145,6 +145,7 @@ uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
 uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);
 uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
+void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end);
 
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
@@ -250,4 +251,12 @@ void oracle_fnRegSort(uint16_t unusedButMandatoryParameter) {
 	else {
 		z47_stack_runtime_report_register_command_error(lastErrorCode);
 	}
+}
+
+void oracle_fnToReal(uint16_t unusedButMandatoryParameter) {
+	if(z47_stack_runtime_try_fn_to_real_complex_zero()) {
+		return;
+	}
+
+	z47_registers_retained_fnToReal(unusedButMandatoryParameter);
 }

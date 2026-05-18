@@ -10,7 +10,6 @@ void z47_registers_retained_fnDeleteVariable(uint16_t regist);
 void z47_registers_retained_fnDeleteAllVariables(uint16_t confirmation);
 void z47_registers_retained_fnClearAllVariables(uint16_t confirmation);
 void z47_registers_retained_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 bool_t z47_registers_retained_isFunctionAllowingNewVariable(uint16_t op);
 
 void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
@@ -43,10 +42,6 @@ void fnClearAllVariables(uint16_t confirmation) {
 
 void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
   z47_registers_retained_adjustResult(res, dropY, setCpxRes, op1, op2, op3);
-}
-
-void fnToReal(uint16_t unusedButMandatoryParameter) {
-  z47_registers_retained_fnToReal(unusedButMandatoryParameter);
 }
 
 bool_t isFunctionAllowingNewVariable(uint16_t op) {

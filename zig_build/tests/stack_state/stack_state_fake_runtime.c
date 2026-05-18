@@ -447,6 +447,36 @@ void z47_stack_runtime_real34_set_zero(void *dest) {
   real34SetZero((real34_t *)dest);
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void) {
+  uint8_t real_bytes[REAL34_SIZE_IN_BYTES];
+  uint8_t *data;
+
+  if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+    return false;
+  }
+
+  data = (uint8_t *)getRegisterDataPointer(REGISTER_X);
+  if(data == NULL) {
+    return false;
+  }
+
+  for(uint32_t i = 0; i < REAL34_SIZE_IN_BYTES; ++i) {
+    if(data[REAL34_SIZE_IN_BYTES + i] != 0) {
+      return false;
+    }
+  }
+
+  memcpy(real_bytes, data, sizeof(real_bytes));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  if(lastErrorCode != ERROR_NONE) {
+    return true;
+  }
+
+  memcpy(getRegisterDataPointer(REGISTER_X), real_bytes, sizeof(real_bytes));
+  confirmation_request = 4;
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
@@ -624,6 +654,13 @@ void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter) {
       copySourceRegisterToDestRegister((calcRegister_t)(fake_regcopy_start + i - 1), (calcRegister_t)(fake_regcopy_dest + i - 1));
     }
   }
+}
+
+void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter) {
+  (void)unusedButMandatoryParameter;
+
+  confirmation_request = 5;
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
 }
 
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {

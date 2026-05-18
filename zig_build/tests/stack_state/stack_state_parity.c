@@ -15,6 +15,7 @@ void clearRegister(calcRegister_t reg);
 void fnRegClr(uint16_t unusedButMandatoryParameter);
 void fnRegCopy(uint16_t unusedButMandatoryParameter);
 void fnRegSort(uint16_t unusedButMandatoryParameter);
+void fnToReal(uint16_t unusedButMandatoryParameter);
 void fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
@@ -37,6 +38,7 @@ void oracle_clearRegister(calcRegister_t reg);
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegSort(uint16_t unusedButMandatoryParameter);
+void oracle_fnToReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
@@ -243,6 +245,20 @@ static void setupRegSortParseErrorCase(void) {
   stackParitySetRegClrRange(ERROR_OUT_OF_RANGE, 0, 0);
 }
 
+static void setupToRealComplexZeroCase(void) {
+  uint8_t payload[TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)] = {0};
+
+  seedBasicStack();
+  payload[0] = 0xf0;
+  payload[1] = 0x0f;
+  stackParitySeedRegister(REGISTER_X, dtComplex34, amPolar | 2, payload, COMPLEX34_SIZE_IN_BLOCKS);
+}
+
+static void setupToRealFallbackCase(void) {
+  seedBasicStack();
+  seedRegister(REGISTER_X, 0xa0);
+}
+
 static void setupClearRegisterRealCase(void) {
   seedRegister(REGISTER_X, 0xa0);
   Input_Default = ID_DP;
@@ -442,6 +458,8 @@ int main(void) {
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortNumericCase, 0);
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortStrictTypeErrorCase, 0);
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortParseErrorCase, 0);
+  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealComplexZeroCase, 0);
+  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
 
