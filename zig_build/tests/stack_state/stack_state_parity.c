@@ -14,6 +14,7 @@ void fnClearRegisters(uint16_t confirmation);
 void clearRegister(calcRegister_t reg);
 void fnRegClr(uint16_t unusedButMandatoryParameter);
 void fnRegCopy(uint16_t unusedButMandatoryParameter);
+void fnRegSort(uint16_t unusedButMandatoryParameter);
 void fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
@@ -35,6 +36,7 @@ void oracle_fnClearRegisters(uint16_t confirmation);
 void oracle_clearRegister(calcRegister_t reg);
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegCopy(uint16_t unusedButMandatoryParameter);
+void oracle_fnRegSort(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
@@ -220,6 +222,25 @@ static void setupRegCopyLoadCase(void) {
 static void setupRegCopyErrorCase(void) {
   seedBasicStack();
   stackParitySetRegCopyParams(ERROR_OUT_OF_RANGE, false, 0, 0, 0);
+}
+
+static void setupRegSortNumericCase(void) {
+  seedBasicStack();
+  stackParitySeedRegister(2, dtReal34, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xf0}, REAL34_SIZE_IN_BLOCKS);
+  stackParitySeedRegister(3, dtShortInteger, amNone, (const uint8_t[TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS)]){0xe0}, SHORT_INTEGER_SIZE_IN_BLOCKS);
+  stackParitySetRegClrRange(ERROR_NONE, 2, 2);
+}
+
+static void setupRegSortStrictTypeErrorCase(void) {
+  seedBasicStack();
+  stackParitySeedRegister(2, dtTime, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xf0}, REAL34_SIZE_IN_BLOCKS);
+  stackParitySeedRegister(3, dtDate, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xe0}, REAL34_SIZE_IN_BLOCKS);
+  stackParitySetRegClrRange(ERROR_NONE, 2, 2);
+}
+
+static void setupRegSortParseErrorCase(void) {
+  seedBasicStack();
+  stackParitySetRegClrRange(ERROR_OUT_OF_RANGE, 0, 0);
 }
 
 static void setupClearRegisterRealCase(void) {
@@ -418,6 +439,9 @@ int main(void) {
   failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyBackwardCase, 0);
   failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyLoadCase, 0);
   failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyErrorCase, 0);
+  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortNumericCase, 0);
+  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortStrictTypeErrorCase, 0);
+  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortParseErrorCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
 

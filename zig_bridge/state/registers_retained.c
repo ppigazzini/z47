@@ -43,3 +43,7 @@ uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint
 uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
 	return getRegParam(f, s, n, d);
 }
+
+void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
+	sortReg(range_start, range_end);
+}
