@@ -212,6 +212,7 @@ uint8_t z47_stack_runtime_current_local_register_count(void);
 uint8_t z47_stack_runtime_get_input_default(void);
 void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg);
 void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base);
+void z47_stack_runtime_request_clear_registers_confirmation(void);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
@@ -260,6 +261,7 @@ typedef struct {
   stack_parity_register_snapshot_t local_registers[MAX_FAKE_LOCAL_REGISTERS];
   uint16_t numberOfNamedVariables;
   uint8_t currentNumberOfLocalRegisters;
+  uint8_t confirmationRequest;
   uint16_t currentInputVariable;
   uint8_t displayStack;
   bool_t thereIsSomethingToUndo;

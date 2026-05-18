@@ -129,6 +129,10 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
   longIntegerFree(lg_int);
 }
 
+void z47_stack_runtime_request_clear_registers_confirmation(void) {
+  setConfirmationMode(fnClearRegisters);
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);

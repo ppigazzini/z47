@@ -80,7 +80,7 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
 
 pub export fn fnClearRegisters(confirmation: u16) void {
     if (confirmation == runtime.NOT_CONFIRMED and runtime.programRunStop != runtime.PGM_RUNNING) {
-        runtime.retainedFnClearRegisters(confirmation);
+        runtime.requestClearRegistersConfirmation();
         return;
     }
 

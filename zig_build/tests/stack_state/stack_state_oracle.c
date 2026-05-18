@@ -110,6 +110,7 @@ void oracle_fnClearRegisters(uint16_t confirmation) {
 	calcRegister_t regist;
 
 	if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
+		z47_stack_runtime_request_clear_registers_confirmation();
 		return;
 	}
 
