@@ -36,6 +36,16 @@
 #include "../../../src/c47/mathematics/integerPartShortinteger.c"
 #undef fnSint
 
+#define fpLonI oracle_fpLonI
+#define fpShoI oracle_fpShoI
+#define fpReal oracle_fpReal
+#define fnFp oracle_fnFp
+#include "../../../src/c47/mathematics/fractionalPart.c"
+#undef fnFp
+#undef fpReal
+#undef fpShoI
+#undef fpLonI
+
 #define lnComplex oracle_lnComplex
 #define fnLn oracle_fnLn
 #include "../../../src/c47/mathematics/ln.c"
