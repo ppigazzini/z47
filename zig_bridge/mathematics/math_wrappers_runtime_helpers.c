@@ -660,11 +660,23 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef complexMagnitude
 #undef complexMagnitude2
 
+void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
+  z47_math_wrappers_retained_complexMagnitude2(a, b, c, realContext);
+}
+
+void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
+  z47_math_wrappers_retained_complexMagnitude(a, b, c, realContext);
+}
+
 #define conjCplx z47_math_wrappers_retained_conjCplx
 #define fnConjugate z47_math_wrappers_retained_fnConjugate
 #include "../../src/c47/mathematics/conjugate.c"
 #undef fnConjugate
 #undef conjCplx
+
+void conjCplx(void) {
+  z47_math_wrappers_retained_conjCplx();
+}
 
 #define fnSwapRealImaginary z47_math_wrappers_retained_fnSwapRealImaginary
 #include "../../src/c47/mathematics/swapRealImaginary.c"
@@ -693,3 +705,9 @@ void atan2LonIRema(void);
 #undef atan2RealReal
 #undef atan2Error
 #undef arctan2
+
+#define percentReal z47_math_wrappers_retained_percentReal
+#define fnPercent z47_math_wrappers_retained_fnPercent
+#include "../../src/c47/mathematics/percent.c"
+#undef fnPercent
+#undef percentReal

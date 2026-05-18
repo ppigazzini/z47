@@ -6,6 +6,10 @@ pub const RuntimeObjects = struct {
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_helpers.c");
+        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c");
+        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c");
+        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c");
+        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c");
         cmd.addArg("zig_bridge/mathematics/random_runtime_helpers.c");
         cmd.addFileArg(self.math_command_wrappers.getEmittedBin());
     }
@@ -23,6 +27,7 @@ pub const RuntimeObjectOptions = struct {
 const replaced_core_sources = [_][]const u8{
     "mathematics/min.c",
     "mathematics/max.c",
+    "mathematics/percent.c",
     "mathematics/ceil.c",
     "mathematics/floor.c",
     "mathematics/integerPart.c",
@@ -85,6 +90,37 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/w_positive.c",
     "mathematics/square.c",
     "mathematics/cube.c",
+    "mathematics/addition.c",
+    "mathematics/subtraction.c",
+    "mathematics/multiplication.c",
+    "mathematics/division.c",
+    "mathematics/idiv.c",
+    "mathematics/idivr.c",
+    "mathematics/dblMultiplication.c",
+    "mathematics/round.c",
+    "mathematics/decomp.c",
+    "mathematics/int.c",
+    "mathematics/incDec.c",
+    "mathematics/compare.c",
+    "mathematics/checkValue.c",
+    "mathematics/comparisonReals.c",
+    "mathematics/dblDivision.c",
+    "mathematics/logxy.c",
+    "mathematics/toPolar.c",
+    "mathematics/toRect.c",
+    "mathematics/parallel.c",
+    "mathematics/unitVector.c",
+    "mathematics/shiftDigits.c",
+    "mathematics/squareRoot.c",
+    "mathematics/cubeRoot.c",
+    "mathematics/percentMRR.c",
+    "mathematics/percentPlusMG.c",
+    "mathematics/percentT.c",
+    "mathematics/deltaPercent.c",
+    "mathematics/fib.c",
+    "mathematics/linpol.c",
+    "mathematics/cross.c",
+    "mathematics/dot.c",
 };
 
 fn addRuntimeObject(
@@ -156,6 +192,10 @@ pub fn addToModule(
     c_flags: []const []const u8,
 ) void {
     module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c"), .flags = c_flags });
     module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = c_flags });
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
     module.addObject(runtime_object);
@@ -182,6 +222,7 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_retained_link_stubs.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_parity.c"), .flags = &.{} });
     host_platform.linkGmp(exe.root_module, target);
     exe.root_module.addObject(runtime_object);
