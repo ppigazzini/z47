@@ -315,6 +315,7 @@ pub fn addRandomParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_oracle.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_retained_link_stubs.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_parity.c"), .flags = &.{} });
     host_platform.linkGmp(exe.root_module, target);
     exe.root_module.addObject(runtime_object);

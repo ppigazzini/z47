@@ -594,11 +594,15 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
 #undef fnUlp
 
 #define mant z47_math_wrappers_retained_mant
-#define mantError z47_math_wrappers_retained_mantError
 #define mantLonI z47_math_wrappers_retained_mantLonI
 #define mantReal z47_math_wrappers_retained_mantReal
 #define fnMant z47_math_wrappers_retained_fnMant
-void mantError(void);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #define mantError z47_math_wrappers_retained_mantError
+  void mantError(void);
+#else
+  #define mantError typeError
+#endif
 void mantLonI(void);
 void mantReal(void);
 #include "../../src/c47/mathematics/mant.c"
@@ -609,11 +613,15 @@ void mantReal(void);
 #undef mant
 
 #define Roundi z47_math_wrappers_retained_Roundi
-#define roundiError z47_math_wrappers_retained_roundiError
 #define roundiRema z47_math_wrappers_retained_roundiRema
 #define roundiReal z47_math_wrappers_retained_roundiReal
 #define fnRoundi z47_math_wrappers_retained_fnRoundi
-void roundiError(void);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #define roundiError z47_math_wrappers_retained_roundiError
+  void roundiError(void);
+#else
+  #define roundiError typeError
+#endif
 void roundiRema(void);
 void roundiReal(void);
 #include "../../src/c47/mathematics/roundi.c"
@@ -685,14 +693,18 @@ void conjCplx(void) {
 #undef fnSwapRealImaginary
 
 #define arctan2 z47_math_wrappers_retained_arctan2
-#define atan2Error z47_math_wrappers_retained_atan2Error
 #define atan2RealReal z47_math_wrappers_retained_atan2RealReal
 #define atan2RemaRema z47_math_wrappers_retained_atan2RemaRema
 #define atan2RemaReal z47_math_wrappers_retained_atan2RemaReal
 #define atan2RealRema z47_math_wrappers_retained_atan2RealRema
 #define atan2LonIRema z47_math_wrappers_retained_atan2LonIRema
 #define fnAtan2 z47_math_wrappers_retained_fnAtan2
-void atan2Error(void);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #define atan2Error z47_math_wrappers_retained_atan2Error
+  void atan2Error(void);
+#else
+  #define atan2Error typeError
+#endif
 void atan2RealReal(void);
 void atan2RemaRema(void);
 void atan2RemaReal(void);
