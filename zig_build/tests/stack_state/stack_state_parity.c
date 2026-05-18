@@ -11,6 +11,7 @@ void saveForUndo(void);
 void undo(void);
 void fnGetLocR(uint16_t unusedButMandatoryParameter);
 void fnClearRegisters(uint16_t confirmation);
+void clearRegister(calcRegister_t reg);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -28,6 +29,7 @@ void oracle_saveForUndo(void);
 void oracle_undo(void);
 void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
 void oracle_fnClearRegisters(uint16_t confirmation);
+void oracle_clearRegister(calcRegister_t reg);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -42,6 +44,7 @@ void oracle_fnFillStack(uint16_t unusedButMandatoryParameter);
 typedef void (*stack_void_fn)(void);
 typedef void (*stack_u16_fn)(uint16_t);
 typedef bool_t (*stack_bool_fn)(void);
+typedef void (*stack_reg_fn)(calcRegister_t);
 
 static void fillPayload(uint8_t *buffer, uint16_t size_in_blocks, uint8_t seed) {
   uint32_t i;
@@ -143,6 +146,31 @@ static void setupClearRegistersRunningCase(void) {
 static void setupClearRegistersStack8Case(void) {
   setupClearRegistersCase();
   setSystemFlag(FLAG_SSIZE8);
+}
+
+static void setupClearRegisterRealCase(void) {
+  seedRegister(REGISTER_X, 0xa0);
+  Input_Default = ID_DP;
+  lastIntegerBase = 0;
+}
+
+static void setupClearRegisterComplexCase(void) {
+  uint8_t payload[TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)] = {0};
+
+  seedBasicStack();
+  stackParitySeedRegister(REGISTER_X, dtComplex34, amPolar | 2, payload, COMPLEX34_SIZE_IN_BLOCKS);
+  Input_Default = ID_CPXDP;
+  lastIntegerBase = 0;
+  currentAngularMode = 2;
+  setSystemFlag(FLAG_POLAR);
+}
+
+static void setupClearRegisterComplexReallocateCase(void) {
+  seedRegister(REGISTER_X, 0xb0);
+  Input_Default = ID_CPXDP;
+  lastIntegerBase = 0;
+  currentAngularMode = 2;
+  clearSystemFlag(FLAG_POLAR);
 }
 
 static void captureAndCompare(const char *name, const stack_parity_snapshot_t *expected, const stack_parity_snapshot_t *actual, uint16_t arg, int *failures) {
@@ -262,11 +290,33 @@ static int runBoolCase(const char *name, stack_bool_fn oracle_fn, stack_bool_fn 
   return failures;
 }
 
+static int runRegCase(const char *name, stack_reg_fn oracle_fn, stack_reg_fn zig_fn, void (*setup)(void), calcRegister_t reg) {
+  stack_parity_snapshot_t expected;
+  stack_parity_snapshot_t actual;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(reg);
+  stackParityCapture(&expected);
+
+  stackParityReset();
+  setup();
+  zig_fn(reg);
+  stackParityCapture(&actual);
+
+  captureAndCompare(name, &expected, &actual, (uint16_t)reg, &failures);
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithAslift);
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithoutAslift);
+  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterRealCase, REGISTER_X);
+  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexCase, REGISTER_X);
+  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexReallocateCase, REGISTER_X);
   failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);

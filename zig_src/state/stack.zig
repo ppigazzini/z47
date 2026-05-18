@@ -32,6 +32,42 @@ pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
     }
 }
 
+pub export fn clearRegister(reg: runtime.calcRegister_t) void {
+    if (runtime.lastIntegerBase == 0 and (runtime.inputDefault() == runtime.ID_43S or runtime.inputDefault() == runtime.ID_DP)) {
+        if (runtime.getRegisterDataType(reg) == runtime.dtReal34) {
+            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+            runtime.setRegisterDataType(reg, @intCast(runtime.dtReal34), runtime.amNone);
+        } else {
+            runtime.reallocateRegister(reg, runtime.dtReal34, 0, runtime.amNone);
+            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                return;
+            }
+            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+        }
+        return;
+    }
+
+    if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_CPXDP) {
+        const complex_tag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
+
+        if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
+            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+            runtime.real34SetZero(@as(?*anyopaque, @ptrCast(@alignCast(@as([*]u8, @ptrCast(runtime.getRegisterDataPointer(reg).?)) + runtime.bytesFromBlocks(runtime.real34SizeInBlocks())))));
+            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
+        } else {
+            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
+            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                return;
+            }
+            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+            runtime.real34SetZero(@as(?*anyopaque, @ptrCast(@alignCast(@as([*]u8, @ptrCast(runtime.getRegisterDataPointer(reg).?)) + runtime.bytesFromBlocks(runtime.real34SizeInBlocks())))));
+        }
+        return;
+    }
+
+    runtime.retainedClearRegister(reg);
+}
+
 pub export fn fnClearRegisters(confirmation: u16) void {
     if (confirmation == runtime.NOT_CONFIRMED and runtime.programRunStop != runtime.PGM_RUNNING) {
         runtime.retainedFnClearRegisters(confirmation);

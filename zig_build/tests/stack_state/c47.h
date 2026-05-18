@@ -51,11 +51,13 @@ typedef uint32_t longInteger_t[1];
 enum {
   dtLongInteger = 0,
   dtReal34 = 1,
+  dtComplex34 = 2,
 };
 
 enum {
   LI_POSITIVE = 2,
   amNone = 5,
+  amPolar = 16,
 };
 
 enum {
@@ -121,6 +123,12 @@ enum {
 #define FLAG_ASLIFT 0xc023
 #define FLAG_INTING 0xc025
 #define FLAG_SOLVING 0xc026
+#define FLAG_POLAR 0x8006
+
+#define ID_43S 0
+#define ID_DP 2
+#define ID_CPXDP 4
+#define ID_LI 7
 
 #define BPB 2
 #define BYTES_PER_BLOCK (1u << BPB)
@@ -129,6 +137,7 @@ enum {
 
 #define REAL34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(real34_t))
 #define REAL34_SIZE_IN_BYTES TO_BYTES(REAL34_SIZE_IN_BLOCKS)
+#define COMPLEX34_SIZE_IN_BLOCKS (REAL34_SIZE_IN_BLOCKS * 2)
 #define REAL_SIZE_IN_BYTES(digits) ((uint32_t)sizeof(real_t))
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
@@ -151,6 +160,7 @@ void *stackParityToPcMemPtr(uint16_t ptr);
 #define getStackTop() z47_stack_runtime_get_stack_top()
 #define freeRegisterData(regist) freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define REGISTER_REAL34_DATA(a) ((real34_t *)(getRegisterDataPointer(a)))
+#define REGISTER_IMAG34_DATA(a) (((real34_t *)(getRegisterDataPointer(a))) + 1)
 
 extern registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
 extern namedVariableHeader_t *allNamedVariables;
@@ -166,8 +176,11 @@ extern uint8_t displayStack;
 extern bool_t thereIsSomethingToUndo;
 extern uint8_t calcMode;
 extern uint8_t programRunStop;
+extern uint8_t Input_Default;
 extern uint8_t lastErrorCode;
 extern uint8_t entryStatus;
+extern uint32_t currentAngularMode;
+extern uint32_t lastIntegerBase;
 extern uint64_t systemFlags0;
 extern uint64_t systemFlags1;
 extern uint64_t savedSystemFlags0;
@@ -194,6 +207,7 @@ uint32_t z47_stack_runtime_statistical_sums_bytes(void);
 void z47_stack_runtime_store_stack_size_in_x(uint32_t size);
 void z47_stack_runtime_store_local_register_count_in_x(void);
 uint8_t z47_stack_runtime_current_local_register_count(void);
+uint8_t z47_stack_runtime_get_input_default(void);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
@@ -270,6 +284,7 @@ void stackParitySeedCurrentStats(uint8_t seed);
 void stackParitySeedSavedStats(uint8_t seed);
 void stackParityCapture(stack_parity_snapshot_t *snapshot);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
+void z47_registers_retained_clearRegister(calcRegister_t reg);
 
 #endif
 

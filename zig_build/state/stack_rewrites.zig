@@ -102,7 +102,7 @@ pub fn addParityExecutable(
     });
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/stack_state"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_fake_runtime.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_fake_runtime.c"), .flags = &.{"-DZ47_STACK_STATE_RUNTIME=1"} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_parity.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/stack_state/stack_state_oracle.c"), .flags = &.{} });
     runtime_objects.link(exe.root_module);

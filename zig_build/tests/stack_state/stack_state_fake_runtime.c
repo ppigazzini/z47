@@ -30,8 +30,10 @@ uint8_t displayStack = 0;
 bool_t thereIsSomethingToUndo = false;
 uint8_t calcMode = 0;
 uint8_t programRunStop = 0;
+uint8_t Input_Default = ID_43S;
 uint8_t lastErrorCode = ERROR_NONE;
 uint8_t entryStatus = 0;
+uint32_t lastIntegerBase = 0;
 uint64_t systemFlags0 = 0;
 uint64_t systemFlags1 = 0;
 uint64_t savedSystemFlags0 = 0;
@@ -48,6 +50,10 @@ real_t SAVED_SIGMA_LASTY = {{0}};
 
 static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
 static bool_t fake_memory_block_available = true;
+
+#ifdef Z47_STACK_STATE_RUNTIME
+#define clearRegister z47_stack_parity_raw_clearRegister
+#endif
 
 #ifdef Z47_REGISTER_METADATA_RUNTIME
 #define getRegisterDataPointer z47_stack_parity_raw_getRegisterDataPointer
@@ -152,8 +158,10 @@ void stackParityReset(void) {
   thereIsSomethingToUndo = false;
   calcMode = 0;
   programRunStop = 0;
+  Input_Default = ID_43S;
   lastErrorCode = ERROR_NONE;
   entryStatus = 0;
+  lastIntegerBase = 0;
   systemFlags0 = 0;
   systemFlags1 = 0;
   savedSystemFlags0 = 0;
@@ -388,6 +396,9 @@ void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_si
   if(data_type == dtReal34 && size_in_blocks == 0) {
     size_in_blocks = REAL34_SIZE_IN_BLOCKS;
   }
+  else if(data_type == dtComplex34 && size_in_blocks == 0) {
+    size_in_blocks = COMPLEX34_SIZE_IN_BLOCKS;
+  }
 
   if(size_in_blocks != 0) {
     ptr = allocC47Blocks(size_in_blocks);
@@ -419,6 +430,14 @@ void uInt32ToLongInteger(uint32_t source, longInteger_t dest) {
 }
 
 void convertLongIntegerToLongIntegerRegister(const longInteger_t value, calcRegister_t dest) {
+  reallocateRegister(dest, dtLongInteger, 1, 0);
+  if(getRegisterDataPointer(dest) != NULL) {
+    memcpy(getRegisterDataPointer(dest), value, sizeof(uint32_t));
+  }
+}
+
+void convertLongIntegerToShortIntegerRegister(const longInteger_t value, uint32_t base, calcRegister_t dest) {
+  (void)base;
   reallocateRegister(dest, dtLongInteger, 1, 0);
   if(getRegisterDataPointer(dest) != NULL) {
     memcpy(getRegisterDataPointer(dest), value, sizeof(uint32_t));
@@ -512,6 +531,10 @@ void z47_stack_runtime_store_local_register_count_in_x(void) {
 
 uint8_t z47_stack_runtime_current_local_register_count(void) {
   return currentNumberOfLocalRegisters;
+}
+
+uint8_t z47_stack_runtime_get_input_default(void) {
+  return Input_Default;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
