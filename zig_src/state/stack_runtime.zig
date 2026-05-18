@@ -69,6 +69,7 @@ extern fn z47_stack_runtime_current_local_register_count() u8;
 extern fn z47_stack_runtime_get_input_default() u8;
 extern fn z47_stack_runtime_store_zero_long_integer(reg: calcRegister_t) void;
 extern fn z47_stack_runtime_store_zero_short_integer(reg: calcRegister_t, base: u32) void;
+extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
@@ -178,6 +179,10 @@ pub fn storeZeroLongInteger(reg: calcRegister_t) void {
 
 pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
     z47_stack_runtime_store_zero_short_integer(reg, base);
+}
+
+pub fn requestClearRegistersConfirmation() void {
+    z47_stack_runtime_request_clear_registers_confirmation();
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {

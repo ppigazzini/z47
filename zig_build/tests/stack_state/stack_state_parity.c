@@ -148,6 +148,11 @@ static void setupClearRegistersStack8Case(void) {
   setSystemFlag(FLAG_SSIZE8);
 }
 
+static void setupClearRegistersConfirmCase(void) {
+  setupClearRegistersCase();
+  programRunStop = 0;
+}
+
 static void setupClearRegisterRealCase(void) {
   seedRegister(REGISTER_X, 0xa0);
   Input_Default = ID_DP;
@@ -335,6 +340,7 @@ int main(void) {
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);
   failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersCase, 1);
+  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersConfirmCase, NOT_CONFIRMED);
   failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersRunningCase, NOT_CONFIRMED);
   failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersStack8Case, 1);
 

@@ -50,6 +50,7 @@ real_t SAVED_SIGMA_LASTY = {{0}};
 
 static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
 static bool_t fake_memory_block_available = true;
+static uint8_t confirmation_request = 0;
 
 #ifdef Z47_STACK_STATE_RUNTIME
 #define clearRegister z47_stack_parity_raw_clearRegister
@@ -153,6 +154,7 @@ void stackParityReset(void) {
   memset(fake_local_registers, 0, sizeof(fake_local_registers));
   numberOfNamedVariables = 0;
   currentNumberOfLocalRegisters = 0;
+  confirmation_request = 0;
   currentInputVariable = INVALID_VARIABLE;
   displayStack = 0;
   thereIsSomethingToUndo = false;
@@ -552,6 +554,10 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
   convertLongIntegerToShortIntegerRegister(li, base, reg);
 }
 
+void z47_stack_runtime_request_clear_registers_confirmation(void) {
+  confirmation_request = 1;
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
@@ -793,6 +799,7 @@ void stackParityCapture(stack_parity_snapshot_t *snapshot) {
 
   snapshot->numberOfNamedVariables = numberOfNamedVariables;
   snapshot->currentNumberOfLocalRegisters = currentNumberOfLocalRegisters;
+  snapshot->confirmationRequest = confirmation_request;
   snapshot->currentInputVariable = currentInputVariable;
   snapshot->displayStack = displayStack;
   snapshot->thereIsSomethingToUndo = thereIsSomethingToUndo;
