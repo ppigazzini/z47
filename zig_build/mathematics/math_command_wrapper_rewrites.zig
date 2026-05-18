@@ -6,6 +6,7 @@ pub const RuntimeObjects = struct {
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_helpers.c");
+        cmd.addArg("zig_bridge/mathematics/random_runtime_helpers.c");
         cmd.addFileArg(self.math_command_wrappers.getEmittedBin());
     }
 };
@@ -24,6 +25,8 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/max.c",
     "mathematics/ceil.c",
     "mathematics/floor.c",
+    "mathematics/pcg_basic.c",
+    "mathematics/random.c",
     "mathematics/2pow.c",
     "mathematics/10pow.c",
     "mathematics/minusOnePow.c",
@@ -111,6 +114,7 @@ pub fn addToModule(
     c_flags: []const []const u8,
 ) void {
     module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = c_flags });
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
     module.addObject(runtime_object);
 }
@@ -133,9 +137,37 @@ pub fn addParityExecutable(
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/math_wrappers"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_parity.c"), .flags = &.{} });
+    host_platform.linkGmp(exe.root_module, target);
+    exe.root_module.addObject(runtime_object);
+    return exe;
+}
+
+pub fn addRandomParityExecutable(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step.Compile {
+    const runtime_object = addRuntimeObject(b, target, optimize, "random-parity", .{});
+    const exe = b.addExecutable(.{
+        .name = "math-random-parity",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
+    exe.root_module.addIncludePath(b.path("zig_build/tests/math_wrappers"));
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_oracle.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_parity.c"), .flags = &.{} });
     host_platform.linkGmp(exe.root_module, target);
     exe.root_module.addObject(runtime_object);
     return exe;

@@ -128,6 +128,8 @@ Maintainer entrypoints:
 - `zig build math_command_wrappers_parity`: focused parity lane for the live
   math command-wrapper rewrite slice, including shared exp, integer-power,
   and Euler helper exports
+- `zig build math_random_parity`: focused parity lane for the live random and
+  PCG math owner slice under the shared command-wrapper runtime boundary
 - `zig build keyboard_state_parity`: focused parity lane for the live keyboard
   rewrite slice
 - `zig build keyboard_statusbar_flags_regression`: focused regression lane for

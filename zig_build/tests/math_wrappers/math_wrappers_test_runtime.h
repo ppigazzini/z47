@@ -33,6 +33,20 @@ typedef struct {
 
   uint32_t process_real_complex_monadic_calls;
   uint32_t process_int_real_complex_monadic_calls;
+  uint32_t process_int_real_complex_dyadic_calls;
+
+  uint32_t save_for_undo_calls;
+  uint32_t lift_stack_calls;
+  uint32_t fn_drop_calls;
+  uint16_t fn_drop_last_param;
+  uint32_t fn_undo_calls;
+  uint16_t fn_undo_last_param;
+
+  uint32_t reallocate_register_calls;
+  calcRegister_t reallocate_register_reg;
+  uint32_t reallocate_register_data_type;
+  uint16_t reallocate_register_data_size_without_data_len_blocks;
+  uint32_t reallocate_register_tag;
 
   uint32_t integer_part_noop_calls;
   uint32_t integer_part_real_calls;
@@ -71,6 +85,11 @@ typedef struct {
   int32_t convert_real_to_result_value;
   uint8_t convert_real_to_result_bits;
   angularMode_t convert_real_to_result_angle;
+  real_t convert_real_to_result_raw;
+
+  uint32_t convert_real_to_real34_result_calls;
+  calcRegister_t convert_real_to_real34_result_dest;
+  real_t convert_real_to_real34_result_raw;
 
   uint32_t convert_complex_to_result_calls;
   int32_t convert_complex_to_result_real_value;
@@ -102,6 +121,12 @@ typedef struct {
   uint32_t dec_number_exp_calls;
   int32_t dec_number_exp_input_value;
   uint8_t dec_number_exp_input_bits;
+
+  uint32_t dec_number_add_calls;
+  uint32_t dec_number_subtract_calls;
+  uint32_t dec_number_fma_calls;
+  uint32_t dec_number_from_uint32_calls;
+  uint32_t dec_number_from_uint32_last_source;
 
   uint32_t real_compare_abs_equal_calls;
   int32_t real_compare_abs_equal_lhs_value;
@@ -177,6 +202,14 @@ typedef struct {
 
   uint32_t more_info_calls;
 
+  uint32_t get_uptime_ms_calls;
+  uint32_t get_free_ram_memory_calls;
+  uint32_t get_free_flash_calls;
+
+  uint64_t final_pcg_state;
+  uint64_t final_pcg_inc;
+  bool_t final_there_is_something_to_undo;
+
   uint32_t final_register_data_type;
   uint32_t final_register_tag;
   int32_t final_register_real34_value;
@@ -190,15 +223,22 @@ void mathWrappersReset(void);
 void mathWrappersSetSaveLastXResult(bool_t result);
 void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag);
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits);
+void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode);
 void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetShortIntegerInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
+void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
 void mathWrappersSetFlagOverflow(bool_t enabled);
 void mathWrappersSetFlagSpcRes(bool_t enabled);
 void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_value, int32_t tan_value);
+void mathWrappersSetSeedInput(uint64_t seed, uint64_t seq);
+void mathWrappersSetPcgState(uint64_t state, uint64_t inc);
+void mathWrappersSetUptimeMs(uint32_t value);
+void mathWrappersSetFreeRamMemory(uint32_t value);
+void mathWrappersSetFreeFlash(uint32_t value);
 void mathWrappersCapture(math_wrappers_snapshot_t *snapshot);
 
 #endif

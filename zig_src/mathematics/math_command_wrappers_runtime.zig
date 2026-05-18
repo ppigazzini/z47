@@ -3,6 +3,11 @@ pub const angularMode_t = c_int;
 pub const rounding_t = c_int;
 pub const trigType_t = c_int;
 
+pub const pcg32_random_t = extern struct {
+    state: u64,
+    inc: u64,
+};
+
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
@@ -75,8 +80,11 @@ pub extern var ctxtReal39: realContext_t;
 pub extern var ctxtReal51: realContext_t;
 pub extern var ctxtReal75: realContext_t;
 pub extern var shortIntegerMode: u8;
+pub extern var thereIsSomethingToUndo: bool;
+pub extern var pcg32_global: pcg32_random_t;
 
 pub extern fn saveLastX() bool;
+pub extern fn saveForUndo() void;
 pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterTag(reg: calcRegister_t) u32;
 pub extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
@@ -119,10 +127,22 @@ pub extern fn processIntRealComplexMonadicFunction(
     shortintf: VoidCallback,
     longintf: VoidCallback,
 ) void;
+pub extern fn processIntRealComplexDyadicFunction(
+    realf: VoidCallback,
+    complexf: VoidCallback,
+    shortintf: VoidCallback,
+    longintf: VoidCallback,
+) void;
 
 pub extern fn integerPartNoOp() void;
 pub extern fn integerPartReal(mode: rounding_t) void;
 pub extern fn integerPartCplx(mode: rounding_t) void;
+pub extern fn liftStack() void;
+pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn fnDrop(unused_but_mandatory_parameter: u16) void;
+pub extern fn getUptimeMs() u32;
+pub extern fn getFreeRamMemory() u32;
+pub extern fn getFreeFlash() u32;
 
 pub extern fn unitVectorCplx() void;
 pub extern fn decQuadIsNaN(value: *const real34_t) u32;
@@ -174,6 +194,10 @@ pub extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) 
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberExp(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberFMA(result: *real_t, lhs: *const real_t, rhs: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
@@ -189,6 +213,7 @@ pub extern fn fnInvertMatrix(unused_but_mandatory_parameter: u16) void;
 pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
+pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
 pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
@@ -217,6 +242,8 @@ pub extern fn z47_math_wrappers_report_tanh_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_square_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_tan_real_pole_error() void;
 pub extern fn z47_math_wrappers_report_cube_real_domain_error() void;
+pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
+pub extern fn z47_math_wrappers_do_int_random_i() void;
 
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
@@ -297,4 +324,20 @@ pub inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real
 
 pub inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
     _ = decNumberDivide(result, lhs, rhs, real_context);
+}
+
+pub inline fn realAdd(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberAdd(result, lhs, rhs, real_context);
+}
+
+pub inline fn realSubtract(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberSubtract(result, lhs, rhs, real_context);
+}
+
+pub inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberFMA(result, factor1, factor2, term, real_context);
+}
+
+pub inline fn uInt32ToReal(source: u32, destination: *real_t) void {
+    _ = decNumberFromUInt32(destination, source);
 }

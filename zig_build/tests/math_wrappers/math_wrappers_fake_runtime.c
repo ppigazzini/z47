@@ -5,6 +5,9 @@
 
 #include "math_wrappers_test_runtime.h"
 
+typedef unsigned __int128 uint128_t;
+typedef __int128 int128_t;
+
 static math_wrappers_snapshot_t snapshot;
 static bool_t save_last_x_result = true;
 static uint32_t current_register_data_type = dtReal34;
@@ -18,6 +21,11 @@ static struct {
   bool_t available;
   real_t value;
 } real_input;
+
+static struct {
+  bool_t available;
+  real_t value;
+} real_y_input;
 
 static struct {
   bool_t available;
@@ -37,6 +45,11 @@ static struct {
 } longint_input;
 
 static struct {
+  bool_t available;
+  int32_t value;
+} longint_y_input;
+
+static struct {
   bool_t enabled;
   real_t sin_value;
   real_t cos_value;
@@ -45,18 +58,72 @@ static struct {
 
 static bool_t spcres_flag = false;
 static bool_t overflow_flag = false;
+static uint32_t fake_uptime_ms = 0;
+static uint32_t fake_free_ram_memory = 0;
+static uint32_t fake_free_flash = 0;
 
 realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
 uint8_t shortIntegerMode = SIM_UNSIGN;
 angularMode_t currentAngularMode = amNone;
+bool_t thereIsSomethingToUndo = false;
+pcg32_random_t pcg32_global = PCG32_INITIALIZER;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
+
+static uint128_t pow10u(uint32_t exponent) {
+  uint128_t result = 1;
+
+  while(exponent-- != 0) {
+    result *= 10;
+  }
+  return result;
+}
+
+static uint128_t loadFakeCoeff(const real_t *value) {
+  uint128_t coeff = 0;
+
+  memcpy(&coeff, value->lsu, sizeof(coeff));
+  return coeff;
+}
+
+static void storeFakeCoeff(real_t *value, uint128_t coeff) {
+  memset(value->lsu, 0, sizeof(value->lsu));
+  memcpy(value->lsu, &coeff, sizeof(coeff));
+}
+
+static void setFakeRealWithCoeff(real_t *value, int128_t coeff, uint8_t bits, int32_t exponent) {
+  uint128_t magnitude;
+
+  memset(value, 0, sizeof(*value));
+  value->digits = 1;
+  value->exponent = exponent;
+  value->bits = bits & 0x70;
+
+  if(coeff < 0) {
+    magnitude = (uint128_t)(-coeff);
+    value->bits |= 0x80;
+  }
+  else {
+    magnitude = (uint128_t)coeff;
+  }
+
+  storeFakeCoeff(value, magnitude);
+}
+
+static int128_t signedFakeCoeff(const real_t *value) {
+  const int128_t magnitude = (int128_t)loadFakeCoeff(value);
+
+  if((value->bits & 0x80) != 0 && magnitude != 0) {
+    return -magnitude;
+  }
+  return magnitude;
+}
 
 static void setRegisterReal34(uint8_t *slot, int32_t signed_value, uint8_t bits) {
   uint32_t magnitude = (uint32_t)(signed_value < 0 ? -signed_value : signed_value);
@@ -103,17 +170,7 @@ static int64_t decodeShortInteger(uint64_t raw, int32_t *sign_value) {
 }
 
 static void setFakeRealWithExponent(real_t *value, int32_t signed_value, uint8_t bits, int32_t exponent) {
-  memset(value, 0, sizeof(*value));
-  value->digits = 1;
-  value->exponent = exponent;
-  value->bits = bits;
-  if(signed_value < 0) {
-    value->bits |= 0x80;
-    value->lsu[0] = (uint16_t)(-signed_value);
-  }
-  else {
-    value->lsu[0] = (uint16_t)signed_value;
-  }
+  setFakeRealWithCoeff(value, signed_value, bits, exponent);
 }
 
 static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
@@ -121,20 +178,26 @@ static void setFakeReal(real_t *value, int32_t signed_value, uint8_t bits) {
 }
 
 static int32_t fakeRealValue(const real_t *value) {
-  int64_t magnitude = value->lsu[0];
+  int128_t scaled_value = signedFakeCoeff(value);
 
   if(value->exponent > 0) {
     for(int32_t i = 0; i < value->exponent; ++i) {
-      magnitude *= 10;
+      scaled_value *= 10;
     }
   }
   else if(value->exponent < 0) {
     for(int32_t i = 0; i < -value->exponent; ++i) {
-      magnitude /= 10;
+      scaled_value /= 10;
     }
   }
 
-  return (value->bits & 0x80) ? -magnitude : magnitude;
+  if(scaled_value > INT32_MAX) {
+    return INT32_MAX;
+  }
+  if(scaled_value < INT32_MIN) {
+    return INT32_MIN;
+  }
+  return (int32_t)scaled_value;
 }
 
 void mathWrappersReset(void) {
@@ -155,6 +218,9 @@ void mathWrappersReset(void) {
   real_input.available = true;
   setFakeReal(&real_input.value, 7, 0);
 
+  real_y_input.available = true;
+  setFakeReal(&real_y_input.value, 2, 0);
+
   real_angle_input.available = true;
   setFakeReal(&real_angle_input.value, 5, 0);
   real_angle_input.angle_mode = amRadian;
@@ -166,12 +232,20 @@ void mathWrappersReset(void) {
   longint_input.available = true;
   longint_input.value = -4;
 
+  longint_y_input.available = true;
+  longint_y_input.value = 9;
+
   trig_outputs.enabled = false;
   spcres_flag = false;
   overflow_flag = false;
+  fake_uptime_ms = 0x12345678u;
+  fake_free_ram_memory = 0x11223344u;
+  fake_free_flash = 0x55667788u;
   shortIntegerMode = SIM_UNSIGN;
   currentAngularMode = amNone;
+  thereIsSomethingToUndo = false;
   lastErrorCode = 0;
+  pcg32_global = (pcg32_random_t)PCG32_INITIALIZER;
 
   ctxtReal39.digits = 39;
   ctxtReal51.digits = 51;
@@ -199,6 +273,11 @@ void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits) {
   setFakeReal(&real_input.value, value, bits);
   register_scalar_available = available;
   setRegisterScalar(value, bits);
+}
+
+void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits) {
+  real_y_input.available = available;
+  setFakeReal(&real_y_input.value, value, bits);
 }
 
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
@@ -233,6 +312,11 @@ void mathWrappersSetLongIntegerInput(bool_t available, int32_t value) {
   longint_input.value = value;
 }
 
+void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
+  longint_y_input.available = available;
+  longint_y_input.value = value;
+}
+
 void mathWrappersSetFlagOverflow(bool_t enabled) {
   overflow_flag = enabled;
 }
@@ -248,6 +332,30 @@ void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_v
   setFakeReal(&trig_outputs.tan_value, tan_value, 0);
 }
 
+void mathWrappersSetSeedInput(uint64_t seed, uint64_t seq) {
+  memset(&real_input.value, 0, sizeof(real_input.value));
+  real_input.available = true;
+  memcpy(real_input.value.lsu, &seed, sizeof(seed));
+  memcpy((unsigned char *)real_input.value.lsu + sizeof(seed), &seq, sizeof(seq));
+}
+
+void mathWrappersSetPcgState(uint64_t state, uint64_t inc) {
+  pcg32_global.state = state;
+  pcg32_global.inc = inc;
+}
+
+void mathWrappersSetUptimeMs(uint32_t value) {
+  fake_uptime_ms = value;
+}
+
+void mathWrappersSetFreeRamMemory(uint32_t value) {
+  fake_free_ram_memory = value;
+}
+
+void mathWrappersSetFreeFlash(uint32_t value) {
+  fake_free_flash = value;
+}
+
 void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_data_type = current_register_data_type;
   snapshot.final_register_tag = current_register_tag;
@@ -256,6 +364,9 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_overflow_flag = overflow_flag;
+  snapshot.final_pcg_state = pcg32_global.state;
+  snapshot.final_pcg_inc = pcg32_global.inc;
+  snapshot.final_there_is_something_to_undo = thereIsSomethingToUndo;
   *out = snapshot;
 }
 
@@ -350,6 +461,35 @@ void processIntRealComplexMonadicFunction(void (*realf)(void),
   }
 }
 
+void processIntRealComplexDyadicFunction(void (*realf)(void),
+                                        void (*complexf)(void),
+                                        void (*shortintf)(void),
+                                        void (*longintf)(void)) {
+  snapshot.process_int_real_complex_dyadic_calls++;
+  switch(current_register_data_type) {
+    case dtComplex34:
+      if(complexf != NULL) {
+        complexf();
+      }
+      break;
+    case dtShortInteger:
+      if(shortintf != NULL) {
+        shortintf();
+      }
+      break;
+    case dtLongInteger:
+      if(longintf != NULL) {
+        longintf();
+      }
+      break;
+    default:
+      if(realf != NULL) {
+        realf();
+      }
+      break;
+  }
+}
+
 void integerPartNoOp(void) {
   snapshot.integer_part_noop_calls++;
 }
@@ -366,12 +506,18 @@ void integerPartCplx(enum rounding mode) {
 
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
   snapshot.get_register_as_real_calls++;
-  (void)reg;
   if(current_register_data_type == dtTime) {
     if(!register_scalar_available) {
       return false;
     }
     setFakeReal(value, fakeRegisterScalarValue(), register_slot[15] & 0x70);
+    return true;
+  }
+  if(reg == REGISTER_Y) {
+    if(!real_y_input.available) {
+      return false;
+    }
+    *value = real_y_input.value;
     return true;
   }
   if(!real_input.available) {
@@ -412,18 +558,20 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
 }
 
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  const bool_t available = reg == REGISTER_Y ? longint_y_input.available : longint_input.available;
+  const int32_t input_value = reg == REGISTER_Y ? longint_y_input.value : longint_input.value;
+
   snapshot.get_register_as_longint_calls++;
-  snapshot.get_register_as_longint_result = longint_input.available;
-  snapshot.get_register_as_longint_value = longint_input.value;
-  (void)reg;
+  snapshot.get_register_as_longint_result = available;
+  snapshot.get_register_as_longint_value = input_value;
   mpz_init(val);
   if(fractional != NULL) {
     *fractional = false;
   }
-  if(!longint_input.available) {
+  if(!available) {
     return false;
   }
-  mpz_set_si(val, longint_input.value);
+  mpz_set_si(val, input_value);
   return true;
 }
 
@@ -447,9 +595,19 @@ void convertRealToResultRegister(const real_t *real, calcRegister_t reg, angular
   snapshot.convert_real_to_result_value = fakeRealValue(real);
   snapshot.convert_real_to_result_bits = real->bits;
   snapshot.convert_real_to_result_angle = angleMode;
+  snapshot.convert_real_to_result_raw = *real;
   (void)reg;
   current_register_data_type = dtReal34;
   current_register_tag = (uint32_t)angleMode;
+  setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
+}
+
+void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest) {
+  snapshot.convert_real_to_real34_result_calls++;
+  snapshot.convert_real_to_real34_result_dest = dest;
+  snapshot.convert_real_to_real34_result_raw = *real;
+  current_register_data_type = dtReal34;
+  current_register_tag = amNone;
   setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
 }
 
@@ -594,6 +752,51 @@ decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *rea
   snapshot.dec_number_exp_input_bits = rhs->bits;
   (void)realContext;
   setFakeReal(result, fakeRealValue(rhs) + 70, 0);
+  return result;
+}
+
+decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
+  const int32_t result_exponent = lhs->exponent < rhs->exponent ? lhs->exponent : rhs->exponent;
+  int128_t lhs_coeff = signedFakeCoeff(lhs);
+  int128_t rhs_coeff = signedFakeCoeff(rhs);
+
+  snapshot.dec_number_add_calls++;
+  (void)realContext;
+
+  lhs_coeff *= (int128_t)pow10u((uint32_t)(lhs->exponent - result_exponent));
+  rhs_coeff *= (int128_t)pow10u((uint32_t)(rhs->exponent - result_exponent));
+  setFakeRealWithCoeff(result, lhs_coeff + rhs_coeff, 0, result_exponent);
+  return result;
+}
+
+decNumber *decNumberSubtract(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
+  const int32_t result_exponent = lhs->exponent < rhs->exponent ? lhs->exponent : rhs->exponent;
+  int128_t lhs_coeff = signedFakeCoeff(lhs);
+  int128_t rhs_coeff = signedFakeCoeff(rhs);
+
+  snapshot.dec_number_subtract_calls++;
+  (void)realContext;
+
+  lhs_coeff *= (int128_t)pow10u((uint32_t)(lhs->exponent - result_exponent));
+  rhs_coeff *= (int128_t)pow10u((uint32_t)(rhs->exponent - result_exponent));
+  setFakeRealWithCoeff(result, lhs_coeff - rhs_coeff, 0, result_exponent);
+  return result;
+}
+
+decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber *rhs, const decNumber *term, decContext *realContext) {
+  real_t product;
+
+  snapshot.dec_number_fma_calls++;
+  (void)realContext;
+
+  setFakeRealWithCoeff(&product, signedFakeCoeff(lhs) * signedFakeCoeff(rhs), 0, lhs->exponent + rhs->exponent);
+  return decNumberAdd(result, &product, term, realContext);
+}
+
+decNumber *decNumberFromUInt32(decNumber *result, uint32_t source) {
+  snapshot.dec_number_from_uint32_calls++;
+  snapshot.dec_number_from_uint32_last_source = source;
+  setFakeRealWithCoeff(result, source, 0, 0);
   return result;
 }
 
@@ -825,6 +1028,50 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
   snapshot.display_calc_error_last_code = error_code;
   snapshot.display_calc_error_last_message_reg_line = err_message_register_line;
   snapshot.display_calc_error_last_register_line = err_register_line;
+}
+
+void saveForUndo(void) {
+  snapshot.save_for_undo_calls++;
+}
+
+void liftStack(void) {
+  snapshot.lift_stack_calls++;
+}
+
+void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
+  snapshot.reallocate_register_calls++;
+  snapshot.reallocate_register_reg = regist;
+  snapshot.reallocate_register_data_type = data_type;
+  snapshot.reallocate_register_data_size_without_data_len_blocks = data_size_without_data_len_blocks;
+  snapshot.reallocate_register_tag = tag;
+  current_register_data_type = data_type;
+  current_register_tag = tag;
+}
+
+void fnDrop(uint16_t unusedButMandatoryParameter) {
+  snapshot.fn_drop_calls++;
+  snapshot.fn_drop_last_param = unusedButMandatoryParameter;
+}
+
+void fnUndo(uint16_t unusedButMandatoryParameter) {
+  snapshot.fn_undo_calls++;
+  snapshot.fn_undo_last_param = unusedButMandatoryParameter;
+  thereIsSomethingToUndo = false;
+}
+
+uint32_t getUptimeMs(void) {
+  snapshot.get_uptime_ms_calls++;
+  return fake_uptime_ms;
+}
+
+uint32_t getFreeRamMemory(void) {
+  snapshot.get_free_ram_memory_calls++;
+  return fake_free_ram_memory;
+}
+
+uint32_t getFreeFlash(void) {
+  snapshot.get_free_flash_calls++;
+  return fake_free_flash;
 }
 
 uint32_t decQuadIsNaN(const decQuad *dq) {

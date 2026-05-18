@@ -48,6 +48,7 @@ flowchart TD
 | program-serialization rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/program_serialization/` | focused parity executable | `zig build program_serialization_parity --summary none` |
 | calc-state rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
 | mathematics command-wrapper rewrite parity | `../zig_src/mathematics/`, `../zig_bridge/mathematics/`, `../zig_build/tests/math_wrappers/` | focused parity executable covering the live command owners plus shared trig, exponential, integer-power, and Euler-helper exports and the `invert`, `sign`, `changeSign`, `tanh`, `square`, and `cube` cluster | `zig build math_command_wrappers_parity --summary none` |
+| mathematics random and PCG rewrite parity | `../zig_src/mathematics/`, `../zig_bridge/mathematics/`, `../zig_build/tests/math_wrappers/` | focused parity executable covering the live `pcg_basic.c` and `random.c` owner replacements under the shared math wrapper runtime boundary | `zig build math_random_parity --summary none` |
 | tone UI rewrite parity | `../zig_src/ui/`, `../zig_bridge/ui/`, `../zig_build/tests/tone/` | focused parity executable covering `fnTone` and `fnBeep` dispatch and refresh behavior | `zig build tone_parity --summary none` |
 | keyboard command-surface rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/keyboard_state/` | focused parity executable covering the broader public keyboard command entrypoints | `zig build keyboard_state_parity --summary none` |
 | keyboard stop-statusbar mask regression | `../zig_bridge/state/keyboard_state_overlay.c`, `../zig_bridge/state/keyboard_state_retained.c`, `../zig_bridge/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
@@ -78,7 +79,7 @@ flowchart TD
 - calc-state or simulator backup-entrypoint change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice adds or moves retained C bindings, keep them in `zig_src/state/calc_state_runtime.zig` rather than `zig_src/state/calc_state.zig`; if the slice must stay firmware-safe, rerun `zig build dist_dmcp_pkg3 --summary none`, and rerun `zig build dist_dmcp_pkg2 --summary none` as well when package-2 overlay trims are part of the change
 - rotate, justify, byte-order, or zip-state leaf change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build rotate_bits_parity --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
 - short-integer logical boolean operator change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_boolean_ops_suite --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
-- mathematics command-wrapper, shared helper-export, or shared trig, exponential, integer-power, or Euler-helper change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build math_command_wrappers_parity --summary none`, then `zig build sim --summary none`; rerun `zig build dmcp dmcp5 --summary none` when the slice adds or moves retained helper exports used by retained C, or when it must remain firmware-safe across both firmware targets
+- mathematics command-wrapper, shared helper-export, or shared trig, exponential, integer-power, Euler, random, or PCG change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build math_random_parity --summary none`, then `zig build math_command_wrappers_parity --summary none`, then `zig build sim --summary none`; rerun `zig build dmcp dmcp5 --summary none` when the slice adds or moves retained helper exports used by retained C, or when it must remain firmware-safe across both firmware targets
 - tone command-surface change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build tone_parity --summary none`, then `zig build sim --summary none`, then `zig build -Ddmcp-package=3 dmcp --summary none`
 - keyboard input, command-surface, or statusbar-flag change: `zig build keyboard_state_parity --summary none`; if the slice is limited to the stop-statusbar helper, rerun `zig build keyboard_statusbar_flags_regression --summary none`; then rerun `zig build simulator_smoke --summary none` and `zig build test --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
 - host simulator UI, GTK callback, or desktop platform-glue change:
@@ -123,12 +124,13 @@ match to the Linux CI lane, use this order after exporting the xlsxio helper:
 11. `zig build program_serialization_parity --summary none`
 12. `zig build calc_state_parity --summary none`
 13. `zig build math_command_wrappers_parity --summary none`
-14. `zig build tone_parity --summary none`
-15. `zig build keyboard_state_parity --summary none`
-16. `zig build both --summary none`
-17. `zig build simulator_smoke --summary none`
-18. `zig build testPgms --summary none`
-19. `xvfb-run --auto-servernum zig build test --summary none`
+14. `zig build math_random_parity --summary none`
+15. `zig build tone_parity --summary none`
+16. `zig build keyboard_state_parity --summary none`
+17. `zig build both --summary none`
+18. `zig build simulator_smoke --summary none`
+19. `zig build testPgms --summary none`
+20. `xvfb-run --auto-servernum zig build test --summary none`
 20. `zig build generated --summary none`
 21. `zig build both_asan --summary none`
 22. `xvfb-run --auto-servernum zig build test_asan --summary none`

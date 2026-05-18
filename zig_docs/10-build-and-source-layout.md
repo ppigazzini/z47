@@ -179,6 +179,7 @@ Public maintainer entrypoints currently exposed by `zig build --help` include:
 - `zig build program_serialization_parity`
 - `zig build calc_state_parity`
 - `zig build math_command_wrappers_parity`
+- `zig build math_random_parity`
 - `zig build keyboard_state_parity`
 - `zig build keyboard_statusbar_flags_regression`
 - `zig build test`
