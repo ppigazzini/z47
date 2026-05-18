@@ -67,6 +67,17 @@ bool_t z47_stack_runtime_try_fn_to_real_short_integer(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_time(void) {
+  if(getRegisterDataType(REGISTER_X) != dtTime) {
+    return false;
+  }
+
+  temporaryInformation = TI_FROM_HMS;
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  convertTimeRegisterToReal34Register(REGISTER_X, REGISTER_X);
+  return true;
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }
