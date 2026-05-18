@@ -213,6 +213,7 @@ uint8_t z47_stack_runtime_get_input_default(void);
 void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg);
 void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base);
 void z47_stack_runtime_request_clear_registers_confirmation(void);
+void z47_stack_runtime_report_register_command_error(uint8_t error_code);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
@@ -292,6 +293,9 @@ void stackParitySeedSavedStats(uint8_t seed);
 void stackParityCapture(stack_parity_snapshot_t *snapshot);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 void z47_registers_retained_clearRegister(calcRegister_t reg);
+uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
+
+void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n);
 
 #endif
 

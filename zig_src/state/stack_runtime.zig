@@ -70,6 +70,7 @@ extern fn z47_stack_runtime_get_input_default() u8;
 extern fn z47_stack_runtime_store_zero_long_integer(reg: calcRegister_t) void;
 extern fn z47_stack_runtime_store_zero_short_integer(reg: calcRegister_t, base: u32) void;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
+extern fn z47_stack_runtime_report_register_command_error(error_code: u8) void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
@@ -95,6 +96,7 @@ pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
 pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
+pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
@@ -185,6 +187,10 @@ pub fn requestClearRegistersConfirmation() void {
     z47_stack_runtime_request_clear_registers_confirmation();
 }
 
+pub fn reportRegisterCommandError(error_code: u8) void {
+    z47_stack_runtime_report_register_command_error(error_code);
+}
+
 pub fn restoreSavedSigmaLastXYAndAdd() void {
     z47_stack_runtime_restore_saved_sigma_last_xy_and_add();
 }
@@ -195,6 +201,10 @@ pub fn retainedFnClearRegisters(confirmation: u16) void {
 
 pub fn retainedClearRegister(reg: calcRegister_t) void {
     z47_registers_retained_clearRegister(reg);
+}
+
+pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {
+    return z47_registers_retained_get_reg_clr_range(s, n);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {

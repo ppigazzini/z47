@@ -108,6 +108,24 @@ pub export fn fnClearRegisters(confirmation: u16) void {
     }
 }
 
+pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
+
+    var s: u16 = 0;
+    var n: u16 = 0;
+
+    runtime.lastErrorCode = runtime.retainedGetRegClrRange(&s, &n);
+    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+        var reg = s;
+        while (reg < s + n) : (reg += 1) {
+            runtime.clearRegister(@intCast(reg));
+        }
+        return;
+    }
+
+    runtime.reportRegisterCommandError(runtime.lastErrorCode);
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 
