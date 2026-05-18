@@ -475,7 +475,14 @@ pub export fn isUniqueMenuName(name: [*c]const u8) bool {
         }
     }
 
-    return runtime.retainedIsUniqueMenuNameUserMenus(name);
+    index = 0;
+    while (index < runtime.userMenuCount()) : (index += 1) {
+        if (runtime.compareMenuNames(name, runtime.userMenuName(index)) == 0) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
