@@ -527,6 +527,15 @@ pub export fn fnDeleteVariable(regist: u16) void {
     runtime.reportCannotDeletePredefItem();
 }
 
+pub export fn fnDeleteAllVariables(confirmation: u16) void {
+    if (confirmation == stack_runtime.NOT_CONFIRMED and stack_runtime.programRunStop != stack_runtime.PGM_RUNNING) {
+        runtime.requestDeleteAllVariablesConfirmation();
+        return;
+    }
+
+    runtime.retainedFnDeleteAllVariables(confirmation);
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,

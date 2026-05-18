@@ -102,5 +102,6 @@ calcRegister_t z47_register_metadata_find_reserved_variable_name(const char *var
 void z47_register_metadata_report_invalid_name(void);
 void z47_register_metadata_report_undef_source_var(void);
 void z47_register_metadata_report_cannot_delete_predef_item(void);
+void z47_register_metadata_request_delete_all_variables_confirmation(void);
 
 #endif

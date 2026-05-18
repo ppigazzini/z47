@@ -219,3 +219,9 @@ void z47_register_metadata_report_undef_source_var(void) {
 void z47_register_metadata_report_cannot_delete_predef_item(void) {
   displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
+
+#ifndef Z47_REGISTER_METADATA_FAKE_C47_H
+void z47_register_metadata_request_delete_all_variables_confirmation(void) {
+  setConfirmationMode(fnDeleteAllVariables);
+}
+#endif
