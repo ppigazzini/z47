@@ -600,16 +600,6 @@ int32_t compareString(const char *left, const char *right, int32_t comparisonTyp
   return strcmp(left, right);
 }
 
-bool_t z47_registers_retained_isUniqueMenuName_user_menus(const char *name) {
-  for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-    if(compareString(name, userMenus[i].menuName, FAKE_CMP_NAME) == 0) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
   uint32_t result_data_type = getRegisterDataType(res);
 
