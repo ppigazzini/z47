@@ -30,6 +30,22 @@ bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_real34(void) {
+  if(getRegisterDataType(REGISTER_X) != dtReal34) {
+    return false;
+  }
+
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  if(getRegisterAngularMode(REGISTER_X) != amNone) {
+    if(getRegisterAngularMode(REGISTER_X) == amDMS) {
+      temporaryInformation = TI_FROM_DMS;
+    }
+    setRegisterAngularMode(REGISTER_X, amNone);
+  }
+
+  return true;
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }

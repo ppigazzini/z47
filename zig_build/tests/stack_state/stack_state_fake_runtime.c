@@ -477,6 +477,17 @@ bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_real34(void) {
+  if(getRegisterDataType(REGISTER_X) != dtReal34) {
+    return false;
+  }
+
+  confirmation_request = 6;
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  setRegisterDataType(REGISTER_X, dtReal34, amNone);
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
