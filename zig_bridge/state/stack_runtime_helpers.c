@@ -14,6 +14,22 @@ void z47_stack_runtime_real34_set_zero(void *dest) {
   real34SetZero((real34_t *)dest);
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void) {
+  real_t real_part;
+
+  if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+    return false;
+  }
+
+  if(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
+    return false;
+  }
+
+  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &real_part);
+  convertRealToResultRegister(&real_part, REGISTER_X, amNone);
+  return true;
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }

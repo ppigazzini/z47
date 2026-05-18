@@ -203,6 +203,7 @@ extern real_t SAVED_SIGMA_LASTY;
 
 uint16_t z47_stack_runtime_get_stack_top(void);
 uint16_t z47_stack_runtime_real34_size_in_blocks(void);
+bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void);
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg);
 void z47_stack_runtime_set_global_register_descriptor(calcRegister_t reg, uint32_t descriptor);
 bool_t z47_stack_runtime_get_swap_target_descriptor(uint16_t reg, uint32_t *descriptor);
@@ -298,6 +299,7 @@ void stackParityCapture(stack_parity_snapshot_t *snapshot);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 void z47_registers_retained_clearRegister(calcRegister_t reg);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
+void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end);
 uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
 uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);

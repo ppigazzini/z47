@@ -241,6 +241,14 @@ pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     }
 }
 
+pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
+    if (runtime.tryFnToRealComplexZero()) {
+        return;
+    }
+
+    runtime.retainedFnToReal(unused_but_mandatory_parameter);
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 
