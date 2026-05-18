@@ -9,9 +9,6 @@ void z47_registers_retained_allocateNamedVariable(const char *variableName, data
 void z47_registers_retained_fnDeleteVariable(uint16_t regist);
 void z47_registers_retained_fnDeleteAllVariables(uint16_t confirmation);
 void z47_registers_retained_fnClearAllVariables(uint16_t confirmation);
-void z47_registers_retained_setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen);
-uint16_t z47_registers_retained_getRegisterMaxDataLengthInBlocks(calcRegister_t regist);
-uint16_t z47_registers_retained_getRegisterFullSizeInBlocks(calcRegister_t regist);
 void z47_registers_retained_clearRegister(calcRegister_t regist);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 void z47_registers_retained_fnGetLocR(uint16_t unusedButMandatoryParameter);
@@ -52,18 +49,6 @@ void fnDeleteAllVariables(uint16_t confirmation) {
 
 void fnClearAllVariables(uint16_t confirmation) {
   z47_registers_retained_fnClearAllVariables(confirmation);
-}
-
-void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen) {
-  z47_registers_retained_setRegisterMaxDataLengthInBlocks(regist, maxDataLen);
-}
-
-uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
-  return z47_registers_retained_getRegisterMaxDataLengthInBlocks(regist);
-}
-
-uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
-  return z47_registers_retained_getRegisterFullSizeInBlocks(regist);
 }
 
 void clearRegister(calcRegister_t regist) {

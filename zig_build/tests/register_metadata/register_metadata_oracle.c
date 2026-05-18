@@ -285,6 +285,130 @@ void oracle_setRegisterTag(calcRegister_t regist, const uint32_t tag) {
   displayBugScreen(errorMessage);
 }
 
+void oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen) {
+  if(regist <= LAST_GLOBAL_REGISTER) {
+    ((strLgIntHeader_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData))->dataMaxLengthInBlocks = maxDataLen;
+    return;
+  }
+
+  if(regist <= LAST_NAMED_VARIABLE) {
+    if(numberOfNamedVariables > 0) {
+      if(regist - FIRST_NAMED_VARIABLE < numberOfNamedVariables) {
+        ((strLgIntHeader_t *)oracle_getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
+      }
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "setRegisterMaxDataLengthInBlocks");
+      displayBugScreen(errorMessage);
+    }
+    return;
+  }
+
+  if(regist <= LAST_RESERVED_VARIABLE) {
+    regist -= FIRST_RESERVED_VARIABLE;
+    ((strLgIntHeader_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData))->dataMaxLengthInBlocks = maxDataLen;
+    return;
+  }
+
+  if(regist <= LAST_LOCAL_REGISTER) {
+    if(currentLocalRegisters != NULL) {
+      if(regist - FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
+        ((strLgIntHeader_t *)oracle_getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
+      }
+    }
+    return;
+  }
+
+  sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterMaxDataLengthInBlocks", regist, LAST_RESERVED_VARIABLE + 1);
+  displayBugScreen(errorMessage);
+}
+
+uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
+  void *db = NULL;
+  calcRegister_t dataTypeRegister = regist;
+
+  if(regist <= LAST_GLOBAL_REGISTER) {
+    db = TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData);
+  }
+
+  else if(regist <= LAST_NAMED_VARIABLE) {
+    if(numberOfNamedVariables > 0) {
+      regist -= FIRST_NAMED_VARIABLE;
+      dataTypeRegister = regist;
+      if(regist < numberOfNamedVariables) {
+        db = TO_PCMEMPTR(allNamedVariables[regist].header.pointerToRegisterData);
+      }
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgNoNamedVariables], "getRegisterMaxDataLengthInBlocks");
+      displayBugScreen(errorMessage);
+    }
+  }
+
+  else if(regist <= LAST_RESERVED_VARIABLE) {
+    regist -= FIRST_RESERVED_VARIABLE;
+    dataTypeRegister = regist;
+    db = TO_PCMEMPTR(allReservedVariables[regist].header.pointerToRegisterData);
+  }
+
+  else if(regist <= LAST_LOCAL_REGISTER) {
+    if(currentLocalRegisters != NULL) {
+      if(regist - FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
+        db = TO_PCMEMPTR(POINTER_TO_LOCAL_REGISTER(regist - FIRST_LOCAL_REGISTER)->pointerToRegisterData);
+      }
+    }
+  }
+
+  else {
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "getRegisterMaxDataLengthInBlocks", regist, LAST_RESERVED_VARIABLE + 1);
+    displayBugScreen(errorMessage);
+  }
+
+  if(db != NULL) {
+    uint32_t data_type = oracle_getRegisterDataType(dataTypeRegister);
+
+    if(data_type == dtReal34Matrix) {
+      return (uint16_t)(((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * REAL34_SIZE_IN_BLOCKS);
+    }
+    if(data_type == dtComplex34Matrix) {
+      return (uint16_t)(((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * COMPLEX34_SIZE_IN_BLOCKS);
+    }
+    return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks;
+  }
+
+  return 0;
+}
+
+uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t regist) {
+  void *db = oracle_getRegisterDataPointer(regist);
+
+  switch(oracle_getRegisterDataType(regist)) {
+    case dtLongInteger:
+      return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
+    case dtTime:
+      return REAL34_SIZE_IN_BLOCKS;
+    case dtDate:
+      return REAL34_SIZE_IN_BLOCKS;
+    case dtString:
+      return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
+    case dtReal34Matrix:
+      return TO_BLOCKS((((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
+    case dtComplex34Matrix:
+      return TO_BLOCKS((((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
+    case dtShortInteger:
+      return SHORT_INTEGER_SIZE_IN_BLOCKS;
+    case dtReal34:
+      return REAL34_SIZE_IN_BLOCKS;
+    case dtComplex34:
+      return COMPLEX34_SIZE_IN_BLOCKS;
+    case dtConfig:
+      return CONFIG_SIZE_IN_BLOCKS;
+    default:
+      displayBugScreen("getRegisterFullSizeInBlocks");
+      return 0;
+  }
+}
+
 uint32_t z47_registers_retained_getRegisterDataType(calcRegister_t reg) {
   return oracle_getRegisterDataType(reg);
 }
@@ -295,6 +419,18 @@ void *z47_registers_retained_getRegisterDataPointer(calcRegister_t reg) {
 
 uint32_t z47_registers_retained_getRegisterTag(calcRegister_t reg) {
   return oracle_getRegisterTag(reg);
+}
+
+void z47_registers_retained_setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len) {
+  oracle_setRegisterMaxDataLengthInBlocks(reg, max_data_len);
+}
+
+uint16_t z47_registers_retained_getRegisterMaxDataLengthInBlocks(calcRegister_t reg) {
+  return oracle_getRegisterMaxDataLengthInBlocks(reg);
+}
+
+uint16_t z47_registers_retained_getRegisterFullSizeInBlocks(calcRegister_t reg) {
+  return oracle_getRegisterFullSizeInBlocks(reg);
 }
 
 void z47_registers_retained_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {

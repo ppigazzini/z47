@@ -98,3 +98,37 @@ void *z47_register_metadata_to_pc_mem_ptr(uint16_t mem_ptr) {
 uint16_t z47_register_metadata_to_c47_mem_ptr(const void *mem_ptr) {
   return TO_C47MEMPTR(mem_ptr);
 }
+
+uint16_t z47_register_metadata_get_data_max_length_in_blocks(const void *data_ptr) {
+  return ((const strLgIntHeader_t *)data_ptr)->dataMaxLengthInBlocks;
+}
+
+void z47_register_metadata_set_data_max_length_in_blocks(void *data_ptr, uint16_t max_data_len) {
+  ((strLgIntHeader_t *)data_ptr)->dataMaxLengthInBlocks = max_data_len;
+}
+
+uint16_t z47_register_metadata_get_matrix_payload_size_in_blocks(const void *data_ptr, uint16_t element_size_in_blocks) {
+  const matrixHeader_t *header = (const matrixHeader_t *)data_ptr;
+
+  return (uint16_t)(header->matrixRows * header->matrixColumns * element_size_in_blocks);
+}
+
+uint16_t z47_register_metadata_str_lg_int_header_size_in_blocks(void) {
+  return TO_BLOCKS(sizeof(strLgIntHeader_t));
+}
+
+uint16_t z47_register_metadata_matrix_header_size_in_blocks(void) {
+  return TO_BLOCKS(sizeof(matrixHeader_t));
+}
+
+uint16_t z47_register_metadata_complex34_size_in_blocks(void) {
+  return COMPLEX34_SIZE_IN_BLOCKS;
+}
+
+uint16_t z47_register_metadata_short_integer_size_in_blocks(void) {
+  return SHORT_INTEGER_SIZE_IN_BLOCKS;
+}
+
+uint16_t z47_register_metadata_config_size_in_blocks(void) {
+  return CONFIG_SIZE_IN_BLOCKS;
+}

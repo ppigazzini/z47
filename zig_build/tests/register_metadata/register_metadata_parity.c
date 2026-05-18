@@ -8,6 +8,9 @@
 uint32_t getRegisterDataType(calcRegister_t reg);
 void *getRegisterDataPointer(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
+void setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len);
+uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
+uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -15,15 +18,36 @@ void setRegisterTag(calcRegister_t reg, uint32_t tag);
 uint32_t oracle_getRegisterDataType(calcRegister_t reg);
 void *oracle_getRegisterDataPointer(calcRegister_t reg);
 uint32_t oracle_getRegisterTag(calcRegister_t reg);
+void oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len);
+uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
+uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t reg);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
 
 typedef uint32_t (*get_u32_fn)(calcRegister_t);
+typedef uint16_t (*get_u16_fn)(calcRegister_t);
 typedef void *(*get_ptr_fn)(calcRegister_t);
+typedef void (*set_max_len_fn)(calcRegister_t, uint16_t);
 typedef void (*set_type_fn)(calcRegister_t, uint16_t, uint32_t);
 typedef void (*set_ptr_fn)(calcRegister_t, const void *);
 typedef void (*set_tag_fn)(calcRegister_t, uint32_t);
+
+enum {
+  LOCAL_PAYLOAD_BYTES = 128,
+};
+
+static void seedRegisterBuffer(calcRegister_t reg, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
+  stackParitySeedRegister(reg, data_type, tag, payload, size_in_blocks);
+}
+
+static void seedNamedBuffer(int index, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
+  stackParitySeedNamedVariable(index, data_type, tag, payload, size_in_blocks);
+}
+
+static void seedLocalBuffer(int index, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
+  stackParitySeedLocalRegister(index, data_type, tag, payload, size_in_blocks);
+}
 
 static void fillPayload(uint8_t *buffer, uint16_t size_in_blocks, uint8_t seed) {
   uint32_t i;
@@ -57,11 +81,72 @@ static void seedLocalPayload(int index, uint32_t data_type, uint32_t tag, uint16
   stackParitySeedLocalRegister(index, data_type, tag, payload, size_in_blocks);
 }
 
+static void buildStringLikePayload(uint8_t *payload, uint16_t size_in_blocks, uint16_t data_max_length_in_blocks, uint8_t seed) {
+  strLgIntHeader_t *header = (strLgIntHeader_t *)payload;
+
+  memset(payload, 0, LOCAL_PAYLOAD_BYTES);
+  fillPayload(payload, size_in_blocks, seed);
+  header->dataMaxLengthInBlocks = data_max_length_in_blocks;
+  header->unused = 0;
+}
+
+static void seedRegisterStringLike(calcRegister_t reg, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
+  uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
+  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+
+  buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
+  seedRegisterBuffer(reg, data_type, tag, payload, size_in_blocks);
+}
+
+static void seedNamedStringLike(int index, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
+  uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
+  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+
+  buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
+  seedNamedBuffer(index, data_type, tag, payload, size_in_blocks);
+}
+
+static void seedLocalStringLike(int index, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
+  uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
+  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+
+  buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
+  seedLocalBuffer(index, data_type, tag, payload, size_in_blocks);
+}
+
+static void buildMatrixPayload(uint8_t *payload, uint16_t size_in_blocks, uint16_t rows, uint16_t columns, uint32_t tag, uint8_t seed) {
+  matrixHeader_t *header = (matrixHeader_t *)payload;
+
+  memset(payload, 0, LOCAL_PAYLOAD_BYTES);
+  fillPayload(payload, size_in_blocks, seed);
+  header->matrixRows = rows;
+  header->matrixColumns = columns;
+  header->mtag = tag;
+  header->notUsed = 0;
+}
+
+static void seedRegisterMatrix(calcRegister_t reg, uint32_t data_type, uint32_t tag, uint16_t rows, uint16_t columns, uint16_t element_size_in_blocks, uint8_t seed) {
+  uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(matrixHeader_t)) + rows * columns * element_size_in_blocks);
+  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+
+  buildMatrixPayload(payload, size_in_blocks, rows, columns, tag, seed);
+  seedRegisterBuffer(reg, data_type, tag, payload, size_in_blocks);
+}
+
+static void seedReservedStringLike(uint16_t size_in_blocks, uint16_t data_max_length_in_blocks, uint8_t seed) {
+  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  void *ptr;
+
+  buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
+  ptr = allocC47Blocks(size_in_blocks);
+  if(ptr != NULL) {
+    memcpy(ptr, payload, TO_BYTES(size_in_blocks));
+  }
+}
+
 static void seedReservedBacking(void) {
   uint8_t acc_payload[REAL34_SIZE_IN_BYTES];
-  uint8_t gramod_payload[TO_BYTES(1)];
   void *acc_ptr;
-  void *gramod_ptr;
 
   fillPayload(acc_payload, REAL34_SIZE_IN_BLOCKS, 0xa0);
   acc_ptr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
@@ -69,11 +154,7 @@ static void seedReservedBacking(void) {
     memcpy(acc_ptr, acc_payload, sizeof(acc_payload));
   }
 
-  fillPayload(gramod_payload, 1, 0xb0);
-  gramod_ptr = allocC47Blocks(1);
-  if(gramod_ptr != NULL) {
-    memcpy(gramod_ptr, gramod_payload, sizeof(gramod_payload));
-  }
+  seedReservedStringLike(4, 3, 0xb0);
 }
 
 static void setupGlobalCase(void) {
@@ -101,6 +182,42 @@ static void setupReservedWriteCase(void) {
   seedNamedPayload(40, dtLongInteger, LI_POSITIVE, 1, 0x50);
 }
 
+static void setupGlobalLongIntegerCase(void) {
+  seedRegisterStringLike(REGISTER_X, dtLongInteger, LI_POSITIVE, 3, 0x60);
+}
+
+static void setupGlobalRealMatrixCase(void) {
+  seedRegisterMatrix(REGISTER_X, dtReal34Matrix, amNone, 2, 3, REAL34_SIZE_IN_BLOCKS, 0x70);
+}
+
+static void setupGlobalComplexMatrixCase(void) {
+  seedRegisterMatrix(REGISTER_X, dtComplex34Matrix, amNone, 2, 2, COMPLEX34_SIZE_IN_BLOCKS, 0x80);
+}
+
+static void setupNamedStringCase(void) {
+  seedNamedStringLike(2, dtString, amNone, 4, 0x90);
+}
+
+static void setupLocalLongIntegerCase(void) {
+  seedLocalStringLike(1, dtLongInteger, LI_POSITIVE, 5, 0xa0);
+}
+
+static void setupReservedLongIntegerCase(void) {
+  seedReservedBacking();
+}
+
+static void setupGlobalReal34Case(void) {
+  seedRegisterPayload(REGISTER_X, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0xb0);
+}
+
+static void setupGlobalComplex34Case(void) {
+  seedRegisterPayload(REGISTER_X, dtComplex34, amNone, COMPLEX34_SIZE_IN_BLOCKS, 0xc0);
+}
+
+static void setupGlobalShortIntegerCase(void) {
+  seedRegisterPayload(REGISTER_X, dtShortInteger, 0, SHORT_INTEGER_SIZE_IN_BLOCKS, 0xd0);
+}
+
 static void reportSnapshotMismatch(const char *name, calcRegister_t reg, int *failures) {
   fprintf(stderr, "%s(%d) state mismatch\n", name, reg);
   (*failures)++;
@@ -125,6 +242,34 @@ static int runGetU32Case(const char *name, get_u32_fn oracle_fn, get_u32_fn zig_
 
   if(expected != actual) {
     fprintf(stderr, "%s(%d) result mismatch: expected %#x actual %#x\n", name, reg, expected, actual);
+    failures++;
+  }
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    reportSnapshotMismatch(name, reg, &failures);
+  }
+
+  return failures;
+}
+
+static int runGetU16Case(const char *name, get_u16_fn oracle_fn, get_u16_fn zig_fn, void (*setup)(void), calcRegister_t reg) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  uint16_t expected;
+  uint16_t actual;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  expected = oracle_fn(reg);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  actual = zig_fn(reg);
+  stackParityCapture(&actual_snapshot);
+
+  if(expected != actual) {
+    fprintf(stderr, "%s(%d) result mismatch: expected %u actual %u\n", name, reg, expected, actual);
     failures++;
   }
   if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
@@ -242,6 +387,28 @@ static int runSetTagCase(const char *name, set_tag_fn oracle_fn, set_tag_fn zig_
   return failures;
 }
 
+static int runSetMaxLengthCase(const char *name, set_max_len_fn oracle_fn, set_max_len_fn zig_fn, void (*setup)(void), calcRegister_t reg, uint16_t max_data_len) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(reg, max_data_len);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  zig_fn(reg, max_data_len);
+  stackParityCapture(&actual_snapshot);
+
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    reportSnapshotMismatch(name, reg, &failures);
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
@@ -259,10 +426,31 @@ int main(void) {
   failures += runGetU32Case("getRegisterTag", oracle_getRegisterTag, getRegisterTag, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 40);
   failures += runGetU32Case("getRegisterTag", oracle_getRegisterTag, getRegisterTag, setupLocalCase, FIRST_LOCAL_REGISTER + 1);
 
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupGlobalLongIntegerCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupGlobalRealMatrixCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupGlobalComplexMatrixCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupReservedLongIntegerCase, FIRST_RESERVED_VARIABLE + 40);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1);
+
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalLongIntegerCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalReal34Case, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalComplex34Case, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalShortIntegerCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalRealMatrixCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalComplexMatrixCase, REGISTER_X);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupReservedLongIntegerCase, FIRST_RESERVED_VARIABLE + 40);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1);
+
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupGlobalCase, REGISTER_X, dtReal34, amNone);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNamedCase, FIRST_NAMED_VARIABLE + 2, dtLongInteger, LI_POSITIVE);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupReservedWriteCase, FIRST_RESERVED_VARIABLE + 40, dtReal34, amNone);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupLocalCase, FIRST_LOCAL_REGISTER + 1, dtReal34, amNone);
+
+  failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupGlobalLongIntegerCase, REGISTER_X, 6);
+  failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2, 7);
+  failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1, 9);
 
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupGlobalCase, REGISTER_X, 1, 0x60);
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupNamedCase, FIRST_NAMED_VARIABLE + 2, 1, 0x70);
