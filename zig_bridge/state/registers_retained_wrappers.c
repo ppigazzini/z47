@@ -11,7 +11,6 @@ void z47_registers_retained_fnDeleteAllVariables(uint16_t confirmation);
 void z47_registers_retained_fnClearAllVariables(uint16_t confirmation);
 void z47_registers_retained_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
-void z47_registers_retained_fnRegClr(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegSort(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegSwap(uint16_t unusedButMandatoryParameter);
@@ -51,10 +50,6 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
 
 void fnToReal(uint16_t unusedButMandatoryParameter) {
   z47_registers_retained_fnToReal(unusedButMandatoryParameter);
-}
-
-void fnRegClr(uint16_t unusedButMandatoryParameter) {
-  z47_registers_retained_fnRegClr(unusedButMandatoryParameter);
 }
 
 void fnRegSort(uint16_t unusedButMandatoryParameter) {

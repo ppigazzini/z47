@@ -140,3 +140,20 @@ void z47_registers_retained_fnClearRegisters(uint16_t confirmation) {
 void z47_registers_retained_clearRegister(calcRegister_t reg) {
 	z47_stack_parity_raw_clearRegister(reg);
 }
+
+uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
+
+void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
+	uint16_t s, n;
+
+	(void)unusedButMandatoryParameter;
+
+	if((lastErrorCode = z47_registers_retained_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
+		for(uint16_t i = s; i < (uint16_t)(s + n); ++i) {
+			oracle_clearRegister((calcRegister_t)i);
+		}
+	}
+	else {
+		z47_stack_runtime_report_register_command_error(lastErrorCode);
+	}
+}

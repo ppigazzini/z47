@@ -51,6 +51,9 @@ real_t SAVED_SIGMA_LASTY = {{0}};
 static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
 static bool_t fake_memory_block_available = true;
 static uint8_t confirmation_request = 0;
+static uint8_t fake_regclr_error_code = ERROR_NONE;
+static uint16_t fake_regclr_start = 0;
+static uint16_t fake_regclr_count = 0;
 
 #ifdef Z47_STACK_STATE_RUNTIME
 #define clearRegister z47_stack_parity_raw_clearRegister
@@ -155,6 +158,9 @@ void stackParityReset(void) {
   numberOfNamedVariables = 0;
   currentNumberOfLocalRegisters = 0;
   confirmation_request = 0;
+  fake_regclr_error_code = ERROR_NONE;
+  fake_regclr_start = 0;
+  fake_regclr_count = 0;
   currentInputVariable = INVALID_VARIABLE;
   displayStack = 0;
   thereIsSomethingToUndo = false;
@@ -556,6 +562,22 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
 
 void z47_stack_runtime_request_clear_registers_confirmation(void) {
   confirmation_request = 1;
+}
+
+void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
+  displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
+}
+
+uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n) {
+  *s = fake_regclr_start;
+  *n = fake_regclr_count;
+  return fake_regclr_error_code;
+}
+
+void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n) {
+  fake_regclr_error_code = error_code;
+  fake_regclr_start = s;
+  fake_regclr_count = n;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {

@@ -31,3 +31,7 @@
 #define isFunctionAllowingNewVariable z47_registers_retained_isFunctionAllowingNewVariable
 
 #include "../../src/c47/registers.c"
+
+uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n) {
+	return getRegParam(NULL, s, n, NULL);
+}

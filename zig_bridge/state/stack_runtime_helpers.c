@@ -133,6 +133,10 @@ void z47_stack_runtime_request_clear_registers_confirmation(void) {
   setConfirmationMode(fnClearRegisters);
 }
 
+void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
+  displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
