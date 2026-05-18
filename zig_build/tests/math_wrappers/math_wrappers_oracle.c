@@ -18,6 +18,18 @@
 #include "../../../src/c47/mathematics/floor.c"
 #undef fnFloor
 
+#define lnComplex oracle_lnComplex
+#define fnLn oracle_fnLn
+#include "../../../src/c47/mathematics/ln.c"
+#undef fnLn
+#undef lnComplex
+
+#define sqrt1Px2Complex oracle_sqrt1Px2Complex
+#define fnSqrt1Px2 oracle_fnSqrt1Px2
+#include "../../../src/c47/mathematics/sqrt1Px2.c"
+#undef fnSqrt1Px2
+#undef sqrt1Px2Complex
+
 #define ArcsinComplex oracle_ArcsinComplex
 uint8_t oracle_ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
 #define fnArcsin oracle_fnArcsin
@@ -138,6 +150,16 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #define fnErfc oracle_fnErfc
 #include "../../../src/c47/mathematics/erfc.c"
 #undef fnErfc
+
+#define logxyLonI oracle_logxyLonI
+#define logxyReal oracle_logxyReal
+#define logxyCplx oracle_logxyCplx
+#define fnLog10 oracle_fnLog10
+#include "../../../src/c47/mathematics/log10.c"
+#undef fnLog10
+#undef logxyCplx
+#undef logxyReal
+#undef logxyLonI
 
 #define realPower2 oracle_realPower2
 #define intPowReal oracle_intPowReal

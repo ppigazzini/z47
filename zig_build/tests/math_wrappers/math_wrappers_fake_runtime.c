@@ -63,6 +63,7 @@ static uint32_t fake_uptime_ms = 0;
 static uint32_t fake_free_ram_memory = 0;
 static uint32_t fake_free_flash = 0;
 
+realContext_t ctxtReal34;
 realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
@@ -249,6 +250,7 @@ void mathWrappersReset(void) {
   lastErrorCode = 0;
   pcg32_global = (pcg32_random_t)PCG32_INITIALIZER;
 
+  ctxtReal34.digits = 34;
   ctxtReal39.digits = 39;
   ctxtReal51.digits = 51;
   ctxtReal75.digits = 75;
@@ -608,6 +610,18 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
   current_register_tag = longint_input.value < 0 ? LI_NEGATIVE : longint_input.value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
+void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode) {
+  const int32_t value = fakeRealValue(real);
+
+  (void)roundingMode;
+  snapshot.convert_long_integer_to_register_calls++;
+  snapshot.convert_long_integer_to_register_value = value;
+  snapshot.convert_long_integer_to_register_dest = dest;
+  longint_input.value = value;
+  current_register_data_type = dtLongInteger;
+  current_register_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
 void convertRealToResultRegister(const real_t *real, calcRegister_t reg, angularMode_t angleMode) {
   snapshot.convert_real_to_result_calls++;
   snapshot.convert_real_to_result_value = fakeRealValue(real);
@@ -769,57 +783,30 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 81, 0);
 }
 
-void logxyReal(const real_t *denom) {
-  real_t value;
-
-  if(!getRegisterAsReal(REGISTER_X, &value)) {
-    return;
-  }
-
-  setFakeReal(&value, fakeRealValue(&value) + fakeRealValue(denom), 0);
-  convertRealToResultRegister(&value, REGISTER_X, amNone);
-}
-
-void logxyCplx(const real_t *denom) {
-  real_t real;
-  real_t imag;
-
-  if(!getRegisterAsComplex(REGISTER_X, &real, &imag)) {
-    return;
-  }
-
-  setFakeReal(&real, fakeRealValue(&real) + fakeRealValue(denom), 0);
-  setFakeReal(&imag, fakeRealValue(&imag) - fakeRealValue(denom), 0);
-  convertComplexToResultRegister(&real, &imag, REGISTER_X);
-}
-
-void logxyLonI(const real_t *denom) {
-  real_t value;
-  longInteger_t result;
-
-  if(!getRegisterAsReal(REGISTER_X, &value)) {
-    return;
-  }
-
-  mpz_init(result);
-  mpz_set_si(result, fakeRealValue(&value) + fakeRealValue(denom));
-  convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
-  mpz_clear(result);
-}
-
-void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext) {
-  realRectangularToPolar(real, imag, lnReal, lnImag, realContext);
-  WP34S_Ln(lnReal, lnReal, realContext);
-}
-
-void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  const int32_t real_value = fakeRealValue(real);
+  const int32_t imag_value = fakeRealValue(imag);
   real_t magnitude;
   real_t theta;
 
+  if(imag_value == 0) {
+    if(real_value < 0) {
+      setFakeReal(resReal, 0, 0);
+      setFakeReal(resImag, -real_value + 71, 0);
+    }
+    else {
+      setFakeReal(resReal, real_value + 70, 0);
+      setFakeReal(resImag, 0, 0);
+    }
+    return;
+  }
+
   realRectangularToPolar(real, imag, &magnitude, &theta, realContext);
-  decNumberSquareRoot(&magnitude, &magnitude, realContext);
-  setFakeReal(resReal, fakeRealValue(&magnitude) + 72, 0);
-  setFakeReal(resImag, fakeRealValue(&theta) + 73, 0);
+  realSquareRoot(&magnitude, &magnitude, realContext);
+  realMultiply(&theta, const_1on2, &theta, realContext);
+  realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, realContext);
+  setFakeReal(resReal, real_value + imag_value + 72, 0);
+  setFakeReal(resImag, real_value - imag_value + 73, 0);
 }
 
 void realPolarToRectangular(const real_t *magnitude,
@@ -952,6 +939,10 @@ bool_t realCompareLessThan(const real_t *number1, const real_t *number2) {
   return fakeRealValue(number1) < fakeRealValue(number2);
 }
 
+bool_t realIsAnInteger(const real_t *x) {
+  return !realIsSpecial(x);
+}
+
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
   const int32_t lhs_value = fakeRealValue(number1);
   const int32_t rhs_value = fakeRealValue(number2);
@@ -1056,6 +1047,18 @@ uint64_t WP34S_int10pow(uint64_t x) {
   while(exponent-- != 0) {
     result *= 10;
   }
+  return result;
+}
+
+uint64_t WP34S_intLog10(uint64_t x) {
+  uint64_t value = WP34S_extract_value(x, NULL);
+  uint64_t result = 0;
+
+  while(value >= 10) {
+    value /= 10;
+    result++;
+  }
+
   return result;
 }
 

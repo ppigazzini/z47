@@ -483,6 +483,314 @@ fn log2Cplx() callconv(.c) void {
     runtime.logxyCplx(runtime.z47_math_wrappers_const_ln2());
 }
 
+pub export fn lnComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    ln_real: *runtime.real_t,
+    ln_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {
+        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(ln_imag);
+        return;
+    }
+
+    runtime.realRectangularToPolar(real, imag, ln_real, ln_imag, real_context);
+    runtime.WP34S_Ln(ln_real, ln_real, real_context);
+}
+
+fn lnReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        copyReal(&x, runtime.z47_math_wrappers_const_minus_infinity());
+    } else if (runtime.realIsInfinite(&x)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        if (!runtime.realIsNegative(&x)) {
+            copyReal(&x, runtime.z47_math_wrappers_const_plus_infinity());
+        } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+            runtime.convertComplexToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), runtime.z47_math_wrappers_const_pi(), runtime.REGISTER_X);
+            return;
+        } else {
+            runtime.realSetNaN(&x);
+        }
+    } else if (!runtime.realIsNegative(&x)) {
+        runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+    } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+        runtime.realSetPositiveSign(&x);
+        runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+        copyReal(&imag_value, runtime.z47_math_wrappers_const_pi());
+        runtime.convertComplexToResultRegister(&x, &imag_value, runtime.REGISTER_X);
+        return;
+    } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetNaN(&x);
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn lnCplx() callconv(.c) void {
+    var x_real: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&x_imag);
+    } else {
+        lnComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    }
+
+    runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
+}
+
+pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &a)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&a)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
+    } else if (runtime.realIsInfinite(&a)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+            if (!runtime.realIsNegative(&a)) {
+                copyReal(&a, runtime.z47_math_wrappers_const_plus_infinity());
+            } else {
+                runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &a, &runtime.ctxtReal39);
+                runtime.convertComplexToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), &a, runtime.REGISTER_X);
+                return;
+            }
+        } else {
+            runtime.realSetNaN(&a);
+        }
+    } else if (!runtime.realIsNegative(&a)) {
+        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
+    } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+        runtime.realSetPositiveSign(&a);
+        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
+        runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &b, &runtime.ctxtReal39);
+        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+        return;
+    } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetNaN(&a);
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&a, runtime.REGISTER_X, runtime.amNone);
+}
+
+pub export fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&a) and runtime.realIsZero(&b)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            return;
+        }
+
+        copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&b);
+    } else {
+        runtime.realRectangularToPolar(&a, &b, &a, &b, &runtime.ctxtReal39);
+        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
+        runtime.realDivide(&b, denom, &b, &runtime.ctxtReal39);
+    }
+
+    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+}
+
+pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsNegative(&x) or runtime.realIsZero(&x)) {
+        logxyReal(denom);
+        return;
+    }
+
+    runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+    runtime.realDivide(&x, denom, &x, &runtime.ctxtReal34);
+    if (!runtime.realIsAnInteger(&x)) {
+        runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+    } else {
+        runtime.convertRealToLongIntegerRegister(&x, runtime.REGISTER_X, runtime.DEC_ROUND_HALF_EVEN);
+    }
+}
+
+fn log10LonI() callconv(.c) void {
+    logxyLonI(runtime.z47_math_wrappers_const_ln10());
+}
+
+fn log10ShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intLog10(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn log10Real() callconv(.c) void {
+    logxyReal(runtime.z47_math_wrappers_const_ln10());
+}
+
+fn log10Cplx() callconv(.c) void {
+    logxyCplx(runtime.z47_math_wrappers_const_ln10());
+}
+
+fn sqrtComplexLocal(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    copyReal(&a, real);
+    copyReal(&b, imag);
+
+    if (runtime.realIsZero(&b)) {
+        if (runtime.realIsNegative(&a)) {
+            negateReal(res_imag, &a);
+            runtime.realSquareRoot(res_imag, res_imag, real_context);
+            runtime.realSetZero(res_real);
+        } else {
+            runtime.realSquareRoot(&a, res_real, real_context);
+            runtime.realSetZero(res_imag);
+        }
+        return;
+    }
+
+    runtime.realRectangularToPolar(&a, &b, res_real, res_imag, real_context);
+    runtime.realSquareRoot(res_real, res_real, real_context);
+    runtime.realMultiply(res_imag, runtime.z47_math_wrappers_const_1on2(), res_imag, real_context);
+    runtime.realPolarToRectangular(res_real, res_imag, res_real, res_imag, real_context);
+}
+
+pub export fn sqrt1Px2Complex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var y: runtime.real_t = undefined;
+
+    if (runtime.realIsZero(imag)) {
+        if (runtime.realIsInfinite(real)) {
+            copyReal(res_real, runtime.z47_math_wrappers_const_plus_infinity());
+            runtime.realSetZero(res_imag);
+            return;
+        }
+
+        runtime.realFMA(real, real, runtime.z47_math_wrappers_const_1(), res_real, real_context);
+        runtime.realSquareRoot(res_real, res_real, real_context);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    if (runtime.realIsSpecial(real) or runtime.realIsSpecial(imag)) {
+        runtime.realSetNaN(res_real);
+        runtime.realSetNaN(res_imag);
+        return;
+    }
+
+    runtime.realFMA(imag, imag, runtime.z47_math_wrappers_const_minus_1(), &x, real_context);
+    runtime.realChangeSign(&x);
+    runtime.realFMA(real, real, &x, &x, real_context);
+    runtime.realMultiply(real, imag, &y, real_context);
+    runtime.realAdd(&y, &y, &y, real_context);
+    sqrtComplexLocal(&x, &y, res_real, res_imag, real_context);
+}
+
+fn sqrt1Px2Real() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x)) {
+        copyReal(&x, runtime.z47_math_wrappers_const_plus_infinity());
+    } else if (runtime.realIsSpecial(&x)) {
+        runtime.realSetNaN(&x);
+    } else {
+        runtime.realFMA(&x, &x, runtime.z47_math_wrappers_const_1(), &x, &runtime.ctxtReal51);
+        runtime.realSquareRoot(&x, &x, &runtime.ctxtReal51);
+    }
+
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn sqrt1Px2Cplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    sqrt1Px2Complex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+}
+
 fn m1PowLonI() callconv(.c) void {
     runtime.z47_math_wrappers_minus_one_power_long_integer();
 }
@@ -1617,6 +1925,18 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
 }
 
+pub export fn fnLn(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&lnReal, &lnCplx);
+}
+
+pub export fn fnSqrt1Px2(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&sqrt1Px2Real, &sqrt1Px2Cplx);
+}
+
 pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -1639,6 +1959,12 @@ pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processIntRealComplexMonadicFunction(&tenPowReal, &tenPowCplx, &tenPowShoI, &tenPowLonI);
+}
+
+pub export fn fnLog10(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&log10Real, &log10Cplx, &log10ShoI, &log10LonI);
 }
 
 pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
