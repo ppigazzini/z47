@@ -562,6 +562,7 @@ fn addFirmwareElfBuild(
 ) ElfBuildOutputs {
     const cmd = b.addSystemCommand(&.{"arm-none-eabi-gcc"});
     cmd.setCwd(b.path("."));
+    const use_retained_memory = config.board == .dmcp and config.dmcp_package == 3;
 
     for (firmwareArchFlags(config.board)) |flag| cmd.addArg(flag);
     for (firmware_common_c_flags) |flag| cmd.addArg(flag);
@@ -599,12 +600,13 @@ fn addFirmwareElfBuild(
     cmd.addArg(build_common.upstreamPathString(b, firmwareSdkStartupSource(config.board)));
     for (build_common.decnumber_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("dep/{s}", .{source})));
     for (core_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("src/c47/{s}", .{source})));
+    if (use_retained_memory) cmd.addArg(build_common.upstreamPathString(b, "src/c47/memory.c"));
     flags_state_objects.addToCommand(cmd);
     math_command_wrapper_objects.addToCommand(cmd);
     constants_objects.addToCommand(cmd);
     tone_objects.addToCommand(cmd);
     keyboard_state_objects.addToCommand(cmd);
-    memory_state_objects.addToCommand(cmd);
+    if (!use_retained_memory) memory_state_objects.addToCommand(cmd);
     calc_state_objects.addToCommand(cmd);
     program_serialization_objects.addToCommand(cmd);
     register_metadata_objects.addToCommand(cmd);

@@ -30,6 +30,7 @@ pub const dtLongInteger: u32 = 0;
 pub const dtReal34: u32 = 1;
 pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
+pub const dtDate: u32 = 4;
 pub const dtReal34Matrix: u32 = 6;
 pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
@@ -48,6 +49,7 @@ pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
 
 pub const SIM_UNSIGN: u8 = 0;
+pub const TI_FALSE: u8 = 12;
 
 pub const DECNEG: u8 = 0x80;
 const DECINF: u8 = 0x40;
@@ -87,6 +89,7 @@ pub extern var shortIntegerMode: u8;
 pub extern var currentAngularMode: angularMode_t;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
+pub extern var temporaryInformation: u8;
 
 pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
@@ -259,6 +262,87 @@ pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2() *const real_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
+pub const retained = struct {
+    pub extern fn z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnExpt(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnWpositive(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnWnegative(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnLcm(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnRmd(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnNeighb(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnIxyz(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnRealPart(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnConjugate(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnPercent(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnAdd(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnSubtract(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnMultiply(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDivide(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnIDiv(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnIDivR(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDblMultiply(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDecomp(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckInteger(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXLessThan(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXLessEqual(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXGreaterThan(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXGreaterEqual(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXEqualsTo(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXNotEqual(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnXAlmostEqual(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnIsConverged(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckType(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckReal(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckNumber(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckAngle(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckMatrix(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckForZero(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckIsVect2d(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckIsVect3d(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckInfinite(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckPlusZero(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCheckMinusZero(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnGetType(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDblDivide(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnToPolar2(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnToRect2(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnToRect(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnParallel(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnUnitVector(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnSdl(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnSdr(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnSquareRoot(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCubeRoot(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnPercentMRR(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnPercentPlusMG(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnPercentT(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDeltaPercent(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnFib(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnLINPOL(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnCross(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnDot(unused_but_mandatory_parameter: u16) void;
+    pub extern fn z47_math_wrappers_retained_fnLogXY(unused_but_mandatory_parameter: u16) void;
+};
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_90() *const real_t;
 pub extern fn z47_math_wrappers_const_ln2() *const real_t;
@@ -328,6 +412,10 @@ pub fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 
 pub fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
     setRegisterTag(reg, @intCast(mode));
+}
+
+pub fn setTemporaryInformation(condition: bool) void {
+    temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
 pub fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
