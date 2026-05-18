@@ -17,6 +17,8 @@ static uint32_t current_register_tag = amNone;
 static uint8_t register_slot[32];
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
+static real34Matrix_t fake_real_matrix;
+static complex34Matrix_t fake_complex_matrix;
 
 static struct {
   bool_t available;
@@ -79,8 +81,10 @@ uint64_t shortIntegerSignBit = UINT64_C(1) << 63;
 angularMode_t currentAngularMode = amNone;
 bool_t thereIsSomethingToUndo = false;
 pcg32_random_t pcg32_global = PCG32_INITIALIZER;
+int32_t significantDigits = 34;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
+static real_t fake_const_180_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 static real_t fake_const_1e_6_value;
@@ -271,12 +275,31 @@ void mathWrappersReset(void) {
   ctxtReal75.digits = 75;
   setFakeReal(&fake_const_nan_value, 0, 0x20);
   setFakeReal(&fake_const_one_value, 1, 0);
+  setFakeReal(&fake_const_180_value, 180, 0);
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
   setFakeRealWithExponent(&fake_const_1e_6_value, 1, 0, -6);
   setRegisterReal34((uint8_t *)&fake_const34_zero_value, 0, 0);
   setRegisterReal34(register_slot, 2, 0);
   setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
+
+  fake_real_matrix.header.matrixRows = 2;
+  fake_real_matrix.header.matrixColumns = 2;
+  setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[0], 1, 0);
+  setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[1], 2, 0);
+  setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[2], 3, 0);
+  setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[3], 4, 0);
+
+  fake_complex_matrix.header.matrixRows = 2;
+  fake_complex_matrix.header.matrixColumns = 2;
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[0].real, 1, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[0].imag, 5, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[1].real, 2, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[1].imag, 6, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[2].real, 3, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[2].imag, 7, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[3].real, 4, 0);
+  setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[3].imag, 8, 0);
 }
 
 void mathWrappersSetSaveLastXResult(bool_t result) {
@@ -445,6 +468,10 @@ void elementwiseRema(void (*func)(void)) {
   if(func != NULL) {
     func();
   }
+}
+
+void elementwiseRemaReal(void (*func)(void)) {
+  elementwiseRema(func);
 }
 
 void adjustResult(calcRegister_t res,
@@ -745,6 +772,19 @@ void real34NextMinus(const real34_t *source, real34_t *destination) {
   setRegisterReal34((uint8_t *)destination, fakeReal34Value(source) - 1, source->bytes[15] & 0x70);
 }
 
+void realToReal34(const real_t *source, real34_t *destination) {
+  setRegisterReal34((uint8_t *)destination, fakeRealValue(source), source->bits & 0x70);
+}
+
+void convertAngle34FromTo(real34_t *angle, angularMode_t fromMode, angularMode_t toMode) {
+  setRegisterReal34((uint8_t *)angle, fakeReal34Value(angle) + fromMode - toMode, angle->bytes[15] & 0x70);
+}
+
+void real34RectangularToPolar(const real34_t *real, const real34_t *imag, real34_t *magnitude, real34_t *theta) {
+  setRegisterReal34((uint8_t *)magnitude, fakeReal34Value(real) + fakeReal34Value(imag) + 5, 0);
+  setRegisterReal34((uint8_t *)theta, fakeReal34Value(real) - fakeReal34Value(imag) + 7, 0);
+}
+
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode) {
   const int32_t value = fakeRealValue(real);
 
@@ -798,6 +838,79 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   snapshot.convert_complex_to_result_imag_bits = imag->bits;
   (void)reg;
   current_register_data_type = dtComplex34;
+}
+
+void linkToComplexMatrixRegister(calcRegister_t reg, complex34Matrix_t *matrix) {
+  (void)reg;
+  *matrix = fake_complex_matrix;
+}
+
+void linkToRealMatrixRegister(calcRegister_t reg, real34Matrix_t *matrix) {
+  (void)reg;
+  *matrix = fake_real_matrix;
+}
+
+bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
+  matrix->header.matrixRows = rows;
+  matrix->header.matrixColumns = columns;
+  for(uint16_t i = 0; i < rows * columns && i < 4; ++i) {
+    setRegisterReal34((uint8_t *)&matrix->matrixElements[i], 0, 0);
+  }
+  return true;
+}
+
+bool_t complexMatrixInit(complex34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
+  matrix->header.matrixRows = rows;
+  matrix->header.matrixColumns = columns;
+  for(uint16_t i = 0; i < rows * columns && i < 4; ++i) {
+    setRegisterReal34((uint8_t *)&matrix->matrixElements[i].real, 0, 0);
+    setRegisterReal34((uint8_t *)&matrix->matrixElements[i].imag, 0, 0);
+  }
+  return true;
+}
+
+void realMatrixFree(real34Matrix_t *matrix) {
+  (void)matrix;
+}
+
+void complexMatrixFree(complex34Matrix_t *matrix) {
+  (void)matrix;
+}
+
+void convertReal34MatrixToReal34MatrixRegister(const real34Matrix_t *matrix, calcRegister_t reg) {
+  (void)reg;
+  fake_real_matrix = *matrix;
+  current_register_data_type = dtReal34Matrix;
+  current_register_tag = amNone;
+}
+
+void convertComplex34MatrixToComplex34MatrixRegister(const complex34Matrix_t *matrix, calcRegister_t reg) {
+  (void)reg;
+  fake_complex_matrix = *matrix;
+  current_register_data_type = dtComplex34Matrix;
+  current_register_tag = amNone;
+}
+
+void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t reg, real34Matrix_t *matrix) {
+  (void)reg;
+  *matrix = fake_real_matrix;
+}
+
+void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix) {
+  (void)reg;
+  matrix->header = fake_real_matrix.header;
+  for(uint16_t i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns && i < 4; ++i) {
+    matrix->matrixElements[i].real = fake_real_matrix.matrixElements[i];
+    setRegisterReal34((uint8_t *)&matrix->matrixElements[i].imag, 0, 0);
+  }
+}
+
+void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *realMatrix, complex34Matrix_t *complexMatrix) {
+  complexMatrix->header = realMatrix->header;
+  for(uint16_t i = 0; i < complexMatrix->header.matrixRows * complexMatrix->header.matrixColumns && i < 4; ++i) {
+    complexMatrix->matrixElements[i].real = realMatrix->matrixElements[i];
+    setRegisterReal34((uint8_t *)&complexMatrix->matrixElements[i].imag, 0, 0);
+  }
 }
 
 void setRegisterTag(calcRegister_t reg, uint32_t tag) {
@@ -903,6 +1016,11 @@ void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) 
 void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(angle, fakeRealValue(x) + 63, 0);
+}
+
+void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *angle, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(angle, fakeRealValue(y) - fakeRealValue(x) + 94, 0);
 }
 
 void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext) {
@@ -1297,6 +1415,10 @@ uint64_t WP34S_int2pow(uint64_t x) {
   return result;
 }
 
+uint64_t WP34S_intAbs(uint64_t x) {
+  return WP34S_extract_value(x, NULL);
+}
+
 uint64_t WP34S_intLog2(uint64_t x) {
   uint64_t value = WP34S_extract_value(x, NULL);
   uint64_t result = 0;
@@ -1361,6 +1483,12 @@ void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMod
   snapshot.convert_angle_from_to_to_mode = toAngularMode;
   (void)realContext;
   setFakeReal(angle, fakeRealValue(angle) + fromAngularMode - toAngularMode, angle->bits & 0x70);
+}
+
+void roundToSignificantDigits(const real_t *source, real_t *destination, int32_t digits, realContext_t *realContext) {
+  (void)digits;
+  (void)realContext;
+  *destination = *source;
 }
 
 void fnSetFlag(int32_t flag) {
@@ -1457,6 +1585,10 @@ void liftStack(void) {
 
 const real_t *z47_math_wrappers_const_1e_6(void) {
   return &fake_const_1e_6_value;
+}
+
+const real_t *z47_math_wrappers_const_180(void) {
+  return &fake_const_180_value;
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {

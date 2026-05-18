@@ -335,6 +335,63 @@ void roundiReal(void);
 #undef fnFactorial
 #undef log
 
+#define fnRealPart oracle_fnRealPart
+#include "../../../src/c47/mathematics/realPart.c"
+#undef fnRealPart
+
+#define fnImaginaryPart oracle_fnImaginaryPart
+#include "../../../src/c47/mathematics/imaginaryPart.c"
+#undef fnImaginaryPart
+
+#define arg oracle_arg
+#define fnArg oracle_fnArg
+#include "../../../src/c47/mathematics/arg.c"
+#undef fnArg
+#undef arg
+
+#define complexMagnitude2 oracle_complexMagnitude2
+#define complexMagnitude oracle_complexMagnitude
+#define fnMagnitude oracle_fnMagnitude
+void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
+#include "../../../src/c47/mathematics/magnitude.c"
+#undef fnMagnitude
+#undef complexMagnitude
+#undef complexMagnitude2
+
+#define conjCplx oracle_conjCplx
+#define fnConjugate oracle_fnConjugate
+#include "../../../src/c47/mathematics/conjugate.c"
+#undef fnConjugate
+#undef conjCplx
+
+#define fnSwapRealImaginary oracle_fnSwapRealImaginary
+#include "../../../src/c47/mathematics/swapRealImaginary.c"
+#undef fnSwapRealImaginary
+
+#define arctan2 oracle_arctan2
+#define atan2Error oracle_atan2Error
+#define atan2RealReal oracle_atan2RealReal
+#define atan2RemaRema oracle_atan2RemaRema
+#define atan2RemaReal oracle_atan2RemaReal
+#define atan2RealRema oracle_atan2RealRema
+#define atan2LonIRema oracle_atan2LonIRema
+#define fnAtan2 oracle_fnAtan2
+void atan2Error(void);
+void atan2RealReal(void);
+void atan2RemaRema(void);
+void atan2RemaReal(void);
+void atan2RealRema(void);
+void atan2LonIRema(void);
+#include "../../../src/c47/mathematics/atan2.c"
+#undef fnAtan2
+#undef atan2LonIRema
+#undef atan2RealRema
+#undef atan2RemaReal
+#undef atan2RemaRema
+#undef atan2RealReal
+#undef atan2Error
+#undef arctan2
+
 #define eulersFormula oracle_eulersFormula
 #define fnM1Pow oracle_fnM1Pow
 #include "../../../src/c47/mathematics/minusOnePow.c"

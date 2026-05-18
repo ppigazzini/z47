@@ -21,6 +21,13 @@ extern fn z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter: u1
 extern fn z47_math_wrappers_retained_fnNeighb(unused_but_mandatory_parameter: u16) void;
 extern fn z47_math_wrappers_retained_fnIxyz(unused_but_mandatory_parameter: u16) void;
 extern fn z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnRealPart(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnConjugate(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter: u16) void;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -2621,4 +2628,32 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
     z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter);
+}
+
+pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnRealPart(unused_but_mandatory_parameter);
+}
+
+pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter);
+}
+
+pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter);
+}
+
+pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter);
+}
+
+pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnConjugate(unused_but_mandatory_parameter);
+}
+
+pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter);
+}
+
+pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
 }
