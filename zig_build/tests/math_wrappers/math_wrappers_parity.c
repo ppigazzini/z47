@@ -9,6 +9,12 @@ void fnMin(uint16_t unusedButMandatoryParameter);
 void fnMax(uint16_t unusedButMandatoryParameter);
 void fnCeil(uint16_t unusedButMandatoryParameter);
 void fnFloor(uint16_t unusedButMandatoryParameter);
+void fnArcsin(uint16_t unusedButMandatoryParameter);
+void fnArccos(uint16_t unusedButMandatoryParameter);
+void fnArctan(uint16_t unusedButMandatoryParameter);
+void fnArcsinh(uint16_t unusedButMandatoryParameter);
+void fnArccosh(uint16_t unusedButMandatoryParameter);
+void fnArctanh(uint16_t unusedButMandatoryParameter);
 void fnInvert(uint16_t unusedButMandatoryParameter);
 void fnSign(uint16_t unusedButMandatoryParameter);
 void fnChangeSign(uint16_t unusedButMandatoryParameter);
@@ -33,6 +39,12 @@ void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
 void oracle_fnCeil(uint16_t unusedButMandatoryParameter);
 void oracle_fnFloor(uint16_t unusedButMandatoryParameter);
+void oracle_fnArcsin(uint16_t unusedButMandatoryParameter);
+void oracle_fnArccos(uint16_t unusedButMandatoryParameter);
+void oracle_fnArctan(uint16_t unusedButMandatoryParameter);
+void oracle_fnArcsinh(uint16_t unusedButMandatoryParameter);
+void oracle_fnArccosh(uint16_t unusedButMandatoryParameter);
+void oracle_fnArctanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnInvert(uint16_t unusedButMandatoryParameter);
 void oracle_fnSign(uint16_t unusedButMandatoryParameter);
 void oracle_fnChangeSign(uint16_t unusedButMandatoryParameter);
@@ -215,6 +227,125 @@ static void configureTrigNominal(void) {
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetFlagSpcRes(false);
   mathWrappersSetTrigOutputs(false, 0, 0, 0);
+}
+
+static void configureInverseTrigReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(false);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureInverseTrigComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 2, 0);
+  mathWrappersSetComplexInput(true, 4, 0, 5, 0);
+  mathWrappersSetFlagCpxRes(true);
+  mathWrappersSetFlagSpcRes(false);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureInverseTrigDomainDanger(void) {
+  configureInverseTrigComplex();
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureArctanInfinity(void) {
+  configureInverseTrigReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureArctanInfinityDanger(void) {
+  configureArctanInfinity();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureArcsinhReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureArcsinhRealInfinity(void) {
+  configureArcsinhReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureArcsinhComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+}
+
+static void configureArccoshReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureArccoshComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetFlagCpxRes(true);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureArccoshDanger(void) {
+  configureArccoshComplex();
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureArctanhReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureArctanhRealPositiveOne(void) {
+  configureArctanhReal();
+  mathWrappersSetRealInput(true, 1, 0);
+}
+
+static void configureArctanhRealPositiveOneDanger(void) {
+  configureArctanhRealPositiveOne();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureArctanhRealNegativeOneDanger(void) {
+  configureArctanhReal();
+  mathWrappersSetRealInput(true, -1, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureArctanhComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 2, 0);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+  mathWrappersSetFlagCpxRes(true);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureArctanhDanger(void) {
+  configureArctanhComplex();
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(true);
 }
 
 static void configureSinhInfinity(void) {
@@ -730,6 +861,28 @@ int main(void) {
   failures += runCase("fnMax", oracle_fnMax, fnMax, 0, true, NULL);
   failures += runCase("fnCeil", oracle_fnCeil, fnCeil, 0, true, NULL);
   failures += runCase("fnFloor", oracle_fnFloor, fnFloor, 0, true, NULL);
+  failures += runCase("fnArcsin/real", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigReal);
+  failures += runCase("fnArcsin/complex", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigComplex);
+  failures += runCase("fnArcsin/danger", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigDomainDanger);
+  failures += runCase("fnArccos/real", oracle_fnArccos, fnArccos, 0, true, configureInverseTrigReal);
+  failures += runCase("fnArccos/complex", oracle_fnArccos, fnArccos, 0, true, configureInverseTrigComplex);
+  failures += runCase("fnArccos/danger", oracle_fnArccos, fnArccos, 0, true, configureInverseTrigDomainDanger);
+  failures += runCase("fnArctan/real", oracle_fnArctan, fnArctan, 0, true, configureInverseTrigReal);
+  failures += runCase("fnArctan/real_inf", oracle_fnArctan, fnArctan, 0, true, configureArctanInfinity);
+  failures += runCase("fnArctan/real_inf_danger", oracle_fnArctan, fnArctan, 0, true, configureArctanInfinityDanger);
+  failures += runCase("fnArctan/complex", oracle_fnArctan, fnArctan, 0, true, configureInverseTrigComplex);
+  failures += runCase("fnArcsinh/real", oracle_fnArcsinh, fnArcsinh, 0, true, configureArcsinhReal);
+  failures += runCase("fnArcsinh/real_inf", oracle_fnArcsinh, fnArcsinh, 0, true, configureArcsinhRealInfinity);
+  failures += runCase("fnArcsinh/complex", oracle_fnArcsinh, fnArcsinh, 0, true, configureArcsinhComplex);
+  failures += runCase("fnArccosh/real", oracle_fnArccosh, fnArccosh, 0, true, configureArccoshReal);
+  failures += runCase("fnArccosh/complex", oracle_fnArccosh, fnArccosh, 0, true, configureArccoshComplex);
+  failures += runCase("fnArccosh/danger", oracle_fnArccosh, fnArccosh, 0, true, configureArccoshDanger);
+  failures += runCase("fnArctanh/real_zero", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhReal);
+  failures += runCase("fnArctanh/real_pos_one", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhRealPositiveOne);
+  failures += runCase("fnArctanh/real_pos_one_danger", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhRealPositiveOneDanger);
+  failures += runCase("fnArctanh/real_neg_one_danger", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhRealNegativeOneDanger);
+  failures += runCase("fnArctanh/complex", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhComplex);
+  failures += runCase("fnArctanh/danger", oracle_fnArctanh, fnArctanh, 0, true, configureArctanhDanger);
   failures += runCase("fnInvert/real", oracle_fnInvert, fnInvert, 0, true, configureInvertReal);
   failures += runCase("fnInvert/real_zero", oracle_fnInvert, fnInvert, 0, true, configureInvertRealZero);
   failures += runCase("fnInvert/real_zero_danger", oracle_fnInvert, fnInvert, 0, true, configureInvertRealZeroDanger);

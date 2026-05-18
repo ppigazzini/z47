@@ -147,11 +147,13 @@ enum {
 #define realIsPositive(source) (!realIsNegative(source))
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
 #define realCopy(source, destination) (*(destination) = *(source))
+#define realMinus(operand, res, ctxt) do { (void)(ctxt); realCopy((operand), (res)); realChangeSign((res)); } while(0)
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
 #define realDivide(operand1, operand2, res, ctxt) decNumberDivide((res), (operand1), (operand2), (ctxt))
 #define realAdd(operand1, operand2, res, ctxt) decNumberAdd((res), (operand1), (operand2), (ctxt))
 #define realSubtract(operand1, operand2, res, ctxt) decNumberSubtract((res), (operand1), (operand2), (ctxt))
 #define realFMA(factor1, factor2, term, res, ctxt) decNumberFMA((res), (factor1), (factor2), (term), (ctxt))
+#define realSquareRoot(operand, res, ctxt) decNumberSquareRoot((res), (operand), (ctxt))
 #define uInt32ToReal(source, destination) decNumberFromUInt32((destination), (source))
 
 #define real34ChangeSign(operand) ((operand)->bytes[15] ^= 0x80)
@@ -174,7 +176,9 @@ extern pcg32_random_t pcg32_global;
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
 #define const__1 ((real_t *)z47_math_wrappers_const_minus_1())
 #define const_2 ((real_t *)z47_math_wrappers_const_2())
+#define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
+#define const_90 ((real_t *)z47_math_wrappers_const_90())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
 #define const39_pi ((real_t *)z47_math_wrappers_const_pi())
@@ -219,6 +223,7 @@ void integerPartCplx(enum rounding mode);
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value);
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *angle_mode, bool_t reduce_longinteger_angle);
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
+bool_t getFlag(uint16_t flag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void *getRegisterDataPointer(calcRegister_t reg);
@@ -235,6 +240,11 @@ void realPolarToRectangular(const real_t *magnitude,
                             real_t *real,
                             real_t *imag,
                             realContext_t *real_context);
+void realRectangularToPolar(const real_t *real,
+                            const real_t *imag,
+                            real_t *magnitude,
+                            real_t *theta,
+                            realContext_t *real_context);
 void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *real_context);
 void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 angularMode_t mode,
@@ -242,22 +252,32 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *angle,
                                 real_t *cos,
                                 real_t *tan,
                                 realContext_t *real_context);
+void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *real_context);
+void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *real_context);
+void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *real_context);
 void WP34S_SinhCosh(const real_t *x, real_t *sin_out, real_t *cos_out, realContext_t *real_context);
+void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Erf(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_Ln(const real_t *x, real_t *res, realContext_t *real_context);
 void logxyLonI(const real_t *denom);
 void logxyReal(const real_t *denom);
 void logxyCplx(const real_t *denom);
+void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
+void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberSquareRoot(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberSubtract(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber *rhs, const decNumber *term, decContext *real_context);
 decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
 bool_t realCompareEqual(const real_t *number1, const real_t *number2);
+bool_t realCompareLessThan(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2);
 void realSetNaN(real_t *value);
@@ -312,7 +332,9 @@ const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
 const real_t *z47_math_wrappers_const_minus_1(void);
 const real_t *z47_math_wrappers_const_2(void);
+const real_t *z47_math_wrappers_const_1on2(void);
 const real_t *z47_math_wrappers_const_2e6(void);
+const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
 const real_t *z47_math_wrappers_const_pi(void);
