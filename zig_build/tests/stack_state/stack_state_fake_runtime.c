@@ -630,6 +630,12 @@ void z47_registers_retained_fnClearAllVariables(uint16_t confirmation) {
   displayBugScreen("unexpected retained fnClearAllVariables parity fallback");
 }
 
+calcRegister_t z47_registers_retained_findOrAllocateNamedVariable(const char *variableName) {
+  (void)variableName;
+  displayBugScreen("unexpected retained findOrAllocateNamedVariable parity fallback");
+  return INVALID_VARIABLE;
+}
+
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
   uint32_t result_data_type = getRegisterDataType(res);
 

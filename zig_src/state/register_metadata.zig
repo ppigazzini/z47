@@ -568,6 +568,22 @@ pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegiste
     return runtime.INVALID_VARIABLE;
 }
 
+pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
+
+    if (glyph_length < 1 or glyph_length > 7) {
+        return runtime.INVALID_VARIABLE;
+    }
+
+    const register = findNamedVariable(variable_name);
+    if (register != runtime.INVALID_VARIABLE) {
+        return register;
+    }
+
+    return runtime.retainedFindOrAllocateNamedVariable(variable_name);
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,
