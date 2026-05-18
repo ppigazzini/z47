@@ -46,6 +46,16 @@ bool_t z47_stack_runtime_try_fn_to_real_real34(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_long_integer(void) {
+  if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
+    return false;
+  }
+
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+  return true;
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }
