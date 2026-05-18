@@ -77,6 +77,7 @@ static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
+static real_t fake_const_1e_6_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
 
@@ -260,6 +261,7 @@ void mathWrappersReset(void) {
   setFakeReal(&fake_const_one_value, 1, 0);
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
+  setFakeRealWithExponent(&fake_const_1e_6_value, 1, 0, -6);
   setRegisterReal34(register_slot, 2, 0);
   setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
 }
@@ -817,6 +819,26 @@ void WP34S_Ln(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 66, 0);
 }
 
+void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 67, 0);
+}
+
+void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 68, 0);
+}
+
+void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext) {
+  real_t theta;
+
+  realRectangularToPolar(real, imag, magnitude, &theta, realContext);
+}
+
+void int32ToReal(int32_t source, real_t *destination) {
+  setFakeReal(destination, source, 0);
+}
+
 void WP34S_Erf(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 80, 0);
@@ -1248,6 +1270,10 @@ void saveForUndo(void) {
 
 void liftStack(void) {
   snapshot.lift_stack_calls++;
+}
+
+const real_t *z47_math_wrappers_const_1e_6(void) {
+  return &fake_const_1e_6_value;
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {

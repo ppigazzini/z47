@@ -183,6 +183,7 @@ extern pcg32_random_t pcg32_global;
 #define const_2 ((real_t *)z47_math_wrappers_const_2())
 #define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
+#define const_1e_6 ((real_t *)z47_math_wrappers_const_1e_6())
 #define const_90 ((real_t *)z47_math_wrappers_const_90())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
@@ -193,6 +194,8 @@ extern pcg32_random_t pcg32_global;
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
 #define realSetMinusInfinity(value) realCopy(const_minusInfinity, (value))
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
+#define realDivideRemainder(dividend, divisor, remainder, ctxt) WP34S_Mod((dividend), (divisor), (remainder), (ctxt))
+#define realCompareAbsLessThan(number1, number2) (!realCompareAbsEqual((number1), (number2)) && !realCompareAbsGreaterThan((number1), (number2)))
 
 bool_t saveLastX(void);
 void saveForUndo(void);
@@ -273,12 +276,17 @@ void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Erf(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
+void realExpM1(const real_t *x, real_t *res, realContext_t *realContext);
 void logxyLonI(const real_t *denom);
 void logxyReal(const real_t *denom);
 void logxyCplx(const real_t *denom);
 void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
 void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext);
+void int32ToReal(int32_t source, real_t *destination);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
@@ -351,6 +359,7 @@ const real_t *z47_math_wrappers_const_minus_1(void);
 const real_t *z47_math_wrappers_const_2(void);
 const real_t *z47_math_wrappers_const_1on2(void);
 const real_t *z47_math_wrappers_const_2e6(void);
+const real_t *z47_math_wrappers_const_1e_6(void);
 const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);

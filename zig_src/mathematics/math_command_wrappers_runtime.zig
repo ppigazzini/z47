@@ -173,6 +173,8 @@ pub extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realCont
 pub extern fn WP34S_Erf(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Erfc(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn logxyLonI(denom: *const real_t) void;
 pub extern fn logxyReal(denom: *const real_t) void;
 pub extern fn logxyCplx(denom: *const real_t) void;
@@ -289,6 +291,13 @@ pub extern fn z47_math_wrappers_report_tanh_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_square_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_tan_real_pole_error() void;
 pub extern fn z47_math_wrappers_report_cube_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_sinc_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_sincpi_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_exp_m1_real_domain_error() void;
+pub extern fn z47_math_wrappers_report_ln_p1_real_zero_domain_error() void;
+pub extern fn z47_math_wrappers_report_ln_p1_real_infinite_domain_error() void;
+pub extern fn z47_math_wrappers_report_ln_p1_real_negative_domain_error() void;
+pub extern fn z47_math_wrappers_report_ln_p1_cplx_zero_domain_error() void;
 pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
 pub extern fn z47_math_wrappers_do_int_random_i() void;
 

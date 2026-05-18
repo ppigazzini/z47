@@ -13,6 +13,8 @@ void fnIp(uint16_t unusedButMandatoryParameter);
 void fnLint(uint16_t unusedButMandatoryParameter);
 void fnSint(uint16_t unusedButMandatoryParameter);
 void fnFp(uint16_t unusedButMandatoryParameter);
+void fnSinc(uint16_t unusedButMandatoryParameter);
+void fnSincpi(uint16_t unusedButMandatoryParameter);
 void fnArcsin(uint16_t unusedButMandatoryParameter);
 void fnArccos(uint16_t unusedButMandatoryParameter);
 void fnArctan(uint16_t unusedButMandatoryParameter);
@@ -29,7 +31,9 @@ void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
 void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnExp(uint16_t unusedButMandatoryParameter);
+void fnExpM1(uint16_t unusedButMandatoryParameter);
 void fnLn(uint16_t unusedButMandatoryParameter);
+void fnLnP1(uint16_t unusedButMandatoryParameter);
 void fnSqrt1Px2(uint16_t unusedButMandatoryParameter);
 void fnErf(uint16_t unusedButMandatoryParameter);
 void fnErfc(uint16_t unusedButMandatoryParameter);
@@ -50,6 +54,8 @@ void oracle_fnIp(uint16_t unusedButMandatoryParameter);
 void oracle_fnLint(uint16_t unusedButMandatoryParameter);
 void oracle_fnSint(uint16_t unusedButMandatoryParameter);
 void oracle_fnFp(uint16_t unusedButMandatoryParameter);
+void oracle_fnSinc(uint16_t unusedButMandatoryParameter);
+void oracle_fnSincpi(uint16_t unusedButMandatoryParameter);
 void oracle_fnArcsin(uint16_t unusedButMandatoryParameter);
 void oracle_fnArccos(uint16_t unusedButMandatoryParameter);
 void oracle_fnArctan(uint16_t unusedButMandatoryParameter);
@@ -66,7 +72,9 @@ void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
+void oracle_fnExpM1(uint16_t unusedButMandatoryParameter);
 void oracle_fnLn(uint16_t unusedButMandatoryParameter);
+void oracle_fnLnP1(uint16_t unusedButMandatoryParameter);
 void oracle_fnSqrt1Px2(uint16_t unusedButMandatoryParameter);
 void oracle_fnErf(uint16_t unusedButMandatoryParameter);
 void oracle_fnErfc(uint16_t unusedButMandatoryParameter);
@@ -241,6 +249,49 @@ static void configureTrigNominal(void) {
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetFlagSpcRes(false);
   mathWrappersSetTrigOutputs(false, 0, 0, 0);
+}
+
+static void configureSincReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 5, 0);
+}
+
+static void configureSincRealInfinity(void) {
+  configureSincReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureSincRealInfinityDanger(void) {
+  configureSincReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureSincComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+}
+
+static void configureSincpiReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 4, 0);
+}
+
+static void configureSincpiShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetShortIntegerInput(4);
+}
+
+static void configureSincpiComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
 }
 
 static void configureInverseTrigReal(void) {
@@ -432,6 +483,51 @@ static void configureExpComplexImagZero(void) {
 static void configureExpComplexSpecial(void) {
   configureExpComplex();
   mathWrappersSetComplexInput(true, 2, 0, 0, 0x40);
+}
+
+static void configureLnP1Real(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureLnP1RealMinusOne(void) {
+  configureLnP1Real();
+  mathWrappersSetRealInput(true, -1, 0);
+}
+
+static void configureLnP1RealMinusOneDanger(void) {
+  configureLnP1RealMinusOne();
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureLnP1RealNegativeComplex(void) {
+  configureLnP1Real();
+  mathWrappersSetRealInput(true, -8, 0);
+  mathWrappersSetFlagCpxRes(true);
+}
+
+static void configureLnP1RealNegativeDanger(void) {
+  configureLnP1RealNegativeComplex();
+  mathWrappersSetFlagCpxRes(false);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureLnP1Complex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureLnP1ComplexMinusOneDanger(void) {
+  configureLnP1Complex();
+  mathWrappersSetComplexInput(true, -1, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
 }
 
 static void configure10PowReal(void) {
@@ -931,6 +1027,13 @@ int main(void) {
   failures += runCase("fnFp/real", oracle_fnFp, fnFp, 0, true, configure2PowReal);
   failures += runCase("fnFp/shortint", oracle_fnFp, fnFp, 0, true, configure2PowShortInteger);
   failures += runCase("fnFp/longint", oracle_fnFp, fnFp, 0, true, configure2PowLongInteger);
+  failures += runCase("fnSinc/real", oracle_fnSinc, fnSinc, 0, true, configureSincReal);
+  failures += runCase("fnSinc/real_inf", oracle_fnSinc, fnSinc, 0, true, configureSincRealInfinity);
+  failures += runCase("fnSinc/real_inf_danger", oracle_fnSinc, fnSinc, 0, true, configureSincRealInfinityDanger);
+  failures += runCase("fnSinc/complex", oracle_fnSinc, fnSinc, 0, true, configureSincComplex);
+  failures += runCase("fnSincpi/real", oracle_fnSincpi, fnSincpi, 0, true, configureSincpiReal);
+  failures += runCase("fnSincpi/shortint", oracle_fnSincpi, fnSincpi, 0, true, configureSincpiShortInteger);
+  failures += runCase("fnSincpi/complex", oracle_fnSincpi, fnSincpi, 0, true, configureSincpiComplex);
   failures += runCase("fnArcsin/real", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigReal);
   failures += runCase("fnArcsin/complex", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigComplex);
   failures += runCase("fnArcsin/danger", oracle_fnArcsin, fnArcsin, 0, true, configureInverseTrigDomainDanger);
@@ -992,12 +1095,25 @@ int main(void) {
   failures += runCase("fnExp/complex", oracle_fnExp, fnExp, 0, true, configureExpComplex);
   failures += runCase("fnExp/complex_imag_zero", oracle_fnExp, fnExp, 0, true, configureExpComplexImagZero);
   failures += runCase("fnExp/complex_special", oracle_fnExp, fnExp, 0, true, configureExpComplexSpecial);
+  failures += runCase("fnExpM1/real", oracle_fnExpM1, fnExpM1, 0, true, configureExpReal);
+  failures += runCase("fnExpM1/real_inf_danger", oracle_fnExpM1, fnExpM1, 0, true, configureExpRealInfinityDanger);
+  failures += runCase("fnExpM1/real_neg_inf_danger", oracle_fnExpM1, fnExpM1, 0, true, configureExpRealNegativeInfinityDanger);
+  failures += runCase("fnExpM1/complex", oracle_fnExpM1, fnExpM1, 0, true, configureExpComplex);
+  failures += runCase("fnExpM1/complex_imag_zero", oracle_fnExpM1, fnExpM1, 0, true, configureExpComplexImagZero);
+  failures += runCase("fnExpM1/complex_special", oracle_fnExpM1, fnExpM1, 0, true, configureExpComplexSpecial);
   failures += runCase("fnLn/real", oracle_fnLn, fnLn, 0, true, configureLog2Real);
   failures += runCase("fnLn/real_zero_danger", oracle_fnLn, fnLn, 0, true, configureLnRealZeroDanger);
   failures += runCase("fnLn/real_negative_complex", oracle_fnLn, fnLn, 0, true, configureLnRealNegativeComplex);
   failures += runCase("fnLn/real_negative_danger", oracle_fnLn, fnLn, 0, true, configureLnRealNegativeDanger);
   failures += runCase("fnLn/complex", oracle_fnLn, fnLn, 0, true, configureLog2Complex);
   failures += runCase("fnLn/complex_zero_danger", oracle_fnLn, fnLn, 0, true, configureLnComplexZeroDanger);
+  failures += runCase("fnLnP1/real", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1Real);
+  failures += runCase("fnLnP1/real_minus_one", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1RealMinusOne);
+  failures += runCase("fnLnP1/real_minus_one_danger", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1RealMinusOneDanger);
+  failures += runCase("fnLnP1/real_negative_complex", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1RealNegativeComplex);
+  failures += runCase("fnLnP1/real_negative_danger", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1RealNegativeDanger);
+  failures += runCase("fnLnP1/complex", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1Complex);
+  failures += runCase("fnLnP1/complex_minus_one_danger", oracle_fnLnP1, fnLnP1, 0, true, configureLnP1ComplexMinusOneDanger);
   failures += runCase("fnSqrt1Px2/real", oracle_fnSqrt1Px2, fnSqrt1Px2, 0, true, configure2PowReal);
   failures += runCase("fnSqrt1Px2/real_inf_danger", oracle_fnSqrt1Px2, fnSqrt1Px2, 0, true, configure2PowRealInfinityDanger);
   failures += runCase("fnErf/real", oracle_fnErf, fnErf, 0, true, configureErfReal);
