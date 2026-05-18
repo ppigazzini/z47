@@ -191,6 +191,11 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
     return;
   }
 
+  if(!oracle_validateName(variableName)) {
+    displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    return;
+  }
+
   displayBugScreen("oracle_allocateNamedVariable called with an unsupported valid-name case");
 }
 
