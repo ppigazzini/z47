@@ -65,6 +65,12 @@ enum {
 };
 
 enum {
+  PGM_RUNNING = 1,
+};
+
+#define NOT_CONFIRMED 9878
+
+enum {
   CM_AIM = 1,
   CM_NIM = 2,
   CM_MIM = 12,
@@ -82,8 +88,11 @@ enum REG_NUMBERS {
   REGISTER_Y = 101,
   REGISTER_Z = 102,
   REGISTER_T = 103,
+  REGISTER_A = 104,
   REGISTER_D = 107,
   REGISTER_L = 108,
+  REGISTER_I = 109,
+  REGISTER_W = 125,
   SAVED_REGISTER_X = 126,
   SAVED_REGISTER_L = 134,
   TEMP_REGISTER_2_SAVED_STATS = 136,
@@ -156,6 +165,7 @@ extern uint16_t currentInputVariable;
 extern uint8_t displayStack;
 extern bool_t thereIsSomethingToUndo;
 extern uint8_t calcMode;
+extern uint8_t programRunStop;
 extern uint8_t lastErrorCode;
 extern uint8_t entryStatus;
 extern uint64_t systemFlags0;
@@ -183,6 +193,7 @@ uint16_t z47_stack_runtime_statistical_sums_blocks(void);
 uint32_t z47_stack_runtime_statistical_sums_bytes(void);
 void z47_stack_runtime_store_stack_size_in_x(uint32_t size);
 void z47_stack_runtime_store_local_register_count_in_x(void);
+uint8_t z47_stack_runtime_current_local_register_count(void);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
@@ -258,6 +269,7 @@ void stackParitySeedLocalRegister(int index, uint32_t data_type, uint32_t tag, c
 void stackParitySeedCurrentStats(uint8_t seed);
 void stackParitySeedSavedStats(uint8_t seed);
 void stackParityCapture(stack_parity_snapshot_t *snapshot);
+void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 
 #endif
 

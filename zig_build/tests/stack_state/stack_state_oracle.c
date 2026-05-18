@@ -49,3 +49,33 @@ void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter) {
 	convertLongIntegerToLongIntegerRegister(locR, REGISTER_X);
 	longIntegerFree(locR);
 }
+
+void oracle_fnClearRegisters(uint16_t confirmation) {
+	calcRegister_t regist;
+
+	if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
+		return;
+	}
+
+	for(regist = 0; regist < REGISTER_X; regist++) {
+		clearRegister(regist);
+	}
+
+	for(regist = 0; regist < currentNumberOfLocalRegisters; regist++) {
+		clearRegister(FIRST_LOCAL_REGISTER + regist);
+	}
+
+	if(!getSystemFlag(FLAG_SSIZE8)) {
+		for(regist = REGISTER_A; regist <= REGISTER_D; regist++) {
+			clearRegister(regist);
+		}
+	}
+
+	for(regist = REGISTER_I; regist <= REGISTER_W; regist++) {
+		clearRegister(regist);
+	}
+}
+
+void z47_registers_retained_fnClearRegisters(uint16_t confirmation) {
+	oracle_fnClearRegisters(confirmation);
+}

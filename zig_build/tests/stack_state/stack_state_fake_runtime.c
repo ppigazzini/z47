@@ -29,6 +29,7 @@ uint16_t currentInputVariable = INVALID_VARIABLE;
 uint8_t displayStack = 0;
 bool_t thereIsSomethingToUndo = false;
 uint8_t calcMode = 0;
+uint8_t programRunStop = 0;
 uint8_t lastErrorCode = ERROR_NONE;
 uint8_t entryStatus = 0;
 uint64_t systemFlags0 = 0;
@@ -150,6 +151,7 @@ void stackParityReset(void) {
   displayStack = 0;
   thereIsSomethingToUndo = false;
   calcMode = 0;
+  programRunStop = 0;
   lastErrorCode = ERROR_NONE;
   entryStatus = 0;
   systemFlags0 = 0;
@@ -506,6 +508,10 @@ void z47_stack_runtime_store_local_register_count_in_x(void) {
   longIntegerInit(li);
   uInt32ToLongInteger(currentNumberOfLocalRegisters, li);
   convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+}
+
+uint8_t z47_stack_runtime_current_local_register_count(void) {
+  return currentNumberOfLocalRegisters;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
