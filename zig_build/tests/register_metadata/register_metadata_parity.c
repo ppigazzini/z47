@@ -15,6 +15,7 @@ void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_si
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 bool_t isFunctionAllowingNewVariable(uint16_t op);
 bool_t validateName(const char *name);
+bool_t isUniqueMenuName(const char *name);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -29,6 +30,7 @@ void oracle_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t 
 void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 bool_t oracle_isFunctionAllowingNewVariable(uint16_t op);
 bool_t oracle_validateName(const char *name);
+bool_t oracle_isUniqueMenuName(const char *name);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -295,6 +297,23 @@ static void setupReallocateComplexPolarCase(void) {
 static void setupReallocateMemoryFullCase(void) {
   seedRegisterPayload(REGISTER_X, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x88);
   stackParitySetMemoryBlockAvailable(false);
+}
+
+static void setupUniqueMenuBuiltInCollisionCase(void) {
+  stackParitySeedBuiltInMenuItem(0, CAT_MENU, "HOME");
+}
+
+static void setupUniqueMenuBuiltInNonMenuCase(void) {
+  stackParitySeedBuiltInMenuItem(0, 0, "HOME");
+}
+
+static void setupUniqueMenuUserCollisionCase(void) {
+  stackParitySeedUserMenu(0, "TOOLS");
+}
+
+static void setupUniqueMenuMissCase(void) {
+  stackParitySeedBuiltInMenuItem(0, CAT_MENU, "HOME");
+  stackParitySeedUserMenu(0, "TOOLS");
 }
 
 static void setupNoOpCase(void) {
@@ -597,6 +616,10 @@ int main(void) {
 
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_STOADD);
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
+  failures += runBoolStringCase("isUniqueMenuName", "builtin-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInCollisionCase, "HOME");
+  failures += runBoolStringCase("isUniqueMenuName", "builtin-nonmenu-ignored", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInNonMenuCase, "HOME");
+  failures += runBoolStringCase("isUniqueMenuName", "user-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuUserCollisionCase, "TOOLS");
+  failures += runBoolStringCase("isUniqueMenuName", "miss", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuMissCase, "GRAPHS");
   failures += runBoolStringCase("validateName", "ascii-valid", oracle_validateName, validateName, setupNoOpCase, validate_name_ascii_valid);
   failures += runBoolStringCase("validateName", "empty", oracle_validateName, validateName, setupNoOpCase, validate_name_empty);
   failures += runBoolStringCase("validateName", "digit-first", oracle_validateName, validateName, setupNoOpCase, validate_name_digit_first);

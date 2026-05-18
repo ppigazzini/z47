@@ -459,6 +459,25 @@ pub export fn validateName(name: [*c]const u8) bool {
     return true;
 }
 
+pub export fn isUniqueMenuName(name: [*c]const u8) bool {
+    if (name == null) {
+        return false;
+    }
+
+    var index: u32 = 0;
+    while (index < runtime.builtinMenuItemCount()) : (index += 1) {
+        if (!runtime.builtinMenuItemIsMenu(index)) {
+            continue;
+        }
+
+        if (runtime.compareMenuNames(name, runtime.builtinMenuItemName(index)) == 0) {
+            return false;
+        }
+    }
+
+    return runtime.retainedIsUniqueMenuNameUserMenus(name);
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,

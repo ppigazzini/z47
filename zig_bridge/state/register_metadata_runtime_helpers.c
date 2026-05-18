@@ -161,3 +161,35 @@ void z47_register_metadata_initialize_matrix_header_1x1(void *data_ptr) {
 void z47_register_metadata_report_ram_full(void) {
   displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
+
+uint32_t z47_register_metadata_builtin_menu_item_count(void) {
+  return LAST_ITEM;
+}
+
+bool_t z47_register_metadata_builtin_menu_item_is_menu(uint32_t index) {
+  return index < LAST_ITEM && (indexOfItems[index].status & CAT_STATUS) == CAT_MENU;
+}
+
+const char *z47_register_metadata_builtin_menu_item_name(uint32_t index) {
+  if(index >= LAST_ITEM) {
+    return "";
+  }
+
+  return indexOfItems[index].itemCatalogName;
+}
+
+uint32_t z47_register_metadata_user_menu_count(void) {
+  return numberOfUserMenus;
+}
+
+const char *z47_register_metadata_user_menu_name(uint32_t index) {
+  if(index >= numberOfUserMenus) {
+    return "";
+  }
+
+  return userMenus[index].menuName;
+}
+
+int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right) {
+  return compareString(left, right, CMP_NAME);
+}

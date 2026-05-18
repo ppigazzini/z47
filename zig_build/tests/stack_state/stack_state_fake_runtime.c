@@ -11,11 +11,36 @@ typedef struct {
   uint16_t size_in_blocks;
 } fake_memory_slot_t;
 
+enum {
+  FAKE_CAT_STATUS = 0x00f0,
+  FAKE_CAT_MENU = (2 << 4),
+  FAKE_CMP_NAME = 3,
+  MAX_FAKE_MENU_ITEMS = 8,
+  MAX_FAKE_USER_MENUS = 8,
+};
+
+#ifdef Z47_REGISTER_METADATA_RUNTIME
+typedef struct {
+  uint32_t status;
+  char itemCatalogName[16];
+} item_t;
+
+typedef struct {
+  char menuName[16];
+} userMenu_t;
+#endif
+
 registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
 static namedVariableHeader_t fake_named_variables[MAX_FAKE_NAMED_VARIABLES];
 static registerHeader_t fake_local_registers[MAX_FAKE_LOCAL_REGISTERS];
 namedVariableHeader_t *allNamedVariables = fake_named_variables;
 registerHeader_t *currentLocalRegisters = fake_local_registers;
+#ifdef Z47_REGISTER_METADATA_RUNTIME
+item_t indexOfItems[MAX_FAKE_MENU_ITEMS];
+static userMenu_t fake_user_menus[MAX_FAKE_USER_MENUS];
+userMenu_t *userMenus = fake_user_menus;
+uint16_t numberOfUserMenus = 0;
+#endif
 uint32_t currentAngularMode = amNone;
 char errorMessage[ERROR_MESSAGE_LENGTH];
 const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH] = {
@@ -165,6 +190,11 @@ void stackParityReset(void) {
   memset(globalRegister, 0, sizeof(globalRegister));
   memset(fake_named_variables, 0, sizeof(fake_named_variables));
   memset(fake_local_registers, 0, sizeof(fake_local_registers));
+#ifdef Z47_REGISTER_METADATA_RUNTIME
+  memset(indexOfItems, 0, sizeof(indexOfItems));
+  memset(fake_user_menus, 0, sizeof(fake_user_menus));
+  numberOfUserMenus = 0;
+#endif
   numberOfNamedVariables = 0;
   currentNumberOfLocalRegisters = 0;
   confirmation_request = 0;
@@ -216,6 +246,32 @@ bool_t isMemoryBlockAvailable(size_t size_in_blocks, uint16_t numBlocks, float e
 
 void stackParitySetMemoryBlockAvailable(bool_t available) {
   fake_memory_block_available = available;
+}
+
+void stackParitySeedBuiltInMenuItem(uint32_t index, uint32_t status, const char *name) {
+  if(index >= MAX_FAKE_MENU_ITEMS) {
+    return;
+  }
+
+  indexOfItems[index].status = status;
+  memset(indexOfItems[index].itemCatalogName, 0, sizeof(indexOfItems[index].itemCatalogName));
+  if(name != NULL) {
+    strncpy(indexOfItems[index].itemCatalogName, name, sizeof(indexOfItems[index].itemCatalogName) - 1);
+  }
+}
+
+void stackParitySeedUserMenu(uint32_t index, const char *name) {
+  if(index >= MAX_FAKE_USER_MENUS) {
+    return;
+  }
+
+  memset(fake_user_menus[index].menuName, 0, sizeof(fake_user_menus[index].menuName));
+  if(name != NULL) {
+    strncpy(fake_user_menus[index].menuName, name, sizeof(fake_user_menus[index].menuName) - 1);
+  }
+  if(index + 1 > numberOfUserMenus) {
+    numberOfUserMenus = (uint16_t)(index + 1);
+  }
 }
 
 void *allocC47Blocks(size_t size_in_blocks) {
@@ -537,6 +593,21 @@ bool_t z47_stack_runtime_try_fn_to_real_date(void) {
 
 void z47_stack_runtime_adjust_result_set_cpxres(void) {
   setSystemFlag(FLAG_CPXRES);
+}
+
+int32_t compareString(const char *left, const char *right, int32_t comparisonType) {
+  (void)comparisonType;
+  return strcmp(left, right);
+}
+
+bool_t z47_registers_retained_isUniqueMenuName_user_menus(const char *name) {
+  for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+    if(compareString(name, userMenus[i].menuName, FAKE_CMP_NAME) == 0) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
