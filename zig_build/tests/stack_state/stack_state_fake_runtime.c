@@ -535,6 +535,10 @@ bool_t z47_stack_runtime_try_fn_to_real_date(void) {
   return true;
 }
 
+void z47_stack_runtime_adjust_result_set_cpxres(void) {
+  setSystemFlag(FLAG_CPXRES);
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
@@ -729,6 +733,19 @@ bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t
   (void)op3;
 
   confirmation_request = fake_adjust_result_no_drop_success ? 11 : 12;
+  if(!fake_adjust_result_no_drop_success) {
+    lastErrorCode = ERROR_OUT_OF_RANGE;
+  }
+  return fake_adjust_result_no_drop_success;
+}
+
+bool_t z47_registers_retained_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
+  (void)res;
+  (void)op1;
+  (void)op2;
+  (void)op3;
+
+  confirmation_request = fake_adjust_result_no_drop_success ? 13 : 14;
   if(!fake_adjust_result_no_drop_success) {
     lastErrorCode = ERROR_OUT_OF_RANGE;
   }

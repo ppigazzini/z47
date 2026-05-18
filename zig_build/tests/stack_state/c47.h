@@ -55,6 +55,8 @@ enum {
   dtTime = 3,
   dtDate = 4,
   dtString = 5,
+  dtReal34Matrix = 6,
+  dtComplex34Matrix = 7,
   dtShortInteger = 8,
 };
 
@@ -125,6 +127,7 @@ enum {
   MAX_FAKE_MEMORY_SLOTS = 256,
 };
 
+#define FLAG_CPXRES 0x8004
 #define FLAG_SSIZE8 0x8018
 #define FLAG_ASLIFT 0xc023
 #define FLAG_INTING 0xc025
@@ -226,6 +229,7 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
 void z47_stack_runtime_request_clear_registers_confirmation(void);
 void z47_stack_runtime_report_register_command_error(uint8_t error_code);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
+void z47_stack_runtime_adjust_result_set_cpxres(void);
 
 bool_t getSystemFlag(int32_t sf);
 void setSystemFlag(unsigned int sf);
@@ -308,6 +312,7 @@ void z47_registers_retained_clearRegister(calcRegister_t reg);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
+bool_t z47_registers_retained_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end);
 uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
 uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);

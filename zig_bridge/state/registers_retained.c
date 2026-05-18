@@ -52,3 +52,8 @@ bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t
 	adjustResult(res, false, setCpxRes, op1, op2, op3);
 	return lastErrorCode == ERROR_NONE;
 }
+
+bool_t z47_registers_retained_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
+	adjustResult(res, false, false, op1, op2, op3);
+	return lastErrorCode == ERROR_NONE;
+}

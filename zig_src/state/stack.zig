@@ -4,6 +4,15 @@ fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcReg
     return base + @as(runtime.calcRegister_t, @intCast(offset));
 }
 
+fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
+    if (reg < 0) {
+        return false;
+    }
+
+    const data_type = runtime.getRegisterDataType(reg);
+    return data_type == runtime.dtComplex34 or data_type == runtime.dtComplex34Matrix;
+}
+
 fn swapRegs(src_reg: runtime.calcRegister_t, target_reg: u16) void {
     const saved_descriptor = runtime.globalDescriptor(src_reg);
     var target_descriptor: runtime.register_descriptor_t = 0;
@@ -270,8 +279,14 @@ pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
 }
 
 pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
-    if (!runtime.retainedAdjustResultNoDropY(res, set_cpx_res, op1, op2, op3)) {
+    const one_argument_is_complex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
+
+    if (!runtime.retainedAdjustResultNoDropYNoCpxRes(res, op1, op2, op3)) {
         return;
+    }
+
+    if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {
+        runtime.adjustResultSetCpxRes();
     }
 
     if (drop_y) {

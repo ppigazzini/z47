@@ -89,6 +89,11 @@ bool_t z47_stack_runtime_try_fn_to_real_date(void) {
   return true;
 }
 
+void z47_stack_runtime_adjust_result_set_cpxres(void) {
+  fnSetFlag(FLAG_CPXRES);
+  fnRefreshState();
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }

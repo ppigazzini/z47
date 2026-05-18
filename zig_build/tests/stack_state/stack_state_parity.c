@@ -272,6 +272,15 @@ static void setupAdjustResultErrorCase(void) {
   stackParitySetAdjustResultNoDropOutcome(false);
 }
 
+static void setupAdjustResultCpxResCase(void) {
+  uint8_t payload[TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)] = {0};
+
+  seedBasicStack();
+  stackParitySetAdjustResultNoDropOutcome(true);
+  payload[0] = 0xaa;
+  stackParitySeedRegister(2, dtComplex34, amNone, payload, COMPLEX34_SIZE_IN_BLOCKS);
+}
+
 static void setupToRealReal34Case(void) {
   seedBasicStack();
   stackParitySeedRegister(REGISTER_X, dtReal34, amDMS, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xb0}, REAL34_SIZE_IN_BLOCKS);
@@ -523,6 +532,7 @@ int main(void) {
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealDateCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
+  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultCpxResCase, REGISTER_X, false, true, 2, -1, -1);
   failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultDropYCase, REGISTER_X, true, false, -1, -1, -1);
   failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultErrorCase, REGISTER_X, true, false, -1, -1, -1);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
