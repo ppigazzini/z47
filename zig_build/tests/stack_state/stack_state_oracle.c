@@ -142,6 +142,7 @@ void z47_registers_retained_clearRegister(calcRegister_t reg) {
 }
 
 uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
+uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);
 
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
 	uint16_t s, n;
@@ -151,6 +152,28 @@ void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
 	if((lastErrorCode = z47_registers_retained_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
 		for(uint16_t i = s; i < (uint16_t)(s + n); ++i) {
 			oracle_clearRegister((calcRegister_t)i);
+		}
+	}
+	else {
+		z47_stack_runtime_report_register_command_error(lastErrorCode);
+	}
+}
+
+void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter) {
+	uint16_t s, n, d;
+
+	(void)unusedButMandatoryParameter;
+
+	if((lastErrorCode = z47_registers_retained_get_reg_swap_range(&s, &n, &d)) == ERROR_NONE) {
+		if((d < s + n) && (s < d + n)) {
+			z47_stack_runtime_report_register_command_error(ERROR_OUT_OF_RANGE);
+		}
+		else {
+			for(uint16_t i = 0; i < n; ++i) {
+				registerHeader_t savedRegisterHeader = globalRegister[s + i];
+				globalRegister[s + i] = globalRegister[d + i];
+				globalRegister[d + i] = savedRegisterHeader;
+			}
 		}
 	}
 	else {
