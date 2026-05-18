@@ -25,29 +25,36 @@ typedef struct {
 	uint8_t bytes[840];
 } dtConfigDescriptor_t;
 
-enum {
-	dtComplex34 = 2,
-	dtTime = 3,
-	dtDate = 4,
-	dtString = 5,
-	dtReal34Matrix = 6,
-	dtComplex34Matrix = 7,
-	dtShortInteger = 8,
-	dtConfig = 9,
-};
-
-enum {
-	amPolar = 16,
-};
-
-#define COMPLEX34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(complex34_t))
 #define COMPLEX34_SIZE_IN_BYTES TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
-#define SHORT_INTEGER_SIZE_IN_BLOCKS 2
 #define CONFIG_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(dtConfigDescriptor_t))
-#define FLAG_POLAR 0x8006
 #define LIMB_SIZE ((uint32_t)sizeof(uintptr_t))
 #define ERR_REGISTER_LINE REGISTER_X
 #define NIM_REGISTER_LINE REGISTER_Y
+
+enum {
+	dtConfig = 9,
+};
+
+#define ITM_INPUT 43
+#define ITM_STO 44
+#define ITM_STOADD 45
+#define ITM_STOSUB 46
+#define ITM_STOMULT 47
+#define ITM_STODIV 48
+#define ITM_RCL 51
+#define ITM_KEYQ 77
+#define ITM_Xex 127
+#define ITM_STOMAX 1430
+#define ITM_MVAR 1524
+#define ITM_M_DIM 1526
+#define ITM_STOMIN 1545
+#define ITM_SOLVE 1608
+#define ITM_STOCFG 1611
+#define ITM_Tex 1625
+#define ITM_XtoALPHA 1645
+#define ITM_Yex 1650
+#define ITM_Zex 1651
+#define ITM_INTEGRAL 1700
 
 enum {
 	RESERVED_VARIABLE_ADM = FIRST_NAMED_RESERVED_VARIABLE,

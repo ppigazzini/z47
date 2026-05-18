@@ -31,6 +31,26 @@ pub const RESERVED_VARIABLE_ISM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE 
 pub const RESERVED_VARIABLE_REALDF: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 3;
 pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 4;
 
+pub const ITM_INPUT: u16 = 43;
+pub const ITM_STO: u16 = 44;
+pub const ITM_STOADD: u16 = 45;
+pub const ITM_STOSUB: u16 = 46;
+pub const ITM_STOMULT: u16 = 47;
+pub const ITM_STODIV: u16 = 48;
+pub const ITM_KEYQ: u16 = 77;
+pub const ITM_MVAR: u16 = 1524;
+pub const ITM_M_DIM: u16 = 1526;
+pub const ITM_STOMAX: u16 = 1430;
+pub const ITM_STOMIN: u16 = 1545;
+pub const ITM_SOLVE: u16 = 1608;
+pub const ITM_STOCFG: u16 = 1611;
+pub const ITM_Tex: u16 = 1625;
+pub const ITM_XtoALPHA: u16 = 1645;
+pub const ITM_Xex: u16 = 127;
+pub const ITM_Yex: u16 = 1650;
+pub const ITM_Zex: u16 = 1651;
+pub const ITM_INTEGRAL: u16 = 1700;
+
 pub extern var currentAngularMode: u32;
 
 extern fn z47_register_metadata_get_global_descriptor(reg: calcRegister_t) register_descriptor_t;

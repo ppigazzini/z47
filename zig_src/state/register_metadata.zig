@@ -364,6 +364,32 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
     }
 }
 
+pub export fn isFunctionAllowingNewVariable(op: u16) bool {
+    return switch (op) {
+        runtime.ITM_INPUT,
+        runtime.ITM_STO,
+        runtime.ITM_STOADD,
+        runtime.ITM_STOSUB,
+        runtime.ITM_STOMULT,
+        runtime.ITM_STODIV,
+        runtime.ITM_KEYQ,
+        runtime.ITM_M_DIM,
+        runtime.ITM_MVAR,
+        runtime.ITM_SOLVE,
+        runtime.ITM_STOCFG,
+        runtime.ITM_STOMAX,
+        runtime.ITM_STOMIN,
+        runtime.ITM_XtoALPHA,
+        runtime.ITM_Xex,
+        runtime.ITM_Yex,
+        runtime.ITM_Zex,
+        runtime.ITM_Tex,
+        runtime.ITM_INTEGRAL,
+        => true,
+        else => false,
+    };
+}
+
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     if (builtin.target.os.tag == .freestanding) {
         return runtime.retainedGetRegisterDataType(reg);

@@ -13,6 +13,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
 uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg);
 void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
+bool_t isFunctionAllowingNewVariable(uint16_t op);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -25,6 +26,7 @@ uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
 uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t reg);
 void oracle_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
+bool_t oracle_isFunctionAllowingNewVariable(uint16_t op);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -38,6 +40,7 @@ typedef void (*set_max_len_fn)(calcRegister_t, uint16_t);
 typedef void (*set_type_fn)(calcRegister_t, uint16_t, uint32_t);
 typedef void (*set_ptr_fn)(calcRegister_t, const void *);
 typedef void (*set_tag_fn)(calcRegister_t, uint32_t);
+typedef bool_t (*bool_u16_fn)(uint16_t);
 
 enum {
   LOCAL_PAYLOAD_BYTES = 128,
@@ -282,6 +285,9 @@ static void setupReallocateMemoryFullCase(void) {
   stackParitySetMemoryBlockAvailable(false);
 }
 
+static void setupNoOpCase(void) {
+}
+
 static void reportSnapshotMismatch(const char *name, calcRegister_t reg, int *failures) {
   fprintf(stderr, "%s(%d) state mismatch\n", name, reg);
   (*failures)++;
@@ -517,8 +523,39 @@ static int runReallocateCase(const char *name, reallocate_fn oracle_fn, realloca
   return failures;
 }
 
+static int runBoolU16Case(const char *name, bool_u16_fn oracle_fn, bool_u16_fn zig_fn, void (*setup)(void), uint16_t arg) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  bool_t expected;
+  bool_t actual;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  expected = oracle_fn(arg);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  actual = zig_fn(arg);
+  stackParityCapture(&actual_snapshot);
+
+  if(expected != actual) {
+    fprintf(stderr, "%s(%u) result mismatch: expected %u actual %u\n", name, arg, expected, actual);
+    failures++;
+  }
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    reportSnapshotMismatch(name, (calcRegister_t)arg, &failures);
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
+
+  failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_STOADD);
+  failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
 
   failures += runGetU32Case("getRegisterDataType", oracle_getRegisterDataType, getRegisterDataType, setupGlobalCase, REGISTER_X);
   failures += runGetU32Case("getRegisterDataType", oracle_getRegisterDataType, getRegisterDataType, setupNamedCase, FIRST_NAMED_VARIABLE + 2);
