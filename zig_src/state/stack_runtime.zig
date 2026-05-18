@@ -65,6 +65,7 @@ extern fn z47_stack_runtime_try_fn_to_real_real34() bool;
 extern fn z47_stack_runtime_try_fn_to_real_long_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_time() bool;
+extern fn z47_stack_runtime_try_fn_to_real_date() bool;
 extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
 extern fn z47_stack_runtime_get_swap_target_descriptor(reg: u16, descriptor: *register_descriptor_t) bool;
@@ -163,6 +164,10 @@ pub fn tryFnToRealShortInteger() bool {
 
 pub fn tryFnToRealTime() bool {
     return z47_stack_runtime_try_fn_to_real_time();
+}
+
+pub fn tryFnToRealDate() bool {
+    return z47_stack_runtime_try_fn_to_real_date();
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {

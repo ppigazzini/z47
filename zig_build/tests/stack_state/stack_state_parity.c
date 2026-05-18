@@ -280,6 +280,11 @@ static void setupToRealTimeCase(void) {
   stackParitySeedRegister(REGISTER_X, dtTime, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xe0}, REAL34_SIZE_IN_BLOCKS);
 }
 
+static void setupToRealDateCase(void) {
+  seedBasicStack();
+  stackParitySeedRegister(REGISTER_X, dtDate, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xf0}, REAL34_SIZE_IN_BLOCKS);
+}
+
 static void setupClearRegisterRealCase(void) {
   seedRegister(REGISTER_X, 0xa0);
   Input_Default = ID_DP;
@@ -483,6 +488,7 @@ int main(void) {
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealLongIntegerCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealShortIntegerCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealTimeCase, 0);
+  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealDateCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
