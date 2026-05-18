@@ -26,6 +26,7 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/ceil.c",
     "mathematics/floor.c",
     "mathematics/integerPart.c",
+    "mathematics/integerPartLonginteger.c",
     "mathematics/arcsin.c",
     "mathematics/arccos.c",
     "mathematics/arctan.c",

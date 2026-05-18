@@ -28,6 +28,10 @@
 #undef integerPartReal
 #undef integerPartNoOp
 
+#define fnLint oracle_fnLint
+#include "../../../src/c47/mathematics/integerPartLonginteger.c"
+#undef fnLint
+
 #define lnComplex oracle_lnComplex
 #define fnLn oracle_fnLn
 #include "../../../src/c47/mathematics/ln.c"
