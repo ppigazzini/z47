@@ -87,7 +87,6 @@ extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
-extern fn z47_registers_retained_isUniqueMenuName_user_menus(name: [*c]const u8) bool;
 extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
@@ -235,10 +234,6 @@ pub fn retainedGetRegisterDataPointer(reg: calcRegister_t) ?*anyopaque {
 
 pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
-}
-
-pub fn retainedIsUniqueMenuNameUserMenus(name: [*c]const u8) bool {
-    return z47_registers_retained_isUniqueMenuName_user_menus(name);
 }
 
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
