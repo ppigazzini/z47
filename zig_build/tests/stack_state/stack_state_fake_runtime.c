@@ -58,6 +58,11 @@ static uint8_t fake_regswap_error_code = ERROR_NONE;
 static uint16_t fake_regswap_start = 0;
 static uint16_t fake_regswap_count = 0;
 static uint16_t fake_regswap_dest = 0;
+static uint8_t fake_regcopy_error_code = ERROR_NONE;
+static bool_t fake_regcopy_f = false;
+static uint16_t fake_regcopy_start = 0;
+static uint16_t fake_regcopy_count = 0;
+static uint16_t fake_regcopy_dest = 0;
 
 #ifdef Z47_STACK_STATE_RUNTIME
 #define clearRegister z47_stack_parity_raw_clearRegister
@@ -169,6 +174,11 @@ void stackParityReset(void) {
   fake_regswap_start = 0;
   fake_regswap_count = 0;
   fake_regswap_dest = 0;
+  fake_regcopy_error_code = ERROR_NONE;
+  fake_regcopy_f = false;
+  fake_regcopy_start = 0;
+  fake_regcopy_count = 0;
+  fake_regcopy_dest = 0;
   currentInputVariable = INVALID_VARIABLE;
   displayStack = 0;
   thereIsSomethingToUndo = false;
@@ -589,6 +599,33 @@ uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint
   return fake_regswap_error_code;
 }
 
+uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
+  *f = fake_regcopy_f;
+  *s = fake_regcopy_start;
+  *n = fake_regcopy_count;
+  *d = fake_regcopy_dest;
+  return fake_regcopy_error_code;
+}
+
+void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter) {
+  (void)unusedButMandatoryParameter;
+
+  confirmation_request = 2;
+
+  if(fake_regcopy_start > fake_regcopy_dest) {
+    for(uint16_t i = 0; i < fake_regcopy_count; ++i) {
+      copySourceRegisterToDestRegister((calcRegister_t)(fake_regcopy_start + i), (calcRegister_t)(fake_regcopy_dest + i));
+    }
+    return;
+  }
+
+  if(fake_regcopy_start < fake_regcopy_dest) {
+    for(uint16_t i = fake_regcopy_count; i > 0; --i) {
+      copySourceRegisterToDestRegister((calcRegister_t)(fake_regcopy_start + i - 1), (calcRegister_t)(fake_regcopy_dest + i - 1));
+    }
+  }
+}
+
 void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n) {
   fake_regclr_error_code = error_code;
   fake_regclr_start = s;
@@ -600,6 +637,14 @@ void stackParitySetRegSwapRange(uint8_t error_code, uint16_t s, uint16_t n, uint
   fake_regswap_start = s;
   fake_regswap_count = n;
   fake_regswap_dest = d;
+}
+
+void stackParitySetRegCopyParams(uint8_t error_code, bool_t f, uint16_t s, uint16_t n, uint16_t d) {
+  fake_regcopy_error_code = error_code;
+  fake_regcopy_f = f;
+  fake_regcopy_start = s;
+  fake_regcopy_count = n;
+  fake_regcopy_dest = d;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {

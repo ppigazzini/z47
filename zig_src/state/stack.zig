@@ -154,6 +154,52 @@ pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
     }
 }
 
+pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
+    var f = false;
+    var s: u16 = 0;
+    var n: u16 = 0;
+    var d: u16 = 0;
+
+    runtime.lastErrorCode = runtime.retainedGetRegCopyParams(&f, &s, &n, &d);
+    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        runtime.reportRegisterCommandError(runtime.lastErrorCode);
+        return;
+    }
+
+    if (f) {
+        runtime.retainedFnRegCopy(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (s > d) {
+        var index: u16 = 0;
+        while (index < n) : (index += 1) {
+            runtime.copySourceRegisterToDestRegister(
+                @as(runtime.calcRegister_t, @intCast(s + index)),
+                @as(runtime.calcRegister_t, @intCast(d + index)),
+            );
+            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                return;
+            }
+        }
+        return;
+    }
+
+    if (s < d) {
+        var index = n;
+        while (index > 0) {
+            index -= 1;
+            runtime.copySourceRegisterToDestRegister(
+                @as(runtime.calcRegister_t, @intCast(s + index)),
+                @as(runtime.calcRegister_t, @intCast(d + index)),
+            );
+            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                return;
+            }
+        }
+    }
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 
