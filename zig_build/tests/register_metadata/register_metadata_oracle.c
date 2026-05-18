@@ -254,6 +254,16 @@ calcRegister_t oracle_findNamedVariable(const char *variableName) {
   return INVALID_VARIABLE;
 }
 
+calcRegister_t oracle_findOrAllocateNamedVariable(const char *variableName) {
+  uint8_t len = (uint8_t)oracle_validateNameGlyphLength(variableName);
+
+  if(len < 1 || len > 7) {
+    return INVALID_VARIABLE;
+  }
+
+  return oracle_findNamedVariable(variableName);
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;
