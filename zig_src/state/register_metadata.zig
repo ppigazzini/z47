@@ -545,6 +545,29 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
     runtime.retainedFnClearAllVariables(confirmation);
 }
 
+pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
+
+    if (glyph_length < 1 or glyph_length > 7) {
+        return runtime.INVALID_VARIABLE;
+    }
+
+    const reserved = runtime.findReservedVariableName(variable_name, @intCast(glyph_length));
+    if (reserved != runtime.INVALID_VARIABLE) {
+        return reserved;
+    }
+
+    var index: u16 = 0;
+    while (index < runtime.numberOfNamedVariables) : (index += 1) {
+        if (runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0) {
+            return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
+        }
+    }
+
+    return runtime.INVALID_VARIABLE;
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,
