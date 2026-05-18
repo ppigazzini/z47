@@ -193,3 +193,21 @@ const char *z47_register_metadata_user_menu_name(uint32_t index) {
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right) {
   return compareString(left, right, CMP_NAME);
 }
+
+calcRegister_t z47_register_metadata_find_reserved_variable_name(const char *variable_name, uint8_t glyph_length) {
+  for(calcRegister_t reg = 0; reg < NUMBER_OF_RESERVED_VARIABLES; ++reg) {
+    if(allReservedVariables[reg].reservedVariableName[0] != glyph_length) {
+      continue;
+    }
+
+    if(compareString(variable_name, (const char *)(allReservedVariables[reg].reservedVariableName + 1), CMP_NAME) == 0) {
+      return (calcRegister_t)(FIRST_RESERVED_VARIABLE + reg);
+    }
+  }
+
+  return INVALID_VARIABLE;
+}
+
+void z47_register_metadata_report_invalid_name(void) {
+  displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}

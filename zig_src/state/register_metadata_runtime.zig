@@ -30,6 +30,7 @@ pub const RESERVED_VARIABLE_DENMAX: calcRegister_t = FIRST_NAMED_RESERVED_VARIAB
 pub const RESERVED_VARIABLE_ISM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 2;
 pub const RESERVED_VARIABLE_REALDF: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 3;
 pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 4;
+pub const INVALID_VARIABLE: calcRegister_t = @intCast(stack_runtime.INVALID_VARIABLE);
 
 pub const ITM_INPUT: u16 = 43;
 pub const ITM_STO: u16 = 44;
@@ -84,6 +85,8 @@ extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
 extern fn z47_register_metadata_user_menu_count() u32;
 extern fn z47_register_metadata_user_menu_name(index: u32) [*c]const u8;
 extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
+extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
+extern fn z47_register_metadata_report_invalid_name() void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
@@ -223,6 +226,14 @@ pub fn userMenuName(index: u32) [*c]const u8 {
 
 pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
     return z47_register_metadata_compare_menu_names(left, right);
+}
+
+pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
+    return z47_register_metadata_find_reserved_variable_name(variable_name, glyph_length);
+}
+
+pub fn reportInvalidName() void {
+    z47_register_metadata_report_invalid_name();
 }
 
 pub fn retainedGetRegisterDataType(reg: calcRegister_t) u32 {

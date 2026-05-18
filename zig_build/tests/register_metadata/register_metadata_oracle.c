@@ -161,6 +161,20 @@ bool_t oracle_isUniqueMenuName(const char *name) {
   return true;
 }
 
+static calcRegister_t oracle_findReservedVariableName(const char *variableName, uint8_t glyph_length) {
+  for(calcRegister_t reg = 0; reg < NUMBER_OF_RESERVED_VARIABLES; ++reg) {
+    if(allReservedVariables[reg].reservedVariableName[0] != glyph_length) {
+      continue;
+    }
+
+    if(compareString(variableName, (const char *)(allReservedVariables[reg].reservedVariableName + 1), CMP_NAME) == 0) {
+      return (calcRegister_t)(FIRST_RESERVED_VARIABLE + reg);
+    }
+  }
+
+  return INVALID_VARIABLE;
+}
+
 void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks) {
   int32_t glyph_length;
 
@@ -169,6 +183,11 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
 
   glyph_length = oracle_validateNameGlyphLength(variableName);
   if(glyph_length < 1 || glyph_length > VALIDATE_NAME_MAX_GLYPHS) {
+    return;
+  }
+
+  if(oracle_findReservedVariableName(variableName, (uint8_t)glyph_length) != INVALID_VARIABLE) {
+    displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     return;
   }
 

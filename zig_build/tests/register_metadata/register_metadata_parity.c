@@ -64,6 +64,8 @@ static const char validate_name_cross_after_first[] = "A" "\x80\xd7";
 static const char validate_name_too_long[] = "ABCDEFGH";
 static const char allocate_named_variable_empty[] = "";
 static const char allocate_named_variable_too_long[] = "ABCDEFGH";
+static const char allocate_named_variable_reserved_acc[] = "ACC";
+static const char allocate_named_variable_reserved_adm[] = "ADM";
 
 static void seedRegisterBuffer(calcRegister_t reg, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
   stackParitySeedRegister(reg, data_type, tag, payload, size_in_blocks);
@@ -646,6 +648,8 @@ int main(void) {
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-acc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-adm", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_adm, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runBoolStringCase("isUniqueMenuName", "builtin-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInCollisionCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "builtin-nonmenu-ignored", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInNonMenuCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "user-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuUserCollisionCase, "TOOLS");
