@@ -16,6 +16,7 @@ static namedVariableHeader_t fake_named_variables[MAX_FAKE_NAMED_VARIABLES];
 static registerHeader_t fake_local_registers[MAX_FAKE_LOCAL_REGISTERS];
 namedVariableHeader_t *allNamedVariables = fake_named_variables;
 registerHeader_t *currentLocalRegisters = fake_local_registers;
+uint32_t currentAngularMode = amNone;
 char errorMessage[ERROR_MESSAGE_LENGTH];
 const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH] = {
   "%s: no named variables",
@@ -45,6 +46,7 @@ real_t SAVED_SIGMA_LASTX = {{0}};
 real_t SAVED_SIGMA_LASTY = {{0}};
 
 static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
+static bool_t fake_memory_block_available = true;
 
 #ifdef Z47_REGISTER_METADATA_RUNTIME
 #define getRegisterDataPointer z47_stack_parity_raw_getRegisterDataPointer
@@ -54,6 +56,7 @@ static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
 #define getRegisterTag z47_stack_parity_raw_getRegisterTag
 #define setRegisterDataType z47_stack_parity_raw_setRegisterDataType
 #define copySourceRegisterToDestRegister z47_stack_parity_raw_copySourceRegisterToDestRegister
+#define reallocateRegister z47_stack_parity_raw_reallocateRegister
 #endif
 
 static registerHeader_t *mutableRegisterHeader(calcRegister_t reg) {
@@ -160,8 +163,21 @@ void stackParityReset(void) {
   lrChosenUndo = 0;
   statisticalSumsPointer = NULL;
   savedStatisticalSumsPointer = NULL;
+  currentAngularMode = amNone;
   memset(&SAVED_SIGMA_LASTX, 0, sizeof(SAVED_SIGMA_LASTX));
   memset(&SAVED_SIGMA_LASTY, 0, sizeof(SAVED_SIGMA_LASTY));
+  fake_memory_block_available = true;
+}
+
+bool_t isMemoryBlockAvailable(size_t size_in_blocks, uint16_t numBlocks, float extraFraction) {
+  (void)size_in_blocks;
+  (void)numBlocks;
+  (void)extraFraction;
+  return fake_memory_block_available;
+}
+
+void stackParitySetMemoryBlockAvailable(bool_t available) {
+  fake_memory_block_available = available;
 }
 
 void *allocC47Blocks(size_t size_in_blocks) {

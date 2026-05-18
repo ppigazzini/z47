@@ -5,6 +5,8 @@ pub const register_descriptor_t = stack_runtime.register_descriptor_t;
 pub const dtLongInteger = stack_runtime.dtLongInteger;
 pub const dtReal34 = stack_runtime.dtReal34;
 pub const amNone = stack_runtime.amNone;
+pub const amPolar: u32 = 16;
+pub const FLAG_POLAR: i32 = 0x8006;
 pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
 pub const dtDate: u32 = 4;
@@ -29,6 +31,8 @@ pub const RESERVED_VARIABLE_ISM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE 
 pub const RESERVED_VARIABLE_REALDF: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 3;
 pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 4;
 
+pub extern var currentAngularMode: u32;
+
 extern fn z47_register_metadata_get_global_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_set_global_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
 extern fn z47_register_metadata_try_get_named_descriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool;
@@ -48,12 +52,17 @@ extern fn z47_register_metadata_matrix_header_size_in_blocks() u16;
 extern fn z47_register_metadata_complex34_size_in_blocks() u16;
 extern fn z47_register_metadata_short_integer_size_in_blocks() u16;
 extern fn z47_register_metadata_config_size_in_blocks() u16;
+extern fn z47_register_metadata_memory_block_available(size_in_blocks: u16) bool;
+extern fn z47_register_metadata_align_long_integer_blocks(size_in_blocks: u16) u16;
+extern fn z47_register_metadata_initialize_matrix_header_1x1(data_ptr: ?*anyopaque) void;
+extern fn z47_register_metadata_report_ram_full() void;
 extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
 extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
+extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
 extern fn z47_registers_retained_getRegisterMaxDataLengthInBlocks(reg: calcRegister_t) u16;
 extern fn z47_registers_retained_getRegisterFullSizeInBlocks(reg: calcRegister_t) u16;
@@ -141,6 +150,22 @@ pub fn configSizeInBlocks() u16 {
     return z47_register_metadata_config_size_in_blocks();
 }
 
+pub fn memoryBlockAvailable(size_in_blocks: u16) bool {
+    return z47_register_metadata_memory_block_available(size_in_blocks);
+}
+
+pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
+    return z47_register_metadata_align_long_integer_blocks(size_in_blocks);
+}
+
+pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
+    z47_register_metadata_initialize_matrix_header_1x1(data_ptr);
+}
+
+pub fn reportRamFull() void {
+    z47_register_metadata_report_ram_full();
+}
+
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
     return z47_register_metadata_to_pc_mem_ptr(mem_ptr);
 }
@@ -163,6 +188,10 @@ pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
 
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
     z47_registers_retained_copySourceRegisterToDestRegister(source_register, dest_register);
+}
+
+pub fn retainedReallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+    z47_registers_retained_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 
 pub fn retainedSetRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void {

@@ -411,6 +411,77 @@ uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t regist) {
   }
 }
 
+void oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {
+  uint16_t dataSizeWithDataLenBlocks;
+
+  switch(dataType) {
+    case dtComplex34:
+      dataSizeWithoutDataLenBlocks = COMPLEX34_SIZE_IN_BLOCKS;
+      break;
+    case dtReal34:
+    case dtTime:
+    case dtDate:
+      dataSizeWithoutDataLenBlocks = REAL34_SIZE_IN_BLOCKS;
+      break;
+    case dtShortInteger:
+      dataSizeWithoutDataLenBlocks = SHORT_INTEGER_SIZE_IN_BLOCKS;
+      break;
+    case dtConfig:
+      dataSizeWithoutDataLenBlocks = CONFIG_SIZE_IN_BLOCKS;
+      break;
+    default:
+      break;
+  }
+
+  dataSizeWithDataLenBlocks = dataSizeWithoutDataLenBlocks;
+  if(dataType == dtString) {
+    dataSizeWithDataLenBlocks = (uint16_t)(dataSizeWithoutDataLenBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t)));
+  }
+  else if(dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {
+    dataSizeWithDataLenBlocks = (uint16_t)(dataSizeWithoutDataLenBlocks + TO_BLOCKS(sizeof(matrixHeader_t)));
+  }
+  else if(dataType == dtLongInteger) {
+    if(TO_BYTES(dataSizeWithoutDataLenBlocks) % LIMB_SIZE != 0) {
+      dataSizeWithoutDataLenBlocks = (uint16_t)(((dataSizeWithoutDataLenBlocks / TO_BLOCKS(LIMB_SIZE)) + 1) * TO_BLOCKS(LIMB_SIZE));
+    }
+    dataSizeWithDataLenBlocks = (uint16_t)(dataSizeWithoutDataLenBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t)));
+  }
+
+  if(oracle_getRegisterDataType(regist) != dataType ||
+     ((oracle_getRegisterDataType(regist) == dtString ||
+       oracle_getRegisterDataType(regist) == dtLongInteger ||
+       oracle_getRegisterDataType(regist) == dtReal34Matrix ||
+       oracle_getRegisterDataType(regist) == dtComplex34Matrix) &&
+      oracle_getRegisterMaxDataLengthInBlocks(regist) != dataSizeWithoutDataLenBlocks)) {
+    if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks, 2, 0.1f)) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
+
+    freeRegisterData(regist);
+    oracle_setRegisterDataPointer(regist, dataSizeWithDataLenBlocks == 0 ? NULL : allocC47Blocks(dataSizeWithDataLenBlocks));
+    oracle_setRegisterDataType(regist, (uint16_t)dataType, tag);
+
+    if(dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {
+      matrixHeader_t *header = (matrixHeader_t *)oracle_getRegisterDataPointer(regist);
+      if(header != NULL) {
+        header->matrixRows = 1;
+        header->matrixColumns = 1;
+      }
+    }
+    else {
+      oracle_setRegisterMaxDataLengthInBlocks(regist, dataSizeWithoutDataLenBlocks);
+    }
+  }
+
+  if(dataType == dtComplex34 && getSystemFlag(FLAG_POLAR)) {
+    oracle_setRegisterTag(regist, currentAngularMode | amPolar);
+  }
+  else {
+    oracle_setRegisterTag(regist, tag);
+  }
+}
+
 uint32_t z47_registers_retained_getRegisterDataType(calcRegister_t reg) {
   return oracle_getRegisterDataType(reg);
 }
@@ -433,6 +504,10 @@ uint16_t z47_registers_retained_getRegisterMaxDataLengthInBlocks(calcRegister_t 
 
 uint16_t z47_registers_retained_getRegisterFullSizeInBlocks(calcRegister_t reg) {
   return oracle_getRegisterFullSizeInBlocks(reg);
+}
+
+void z47_registers_retained_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
+  oracle_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 
 void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {

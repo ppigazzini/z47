@@ -150,6 +150,10 @@ fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
         reg == runtime.RESERVED_VARIABLE_NDEC;
 }
 
+fn isReservedRegister(reg: runtime.calcRegister_t) bool {
+    return reg > runtime.LAST_NAMED_VARIABLE and reg <= runtime.LAST_RESERVED_VARIABLE;
+}
+
 fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRegister_t {
     if (reg >= runtime.FIRST_RESERVED_VARIABLE and reg < runtime.FIRST_NAMED_RESERVED_VARIABLE) {
         return reg - runtime.FIRST_RESERVED_VARIABLE + runtime.REGISTER_X;
@@ -173,6 +177,52 @@ fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u
         => 0,
         else => null,
     };
+}
+
+fn isVariableSizedDataType(data_type: u32) bool {
+    return data_type == runtime.dtLongInteger or
+        data_type == runtime.dtString or
+        data_type == runtime.dtReal34Matrix or
+        data_type == runtime.dtComplex34Matrix;
+}
+
+fn normalizePayloadSizeInBlocks(data_type: u32, requested_size_in_blocks: u16) u16 {
+    return switch (data_type) {
+        runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
+        runtime.dtReal34,
+        runtime.dtTime,
+        runtime.dtDate,
+        => runtime.real34SizeInBlocks(),
+        runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
+        runtime.dtConfig => runtime.configSizeInBlocks(),
+        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requested_size_in_blocks),
+        else => requested_size_in_blocks,
+    };
+}
+
+fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
+    return switch (data_type) {
+        runtime.dtString,
+        runtime.dtLongInteger,
+        => payload_size_in_blocks + runtime.strLgIntHeaderSizeInBlocks(),
+        runtime.dtReal34Matrix,
+        runtime.dtComplex34Matrix,
+        => payload_size_in_blocks + runtime.matrixHeaderSizeInBlocks(),
+        else => payload_size_in_blocks,
+    };
+}
+
+fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_blocks: u16) bool {
+    const current_type = getRegisterDataType(reg);
+    if (current_type != data_type) {
+        return true;
+    }
+
+    if (isVariableSizedDataType(current_type)) {
+        return getRegisterMaxDataLengthInBlocks(reg) != payload_size_in_blocks;
+    }
+
+    return false;
 }
 
 fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
@@ -261,7 +311,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
             return;
         };
 
-        stack_runtime.reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
+        reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
         if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
             return;
         }
@@ -273,6 +323,45 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
         stack_runtime.bytesFromBlocks(source_full_size),
     );
     setRegisterTag(normalized_dest, getRegisterTag(normalized_source));
+}
+
+pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+    if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
+        runtime.retainedReallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+        return;
+    }
+
+    const normalized_payload_size = normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
+    const allocated_size = allocationSizeInBlocks(data_type, normalized_payload_size);
+
+    if (needsReallocate(reg, data_type, normalized_payload_size)) {
+        if (!runtime.memoryBlockAvailable(allocated_size)) {
+            runtime.reportRamFull();
+            return;
+        }
+
+        stack_runtime.freeRegisterData(reg);
+        const data_ptr = if (allocated_size == 0) null else stack_runtime.allocC47Blocks(allocated_size);
+        if (allocated_size != 0 and data_ptr == null) {
+            runtime.reportRamFull();
+            return;
+        }
+
+        setRegisterDataPointer(reg, data_ptr);
+        setRegisterDataType(reg, @intCast(data_type), tag);
+
+        if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
+            runtime.initializeMatrixHeader1x1(data_ptr);
+        } else {
+            setRegisterMaxDataLengthInBlocks(reg, normalized_payload_size);
+        }
+    }
+
+    if (data_type == runtime.dtComplex34 and stack_runtime.getSystemFlag(runtime.FLAG_POLAR)) {
+        setRegisterTag(reg, runtime.currentAngularMode | runtime.amPolar);
+    } else {
+        setRegisterTag(reg, tag);
+    }
 }
 
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
