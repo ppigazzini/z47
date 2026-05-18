@@ -11,6 +11,7 @@ uint32_t getRegisterTag(calcRegister_t reg);
 void setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len);
 uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
 uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg);
+void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -21,6 +22,7 @@ uint32_t oracle_getRegisterTag(calcRegister_t reg);
 void oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len);
 uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t reg);
 uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t reg);
+void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -28,6 +30,7 @@ void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
 typedef uint32_t (*get_u32_fn)(calcRegister_t);
 typedef uint16_t (*get_u16_fn)(calcRegister_t);
 typedef void *(*get_ptr_fn)(calcRegister_t);
+typedef void (*copy_fn)(calcRegister_t, calcRegister_t);
 typedef void (*set_max_len_fn)(calcRegister_t, uint16_t);
 typedef void (*set_type_fn)(calcRegister_t, uint16_t, uint32_t);
 typedef void (*set_ptr_fn)(calcRegister_t, const void *);
@@ -216,6 +219,41 @@ static void setupGlobalComplex34Case(void) {
 
 static void setupGlobalShortIntegerCase(void) {
   seedRegisterPayload(REGISTER_X, dtShortInteger, 0, SHORT_INTEGER_SIZE_IN_BLOCKS, 0xd0);
+}
+
+static void setupCopyGlobalLongIntegerCase(void) {
+  seedRegisterStringLike(REGISTER_X, dtLongInteger, LI_POSITIVE, 3, 0xe0);
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0xe8);
+}
+
+static void setupCopyNamedStringCase(void) {
+  seedNamedStringLike(2, dtString, amNone, 4, 0xf0);
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0xf8);
+}
+
+static void setupCopyLocalLongIntegerCase(void) {
+  seedLocalStringLike(1, dtLongInteger, LI_POSITIVE, 5, 0x18);
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x20);
+}
+
+static void setupCopyReservedLetteredSourceCase(void) {
+  seedRegisterStringLike(REGISTER_X, dtLongInteger, LI_POSITIVE, 3, 0x28);
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x30);
+}
+
+static void setupCopyReservedLetteredDestCase(void) {
+  seedRegisterStringLike(REGISTER_Y, dtLongInteger, LI_POSITIVE, 4, 0x38);
+  seedRegisterPayload(REGISTER_X, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x40);
+}
+
+static void setupCopyReservedDataCase(void) {
+  seedReservedBacking();
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x48);
+}
+
+static void setupCopyMatrixCase(void) {
+  seedRegisterMatrix(REGISTER_X, dtReal34Matrix, amNone, 2, 3, REAL34_SIZE_IN_BLOCKS, 0x50);
+  seedRegisterPayload(REGISTER_Y, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x58);
 }
 
 static void reportSnapshotMismatch(const char *name, calcRegister_t reg, int *failures) {
@@ -409,6 +447,28 @@ static int runSetMaxLengthCase(const char *name, set_max_len_fn oracle_fn, set_m
   return failures;
 }
 
+static int runCopyCase(const char *name, copy_fn oracle_fn, copy_fn zig_fn, void (*setup)(void), calcRegister_t source_reg, calcRegister_t dest_reg) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(source_reg, dest_reg);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  zig_fn(source_reg, dest_reg);
+  stackParityCapture(&actual_snapshot);
+
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    reportSnapshotMismatch(name, dest_reg, &failures);
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
@@ -461,6 +521,14 @@ int main(void) {
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNamedCase, FIRST_NAMED_VARIABLE + 2, LI_POSITIVE);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 40, amNone);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupLocalCase, FIRST_LOCAL_REGISTER + 1, amNone);
+
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyGlobalLongIntegerCase, REGISTER_X, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyNamedStringCase, FIRST_NAMED_VARIABLE + 2, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyReservedLetteredSourceCase, FIRST_RESERVED_VARIABLE, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyReservedLetteredDestCase, REGISTER_Y, FIRST_RESERVED_VARIABLE);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyReservedDataCase, FIRST_RESERVED_VARIABLE + 40, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyMatrixCase, REGISTER_X, REGISTER_Y);
 
   if(failures != 0) {
     fprintf(stderr, "%d register-metadata parity checks failed\n", failures);

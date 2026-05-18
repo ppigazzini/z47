@@ -13,7 +13,6 @@ void z47_registers_retained_clearRegister(calcRegister_t regist);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 void z47_registers_retained_fnGetLocR(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 void z47_registers_retained_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 bool_t z47_registers_retained_saveLastX(void);
@@ -65,10 +64,6 @@ void fnGetLocR(uint16_t unusedButMandatoryParameter) {
 
 void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
   z47_registers_retained_adjustResult(res, dropY, setCpxRes, op1, op2, op3);
-}
-
-void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
-  z47_registers_retained_copySourceRegisterToDestRegister(sourceRegister, destRegister);
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag) {

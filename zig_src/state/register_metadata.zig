@@ -1,5 +1,6 @@
 const builtin = @import("builtin");
 const runtime = @import("register_metadata_runtime.zig");
+const stack_runtime = @import("stack_runtime.zig");
 
 const pointer_mask: runtime.register_descriptor_t = 0x0000ffff;
 const data_type_mask: runtime.register_descriptor_t = 0x000f0000;
@@ -141,6 +142,39 @@ fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
     );
 }
 
+fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
+    return reg == runtime.RESERVED_VARIABLE_ADM or
+        reg == runtime.RESERVED_VARIABLE_DENMAX or
+        reg == runtime.RESERVED_VARIABLE_ISM or
+        reg == runtime.RESERVED_VARIABLE_REALDF or
+        reg == runtime.RESERVED_VARIABLE_NDEC;
+}
+
+fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRegister_t {
+    if (reg >= runtime.FIRST_RESERVED_VARIABLE and reg < runtime.FIRST_NAMED_RESERVED_VARIABLE) {
+        return reg - runtime.FIRST_RESERVED_VARIABLE + runtime.REGISTER_X;
+    }
+    return reg;
+}
+
+fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
+    return switch (data_type) {
+        runtime.dtLongInteger,
+        runtime.dtString,
+        runtime.dtReal34Matrix,
+        runtime.dtComplex34Matrix,
+        => getRegisterMaxDataLengthInBlocks(source_reg),
+        runtime.dtTime,
+        runtime.dtDate,
+        runtime.dtShortInteger,
+        runtime.dtReal34,
+        runtime.dtComplex34,
+        runtime.dtConfig,
+        => 0,
+        else => null,
+    };
+}
+
 fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
     var data_ptr: ?*anyopaque = null;
 
@@ -208,6 +242,37 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
         runtime.dtConfig => runtime.configSizeInBlocks(),
         else => runtime.retainedGetRegisterFullSizeInBlocks(reg),
     };
+}
+
+pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
+    if (builtin.target.os.tag == .freestanding or isSyntheticReservedCopySource(source_register)) {
+        runtime.retainedCopySourceRegisterToDestRegister(source_register, dest_register);
+        return;
+    }
+
+    const normalized_source = normalizeLetteredReservedRegister(source_register);
+    const normalized_dest = normalizeLetteredReservedRegister(dest_register);
+    const source_type = getRegisterDataType(normalized_source);
+    const source_full_size = getRegisterFullSizeInBlocks(normalized_source);
+
+    if (getRegisterDataType(normalized_dest) != source_type or getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
+        const payload_size = copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
+            runtime.retainedCopySourceRegisterToDestRegister(source_register, dest_register);
+            return;
+        };
+
+        stack_runtime.reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
+        if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
+            return;
+        }
+    }
+
+    _ = stack_runtime.xcopy(
+        getRegisterDataPointer(normalized_dest),
+        getRegisterDataPointer(normalized_source),
+        stack_runtime.bytesFromBlocks(source_full_size),
+    );
+    setRegisterTag(normalized_dest, getRegisterTag(normalized_source));
 }
 
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
