@@ -82,8 +82,10 @@ angularMode_t currentAngularMode = amNone;
 bool_t thereIsSomethingToUndo = false;
 pcg32_random_t pcg32_global = PCG32_INITIALIZER;
 int32_t significantDigits = 34;
+int32_t temporaryInformation = 0;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
+static real_t fake_const_100_value;
 static real_t fake_const_180_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
@@ -275,6 +277,7 @@ void mathWrappersReset(void) {
   ctxtReal75.digits = 75;
   setFakeReal(&fake_const_nan_value, 0, 0x20);
   setFakeReal(&fake_const_one_value, 1, 0);
+  setFakeReal(&fake_const_100_value, 100, 0);
   setFakeReal(&fake_const_180_value, 180, 0);
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
@@ -1587,6 +1590,10 @@ const real_t *z47_math_wrappers_const_1e_6(void) {
   return &fake_const_1e_6_value;
 }
 
+const real_t *z47_math_wrappers_const_100(void) {
+  return &fake_const_100_value;
+}
+
 const real_t *z47_math_wrappers_const_180(void) {
   return &fake_const_180_value;
 }
@@ -1608,6 +1615,19 @@ void fnDrop(uint16_t unusedButMandatoryParameter) {
 
 void fnDropY(uint16_t unusedButMandatoryParameter) {
   fnDrop(unusedButMandatoryParameter);
+}
+
+void refreshLcd(void *unused) {
+  (void)unused;
+  snapshot.fn_refresh_state_calls++;
+}
+
+void lcd_refresh(void) {
+  snapshot.fn_refresh_state_calls++;
+}
+
+void fnChangeBase(uint16_t base) {
+  (void)base;
 }
 
 void fnUndo(uint16_t unusedButMandatoryParameter) {
@@ -1676,6 +1696,22 @@ const char *getRegisterDataTypeName(calcRegister_t reg, bool_t article, bool_t a
   return "test";
 }
 
+const char *getDataTypeName(uint32_t data_type, bool_t article, bool_t abbreviated) {
+  (void)article;
+  (void)abbreviated;
+
+  switch(data_type) {
+    case dtShortInteger: return "short integer";
+    case dtLongInteger: return "long integer";
+    case dtReal34: return "real";
+    case dtComplex34: return "complex";
+    case dtTime: return "time";
+    case dtReal34Matrix: return "real matrix";
+    case dtComplex34Matrix: return "complex matrix";
+    default: return "test";
+  }
+}
+
 void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int bufferLength, int screenWidth, int limit, bool_t allowLarge) {
   (void)reg;
   (void)screenWidth;
@@ -1688,4 +1724,35 @@ void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int bu
 
 const real34_t *z47_math_wrappers_const34_0(void) {
   return &fake_const34_zero_value;
+}
+
+bool_t real34CompareEqual(const real34_t *lhs, const real34_t *rhs) {
+  return memcmp(lhs, rhs, sizeof(*lhs)) == 0;
+}
+
+bool_t real34IsAnInteger(const real34_t *value) {
+  return real34GetExponent(value) >= 0;
+}
+
+void WP34S_Logxy(const real_t *numer, const real_t *denom, real_t *res, realContext_t *realContext) {
+  decNumberDivide(res, numer, denom, realContext);
+}
+
+void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer) {
+  int16_t sign;
+  uint64_t value;
+
+  convertShortIntegerRegisterToUInt64(reg, &sign, &value);
+  mpz_set_ui(long_integer, value);
+  if(sign < 0) {
+    mpz_neg(long_integer, long_integer);
+  }
+}
+
+void longInteger2Pow(int32_t exponent, longInteger_t result) {
+  mpz_ui_pow_ui(result, 2, (unsigned long)exponent);
+}
+
+void longIntegerDivideQuotientRemainder(const longInteger_t dividend, const longInteger_t divisor, longInteger_t quotient, longInteger_t remainder) {
+  mpz_tdiv_qr(quotient, remainder, dividend, divisor);
 }

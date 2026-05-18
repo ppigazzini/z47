@@ -392,6 +392,12 @@ void atan2LonIRema(void);
 #undef atan2Error
 #undef arctan2
 
+#define percentReal oracle_percentReal
+#define fnPercent oracle_fnPercent
+#include "../../../src/c47/mathematics/percent.c"
+#undef fnPercent
+#undef percentReal
+
 #define eulersFormula oracle_eulersFormula
 #define fnM1Pow oracle_fnM1Pow
 #include "../../../src/c47/mathematics/minusOnePow.c"

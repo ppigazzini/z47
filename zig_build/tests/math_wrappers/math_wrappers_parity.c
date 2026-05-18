@@ -68,6 +68,7 @@ void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 void fnAtan2(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
+void fnPercent(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -132,6 +133,7 @@ void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 void oracle_fnAtan2(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
+void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -1383,6 +1385,14 @@ static void configureCubeLongInteger(void) {
   mathWrappersSetLongIntegerInput(true, 3);
 }
 
+static void configurePercentReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetRealYInput(true, 25, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
 int main(void) {
   int failures = 0;
 
@@ -1603,6 +1613,7 @@ int main(void) {
   failures += runCase("fnCube/complex", oracle_fnCube, fnCube, 0, true, configureCubeComplex);
   failures += runCase("fnCube/shortint", oracle_fnCube, fnCube, 0, true, configureCubeShortInteger);
   failures += runCase("fnCube/longint", oracle_fnCube, fnCube, 0, true, configureCubeLongInteger);
+  failures += runCase("fnPercent/real", oracle_fnPercent, fnPercent, 0, true, configurePercentReal);
 
   if(failures != 0) {
     fprintf(stderr, "%d math-command-wrapper parity checks failed\n", failures);
