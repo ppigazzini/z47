@@ -132,3 +132,32 @@ uint16_t z47_register_metadata_short_integer_size_in_blocks(void) {
 uint16_t z47_register_metadata_config_size_in_blocks(void) {
   return CONFIG_SIZE_IN_BLOCKS;
 }
+
+bool_t z47_register_metadata_memory_block_available(uint16_t size_in_blocks) {
+  return isMemoryBlockAvailable(size_in_blocks, 2, 0.1f);
+}
+
+uint16_t z47_register_metadata_align_long_integer_blocks(uint16_t size_in_blocks) {
+  const uint16_t limb_size_in_blocks = TO_BLOCKS(LIMB_SIZE);
+
+  if(TO_BYTES(size_in_blocks) % LIMB_SIZE != 0) {
+    return (uint16_t)(((size_in_blocks / limb_size_in_blocks) + 1) * limb_size_in_blocks);
+  }
+
+  return size_in_blocks;
+}
+
+void z47_register_metadata_initialize_matrix_header_1x1(void *data_ptr) {
+  matrixHeader_t *header = (matrixHeader_t *)data_ptr;
+
+  if(header == NULL) {
+    return;
+  }
+
+  header->matrixRows = 1;
+  header->matrixColumns = 1;
+}
+
+void z47_register_metadata_report_ram_full(void) {
+  displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}

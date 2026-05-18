@@ -36,10 +36,18 @@ enum {
 	dtConfig = 9,
 };
 
+enum {
+	amPolar = 16,
+};
+
 #define COMPLEX34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(complex34_t))
 #define COMPLEX34_SIZE_IN_BYTES TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
 #define SHORT_INTEGER_SIZE_IN_BLOCKS 2
 #define CONFIG_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(dtConfigDescriptor_t))
+#define FLAG_POLAR 0x8006
+#define LIMB_SIZE ((uint32_t)sizeof(uintptr_t))
+#define ERR_REGISTER_LINE REGISTER_X
+#define NIM_REGISTER_LINE REGISTER_Y
 
 enum {
 	RESERVED_VARIABLE_ADM = FIRST_NAMED_RESERVED_VARIABLE,
@@ -48,5 +56,10 @@ enum {
 	RESERVED_VARIABLE_REALDF,
 	RESERVED_VARIABLE_NDEC,
 };
+
+extern uint32_t currentAngularMode;
+
+bool_t isMemoryBlockAvailable(size_t size_in_blocks, uint16_t numBlocks, float extraFraction);
+void stackParitySetMemoryBlockAvailable(bool_t available);
 
 #endif
