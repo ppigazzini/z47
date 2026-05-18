@@ -1908,6 +1908,16 @@ pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.z47_math_wrappers_integer_part_long_integer();
 }
 
+pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    runtime.z47_math_wrappers_integer_part_short_integer();
+}
+
 pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 

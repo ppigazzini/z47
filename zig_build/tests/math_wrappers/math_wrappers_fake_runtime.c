@@ -555,6 +555,46 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   return true;
 }
 
+bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional) {
+  (void)reg;
+
+  if(current_register_data_type == dtShortInteger) {
+    const uint64_t raw = *(uint64_t *)register_slot;
+    if(sign != NULL) {
+      *sign = (raw >> 63) != 0;
+    }
+    if(val != NULL) {
+      *val = raw & ~(UINT64_C(1) << 63);
+    }
+    if(overflow != NULL) {
+      *overflow = overflow_flag;
+    }
+    if(fractional != NULL) {
+      *fractional = false;
+    }
+    return true;
+  }
+
+  if(current_register_data_type == dtLongInteger) {
+    const int32_t input_value = longint_input.value;
+    if(sign != NULL) {
+      *sign = input_value < 0;
+    }
+    if(val != NULL) {
+      *val = (uint64_t)(input_value < 0 ? -input_value : input_value);
+    }
+    if(overflow != NULL) {
+      *overflow = false;
+    }
+    if(fractional != NULL) {
+      *fractional = false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
 bool_t getFlag(uint16_t flag) {
   if(flag == FLAG_CPXRES) {
     return cpxres_flag;
@@ -594,6 +634,13 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
   longint_input.value = (int32_t)mpz_get_si(lgInt);
   current_register_data_type = dtLongInteger;
   current_register_tag = longint_input.value < 0 ? LI_NEGATIVE : longint_input.value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t reg) {
+  (void)reg;
+  *(uint64_t *)register_slot = value | ((uint64_t)(sign != 0) << 63);
+  current_register_data_type = dtShortInteger;
+  current_register_tag = base;
 }
 
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode) {
@@ -1107,6 +1154,12 @@ void fnSetFlag(int32_t flag) {
 
 void fnRefreshState(void) {
   snapshot.fn_refresh_state_calls++;
+}
+
+void forceSystemFlag(unsigned int sf, int set) {
+  if(sf == FLAG_OVERFLOW) {
+    overflow_flag = set != 0;
+  }
 }
 
 void setLastintegerBasetoZero(void) {
