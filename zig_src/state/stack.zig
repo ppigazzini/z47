@@ -281,8 +281,14 @@ pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
 pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
     const one_argument_is_complex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
 
-    if (!runtime.retainedAdjustResultNoDropYNoCpxRes(res, op1, op2, op3)) {
-        return;
+    if (runtime.adjustResultScalarCore(res)) {
+        if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+            return;
+        }
+    } else {
+        if (!runtime.retainedAdjustResultNoDropYNoCpxRes(res, op1, op2, op3)) {
+            return;
+        }
     }
 
     if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {

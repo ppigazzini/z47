@@ -298,8 +298,15 @@ void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, cal
 		oneArgumentIsComplex = oneArgumentIsComplex || getRegisterDataType(op3) == dtComplex34 || getRegisterDataType(op3) == dtComplex34Matrix;
 	}
 
-	if(!z47_registers_retained_adjust_result_no_drop_y_no_cpxres(res, op1, op2, op3)) {
-		return;
+	if(z47_stack_runtime_adjust_result_scalar_core(res)) {
+		if(lastErrorCode != ERROR_NONE) {
+			return;
+		}
+	}
+	else {
+		if(!z47_registers_retained_adjust_result_no_drop_y_no_cpxres(res, op1, op2, op3)) {
+			return;
+		}
 	}
 
 	if(setCpxRes && oneArgumentIsComplex && getRegisterDataType(res) != dtString) {

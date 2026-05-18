@@ -229,6 +229,7 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
 void z47_stack_runtime_request_clear_registers_confirmation(void);
 void z47_stack_runtime_report_register_command_error(uint8_t error_code);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
+bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res);
 void z47_stack_runtime_adjust_result_set_cpxres(void);
 
 bool_t getSystemFlag(int32_t sf);
