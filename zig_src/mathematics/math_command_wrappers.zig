@@ -973,8 +973,48 @@ fn floorCplx() callconv(.c) void {
     runtime.integerPartCplx(runtime.DEC_ROUND_FLOOR);
 }
 
+fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
+    if (runtime.realIsSpecial(x)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        }
+    } else {
+        runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal39);
+    }
+}
+
+pub export fn integerPartNoOp() callconv(.c) void {}
+
+pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        doIP(&x, mode);
+        runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+    }
+}
+
+pub export fn integerPartCplx(mode: runtime.rounding_t) callconv(.c) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
+        doIP(&a, mode);
+        doIP(&b, mode);
+        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    }
+}
+
 fn integerPartNoOpForward() callconv(.c) void {
-    runtime.integerPartNoOp();
+    integerPartNoOp();
+}
+
+fn ipReal() callconv(.c) void {
+    integerPartReal(runtime.DEC_ROUND_DOWN);
+}
+
+fn ipCplx() callconv(.c) void {
+    integerPartCplx(runtime.DEC_ROUND_DOWN);
 }
 
 fn coshReal() callconv(.c) void {
@@ -1842,6 +1882,17 @@ pub export fn fnFloor(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.processIntRealComplexMonadicFunction(
         &floorReal,
         &floorCplx,
+        &integerPartNoOpForward,
+        &integerPartNoOpForward,
+    );
+}
+
+pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(
+        &ipReal,
+        &ipCplx,
         &integerPartNoOpForward,
         &integerPartNoOpForward,
     );

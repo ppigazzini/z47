@@ -502,20 +502,6 @@ void processIntRealComplexDyadicFunction(void (*realf)(void),
   }
 }
 
-void integerPartNoOp(void) {
-  snapshot.integer_part_noop_calls++;
-}
-
-void integerPartReal(enum rounding mode) {
-  snapshot.integer_part_real_calls++;
-  snapshot.integer_part_real_mode = mode;
-}
-
-void integerPartCplx(enum rounding mode) {
-  snapshot.integer_part_cplx_calls++;
-  snapshot.integer_part_cplx_mode = mode;
-}
-
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
   snapshot.get_register_as_real_calls++;
   if(current_register_data_type == dtTime) {
@@ -919,6 +905,12 @@ decNumber *decNumberFromUInt32(decNumber *result, uint32_t source) {
   snapshot.dec_number_from_uint32_last_source = source;
   setFakeRealWithCoeff(result, source, 0, 0);
   return result;
+}
+
+void realToIntegralValue(const real_t *source, real_t *destination, enum rounding mode, realContext_t *realContext) {
+  (void)mode;
+  (void)realContext;
+  *destination = *source;
 }
 
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {

@@ -281,6 +281,7 @@ decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber
 decNumber *decNumberSubtract(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber *rhs, const decNumber *term, decContext *real_context);
 decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
+void realToIntegralValue(const real_t *source, real_t *destination, enum rounding mode, realContext_t *realContext);
 bool_t realCompareEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareLessThan(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
