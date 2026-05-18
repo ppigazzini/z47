@@ -187,9 +187,12 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 
 #define sinComplex oracle_sinComplex
 #define expComplex oracle_expComplex
+#define realExpM1 oracle_realExpM1
+void oracle_realExpM1(const real_t *x, real_t *res, realContext_t *realContext);
 #define fnExpM1 oracle_fnExpM1
 #include "../../../src/c47/mathematics/expMOne.c"
 #undef fnExpM1
+#undef realExpM1
 #undef expComplex
 #undef sinComplex
 
@@ -214,9 +217,12 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #define logxyLonI oracle_logxyLonI
 #define logxyReal oracle_logxyReal
 #define logxyCplx oracle_logxyCplx
+#define realLog10 oracle_realLog10
+void oracle_realLog10(const real_t *x, real_t *res, realContext_t *realContext);
 #define fnLog10 oracle_fnLog10
 #include "../../../src/c47/mathematics/log10.c"
 #undef fnLog10
+#undef realLog10
 #undef logxyCplx
 #undef logxyReal
 #undef logxyLonI
