@@ -48,6 +48,8 @@ pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
 pub const dtDate: u32 = 4;
 pub const dtString: u32 = 5;
+pub const dtReal34Matrix: u32 = 6;
+pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
 pub const amNone: u32 = 5;
 pub const amPolar: u32 = 16;
@@ -66,6 +68,7 @@ extern fn z47_stack_runtime_try_fn_to_real_long_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_time() bool;
 extern fn z47_stack_runtime_try_fn_to_real_date() bool;
+extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
 extern fn z47_stack_runtime_get_swap_target_descriptor(reg: u16, descriptor: *register_descriptor_t) bool;
@@ -109,6 +112,7 @@ pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
 pub extern fn z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_fnToReal(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_adjust_result_no_drop_y(res: calcRegister_t, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool;
+pub extern fn z47_registers_retained_adjust_result_no_drop_y_no_cpxres(res: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
@@ -169,6 +173,10 @@ pub fn tryFnToRealTime() bool {
 
 pub fn tryFnToRealDate() bool {
     return z47_stack_runtime_try_fn_to_real_date();
+}
+
+pub fn adjustResultSetCpxRes() void {
+    z47_stack_runtime_adjust_result_set_cpxres();
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
@@ -253,6 +261,10 @@ pub fn retainedFnToReal(unused_but_mandatory_parameter: u16) void {
 
 pub fn retainedAdjustResultNoDropY(res: calcRegister_t, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool {
     return z47_registers_retained_adjust_result_no_drop_y(res, set_cpx_res, op1, op2, op3);
+}
+
+pub fn retainedAdjustResultNoDropYNoCpxRes(res: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool {
+    return z47_registers_retained_adjust_result_no_drop_y_no_cpxres(res, op1, op2, op3);
 }
 
 pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {
