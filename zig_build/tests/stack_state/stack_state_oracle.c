@@ -146,6 +146,7 @@ uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint
 uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
+bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end);
 
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
@@ -279,4 +280,14 @@ void oracle_fnToReal(uint16_t unusedButMandatoryParameter) {
 	}
 
 	z47_registers_retained_fnToReal(unusedButMandatoryParameter);
+}
+
+void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
+	if(!z47_registers_retained_adjust_result_no_drop_y(res, setCpxRes, op1, op2, op3)) {
+		return;
+	}
+
+	if(dropY) {
+		oracle_fnDropY(0);
+	}
 }

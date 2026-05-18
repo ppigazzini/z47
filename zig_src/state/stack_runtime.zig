@@ -108,6 +108,7 @@ pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
 pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
 pub extern fn z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_fnToReal(unused_but_mandatory_parameter: u16) void;
+pub extern fn z47_registers_retained_adjust_result_no_drop_y(res: calcRegister_t, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
@@ -248,6 +249,10 @@ pub fn retainedFnRegCopy(unused_but_mandatory_parameter: u16) void {
 
 pub fn retainedFnToReal(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
+}
+
+pub fn retainedAdjustResultNoDropY(res: calcRegister_t, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) bool {
+    return z47_registers_retained_adjust_result_no_drop_y(res, set_cpx_res, op1, op2, op3);
 }
 
 pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {
