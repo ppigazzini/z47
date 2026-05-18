@@ -293,11 +293,14 @@ void stackParitySeedSavedStats(uint8_t seed);
 void stackParityCapture(stack_parity_snapshot_t *snapshot);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
 void z47_registers_retained_clearRegister(calcRegister_t reg);
+void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
 uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
 uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);
+uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
 
 void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n);
 void stackParitySetRegSwapRange(uint8_t error_code, uint16_t s, uint16_t n, uint16_t d);
+void stackParitySetRegCopyParams(uint8_t error_code, bool_t f, uint16_t s, uint16_t n, uint16_t d);
 
 #endif
 
