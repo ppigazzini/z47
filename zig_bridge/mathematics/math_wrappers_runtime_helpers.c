@@ -660,6 +660,7 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef complexMagnitude
 #undef complexMagnitude2
 
+#ifndef Z47_MATH_WRAPPERS_C47_H
 void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
   z47_math_wrappers_retained_complexMagnitude2(a, b, c, realContext);
 }
@@ -667,6 +668,7 @@ void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_
 void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
   z47_math_wrappers_retained_complexMagnitude(a, b, c, realContext);
 }
+#endif
 
 #define conjCplx z47_math_wrappers_retained_conjCplx
 #define fnConjugate z47_math_wrappers_retained_fnConjugate

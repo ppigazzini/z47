@@ -5,12 +5,9 @@ pub const RuntimeObjects = struct {
     math_command_wrappers: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_helpers.c");
-        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c");
-        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c");
-        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c");
-        cmd.addArg("zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c");
-        cmd.addArg("zig_bridge/mathematics/random_runtime_helpers.c");
+        for (runtime_helper_sources) |source| {
+            cmd.addArg(source);
+        }
         cmd.addFileArg(self.math_command_wrappers.getEmittedBin());
     }
 };
@@ -121,6 +118,77 @@ const replaced_core_sources = [_][]const u8{
     "mathematics/linpol.c",
     "mathematics/cross.c",
     "mathematics/dot.c",
+    "mathematics/agm.c",
+    "mathematics/bessel.c",
+    "mathematics/beta.c",
+    "mathematics/cpyx.c",
+    "mathematics/cxToRe.c",
+    "mathematics/deltaPercentXmean.c",
+    "mathematics/elliptic.c",
+    "mathematics/gamma.c",
+    "mathematics/gammaX.c",
+    "mathematics/gd.c",
+    "mathematics/iteration.c",
+    "mathematics/lnbeta.c",
+    "mathematics/matrix.c",
+    "mathematics/mean.c",
+    "mathematics/median.c",
+    "mathematics/opmod.c",
+    "mathematics/ortho_polynom.c",
+    "mathematics/percentSigma.c",
+    "mathematics/percentSigmaDeltaPercentXmean.c",
+    "mathematics/power.c",
+    "mathematics/prime.c",
+    "mathematics/rdp.c",
+    "mathematics/reToCx.c",
+    "mathematics/rsd.c",
+    "mathematics/slvc.c",
+    "mathematics/slvq.c",
+    "mathematics/variance.c",
+    "mathematics/wp34s.c",
+    "mathematics/xfn.c",
+    "mathematics/xthRoot.c",
+    "mathematics/zeta.c",
+};
+
+const runtime_helper_sources = [_][]const u8{
+    "zig_bridge/mathematics/math_wrappers_runtime_helpers.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c",
+    "zig_bridge/mathematics/random_runtime_helpers.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_agm.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_bessel.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_beta.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_cpyx.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_cxToRe.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_elliptic.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_gamma.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_gammaX.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_gd.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_iteration.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_lnbeta.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_matrix.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_mean.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_median.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_opmod.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_ortho_polynom.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_percentSigma.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_power.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_prime.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_rdp.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_reToCx.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_rsd.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_slvc.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_slvq.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_variance.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_wp34s.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_xfn.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_xthRoot.c",
+    "zig_bridge/mathematics/math_wrappers_runtime_zeta.c",
 };
 
 fn addRuntimeObject(
@@ -191,12 +259,9 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/random_runtime_helpers.c"), .flags = c_flags });
+    for (runtime_helper_sources) |source| {
+        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
+    }
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
     module.addObject(runtime_object);
 }
