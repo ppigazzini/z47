@@ -37,3 +37,15 @@ bool_t oracle_saveLastX(void) {
 	copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
 	return lastErrorCode == ERROR_NONE;
 }
+
+void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter) {
+	longInteger_t locR;
+
+	(void)unusedButMandatoryParameter;
+
+	oracle_liftStack();
+	longIntegerInit(locR);
+	uInt32ToLongInteger(currentNumberOfLocalRegisters, locR);
+	convertLongIntegerToLongIntegerRegister(locR, REGISTER_X);
+	longIntegerFree(locR);
+}

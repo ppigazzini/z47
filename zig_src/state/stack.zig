@@ -58,6 +58,13 @@ pub export fn saveLastX() bool {
     return runtime.lastErrorCode == runtime.ERROR_NONE;
 }
 
+pub export fn fnGetLocR(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
+
+    liftStack();
+    runtime.storeLocalRegisterCountInX();
+}
+
 pub export fn _Drop(reg: runtime.calcRegister_t) void {
     const stack_top = runtime.getStackTop();
     if (reg == stack_top) {

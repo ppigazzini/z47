@@ -182,6 +182,7 @@ void z47_stack_runtime_report_invalid_swap_target(uint16_t reg);
 uint16_t z47_stack_runtime_statistical_sums_blocks(void);
 uint32_t z47_stack_runtime_statistical_sums_bytes(void);
 void z47_stack_runtime_store_stack_size_in_x(uint32_t size);
+void z47_stack_runtime_store_local_register_count_in_x(void);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
