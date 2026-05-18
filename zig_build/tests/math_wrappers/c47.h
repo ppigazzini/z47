@@ -107,6 +107,7 @@ enum {
 #define ERR_REGISTER_LINE REGISTER_Z
 #define ERROR_NONE 0
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
+#define FLAG_CARRY 0x800b
 #define FLAG_CPXRES 0x8004
 #define FLAG_OVERFLOW 0x800c
 #define FLAG_SPCRES 0x8017
@@ -226,6 +227,7 @@ void integerPartCplx(enum rounding mode);
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value);
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *angle_mode, bool_t reduce_longinteger_angle);
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
+bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
 bool_t getFlag(uint16_t flag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
@@ -234,6 +236,7 @@ uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
+void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
@@ -331,6 +334,7 @@ void setSystemFlag(int32_t flag);
 void clearSystemFlag(int32_t flag);
 void fnSetFlag(int32_t flag);
 void fnRefreshState(void);
+void forceSystemFlag(unsigned int sf, int set);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void setLastintegerBasetoZero(void);
@@ -351,6 +355,7 @@ const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
 void z47_math_wrappers_minus_one_power_long_integer(void);
 void z47_math_wrappers_integer_part_long_integer(void);
+void z47_math_wrappers_integer_part_short_integer(void);
 int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue);
 void z47_math_wrappers_report_int_pow_real_domain_error(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
