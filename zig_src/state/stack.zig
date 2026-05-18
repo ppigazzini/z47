@@ -258,6 +258,10 @@ pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
+    if (runtime.tryFnToRealDate()) {
+        return;
+    }
+
     if (runtime.tryFnToRealReal34()) {
         return;
     }
