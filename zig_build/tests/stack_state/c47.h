@@ -231,6 +231,7 @@ void z47_stack_runtime_report_register_command_error(uint8_t error_code);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res);
 bool_t z47_stack_runtime_adjust_result_real_matrix_core(calcRegister_t res);
+bool_t z47_stack_runtime_adjust_result_complex_matrix_core(calcRegister_t res);
 void z47_stack_runtime_adjust_result_set_cpxres(void);
 
 bool_t getSystemFlag(int32_t sf);
