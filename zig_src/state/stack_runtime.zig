@@ -70,6 +70,7 @@ extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_time() bool;
 extern fn z47_stack_runtime_try_fn_to_real_date() bool;
 extern fn z47_stack_runtime_adjust_result_scalar_core(res: calcRegister_t) bool;
+extern fn z47_stack_runtime_adjust_result_real_matrix_core(res: calcRegister_t) bool;
 extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
@@ -183,6 +184,10 @@ pub fn adjustResultSetCpxRes() void {
 
 pub fn adjustResultScalarCore(res: calcRegister_t) bool {
     return z47_stack_runtime_adjust_result_scalar_core(res);
+}
+
+pub fn adjustResultRealMatrixCore(res: calcRegister_t) bool {
+    return z47_stack_runtime_adjust_result_real_matrix_core(res);
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {

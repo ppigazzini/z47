@@ -553,6 +553,18 @@ bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
   return true;
 }
 
+bool_t z47_stack_runtime_adjust_result_real_matrix_core(calcRegister_t res) {
+  if(getRegisterDataType(res) != dtReal34Matrix) {
+    return false;
+  }
+
+  confirmation_request = fake_adjust_result_no_drop_success ? 17 : 18;
+  if(!fake_adjust_result_no_drop_success) {
+    lastErrorCode = ERROR_OUT_OF_RANGE;
+  }
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
