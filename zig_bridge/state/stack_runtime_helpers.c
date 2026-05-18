@@ -107,6 +107,10 @@ uint8_t z47_stack_runtime_current_local_register_count(void) {
   return currentNumberOfLocalRegisters;
 }
 
+uint8_t z47_stack_runtime_get_input_default(void) {
+  return Input_Default;
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
