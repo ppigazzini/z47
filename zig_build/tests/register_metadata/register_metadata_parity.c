@@ -14,6 +14,7 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg);
 void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 bool_t isFunctionAllowingNewVariable(uint16_t op);
+bool_t validateName(const char *name);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -27,6 +28,7 @@ uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t reg);
 void oracle_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
 void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 bool_t oracle_isFunctionAllowingNewVariable(uint16_t op);
+bool_t oracle_validateName(const char *name);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -41,10 +43,20 @@ typedef void (*set_type_fn)(calcRegister_t, uint16_t, uint32_t);
 typedef void (*set_ptr_fn)(calcRegister_t, const void *);
 typedef void (*set_tag_fn)(calcRegister_t, uint32_t);
 typedef bool_t (*bool_u16_fn)(uint16_t);
+typedef bool_t (*bool_str_fn)(const char *);
 
 enum {
   LOCAL_PAYLOAD_BYTES = 128,
 };
+
+static const char validate_name_ascii_valid[] = "Abc1";
+static const char validate_name_empty[] = "";
+static const char validate_name_digit_first[] = "1abc";
+static const char validate_name_accented_first[] = "\x80\xc0" "bc";
+static const char validate_name_superscript_first[] = "\xa4\x82" "1";
+static const char validate_name_plus_after_first[] = "A+";
+static const char validate_name_cross_after_first[] = "A" "\x80\xd7";
+static const char validate_name_too_long[] = "ABCDEFGH";
 
 static void seedRegisterBuffer(calcRegister_t reg, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
   stackParitySeedRegister(reg, data_type, tag, payload, size_in_blocks);
@@ -551,11 +563,48 @@ static int runBoolU16Case(const char *name, bool_u16_fn oracle_fn, bool_u16_fn z
   return failures;
 }
 
+static int runBoolStringCase(const char *name, const char *case_name, bool_str_fn oracle_fn, bool_str_fn zig_fn, void (*setup)(void), const char *arg) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  bool_t expected;
+  bool_t actual;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  expected = oracle_fn(arg);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  actual = zig_fn(arg);
+  stackParityCapture(&actual_snapshot);
+
+  if(expected != actual) {
+    fprintf(stderr, "%s(%s) result mismatch: expected %u actual %u\n", name, case_name, expected, actual);
+    failures++;
+  }
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    fprintf(stderr, "%s(%s) state mismatch\n", name, case_name);
+    failures++;
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_STOADD);
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
+  failures += runBoolStringCase("validateName", "ascii-valid", oracle_validateName, validateName, setupNoOpCase, validate_name_ascii_valid);
+  failures += runBoolStringCase("validateName", "empty", oracle_validateName, validateName, setupNoOpCase, validate_name_empty);
+  failures += runBoolStringCase("validateName", "digit-first", oracle_validateName, validateName, setupNoOpCase, validate_name_digit_first);
+  failures += runBoolStringCase("validateName", "accented-first", oracle_validateName, validateName, setupNoOpCase, validate_name_accented_first);
+  failures += runBoolStringCase("validateName", "superscript-first", oracle_validateName, validateName, setupNoOpCase, validate_name_superscript_first);
+  failures += runBoolStringCase("validateName", "plus-after-first", oracle_validateName, validateName, setupNoOpCase, validate_name_plus_after_first);
+  failures += runBoolStringCase("validateName", "cross-after-first", oracle_validateName, validateName, setupNoOpCase, validate_name_cross_after_first);
+  failures += runBoolStringCase("validateName", "too-long", oracle_validateName, validateName, setupNoOpCase, validate_name_too_long);
 
   failures += runGetU32Case("getRegisterDataType", oracle_getRegisterDataType, getRegisterDataType, setupGlobalCase, REGISTER_X);
   failures += runGetU32Case("getRegisterDataType", oracle_getRegisterDataType, getRegisterDataType, setupNamedCase, FIRST_NAMED_VARIABLE + 2);

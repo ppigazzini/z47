@@ -44,6 +44,107 @@ static inline registerHeader_t *POINTER_TO_LOCAL_REGISTER(const calcRegister_t r
   return (registerHeader_t *)(currentLocalRegisters + reg);
 }
 
+enum {
+  VALIDATE_NAME_MAX_GLYPHS = 7,
+  VALIDATE_NAME_GLYPH_A = 0x41,
+  VALIDATE_NAME_GLYPH_Z = 0x5a,
+  VALIDATE_NAME_GLYPH_a = 0x61,
+  VALIDATE_NAME_GLYPH_z = 0x7a,
+  VALIDATE_NAME_GLYPH_A_GRAVE = 0x00c0,
+  VALIDATE_NAME_GLYPH_CROSS = 0x00d7,
+  VALIDATE_NAME_GLYPH_DIVIDE = 0x00f7,
+  VALIDATE_NAME_GLYPH_z_CARON = 0x017e,
+  VALIDATE_NAME_GLYPH_IOTA_DIALYTIKA_TONOS = 0x0390,
+  VALIDATE_NAME_GLYPH_SAMPI = 0x03e1,
+  VALIDATE_NAME_GLYPH_SUB_ALPHA = 0x2296,
+  VALIDATE_NAME_GLYPH_SUB_MU = 0x2298,
+  VALIDATE_NAME_GLYPH_SUP_a = 0x2482,
+  VALIDATE_NAME_GLYPH_SUB_Z = 0x24e9,
+};
+
+static int32_t oracle_validateNameGlyphLength(const char *name) {
+  int32_t glyph_length = 0;
+
+  while(*name != 0) {
+    name += (((uint8_t)*name & 0x80) != 0) ? 2 : 1;
+    glyph_length++;
+  }
+
+  return glyph_length;
+}
+
+static uint16_t oracle_validateNameGlyphCode(const char *name) {
+  uint8_t first = (uint8_t)name[0];
+
+  if((first & 0x80) != 0) {
+    return (uint16_t)((((uint16_t)(first & 0x7f)) << 8) | (uint8_t)name[1]);
+  }
+
+  return first;
+}
+
+bool_t oracle_validateName(const char *name) {
+  int32_t glyph_length;
+  uint16_t first;
+
+  glyph_length = oracle_validateNameGlyphLength(name);
+  if(glyph_length > VALIDATE_NAME_MAX_GLYPHS || glyph_length == 0) {
+    return false;
+  }
+
+  first = oracle_validateNameGlyphCode(name);
+  if(first < VALIDATE_NAME_GLYPH_A) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_Z && first < VALIDATE_NAME_GLYPH_a) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_z && first < VALIDATE_NAME_GLYPH_A_GRAVE) {
+    return false;
+  }
+  if(first == VALIDATE_NAME_GLYPH_CROSS || first == VALIDATE_NAME_GLYPH_DIVIDE) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_z_CARON && first < VALIDATE_NAME_GLYPH_IOTA_DIALYTIKA_TONOS) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_SAMPI && first < VALIDATE_NAME_GLYPH_SUB_ALPHA) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_SUB_MU && first < VALIDATE_NAME_GLYPH_SUP_a) {
+    return false;
+  }
+  if(first > VALIDATE_NAME_GLYPH_SUB_Z) {
+    return false;
+  }
+
+  for(name += (((uint8_t)*name & 0x80) != 0) ? 2 : 1; *name != 0; name += (((uint8_t)*name & 0x80) != 0) ? 2 : 1) {
+    switch(*name) {
+      case '+':
+      case '-':
+      case ':':
+      case '/':
+      case '^':
+      case '(':
+      case ')':
+      case '=':
+      case ';':
+      case '|':
+      case '!':
+      case ' ': {
+        return false;
+      }
+      default: {
+        if(oracle_validateNameGlyphCode(name) == VALIDATE_NAME_GLYPH_CROSS) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;
