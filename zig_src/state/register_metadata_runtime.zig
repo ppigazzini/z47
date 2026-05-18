@@ -87,6 +87,7 @@ extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
+extern fn z47_registers_retained_allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void;
 extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
@@ -234,6 +235,10 @@ pub fn retainedGetRegisterDataPointer(reg: calcRegister_t) ?*anyopaque {
 
 pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
+}
+
+pub fn retainedAllocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
+    z47_registers_retained_allocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {

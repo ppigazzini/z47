@@ -485,6 +485,21 @@ pub export fn isUniqueMenuName(name: [*c]const u8) bool {
     return true;
 }
 
+pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
+    if (variable_name == null) {
+        return;
+    }
+
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
+
+    if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
+        return;
+    }
+
+    runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,
