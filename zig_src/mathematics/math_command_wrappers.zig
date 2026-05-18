@@ -5,6 +5,16 @@ const no_register = @as(runtime.calcRegister_t, -1);
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
+extern fn z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnExpt(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnWpositive(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnWnegative(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnLcm(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter: u16) void;
+
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -2540,4 +2550,40 @@ pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processIntRealComplexMonadicFunction(&cubeReal, &cubeCplx, &cubeShoI, &cubeLonI);
+}
+
+pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter);
+}
+
+pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter);
+}
+
+pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnExpt(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnWpositive(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnWnegative(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter);
+}
+
+pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnLcm(unused_but_mandatory_parameter);
+}
+
+pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter);
 }

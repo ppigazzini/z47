@@ -138,14 +138,20 @@ enum {
 #define longIntegerCompareUInt(lhs, rhs) mpz_cmp_ui((lhs), (rhs))
 #define longIntegerToUInt32(source, destination) ((destination) = (uint32_t)mpz_get_ui((source)))
 #define longIntegerAddUInt(lhs, rhs, result) mpz_add_ui((result), (lhs), (rhs))
+#define longIntegerAdd(lhs, rhs, result) mpz_add((result), (lhs), (rhs))
+#define longIntegerGcd(lhs, rhs, result) mpz_gcd((result), (lhs), (rhs))
+#define longIntegerLcm(lhs, rhs, result) mpz_lcm((result), (lhs), (rhs))
+#define longIntegerDivideRemainder(dividend, divisor, remainder) mpz_tdiv_r((remainder), (dividend), (divisor))
 
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
+#define realSetNegativeSign(operand) ((operand)->bits |= 0x80)
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
 #define realIsSpecial(source) (((source)->bits & DECSPECIAL) != 0)
 #define realIsInfinite(source) (((source)->bits & DECINF) != 0)
 #define realIsNaN(source) (((source)->bits & (DECNAN | DECSNAN)) != 0)
 #define realIsNegative(source) (((source)->bits & 0x80) != 0)
 #define realIsPositive(source) (!realIsNegative(source))
+#define realGetSign(source) (realIsNegative(source) ? -1 : 1)
 #define realIsZero(source) ((source)->lsu[0] == 0 && !realIsSpecial(source))
 #define realCopy(source, destination) (*(destination) = *(source))
 #define realMinus(operand, res, ctxt) do { (void)(ctxt); realCopy((operand), (res)); realChangeSign((res)); } while(0)
@@ -184,6 +190,7 @@ extern pcg32_random_t pcg32_global;
 #define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
 #define const_1e_6 ((real_t *)z47_math_wrappers_const_1e_6())
+#define const39_1oneE ((real_t *)z47_math_wrappers_const_1oneE())
 #define const_90 ((real_t *)z47_math_wrappers_const_90())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
@@ -196,6 +203,9 @@ extern pcg32_random_t pcg32_global;
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 #define realDivideRemainder(dividend, divisor, remainder, ctxt) WP34S_Mod((dividend), (divisor), (remainder), (ctxt))
 #define realCompareAbsLessThan(number1, number2) (!realCompareAbsEqual((number1), (number2)) && !realCompareAbsGreaterThan((number1), (number2)))
+#define realCompareGreaterEqual(number1, number2) (!realCompareLessThan((number1), (number2)))
+#define realCompareLessEqual(number1, number2) (!realCompareLessThan((number2), (number1)))
+#define WP34S_BigMod(x, y, res, real_context) WP34S_Mod((x), (y), (res), (real_context))
 
 bool_t saveLastX(void);
 void saveForUndo(void);
@@ -241,6 +251,7 @@ uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
+void convertLongIntegerToShortIntegerRegister(const longInteger_t long_integer, uint32_t base, calcRegister_t regist);
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
@@ -278,6 +289,11 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *real_context);
+void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *real_context);
+void WP34S_InverseComplexW(const real_t *real, const real_t *imag, real_t *res_real, real_t *res_imag, realContext_t *real_context);
+void WP34S_LambertW(const real_t *x, real_t *res, bool_t negative_branch, realContext_t *real_context);
+void WP34S_ComplexLambertW(const real_t *real, const real_t *imag, real_t *res_real, real_t *res_imag, realContext_t *real_context);
 void realExpM1(const real_t *x, real_t *res, realContext_t *realContext);
 void logxyLonI(const real_t *denom);
 void logxyReal(const real_t *denom);
@@ -339,6 +355,8 @@ uint64_t WP34S_int2pow(uint64_t x);
 uint64_t WP34S_int10pow(uint64_t x);
 uint64_t WP34S_intLog10(uint64_t x);
 uint64_t WP34S_intLog2(uint64_t x);
+uint64_t WP34S_intGCD(uint64_t y, uint64_t x);
+uint64_t WP34S_intLCM(uint64_t y, uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
 bool_t getSystemFlag(int32_t flag);
@@ -360,6 +378,7 @@ const real_t *z47_math_wrappers_const_2(void);
 const real_t *z47_math_wrappers_const_1on2(void);
 const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_1e_6(void);
+const real_t *z47_math_wrappers_const_1oneE(void);
 const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
@@ -387,6 +406,7 @@ uint32_t decQuadIsNegative(const decQuad *dq);
 #define REGISTER_IMAG34_DATA(a) ((real34_t *)((uint8_t *)(getRegisterDataPointer(a)) + sizeof(real34_t)))
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
+#define getRegisterShortIntegerBase(reg) getRegisterTag(reg)
 
 void sinCosReal(trigType_t trigType);
 void sinCosCplx(trigType_t trigType);
