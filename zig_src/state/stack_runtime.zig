@@ -44,6 +44,7 @@ pub const SIGMA_MINUS: u16 = 2;
 pub const dtLongInteger: u32 = 0;
 pub const dtReal34: u32 = 1;
 pub const dtComplex34: u32 = 2;
+pub const dtShortInteger: u32 = 8;
 pub const amNone: u32 = 5;
 pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
@@ -66,6 +67,8 @@ extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
 extern fn z47_stack_runtime_store_local_register_count_in_x() void;
 extern fn z47_stack_runtime_current_local_register_count() u8;
 extern fn z47_stack_runtime_get_input_default() u8;
+extern fn z47_stack_runtime_store_zero_long_integer(reg: calcRegister_t) void;
+extern fn z47_stack_runtime_store_zero_short_integer(reg: calcRegister_t, base: u32) void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
@@ -167,6 +170,14 @@ pub fn currentLocalRegisterCount() u8 {
 
 pub fn inputDefault() u8 {
     return z47_stack_runtime_get_input_default();
+}
+
+pub fn storeZeroLongInteger(reg: calcRegister_t) void {
+    z47_stack_runtime_store_zero_long_integer(reg);
+}
+
+pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
+    z47_stack_runtime_store_zero_short_integer(reg, base);
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {

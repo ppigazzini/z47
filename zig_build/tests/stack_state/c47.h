@@ -52,6 +52,7 @@ enum {
   dtLongInteger = 0,
   dtReal34 = 1,
   dtComplex34 = 2,
+  dtShortInteger = 8,
 };
 
 enum {
@@ -138,6 +139,7 @@ enum {
 #define REAL34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(real34_t))
 #define REAL34_SIZE_IN_BYTES TO_BYTES(REAL34_SIZE_IN_BLOCKS)
 #define COMPLEX34_SIZE_IN_BLOCKS (REAL34_SIZE_IN_BLOCKS * 2)
+#define SHORT_INTEGER_SIZE_IN_BLOCKS 2
 #define REAL_SIZE_IN_BYTES(digits) ((uint32_t)sizeof(real_t))
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
@@ -208,6 +210,8 @@ void z47_stack_runtime_store_stack_size_in_x(uint32_t size);
 void z47_stack_runtime_store_local_register_count_in_x(void);
 uint8_t z47_stack_runtime_current_local_register_count(void);
 uint8_t z47_stack_runtime_get_input_default(void);
+void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg);
+void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 
 bool_t getSystemFlag(int32_t sf);
@@ -237,6 +241,7 @@ void real34SetZero(real34_t *dest);
 void longIntegerInit(longInteger_t value);
 void uInt32ToLongInteger(uint32_t source, longInteger_t dest);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t value, calcRegister_t dest);
+void convertLongIntegerToShortIntegerRegister(const longInteger_t value, uint32_t base, calcRegister_t dest);
 void longIntegerFree(longInteger_t value);
 void convertRealToResultRegister(const real_t *value, calcRegister_t dest, uint32_t angle);
 

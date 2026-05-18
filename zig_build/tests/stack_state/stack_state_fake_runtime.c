@@ -430,15 +430,14 @@ void uInt32ToLongInteger(uint32_t source, longInteger_t dest) {
 }
 
 void convertLongIntegerToLongIntegerRegister(const longInteger_t value, calcRegister_t dest) {
-  reallocateRegister(dest, dtLongInteger, 1, 0);
+  reallocateRegister(dest, dtLongInteger, 1, LI_POSITIVE);
   if(getRegisterDataPointer(dest) != NULL) {
     memcpy(getRegisterDataPointer(dest), value, sizeof(uint32_t));
   }
 }
 
 void convertLongIntegerToShortIntegerRegister(const longInteger_t value, uint32_t base, calcRegister_t dest) {
-  (void)base;
-  reallocateRegister(dest, dtLongInteger, 1, 0);
+  reallocateRegister(dest, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   if(getRegisterDataPointer(dest) != NULL) {
     memcpy(getRegisterDataPointer(dest), value, sizeof(uint32_t));
   }
@@ -535,6 +534,22 @@ uint8_t z47_stack_runtime_current_local_register_count(void) {
 
 uint8_t z47_stack_runtime_get_input_default(void) {
   return Input_Default;
+}
+
+void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg) {
+  longInteger_t li;
+
+  longIntegerInit(li);
+  uInt32ToLongInteger(0u, li);
+  convertLongIntegerToLongIntegerRegister(li, reg);
+}
+
+void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base) {
+  longInteger_t li;
+
+  longIntegerInit(li);
+  uInt32ToLongInteger(0u, li);
+  convertLongIntegerToShortIntegerRegister(li, base, reg);
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {

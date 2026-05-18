@@ -66,6 +66,26 @@ void oracle_clearRegister(calcRegister_t regist) {
 		return;
 	}
 
+	if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {
+		longInteger_t lgInt;
+
+		longIntegerInit(lgInt);
+		uInt32ToLongInteger(0u, lgInt);
+		convertLongIntegerToLongIntegerRegister(lgInt, regist);
+		longIntegerFree(lgInt);
+		return;
+	}
+
+	if(lastIntegerBase != 0) {
+		longInteger_t lgInt;
+
+		longIntegerInit(lgInt);
+		uInt32ToLongInteger(0u, lgInt);
+		convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase, regist);
+		longIntegerFree(lgInt);
+		return;
+	}
+
 	z47_registers_retained_clearRegister(regist);
 }
 
