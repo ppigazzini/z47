@@ -265,6 +265,7 @@ pub extern fn z47_math_wrappers_const_pi() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_minus_one_power_long_integer() void;
+pub extern fn z47_math_wrappers_integer_part_long_integer() void;
 pub extern fn z47_math_wrappers_small_base_power_long_integer(base_value: u32) i32;
 pub extern fn z47_math_wrappers_report_int_pow_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;

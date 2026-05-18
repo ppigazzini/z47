@@ -1109,6 +1109,9 @@ void fnRefreshState(void) {
   snapshot.fn_refresh_state_calls++;
 }
 
+void setLastintegerBasetoZero(void) {
+}
+
 void divComplexComplex(const real_t *numerReal,
                        const real_t *numerImag,
                        const real_t *denomReal,

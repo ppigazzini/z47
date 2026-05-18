@@ -26,6 +26,19 @@ end:
   longIntegerFree(x);
 }
 
+void z47_math_wrappers_integer_part_long_integer(void) {
+  longInteger_t val;
+  uint32_t type = getRegisterDataType(REGISTER_X);
+
+  if(getRegisterAsLongInt(REGISTER_X, val, NULL)) {
+    convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
+    if(type == dtShortInteger) {
+      setLastintegerBasetoZero();
+    }
+  }
+  longIntegerFree(val);
+}
+
 void z47_math_wrappers_square_long_integer(void) {
   longInteger_t lgInt;
 

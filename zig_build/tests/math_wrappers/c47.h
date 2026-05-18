@@ -333,6 +333,7 @@ void fnSetFlag(int32_t flag);
 void fnRefreshState(void);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
+void setLastintegerBasetoZero(void);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest);
 
@@ -349,6 +350,7 @@ const real_t *z47_math_wrappers_const_pi(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
 void z47_math_wrappers_minus_one_power_long_integer(void);
+void z47_math_wrappers_integer_part_long_integer(void);
 int32_t z47_math_wrappers_small_base_power_long_integer(uint32_t baseValue);
 void z47_math_wrappers_report_int_pow_real_domain_error(void);
 void z47_math_wrappers_report_exp_real_domain_error(void);
