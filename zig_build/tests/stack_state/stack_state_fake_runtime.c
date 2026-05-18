@@ -626,6 +626,28 @@ void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter) {
   }
 }
 
+void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
+  confirmation_request = 3;
+
+  for(uint16_t i = range_start; i < range_end; ++i) {
+    for(uint16_t j = (uint16_t)(i + 1); j <= range_end; ++j) {
+      registerHeader_t saved_register_header;
+      registerHeader_t *left = mutableRegisterHeader((calcRegister_t)i);
+      registerHeader_t *right = mutableRegisterHeader((calcRegister_t)j);
+
+      if(left == NULL || right == NULL) {
+        continue;
+      }
+
+      if((left->dataType > right->dataType) || ((left->dataType == right->dataType) && (left->descriptor > right->descriptor))) {
+        saved_register_header = *left;
+        *left = *right;
+        *right = saved_register_header;
+      }
+    }
+  }
+}
+
 void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n) {
   fake_regclr_error_code = error_code;
   fake_regclr_start = s;

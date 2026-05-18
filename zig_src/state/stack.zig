@@ -200,6 +200,47 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
     }
 }
 
+pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
+
+    var s: u16 = 0;
+    var n: u16 = 0;
+
+    runtime.lastErrorCode = runtime.retainedGetRegClrRange(&s, &n);
+    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        runtime.reportRegisterCommandError(runtime.lastErrorCode);
+        return;
+    }
+
+    switch (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)))) {
+        runtime.dtLongInteger, runtime.dtShortInteger, runtime.dtReal34 => {
+            var index: u16 = s + 1;
+            while (index < s + n) : (index += 1) {
+                const data_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index)));
+                if (data_type != runtime.dtLongInteger and data_type != runtime.dtShortInteger and data_type != runtime.dtReal34) {
+                    runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
+                    return;
+                }
+            }
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtString => {
+            const first_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)));
+            var index: u16 = s + 1;
+            while (index < s + n) : (index += 1) {
+                if (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index))) != first_type) {
+                    runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
+                    return;
+                }
+            }
+        },
+        else => {},
+    }
+
+    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+        runtime.retainedSortReg(s, s + n - 1);
+    }
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 

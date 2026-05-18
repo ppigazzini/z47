@@ -29,6 +29,7 @@ pub const FLAG_SOLVING: i32 = 0xc026;
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
 pub const ERROR_RAM_FULL: u8 = 11;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 
 pub const PGM_RUNNING: u8 = 1;
 pub const NOT_CONFIRMED: u16 = 9878;
@@ -44,6 +45,9 @@ pub const SIGMA_MINUS: u16 = 2;
 pub const dtLongInteger: u32 = 0;
 pub const dtReal34: u32 = 1;
 pub const dtComplex34: u32 = 2;
+pub const dtTime: u32 = 3;
+pub const dtDate: u32 = 4;
+pub const dtString: u32 = 5;
 pub const dtShortInteger: u32 = 8;
 pub const amNone: u32 = 5;
 pub const amPolar: u32 = 16;
@@ -100,6 +104,7 @@ pub extern fn z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter: u
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
+pub extern fn z47_registers_retained_sort_reg(range_start: u16, range_end: u16) void;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
@@ -220,6 +225,10 @@ pub fn retainedGetRegSwapRange(s: *u16, n: *u16, d: *u16) u8 {
 
 pub fn retainedGetRegCopyParams(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
     return z47_registers_retained_get_reg_copy_params(f, s, n, d);
+}
+
+pub fn retainedSortReg(range_start: u16, range_end: u16) void {
+    z47_registers_retained_sort_reg(range_start, range_end);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {
