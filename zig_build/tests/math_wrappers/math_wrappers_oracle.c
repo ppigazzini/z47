@@ -193,6 +193,16 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef expComplex
 #undef sinComplex
 
+#define fnExpt oracle_fnExpt
+#include "../../../src/c47/mathematics/expt.c"
+#undef fnExpt
+
+#define fnBn oracle_fnBn
+#define fnBnStar oracle_fnBnStar
+#include "../../../src/c47/mathematics/bn.c"
+#undef fnBnStar
+#undef fnBn
+
 #define fnErf oracle_fnErf
 #include "../../../src/c47/mathematics/erf.c"
 #undef fnErf
@@ -246,6 +256,32 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef fnEulersFormula
 #undef eulersFormula
 #undef expComplex
+
+#define fnWinverse oracle_fnWinverse
+#include "../../../src/c47/mathematics/w_inverse.c"
+#undef fnWinverse
+
+#define fnWnegative oracle_fnWnegative
+#include "../../../src/c47/mathematics/w_negative.c"
+#undef fnWnegative
+
+#define fnWpositive oracle_fnWpositive
+#include "../../../src/c47/mathematics/w_positive.c"
+#undef fnWpositive
+
+#define fnGcd oracle_fnGcd
+#include "../../../src/c47/mathematics/gcd.c"
+#undef fnGcd
+
+#define fnLcm oracle_fnLcm
+#include "../../../src/c47/mathematics/lcm.c"
+#undef fnLcm
+
+#define modReal oracle_modReal
+#define fnMod oracle_fnMod
+#include "../../../src/c47/mathematics/modulo.c"
+#undef fnMod
+#undef modReal
 
 #define eulersFormula oracle_eulersFormula
 #define fnM1Pow oracle_fnM1Pow

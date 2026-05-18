@@ -647,6 +647,15 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
   current_register_tag = base;
 }
 
+void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
+  const int64_t value = mpz_get_si(longInteger);
+
+  (void)reg;
+  *(uint64_t *)register_slot = encodeShortInteger(value);
+  current_register_data_type = dtShortInteger;
+  current_register_tag = base;
+}
+
 void real34ToIntegralValue(const real34_t *source, real34_t *destination, enum rounding mode) {
   (void)mode;
   setRegisterReal34((uint8_t *)destination, fakeReal34Value(source), source->bytes[15] & 0x70);
@@ -827,6 +836,40 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 68, 0);
+}
+
+void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *realContext) {
+  const int32_t input_value = fakeRealValue(x);
+
+  (void)realContext;
+  if(input_value < 0 || (!bnstar && input_value == 0)) {
+    setFakeReal(res, 0, 0x20);
+    return;
+  }
+
+  setFakeReal(res, input_value + (bnstar ? 83 : 82), 0);
+}
+
+void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 84, 0);
+}
+
+void WP34S_InverseComplexW(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(resReal, fakeRealValue(real) + 85, 0);
+  setFakeReal(resImag, fakeRealValue(imag) + 86, 0);
+}
+
+void WP34S_LambertW(const real_t *x, real_t *res, bool_t negativeBranch, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + (negativeBranch ? 87 : 88), 0);
+}
+
+void WP34S_ComplexLambertW(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(resReal, fakeRealValue(real) + 89, 0);
+  setFakeReal(resImag, fakeRealValue(imag) + 90, 0);
 }
 
 void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext) {
@@ -1169,6 +1212,30 @@ uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
   snapshot.wp34s_int_multiply_lhs = y;
   snapshot.wp34s_int_multiply_rhs = x;
   return product | ((uint64_t)(sign_y ^ sign_x) << 63);
+}
+
+static uint64_t gcdUnsigned(uint64_t lhs, uint64_t rhs) {
+  while(rhs != 0) {
+    const uint64_t remainder = lhs % rhs;
+    lhs = rhs;
+    rhs = remainder;
+  }
+  return lhs;
+}
+
+uint64_t WP34S_intGCD(uint64_t y, uint64_t x) {
+  return gcdUnsigned(WP34S_extract_value(y, NULL), WP34S_extract_value(x, NULL));
+}
+
+uint64_t WP34S_intLCM(uint64_t y, uint64_t x) {
+  const uint64_t lhs = WP34S_extract_value(y, NULL);
+  const uint64_t rhs = WP34S_extract_value(x, NULL);
+  const uint64_t gcd = gcdUnsigned(lhs, rhs);
+
+  if(lhs == 0 || rhs == 0) {
+    return 0;
+  }
+  return (lhs / gcd) * rhs;
 }
 
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext) {

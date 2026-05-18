@@ -266,6 +266,22 @@ const real_t *z47_math_wrappers_const_2e6(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_1oneE(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 1);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const39_1oneE;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_90(void) {
 #ifdef Z47_MATH_WRAPPERS_C47_H
   static bool initialized = false;
@@ -528,3 +544,39 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
   moreInfoOnError("In function cubeReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of curt when flag D is not set", NULL, NULL);
 #endif
 }
+
+#define fnBn z47_math_wrappers_retained_fnBn
+#define fnBnStar z47_math_wrappers_retained_fnBnStar
+#include "../../src/c47/mathematics/bn.c"
+#undef fnBnStar
+#undef fnBn
+
+#define fnExpt z47_math_wrappers_retained_fnExpt
+#include "../../src/c47/mathematics/expt.c"
+#undef fnExpt
+
+#define fnWpositive z47_math_wrappers_retained_fnWpositive
+#include "../../src/c47/mathematics/w_positive.c"
+#undef fnWpositive
+
+#define fnWnegative z47_math_wrappers_retained_fnWnegative
+#include "../../src/c47/mathematics/w_negative.c"
+#undef fnWnegative
+
+#define fnWinverse z47_math_wrappers_retained_fnWinverse
+#include "../../src/c47/mathematics/w_inverse.c"
+#undef fnWinverse
+
+#define fnGcd z47_math_wrappers_retained_fnGcd
+#include "../../src/c47/mathematics/gcd.c"
+#undef fnGcd
+
+#define fnLcm z47_math_wrappers_retained_fnLcm
+#include "../../src/c47/mathematics/lcm.c"
+#undef fnLcm
+
+#define modReal z47_math_wrappers_retained_modReal
+#define fnMod z47_math_wrappers_retained_fnMod
+#include "../../src/c47/mathematics/modulo.c"
+#undef fnMod
+#undef modReal
