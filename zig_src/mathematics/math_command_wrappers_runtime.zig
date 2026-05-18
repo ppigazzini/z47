@@ -19,6 +19,7 @@ pub const amNone: angularMode_t = 5;
 pub const amAngleMask: u32 = 15;
 
 pub const DEC_ROUND_CEILING: rounding_t = 0;
+pub const DEC_ROUND_HALF_EVEN: rounding_t = 3;
 pub const DEC_ROUND_FLOOR: rounding_t = 6;
 
 pub const trigSin: trigType_t = 0;
@@ -77,6 +78,7 @@ pub const realContext_t = extern struct {
 
 pub const VoidCallback = ?*const fn () callconv(.c) void;
 
+pub extern var ctxtReal34: realContext_t;
 pub extern var ctxtReal39: realContext_t;
 pub extern var ctxtReal51: realContext_t;
 pub extern var ctxtReal75: realContext_t;
@@ -113,6 +115,7 @@ pub extern fn fnRefreshState() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
+pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
 pub extern fn realPolarToRectangular(
@@ -209,6 +212,7 @@ pub extern fn mulComplexReal(
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
 pub extern fn WP34S_int2pow(x: u64) u64;
 pub extern fn WP34S_int10pow(x: u64) u64;
+pub extern fn WP34S_intLog10(x: u64) u64;
 pub extern fn WP34S_intLog2(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
@@ -227,6 +231,7 @@ pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) b
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realIsAnInteger(x: *const real_t) bool;
 pub extern fn divRealComplex(
     numer: *const real_t,
     denom_real: *const real_t,

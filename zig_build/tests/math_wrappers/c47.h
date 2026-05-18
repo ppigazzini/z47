@@ -161,7 +161,9 @@ enum {
 #define real34IsNaN(source) decQuadIsNaN((const decQuad *)(source))
 #define real34IsZero(source) decQuadIsZero((const decQuad *)(source))
 #define real34IsNegative(source) decQuadIsNegative((const decQuad *)(source))
+#define real34IsPositive(source) (!real34IsNegative((source)))
 
+extern realContext_t ctxtReal34;
 extern realContext_t ctxtReal39;
 extern realContext_t ctxtReal51;
 extern realContext_t ctxtReal75;
@@ -186,6 +188,7 @@ extern pcg32_random_t pcg32_global;
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
 
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
+#define realSetMinusInfinity(value) realCopy(const_minusInfinity, (value))
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 
 bool_t saveLastX(void);
@@ -232,6 +235,7 @@ uint32_t getRegisterTag(calcRegister_t reg);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
 void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, calcRegister_t regist);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
+void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
 void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode);
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
@@ -267,6 +271,7 @@ void logxyReal(const real_t *denom);
 void logxyCplx(const real_t *denom);
 void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
 void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
@@ -280,6 +285,7 @@ bool_t realCompareEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareLessThan(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2);
+bool_t realIsAnInteger(const real_t *x);
 void realSetNaN(real_t *value);
 void realSetZero(real_t *value);
 void realSetOne(real_t *value);
@@ -315,6 +321,7 @@ uint64_t WP34S_extract_value(uint64_t val, int32_t *sign);
 int64_t WP34S_build_value(uint64_t x, int32_t sign);
 uint64_t WP34S_int2pow(uint64_t x);
 uint64_t WP34S_int10pow(uint64_t x);
+uint64_t WP34S_intLog10(uint64_t x);
 uint64_t WP34S_intLog2(uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);
 uint64_t WP34S_intChs(uint64_t x);
