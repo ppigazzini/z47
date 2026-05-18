@@ -5,6 +5,8 @@
 
 #include "c47.h"
 
+void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
+
 const reservedVariableHeader_t allReservedVariables[NUMBER_OF_RESERVED_VARIABLES] = {
   [26] = {
     .header = {
@@ -431,6 +433,60 @@ uint16_t z47_registers_retained_getRegisterMaxDataLengthInBlocks(calcRegister_t 
 
 uint16_t z47_registers_retained_getRegisterFullSizeInBlocks(calcRegister_t reg) {
   return oracle_getRegisterFullSizeInBlocks(reg);
+}
+
+void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
+  uint32_t dataType;
+  uint16_t sizeInBlocks;
+
+  if(FIRST_RESERVED_VARIABLE <= destRegister && destRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    destRegister = destRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
+  }
+
+  if(FIRST_RESERVED_VARIABLE <= sourceRegister && sourceRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    sourceRegister = sourceRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
+  }
+  else if(sourceRegister == RESERVED_VARIABLE_ADM ||
+          sourceRegister == RESERVED_VARIABLE_DENMAX ||
+          sourceRegister == RESERVED_VARIABLE_ISM ||
+          sourceRegister == RESERVED_VARIABLE_REALDF ||
+          sourceRegister == RESERVED_VARIABLE_NDEC) {
+    return;
+  }
+
+  dataType = oracle_getRegisterDataType(sourceRegister);
+  if(oracle_getRegisterDataType(destRegister) != dataType || oracle_getRegisterFullSizeInBlocks(destRegister) != oracle_getRegisterFullSizeInBlocks(sourceRegister)) {
+    switch(dataType) {
+      case dtLongInteger:
+      case dtString:
+      case dtReal34Matrix:
+      case dtComplex34Matrix:
+        sizeInBlocks = oracle_getRegisterMaxDataLengthInBlocks(sourceRegister);
+        break;
+      case dtTime:
+      case dtDate:
+      case dtShortInteger:
+      case dtReal34:
+      case dtComplex34:
+      case dtConfig:
+        sizeInBlocks = 0;
+        break;
+      default:
+        return;
+    }
+
+    reallocateRegister(destRegister, dataType, sizeInBlocks, amNone);
+    if(lastErrorCode == ERROR_RAM_FULL) {
+      return;
+    }
+  }
+
+  xcopy(oracle_getRegisterDataPointer(destRegister), oracle_getRegisterDataPointer(sourceRegister), TO_BYTES(oracle_getRegisterFullSizeInBlocks(sourceRegister)));
+  oracle_setRegisterTag(destRegister, oracle_getRegisterTag(sourceRegister));
+}
+
+void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
+  z47_registers_retained_copySourceRegisterToDestRegister(sourceRegister, destRegister);
 }
 
 void z47_registers_retained_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {

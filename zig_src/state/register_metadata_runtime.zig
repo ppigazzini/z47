@@ -4,6 +4,7 @@ pub const calcRegister_t = stack_runtime.calcRegister_t;
 pub const register_descriptor_t = stack_runtime.register_descriptor_t;
 pub const dtLongInteger = stack_runtime.dtLongInteger;
 pub const dtReal34 = stack_runtime.dtReal34;
+pub const amNone = stack_runtime.amNone;
 pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
 pub const dtDate: u32 = 4;
@@ -22,6 +23,11 @@ pub const FIRST_NAMED_RESERVED_VARIABLE: calcRegister_t = 2026;
 pub const LAST_RESERVED_VARIABLE: calcRegister_t = 2047;
 pub const FIRST_LOCAL_REGISTER = stack_runtime.FIRST_LOCAL_REGISTER;
 pub const LAST_LOCAL_REGISTER = stack_runtime.LAST_LOCAL_REGISTER;
+pub const RESERVED_VARIABLE_ADM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE;
+pub const RESERVED_VARIABLE_DENMAX: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 1;
+pub const RESERVED_VARIABLE_ISM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 2;
+pub const RESERVED_VARIABLE_REALDF: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 3;
+pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 4;
 
 extern fn z47_register_metadata_get_global_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_set_global_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
@@ -47,6 +53,7 @@ extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
+extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
 extern fn z47_registers_retained_getRegisterMaxDataLengthInBlocks(reg: calcRegister_t) u16;
 extern fn z47_registers_retained_getRegisterFullSizeInBlocks(reg: calcRegister_t) u16;
@@ -152,6 +159,10 @@ pub fn retainedGetRegisterDataPointer(reg: calcRegister_t) ?*anyopaque {
 
 pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
+}
+
+pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
+    z47_registers_retained_copySourceRegisterToDestRegister(source_register, dest_register);
 }
 
 pub fn retainedSetRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void {

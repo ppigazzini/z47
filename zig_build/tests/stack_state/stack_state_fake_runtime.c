@@ -53,6 +53,7 @@ static fake_memory_slot_t fake_memory_slots[MAX_FAKE_MEMORY_SLOTS];
 #define getRegisterFullSizeInBlocks z47_stack_parity_raw_getRegisterFullSizeInBlocks
 #define getRegisterTag z47_stack_parity_raw_getRegisterTag
 #define setRegisterDataType z47_stack_parity_raw_setRegisterDataType
+#define copySourceRegisterToDestRegister z47_stack_parity_raw_copySourceRegisterToDestRegister
 #endif
 
 static registerHeader_t *mutableRegisterHeader(calcRegister_t reg) {
