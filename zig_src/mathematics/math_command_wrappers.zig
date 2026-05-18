@@ -1017,6 +1017,18 @@ fn ipCplx() callconv(.c) void {
     integerPartCplx(runtime.DEC_ROUND_DOWN);
 }
 
+fn fpRealForward() callconv(.c) void {
+    runtime.z47_math_wrappers_fractional_part_real();
+}
+
+fn fpShoIForward() callconv(.c) void {
+    runtime.z47_math_wrappers_fractional_part_short_integer();
+}
+
+fn fpLonIForward() callconv(.c) void {
+    runtime.z47_math_wrappers_fractional_part_long_integer();
+}
+
 fn coshReal() callconv(.c) void {
     sinhCoshReal(runtime.trigCos);
 }
@@ -1916,6 +1928,17 @@ pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 
     runtime.z47_math_wrappers_integer_part_short_integer();
+}
+
+pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(
+        &fpRealForward,
+        null,
+        &fpShoIForward,
+        &fpLonIForward,
+    );
 }
 
 pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {

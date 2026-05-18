@@ -68,6 +68,8 @@ realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
 uint8_t shortIntegerMode = SIM_UNSIGN;
+uint64_t shortIntegerMask = UINT64_MAX;
+uint64_t shortIntegerSignBit = UINT64_C(1) << 63;
 angularMode_t currentAngularMode = amNone;
 bool_t thereIsSomethingToUndo = false;
 pcg32_random_t pcg32_global = PCG32_INITIALIZER;
@@ -641,6 +643,15 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
   *(uint64_t *)register_slot = value | ((uint64_t)(sign != 0) << 63);
   current_register_data_type = dtShortInteger;
   current_register_tag = base;
+}
+
+void real34ToIntegralValue(const real34_t *source, real34_t *destination, enum rounding mode) {
+  (void)mode;
+  setRegisterReal34((uint8_t *)destination, fakeReal34Value(source), source->bytes[15] & 0x70);
+}
+
+void real34Subtract(const real34_t *operand1, const real34_t *operand2, real34_t *res) {
+  setRegisterReal34((uint8_t *)res, fakeReal34Value(operand1) - fakeReal34Value(operand2), operand1->bytes[15] & 0x70);
 }
 
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode) {

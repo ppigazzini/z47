@@ -53,6 +53,34 @@ void z47_math_wrappers_integer_part_short_integer(void) {
   forceSystemFlag(FLAG_OVERFLOW, overflow);
 }
 
+void z47_math_wrappers_fractional_part_long_integer(void) {
+  longInteger_t x;
+
+  longIntegerInit(x);
+  convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+  longIntegerFree(x);
+}
+
+void z47_math_wrappers_fractional_part_short_integer(void) {
+  uint64_t x, y = 0;
+
+  if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
+    x = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X));
+    if((x & shortIntegerSignBit) != 0) {
+      y = shortIntegerMode == SIM_1COMPL ? shortIntegerMask : shortIntegerSignBit;
+    }
+  }
+
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = y;
+}
+
+void z47_math_wrappers_fractional_part_real(void) {
+  real34_t x;
+
+  real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &x, DEC_ROUND_DOWN);
+  real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &x, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
 void z47_math_wrappers_square_long_integer(void) {
   longInteger_t lgInt;
 
