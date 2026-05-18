@@ -34,6 +34,182 @@ fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.
     return (descriptor & ~pointer_mask) | @as(runtime.register_descriptor_t, mem_ptr);
 }
 
+fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*anyopaque {
+    return runtime.toPcMemPtr(descriptorPointer(descriptor));
+}
+
+fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque, type_reg: *runtime.calcRegister_t) bool {
+    var descriptor: runtime.register_descriptor_t = 0;
+
+    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
+        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        type_reg.* = reg;
+        return data_ptr.* != null;
+    }
+
+    if (reg <= runtime.LAST_NAMED_VARIABLE) {
+        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            type_reg.* = @intCast(reg - runtime.FIRST_NAMED_VARIABLE);
+            return data_ptr.* != null;
+        }
+        return false;
+    }
+
+    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
+        data_ptr.* = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        type_reg.* = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
+        return data_ptr.* != null;
+    }
+
+    if (reg <= runtime.LAST_LOCAL_REGISTER) {
+        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            type_reg.* = reg;
+            return data_ptr.* != null;
+        }
+    }
+
+    return false;
+}
+
+fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
+    var descriptor: runtime.register_descriptor_t = 0;
+
+    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
+        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        return data_ptr.* != null;
+    }
+
+    if (reg <= runtime.LAST_NAMED_VARIABLE) {
+        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            return data_ptr.* != null;
+        }
+        return false;
+    }
+
+    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
+        data_ptr.* = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        return data_ptr.* != null;
+    }
+
+    if (reg <= runtime.LAST_LOCAL_REGISTER) {
+        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            return data_ptr.* != null;
+        }
+    }
+
+    return false;
+}
+
+fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
+    var descriptor: runtime.register_descriptor_t = 0;
+
+    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
+        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        return data_ptr.* != null;
+    }
+
+    if (reg <= runtime.LAST_NAMED_VARIABLE) {
+        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            return data_ptr.* != null;
+        }
+        return false;
+    }
+
+    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
+        return false;
+    }
+
+    if (reg <= runtime.LAST_LOCAL_REGISTER) {
+        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
+            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            return data_ptr.* != null;
+        }
+    }
+
+    return false;
+}
+
+fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
+    return runtime.matrixPayloadSizeInBlocks(
+        data_ptr,
+        if (data_type == runtime.dtReal34Matrix) runtime.real34SizeInBlocks() else runtime.complex34SizeInBlocks(),
+    );
+}
+
+fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
+    var data_ptr: ?*anyopaque = null;
+
+    if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
+        return runtime.retainedGetRegisterFullSizeInBlocks(reg);
+    }
+
+    return switch (data_type) {
+        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
+        else => runtime.retainedGetRegisterFullSizeInBlocks(reg),
+    };
+}
+
+pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
+    if (builtin.target.os.tag == .freestanding) {
+        runtime.retainedSetRegisterMaxDataLengthInBlocks(reg, max_data_len);
+        return;
+    }
+
+    var data_ptr: ?*anyopaque = null;
+
+    if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
+        runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
+        return;
+    }
+
+    runtime.retainedSetRegisterMaxDataLengthInBlocks(reg, max_data_len);
+}
+
+pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
+    if (builtin.target.os.tag == .freestanding) {
+        return runtime.retainedGetRegisterMaxDataLengthInBlocks(reg);
+    }
+
+    var data_ptr: ?*anyopaque = null;
+    var type_reg = reg;
+
+    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
+        return runtime.retainedGetRegisterMaxDataLengthInBlocks(reg);
+    }
+
+    const data_type = getRegisterDataType(type_reg);
+    if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
+        return matrixMaxLengthInBlocks(data_ptr, data_type);
+    }
+
+    return runtime.dataMaxLengthInBlocks(data_ptr);
+}
+
+pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
+    if (builtin.target.os.tag == .freestanding) {
+        return runtime.retainedGetRegisterFullSizeInBlocks(reg);
+    }
+
+    return switch (getRegisterDataType(reg)) {
+        runtime.dtLongInteger,
+        runtime.dtString,
+        runtime.dtReal34Matrix,
+        runtime.dtComplex34Matrix,
+        => getVariableFullSizeInBlocks(reg, getRegisterDataType(reg)),
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => runtime.real34SizeInBlocks(),
+        runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
+        runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
+        runtime.dtConfig => runtime.configSizeInBlocks(),
+        else => runtime.retainedGetRegisterFullSizeInBlocks(reg),
+    };
+}
+
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     if (builtin.target.os.tag == .freestanding) {
         return runtime.retainedGetRegisterDataType(reg);
