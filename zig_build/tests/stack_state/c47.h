@@ -60,6 +60,7 @@ enum {
 
 enum {
   LI_POSITIVE = 2,
+  amDMS = 3,
   amNone = 5,
   amPolar = 16,
 };
@@ -204,6 +205,7 @@ extern real_t SAVED_SIGMA_LASTY;
 uint16_t z47_stack_runtime_get_stack_top(void);
 uint16_t z47_stack_runtime_real34_size_in_blocks(void);
 bool_t z47_stack_runtime_try_fn_to_real_complex_zero(void);
+bool_t z47_stack_runtime_try_fn_to_real_real34(void);
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg);
 void z47_stack_runtime_set_global_register_descriptor(calcRegister_t reg, uint32_t descriptor);
 bool_t z47_stack_runtime_get_swap_target_descriptor(uint16_t reg, uint32_t *descriptor);

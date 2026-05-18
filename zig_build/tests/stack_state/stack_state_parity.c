@@ -256,7 +256,12 @@ static void setupToRealComplexZeroCase(void) {
 
 static void setupToRealFallbackCase(void) {
   seedBasicStack();
-  seedRegister(REGISTER_X, 0xa0);
+  stackParitySeedRegister(REGISTER_X, dtTime, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xa0}, REAL34_SIZE_IN_BLOCKS);
+}
+
+static void setupToRealReal34Case(void) {
+  seedBasicStack();
+  stackParitySeedRegister(REGISTER_X, dtReal34, amDMS, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xb0}, REAL34_SIZE_IN_BLOCKS);
 }
 
 static void setupClearRegisterRealCase(void) {
@@ -459,6 +464,7 @@ int main(void) {
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortStrictTypeErrorCase, 0);
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortParseErrorCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealComplexZeroCase, 0);
+  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
