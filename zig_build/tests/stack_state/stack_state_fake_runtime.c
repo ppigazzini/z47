@@ -616,9 +616,18 @@ void z47_register_metadata_request_delete_all_variables_confirmation(void) {
   confirmation_request = 11;
 }
 
+void z47_register_metadata_request_clear_all_variables_confirmation(void) {
+  confirmation_request = 12;
+}
+
 void z47_registers_retained_fnDeleteAllVariables(uint16_t confirmation) {
   (void)confirmation;
   displayBugScreen("unexpected retained fnDeleteAllVariables parity fallback");
+}
+
+void z47_registers_retained_fnClearAllVariables(uint16_t confirmation) {
+  (void)confirmation;
+  displayBugScreen("unexpected retained fnClearAllVariables parity fallback");
 }
 
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
