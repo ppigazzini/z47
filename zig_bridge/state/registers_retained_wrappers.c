@@ -38,7 +38,3 @@ void fnDeleteAllVariables(uint16_t confirmation) {
 void fnClearAllVariables(uint16_t confirmation) {
   z47_registers_retained_fnClearAllVariables(confirmation);
 }
-
-bool_t isFunctionAllowingNewVariable(uint16_t op) {
-  return z47_registers_retained_isFunctionAllowingNewVariable(op);
-}

@@ -564,6 +564,34 @@ void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calc
   z47_registers_retained_copySourceRegisterToDestRegister(sourceRegister, destRegister);
 }
 
+bool_t oracle_isFunctionAllowingNewVariable(uint16_t op) {
+  switch(op) {
+    case ITM_INPUT:
+    case ITM_STO:
+    case ITM_STOADD:
+    case ITM_STOSUB:
+    case ITM_STOMULT:
+    case ITM_STODIV:
+    case ITM_KEYQ:
+    case ITM_M_DIM:
+    case ITM_MVAR:
+    case ITM_SOLVE:
+    case ITM_STOCFG:
+    case ITM_STOMAX:
+    case ITM_STOMIN:
+    case ITM_XtoALPHA:
+    case ITM_Xex:
+    case ITM_Yex:
+    case ITM_Zex:
+    case ITM_Tex:
+    case ITM_INTEGRAL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 void z47_registers_retained_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {
   oracle_setRegisterDataType(reg, data_type, tag);
 }
