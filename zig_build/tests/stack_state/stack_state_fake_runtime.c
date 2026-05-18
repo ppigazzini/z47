@@ -607,6 +607,11 @@ void z47_registers_retained_allocateNamedVariable(const char *variableName, uint
   displayBugScreen("unexpected retained allocateNamedVariable parity fallback");
 }
 
+void z47_registers_retained_fnDeleteVariable(uint16_t regist) {
+  (void)regist;
+  displayBugScreen("unexpected retained fnDeleteVariable parity fallback");
+}
+
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
   uint32_t result_data_type = getRegisterDataType(res);
 

@@ -199,6 +199,20 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
   displayBugScreen("oracle_allocateNamedVariable called with an unsupported valid-name case");
 }
 
+void oracle_fnDeleteVariable(uint16_t regist) {
+  if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
+    displayBugScreen("oracle_fnDeleteVariable called with an unsupported live-delete case");
+    return;
+  }
+
+  if(regist >= FIRST_NAMED_VARIABLE && regist < LAST_NAMED_VARIABLE) {
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    return;
+  }
+
+  displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;
