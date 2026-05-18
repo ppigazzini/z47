@@ -488,6 +488,17 @@ bool_t z47_stack_runtime_try_fn_to_real_real34(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_long_integer(void) {
+  if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
+    return false;
+  }
+
+  confirmation_request = 7;
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
