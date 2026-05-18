@@ -90,11 +90,13 @@ extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]c
 extern fn z47_register_metadata_report_invalid_name() void;
 extern fn z47_register_metadata_report_undef_source_var() void;
 extern fn z47_register_metadata_report_cannot_delete_predef_item() void;
+extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void;
 extern fn z47_registers_retained_fnDeleteVariable(regist: u16) void;
+extern fn z47_registers_retained_fnDeleteAllVariables(confirmation: u16) void;
 extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
@@ -248,6 +250,10 @@ pub fn reportCannotDeletePredefItem() void {
     z47_register_metadata_report_cannot_delete_predef_item();
 }
 
+pub fn requestDeleteAllVariablesConfirmation() void {
+    z47_register_metadata_request_delete_all_variables_confirmation();
+}
+
 pub fn retainedGetRegisterDataType(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterDataType(reg);
 }
@@ -266,6 +272,10 @@ pub fn retainedAllocateNamedVariable(variable_name: [*c]const u8, data_type: u32
 
 pub fn retainedFnDeleteVariable(regist: u16) void {
     z47_registers_retained_fnDeleteVariable(regist);
+}
+
+pub fn retainedFnDeleteAllVariables(confirmation: u16) void {
+    z47_registers_retained_fnDeleteAllVariables(confirmation);
 }
 
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
