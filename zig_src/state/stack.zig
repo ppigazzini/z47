@@ -53,6 +53,11 @@ pub export fn liftStack() void {
     runtime.setRegisterDataType(runtime.REGISTER_X, @intCast(runtime.dtReal34), runtime.amNone);
 }
 
+pub export fn saveLastX() bool {
+    runtime.copySourceRegisterToDestRegister(runtime.REGISTER_X, runtime.REGISTER_L);
+    return runtime.lastErrorCode == runtime.ERROR_NONE;
+}
+
 pub export fn _Drop(reg: runtime.calcRegister_t) void {
     const stack_top = runtime.getStackTop();
     if (reg == stack_top) {

@@ -6,6 +6,7 @@
 #include "c47.h"
 
 void liftStack(void);
+bool_t saveLastX(void);
 void saveForUndo(void);
 void undo(void);
 
@@ -20,6 +21,7 @@ void fnShuffle(uint16_t regist_order);
 void fnFillStack(uint16_t unusedButMandatoryParameter);
 
 void oracle_liftStack(void);
+bool_t oracle_saveLastX(void);
 void oracle_saveForUndo(void);
 void oracle_undo(void);
 
@@ -35,6 +37,7 @@ void oracle_fnFillStack(uint16_t unusedButMandatoryParameter);
 
 typedef void (*stack_void_fn)(void);
 typedef void (*stack_u16_fn)(uint16_t);
+typedef bool_t (*stack_bool_fn)(void);
 
 static void fillPayload(uint8_t *buffer, uint16_t size_in_blocks, uint8_t seed) {
   uint32_t i;
@@ -196,11 +199,38 @@ static int runSaveUndoRoundTripCase(void) {
   return failures;
 }
 
+static int runBoolCase(const char *name, stack_bool_fn oracle_fn, stack_bool_fn zig_fn, void (*setup)(void)) {
+  stack_parity_snapshot_t expected;
+  stack_parity_snapshot_t actual;
+  bool_t expected_result;
+  bool_t actual_result;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  expected_result = oracle_fn();
+  stackParityCapture(&expected);
+
+  stackParityReset();
+  setup();
+  actual_result = zig_fn();
+  stackParityCapture(&actual);
+
+  if(expected_result != actual_result) {
+    fprintf(stderr, "%s result mismatch: expected %u actual %u\n", name, expected_result, actual_result);
+    failures++;
+  }
+
+  captureAndCompare(name, &expected, &actual, 0, &failures);
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithAslift);
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithoutAslift);
+  failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
 
   failures += runU16Case("fnDrop", oracle_fnDrop, fnDrop, setupDropCase, 0);
   failures += runU16Case("fnDropY", oracle_fnDropY, fnDropY, setupDropCase, 0);
