@@ -231,6 +231,29 @@ void oracle_fnClearAllVariables(uint16_t confirmation) {
   displayBugScreen("oracle_fnClearAllVariables called with an unsupported confirmed case");
 }
 
+calcRegister_t oracle_findNamedVariable(const char *variableName) {
+  uint8_t len = (uint8_t)oracle_validateNameGlyphLength(variableName);
+
+  if(len < 1 || len > 7) {
+    return INVALID_VARIABLE;
+  }
+
+  {
+    calcRegister_t regist = oracle_findReservedVariableName(variableName, len);
+    if(regist != INVALID_VARIABLE) {
+      return regist;
+    }
+  }
+
+  for(uint16_t i = 0; i < numberOfNamedVariables; ++i) {
+    if(compareString((const char *)(allNamedVariables[i].variableName + 1), variableName, CMP_NAME) == 0) {
+      return (calcRegister_t)(FIRST_NAMED_VARIABLE + i);
+    }
+  }
+
+  return INVALID_VARIABLE;
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;

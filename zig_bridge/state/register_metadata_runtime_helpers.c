@@ -190,6 +190,14 @@ const char *z47_register_metadata_user_menu_name(uint32_t index) {
   return userMenus[index].menuName;
 }
 
+const char *z47_register_metadata_named_variable_name(uint16_t index) {
+  if(index >= numberOfNamedVariables) {
+    return "";
+  }
+
+  return (const char *)(allNamedVariables[index].variableName + 1);
+}
+
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right) {
   return compareString(left, right, CMP_NAME);
 }

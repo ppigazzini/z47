@@ -1083,6 +1083,27 @@ void stackParitySeedNamedVariable(int index, uint32_t data_type, uint32_t tag, c
   stackParitySeedRegister(reg, data_type, tag, data, size_in_blocks);
 }
 
+void stackParitySeedNamedVariableName(int index, const char *name) {
+  size_t len;
+
+  if(index < 0 || index >= MAX_FAKE_NAMED_VARIABLES || name == NULL) {
+    return;
+  }
+
+  len = strlen(name);
+  if(len > 14) {
+    len = 14;
+  }
+
+  memset(allNamedVariables[index].variableName, 0, sizeof(allNamedVariables[index].variableName));
+  allNamedVariables[index].variableName[0] = (uint8_t)len;
+  memcpy(allNamedVariables[index].variableName + 1, name, len);
+
+  if(numberOfNamedVariables < (uint16_t)(index + 1)) {
+    numberOfNamedVariables = (uint16_t)(index + 1);
+  }
+}
+
 void stackParitySeedLocalRegister(int index, uint32_t data_type, uint32_t tag, const uint8_t *data, uint16_t size_in_blocks) {
   calcRegister_t reg;
 
