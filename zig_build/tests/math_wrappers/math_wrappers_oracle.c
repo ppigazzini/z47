@@ -18,6 +18,16 @@
 #include "../../../src/c47/mathematics/floor.c"
 #undef fnFloor
 
+#define integerPartNoOp oracle_integerPartNoOp
+#define integerPartReal oracle_integerPartReal
+#define integerPartCplx oracle_integerPartCplx
+#define fnIp oracle_fnIp
+#include "../../../src/c47/mathematics/integerPart.c"
+#undef fnIp
+#undef integerPartCplx
+#undef integerPartReal
+#undef integerPartNoOp
+
 #define lnComplex oracle_lnComplex
 #define fnLn oracle_fnLn
 #include "../../../src/c47/mathematics/ln.c"
