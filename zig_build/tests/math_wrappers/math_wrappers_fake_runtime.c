@@ -57,6 +57,7 @@ static struct {
 } trig_outputs;
 
 static bool_t spcres_flag = false;
+static bool_t cpxres_flag = false;
 static bool_t overflow_flag = false;
 static uint32_t fake_uptime_ms = 0;
 static uint32_t fake_free_ram_memory = 0;
@@ -237,6 +238,7 @@ void mathWrappersReset(void) {
 
   trig_outputs.enabled = false;
   spcres_flag = false;
+  cpxres_flag = false;
   overflow_flag = false;
   fake_uptime_ms = 0x12345678u;
   fake_free_ram_memory = 0x11223344u;
@@ -317,12 +319,20 @@ void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
   longint_y_input.value = value;
 }
 
+void mathWrappersSetFlagCpxRes(bool_t enabled) {
+  cpxres_flag = enabled;
+}
+
 void mathWrappersSetFlagOverflow(bool_t enabled) {
   overflow_flag = enabled;
 }
 
 void mathWrappersSetFlagSpcRes(bool_t enabled) {
   spcres_flag = enabled;
+}
+
+void mathWrappersSetCurrentAngularMode(angularMode_t mode) {
+  currentAngularMode = mode;
 }
 
 void mathWrappersSetTrigOutputs(bool_t enabled, int32_t sin_value, int32_t cos_value, int32_t tan_value) {
@@ -557,6 +567,14 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   return true;
 }
 
+bool_t getFlag(uint16_t flag) {
+  if(flag == FLAG_CPXRES) {
+    return cpxres_flag;
+  }
+
+  return getSystemFlag(flag);
+}
+
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   const bool_t available = reg == REGISTER_Y ? longint_y_input.available : longint_input.available;
   const int32_t input_value = reg == REGISTER_Y ? longint_y_input.value : longint_input.value;
@@ -711,6 +729,36 @@ void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 60, 0);
 }
 
+void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(angle, fakeRealValue(x) + 61, 0);
+}
+
+void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(angle, fakeRealValue(x) + 62, 0);
+}
+
+void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(angle, fakeRealValue(x) + 63, 0);
+}
+
+void WP34S_ArcSinh(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 64, 0);
+}
+
+void WP34S_ArcTanh(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 65, 0);
+}
+
+void WP34S_Ln(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 66, 0);
+}
+
 void WP34S_Erf(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 80, 0);
@@ -759,6 +807,21 @@ void logxyLonI(const real_t *denom) {
   mpz_clear(result);
 }
 
+void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext) {
+  realRectangularToPolar(real, imag, lnReal, lnImag, realContext);
+  WP34S_Ln(lnReal, lnReal, realContext);
+}
+
+void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  real_t magnitude;
+  real_t theta;
+
+  realRectangularToPolar(real, imag, &magnitude, &theta, realContext);
+  decNumberSquareRoot(&magnitude, &magnitude, realContext);
+  setFakeReal(resReal, fakeRealValue(&magnitude) + 72, 0);
+  setFakeReal(resImag, fakeRealValue(&theta) + 73, 0);
+}
+
 void realPolarToRectangular(const real_t *magnitude,
                             const real_t *angle,
                             real_t *real,
@@ -770,6 +833,23 @@ void realPolarToRectangular(const real_t *magnitude,
   (void)realContext;
   setFakeReal(real, fakeRealValue(magnitude) + fakeRealValue(angle), 0);
   setFakeReal(imag, fakeRealValue(magnitude) - fakeRealValue(angle), 0);
+}
+
+void realRectangularToPolar(const real_t *real,
+                            const real_t *imag,
+                            real_t *magnitude,
+                            real_t *theta,
+                            realContext_t *realContext) {
+  const int32_t real_value = fakeRealValue(real);
+  const int32_t imag_value = fakeRealValue(imag);
+  const int32_t magnitude_value = (real_value < 0 ? -real_value : real_value) + (imag_value < 0 ? -imag_value : imag_value) + 5;
+
+  snapshot.real_polar_to_rectangular_calls++;
+  snapshot.real_polar_to_rectangular_magnitude_value = real_value;
+  snapshot.real_polar_to_rectangular_angle_value = imag_value;
+  (void)realContext;
+  setFakeReal(magnitude, magnitude_value, 0);
+  setFakeReal(theta, real_value - imag_value + 7, 0);
 }
 
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
@@ -791,6 +871,12 @@ decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNum
   snapshot.dec_number_divide_rhs_value = rhs_value;
   (void)realContext;
   setFakeReal(result, rhs_value == 0 ? 0 : (fakeRealValue(lhs) * 100) / rhs_value, 0);
+  return result;
+}
+
+decNumber *decNumberSquareRoot(decNumber *result, const decNumber *rhs, decContext *realContext) {
+  (void)realContext;
+  setFakeReal(result, fakeRealValue(rhs) + 69, rhs->bits & 0x70);
   return result;
 }
 
@@ -860,6 +946,10 @@ bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2) {
 
 bool_t realCompareEqual(const real_t *number1, const real_t *number2) {
   return fakeRealValue(number1) == fakeRealValue(number2) && ((number1->bits & 0x70) == (number2->bits & 0x70));
+}
+
+bool_t realCompareLessThan(const real_t *number1, const real_t *number2) {
+  return fakeRealValue(number1) < fakeRealValue(number2);
 }
 
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {

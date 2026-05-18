@@ -18,6 +18,45 @@
 #include "../../../src/c47/mathematics/floor.c"
 #undef fnFloor
 
+#define ArcsinComplex oracle_ArcsinComplex
+uint8_t oracle_ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+#define fnArcsin oracle_fnArcsin
+#include "../../../src/c47/mathematics/arcsin.c"
+#undef fnArcsin
+#undef ArcsinComplex
+
+#define fnArccos oracle_fnArccos
+#include "../../../src/c47/mathematics/arccos.c"
+#undef fnArccos
+
+#define ArctanComplex oracle_ArctanComplex
+uint8_t oracle_ArctanComplex(real_t *xReal, real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+#define fnArctan oracle_fnArctan
+#include "../../../src/c47/mathematics/arctan.c"
+#undef fnArctan
+#undef ArctanComplex
+
+#define ArcsinhReal oracle_ArcsinhReal
+#define ArcsinhComplex oracle_ArcsinhComplex
+uint8_t oracle_ArcsinhReal(const real_t *x, real_t *res, realContext_t *realContext);
+uint8_t oracle_ArcsinhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
+#define fnArcsinh oracle_fnArcsinh
+#include "../../../src/c47/mathematics/arcsinh.c"
+#undef fnArcsinh
+#undef ArcsinhComplex
+#undef ArcsinhReal
+
+#define realArcosh oracle_realArcosh
+void oracle_realArcosh(const real_t *x, real_t *res, realContext_t *realContext);
+#define fnArccosh oracle_fnArccosh
+#include "../../../src/c47/mathematics/arccosh.c"
+#undef fnArccosh
+#undef realArcosh
+
+#define fnArctanh oracle_fnArctanh
+#include "../../../src/c47/mathematics/arctanh.c"
+#undef fnArctanh
+
 #define fnInvert oracle_fnInvert
 #include "../../../src/c47/mathematics/invert.c"
 #undef fnInvert

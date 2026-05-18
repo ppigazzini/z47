@@ -183,6 +183,22 @@ const real_t *z47_math_wrappers_const_2(void) {
 #endif
 }
 
+const real_t *z47_math_wrappers_const_1on2(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, -1, 0, 5);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const_1on2;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_2e6(void) {
   static bool initialized = false;
   static real_t value;
@@ -193,6 +209,22 @@ const real_t *z47_math_wrappers_const_2e6(void) {
   }
 
   return &value;
+}
+
+const real_t *z47_math_wrappers_const_90(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 90);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const_90;
+#endif
 }
 
 const real_t *z47_math_wrappers_const_ln2(void) {
@@ -271,6 +303,55 @@ void z47_math_wrappers_report_exp_real_domain_error(void) {
   displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
   moreInfoOnError("In function expReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag D is not set", NULL, NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arcsin_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arcsinReal:", "|X| > 1", "and CPXRES is not set!", NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arccos_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arccosReal:", "|X| > 1", "and CPXRES is not set!", NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arctan_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arctanReal:", "X = " STD_PLUS_MINUS STD_INFINITY, NULL, NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arccosh_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arccoshReal:", "X < 1", "and CPXRES is not set!", NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arctanh_real_positive_one_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arctanhReal:", "X = 1", "and DANGER flag is not set!", NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arctanh_real_negative_one_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arctanhReal:", "X = -1", "and DANGER flag is not set!", NULL);
+#endif
+}
+
+void z47_math_wrappers_report_arctanh_real_domain_error(void) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  moreInfoOnError("In function arctanhReal:", "|X| > 1", "and CPXRES is not set!", NULL);
 #endif
 }
 
