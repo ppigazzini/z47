@@ -460,6 +460,24 @@ fn tenPowCplx() callconv(.c) void {
     intPowCplx(runtime.z47_math_wrappers_const_ln10());
 }
 
+fn log2LonI() callconv(.c) void {
+    runtime.logxyLonI(runtime.z47_math_wrappers_const_ln2());
+}
+
+fn log2ShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intLog2(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
+fn log2Real() callconv(.c) void {
+    runtime.logxyReal(runtime.z47_math_wrappers_const_ln2());
+}
+
+fn log2Cplx() callconv(.c) void {
+    runtime.logxyCplx(runtime.z47_math_wrappers_const_ln2());
+}
+
 fn m1PowLonI() callconv(.c) void {
     runtime.z47_math_wrappers_minus_one_power_long_integer();
 }
@@ -1010,6 +1028,28 @@ fn cubeCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
 }
 
+fn erfReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    runtime.WP34S_Erf(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn erfcReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    runtime.WP34S_Erfc(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -1140,6 +1180,18 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
 }
 
+pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&erfReal, null);
+}
+
+pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&erfcReal, null);
+}
+
 pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -1150,6 +1202,12 @@ pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processIntRealComplexMonadicFunction(&tenPowReal, &tenPowCplx, &tenPowShoI, &tenPowLonI);
+}
+
+pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&log2Real, &log2Cplx, &log2ShoI, &log2LonI);
 }
 
 pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {

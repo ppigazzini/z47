@@ -711,6 +711,54 @@ void WP34S_Tanh(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 60, 0);
 }
 
+void WP34S_Erf(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 80, 0);
+}
+
+void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 81, 0);
+}
+
+void logxyReal(const real_t *denom) {
+  real_t value;
+
+  if(!getRegisterAsReal(REGISTER_X, &value)) {
+    return;
+  }
+
+  setFakeReal(&value, fakeRealValue(&value) + fakeRealValue(denom), 0);
+  convertRealToResultRegister(&value, REGISTER_X, amNone);
+}
+
+void logxyCplx(const real_t *denom) {
+  real_t real;
+  real_t imag;
+
+  if(!getRegisterAsComplex(REGISTER_X, &real, &imag)) {
+    return;
+  }
+
+  setFakeReal(&real, fakeRealValue(&real) + fakeRealValue(denom), 0);
+  setFakeReal(&imag, fakeRealValue(&imag) - fakeRealValue(denom), 0);
+  convertComplexToResultRegister(&real, &imag, REGISTER_X);
+}
+
+void logxyLonI(const real_t *denom) {
+  real_t value;
+  longInteger_t result;
+
+  if(!getRegisterAsReal(REGISTER_X, &value)) {
+    return;
+  }
+
+  mpz_init(result);
+  mpz_set_si(result, fakeRealValue(&value) + fakeRealValue(denom));
+  convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
+  mpz_clear(result);
+}
+
 void realPolarToRectangular(const real_t *magnitude,
                             const real_t *angle,
                             real_t *real,
@@ -930,6 +978,18 @@ uint64_t WP34S_int2pow(uint64_t x) {
   while(exponent-- != 0) {
     result *= 2;
   }
+  return result;
+}
+
+uint64_t WP34S_intLog2(uint64_t x) {
+  uint64_t value = WP34S_extract_value(x, NULL);
+  uint64_t result = 0;
+
+  while(value > 1) {
+    value >>= 1;
+    result++;
+  }
+
   return result;
 }
 
