@@ -32,3 +32,8 @@ void oracle_undo(void);
 #define fillStackWithReal0 oracle_fillStackWithReal0
 
 #include "../../../src/c47/stack.c"
+
+bool_t oracle_saveLastX(void) {
+	copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+	return lastErrorCode == ERROR_NONE;
+}
