@@ -19,8 +19,11 @@ void fnSinh(uint16_t unusedButMandatoryParameter);
 void fnCosh(uint16_t unusedButMandatoryParameter);
 void fnTanh(uint16_t unusedButMandatoryParameter);
 void fnExp(uint16_t unusedButMandatoryParameter);
+void fnErf(uint16_t unusedButMandatoryParameter);
+void fnErfc(uint16_t unusedButMandatoryParameter);
 void fn2Pow(uint16_t unusedButMandatoryParameter);
 void fn10Pow(uint16_t unusedButMandatoryParameter);
+void fnLog2(uint16_t unusedButMandatoryParameter);
 void fnM1Pow(uint16_t unusedButMandatoryParameter);
 void fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
@@ -40,8 +43,11 @@ void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
+void oracle_fnErf(uint16_t unusedButMandatoryParameter);
+void oracle_fnErfc(uint16_t unusedButMandatoryParameter);
 void oracle_fn2Pow(uint16_t unusedButMandatoryParameter);
 void oracle_fn10Pow(uint16_t unusedButMandatoryParameter);
+void oracle_fnLog2(uint16_t unusedButMandatoryParameter);
 void oracle_fnM1Pow(uint16_t unusedButMandatoryParameter);
 void oracle_fnEulersFormula(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
@@ -324,6 +330,44 @@ static void configure10PowLongIntegerNegative(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
   mathWrappersSetLongIntegerInput(true, -2);
+}
+
+static void configureLog2Real(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 8, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureLog2Complex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 8, 0, 3, 0);
+}
+
+static void configureLog2ShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(8);
+}
+
+static void configureLog2LongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 8);
+}
+
+static void configureErfReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureErfcReal(void) {
+  configureErfReal();
+  mathWrappersSetRealInput(true, -3, 0);
 }
 
 static void configure2PowReal(void) {
@@ -725,6 +769,8 @@ int main(void) {
   failures += runCase("fnExp/complex", oracle_fnExp, fnExp, 0, true, configureExpComplex);
   failures += runCase("fnExp/complex_imag_zero", oracle_fnExp, fnExp, 0, true, configureExpComplexImagZero);
   failures += runCase("fnExp/complex_special", oracle_fnExp, fnExp, 0, true, configureExpComplexSpecial);
+  failures += runCase("fnErf/real", oracle_fnErf, fnErf, 0, true, configureErfReal);
+  failures += runCase("fnErfc/real", oracle_fnErfc, fnErfc, 0, true, configureErfcReal);
   failures += runCase("fn2Pow/real", oracle_fn2Pow, fn2Pow, 0, true, configure2PowReal);
   failures += runCase("fn2Pow/real_inf", oracle_fn2Pow, fn2Pow, 0, true, configure2PowRealInfinity);
   failures += runCase("fn2Pow/real_inf_danger", oracle_fn2Pow, fn2Pow, 0, true, configure2PowRealInfinityDanger);
@@ -739,6 +785,10 @@ int main(void) {
   failures += runCase("fn10Pow/shortint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowShortInteger);
   failures += runCase("fn10Pow/longint", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongInteger);
   failures += runCase("fn10Pow/longint_negative", oracle_fn10Pow, fn10Pow, 0, true, configure10PowLongIntegerNegative);
+  failures += runCase("fnLog2/real", oracle_fnLog2, fnLog2, 0, true, configureLog2Real);
+  failures += runCase("fnLog2/complex", oracle_fnLog2, fnLog2, 0, true, configureLog2Complex);
+  failures += runCase("fnLog2/shortint", oracle_fnLog2, fnLog2, 0, true, configureLog2ShortInteger);
+  failures += runCase("fnLog2/longint", oracle_fnLog2, fnLog2, 0, true, configureLog2LongInteger);
   failures += runCase("fnM1Pow/real_zero", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealZero);
   failures += runCase("fnM1Pow/real_one", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealOne);
   failures += runCase("fnM1Pow/real_inf", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealInfinity);
