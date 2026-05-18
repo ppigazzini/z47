@@ -21,6 +21,11 @@ typedef struct {
 typedef decQuad real34_t;
 
 typedef struct {
+  uint64_t state;
+  uint64_t inc;
+} pcg32_random_t;
+
+typedef struct {
   int32_t digits;
   int32_t exponent;
   uint8_t bits;
@@ -88,6 +93,8 @@ enum {
 
 #define EXTRA_INFO_ON_CALC_ERROR 1
 
+#define PCG32_INITIALIZER { 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL }
+
 #define STD_PLUS_MINUS "+/-"
 #define STD_INFINITY "inf"
 #define STD_DEGREE "deg"
@@ -124,6 +131,12 @@ enum {
 #define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
 #define longIntegerMultiply(op_y, op_x, result) mpz_mul((result), (op_y), (op_x))
 #define longIntegerSquare(op, result) mpz_mul((result), (op), (op))
+#define longIntegerCompare(lhs, rhs) mpz_cmp((lhs), (rhs))
+#define longIntegerCopy(source, destination) mpz_set((destination), (source))
+#define longIntegerSubtract(lhs, rhs, result) mpz_sub((result), (lhs), (rhs))
+#define longIntegerCompareUInt(lhs, rhs) mpz_cmp_ui((lhs), (rhs))
+#define longIntegerToUInt32(source, destination) ((destination) = (uint32_t)mpz_get_ui((source)))
+#define longIntegerAddUInt(lhs, rhs, result) mpz_add_ui((result), (lhs), (rhs))
 
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
 #define realSetPositiveSign(operand) ((operand)->bits &= 0x7f)
@@ -136,6 +149,10 @@ enum {
 #define realCopy(source, destination) (*(destination) = *(source))
 #define realMultiply(operand1, operand2, res, ctxt) decNumberMultiply((res), (operand1), (operand2), (ctxt))
 #define realDivide(operand1, operand2, res, ctxt) decNumberDivide((res), (operand1), (operand2), (ctxt))
+#define realAdd(operand1, operand2, res, ctxt) decNumberAdd((res), (operand1), (operand2), (ctxt))
+#define realSubtract(operand1, operand2, res, ctxt) decNumberSubtract((res), (operand1), (operand2), (ctxt))
+#define realFMA(factor1, factor2, term, res, ctxt) decNumberFMA((res), (factor1), (factor2), (term), (ctxt))
+#define uInt32ToReal(source, destination) decNumberFromUInt32((destination), (source))
 
 #define real34ChangeSign(operand) ((operand)->bytes[15] ^= 0x80)
 #define real34SetPositiveSign(operand) ((operand)->bytes[15] &= 0x7f)
@@ -150,6 +167,8 @@ extern const real_t *const_NaN;
 extern uint8_t lastErrorCode;
 extern uint8_t shortIntegerMode;
 extern angularMode_t currentAngularMode;
+extern bool_t thereIsSomethingToUndo;
+extern pcg32_random_t pcg32_global;
 
 #define const_0 ((real_t *)z47_math_wrappers_const_0())
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
@@ -166,6 +185,7 @@ extern angularMode_t currentAngularMode;
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 
 bool_t saveLastX(void);
+void saveForUndo(void);
 void registerMin(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
 void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t dest);
 void adjustResult(calcRegister_t res,
@@ -179,6 +199,18 @@ void processIntRealComplexMonadicFunction(void (*realf)(void),
                                          void (*complexf)(void),
                                          void (*shortintf)(void),
                                          void (*longintf)(void));
+void processIntRealComplexDyadicFunction(void (*realf)(void),
+                                        void (*complexf)(void),
+                                        void (*shortintf)(void),
+                                        void (*longintf)(void));
+
+void liftStack(void);
+void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag);
+void fnDrop(uint16_t unusedButMandatoryParameter);
+void fnUndo(uint16_t unusedButMandatoryParameter);
+uint32_t getUptimeMs(void);
+uint32_t getFreeRamMemory(void);
+uint32_t getFreeFlash(void);
 
 void integerPartNoOp(void);
 void integerPartReal(enum rounding mode);
@@ -216,6 +248,10 @@ decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberSubtract(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberFMA(decNumber *result, const decNumber *lhs, const decNumber *rhs, const decNumber *term, decContext *real_context);
+decNumber *decNumberFromUInt32(decNumber *result, uint32_t source);
 bool_t realCompareEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsEqual(const real_t *number1, const real_t *number2);
 bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2);
@@ -264,6 +300,7 @@ void fnRefreshState(void);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
+void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest);
 
 const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
@@ -300,5 +337,13 @@ uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real
 uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);
 void sinhCoshReal(trigType_t trigType);
 void sinhCoshCplx(trigType_t trigType);
+
+void pcg32_srandom(uint64_t initstate, uint64_t initseq);
+void pcg32_srandom_r(pcg32_random_t *rng, uint64_t initstate, uint64_t initseq);
+uint32_t pcg32_random_r(pcg32_random_t *rng);
+void realRandomU01(real_t *res);
+
+void z47_math_wrappers_seed_defaults(uint64_t *seed, uint64_t *seq);
+void z47_math_wrappers_do_int_random_i(void);
 
 #endif
