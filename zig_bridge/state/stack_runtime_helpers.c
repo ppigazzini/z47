@@ -111,6 +111,24 @@ uint8_t z47_stack_runtime_get_input_default(void) {
   return Input_Default;
 }
 
+void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg) {
+  longInteger_t lg_int;
+
+  longIntegerInit(lg_int);
+  uInt32ToLongInteger(0u, lg_int);
+  convertLongIntegerToLongIntegerRegister(lg_int, reg);
+  longIntegerFree(lg_int);
+}
+
+void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base) {
+  longInteger_t lg_int;
+
+  longIntegerInit(lg_int);
+  uInt32ToLongInteger(0u, lg_int);
+  convertLongIntegerToShortIntegerRegister(lg_int, base, reg);
+  longIntegerFree(lg_int);
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);

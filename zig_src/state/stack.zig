@@ -65,6 +65,16 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
         return;
     }
 
+    if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_LI) {
+        runtime.storeZeroLongInteger(reg);
+        return;
+    }
+
+    if (runtime.lastIntegerBase != 0) {
+        runtime.storeZeroShortInteger(reg, runtime.lastIntegerBase);
+        return;
+    }
+
     runtime.retainedClearRegister(reg);
 }
 

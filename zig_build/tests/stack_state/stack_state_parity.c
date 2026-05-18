@@ -173,6 +173,18 @@ static void setupClearRegisterComplexReallocateCase(void) {
   clearSystemFlag(FLAG_POLAR);
 }
 
+static void setupClearRegisterLongIntegerCase(void) {
+  seedRegister(REGISTER_X, 0xc0);
+  Input_Default = ID_LI;
+  lastIntegerBase = 0;
+}
+
+static void setupClearRegisterShortIntegerCase(void) {
+  seedRegister(REGISTER_X, 0xd0);
+  Input_Default = ID_DP;
+  lastIntegerBase = 16;
+}
+
 static void captureAndCompare(const char *name, const stack_parity_snapshot_t *expected, const stack_parity_snapshot_t *actual, uint16_t arg, int *failures) {
   if(memcmp(expected, actual, sizeof(*expected)) != 0) {
     fprintf(stderr,
@@ -317,6 +329,8 @@ int main(void) {
   failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterRealCase, REGISTER_X);
   failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexCase, REGISTER_X);
   failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexReallocateCase, REGISTER_X);
+  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterLongIntegerCase, REGISTER_X);
+  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterShortIntegerCase, REGISTER_X);
   failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
   failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);
