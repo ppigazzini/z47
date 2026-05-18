@@ -46,11 +46,25 @@
 #undef fpShoI
 #undef fpLonI
 
+#define sinComplex oracle_sinComplex
+#define fnSinc oracle_fnSinc
+#include "../../../src/c47/mathematics/sinc.c"
+#undef fnSinc
+#undef sinComplex
+
+#define fnSincpi oracle_fnSincpi
+#include "../../../src/c47/mathematics/sincpi.c"
+#undef fnSincpi
+
 #define lnComplex oracle_lnComplex
 #define fnLn oracle_fnLn
 #include "../../../src/c47/mathematics/ln.c"
 #undef fnLn
 #undef lnComplex
+
+#define fnLnP1 oracle_fnLnP1
+#include "../../../src/c47/mathematics/lnPOne.c"
+#undef fnLnP1
 
 #define sqrt1Px2Complex oracle_sqrt1Px2Complex
 #define fnSqrt1Px2 oracle_fnSqrt1Px2
@@ -170,6 +184,14 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef expComplex
 #undef realExp
 #undef realExpLimitCheck
+
+#define sinComplex oracle_sinComplex
+#define expComplex oracle_expComplex
+#define fnExpM1 oracle_fnExpM1
+#include "../../../src/c47/mathematics/expMOne.c"
+#undef fnExpM1
+#undef expComplex
+#undef sinComplex
 
 #define fnErf oracle_fnErf
 #include "../../../src/c47/mathematics/erf.c"

@@ -14,6 +14,10 @@ fn negateReal(destination: *runtime.real_t, source: *const runtime.real_t) void 
     runtime.realChangeSign(destination);
 }
 
+fn realAbsLessThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
+    return !runtime.realCompareAbsEqual(lhs, rhs) and !runtime.realCompareAbsGreaterThan(lhs, rhs);
+}
+
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
     const old_state = rng.state;
     const xorshifted: u32 = @truncate(((old_state >> 18) ^ old_state) >> 27);
@@ -159,6 +163,34 @@ pub export fn cosComplex(
     runtime.realMultiply(&cosa, &coshb, res_real, real_context);
     runtime.realMultiply(&sina, &sinhb, res_imag, real_context);
     runtime.realChangeSign(res_imag);
+}
+
+fn sincComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var rr: runtime.real_t = undefined;
+    var ii: runtime.real_t = undefined;
+
+    copyReal(&rr, real);
+    copyReal(&ii, imag);
+
+    if (runtime.realIsZero(&rr) and runtime.realIsZero(&ii)) {
+        runtime.realSetOne(res_real);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    var sin_real: runtime.real_t = undefined;
+    var sin_imag: runtime.real_t = undefined;
+
+    sinComplex(&rr, &ii, res_real, res_imag, real_context);
+    copyReal(&sin_real, res_real);
+    copyReal(&sin_imag, res_imag);
+    runtime.divComplexComplex(&sin_real, &sin_imag, &rr, &ii, res_real, res_imag, real_context);
 }
 
 pub export fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void {
@@ -371,6 +403,56 @@ pub export fn expComplex(
     runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
 }
 
+fn realExpM1(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    runtime.WP34S_ExpM1(x, res, real_context);
+}
+
+fn expM1Complex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var z2_real: runtime.real_t = undefined;
+    var z2_imag: runtime.real_t = undefined;
+    var e_real: runtime.real_t = undefined;
+    var e_imag: runtime.real_t = undefined;
+
+    if (runtime.realIsZero(imag)) {
+        if (runtime.realIsInfinite(real) and runtime.realIsNegative(real)) {
+            copyReal(res_real, runtime.z47_math_wrappers_const_minus_1());
+            runtime.realSetZero(res_imag);
+            return;
+        }
+
+        realExpM1(real, res_real, real_context);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    if (runtime.realIsSpecial(real) or runtime.realIsSpecial(imag)) {
+        runtime.realSetNaN(res_real);
+        runtime.realSetNaN(res_imag);
+        return;
+    }
+
+    runtime.realMultiply(real, runtime.z47_math_wrappers_const_1on2(), &z2_real, real_context);
+    runtime.realMultiply(imag, runtime.z47_math_wrappers_const_1on2(), &z2_imag, real_context);
+    expComplex(&z2_real, &z2_imag, &e_real, &e_imag, real_context);
+    runtime.realChangeSign(&e_real);
+    runtime.realAdd(&e_real, &e_real, &e_real, real_context);
+    runtime.realAdd(&e_imag, &e_imag, &e_imag, real_context);
+
+    runtime.realChangeSign(&z2_imag);
+    sinComplex(&z2_imag, &z2_real, &z2_real, &z2_imag, real_context);
+    runtime.mulComplexComplex(&z2_real, &z2_imag, &e_imag, &e_real, res_real, res_imag, real_context);
+}
+
 pub export fn realPower10(
     x: *const runtime.real_t,
     res: *runtime.real_t,
@@ -565,6 +647,322 @@ fn lnCplx() callconv(.c) void {
         runtime.realSetZero(&x_imag);
     } else {
         lnComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+    }
+
+    runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
+}
+
+fn lnP1Complex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    ln_real: *runtime.real_t,
+    ln_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var magnitude: runtime.real_t = undefined;
+    var dummy: runtime.real_t = undefined;
+    var trailing_sum: runtime.real_t = undefined;
+    var threshold = std.mem.zeroes(runtime.real_t);
+
+    defer runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &trailing_sum, real_context);
+
+    threshold.digits = 1;
+    threshold.exponent = -6;
+    threshold.lsu[0] = 1;
+
+    runtime.realRectangularToPolar(real, imag, &magnitude, &dummy, real_context);
+    if (realAbsLessThan(&magnitude, &threshold)) {
+        var term_real: runtime.real_t = undefined;
+        var term_imag: runtime.real_t = undefined;
+        var sum_real: runtime.real_t = undefined;
+        var sum_imag: runtime.real_t = undefined;
+
+        copyReal(&term_real, real);
+        copyReal(&term_imag, imag);
+        copyReal(&sum_real, real);
+        copyReal(&sum_imag, imag);
+
+        const iterations: i32 = @divTrunc(real_context.digits, 5) | 1;
+        var index: i32 = 1;
+        while (index <= iterations) : (index += 1) {
+            var product_real: runtime.real_t = undefined;
+            var product_imag: runtime.real_t = undefined;
+            var divisor: runtime.real_t = undefined;
+            var contribution: runtime.real_t = undefined;
+
+            runtime.mulComplexComplex(&term_real, &term_imag, real, imag, &product_real, &product_imag, real_context);
+            runtime.realChangeSign(&product_real);
+            runtime.realChangeSign(&product_imag);
+            copyReal(&term_real, &product_real);
+            copyReal(&term_imag, &product_imag);
+
+            runtime.uInt32ToReal(@intCast(index + 1), &divisor);
+
+            runtime.realDivide(&term_real, &divisor, &contribution, real_context);
+            runtime.realAdd(&sum_real, &contribution, &sum_real, real_context);
+            runtime.realDivide(&term_imag, &divisor, &contribution, real_context);
+            runtime.realAdd(&sum_imag, &contribution, &sum_imag, real_context);
+        }
+
+        copyReal(ln_real, &sum_real);
+        copyReal(ln_imag, &sum_imag);
+        return;
+    }
+
+    var one_plus_real: runtime.real_t = undefined;
+
+    runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &one_plus_real, real_context);
+    if (runtime.realIsZero(&one_plus_real) and runtime.realIsZero(imag)) {
+        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(ln_imag);
+        return;
+    }
+
+    runtime.realRectangularToPolar(&one_plus_real, imag, ln_real, ln_imag, real_context);
+    runtime.WP34S_Ln(ln_real, ln_real, real_context);
+}
+
+fn sincReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var sine: runtime.real_t = undefined;
+    var result: *const runtime.real_t = &x;
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x)) {
+        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            result = runtime.z47_math_wrappers_const_0();
+        } else {
+            runtime.z47_math_wrappers_report_sinc_real_domain_error();
+            return;
+        }
+    } else {
+        if (runtime.realIsZero(&x)) {
+            result = runtime.z47_math_wrappers_const_1();
+        } else {
+            if (register_data_type == runtime.dtReal34) {
+                const angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+                if (angular_mode != runtime.amNone) {
+                    runtime.convertAngleFromTo(&x, angular_mode, runtime.amRadian, &runtime.ctxtReal39);
+                }
+            }
+            runtime.C47_WP34S_Cvt2RadSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal39);
+            runtime.realDivide(&sine, &x, &x, &runtime.ctxtReal75);
+        }
+    }
+
+    runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn sincCplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    sincComplex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+}
+
+fn sincpiReal() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+    var sine: runtime.real_t = undefined;
+    var result: *const runtime.real_t = &x;
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x)) {
+        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            result = runtime.z47_math_wrappers_const_0();
+        } else {
+            runtime.z47_math_wrappers_report_sincpi_real_domain_error();
+            return;
+        }
+    } else {
+        if (runtime.realIsZero(&x)) {
+            result = runtime.z47_math_wrappers_const_1();
+        } else if (register_data_type != runtime.dtReal34) {
+            result = runtime.z47_math_wrappers_const_0();
+        } else {
+            const angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+            if (angular_mode != runtime.amNone) {
+                runtime.convertAngleFromTo(&x, angular_mode, runtime.amRadian, &runtime.ctxtReal75);
+            }
+            runtime.realMultiply(&x, runtime.z47_math_wrappers_const_pi(), &x, &runtime.ctxtReal75);
+            runtime.C47_WP34S_Cvt2RadSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal75);
+            runtime.realDivide(&sine, &x, &x, &runtime.ctxtReal75);
+        }
+    }
+
+    runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn sincpiComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var rr: runtime.real_t = undefined;
+    var ii: runtime.real_t = undefined;
+    var remainder: runtime.real_t = undefined;
+
+    copyReal(&rr, real);
+    copyReal(&ii, imag);
+    runtime.WP34S_Mod(&rr, runtime.z47_math_wrappers_const_1(), &remainder, real_context);
+
+    if (runtime.realIsZero(&rr) and runtime.realIsZero(&ii)) {
+        runtime.realSetOne(res_real);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    if (runtime.realIsZero(&remainder) and runtime.realIsZero(&ii)) {
+        runtime.realSetZero(res_real);
+        runtime.realSetZero(res_imag);
+        return;
+    }
+
+    var sina: runtime.real_t = undefined;
+    var cosa: runtime.real_t = undefined;
+    var sinhb: runtime.real_t = undefined;
+    var coshb: runtime.real_t = undefined;
+    var sin_real: runtime.real_t = undefined;
+    var sin_imag: runtime.real_t = undefined;
+
+    runtime.realMultiply(&rr, runtime.z47_math_wrappers_const_pi(), &rr, real_context);
+    runtime.realMultiply(&ii, runtime.z47_math_wrappers_const_pi(), &ii, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(&rr, runtime.amRadian, &sina, &cosa, null, real_context);
+    runtime.WP34S_SinhCosh(&ii, &sinhb, &coshb, real_context);
+
+    runtime.realMultiply(&sina, &coshb, res_real, real_context);
+    runtime.realMultiply(&cosa, &sinhb, res_imag, real_context);
+    copyReal(&sin_real, res_real);
+    copyReal(&sin_imag, res_imag);
+    runtime.divComplexComplex(&sin_real, &sin_imag, &rr, &ii, res_real, res_imag, real_context);
+}
+
+fn sincpiCplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    sincpiComplex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+}
+
+fn expM1Real() callconv(.c) void {
+    var x: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
+        return;
+    }
+
+    if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.z47_math_wrappers_report_exp_m1_real_domain_error();
+        return;
+    }
+
+    realExpM1(&x, &x, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn expM1Cplx() callconv(.c) void {
+    var z_real: runtime.real_t = undefined;
+    var z_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+        return;
+    }
+
+    expM1Complex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+}
+
+fn lnP1Real() callconv(.c) void {
+    var arg: runtime.real_t = undefined;
+    var shifted: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+    var imag_part: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &arg)) {
+        return;
+    }
+
+    runtime.realAdd(&arg, runtime.z47_math_wrappers_const_1(), &shifted, &runtime.ctxtReal39);
+    if (runtime.realIsZero(&shifted)) {
+        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            copyReal(&result, runtime.z47_math_wrappers_const_minus_infinity());
+        } else {
+            runtime.z47_math_wrappers_report_ln_p1_real_zero_domain_error();
+            return;
+        }
+    } else if (runtime.realIsInfinite(&shifted)) {
+        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.z47_math_wrappers_report_ln_p1_real_infinite_domain_error();
+            return;
+        } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+            if (!runtime.realIsNegative(&shifted)) {
+                copyReal(&result, runtime.z47_math_wrappers_const_plus_infinity());
+            } else {
+                runtime.convertComplexToResultRegister(
+                    runtime.z47_math_wrappers_const_plus_infinity(),
+                    runtime.z47_math_wrappers_const_pi(),
+                    runtime.REGISTER_X,
+                );
+                return;
+            }
+        } else {
+            runtime.realSetNaN(&result);
+        }
+    } else {
+        if (!runtime.realIsNegative(&shifted)) {
+            runtime.WP34S_Ln1P(&arg, &result, &runtime.ctxtReal39);
+        } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
+            lnP1Complex(&arg, runtime.z47_math_wrappers_const_0(), &result, &imag_part, &runtime.ctxtReal75);
+            runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_pi(), runtime.REGISTER_X);
+            return;
+        } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.realSetNaN(&result);
+        } else {
+            runtime.z47_math_wrappers_report_ln_p1_real_negative_domain_error();
+            return;
+        }
+    }
+
+    runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn lnP1Cplx() callconv(.c) void {
+    var x_real: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x_imag) and runtime.realCompareEqual(&x_real, runtime.z47_math_wrappers_const_minus_1())) {
+        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
+            runtime.realSetZero(&x_imag);
+        } else {
+            runtime.z47_math_wrappers_report_ln_p1_cplx_zero_domain_error();
+            return;
+        }
+    } else {
+        lnP1Complex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal75);
     }
 
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
@@ -1941,6 +2339,18 @@ pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     );
 }
 
+pub export fn fnSinc(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&sincReal, &sincCplx);
+}
+
+pub export fn fnSincpi(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&sincpiReal, &sincpiCplx);
+}
+
 pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -2019,10 +2429,22 @@ pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.processRealComplexMonadicFunction(&expReal, &expCplx);
 }
 
+pub export fn fnExpM1(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&expM1Real, &expM1Cplx);
+}
+
 pub export fn fnLn(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     runtime.processRealComplexMonadicFunction(&lnReal, &lnCplx);
+}
+
+pub export fn fnLnP1(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexMonadicFunction(&lnP1Real, &lnP1Cplx);
 }
 
 pub export fn fnSqrt1Px2(unused_but_mandatory_parameter: u16) callconv(.c) void {
