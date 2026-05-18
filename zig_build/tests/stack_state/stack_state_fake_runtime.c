@@ -763,33 +763,6 @@ void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter) {
   copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
 }
 
-bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
-  (void)res;
-  (void)setCpxRes;
-  (void)op1;
-  (void)op2;
-  (void)op3;
-
-  confirmation_request = fake_adjust_result_no_drop_success ? 11 : 12;
-  if(!fake_adjust_result_no_drop_success) {
-    lastErrorCode = ERROR_OUT_OF_RANGE;
-  }
-  return fake_adjust_result_no_drop_success;
-}
-
-bool_t z47_registers_retained_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
-  (void)res;
-  (void)op1;
-  (void)op2;
-  (void)op3;
-
-  confirmation_request = fake_adjust_result_no_drop_success ? 13 : 14;
-  if(!fake_adjust_result_no_drop_success) {
-    lastErrorCode = ERROR_OUT_OF_RANGE;
-  }
-  return fake_adjust_result_no_drop_success;
-}
-
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
   confirmation_request = 3;
 
