@@ -185,6 +185,33 @@ bool_t z47_stack_runtime_adjust_result_real_matrix_core(calcRegister_t res) {
   return true;
 }
 
+bool_t z47_stack_runtime_adjust_result_complex_matrix_core(calcRegister_t res) {
+  complex34Matrix_t matrix;
+
+  if(getRegisterDataType(res) != dtComplex34Matrix) {
+    return false;
+  }
+
+  if(getSystemFlag(FLAG_SPCRES) == false && lastErrorCode == 0) {
+    linkToComplexMatrixRegister(res, &matrix);
+    for(uint32_t i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns; ++i) {
+      z47_adjust_result_adjust_real_register(res, VARIABLE_REAL34_DATA(&matrix.matrixElements[i]));
+      z47_adjust_result_adjust_real_register(res, VARIABLE_IMAG34_DATA(&matrix.matrixElements[i]));
+    }
+  }
+
+  if(lastErrorCode != 0) {
+    undo();
+    return true;
+  }
+
+  if(significantDigits != 0 && significantDigits < 34) {
+    rsdCxma(significantDigits);
+  }
+
+  return true;
+}
+
 void z47_stack_runtime_adjust_result_set_cpxres(void) {
   fnSetFlag(FLAG_CPXRES);
   fnRefreshState();

@@ -298,7 +298,7 @@ void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, cal
 		oneArgumentIsComplex = oneArgumentIsComplex || getRegisterDataType(op3) == dtComplex34 || getRegisterDataType(op3) == dtComplex34Matrix;
 	}
 
-	if(z47_stack_runtime_adjust_result_scalar_core(res) || z47_stack_runtime_adjust_result_real_matrix_core(res)) {
+	if(z47_stack_runtime_adjust_result_scalar_core(res) || z47_stack_runtime_adjust_result_real_matrix_core(res) || z47_stack_runtime_adjust_result_complex_matrix_core(res)) {
 		if(lastErrorCode != ERROR_NONE) {
 			return;
 		}
