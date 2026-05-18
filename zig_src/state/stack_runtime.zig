@@ -97,6 +97,7 @@ pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_
 pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
 pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
+pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
@@ -205,6 +206,10 @@ pub fn retainedClearRegister(reg: calcRegister_t) void {
 
 pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {
     return z47_registers_retained_get_reg_clr_range(s, n);
+}
+
+pub fn retainedGetRegSwapRange(s: *u16, n: *u16, d: *u16) u8 {
+    return z47_registers_retained_get_reg_swap_range(s, n, d);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {

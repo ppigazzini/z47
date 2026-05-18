@@ -54,6 +54,10 @@ static uint8_t confirmation_request = 0;
 static uint8_t fake_regclr_error_code = ERROR_NONE;
 static uint16_t fake_regclr_start = 0;
 static uint16_t fake_regclr_count = 0;
+static uint8_t fake_regswap_error_code = ERROR_NONE;
+static uint16_t fake_regswap_start = 0;
+static uint16_t fake_regswap_count = 0;
+static uint16_t fake_regswap_dest = 0;
 
 #ifdef Z47_STACK_STATE_RUNTIME
 #define clearRegister z47_stack_parity_raw_clearRegister
@@ -161,6 +165,10 @@ void stackParityReset(void) {
   fake_regclr_error_code = ERROR_NONE;
   fake_regclr_start = 0;
   fake_regclr_count = 0;
+  fake_regswap_error_code = ERROR_NONE;
+  fake_regswap_start = 0;
+  fake_regswap_count = 0;
+  fake_regswap_dest = 0;
   currentInputVariable = INVALID_VARIABLE;
   displayStack = 0;
   thereIsSomethingToUndo = false;
@@ -574,10 +582,24 @@ uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n) {
   return fake_regclr_error_code;
 }
 
+uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d) {
+  *s = fake_regswap_start;
+  *n = fake_regswap_count;
+  *d = fake_regswap_dest;
+  return fake_regswap_error_code;
+}
+
 void stackParitySetRegClrRange(uint8_t error_code, uint16_t s, uint16_t n) {
   fake_regclr_error_code = error_code;
   fake_regclr_start = s;
   fake_regclr_count = n;
+}
+
+void stackParitySetRegSwapRange(uint8_t error_code, uint16_t s, uint16_t n, uint16_t d) {
+  fake_regswap_error_code = error_code;
+  fake_regswap_start = s;
+  fake_regswap_count = n;
+  fake_regswap_dest = d;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {

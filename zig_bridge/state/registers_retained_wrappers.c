@@ -13,7 +13,6 @@ void z47_registers_retained_adjustResult(calcRegister_t res, bool_t dropY, bool_
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegSort(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
-void z47_registers_retained_fnRegSwap(uint16_t unusedButMandatoryParameter);
 bool_t z47_registers_retained_isFunctionAllowingNewVariable(uint16_t op);
 
 void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
@@ -58,10 +57,6 @@ void fnRegSort(uint16_t unusedButMandatoryParameter) {
 
 void fnRegCopy(uint16_t unusedButMandatoryParameter) {
   z47_registers_retained_fnRegCopy(unusedButMandatoryParameter);
-}
-
-void fnRegSwap(uint16_t unusedButMandatoryParameter) {
-  z47_registers_retained_fnRegSwap(unusedButMandatoryParameter);
 }
 
 bool_t isFunctionAllowingNewVariable(uint16_t op) {

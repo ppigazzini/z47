@@ -35,3 +35,7 @@
 uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n) {
 	return getRegParam(NULL, s, n, NULL);
 }
+
+uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d) {
+	return getRegParam(NULL, s, n, d);
+}

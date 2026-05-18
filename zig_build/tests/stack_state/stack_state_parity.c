@@ -13,6 +13,7 @@ void fnGetLocR(uint16_t unusedButMandatoryParameter);
 void fnClearRegisters(uint16_t confirmation);
 void clearRegister(calcRegister_t reg);
 void fnRegClr(uint16_t unusedButMandatoryParameter);
+void fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -32,6 +33,7 @@ void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
 void oracle_fnClearRegisters(uint16_t confirmation);
 void oracle_clearRegister(calcRegister_t reg);
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
+void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -167,6 +169,23 @@ static void setupRegClrCase(void) {
 static void setupRegClrErrorCase(void) {
   seedBasicStack();
   stackParitySetRegClrRange(ERROR_OUT_OF_RANGE, 0, 0);
+}
+
+static void setupRegSwapCase(void) {
+  seedBasicStack();
+  seedRegister(2, 0xf0);
+  seedRegister(3, 0xf4);
+  seedRegister(6, 0xf8);
+  seedRegister(7, 0xfc);
+  stackParitySetRegSwapRange(ERROR_NONE, 2, 2, 6);
+}
+
+static void setupRegSwapOverlapCase(void) {
+  seedBasicStack();
+  seedRegister(2, 0xf0);
+  seedRegister(3, 0xf4);
+  seedRegister(4, 0xf8);
+  stackParitySetRegSwapRange(ERROR_NONE, 2, 2, 3);
 }
 
 static void setupClearRegisterRealCase(void) {
@@ -361,6 +380,8 @@ int main(void) {
   failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersStack8Case, 1);
   failures += runU16Case("fnRegClr", oracle_fnRegClr, fnRegClr, setupRegClrCase, 0);
   failures += runU16Case("fnRegClr", oracle_fnRegClr, fnRegClr, setupRegClrErrorCase, 0);
+  failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
+  failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
 
   failures += runU16Case("fnDrop", oracle_fnDrop, fnDrop, setupDropCase, 0);
   failures += runU16Case("fnDropY", oracle_fnDropY, fnDropY, setupDropCase, 0);

@@ -126,6 +126,34 @@ pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
     runtime.reportRegisterCommandError(runtime.lastErrorCode);
 }
 
+pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
+
+    var s: u16 = 0;
+    var n: u16 = 0;
+    var d: u16 = 0;
+
+    runtime.lastErrorCode = runtime.retainedGetRegSwapRange(&s, &n, &d);
+    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        runtime.reportRegisterCommandError(runtime.lastErrorCode);
+        return;
+    }
+
+    if (d < s + n and s < d + n) {
+        runtime.reportRegisterCommandError(runtime.ERROR_OUT_OF_RANGE);
+        return;
+    }
+
+    var index: u16 = 0;
+    while (index < n) : (index += 1) {
+        const src = @as(runtime.calcRegister_t, @intCast(s + index));
+        const dst = @as(runtime.calcRegister_t, @intCast(d + index));
+        const saved_descriptor = runtime.globalDescriptor(src);
+        runtime.setGlobalDescriptor(src, runtime.globalDescriptor(dst));
+        runtime.setGlobalDescriptor(dst, saved_descriptor);
+    }
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 
