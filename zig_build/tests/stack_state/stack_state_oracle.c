@@ -262,6 +262,10 @@ void oracle_fnToReal(uint16_t unusedButMandatoryParameter) {
 		return;
 	}
 
+	if(z47_stack_runtime_try_fn_to_real_short_integer()) {
+		return;
+	}
+
 	if(z47_stack_runtime_try_fn_to_real_real34()) {
 		return;
 	}

@@ -56,6 +56,17 @@ bool_t z47_stack_runtime_try_fn_to_real_long_integer(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_short_integer(void) {
+  if(getRegisterDataType(REGISTER_X) != dtShortInteger) {
+    return false;
+  }
+
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+  setLastintegerBasetoZero();
+  return true;
+}
+
 uint32_t z47_stack_runtime_get_global_register_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }
