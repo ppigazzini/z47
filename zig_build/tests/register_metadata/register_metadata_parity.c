@@ -16,6 +16,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
 bool_t isFunctionAllowingNewVariable(uint16_t op);
 bool_t validateName(const char *name);
 bool_t isUniqueMenuName(const char *name);
+void allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -31,6 +32,7 @@ void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calc
 bool_t oracle_isFunctionAllowingNewVariable(uint16_t op);
 bool_t oracle_validateName(const char *name);
 bool_t oracle_isUniqueMenuName(const char *name);
+void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -46,6 +48,7 @@ typedef void (*set_ptr_fn)(calcRegister_t, const void *);
 typedef void (*set_tag_fn)(calcRegister_t, uint32_t);
 typedef bool_t (*bool_u16_fn)(uint16_t);
 typedef bool_t (*bool_str_fn)(const char *);
+typedef void (*allocate_named_variable_fn)(const char *, uint32_t, uint16_t);
 
 enum {
   LOCAL_PAYLOAD_BYTES = 128,
@@ -59,6 +62,8 @@ static const char validate_name_superscript_first[] = "\xa4\x82" "1";
 static const char validate_name_plus_after_first[] = "A+";
 static const char validate_name_cross_after_first[] = "A" "\x80\xd7";
 static const char validate_name_too_long[] = "ABCDEFGH";
+static const char allocate_named_variable_empty[] = "";
+static const char allocate_named_variable_too_long[] = "ABCDEFGH";
 
 static void seedRegisterBuffer(calcRegister_t reg, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
   stackParitySeedRegister(reg, data_type, tag, payload, size_in_blocks);
@@ -611,11 +616,36 @@ static int runBoolStringCase(const char *name, const char *case_name, bool_str_f
   return failures;
 }
 
+static int runAllocateNamedVariableCase(const char *name, const char *case_name, allocate_named_variable_fn oracle_fn, allocate_named_variable_fn zig_fn, void (*setup)(void), const char *variable_name, uint32_t data_type, uint16_t full_data_size_in_blocks) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(variable_name, data_type, full_data_size_in_blocks);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  zig_fn(variable_name, data_type, full_data_size_in_blocks);
+  stackParityCapture(&actual_snapshot);
+
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    fprintf(stderr, "%s(%s) state mismatch\n", name, case_name);
+    failures++;
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_STOADD);
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runBoolStringCase("isUniqueMenuName", "builtin-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInCollisionCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "builtin-nonmenu-ignored", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInNonMenuCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "user-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuUserCollisionCase, "TOOLS");

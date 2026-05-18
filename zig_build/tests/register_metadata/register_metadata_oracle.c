@@ -161,6 +161,20 @@ bool_t oracle_isUniqueMenuName(const char *name) {
   return true;
 }
 
+void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks) {
+  int32_t glyph_length;
+
+  (void)dataType;
+  (void)fullDataSizeInBlocks;
+
+  glyph_length = oracle_validateNameGlyphLength(variableName);
+  if(glyph_length < 1 || glyph_length > VALIDATE_NAME_MAX_GLYPHS) {
+    return;
+  }
+
+  displayBugScreen("oracle_allocateNamedVariable called with an unsupported valid-name case");
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;

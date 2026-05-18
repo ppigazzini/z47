@@ -600,6 +600,13 @@ int32_t compareString(const char *left, const char *right, int32_t comparisonTyp
   return strcmp(left, right);
 }
 
+void z47_registers_retained_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks) {
+  (void)variableName;
+  (void)dataType;
+  (void)fullDataSizeInBlocks;
+  displayBugScreen("unexpected retained allocateNamedVariable parity fallback");
+}
+
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
   uint32_t result_data_type = getRegisterDataType(res);
 
