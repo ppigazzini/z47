@@ -35,6 +35,7 @@ typedef struct {
 #define CAT_MENU (2 << 4)
 #define CMP_NAME 3
 #define LAST_ITEM 8
+#define ERROR_INVALID_NAME 48
 
 enum {
 	dtConfig = 9,
@@ -95,5 +96,7 @@ const char *z47_register_metadata_builtin_menu_item_name(uint32_t index);
 uint32_t z47_register_metadata_user_menu_count(void);
 const char *z47_register_metadata_user_menu_name(uint32_t index);
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right);
+calcRegister_t z47_register_metadata_find_reserved_variable_name(const char *variable_name, uint8_t glyph_length);
+void z47_register_metadata_report_invalid_name(void);
 
 #endif
