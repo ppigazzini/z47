@@ -52,6 +52,13 @@ void fnWpositive(uint16_t unusedButMandatoryParameter);
 void fnGcd(uint16_t unusedButMandatoryParameter);
 void fnLcm(uint16_t unusedButMandatoryParameter);
 void fnMod(uint16_t unusedButMandatoryParameter);
+void fnRmd(uint16_t unusedButMandatoryParameter);
+void fnUlp(uint16_t unusedButMandatoryParameter);
+void fnMant(uint16_t unusedButMandatoryParameter);
+void fnRoundi(uint16_t unusedButMandatoryParameter);
+void fnNeighb(uint16_t unusedButMandatoryParameter);
+void fnIxyz(uint16_t unusedButMandatoryParameter);
+void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -102,6 +109,13 @@ void oracle_fnWpositive(uint16_t unusedButMandatoryParameter);
 void oracle_fnGcd(uint16_t unusedButMandatoryParameter);
 void oracle_fnLcm(uint16_t unusedButMandatoryParameter);
 void oracle_fnMod(uint16_t unusedButMandatoryParameter);
+void oracle_fnRmd(uint16_t unusedButMandatoryParameter);
+void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
+void oracle_fnMant(uint16_t unusedButMandatoryParameter);
+void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
+void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
+void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
+void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 
@@ -626,6 +640,118 @@ static void configureModuloLongInteger(void) {
   mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
   mathWrappersSetLongIntegerInput(true, 4);
   mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureRmdReal(void) {
+  configureModuloReal();
+}
+
+static void configureRmdLongInteger(void) {
+  configureModuloLongInteger();
+}
+
+static void configureUlpReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 12, 0);
+}
+
+static void configureUlpLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 12);
+}
+
+static void configureUlpShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(12);
+}
+
+static void configureMantReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 456, 0);
+}
+
+static void configureMantRealNaN(void) {
+  configureMantReal();
+  mathWrappersSetRealInput(true, 0, 0x20);
+}
+
+static void configureMantLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 456);
+}
+
+static void configureRoundiReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 12, 0);
+}
+
+static void configureRoundiRealNaN(void) {
+  configureRoundiReal();
+  mathWrappersSetRealInput(true, 0, 0x20);
+}
+
+static void configureRoundiRealInfinity(void) {
+  configureRoundiReal();
+  mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureNeighbReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetRealYInput(true, 9, 0);
+}
+
+static void configureNeighbLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureIxyzValid(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 2, 0);
+  mathWrappersSetRealZInput(true, 3, 0);
+}
+
+static void configureIxyzDomainError(void) {
+  configureIxyzValid();
+  mathWrappersSetRealInput(true, 2, 0);
+}
+
+static void configureFactorialReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 5, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureFactorialComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+}
+
+static void configureFactorialLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 5);
+}
+
+static void configureFactorialShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(5);
 }
 
 static void configureLnP1Real(void) {
@@ -1306,6 +1432,25 @@ int main(void) {
   failures += runCase("fnLcm/longint", oracle_fnLcm, fnLcm, 0, true, configureDyadicLongInteger);
   failures += runCase("fnMod/real", oracle_fnMod, fnMod, 0, true, configureModuloReal);
   failures += runCase("fnMod/longint", oracle_fnMod, fnMod, 0, true, configureModuloLongInteger);
+  failures += runCase("fnRmd/real", oracle_fnRmd, fnRmd, 0, true, configureRmdReal);
+  failures += runCase("fnRmd/longint", oracle_fnRmd, fnRmd, 0, true, configureRmdLongInteger);
+  failures += runCase("fnUlp/real", oracle_fnUlp, fnUlp, 0, true, configureUlpReal);
+  failures += runCase("fnUlp/longint", oracle_fnUlp, fnUlp, 0, true, configureUlpLongInteger);
+  failures += runCase("fnUlp/shortint", oracle_fnUlp, fnUlp, 0, true, configureUlpShortInteger);
+  failures += runCase("fnMant/real", oracle_fnMant, fnMant, 0, true, configureMantReal);
+  failures += runCase("fnMant/real_nan", oracle_fnMant, fnMant, 0, true, configureMantRealNaN);
+  failures += runCase("fnMant/longint", oracle_fnMant, fnMant, 0, true, configureMantLongInteger);
+  failures += runCase("fnRoundi/real", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiReal);
+  failures += runCase("fnRoundi/real_nan", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealNaN);
+  failures += runCase("fnRoundi/real_inf", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealInfinity);
+  failures += runCase("fnNeighb/real", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbReal);
+  failures += runCase("fnNeighb/longint", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbLongInteger);
+  failures += runCase("fnIxyz/valid", oracle_fnIxyz, fnIxyz, 0, true, configureIxyzValid);
+  failures += runCase("fnIxyz/domain", oracle_fnIxyz, fnIxyz, 0, true, configureIxyzDomainError);
+  failures += runCase("fnFactorial/real", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialReal);
+  failures += runCase("fnFactorial/complex", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialComplex);
+  failures += runCase("fnFactorial/longint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialLongInteger);
+  failures += runCase("fnFactorial/shortint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialShortInteger);
   failures += runCase("fnM1Pow/real_zero", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealZero);
   failures += runCase("fnM1Pow/real_one", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealOne);
   failures += runCase("fnM1Pow/real_inf", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealInfinity);
