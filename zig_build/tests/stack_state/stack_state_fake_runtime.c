@@ -63,6 +63,7 @@ static bool_t fake_regcopy_f = false;
 static uint16_t fake_regcopy_start = 0;
 static uint16_t fake_regcopy_count = 0;
 static uint16_t fake_regcopy_dest = 0;
+static bool_t fake_adjust_result_no_drop_success = true;
 
 #ifdef Z47_STACK_STATE_RUNTIME
 #define clearRegister z47_stack_parity_raw_clearRegister
@@ -179,6 +180,7 @@ void stackParityReset(void) {
   fake_regcopy_start = 0;
   fake_regcopy_count = 0;
   fake_regcopy_dest = 0;
+  fake_adjust_result_no_drop_success = true;
   currentInputVariable = INVALID_VARIABLE;
   displayStack = 0;
   thereIsSomethingToUndo = false;
@@ -719,6 +721,20 @@ void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter) {
   copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
 }
 
+bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
+  (void)res;
+  (void)setCpxRes;
+  (void)op1;
+  (void)op2;
+  (void)op3;
+
+  confirmation_request = fake_adjust_result_no_drop_success ? 11 : 12;
+  if(!fake_adjust_result_no_drop_success) {
+    lastErrorCode = ERROR_OUT_OF_RANGE;
+  }
+  return fake_adjust_result_no_drop_success;
+}
+
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
   confirmation_request = 3;
 
@@ -760,6 +776,10 @@ void stackParitySetRegCopyParams(uint8_t error_code, bool_t f, uint16_t s, uint1
   fake_regcopy_start = s;
   fake_regcopy_count = n;
   fake_regcopy_dest = d;
+}
+
+void stackParitySetAdjustResultNoDropOutcome(bool_t success) {
+  fake_adjust_result_no_drop_success = success;
 }
 
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {

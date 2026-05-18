@@ -269,6 +269,16 @@ pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
     runtime.retainedFnToReal(unused_but_mandatory_parameter);
 }
 
+pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
+    if (!runtime.retainedAdjustResultNoDropY(res, set_cpx_res, op1, op2, op3)) {
+        return;
+    }
+
+    if (drop_y) {
+        fnDropY(0);
+    }
+}
+
 pub export fn liftStack() void {
     const stack_top = runtime.getStackTop();
 

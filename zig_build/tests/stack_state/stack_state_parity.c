@@ -17,6 +17,7 @@ void fnRegCopy(uint16_t unusedButMandatoryParameter);
 void fnRegSort(uint16_t unusedButMandatoryParameter);
 void fnToReal(uint16_t unusedButMandatoryParameter);
 void fnRegSwap(uint16_t unusedButMandatoryParameter);
+void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -40,6 +41,7 @@ void oracle_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegSort(uint16_t unusedButMandatoryParameter);
 void oracle_fnToReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
+void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -55,6 +57,7 @@ typedef void (*stack_void_fn)(void);
 typedef void (*stack_u16_fn)(uint16_t);
 typedef bool_t (*stack_bool_fn)(void);
 typedef void (*stack_reg_fn)(calcRegister_t);
+typedef void (*stack_adjust_result_fn)(calcRegister_t, bool_t, bool_t, calcRegister_t, calcRegister_t, calcRegister_t);
 
 static void fillPayload(uint8_t *buffer, uint16_t size_in_blocks, uint8_t seed) {
   uint32_t i;
@@ -259,6 +262,16 @@ static void setupToRealFallbackCase(void) {
   stackParitySeedRegister(REGISTER_X, dtTime, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xa0}, REAL34_SIZE_IN_BLOCKS);
 }
 
+static void setupAdjustResultDropYCase(void) {
+  seedBasicStack();
+  stackParitySetAdjustResultNoDropOutcome(true);
+}
+
+static void setupAdjustResultErrorCase(void) {
+  seedBasicStack();
+  stackParitySetAdjustResultNoDropOutcome(false);
+}
+
 static void setupToRealReal34Case(void) {
   seedBasicStack();
   stackParitySeedRegister(REGISTER_X, dtReal34, amDMS, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xb0}, REAL34_SIZE_IN_BLOCKS);
@@ -458,6 +471,25 @@ static int runRegCase(const char *name, stack_reg_fn oracle_fn, stack_reg_fn zig
   return failures;
 }
 
+static int runAdjustResultCase(const char *name, stack_adjust_result_fn oracle_fn, stack_adjust_result_fn zig_fn, void (*setup)(void), calcRegister_t res, bool_t drop_y, bool_t set_cpx_res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
+  stack_parity_snapshot_t expected;
+  stack_parity_snapshot_t actual;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(res, drop_y, set_cpx_res, op1, op2, op3);
+  stackParityCapture(&expected);
+
+  stackParityReset();
+  setup();
+  zig_fn(res, drop_y, set_cpx_res, op1, op2, op3);
+  stackParityCapture(&actual);
+
+  captureAndCompare(name, &expected, &actual, (uint16_t)res, &failures);
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
@@ -491,6 +523,8 @@ int main(void) {
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealDateCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
+  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultDropYCase, REGISTER_X, true, false, -1, -1, -1);
+  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultErrorCase, REGISTER_X, true, false, -1, -1, -1);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
 
