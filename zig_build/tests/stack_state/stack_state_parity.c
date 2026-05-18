@@ -269,6 +269,12 @@ static void setupToRealLongIntegerCase(void) {
   stackParitySeedRegister(REGISTER_X, dtLongInteger, amNone, (const uint8_t[REAL34_SIZE_IN_BYTES]){0xc0}, REAL34_SIZE_IN_BLOCKS);
 }
 
+static void setupToRealShortIntegerCase(void) {
+  seedBasicStack();
+  lastIntegerBase = 16;
+  stackParitySeedRegister(REGISTER_X, dtShortInteger, amNone, (const uint8_t[TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS)]){0xd0}, SHORT_INTEGER_SIZE_IN_BLOCKS);
+}
+
 static void setupClearRegisterRealCase(void) {
   seedRegister(REGISTER_X, 0xa0);
   Input_Default = ID_DP;
@@ -470,6 +476,7 @@ int main(void) {
   failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortParseErrorCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealComplexZeroCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealLongIntegerCase, 0);
+  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealShortIntegerCase, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
   failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
   failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);

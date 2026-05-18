@@ -499,6 +499,18 @@ bool_t z47_stack_runtime_try_fn_to_real_long_integer(void) {
   return true;
 }
 
+bool_t z47_stack_runtime_try_fn_to_real_short_integer(void) {
+  if(getRegisterDataType(REGISTER_X) != dtShortInteger) {
+    return false;
+  }
+
+  confirmation_request = 8;
+  copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  lastIntegerBase = 0;
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }
