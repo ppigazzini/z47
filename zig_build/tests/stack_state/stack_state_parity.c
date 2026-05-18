@@ -9,6 +9,7 @@ void liftStack(void);
 bool_t saveLastX(void);
 void saveForUndo(void);
 void undo(void);
+void fnGetLocR(uint16_t unusedButMandatoryParameter);
 
 void fnDrop(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -24,6 +25,7 @@ void oracle_liftStack(void);
 bool_t oracle_saveLastX(void);
 void oracle_saveForUndo(void);
 void oracle_undo(void);
+void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -106,6 +108,18 @@ static void mutateAfterSave(void) {
   lrChosen = 44;
   displayStack = 3;
   stackParitySeedCurrentStats(0xd0);
+}
+
+static void setupGetLocRCase(void) {
+  seedBasicStack();
+  clearSystemFlag(FLAG_ASLIFT);
+  currentNumberOfLocalRegisters = 3;
+}
+
+static void setupGetLocRAsliftCase(void) {
+  seedBasicStack();
+  setSystemFlag(FLAG_ASLIFT);
+  currentNumberOfLocalRegisters = 3;
 }
 
 static void captureAndCompare(const char *name, const stack_parity_snapshot_t *expected, const stack_parity_snapshot_t *actual, uint16_t arg, int *failures) {
@@ -231,6 +245,8 @@ int main(void) {
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithAslift);
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithoutAslift);
   failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
+  failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
+  failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);
 
   failures += runU16Case("fnDrop", oracle_fnDrop, fnDrop, setupDropCase, 0);
   failures += runU16Case("fnDropY", oracle_fnDropY, fnDropY, setupDropCase, 0);

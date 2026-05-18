@@ -500,6 +500,14 @@ void z47_stack_runtime_store_stack_size_in_x(uint32_t size) {
   convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
 }
 
+void z47_stack_runtime_store_local_register_count_in_x(void) {
+  longInteger_t li;
+
+  longIntegerInit(li);
+  uInt32ToLongInteger(currentNumberOfLocalRegisters, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+}
+
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void) {
   convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
   convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);

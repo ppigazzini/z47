@@ -50,6 +50,7 @@ extern fn z47_stack_runtime_report_invalid_swap_target(reg: u16) void;
 extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
+extern fn z47_stack_runtime_store_local_register_count_in_x() void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
@@ -134,6 +135,10 @@ pub fn statisticalSumsBytes() u32 {
 
 pub fn storeStackSizeInX(size: u32) void {
     z47_stack_runtime_store_stack_size_in_x(size);
+}
+
+pub fn storeLocalRegisterCountInX() void {
+    z47_stack_runtime_store_local_register_count_in_x();
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {

@@ -11,7 +11,6 @@ void z47_registers_retained_fnDeleteAllVariables(uint16_t confirmation);
 void z47_registers_retained_fnClearAllVariables(uint16_t confirmation);
 void z47_registers_retained_clearRegister(calcRegister_t regist);
 void z47_registers_retained_fnClearRegisters(uint16_t confirmation);
-void z47_registers_retained_fnGetLocR(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
 void z47_registers_retained_fnRegClr(uint16_t unusedButMandatoryParameter);
@@ -54,10 +53,6 @@ void clearRegister(calcRegister_t regist) {
 
 void fnClearRegisters(uint16_t confirmation) {
   z47_registers_retained_fnClearRegisters(confirmation);
-}
-
-void fnGetLocR(uint16_t unusedButMandatoryParameter) {
-  z47_registers_retained_fnGetLocR(unusedButMandatoryParameter);
 }
 
 void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {
