@@ -502,6 +502,11 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
         return;
     }
 
+    if (!validateName(variable_name)) {
+        runtime.reportInvalidName();
+        return;
+    }
+
     runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 

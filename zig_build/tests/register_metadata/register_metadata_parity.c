@@ -66,6 +66,8 @@ static const char allocate_named_variable_empty[] = "";
 static const char allocate_named_variable_too_long[] = "ABCDEFGH";
 static const char allocate_named_variable_reserved_acc[] = "ACC";
 static const char allocate_named_variable_reserved_adm[] = "ADM";
+static const char allocate_named_variable_invalid_digit[] = "1abc";
+static const char allocate_named_variable_invalid_plus[] = "A+";
 
 static void seedRegisterBuffer(calcRegister_t reg, uint32_t data_type, uint32_t tag, const uint8_t *payload, uint16_t size_in_blocks) {
   stackParitySeedRegister(reg, data_type, tag, payload, size_in_blocks);
@@ -650,6 +652,8 @@ int main(void) {
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-acc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-adm", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_adm, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "invalid-digit", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_invalid_digit, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "invalid-plus", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_invalid_plus, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runBoolStringCase("isUniqueMenuName", "builtin-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInCollisionCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "builtin-nonmenu-ignored", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuBuiltInNonMenuCase, "HOME");
   failures += runBoolStringCase("isUniqueMenuName", "user-menu-hit", oracle_isUniqueMenuName, isUniqueMenuName, setupUniqueMenuUserCollisionCase, "TOOLS");
