@@ -285,10 +285,9 @@ pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_re
         if (runtime.lastErrorCode != runtime.ERROR_NONE) {
             return;
         }
-    } else {
-        if (!runtime.retainedAdjustResultNoDropYNoCpxRes(res, op1, op2, op3)) {
-            return;
-        }
+    } else if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        runtime.undoRetained();
+        return;
     }
 
     if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {

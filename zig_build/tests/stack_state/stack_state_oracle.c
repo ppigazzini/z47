@@ -303,10 +303,9 @@ void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, cal
 			return;
 		}
 	}
-	else {
-		if(!z47_registers_retained_adjust_result_no_drop_y_no_cpxres(res, op1, op2, op3)) {
-			return;
-		}
+	else if(lastErrorCode != ERROR_NONE) {
+		oracle_undo();
+		return;
 	}
 
 	if(setCpxRes && oneArgumentIsComplex && getRegisterDataType(res) != dtString) {
