@@ -510,6 +510,23 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
     runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 
+pub export fn fnDeleteVariable(regist: u16) void {
+    const register: runtime.calcRegister_t = @intCast(regist);
+    const named_variable_limit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
+
+    if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
+        runtime.retainedFnDeleteVariable(regist);
+        return;
+    }
+
+    if (register >= runtime.FIRST_NAMED_VARIABLE and register < runtime.LAST_NAMED_VARIABLE) {
+        runtime.reportUndefSourceVar();
+        return;
+    }
+
+    runtime.reportCannotDeletePredefItem();
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,

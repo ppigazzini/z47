@@ -17,6 +17,7 @@ bool_t isFunctionAllowingNewVariable(uint16_t op);
 bool_t validateName(const char *name);
 bool_t isUniqueMenuName(const char *name);
 void allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
+void fnDeleteVariable(uint16_t regist);
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -33,6 +34,7 @@ bool_t oracle_isFunctionAllowingNewVariable(uint16_t op);
 bool_t oracle_validateName(const char *name);
 bool_t oracle_isUniqueMenuName(const char *name);
 void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
+void oracle_fnDeleteVariable(uint16_t regist);
 void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
@@ -49,6 +51,7 @@ typedef void (*set_tag_fn)(calcRegister_t, uint32_t);
 typedef bool_t (*bool_u16_fn)(uint16_t);
 typedef bool_t (*bool_str_fn)(const char *);
 typedef void (*allocate_named_variable_fn)(const char *, uint32_t, uint16_t);
+typedef void (*u16_void_fn)(uint16_t);
 
 enum {
   LOCAL_PAYLOAD_BYTES = 128,
@@ -643,11 +646,36 @@ static int runAllocateNamedVariableCase(const char *name, const char *case_name,
   return failures;
 }
 
+static int runU16VoidCase(const char *name, const char *case_name, u16_void_fn oracle_fn, u16_void_fn zig_fn, void (*setup)(void), uint16_t arg) {
+  stack_parity_snapshot_t expected_snapshot;
+  stack_parity_snapshot_t actual_snapshot;
+  int failures = 0;
+
+  stackParityReset();
+  setup();
+  oracle_fn(arg);
+  stackParityCapture(&expected_snapshot);
+
+  stackParityReset();
+  setup();
+  zig_fn(arg);
+  stackParityCapture(&actual_snapshot);
+
+  if(memcmp(&expected_snapshot, &actual_snapshot, sizeof(expected_snapshot)) != 0) {
+    fprintf(stderr, "%s(%s) state mismatch\n", name, case_name);
+    failures++;
+  }
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_STOADD);
   failures += runBoolU16Case("isFunctionAllowingNewVariable", oracle_isFunctionAllowingNewVariable, isFunctionAllowingNewVariable, setupNoOpCase, ITM_RCL);
+  failures += runU16VoidCase("fnDeleteVariable", "undef-source", oracle_fnDeleteVariable, fnDeleteVariable, setupNoOpCase, FIRST_NAMED_VARIABLE);
+  failures += runU16VoidCase("fnDeleteVariable", "predefined-item", oracle_fnDeleteVariable, fnDeleteVariable, setupNoOpCase, REGISTER_X);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-acc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc, dtReal34, REAL34_SIZE_IN_BLOCKS);
