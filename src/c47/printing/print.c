@@ -537,7 +537,7 @@ void printTab(uint16_t col) { // pixel-aligned column
   }
   if(printerColumn < col) {
     uint16_t i, j;
-    i = (col - 1 - printerColumn) % 7;
+    i = (col - printerColumn) % 7;
     if(i == 0 && printerColumn == 0 && col > 6) {
       i = 7;  // compensate for the first column being not printed
     }
@@ -549,7 +549,7 @@ void printTab(uint16_t col) { // pixel-aligned column
         sendByteIR(0);
       }
     }
-    j = (col - 1 - printerColumn) / 7;
+    j = (col - printerColumn) / 7;
     while(j--) {
       sendByteIR(' ');
     }
@@ -1145,7 +1145,7 @@ void printReg(uint16_t regist, const char *label, bool_t eq, print_area_t where,
       shortInt = *(REGISTER_SHORT_INTEGER_DATA(regist)) & shortIntegerMask;
       base = getRegisterShortIntegerBase(regist);
       n = ERROR_MESSAGE_LENGTH - 100;
-      sprintf(errorMessage + n--, "#%d", base);
+      sprintf(errorMessage + n--, "#%02d", base);
       if(shortInt == 0) {
         errorMessage[n--] = '0';
       }
@@ -1170,12 +1170,7 @@ void printReg(uint16_t regist, const char *label, bool_t eq, print_area_t where,
     uint16_t glen = stringGlyphLength(tmpString);
     if((where == LINE_NOLF) && (glen < 17)) {
       padding = 17 - glen;
-      for(i = strlen(tmpString)+padding; i >= padding; i--) {
-        tmpString[i] = tmpString[i-padding];
-      }
-      for(i = 0; i < padding; i++) {
-        tmpString[i] = ' ';
-      }
+      printTab(padding * 7 - 1);
     }
 
     if(glen > 17) {
