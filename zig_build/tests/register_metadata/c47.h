@@ -31,9 +31,23 @@ typedef struct {
 #define ERR_REGISTER_LINE REGISTER_X
 #define NIM_REGISTER_LINE REGISTER_Y
 
+#define CAT_STATUS 0x00f0
+#define CAT_MENU (2 << 4)
+#define CMP_NAME 3
+#define LAST_ITEM 8
+
 enum {
 	dtConfig = 9,
 };
+
+typedef struct {
+	uint32_t status;
+	char itemCatalogName[16];
+} item_t;
+
+typedef struct {
+	char menuName[16];
+} userMenu_t;
 
 #define ITM_INPUT 43
 #define ITM_STO 44
@@ -65,8 +79,21 @@ enum {
 };
 
 extern uint32_t currentAngularMode;
+extern item_t indexOfItems[LAST_ITEM];
+extern userMenu_t *userMenus;
+extern uint16_t numberOfUserMenus;
 
 bool_t isMemoryBlockAvailable(size_t size_in_blocks, uint16_t numBlocks, float extraFraction);
 void stackParitySetMemoryBlockAvailable(bool_t available);
+void stackParitySeedBuiltInMenuItem(uint32_t index, uint32_t status, const char *name);
+void stackParitySeedUserMenu(uint32_t index, const char *name);
+int32_t compareString(const char *left, const char *right, int32_t comparisonType);
+
+uint32_t z47_register_metadata_builtin_menu_item_count(void);
+bool_t z47_register_metadata_builtin_menu_item_is_menu(uint32_t index);
+const char *z47_register_metadata_builtin_menu_item_name(uint32_t index);
+uint32_t z47_register_metadata_user_menu_count(void);
+const char *z47_register_metadata_user_menu_name(uint32_t index);
+int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right);
 
 #endif

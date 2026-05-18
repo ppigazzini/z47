@@ -47,3 +47,13 @@ uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint1
 void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
 	sortReg(range_start, range_end);
 }
+
+bool_t z47_registers_retained_isUniqueMenuName_user_menus(const char *name) {
+	for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+		if(compareString(name, userMenus[i].menuName, CMP_NAME) == 0) {
+			return false;
+		}
+	}
+
+	return true;
+}

@@ -145,6 +145,22 @@ bool_t oracle_validateName(const char *name) {
   return true;
 }
 
+bool_t oracle_isUniqueMenuName(const char *name) {
+  for(uint32_t i = 0; i < z47_register_metadata_builtin_menu_item_count(); ++i) {
+    if(z47_register_metadata_builtin_menu_item_is_menu(i) && z47_register_metadata_compare_menu_names(name, z47_register_metadata_builtin_menu_item_name(i)) == 0) {
+      return false;
+    }
+  }
+
+  for(uint32_t i = 0; i < z47_register_metadata_user_menu_count(); ++i) {
+    if(z47_register_metadata_compare_menu_names(name, z47_register_metadata_user_menu_name(i)) == 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;
