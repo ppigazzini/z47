@@ -8,6 +8,21 @@ const tag_mask: runtime.register_descriptor_t = 0x01f00000;
 const data_type_shift: u5 = 16;
 const tag_shift: u5 = 20;
 const invalid_data_type: u32 = 31;
+const validate_name_max_glyphs: usize = 7;
+const glyph_A: u16 = 0x41;
+const glyph_Z: u16 = 0x5a;
+const glyph_a: u16 = 0x61;
+const glyph_z: u16 = 0x7a;
+const glyph_A_grave: u16 = 0x00c0;
+const glyph_cross: u16 = 0x00d7;
+const glyph_divide: u16 = 0x00f7;
+const glyph_z_caron: u16 = 0x017e;
+const glyph_iota_dialytika_tonos: u16 = 0x0390;
+const glyph_sampi: u16 = 0x03e1;
+const glyph_sub_alpha: u16 = 0x2296;
+const glyph_sub_mu: u16 = 0x2298;
+const glyph_sup_a: u16 = 0x2482;
+const glyph_sub_Z: u16 = 0x24e9;
 
 fn descriptorDataType(descriptor: runtime.register_descriptor_t) u32 {
     return (descriptor & data_type_mask) >> data_type_shift;
@@ -212,6 +227,32 @@ fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
     };
 }
 
+fn validateNameGlyphLength(name: [*:0]const u8) usize {
+    var glyph_length: usize = 0;
+    var offset: usize = 0;
+
+    while (name[offset] != 0) {
+        offset += if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
+        glyph_length += 1;
+    }
+
+    return glyph_length;
+}
+
+fn validateNameNextGlyphOffset(name: [*:0]const u8, offset: usize) usize {
+    return offset + if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
+}
+
+fn validateNameGlyphCode(name: [*:0]const u8, offset: usize) u16 {
+    const first = name[offset];
+
+    if ((first & 0x80) != 0) {
+        return (@as(u16, first & 0x7f) << 8) | @as(u16, name[offset + 1]);
+    }
+
+    return @as(u16, first);
+}
+
 fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_blocks: u16) bool {
     const current_type = getRegisterDataType(reg);
     if (current_type != data_type) {
@@ -362,6 +403,60 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
     } else {
         setRegisterTag(reg, tag);
     }
+}
+
+pub export fn validateName(name: [*c]const u8) bool {
+    if (name == null) {
+        return false;
+    }
+
+    const text: [*:0]const u8 = @ptrCast(name);
+    const glyph_length = validateNameGlyphLength(text);
+
+    if (glyph_length > validate_name_max_glyphs or glyph_length == 0) {
+        return false;
+    }
+
+    const first = validateNameGlyphCode(text, 0);
+
+    if (first < glyph_A) {
+        return false;
+    }
+    if (first > glyph_Z and first < glyph_a) {
+        return false;
+    }
+    if (first > glyph_z and first < glyph_A_grave) {
+        return false;
+    }
+    if (first == glyph_cross or first == glyph_divide) {
+        return false;
+    }
+    if (first > glyph_z_caron and first < glyph_iota_dialytika_tonos) {
+        return false;
+    }
+    if (first > glyph_sampi and first < glyph_sub_alpha) {
+        return false;
+    }
+    if (first > glyph_sub_mu and first < glyph_sup_a) {
+        return false;
+    }
+    if (first > glyph_sub_Z) {
+        return false;
+    }
+
+    var offset = validateNameNextGlyphOffset(text, 0);
+    while (text[offset] != 0) : (offset = validateNameNextGlyphOffset(text, offset)) {
+        switch (text[offset]) {
+            '+', '-', ':', '/', '^', '(', ')', '=', ';', '|', '!', ' ' => return false,
+            else => {},
+        }
+
+        if (validateNameGlyphCode(text, offset) == glyph_cross) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
