@@ -4,6 +4,10 @@
 
 #include "c47.h"
 
+double z47_math_wrappers_log(double value) {
+  return value > 0.0 ? value : 0.0;
+}
+
 void z47_math_wrappers_build_sign_result(int32_t r) {
   longInteger_t lgInt;
 
@@ -580,3 +584,55 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
 #include "../../src/c47/mathematics/modulo.c"
 #undef fnMod
 #undef modReal
+
+#define fnRmd z47_math_wrappers_retained_fnRmd
+#include "../../src/c47/mathematics/remainder.c"
+#undef fnRmd
+
+#define fnUlp z47_math_wrappers_retained_fnUlp
+#include "../../src/c47/mathematics/ulp.c"
+#undef fnUlp
+
+#define mant z47_math_wrappers_retained_mant
+#define mantError z47_math_wrappers_retained_mantError
+#define mantLonI z47_math_wrappers_retained_mantLonI
+#define mantReal z47_math_wrappers_retained_mantReal
+#define fnMant z47_math_wrappers_retained_fnMant
+void mantError(void);
+void mantLonI(void);
+void mantReal(void);
+#include "../../src/c47/mathematics/mant.c"
+#undef fnMant
+#undef mantReal
+#undef mantLonI
+#undef mantError
+#undef mant
+
+#define Roundi z47_math_wrappers_retained_Roundi
+#define roundiError z47_math_wrappers_retained_roundiError
+#define roundiRema z47_math_wrappers_retained_roundiRema
+#define roundiReal z47_math_wrappers_retained_roundiReal
+#define fnRoundi z47_math_wrappers_retained_fnRoundi
+void roundiError(void);
+void roundiRema(void);
+void roundiReal(void);
+#include "../../src/c47/mathematics/roundi.c"
+#undef fnRoundi
+#undef roundiReal
+#undef roundiRema
+#undef roundiError
+#undef Roundi
+
+#define fnNeighb z47_math_wrappers_retained_fnNeighb
+#include "../../src/c47/mathematics/neighb.c"
+#undef fnNeighb
+
+#define fnIxyz z47_math_wrappers_retained_fnIxyz
+#include "../../src/c47/mathematics/ixyz.c"
+#undef fnIxyz
+
+#define log z47_math_wrappers_log
+#define fnFactorial z47_math_wrappers_retained_fnFactorial
+#include "../../src/c47/mathematics/factorial.c"
+#undef fnFactorial
+#undef log

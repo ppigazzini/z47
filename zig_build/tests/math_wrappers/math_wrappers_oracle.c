@@ -283,6 +283,58 @@ uint8_t oracle_TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rRe
 #undef fnMod
 #undef modReal
 
+#define fnRmd oracle_fnRmd
+#include "../../../src/c47/mathematics/remainder.c"
+#undef fnRmd
+
+#define fnUlp oracle_fnUlp
+#include "../../../src/c47/mathematics/ulp.c"
+#undef fnUlp
+
+#define mant oracle_mant
+#define mantError oracle_mantError
+#define mantLonI oracle_mantLonI
+#define mantReal oracle_mantReal
+#define fnMant oracle_fnMant
+void mantError(void);
+void mantLonI(void);
+void mantReal(void);
+#include "../../../src/c47/mathematics/mant.c"
+#undef fnMant
+#undef mantReal
+#undef mantLonI
+#undef mantError
+#undef mant
+
+#define Roundi oracle_Roundi
+#define roundiError oracle_roundiError
+#define roundiRema oracle_roundiRema
+#define roundiReal oracle_roundiReal
+#define fnRoundi oracle_fnRoundi
+void roundiError(void);
+void roundiRema(void);
+void roundiReal(void);
+#include "../../../src/c47/mathematics/roundi.c"
+#undef fnRoundi
+#undef roundiReal
+#undef roundiRema
+#undef roundiError
+#undef Roundi
+
+#define fnNeighb oracle_fnNeighb
+#include "../../../src/c47/mathematics/neighb.c"
+#undef fnNeighb
+
+#define fnIxyz oracle_fnIxyz
+#include "../../../src/c47/mathematics/ixyz.c"
+#undef fnIxyz
+
+#define log z47_math_wrappers_log
+#define fnFactorial oracle_fnFactorial
+#include "../../../src/c47/mathematics/factorial.c"
+#undef fnFactorial
+#undef log
+
 #define eulersFormula oracle_eulersFormula
 #define fnM1Pow oracle_fnM1Pow
 #include "../../../src/c47/mathematics/minusOnePow.c"

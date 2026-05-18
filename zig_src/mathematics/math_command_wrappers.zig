@@ -14,6 +14,13 @@ extern fn z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter: 
 extern fn z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter: u16) void;
 extern fn z47_math_wrappers_retained_fnLcm(unused_but_mandatory_parameter: u16) void;
 extern fn z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnRmd(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnNeighb(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnIxyz(unused_but_mandatory_parameter: u16) void;
+extern fn z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter: u16) void;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -2586,4 +2593,32 @@ pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
     z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter);
+}
+
+pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnRmd(unused_but_mandatory_parameter);
+}
+
+pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter);
+}
+
+pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter);
+}
+
+pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter);
+}
+
+pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnNeighb(unused_but_mandatory_parameter);
+}
+
+pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnIxyz(unused_but_mandatory_parameter);
+}
+
+pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter);
 }

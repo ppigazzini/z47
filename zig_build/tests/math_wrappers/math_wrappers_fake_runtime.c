@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <gmp.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "math_wrappers_test_runtime.h"
@@ -26,6 +27,11 @@ static struct {
   bool_t available;
   real_t value;
 } real_y_input;
+
+static struct {
+  bool_t available;
+  real_t value;
+} real_z_input;
 
 static struct {
   bool_t available;
@@ -78,8 +84,11 @@ static real_t fake_const_one_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 static real_t fake_const_1e_6_value;
+static real34_t fake_const34_zero_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
+char errorMessage[ERROR_MESSAGE_LENGTH];
+char tmpString[ERROR_MESSAGE_LENGTH];
 
 static uint128_t pow10u(uint32_t exponent) {
   uint128_t result = 1;
@@ -226,6 +235,9 @@ void mathWrappersReset(void) {
   real_y_input.available = true;
   setFakeReal(&real_y_input.value, 2, 0);
 
+  real_z_input.available = true;
+  setFakeReal(&real_z_input.value, 3, 0);
+
   real_angle_input.available = true;
   setFakeReal(&real_angle_input.value, 5, 0);
   real_angle_input.angle_mode = amRadian;
@@ -262,6 +274,7 @@ void mathWrappersReset(void) {
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
   setFakeRealWithExponent(&fake_const_1e_6_value, 1, 0, -6);
+  setRegisterReal34((uint8_t *)&fake_const34_zero_value, 0, 0);
   setRegisterReal34(register_slot, 2, 0);
   setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
 }
@@ -286,6 +299,11 @@ void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits) {
 void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits) {
   real_y_input.available = available;
   setFakeReal(&real_y_input.value, value, bits);
+}
+
+void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
+  real_z_input.available = available;
+  setFakeReal(&real_z_input.value, value, bits);
 }
 
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
@@ -423,6 +441,12 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
   snapshot.register_max_dest = dest;
 }
 
+void elementwiseRema(void (*func)(void)) {
+  if(func != NULL) {
+    func();
+  }
+}
+
 void adjustResult(calcRegister_t res,
                   bool_t dropY,
                   bool_t setCpxRes,
@@ -520,6 +544,13 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
       return false;
     }
     *value = real_y_input.value;
+    return true;
+  }
+  if(reg == REGISTER_Z) {
+    if(!real_z_input.available) {
+      return false;
+    }
+    *value = real_z_input.value;
     return true;
   }
   if(!real_input.available) {
@@ -626,9 +657,22 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
 }
 
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t lgInt) {
-  (void)reg;
   mpz_init(lgInt);
-  mpz_set_si(lgInt, longint_input.value);
+  mpz_set_si(lgInt, reg == REGISTER_Y ? longint_y_input.value : longint_input.value);
+}
+
+void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(real, reg == REGISTER_Y ? longint_y_input.value : longint_input.value, 0);
+}
+
+void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
+  const int32_t value = source == REGISTER_Y ? longint_y_input.value : longint_input.value;
+
+  (void)destination;
+  current_register_data_type = dtReal34;
+  current_register_tag = amNone;
+  setRegisterScalar(value, 0);
 }
 
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t reg) {
@@ -645,6 +689,17 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
   *(uint64_t *)register_slot = value | ((uint64_t)(sign != 0) << 63);
   current_register_data_type = dtShortInteger;
   current_register_tag = base;
+}
+
+void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value) {
+  const uint64_t raw = *(uint64_t *)getRegisterDataPointer(reg);
+
+  if(sign != NULL) {
+    *sign = (raw >> 63) != 0;
+  }
+  if(value != NULL) {
+    *value = raw & ~(UINT64_C(1) << 63);
+  }
 }
 
 void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
@@ -665,8 +720,45 @@ void real34Subtract(const real34_t *operand1, const real34_t *operand2, real34_t
   setRegisterReal34((uint8_t *)res, fakeReal34Value(operand1) - fakeReal34Value(operand2), operand1->bytes[15] & 0x70);
 }
 
+bool_t real34CompareLessThan(const real34_t *lhs, const real34_t *rhs) {
+  return fakeReal34Value(lhs) < fakeReal34Value(rhs);
+}
+
+bool_t real34IsInfinite(const real34_t *value) {
+  return (value->bytes[15] & DECINF) != 0;
+}
+
+int32_t real34GetExponent(const real34_t *value) {
+  const int32_t magnitude = fakeReal34Value(value);
+
+  if(magnitude == 0) {
+    return 0;
+  }
+  return magnitude < 0 ? -magnitude : magnitude;
+}
+
+void real34NextPlus(const real34_t *source, real34_t *destination) {
+  setRegisterReal34((uint8_t *)destination, fakeReal34Value(source) + 1, source->bytes[15] & 0x70);
+}
+
+void real34NextMinus(const real34_t *source, real34_t *destination) {
+  setRegisterReal34((uint8_t *)destination, fakeReal34Value(source) - 1, source->bytes[15] & 0x70);
+}
+
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode) {
   const int32_t value = fakeRealValue(real);
+
+  (void)roundingMode;
+  snapshot.convert_long_integer_to_register_calls++;
+  snapshot.convert_long_integer_to_register_value = value;
+  snapshot.convert_long_integer_to_register_dest = dest;
+  longint_input.value = value;
+  current_register_data_type = dtLongInteger;
+  current_register_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+void convertReal34ToLongIntegerRegister(const real34_t *real, calcRegister_t dest, enum rounding roundingMode) {
+  const int32_t value = fakeReal34Value(real);
 
   (void)roundingMode;
   snapshot.convert_long_integer_to_register_calls++;
@@ -850,6 +942,11 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t 
   setFakeReal(res, input_value + (bnstar ? 83 : 82), 0);
 }
 
+void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(x) + 91, 0);
+}
+
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 84, 0);
@@ -870,6 +967,17 @@ void WP34S_ComplexLambertW(const real_t *real, const real_t *imag, real_t *resRe
   (void)realContext;
   setFakeReal(resReal, fakeRealValue(real) + 89, 0);
   setFakeReal(resImag, fakeRealValue(imag) + 90, 0);
+}
+
+void WP34S_ComplexGamma(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(resReal, fakeRealValue(real) + 92, 0);
+  setFakeReal(resImag, fakeRealValue(imag) + 93, 0);
+}
+
+void WP34S_betai(const real_t *b, const real_t *a, const real_t *x, real_t *res, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(res, fakeRealValue(b) + fakeRealValue(a) + fakeRealValue(x), 0);
 }
 
 void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext) {
@@ -1238,6 +1346,14 @@ uint64_t WP34S_intLCM(uint64_t y, uint64_t x) {
   return (lhs / gcd) * rhs;
 }
 
+uint64_t WP34S_intAdd(uint64_t x, uint64_t y) {
+  return WP34S_extract_value(x, NULL) + WP34S_extract_value(y, NULL);
+}
+
+uint64_t WP34S_intSubtract(uint64_t x, uint64_t y) {
+  return WP34S_extract_value(x, NULL) - WP34S_extract_value(y, NULL);
+}
+
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext) {
   snapshot.convert_angle_from_to_calls++;
   snapshot.convert_angle_from_to_input_value = fakeRealValue(angle);
@@ -1358,6 +1474,10 @@ void fnDrop(uint16_t unusedButMandatoryParameter) {
   snapshot.fn_drop_last_param = unusedButMandatoryParameter;
 }
 
+void fnDropY(uint16_t unusedButMandatoryParameter) {
+  fnDrop(unusedButMandatoryParameter);
+}
+
 void fnUndo(uint16_t unusedButMandatoryParameter) {
   snapshot.fn_undo_calls++;
   snapshot.fn_undo_last_param = unusedButMandatoryParameter;
@@ -1400,4 +1520,40 @@ void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const
   (void)msg2;
   (void)msg3;
   (void)msg4;
+}
+
+void doNothing(void) {
+}
+
+void realNextToward(const real_t *x, const real_t *y, real_t *result, realContext_t *realContext) {
+  const int32_t lhs = fakeRealValue(x);
+  const int32_t rhs = fakeRealValue(y);
+
+  (void)realContext;
+  if(lhs == rhs) {
+    *result = *x;
+    return;
+  }
+  setFakeReal(result, lhs + (rhs > lhs ? 1 : -1), x->bits & 0x70);
+}
+
+const char *getRegisterDataTypeName(calcRegister_t reg, bool_t article, bool_t abbreviated) {
+  (void)reg;
+  (void)article;
+  (void)abbreviated;
+  return "test";
+}
+
+void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int bufferLength, int screenWidth, int limit, bool_t allowLarge) {
+  (void)reg;
+  (void)screenWidth;
+  (void)limit;
+  (void)allowLarge;
+  if(bufferLength > 0) {
+    snprintf(buffer, (size_t)bufferLength, "%d", longint_input.value);
+  }
+}
+
+const real34_t *z47_math_wrappers_const34_0(void) {
+  return &fake_const34_zero_value;
 }
