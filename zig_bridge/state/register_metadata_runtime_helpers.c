@@ -224,4 +224,8 @@ void z47_register_metadata_report_cannot_delete_predef_item(void) {
 void z47_register_metadata_request_delete_all_variables_confirmation(void) {
   setConfirmationMode(fnDeleteAllVariables);
 }
+
+void z47_register_metadata_request_clear_all_variables_confirmation(void) {
+  setConfirmationMode(fnClearAllVariables);
+}
 #endif

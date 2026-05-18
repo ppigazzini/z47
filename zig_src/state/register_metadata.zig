@@ -536,6 +536,15 @@ pub export fn fnDeleteAllVariables(confirmation: u16) void {
     runtime.retainedFnDeleteAllVariables(confirmation);
 }
 
+pub export fn fnClearAllVariables(confirmation: u16) void {
+    if (confirmation == stack_runtime.NOT_CONFIRMED and stack_runtime.programRunStop != stack_runtime.PGM_RUNNING) {
+        runtime.requestClearAllVariablesConfirmation();
+        return;
+    }
+
+    runtime.retainedFnClearAllVariables(confirmation);
+}
+
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
     return switch (op) {
         runtime.ITM_INPUT,

@@ -222,6 +222,15 @@ void oracle_fnDeleteAllVariables(uint16_t confirmation) {
   displayBugScreen("oracle_fnDeleteAllVariables called with an unsupported confirmed case");
 }
 
+void oracle_fnClearAllVariables(uint16_t confirmation) {
+  if(confirmation == NOT_CONFIRMED && programRunStop != PGM_RUNNING) {
+    z47_register_metadata_request_clear_all_variables_confirmation();
+    return;
+  }
+
+  displayBugScreen("oracle_fnClearAllVariables called with an unsupported confirmed case");
+}
+
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
     return globalRegister[regist].dataType;
