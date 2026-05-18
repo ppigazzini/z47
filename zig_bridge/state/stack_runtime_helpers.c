@@ -89,6 +89,76 @@ bool_t z47_stack_runtime_try_fn_to_real_date(void) {
   return true;
 }
 
+static void z47_adjust_result_adjust_real_register(calcRegister_t reg, real34_t *val) {
+  if(real34IsInfinite(val)) {
+    displayCalcErrorMessage(real34IsPositive(val) ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, reg);
+  }
+  else if(real34IsZero(val)) {
+    real34SetPositiveSign(val);
+  }
+}
+
+bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
+  uint32_t resultDataType = getRegisterDataType(res);
+  real_t tmp;
+
+  if(resultDataType != dtReal34 && resultDataType != dtTime && resultDataType != dtDate && resultDataType != dtComplex34) {
+    return false;
+  }
+
+  if(getSystemFlag(FLAG_SPCRES) == false && lastErrorCode == 0) {
+    switch(resultDataType) {
+      case dtReal34:
+      case dtTime:
+      case dtDate:
+        z47_adjust_result_adjust_real_register(res, REGISTER_REAL34_DATA(res));
+        break;
+
+      case dtComplex34:
+        z47_adjust_result_adjust_real_register(res, REGISTER_REAL34_DATA(res));
+        z47_adjust_result_adjust_real_register(res, REGISTER_IMAG34_DATA(res));
+        break;
+    }
+  }
+
+  if(lastErrorCode == 0) {
+    if(resultDataType == dtTime) {
+      checkTimeRange(REGISTER_REAL34_DATA(res));
+    }
+    if(resultDataType == dtDate) {
+      checkDateRange(REGISTER_REAL34_DATA(res));
+    }
+  }
+
+  if(lastErrorCode != 0) {
+    undo();
+    return true;
+  }
+
+  switch(resultDataType) {
+    case dtReal34:
+      if(significantDigits != 0 && significantDigits < 34) {
+        real34ToReal(REGISTER_REAL34_DATA(res), &tmp);
+        convertRealToReal34ResultRegister(&tmp, res);
+      }
+      break;
+
+    case dtComplex34:
+      if(significantDigits != 0 && significantDigits < 34) {
+        real34ToReal(REGISTER_REAL34_DATA(res), &tmp);
+        convertRealToReal34ResultRegister(&tmp, res);
+        real34ToReal(REGISTER_IMAG34_DATA(res), &tmp);
+        convertRealToImag34ResultRegister(&tmp, res);
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return true;
+}
+
 void z47_stack_runtime_adjust_result_set_cpxres(void) {
   fnSetFlag(FLAG_CPXRES);
   fnRefreshState();

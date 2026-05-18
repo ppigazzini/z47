@@ -539,6 +539,20 @@ void z47_stack_runtime_adjust_result_set_cpxres(void) {
   setSystemFlag(FLAG_CPXRES);
 }
 
+bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res) {
+  uint32_t result_data_type = getRegisterDataType(res);
+
+  if(result_data_type != dtReal34 && result_data_type != dtTime && result_data_type != dtDate && result_data_type != dtComplex34) {
+    return false;
+  }
+
+  confirmation_request = fake_adjust_result_no_drop_success ? 15 : 16;
+  if(!fake_adjust_result_no_drop_success) {
+    lastErrorCode = ERROR_OUT_OF_RANGE;
+  }
+  return true;
+}
+
 void longIntegerInit(longInteger_t value) {
   value[0] = 0;
 }

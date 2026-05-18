@@ -25,6 +25,7 @@ pub const FLAG_SSIZE8: i32 = 0x8018;
 pub const FLAG_ASLIFT: i32 = 0xc023;
 pub const FLAG_INTING: i32 = 0xc025;
 pub const FLAG_SOLVING: i32 = 0xc026;
+pub const FLAG_SPCRES: i32 = 0x8017;
 
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
@@ -68,6 +69,7 @@ extern fn z47_stack_runtime_try_fn_to_real_long_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
 extern fn z47_stack_runtime_try_fn_to_real_time() bool;
 extern fn z47_stack_runtime_try_fn_to_real_date() bool;
+extern fn z47_stack_runtime_adjust_result_scalar_core(res: calcRegister_t) bool;
 extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
@@ -177,6 +179,10 @@ pub fn tryFnToRealDate() bool {
 
 pub fn adjustResultSetCpxRes() void {
     z47_stack_runtime_adjust_result_set_cpxres();
+}
+
+pub fn adjustResultScalarCore(res: calcRegister_t) bool {
+    return z47_stack_runtime_adjust_result_scalar_core(res);
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
