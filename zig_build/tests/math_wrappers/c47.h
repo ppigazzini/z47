@@ -551,6 +551,7 @@ uint32_t decQuadIsNegative(const decQuad *dq);
 #define REGISTER_MATRIX_HEADER(reg) ((matrixHeader_t *)(getRegisterDataPointer(reg)))
 #define amPolarCYL 64
 #define amPolarSPH 128
+#define TI_VECTOR 127
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getComplexRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))

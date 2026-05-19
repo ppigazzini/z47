@@ -69,6 +69,7 @@ pub const SIM_1COMPL: u8 = 1;
 pub const SIM_2COMPL: u8 = 2;
 pub const SIM_SIGNMT: u8 = 3;
 pub const TI_FALSE: u8 = 12;
+pub const TI_VECTOR: u8 = 127;
 
 pub const DECNEG: u8 = 0x80;
 const DECINF: u8 = 0x40;

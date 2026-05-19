@@ -5170,6 +5170,13 @@ fn tryFnToRect2Real34Pair() bool {
         return true;
     }
 
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix and runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
+        runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, runtime.amNone);
+        runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+        runtime.temporaryInformation = runtime.TI_VECTOR;
+        return true;
+    }
+
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
