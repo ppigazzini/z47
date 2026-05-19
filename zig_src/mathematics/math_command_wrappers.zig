@@ -602,10 +602,57 @@ fn tenPowLonI() callconv(.c) void {
     }
 }
 
-fn twoPowLonI() callconv(.c) void {
-    if (runtime.z47_math_wrappers_small_base_power_long_integer(2) == long_integer_power_negative_exponent) {
-        twoPowReal();
+fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn () callconv(.c) void) void {
+    var exponent: runtime.longInteger_t = undefined;
+    var base: runtime.longInteger_t = undefined;
+    var power: runtime.longInteger_t = undefined;
+    var exponent_sign: i32 = 0;
+
+    runtime.__gmpz_init(&base[0]);
+    runtime.__gmpz_set_ui(&base[0], base_value);
+    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &exponent[0]);
+    if (exponent[0]._mp_size < 0) {
+        exponent_sign = -1;
+    } else if (exponent[0]._mp_size > 0) {
+        exponent_sign = 1;
     }
+    defer runtime.__gmpz_clear(&base[0]);
+    defer runtime.__gmpz_clear(&exponent[0]);
+
+    longIntegerSetPositiveSign(&exponent[0]);
+
+    if (exponent[0]._mp_size == 0) {
+        runtime.__gmpz_set_ui(&base[0], 1);
+        runtime.convertLongIntegerToLongIntegerRegister(&base[0], runtime.REGISTER_X);
+        return;
+    }
+
+    if (exponent_sign < 0) {
+        negative_exponent_callback();
+        return;
+    }
+
+    runtime.__gmpz_init(&power[0]);
+    defer runtime.__gmpz_clear(&power[0]);
+    runtime.__gmpz_set_ui(&power[0], 1);
+
+    while (exponent[0]._mp_size != 0 and runtime.lastErrorCode == 0) {
+        if ((exponent[0]._mp_d[0] & 1) != 0) {
+            runtime.__gmpz_mul(&power[0], &power[0], &base[0]);
+        }
+
+        _ = runtime.__gmpz_fdiv_q_ui(&exponent[0], &exponent[0], 2);
+
+        if (exponent[0]._mp_size != 0) {
+            runtime.__gmpz_mul(&base[0], &base[0], &base[0]);
+        }
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&power[0], runtime.REGISTER_X);
+}
+
+fn twoPowLonI() callconv(.c) void {
+    smallBasePowerLonI(2, &twoPowReal);
 }
 
 fn twoPowShoI() callconv(.c) void {
