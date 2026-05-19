@@ -3058,11 +3058,21 @@ pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
+    var value: runtime.longInteger_t = undefined;
+    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
     if (!runtime.saveLastX()) {
         return;
     }
 
-    runtime.z47_math_wrappers_integer_part_long_integer();
+    if (runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
+        defer runtime.__gmpz_clear(&value[0]);
+
+        runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
+        if (data_type == runtime.dtShortInteger) {
+            runtime.setLastintegerBasetoZero();
+        }
+    }
 }
 
 pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
