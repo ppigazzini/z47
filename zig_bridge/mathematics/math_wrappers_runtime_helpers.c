@@ -384,6 +384,73 @@ void z47_math_wrappers_rmd_real(void) {
   convertRealToResultRegister(&r, REGISTER_X, amNone);
 }
 
+void z47_math_wrappers_neighb_short_integer(void) {
+  bool_t subtract, negx, negy;
+  uint64_t x, y;
+
+  if(getRegisterAsShortInt(REGISTER_X, &negx, &x, NULL, NULL) && getRegisterAsShortInt(REGISTER_Y, &negy, &y, NULL, NULL)) {
+    if(negx != negy) {
+      subtract = negy;
+    }
+    else if(x == y) {
+      return;
+    }
+    else if(negx) {
+      subtract = y > x;
+    }
+    else {
+      subtract = y < x;
+    }
+
+    if(subtract) {
+      *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intSubtract(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), 1);
+    }
+    else {
+      *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intAdd(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), 1);
+    }
+  }
+}
+
+void z47_math_wrappers_neighb_long_integer(void) {
+  longInteger_t x, y;
+
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    goto end2;
+  }
+
+  const int32_t cmp = longIntegerCompare(y, x);
+
+  if(cmp != 0) {
+    int32ToLongInteger(cmp > 0 ? 1 : -1, y);
+    longIntegerAdd(x, y, x);
+  }
+  convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+
+end2:
+  longIntegerFree(y);
+end1:
+  longIntegerFree(x);
+}
+
+void z47_math_wrappers_neighb_real(void) {
+  real_t x, y;
+  angularMode_t xAngularMode = amNone;
+
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
+    return;
+  }
+
+  if(getRegisterDataType(REGISTER_X) == dtReal34) {
+    xAngularMode = getRegisterAngularMode(REGISTER_X);
+  }
+
+  realNextToward(&x, &y, &x, &ctxtReal34);
+  convertRealToResultRegister(&x, REGISTER_X, xAngularMode);
+}
+
 void z47_math_wrappers_build_sign_result(int32_t r) {
   longInteger_t lgInt;
 
