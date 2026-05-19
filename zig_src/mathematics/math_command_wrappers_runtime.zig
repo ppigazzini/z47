@@ -133,6 +133,7 @@ pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u64, overflow: ?*bool, fractional: ?*bool) bool;
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
+pub extern fn convertLongIntegerRegisterToLongInteger(reg: calcRegister_t, long_integer: *mpz_struct) void;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
@@ -291,6 +292,7 @@ pub extern fn __gmpz_clear(op: *mpz_struct) void;
 pub extern fn __gmpz_init(op: *mpz_struct) void;
 pub extern fn __gmpz_cmp(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
 pub extern fn __gmpz_set_si(op: *mpz_struct, value: c_long) void;
+pub extern fn __gmpz_set_ui(op: *mpz_struct, value: c_ulong) void;
 pub extern fn __gmpz_add(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_mul(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_gcd(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;

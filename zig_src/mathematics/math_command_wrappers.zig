@@ -1279,7 +1279,21 @@ fn sqrt1Px2Cplx() callconv(.c) void {
 }
 
 fn m1PowLonI() callconv(.c) void {
-    runtime.z47_math_wrappers_minus_one_power_long_integer();
+    var result: runtime.longInteger_t = undefined;
+    var exponent: runtime.longInteger_t = undefined;
+
+    runtime.__gmpz_init(&result[0]);
+    defer runtime.__gmpz_clear(&result[0]);
+    runtime.__gmpz_set_ui(&result[0], 1);
+
+    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &exponent[0]);
+    defer runtime.__gmpz_clear(&exponent[0]);
+
+    if (exponent[0]._mp_size != 0 and (exponent[0]._mp_d[0] & 1) != 0) {
+        result[0]._mp_size = -result[0]._mp_size;
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&result[0], runtime.REGISTER_X);
 }
 
 fn m1PowShoI() callconv(.c) void {
