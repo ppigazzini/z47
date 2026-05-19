@@ -79,6 +79,11 @@ pub const real34_t = extern struct {
     bytes: [16]u8,
 };
 
+pub const complex34_t = extern struct {
+    real: real34_t,
+    imag: real34_t,
+};
+
 pub const realContext_t = extern struct {
     digits: i32,
     emax: i32,
@@ -499,6 +504,11 @@ pub fn registerReal34Bytes(reg: calcRegister_t) *align(1) [16]u8 {
 }
 
 pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
+    const ptr = getRegisterDataPointer(reg) orelse unreachable;
+    return @ptrCast(ptr);
+}
+
+pub fn registerComplex34Ptr(reg: calcRegister_t) *align(1) complex34_t {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
     return @ptrCast(ptr);
 }
