@@ -367,6 +367,13 @@ void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + (getRegisterDataType(REGISTER_X) == 1 && getRegisterAngularMode(REGISTER_X) != 5);
 }
 
+void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
+	const uint32_t t = getRegisterDataType(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+	temporaryInformation = 12 + (t == 6 || t == 7);
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart

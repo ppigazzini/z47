@@ -63,6 +63,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter);
 void fnCheckType(uint16_t unusedButMandatoryParameter);
 void fnCheckReal(uint16_t unusedButMandatoryParameter);
 void fnCheckAngle(uint16_t unusedButMandatoryParameter);
+void fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void fnRealPart(uint16_t unusedButMandatoryParameter);
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void fnArg(uint16_t unusedButMandatoryParameter);
@@ -135,6 +136,7 @@ void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnArg(uint16_t unusedButMandatoryParameter);
@@ -823,6 +825,11 @@ static void configureCheckAngleFalse(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
   mathWrappersSetRealInput(true, 7, 0);
+}
+
+static void configureCheckMatrixTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
 }
 
 static void configureFactorialShortInteger(void) {
@@ -1716,6 +1723,8 @@ int main(void) {
   failures += runCase("fnCheckReal/false", oracle_fnCheckReal, fnCheckReal, 0, true, configureCheckRealMatrix);
   failures += runCase("fnCheckAngle/true", oracle_fnCheckAngle, fnCheckAngle, 0, true, configureCheckAngleTrue);
   failures += runCase("fnCheckAngle/false", oracle_fnCheckAngle, fnCheckAngle, 0, true, configureCheckAngleFalse);
+  failures += runCase("fnCheckMatrix/true", oracle_fnCheckMatrix, fnCheckMatrix, 0, true, configureCheckMatrixTrue);
+  failures += runCase("fnCheckMatrix/false", oracle_fnCheckMatrix, fnCheckMatrix, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);
