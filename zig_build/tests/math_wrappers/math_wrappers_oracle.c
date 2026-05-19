@@ -341,6 +341,16 @@ void roundiReal(void);
 #undef fnFactorial
 #undef log
 
+#define realRandomU01 oracle_realRandomU01
+#define fnRandom oracle_fnRandom
+#define fnRandomI oracle_fnRandomI
+#define fnSeed oracle_fnSeed
+#include "../../../src/c47/mathematics/random.c"
+#undef fnSeed
+#undef fnRandomI
+#undef fnRandom
+#undef realRandomU01
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
