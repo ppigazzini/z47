@@ -349,6 +349,10 @@ static void setupFindNamedVariableMissCase(void) {
   stackParitySeedNamedVariableName(1, "BETA");
 }
 
+static void setupFindOrAllocateNamedVariableFullCase(void) {
+  numberOfNamedVariables = (uint16_t)(LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE + 1);
+}
+
 static void setupNoOpCase(void) {
 }
 
@@ -735,6 +739,7 @@ int main(void) {
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "reserved-acc", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "named-hit", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupFindNamedVariableHitCase, find_named_variable_hit);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "too-long", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long);
+  failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "full-miss", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupFindOrAllocateNamedVariableFullCase, find_named_variable_miss);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-acc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc, dtReal34, REAL34_SIZE_IN_BLOCKS);
