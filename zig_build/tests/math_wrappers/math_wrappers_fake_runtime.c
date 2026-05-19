@@ -80,6 +80,11 @@ static struct {
 } longint_y_input;
 
 static struct {
+  bool_t available;
+  int32_t value;
+} longint_z_input;
+
+static struct {
   bool_t result;
   int16_t sign;
   uint64_t int_part;
@@ -326,6 +331,9 @@ void mathWrappersReset(void) {
   longint_y_input.available = true;
   longint_y_input.value = 9;
 
+  longint_z_input.available = true;
+  longint_z_input.value = 11;
+
   fraction_result.result = true;
   fraction_result.sign = 1;
   fraction_result.int_part = 0;
@@ -494,6 +502,13 @@ void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
   longint_y_input.value = value;
   current_register_y_data_type = dtLongInteger;
   current_register_y_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+void mathWrappersSetLongIntegerZInput(bool_t available, int32_t value) {
+  longint_z_input.available = available;
+  longint_z_input.value = value;
+  current_register_z_data_type = dtLongInteger;
+  current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
@@ -969,8 +984,8 @@ bool_t getFlag(uint16_t flag) {
 }
 
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
-  const bool_t available = reg == REGISTER_Y ? longint_y_input.available : longint_input.available;
-  const int32_t input_value = reg == REGISTER_Y ? longint_y_input.value : longint_input.value;
+  const bool_t available = reg == REGISTER_Y ? longint_y_input.available : reg == REGISTER_Z ? longint_z_input.available : longint_input.available;
+  const int32_t input_value = reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value;
 
   snapshot.get_register_as_longint_calls++;
   snapshot.get_register_as_longint_result = available;
@@ -1005,7 +1020,7 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
   else {
     switch(current_register_data_type) {
       case dtLongInteger:
-        value = reg == REGISTER_Y ? longint_y_input.value : longint_input.value;
+        value = reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value;
         mpz_set_si(val, value);
         break;
 
@@ -1049,16 +1064,16 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
 
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t lgInt) {
   mpz_init(lgInt);
-  mpz_set_si(lgInt, reg == REGISTER_Y ? longint_y_input.value : longint_input.value);
+  mpz_set_si(lgInt, reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value);
 }
 
 void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realContext_t *realContext) {
   (void)realContext;
-  setFakeReal(real, reg == REGISTER_Y ? longint_y_input.value : longint_input.value, 0);
+  setFakeReal(real, reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value, 0);
 }
 
 void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
-  const int32_t value = source == REGISTER_Y ? longint_y_input.value : longint_input.value;
+  const int32_t value = source == REGISTER_Y ? longint_y_input.value : source == REGISTER_Z ? longint_z_input.value : longint_input.value;
 
   if(destination == REGISTER_Y) {
     current_register_y_data_type = dtReal34;
@@ -1066,6 +1081,15 @@ void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegis
     real_y_input.available = true;
     setFakeReal(&real_y_input.value, value, 0);
     setRegisterReal34(register_y_slot, value, 0);
+    return;
+  }
+
+  if(destination == REGISTER_Z) {
+    current_register_z_data_type = dtReal34;
+    current_register_z_tag = amNone;
+    real_z_input.available = true;
+    setFakeReal(&real_z_input.value, value, 0);
+    setRegisterReal34(register_z_slot, value, 0);
     return;
   }
 
@@ -1083,6 +1107,11 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
   if(reg == REGISTER_Y) {
     longint_y_input.available = true;
     longint_y_input.value = value;
+    return;
+  }
+  if(reg == REGISTER_Z) {
+    longint_z_input.available = true;
+    longint_z_input.value = value;
     return;
   }
   longint_input.available = true;

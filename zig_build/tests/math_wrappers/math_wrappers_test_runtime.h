@@ -256,6 +256,7 @@ void mathWrappersSetShortIntegerZInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
+void mathWrappersSetLongIntegerZInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
                                            int32_t error_code,
                                            bool_t fractional,
