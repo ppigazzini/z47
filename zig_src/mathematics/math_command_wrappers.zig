@@ -1496,6 +1496,46 @@ fn imagPartReal() callconv(.c) void {
     runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
 }
 
+fn magnitudeLonI() callconv(.c) void {
+    runtime.setRegisterLongIntegerSign(runtime.REGISTER_X, runtime.LI_POSITIVE);
+}
+
+fn magnitudeShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intAbs(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
+}
+
+fn magnitudeReal() callconv(.c) void {
+    runtime.real34SetPositiveSign(runtime.registerReal34Ptr(runtime.REGISTER_X));
+    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+}
+
+fn complexMagnitude2(real: *const runtime.real_t, imag: *const runtime.real_t, magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
+    var product: runtime.real_t = undefined;
+
+    runtime.realMultiply(real, real, &product, real_context);
+    runtime.realFMA(imag, imag, &product, magnitude, real_context);
+}
+
+fn complexMagnitude(real: *const runtime.real_t, imag: *const runtime.real_t, magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
+    var squared: runtime.real_t = undefined;
+
+    complexMagnitude2(real, imag, &squared, real_context);
+    runtime.realSquareRoot(&squared, magnitude, real_context);
+}
+
+fn magnitudeCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+    var magnitude: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    complexMagnitude(&real_value, &imag_value, &magnitude, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&magnitude, runtime.REGISTER_X, runtime.amNone);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2756,7 +2796,13 @@ pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type == runtime.dtComplex34Matrix or register_data_type == runtime.dtReal34Matrix) {
+        z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter);
+        return;
+    }
+
+    runtime.processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeCplx, &magnitudeShoI, &magnitudeLonI);
 }
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {

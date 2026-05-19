@@ -140,6 +140,7 @@ pub extern fn realRectangularToPolar(
     theta: *real_t,
     real_context: *realContext_t,
 ) void;
+pub extern fn complexMagnitude(real: *const real_t, imag: *const real_t, magnitude: *real_t, real_context: *realContext_t) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
 pub extern fn processIntRealComplexMonadicFunction(
@@ -224,6 +225,7 @@ pub extern fn WP34S_int2pow(x: u64) u64;
 pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intLog10(x: u64) u64;
 pub extern fn WP34S_intLog2(x: u64) u64;
+pub extern fn WP34S_intAbs(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
@@ -392,6 +394,14 @@ pub extern fn z47_math_wrappers_do_int_random_i() void;
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
     return @ptrCast(ptr);
+}
+
+pub fn setRegisterLongIntegerSign(reg: calcRegister_t, sign: u32) void {
+    setRegisterTag(reg, sign);
+}
+
+pub fn real34SetPositiveSign(value: *real34_t) void {
+    value.bytes[15] &= 0x7f;
 }
 
 pub fn registerReal34Bytes(reg: calcRegister_t) *align(1) [16]u8 {
