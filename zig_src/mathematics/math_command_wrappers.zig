@@ -2875,8 +2875,12 @@ pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv
     z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter);
 }
 
-fn loadToPolarReal34Input(reg: runtime.calcRegister_t, value: *runtime.real_t) void {
-    _ = runtime.decimal128ToNumber(runtime.registerReal34Ptr(reg), value);
+fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
+    switch (data_type) {
+        runtime.dtLongInteger => runtime.convertLongIntegerRegisterToReal(reg, value, &runtime.ctxtReal39),
+        runtime.dtReal34 => _ = runtime.decimal128ToNumber(runtime.registerReal34Ptr(reg), value),
+        else => unreachable,
+    }
 }
 
 fn tryFnToPolar2Real34Pair() bool {
@@ -2889,7 +2893,10 @@ fn tryFnToPolar2Real34Pair() bool {
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
     const data_atag_y = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
 
-    if (data_type_x != runtime.dtReal34 or data_atag_x != runtime.amNone or data_type_y != runtime.dtReal34 or data_atag_y != runtime.amNone) {
+    const x_valid = data_type_x == runtime.dtLongInteger or (data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone);
+    const y_valid = data_type_y == runtime.dtLongInteger or (data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone);
+
+    if (!x_valid or !y_valid) {
         return false;
     }
 
@@ -2904,8 +2911,8 @@ fn tryFnToPolar2Real34Pair() bool {
     var real_value: runtime.real_t = undefined;
     var imag_value: runtime.real_t = undefined;
 
-    loadToPolarReal34Input(real_reg, &real_value);
-    loadToPolarReal34Input(imag_reg, &imag_value);
+    loadToPolarNumericInput(real_reg, data_type_x, &real_value);
+    loadToPolarNumericInput(imag_reg, data_type_y, &imag_value);
 
     runtime.realRectangularToPolar(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
@@ -2961,8 +2968,8 @@ fn tryFnToRect2Real34Pair() bool {
     var radius_value: runtime.real_t = undefined;
     var angle_value: runtime.real_t = undefined;
 
-    loadToPolarReal34Input(radius_reg, &radius_value);
-    loadToPolarReal34Input(angle_reg, &angle_value);
+    loadToPolarNumericInput(radius_reg, runtime.dtReal34, &radius_value);
+    loadToPolarNumericInput(angle_reg, runtime.dtReal34, &angle_value);
 
     if (angle_mode == runtime.amNone) {
         angle_mode = runtime.currentAngularMode;
