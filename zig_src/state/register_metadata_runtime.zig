@@ -93,6 +93,7 @@ extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]c
 extern fn z47_register_metadata_report_invalid_name() void;
 extern fn z47_register_metadata_report_undef_source_var() void;
 extern fn z47_register_metadata_report_cannot_delete_predef_item() void;
+extern fn z47_register_metadata_report_too_many_variables() void;
 extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
@@ -265,6 +266,10 @@ pub fn reportUndefSourceVar() void {
 
 pub fn reportCannotDeletePredefItem() void {
     z47_register_metadata_report_cannot_delete_predef_item();
+}
+
+pub fn reportTooManyVariables() void {
+    z47_register_metadata_report_too_many_variables();
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
