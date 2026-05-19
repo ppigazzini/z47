@@ -4034,7 +4034,20 @@ pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckNumber(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    const is_number = switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtLongInteger, runtime.dtShortInteger => true,
+        runtime.dtComplex34 => blk: {
+            const imag_is_number = !(runtime.real34IsNaN(runtime.registerImag34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerImag34Ptr(runtime.REGISTER_X)));
+            const real_is_number = !(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+            break :blk imag_is_number and real_is_number;
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => !(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))),
+        else => false,
+    };
+
+    runtime.setTemporaryInformation(is_number);
 }
 
 pub export fn fnCheckAngle(unused_but_mandatory_parameter: u16) callconv(.c) void {
