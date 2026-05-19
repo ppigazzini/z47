@@ -84,6 +84,11 @@ pub const complex34_t = extern struct {
     imag: real34_t,
 };
 
+pub const matrixHeader_t = extern struct {
+    matrixRows: u16,
+    matrixColumns: u16,
+};
+
 pub const realContext_t = extern struct {
     digits: i32,
     emax: i32,
@@ -509,6 +514,11 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
 }
 
 pub fn registerComplex34Ptr(reg: calcRegister_t) *align(1) complex34_t {
+    const ptr = getRegisterDataPointer(reg) orelse unreachable;
+    return @ptrCast(ptr);
+}
+
+pub fn registerMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
     return @ptrCast(ptr);
 }

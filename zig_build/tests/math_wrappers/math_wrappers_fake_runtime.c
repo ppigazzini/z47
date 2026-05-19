@@ -462,6 +462,12 @@ void *getRegisterDataPointer(calcRegister_t reg) {
   if(reg == REGISTER_Y && current_register_data_type == dtShortInteger) {
     return &shortint_y_slot;
   }
+  if(current_register_data_type == dtReal34Matrix) {
+    return &fake_real_matrix;
+  }
+  if(current_register_data_type == dtComplex34Matrix) {
+    return &fake_complex_matrix;
+  }
   return register_slot;
 }
 
