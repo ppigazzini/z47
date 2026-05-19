@@ -114,7 +114,7 @@ pub extern fn adjustResult(
     op3: calcRegister_t,
 ) void;
 
-pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
+pub extern fn getRegisterAsReal(reg: calcRegister_t, value: ?*real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
@@ -182,6 +182,7 @@ pub extern fn real34GetExponent(value: *const real34_t) i32;
 pub extern fn real34NextPlus(source: *const real34_t, destination: *real34_t) void;
 pub extern fn real34NextMinus(source: *const real34_t, destination: *real34_t) void;
 pub extern fn real34Subtract(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void;
+pub extern fn convertAngle34FromTo(angle: *real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
 pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
@@ -367,6 +368,7 @@ pub const retained = struct {
 };
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_90() *const real_t;
+pub extern fn z47_math_wrappers_const_180() *const real_t;
 pub extern fn z47_math_wrappers_const_ln2() *const real_t;
 pub extern fn z47_math_wrappers_const_ln10() *const real_t;
 pub extern fn z47_math_wrappers_const_pi() *const real_t;

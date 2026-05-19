@@ -1752,6 +1752,48 @@ fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     }
 }
 
+fn argReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    const result = if (runtime.realIsNaN(&x_value))
+        &x_value
+    else if (runtime.realIsZero(&x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
+        &x_value
+    else if (runtime.realIsNegative(&x_value))
+        runtime.z47_math_wrappers_const_180()
+    else
+        runtime.z47_math_wrappers_const_0();
+
+    runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
+    if (!runtime.realIsNaN(result)) {
+        runtime.convertAngle34FromTo(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.amDegree, runtime.currentAngularMode);
+        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+    }
+}
+
+fn argError() void {
+    _ = runtime.getRegisterAsReal(runtime.REGISTER_X, null);
+}
+
+fn argCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.realRectangularToPolar(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3078,7 +3120,23 @@ pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) 
 }
 
 pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+        z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    switch (register_data_type) {
+        runtime.dtLongInteger, runtime.dtReal34, runtime.dtShortInteger => argReal(),
+        runtime.dtComplex34 => argCplx(),
+        else => argError(),
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
