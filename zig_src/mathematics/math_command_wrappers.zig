@@ -2968,7 +2968,8 @@ fn tryFnToRect2Real34Pair() bool {
     const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;
 
     if (!radius_valid or !angle_valid) {
-        return false;
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
+        return true;
     }
 
     var angle_mode = runtime.getRegisterAngularMode(angle_reg);
