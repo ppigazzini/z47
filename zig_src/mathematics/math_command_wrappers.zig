@@ -1938,7 +1938,10 @@ fn ipCplx() callconv(.c) void {
 }
 
 fn fpRealForward() callconv(.c) void {
-    runtime.z47_math_wrappers_fractional_part_real();
+    var integral: runtime.real34_t = undefined;
+
+    runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.DEC_ROUND_DOWN);
+    runtime.real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.registerReal34Ptr(runtime.REGISTER_X));
 }
 
 fn fpShoIForward() callconv(.c) void {
