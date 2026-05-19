@@ -1009,6 +1009,64 @@ static void configureCheckVect3dTrue(void) {
   realMatrixFree(&matrix);
 }
 
+static void configureCheckNaNRealMatrixFalse(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckNaNRealMatrixTrue(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  matrix.matrixElements[2].bytes[15] = 0x20;
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckNaNComplexMatrixFalse(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+}
+
+static void configureCheckNaNComplexMatrixTrue(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  matrix.matrixElements[1].imag.bytes[15] = 0x20;
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+}
+
+static void configureCheckInfiniteRealMatrixTrue(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  matrix.matrixElements[3].bytes[15] = 0x40;
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckInfiniteComplexMatrixTrue(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  matrix.matrixElements[2].real.bytes[15] = 0x40;
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+}
+
 static void configureFactorialShortInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtShortInteger, 16);
@@ -1929,16 +1987,30 @@ int main(void) {
   failures += runCase("fnCheckNaN/real_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureSignRealNaN);
   failures += runCase("fnCheckNaN/complex_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureFactorialComplex);
   failures += runCase("fnCheckNaN/complex_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplex);
+  failures += runCase("fnCheckNaN/real_matrix_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNRealMatrixFalse);
+  failures += runCase("fnCheckNaN/real_matrix_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNRealMatrixTrue);
+  failures += runCase("fnCheckNaN/complex_matrix_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplexMatrixFalse);
+  failures += runCase("fnCheckNaN/complex_matrix_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplexMatrixTrue);
   failures += runCase("fnCheckInfinite/real_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureFactorialReal);
   failures += runCase("fnCheckInfinite/real_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureSincRealInfinity);
   failures += runCase("fnCheckInfinite/complex_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureFactorialComplex);
   failures += runCase("fnCheckInfinite/complex_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureExpComplexSpecial);
+  failures += runCase("fnCheckInfinite/real_matrix_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckNaNRealMatrixFalse);
+  failures += runCase("fnCheckInfinite/real_matrix_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckInfiniteRealMatrixTrue);
+  failures += runCase("fnCheckInfinite/complex_matrix_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckNaNComplexMatrixFalse);
+  failures += runCase("fnCheckInfinite/complex_matrix_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckInfiniteComplexMatrixTrue);
   failures += runCase("fnCheckSpecial/real_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureFactorialReal);
   failures += runCase("fnCheckSpecial/real_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureSignRealNaN);
   failures += runCase("fnCheckSpecial/real_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureSincRealInfinity);
   failures += runCase("fnCheckSpecial/complex_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureFactorialComplex);
   failures += runCase("fnCheckSpecial/complex_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureExpComplexSpecial);
   failures += runCase("fnCheckSpecial/complex_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNComplex);
+  failures += runCase("fnCheckSpecial/real_matrix_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNRealMatrixFalse);
+  failures += runCase("fnCheckSpecial/real_matrix_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNRealMatrixTrue);
+  failures += runCase("fnCheckSpecial/real_matrix_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckInfiniteRealMatrixTrue);
+  failures += runCase("fnCheckSpecial/complex_matrix_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNComplexMatrixFalse);
+  failures += runCase("fnCheckSpecial/complex_matrix_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNComplexMatrixTrue);
+  failures += runCase("fnCheckSpecial/complex_matrix_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckInfiniteComplexMatrixTrue);
   failures += runCase("fnCheckPlusZero/longint_true", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckLongIntegerZero);
   failures += runCase("fnCheckPlusZero/longint_false", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckPlusZero/shortint_true", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckShortIntegerZero);
