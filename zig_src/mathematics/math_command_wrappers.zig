@@ -1794,6 +1794,31 @@ fn argCplx() callconv(.c) void {
     runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
 }
 
+fn wInvReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    runtime.WP34S_InverseW(&x_value, &x_value, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn wInvCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+    var result_real: runtime.real_t = undefined;
+    var result_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.WP34S_InverseComplexW(&real_value, &imag_value, &result_real, &result_imag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -2980,7 +3005,8 @@ pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runtime.processRealComplexMonadicFunction(&wInvReal, &wInvCplx);
 }
 
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
