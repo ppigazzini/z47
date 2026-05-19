@@ -2996,6 +2996,50 @@ fn tryFnToRect2Real34Pair() bool {
     return true;
 }
 
+fn tryFnToRectReal34Pair(angle_in_y: i8) bool {
+    var radius_reg = if (angle_in_y == 1) runtime.REGISTER_X else runtime.REGISTER_Y;
+    var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;
+    const radius_type = runtime.getRegisterDataType(radius_reg);
+    const angle_type = runtime.getRegisterDataType(angle_reg);
+
+    if (radius_type != runtime.dtReal34 or angle_type != runtime.dtReal34) {
+        return false;
+    }
+
+    var angle_mode = runtime.getRegisterAngularMode(angle_reg);
+    if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    var radius_value: runtime.real_t = undefined;
+    var angle_value: runtime.real_t = undefined;
+
+    loadToPolarNumericInput(radius_reg, runtime.dtReal34, &radius_value);
+    loadToPolarNumericInput(angle_reg, runtime.dtReal34, &angle_value);
+
+    if (angle_mode == runtime.amNone) {
+        angle_mode = runtime.currentAngularMode;
+    }
+
+    runtime.convertAngleFromTo(&angle_value, angle_mode, runtime.amRadian, &runtime.ctxtReal39);
+    runtime.realPolarToRectangular(&radius_value, &angle_value, &radius_value, &angle_value, &runtime.ctxtReal39);
+
+    if (runtime.getSystemFlag(runtime.FLAG_HPRP)) {
+        radius_reg = runtime.REGISTER_X;
+        angle_reg = runtime.REGISTER_Y;
+    } else {
+        radius_reg = runtime.REGISTER_Y;
+        angle_reg = runtime.REGISTER_X;
+    }
+
+    runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
+    runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
+    runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
+    runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
+    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    return true;
+}
+
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (tryFnToPolar2Real34Pair()) {
         return;
@@ -3013,6 +3057,12 @@ pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    const angle_in_y: i8 = @bitCast(@as(u8, @truncate(unused_but_mandatory_parameter)));
+
+    if (tryFnToRectReal34Pair(angle_in_y)) {
+        return;
+    }
+
     z47_math_wrappers_retained_fnToRect(unused_but_mandatory_parameter);
 }
 
