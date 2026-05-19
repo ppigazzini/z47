@@ -50,6 +50,7 @@ pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
+pub const FLAG_CARRY: i32 = 0x800b;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
 pub const FLAG_HPRP: i32 = 0x802b;
@@ -121,6 +122,7 @@ pub extern fn adjustResult(
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: ?*real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
+pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u64, overflow: ?*bool, fractional: ?*bool) bool;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
@@ -128,6 +130,7 @@ pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;
 pub extern fn clearSystemFlag(flag: i32) void;
+pub extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 pub extern fn fnSetFlag(flag: i32) void;
 pub extern fn fnRefreshState() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
