@@ -468,3 +468,87 @@ void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
 		temporaryInformation = TI_RADIUS_THETA_SWAPPED;
 	}
 }
+
+void oracle_fnToRect2(uint16_t unusedButMandatoryParameter) {
+	uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
+	calcRegister_t REG_X, REG_Y;
+	angularMode_t yAngularMode;
+	int8_t angleInY = 1;
+	real_t x, y;
+
+	(void)unusedButMandatoryParameter;
+
+	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+		return;
+	}
+
+	dataTypeX = getRegisterDataType(REGISTER_X);
+	dataAtagX = getRegisterAngularMode(REGISTER_X);
+	dataTypeY = getRegisterDataType(REGISTER_Y);
+	dataAtagY = getRegisterAngularMode(REGISTER_Y);
+
+	if(!getSystemFlag(FLAG_HPRP)) {
+		angleInY = -angleInY;
+		if(dataTypeX == dtReal34 && dataAtagX != amNone && dataTypeY == dtReal34 && dataAtagY == amNone) {
+		}
+		else if(dataTypeY == dtReal34 && dataAtagY != amNone && dataTypeX == dtReal34 && dataAtagX == amNone) {
+			angleInY = -angleInY;
+		}
+	}
+	else {
+		if(dataTypeX == dtReal34 && dataAtagX != amNone && dataTypeY == dtReal34 && dataAtagY == amNone) {
+			angleInY = -angleInY;
+		}
+		else if(dataTypeY == dtReal34 && dataAtagY != amNone && dataTypeX == dtReal34 && dataAtagX == amNone) {
+		}
+	}
+
+	if(angleInY == 1) {
+		REG_X = REGISTER_X;
+		REG_Y = REGISTER_Y;
+	}
+	else {
+		REG_X = REGISTER_Y;
+		REG_Y = REGISTER_X;
+	}
+
+	dataTypeX = getRegisterDataType(REG_X);
+	dataTypeY = getRegisterDataType(REG_Y);
+	if(dataTypeX != dtReal34 || dataTypeY != dtReal34) {
+		return;
+	}
+
+	yAngularMode = getRegisterAngularMode(REG_Y);
+	if(!saveLastX()) {
+		return;
+	}
+
+	real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
+	if(yAngularMode == amNone) {
+		yAngularMode = currentAngularMode;
+	}
+	real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	convertAngleFromTo(&y, yAngularMode, amRadian, &ctxtReal39);
+	realPolarToRectangular(&x, &y, &x, &y, &ctxtReal39);
+
+	if(getSystemFlag(FLAG_HPRP)) {
+		REG_X = REGISTER_X;
+		REG_Y = REGISTER_Y;
+	}
+	else {
+		REG_X = REGISTER_Y;
+		REG_Y = REGISTER_X;
+	}
+
+	reallocateRegister(REG_X, dtReal34, 0, amNone);
+	reallocateRegister(REG_Y, dtReal34, 0, amNone);
+	convertRealToReal34ResultRegister(&x, REG_X);
+	convertRealToReal34ResultRegister(&y, REG_Y);
+
+	if(getSystemFlag(FLAG_HPRP)) {
+		temporaryInformation = TI_X_Y;
+	}
+	else {
+		temporaryInformation = TI_X_Y_SWAPPED;
+	}
+}
