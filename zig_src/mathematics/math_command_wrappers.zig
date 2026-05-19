@@ -1664,6 +1664,49 @@ fn magnitudeCplx() callconv(.c) void {
     runtime.convertRealToResultRegister(&magnitude, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn changeReal34Sign(value: *runtime.real34_t) void {
+    value.bytes[15] ^= 0x80;
+}
+
+fn conjRema() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &complex_matrix);
+    if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        const count = @min(
+            @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+            complex_matrix.matrixElements.len,
+        );
+
+        var index: usize = 0;
+        while (index < count) : (index += 1) {
+            changeReal34Sign(&complex_matrix.matrixElements[index].imag);
+        }
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
+fn conjCxma() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    const count = @min(
+        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+        complex_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        changeReal34Sign(&complex_matrix.matrixElements[index].imag);
+        if (runtime.real34IsZero(&complex_matrix.matrixElements[index].imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.real34SetPositiveSign(&complex_matrix.matrixElements[index].imag);
+        }
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
 fn conjCplx() callconv(.c) void {
     var real_value: runtime.real_t = undefined;
     var imag_value: runtime.real_t = undefined;
@@ -4193,12 +4236,20 @@ pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type == runtime.dtComplex34Matrix or register_data_type == runtime.dtReal34Matrix) {
-        z47_math_wrappers_retained_fnConjugate(unused_but_mandatory_parameter);
+
+    _ = unused_but_mandatory_parameter;
+
+    if (!runtime.saveLastX()) {
         return;
     }
 
-    if (!runtime.saveLastX()) {
+    if (register_data_type == runtime.dtComplex34Matrix) {
+        conjCxma();
+        return;
+    }
+
+    if (register_data_type == runtime.dtReal34Matrix) {
+        conjRema();
         return;
     }
 
