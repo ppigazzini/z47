@@ -502,6 +502,42 @@ void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + check;
 }
 
+void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
+	int check = 0;
+
+	(void)unusedButMandatoryParameter;
+
+	switch(getRegisterDataType(REGISTER_X)) {
+		case 0:
+			break;
+
+		case 8: {
+			uint64_t value;
+			int16_t sign;
+			convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &value);
+			check = value == 0 && sign == 1;
+			break;
+		}
+
+		case 2: {
+			const complex34_t *cpx = REGISTER_COMPLEX34_DATA(REGISTER_X);
+			check = real34IsZero(&cpx->real) && real34IsZero(&cpx->imag) && (real34IsNegative(&cpx->real) || real34IsNegative(&cpx->imag));
+			break;
+		}
+
+		case 3:
+		case 4:
+		case 1:
+			check = real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X));
+			break;
+
+		default:
+			break;
+	}
+
+	temporaryInformation = 12 + check;
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart

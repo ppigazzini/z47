@@ -4161,7 +4161,9 @@ pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) 
 }
 
 pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckMinusZero(unused_but_mandatory_parameter);
+    if (!tryCheckZeroScalar(true)) {
+        z47_math_wrappers_retained_fnCheckMinusZero(unused_but_mandatory_parameter);
+    }
 }
 
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
