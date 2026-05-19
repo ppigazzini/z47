@@ -88,6 +88,7 @@ extern fn z47_stack_runtime_store_zero_long_integer(reg: calcRegister_t) void;
 extern fn z47_stack_runtime_store_zero_short_integer(reg: calcRegister_t, base: u32) void;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
+extern fn z47_stack_runtime_sort_register_range(range_start: u16, range_end: u16) void;
 extern fn z47_stack_runtime_report_register_command_error(error_code: u8) void;
 extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
@@ -252,6 +253,10 @@ pub fn requestClearRegistersConfirmation() void {
 
 pub fn doPartialRegisterLoad(s: u16, n: u16, d: u16) void {
     z47_stack_runtime_do_partial_register_load(s, n, d);
+}
+
+pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
+    z47_stack_runtime_sort_register_range(range_start, range_end);
 }
 
 pub fn reportRegisterCommandError(error_code: u8) void {
