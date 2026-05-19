@@ -1564,6 +1564,26 @@ fn swapReImCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&imag_value, &real_value, runtime.REGISTER_X);
 }
 
+fn atan2RealReal() callconv(.c) void {
+    var y_value: runtime.real_t = undefined;
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function atan2RealReal:", "X = 0 and Y = 0", null, null);
+        return;
+    }
+
+    runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2862,7 +2882,22 @@ pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(
 }
 
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
+    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+    const x_supported = data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger;
+    const y_supported = data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger;
+
+    if (!x_supported or !y_supported) {
+        z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    atan2RealReal();
+    runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
 }
 
 pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
