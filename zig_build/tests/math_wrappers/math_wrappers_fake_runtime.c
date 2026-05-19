@@ -455,6 +455,7 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_real34_value = fakeRegisterScalarValue();
   snapshot.final_register_real34_bits = register_slot[15];
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
+  snapshot.final_register_y_shortint_raw = shortint_y_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_overflow_flag = overflow_flag;
   snapshot.final_carry_flag = carry_flag;

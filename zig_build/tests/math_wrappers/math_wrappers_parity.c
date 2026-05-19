@@ -53,6 +53,7 @@ void fnGcd(uint16_t unusedButMandatoryParameter);
 void fnLcm(uint16_t unusedButMandatoryParameter);
 void fnMod(uint16_t unusedButMandatoryParameter);
 void fnRmd(uint16_t unusedButMandatoryParameter);
+void fnDblMultiply(uint16_t unusedButMandatoryParameter);
 void fnDblDivide(uint16_t unusedButMandatoryParameter);
 void fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void fnUlp(uint16_t unusedButMandatoryParameter);
@@ -139,6 +140,7 @@ void oracle_fnGcd(uint16_t unusedButMandatoryParameter);
 void oracle_fnLcm(uint16_t unusedButMandatoryParameter);
 void oracle_fnMod(uint16_t unusedButMandatoryParameter);
 void oracle_fnRmd(uint16_t unusedButMandatoryParameter);
+void oracle_fnDblMultiply(uint16_t unusedButMandatoryParameter);
 void oracle_fnDblDivide(uint16_t unusedButMandatoryParameter);
 void oracle_fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
@@ -201,8 +203,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d ovf=%d carry=%d\n"
-          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu long=%d ovf=%d carry=%d\n",
+          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ovf=%d carry=%d\n"
+          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ovf=%d carry=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -252,6 +254,7 @@ static int reportMismatch(const char *name,
           expected->final_register_real34_value,
           expected->final_register_real34_bits,
           (unsigned long long)expected->final_register_shortint_raw,
+          (unsigned long long)expected->final_register_y_shortint_raw,
           expected->final_register_longint_value,
             expected->final_overflow_flag,
             expected->final_carry_flag,
@@ -302,6 +305,7 @@ static int reportMismatch(const char *name,
           actual->final_register_real34_value,
           actual->final_register_real34_bits,
           (unsigned long long)actual->final_register_shortint_raw,
+          (unsigned long long)actual->final_register_y_shortint_raw,
           actual->final_register_longint_value,
           actual->final_overflow_flag,
           actual->final_carry_flag);
@@ -727,6 +731,27 @@ static void configureModuloShortInteger(void) {
   mathWrappersSetShortIntegerYInput(9);
   mathWrappersSetLongIntegerInput(true, 4);
   mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureDblMultiplyLowWord(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(7);
+  mathWrappersSetShortIntegerYInput(9);
+  mathWrappersSetFlagOverflow(true);
+}
+
+static void configureDblMultiplyHighWord(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(((int64_t)1) << 32);
+  mathWrappersSetShortIntegerYInput(((int64_t)1) << 32);
+  mathWrappersSetFlagOverflow(true);
+}
+
+static void configureDblMultiplyTypeError(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
 }
 
 static void configureDblDivideQuotient(void) {
@@ -1992,6 +2017,10 @@ int main(void) {
   failures += runCase("fnRmd/real", oracle_fnRmd, fnRmd, 0, true, configureRmdReal);
   failures += runCase("fnRmd/shortint", oracle_fnRmd, fnRmd, 0, true, configureModuloShortInteger);
   failures += runCase("fnRmd/longint", oracle_fnRmd, fnRmd, 0, true, configureRmdLongInteger);
+  failures += runCase("fnDblMultiply/low_word", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyLowWord);
+  failures += runCase("fnDblMultiply/high_word", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyHighWord);
+  failures += runCase("fnDblMultiply/save_last_x_false", oracle_fnDblMultiply, fnDblMultiply, 0, false, configureDblMultiplyLowWord);
+  failures += runCase("fnDblMultiply/type_error", oracle_fnDblMultiply, fnDblMultiply, 0, true, configureDblMultiplyTypeError);
   failures += runCase("fnDblDivide/quotient", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideQuotient);
   failures += runCase("fnDblDivide/exact", oracle_fnDblDivide, fnDblDivide, 0, true, configureDblDivideExact);
   failures += runCase("fnDblDivide/save_last_x_false", oracle_fnDblDivide, fnDblDivide, 0, false, configureDblDivideQuotient);

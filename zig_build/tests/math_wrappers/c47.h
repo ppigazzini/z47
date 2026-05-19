@@ -193,7 +193,9 @@ enum {
 #define longIntegerAdd(lhs, rhs, result) mpz_add((result), (lhs), (rhs))
 #define longIntegerGcd(lhs, rhs, result) mpz_gcd((result), (lhs), (rhs))
 #define longIntegerLcm(lhs, rhs, result) mpz_lcm((result), (lhs), (rhs))
+#define longIntegerDivide(lhs, rhs, result) mpz_tdiv_q((result), (lhs), (rhs))
 #define longIntegerDivideRemainder(dividend, divisor, remainder) mpz_tdiv_r((remainder), (dividend), (divisor))
+#define longIntegerModulo(lhs, rhs, result) mpz_mod((result), (lhs), (rhs))
 #define DECNEG 0x80
 
 #define TI_FALSE 0
