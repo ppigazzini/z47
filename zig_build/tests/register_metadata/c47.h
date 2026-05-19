@@ -92,6 +92,8 @@ void stackParitySetMemoryBlockAvailable(bool_t available);
 void stackParitySeedBuiltInMenuItem(uint32_t index, uint32_t status, const char *name);
 void stackParitySeedUserMenu(uint32_t index, const char *name);
 void stackParitySeedNamedVariableName(int index, const char *name);
+calcRegister_t findNamedVariable(const char *variableName);
+void fnDeleteVariable(uint16_t regist);
 int32_t compareString(const char *left, const char *right, int32_t comparisonType);
 
 uint32_t z47_register_metadata_builtin_menu_item_count(void);

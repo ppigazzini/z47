@@ -385,6 +385,21 @@ static void setupDeleteAllVariablesConfirmedCase(void) {
   seedNamedPayload(2, dtComplex34, amPolar, COMPLEX34_SIZE_IN_BLOCKS, 0x81);
 }
 
+static void setupClearAllVariablesConfirmedCase(void) {
+  stackParitySeedNamedVariableName(0, "STATS");
+  stackParitySeedNamedVariableName(1, "ALPHA");
+  stackParitySeedNamedVariableName(2, "HISTO");
+  stackParitySeedNamedVariableName(3, "Mat_A");
+  stackParitySeedNamedVariableName(4, "BETA");
+  seedNamedPayload(0, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x91);
+  seedNamedStringLike(1, dtString, amNone, 4, 0xa1);
+  seedNamedPayload(2, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0xb1);
+  seedNamedStringLike(3, dtString, amNone, 6, 0xc1);
+  seedNamedPayload(4, dtComplex34, amPolar, COMPLEX34_SIZE_IN_BLOCKS, 0xd1);
+  stackParitySeedCurrentStats(0xe1);
+  lrChosen = 7;
+}
+
 static void setupNoOpCase(void) {
 }
 
@@ -765,6 +780,7 @@ int main(void) {
   failures += runU16VoidCase("fnDeleteVariable", "predefined-item", oracle_fnDeleteVariable, fnDeleteVariable, setupNoOpCase, REGISTER_X);
   failures += runU16VoidCase("fnDeleteAllVariables", "confirmed", oracle_fnDeleteAllVariables, fnDeleteAllVariables, setupDeleteAllVariablesConfirmedCase, CONFIRMED);
   failures += runU16VoidCase("fnDeleteAllVariables", "request-confirmation", oracle_fnDeleteAllVariables, fnDeleteAllVariables, setupNoOpCase, NOT_CONFIRMED);
+  failures += runU16VoidCase("fnClearAllVariables", "confirmed", oracle_fnClearAllVariables, fnClearAllVariables, setupClearAllVariablesConfirmedCase, CONFIRMED);
   failures += runU16VoidCase("fnClearAllVariables", "request-confirmation", oracle_fnClearAllVariables, fnClearAllVariables, setupNoOpCase, NOT_CONFIRMED);
   failures += runFindNamedVariableCase("findNamedVariable", "reserved-acc", oracle_findNamedVariable, findNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc);
   failures += runFindNamedVariableCase("findNamedVariable", "named-hit", oracle_findNamedVariable, findNamedVariable, setupFindNamedVariableHitCase, find_named_variable_hit);

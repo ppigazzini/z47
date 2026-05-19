@@ -16,6 +16,7 @@ pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
 pub const dtConfig: u32 = 9;
 pub const TI_NO_INFO: u8 = 0;
+pub const TI_CLEAR_ALL_VARIABLES: u8 = 98;
 pub const TI_DEL_ALL_VARIABLES: u8 = 101;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
@@ -101,6 +102,7 @@ extern fn z47_register_metadata_report_invalid_name() void;
 extern fn z47_register_metadata_report_undef_source_var() void;
 extern fn z47_register_metadata_report_cannot_delete_predef_item() void;
 extern fn z47_register_metadata_report_too_many_variables() void;
+extern fn z47_register_metadata_clear_sigma() void;
 extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
@@ -292,6 +294,10 @@ pub fn reportCannotDeletePredefItem() void {
 
 pub fn reportTooManyVariables() void {
     z47_register_metadata_report_too_many_variables();
+}
+
+pub fn clearSigma() void {
+    z47_register_metadata_clear_sigma();
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
