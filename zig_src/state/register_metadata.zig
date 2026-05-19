@@ -987,7 +987,11 @@ pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
             _ = runtime.trySetNamedDescriptor(reg, withTag(descriptor, tag));
             return;
         }
-        runtime.retainedSetRegisterTag(reg, tag);
+
+        if (runtime.numberOfNamedVariables == 0) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        }
+
         return;
     }
 
@@ -1000,7 +1004,9 @@ pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
             _ = runtime.trySetLocalDescriptor(reg, withTag(descriptor, tag));
             return;
         }
+
+        return;
     }
 
-    runtime.retainedSetRegisterTag(reg, tag);
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
 }
