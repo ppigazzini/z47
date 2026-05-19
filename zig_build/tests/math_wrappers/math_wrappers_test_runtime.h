@@ -241,12 +241,22 @@ typedef struct {
   uint8_t final_register_z_complex_real_bits;
   int32_t final_register_z_complex_imag_value;
   uint8_t final_register_z_complex_imag_bits;
+  uint32_t final_register_t_data_type;
+  uint32_t final_register_t_tag;
+  int32_t final_register_t_real34_value;
+  uint8_t final_register_t_real34_bits;
+  int32_t final_register_t_complex_real_value;
+  uint8_t final_register_t_complex_real_bits;
+  int32_t final_register_t_complex_imag_value;
+  uint8_t final_register_t_complex_imag_bits;
   uint64_t final_register_shortint_raw;
   uint64_t final_register_y_shortint_raw;
   uint64_t final_register_z_shortint_raw;
+  uint64_t final_register_t_shortint_raw;
   int32_t final_register_longint_value;
   int32_t final_register_y_longint_value;
   int32_t final_register_z_longint_value;
+  int32_t final_register_t_longint_value;
   uint16_t final_real_matrix_rows;
   uint16_t final_real_matrix_columns;
   int32_t final_real_matrix_values[4];
@@ -267,18 +277,22 @@ void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag);
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits);
+void mathWrappersSetRealTInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode);
 void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetComplexYInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetComplexZInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
+void mathWrappersSetComplexTInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetShortIntegerInput(int64_t value);
 void mathWrappersSetShortIntegerYInput(int64_t value);
 void mathWrappersSetShortIntegerZInput(int64_t value);
+void mathWrappersSetShortIntegerTInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerZInput(bool_t available, int32_t value);
+void mathWrappersSetLongIntegerTInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
                                            int32_t error_code,
                                            bool_t fractional,
