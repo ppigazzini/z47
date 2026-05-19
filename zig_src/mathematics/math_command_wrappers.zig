@@ -2918,6 +2918,75 @@ fn tryFnToPolar2Real34Pair() bool {
     return true;
 }
 
+fn tryFnToRect2Real34Pair() bool {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34 or runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        return false;
+    }
+
+    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+    const data_atag_y = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
+
+    var angle_in_y: i8 = 1;
+    if (!runtime.getSystemFlag(runtime.FLAG_HPRP)) {
+        angle_in_y = -angle_in_y;
+        if (data_type_x == runtime.dtReal34 and data_atag_x != runtime.amNone and data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone) {
+            // Keep the current register order.
+        } else if (data_type_y == runtime.dtReal34 and data_atag_y != runtime.amNone and data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone) {
+            angle_in_y = -angle_in_y;
+        }
+    } else {
+        if (data_type_x == runtime.dtReal34 and data_atag_x != runtime.amNone and data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone) {
+            angle_in_y = -angle_in_y;
+        } else if (data_type_y == runtime.dtReal34 and data_atag_y != runtime.amNone and data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone) {
+            // Keep the current register order.
+        }
+    }
+
+    var radius_reg = if (angle_in_y == 1) runtime.REGISTER_X else runtime.REGISTER_Y;
+    var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;
+    const radius_type = runtime.getRegisterDataType(radius_reg);
+    const angle_type = runtime.getRegisterDataType(angle_reg);
+
+    if (radius_type != runtime.dtReal34 or angle_type != runtime.dtReal34) {
+        return false;
+    }
+
+    var angle_mode = runtime.getRegisterAngularMode(angle_reg);
+    if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    var radius_value: runtime.real_t = undefined;
+    var angle_value: runtime.real_t = undefined;
+
+    loadToPolarReal34Input(radius_reg, &radius_value);
+    loadToPolarReal34Input(angle_reg, &angle_value);
+
+    if (angle_mode == runtime.amNone) {
+        angle_mode = runtime.currentAngularMode;
+    }
+
+    runtime.convertAngleFromTo(&angle_value, angle_mode, runtime.amRadian, &runtime.ctxtReal39);
+    runtime.realPolarToRectangular(&radius_value, &angle_value, &radius_value, &angle_value, &runtime.ctxtReal39);
+
+    if (runtime.getSystemFlag(runtime.FLAG_HPRP)) {
+        radius_reg = runtime.REGISTER_X;
+        angle_reg = runtime.REGISTER_Y;
+    } else {
+        radius_reg = runtime.REGISTER_Y;
+        angle_reg = runtime.REGISTER_X;
+    }
+
+    runtime.reallocateRegister(radius_reg, runtime.dtReal34, 0, runtime.amNone);
+    runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
+    runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
+    runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
+    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    return true;
+}
+
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (tryFnToPolar2Real34Pair()) {
         return;
@@ -2927,6 +2996,10 @@ pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void 
 }
 
 pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (tryFnToRect2Real34Pair()) {
+        return;
+    }
+
     z47_math_wrappers_retained_fnToRect2(unused_but_mandatory_parameter);
 }
 

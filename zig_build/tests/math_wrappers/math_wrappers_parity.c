@@ -70,6 +70,7 @@ void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 void fnPercent(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
+void fnToRect2(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -136,6 +137,7 @@ void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
+void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -1403,6 +1405,14 @@ static void configureToPolar2Real34Pair(void) {
   mathWrappersSetCurrentAngularMode(amDegree);
 }
 
+static void configureToRect2Real34Pair(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 2, 0);
+  mathWrappersSetRealYInput(true, 3, 0);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
 int main(void) {
   int failures = 0;
 
@@ -1625,6 +1635,7 @@ int main(void) {
   failures += runCase("fnCube/longint", oracle_fnCube, fnCube, 0, true, configureCubeLongInteger);
   failures += runCase("fnPercent/real", oracle_fnPercent, fnPercent, 0, true, configurePercentReal);
   failures += runCase("fnToPolar2/real34_pair", oracle_fnToPolar2, fnToPolar2, 0, true, configureToPolar2Real34Pair);
+  failures += runCase("fnToRect2/real34_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2Real34Pair);
 
   if(failures != 0) {
     fprintf(stderr, "%d math-command-wrapper parity checks failed\n", failures);
