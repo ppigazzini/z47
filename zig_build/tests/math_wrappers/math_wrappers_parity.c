@@ -1022,6 +1022,23 @@ static void configureSdlInvalidType(void) {
   mathWrappersSetRegisterSurface(dtTime, amNone);
 }
 
+static void configureSdrReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1200, 0);
+}
+
+static void configureSdrLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 34567);
+}
+
+static void configureSdrInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
 static void configureDecompLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
@@ -2611,6 +2628,9 @@ int main(void) {
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
+  failures += runCase("fnSdr/real", oracle_fnSdr, fnSdr, 2, true, configureSdrReal);
+  failures += runCase("fnSdr/longint", oracle_fnSdr, fnSdr, 2, true, configureSdrLongInteger);
+  failures += runCase("fnSdr/invalid_type", oracle_fnSdr, fnSdr, 2, true, configureSdrInvalidType);
   failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
   failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
   failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);
