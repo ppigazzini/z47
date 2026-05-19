@@ -1568,6 +1568,19 @@ void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realC
   realPower(base, exponent, result, realContext);
 }
 
+uint8_t PowerComplex(const real_t *base_real,
+                     const real_t *base_imag,
+                     const real_t *exponent_real,
+                     const real_t *exponent_imag,
+                     real_t *result_real,
+                     real_t *result_imag,
+                     realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(result_real, fakeRealValue(base_real) + fakeRealValue(exponent_real) + 84, 0);
+  setFakeReal(result_imag, fakeRealValue(base_imag) + fakeRealValue(exponent_imag) + 85, 0);
+  return ERROR_NONE;
+}
+
 int32_t realToInt32C47(const real_t *source, bool_t *error) {
   if(error != NULL) {
     *error = false;
@@ -2162,6 +2175,10 @@ void displayBugScreen(const char *message) {
 
 void saveForUndo(void) {
   snapshot.save_for_undo_calls++;
+}
+
+void longIntegerFibonacci(uint32_t n, longInteger_t result) {
+  __gmpz_set_ui(result, n + 100);
 }
 
 void liftStack(void) {
