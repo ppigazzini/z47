@@ -1496,6 +1496,12 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef curtReal
 #undef rootLonI
 
+#define cosComplex oracle_cosComplex
+#define fnFib oracle_fnFib
+#include "../../../src/c47/mathematics/fib.c"
+#undef fnFib
+#undef cosComplex
+
 #define fnPercentMRR oracle_fnPercentMRR
 #include "../../../src/c47/mathematics/percentMRR.c"
 #undef fnPercentMRR

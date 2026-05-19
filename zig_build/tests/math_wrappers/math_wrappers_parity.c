@@ -109,6 +109,7 @@ void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
 void fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void fnCubeRoot(uint16_t unusedButMandatoryParameter);
+void fnFib(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -210,6 +211,7 @@ void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
+void oracle_fnFib(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -1254,6 +1256,18 @@ static void configureCubeRootLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
   mathWrappersSetLongIntegerInput(true, 27);
+}
+
+static void configureFibReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 6, 0);
+}
+
+static void configureFibComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2911,6 +2925,8 @@ int main(void) {
   failures += runCase("fnCubeRoot/complex", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootComplex);
   failures += runCase("fnCubeRoot/shortint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootShortInteger);
   failures += runCase("fnCubeRoot/longint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootLongInteger);
+  failures += runCase("fnFib/real", oracle_fnFib, fnFib, 0, true, configureFibReal);
+  failures += runCase("fnFib/complex", oracle_fnFib, fnFib, 0, true, configureFibComplex);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);

@@ -265,6 +265,7 @@ extern uint64_t systemFlags1;
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
 #define const__1 ((real_t *)z47_math_wrappers_const_minus_1())
 #define const_2 ((real_t *)z47_math_wrappers_const_2())
+#define const_5 ((real_t *)z47_math_wrappers_const_5())
 #define const_100 ((real_t *)z47_math_wrappers_const_100())
 #define const_180 ((real_t *)z47_math_wrappers_const_180())
 #define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
@@ -276,6 +277,7 @@ extern uint64_t systemFlags1;
 #define const_90 ((real_t *)z47_math_wrappers_const_90())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
+#define const39_PHI ((real_t *)z47_math_wrappers_const_phi())
 #define const39_pi ((real_t *)z47_math_wrappers_const_pi())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
 #define const_minusInfinity ((real_t *)z47_math_wrappers_const_minus_infinity())
@@ -403,6 +405,7 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
 void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
 void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
+uint8_t PowerComplex(const real_t *base_real, const real_t *base_imag, const real_t *exponent_real, const real_t *exponent_imag, real_t *result_real, real_t *result_imag, realContext_t *real_context);
 void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *real_context);
 void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *real_context);
@@ -532,6 +535,7 @@ const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);
 const real_t *z47_math_wrappers_const_minus_1(void);
 const real_t *z47_math_wrappers_const_2(void);
+const real_t *z47_math_wrappers_const_5(void);
 const real_t *z47_math_wrappers_const_100(void);
 const real_t *z47_math_wrappers_const_180(void);
 const real_t *z47_math_wrappers_const_1on2(void);
@@ -543,6 +547,7 @@ const real_t *z47_math_wrappers_const_1oneE(void);
 const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
+const real_t *z47_math_wrappers_const_phi(void);
 const real_t *z47_math_wrappers_const_pi(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);
 const real_t *z47_math_wrappers_const_minus_infinity(void);
@@ -620,5 +625,6 @@ void realRandomU01(real_t *res);
 
 void z47_math_wrappers_seed_defaults(uint64_t *seed, uint64_t *seq);
 void z47_math_wrappers_do_int_random_i(void);
+void longIntegerFibonacci(uint32_t n, longInteger_t result);
 
 #endif

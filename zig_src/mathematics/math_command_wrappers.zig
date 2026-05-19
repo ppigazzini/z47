@@ -5861,6 +5861,76 @@ fn curtCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
 }
 
+fn fibonacciReal(n: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void {
+    var a: runtime.real_t = undefined;
+    var b: runtime.real_t = undefined;
+
+    runtime.realPower(runtime.z47_math_wrappers_const_phi(), n, &a, real_context);
+    runtime.realDivide(runtime.z47_math_wrappers_const_1(), &a, &b, real_context);
+    runtime.realMultiply(runtime.z47_math_wrappers_const_pi(), n, res, real_context);
+    runtime.C47_WP34S_Cvt2RadSinCosTan(res, runtime.amRadian, null, res, null, real_context);
+    runtime.realMultiply(&b, res, &b, real_context);
+    runtime.realSquareRoot(runtime.z47_math_wrappers_const_5(), res, real_context);
+    runtime.realSubtract(&a, &b, &a, real_context);
+    runtime.realDivide(&a, res, res, real_context);
+}
+
+fn fibonacciComplex(
+    n_real: *const runtime.real_t,
+    n_imag: *const runtime.real_t,
+    res_real: *runtime.real_t,
+    res_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var a_real: runtime.real_t = undefined;
+    var a_imag: runtime.real_t = undefined;
+    var b_real: runtime.real_t = undefined;
+    var b_imag: runtime.real_t = undefined;
+
+    _ = runtime.PowerComplex(runtime.z47_math_wrappers_const_phi(), runtime.z47_math_wrappers_const_0(), n_real, n_imag, &a_real, &a_imag, real_context);
+    runtime.divRealComplex(runtime.z47_math_wrappers_const_1(), &a_real, &a_imag, &b_real, &b_imag, real_context);
+    runtime.mulComplexComplex(runtime.z47_math_wrappers_const_pi(), runtime.z47_math_wrappers_const_0(), n_real, n_imag, res_real, res_imag, real_context);
+    cosComplex(res_real, res_imag, res_real, res_imag, real_context);
+    runtime.mulComplexComplex(&b_real, &b_imag, res_real, res_imag, &b_real, &b_imag, real_context);
+    runtime.realSquareRoot(runtime.z47_math_wrappers_const_5(), res_real, real_context);
+    runtime.realSetZero(res_imag);
+    runtime.realSubtract(&a_real, &b_real, &a_real, real_context);
+    runtime.realSubtract(&a_imag, &b_imag, &a_imag, real_context);
+    runtime.divComplexComplex(&a_real, &a_imag, res_real, res_imag, res_real, res_imag, real_context);
+}
+
+fn fibReal() callconv(.c) void {
+    var value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &value)) {
+        return;
+    }
+
+    fibonacciReal(&value, &value, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn fibCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&imag_value)) {
+        fibonacciReal(&real_value, &real_value, &runtime.ctxtReal39);
+    } else {
+        fibonacciComplex(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    }
+
+    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+}
+
+fn fibLonIRetained() callconv(.c) void {
+    z47_math_wrappers_retained_fnFib(0);
+}
+
 pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
@@ -6064,7 +6134,9 @@ pub export fn fnDeltaPercent(unused_but_mandatory_parameter: u16) callconv(.c) v
 }
 
 pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnFib(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&fibReal, &fibCplx, null, &fibLonIRetained);
 }
 
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
