@@ -118,6 +118,7 @@ pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
+pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;
@@ -176,6 +177,9 @@ pub extern fn decQuadIsZero(value: *const real34_t) u32;
 pub extern fn decQuadIsNegative(value: *const real34_t) u32;
 pub extern fn real34IsInfinite(value: *const real34_t) bool;
 pub extern fn real34GetExponent(value: *const real34_t) i32;
+pub extern fn real34NextPlus(source: *const real34_t, destination: *real34_t) void;
+pub extern fn real34NextMinus(source: *const real34_t, destination: *real34_t) void;
+pub extern fn real34Subtract(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void;
 pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
