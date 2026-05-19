@@ -2747,7 +2747,15 @@ pub export fn chsShoI() callconv(.c) void {
 }
 
 fn chsLonI() callconv(.c) void {
-    runtime.z47_math_wrappers_change_sign_long_integer();
+    var x: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    x[0]._mp_size = -x[0]._mp_size;
+    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
 fn changeSignTime() void {
