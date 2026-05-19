@@ -4108,7 +4108,19 @@ pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) 
 }
 
 pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    switch (register_data_type) {
+        runtime.dtComplex34 => {
+            const imag_special = runtime.real34IsNaN(runtime.registerImag34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerImag34Ptr(runtime.REGISTER_X));
+            const real_special = runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X));
+            runtime.setTemporaryInformation(imag_special or real_special);
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
+            runtime.setTemporaryInformation(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        else => z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter),
+    }
 }
 
 pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
