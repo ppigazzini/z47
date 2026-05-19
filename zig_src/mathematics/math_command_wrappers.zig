@@ -4080,7 +4080,17 @@ pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) 
 }
 
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    switch (register_data_type) {
+        runtime.dtComplex34 => {
+            runtime.setTemporaryInformation(runtime.real34IsNaN(runtime.registerImag34Ptr(runtime.REGISTER_X)) or runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
+            runtime.setTemporaryInformation(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        else => z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter),
+    }
 }
 
 pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) void {
