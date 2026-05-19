@@ -1703,6 +1703,33 @@ fn roundiReal() void {
     runtime.convertReal34ToLongIntegerRegister(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.REGISTER_X, runtime.DEC_ROUND_HALF_UP);
 }
 
+fn ulpLongInteger() void {
+    runtime.z47_math_wrappers_build_sign_result(1);
+}
+
+fn ulpShortInteger() void {
+    runtime.convertUInt64ToShortIntegerRegister(0, 1, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
+}
+
+fn ulpReal() void {
+    var next_value: runtime.real34_t = undefined;
+
+    if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function fnUlp:", "cannot use +/-inf input of ULP", null, null);
+    }
+
+    runtime.real34NextPlus(runtime.registerReal34Ptr(runtime.REGISTER_X), &next_value);
+    if (runtime.real34IsInfinite(&next_value)) {
+        runtime.real34NextMinus(runtime.registerReal34Ptr(runtime.REGISTER_X), &next_value);
+        runtime.real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_X), &next_value, runtime.registerReal34Ptr(runtime.REGISTER_X));
+    } else {
+        runtime.real34Subtract(&next_value, runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+    }
+
+    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2919,7 +2946,23 @@ pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    switch (register_data_type) {
+        runtime.dtLongInteger => ulpLongInteger(),
+        runtime.dtShortInteger => ulpShortInteger(),
+        runtime.dtReal34 => ulpReal(),
+        else => {
+            z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter);
+            return;
+        },
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
