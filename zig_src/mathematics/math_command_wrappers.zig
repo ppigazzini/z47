@@ -4703,7 +4703,7 @@ pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
 }
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y) {
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z) {
         z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter);
         return;
     }
@@ -4712,7 +4712,7 @@ pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y) {
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z) {
         z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter);
         return;
     }

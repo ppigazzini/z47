@@ -1509,7 +1509,7 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef linpol
 
 #define FIRST_LOCAL_REGISTER REGISTER_X
-#define currentNumberOfLocalRegisters 2
+#define currentNumberOfLocalRegisters 3
 #define INC_FLAG 0
 #define DEC_FLAG 1
 #define fnDec oracle_fnDec
