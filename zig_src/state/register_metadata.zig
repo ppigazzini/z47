@@ -585,7 +585,14 @@ pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.c
         return runtime.INVALID_VARIABLE;
     }
 
-    return runtime.retainedFindOrAllocateNamedVariable(variable_name);
+    allocateNamedVariable(variable_name, runtime.dtReal34, runtime.real34SizeInBlocks());
+    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
+        return runtime.INVALID_VARIABLE;
+    }
+
+    const new_register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
+    stack_runtime.real34SetZero(getRegisterDataPointer(new_register));
+    return new_register;
 }
 
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {

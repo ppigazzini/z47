@@ -2,10 +2,13 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "c47.h"
 
 void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
+void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_t tag);
+void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr);
 
 const reservedVariableHeader_t allReservedVariables[NUMBER_OF_RESERVED_VARIABLES] = {
   [26] = {
@@ -196,7 +199,17 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
     return;
   }
 
-  displayBugScreen("oracle_allocateNamedVariable called with an unsupported valid-name case");
+  if(numberOfNamedVariables != 0) {
+    displayBugScreen("oracle_allocateNamedVariable called with an unsupported grow-allocation case");
+    return;
+  }
+
+  memset(allNamedVariables[0].variableName, 0, sizeof(allNamedVariables[0].variableName));
+  allNamedVariables[0].variableName[0] = (uint8_t)strlen(variableName);
+  memcpy(allNamedVariables[0].variableName + 1, variableName, (size_t)allNamedVariables[0].variableName[0]);
+  numberOfNamedVariables = 1;
+  oracle_setRegisterDataType(FIRST_NAMED_VARIABLE, (uint16_t)dataType, amNone);
+  oracle_setRegisterDataPointer(FIRST_NAMED_VARIABLE, allocC47Blocks(fullDataSizeInBlocks));
 }
 
 void oracle_fnDeleteVariable(uint16_t regist) {
@@ -272,8 +285,16 @@ calcRegister_t oracle_findOrAllocateNamedVariable(const char *variableName) {
     return INVALID_VARIABLE;
   }
 
-  displayBugScreen("oracle_findOrAllocateNamedVariable called with an unsupported alloc case");
-  return INVALID_VARIABLE;
+  oracle_allocateNamedVariable(variableName, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  if(lastErrorCode != ERROR_NONE) {
+    return INVALID_VARIABLE;
+  }
+
+  {
+    calcRegister_t regist = (calcRegister_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+    real34SetZero(REGISTER_REAL34_DATA(regist));
+    return regist;
+  }
 }
 
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
