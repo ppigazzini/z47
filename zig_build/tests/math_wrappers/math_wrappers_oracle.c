@@ -1478,6 +1478,24 @@ void oracle_sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 void oracle_curtReal(void) {
 }
 
+void oracle_curtReal_impl(void);
+void oracle_curtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_curtComplex159(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+#define rootLonI oracle_rootLonI
+#define curtReal oracle_curtReal_impl
+#define curtComplex75 oracle_curtComplex75
+#define curtComplex159 oracle_curtComplex159
+#define curtComplex oracle_curtComplex
+#define fnCubeRoot oracle_fnCubeRoot
+#include "../../../src/c47/mathematics/cubeRoot.c"
+#undef fnCubeRoot
+#undef curtComplex
+#undef curtComplex159
+#undef curtComplex75
+#undef curtReal
+#undef rootLonI
+
 #define fnPercentMRR oracle_fnPercentMRR
 #include "../../../src/c47/mathematics/percentMRR.c"
 #undef fnPercentMRR

@@ -396,7 +396,9 @@ pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
 pub extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
+pub extern fn PowerReal(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
+pub extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 
 pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
@@ -408,6 +410,7 @@ pub extern fn z47_math_wrappers_const_minus_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2() *const real_t;
 pub extern fn z47_math_wrappers_const_100() *const real_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
+pub extern fn z47_math_wrappers_const_1on3() *const real_t;
 pub const retained = struct {
     pub extern fn z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter: u16) void;
     pub extern fn z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter: u16) void;
