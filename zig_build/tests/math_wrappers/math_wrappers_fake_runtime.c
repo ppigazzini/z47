@@ -16,6 +16,7 @@ static uint32_t current_register_tag = amNone;
 
 static uint8_t register_slot[32];
 static uint64_t shortint_y_slot;
+static uint64_t shortint_z_slot;
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
 static real34Matrix_t fake_real_matrix;
@@ -68,6 +69,7 @@ static struct {
 static bool_t spcres_flag = false;
 static bool_t cpxres_flag = false;
 static bool_t overflow_flag = false;
+static bool_t carry_flag = false;
 static uint32_t fake_uptime_ms = 0;
 static uint32_t fake_free_ram_memory = 0;
 static uint32_t fake_free_flash = 0;
@@ -77,6 +79,7 @@ realContext_t ctxtReal39;
 realContext_t ctxtReal51;
 realContext_t ctxtReal75;
 uint8_t shortIntegerMode = SIM_UNSIGN;
+uint8_t shortIntegerWordSize = 64;
 uint64_t shortIntegerMask = UINT64_MAX;
 uint64_t shortIntegerSignBit = UINT64_C(1) << 63;
 angularMode_t currentAngularMode = amNone;
@@ -193,6 +196,16 @@ static int64_t decodeShortInteger(uint64_t raw, int32_t *sign_value) {
   return negative ? -(int64_t)(raw & ~(UINT64_C(1) << 63)) : (int64_t)(raw & ~(UINT64_C(1) << 63));
 }
 
+static uint64_t *shortIntegerSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &shortint_y_slot;
+  }
+  if(reg == REGISTER_Z) {
+    return &shortint_z_slot;
+  }
+  return (uint64_t *)register_slot;
+}
+
 static void setFakeRealWithExponent(real_t *value, int32_t signed_value, uint8_t bits, int32_t exponent) {
   setFakeRealWithCoeff(value, signed_value, bits, exponent);
 }
@@ -236,6 +249,7 @@ void mathWrappersReset(void) {
   current_register_tag = amNone;
   memset(register_slot, 0, sizeof(register_slot));
   shortint_y_slot = encodeShortInteger(2);
+  shortint_z_slot = encodeShortInteger(3);
   register_scalar_available = true;
   setRegisterScalar(7, 0);
   *(uint64_t *)register_slot = encodeShortInteger(-3);
@@ -267,10 +281,12 @@ void mathWrappersReset(void) {
   spcres_flag = false;
   cpxres_flag = false;
   overflow_flag = false;
+  carry_flag = false;
   fake_uptime_ms = 0x12345678u;
   fake_free_ram_memory = 0x11223344u;
   fake_free_flash = 0x55667788u;
   shortIntegerMode = SIM_UNSIGN;
+  shortIntegerWordSize = 64;
   currentAngularMode = amNone;
   thereIsSomethingToUndo = false;
   lastErrorCode = 0;
@@ -357,11 +373,15 @@ void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t r
 }
 
 void mathWrappersSetShortIntegerInput(int64_t value) {
-  *(uint64_t *)register_slot = encodeShortInteger(value);
+  *shortIntegerSlot(REGISTER_X) = encodeShortInteger(value);
 }
 
 void mathWrappersSetShortIntegerYInput(int64_t value) {
-  shortint_y_slot = encodeShortInteger(value);
+  *shortIntegerSlot(REGISTER_Y) = encodeShortInteger(value);
+}
+
+void mathWrappersSetShortIntegerZInput(int64_t value) {
+  *shortIntegerSlot(REGISTER_Z) = encodeShortInteger(value);
 }
 
 void mathWrappersSetShortIntegerMode(uint8_t mode) {
@@ -380,6 +400,10 @@ void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
 
 void mathWrappersSetFlagCpxRes(bool_t enabled) {
   cpxres_flag = enabled;
+}
+
+void mathWrappersSetFlagCarry(bool_t enabled) {
+  carry_flag = enabled;
 }
 
 void mathWrappersSetFlagOverflow(bool_t enabled) {
@@ -433,6 +457,7 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_overflow_flag = overflow_flag;
+  snapshot.final_carry_flag = carry_flag;
   snapshot.final_pcg_state = pcg32_global.state;
   snapshot.final_pcg_inc = pcg32_global.inc;
   snapshot.final_there_is_something_to_undo = thereIsSomethingToUndo;
@@ -459,8 +484,8 @@ uint32_t getRegisterTag(calcRegister_t reg) {
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   snapshot.get_register_data_pointer_calls++;
-  if(reg == REGISTER_Y && current_register_data_type == dtShortInteger) {
-    return &shortint_y_slot;
+  if(current_register_data_type == dtShortInteger) {
+    return shortIntegerSlot(reg);
   }
   if(current_register_data_type == dtReal34Matrix) {
     return &fake_real_matrix;
@@ -731,8 +756,7 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
 }
 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t reg) {
-  (void)reg;
-  *(uint64_t *)register_slot = value | ((uint64_t)(sign != 0) << 63);
+  *shortIntegerSlot(reg) = value | ((uint64_t)(sign != 0) << 63);
   current_register_data_type = dtShortInteger;
   current_register_tag = base;
 }
@@ -751,8 +775,7 @@ void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint
 void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
   const int64_t value = mpz_get_si(longInteger);
 
-  (void)reg;
-  *(uint64_t *)register_slot = encodeShortInteger(value);
+  *shortIntegerSlot(reg) = encodeShortInteger(value);
   current_register_data_type = dtShortInteger;
   current_register_tag = base;
 }
@@ -1560,6 +1583,9 @@ void realSetOne(real_t *value) {
 bool_t getSystemFlag(int32_t flag) {
   snapshot.get_system_flag_calls++;
   snapshot.get_system_flag_last_flag = flag;
+  if(flag == FLAG_CARRY) {
+    return carry_flag;
+  }
   if(flag == FLAG_SPCRES) {
     return spcres_flag;
   }
@@ -1570,6 +1596,9 @@ bool_t getSystemFlag(int32_t flag) {
 }
 
 void setSystemFlag(int32_t flag) {
+  if(flag == FLAG_CARRY) {
+    carry_flag = true;
+  }
   if(flag == FLAG_SPCRES) {
     spcres_flag = true;
   }
@@ -1579,6 +1608,9 @@ void setSystemFlag(int32_t flag) {
 }
 
 void clearSystemFlag(int32_t flag) {
+  if(flag == FLAG_CARRY) {
+    carry_flag = false;
+  }
   if(flag == FLAG_SPCRES) {
     spcres_flag = false;
   }
@@ -1763,6 +1795,7 @@ void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t 
   uint64_t value;
 
   convertShortIntegerRegisterToUInt64(reg, &sign, &value);
+  mpz_init(long_integer);
   mpz_set_ui(long_integer, value);
   if(sign < 0) {
     mpz_neg(long_integer, long_integer);
