@@ -255,6 +255,7 @@ pub extern fn mulComplexReal(
 ) void;
 pub extern fn WP34S_intMultiply(y: u64, x: u64) u64;
 pub extern fn WP34S_intGCD(y: u64, x: u64) u64;
+pub extern fn WP34S_intLCM(y: u64, x: u64) u64;
 pub extern fn WP34S_int2pow(x: u64) u64;
 pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intLog10(x: u64) u64;
