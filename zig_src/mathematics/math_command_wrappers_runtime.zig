@@ -51,6 +51,7 @@ pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 2;
 pub const ERROR_OUT_OF_RANGE: u8 = 3;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
+pub const ERROR_RAM_FULL: u8 = 6;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_PROPFR: i32 = 0x8008;
@@ -92,6 +93,16 @@ pub const complex34_t = extern struct {
 pub const matrixHeader_t = extern struct {
     matrixRows: u16,
     matrixColumns: u16,
+};
+
+pub const real34Matrix_t = extern struct {
+    header: matrixHeader_t,
+    matrixElements: [4]real34_t,
+};
+
+pub const complex34Matrix_t = extern struct {
+    header: matrixHeader_t,
+    matrixElements: [4]complex34_t,
 };
 
 pub const realContext_t = extern struct {
@@ -169,6 +180,17 @@ pub extern fn fnSetFlag(flag: i32) void;
 pub extern fn fnRefreshState() void;
 pub extern fn setLastintegerBasetoZero() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
+pub extern fn linkToComplexMatrixRegister(reg: calcRegister_t, matrix: *complex34Matrix_t) void;
+pub extern fn linkToRealMatrixRegister(reg: calcRegister_t, matrix: *real34Matrix_t) void;
+pub extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, columns: u16) bool;
+pub extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, columns: u16) bool;
+pub extern fn realMatrixFree(matrix: *real34Matrix_t) void;
+pub extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
+pub extern fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Matrix_t, reg: calcRegister_t) void;
+pub extern fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const complex34Matrix_t, reg: calcRegister_t) void;
+pub extern fn convertReal34MatrixRegisterToReal34Matrix(reg: calcRegister_t, matrix: *real34Matrix_t) void;
+pub extern fn convertReal34MatrixRegisterToComplex34Matrix(reg: calcRegister_t, matrix: *complex34Matrix_t) void;
+pub extern fn convertReal34MatrixToComplex34Matrix(real_matrix: *const real34Matrix_t, complex_matrix: *complex34Matrix_t) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn getRegisterDataTypeName(reg: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;

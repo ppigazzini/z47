@@ -195,6 +195,40 @@ enum {
   parity_ITM_ISIMNZQ = 2530,
 };
 
+static void printMatrixSummary(const char *label, const math_wrappers_snapshot_t *snapshot) {
+  fprintf(stderr,
+          "  %s matrix: real=%ux%u [%d/%u,%d/%u,%d/%u,%d/%u] complex=%ux%u [(%d/%u,%d/%u),(%d/%u,%d/%u),(%d/%u,%d/%u),(%d/%u,%d/%u)]\n",
+          label,
+          snapshot->final_real_matrix_rows,
+          snapshot->final_real_matrix_columns,
+          snapshot->final_real_matrix_values[0],
+          snapshot->final_real_matrix_bits[0],
+          snapshot->final_real_matrix_values[1],
+          snapshot->final_real_matrix_bits[1],
+          snapshot->final_real_matrix_values[2],
+          snapshot->final_real_matrix_bits[2],
+          snapshot->final_real_matrix_values[3],
+          snapshot->final_real_matrix_bits[3],
+          snapshot->final_complex_matrix_rows,
+          snapshot->final_complex_matrix_columns,
+          snapshot->final_complex_matrix_real_values[0],
+          snapshot->final_complex_matrix_real_bits[0],
+          snapshot->final_complex_matrix_imag_values[0],
+          snapshot->final_complex_matrix_imag_bits[0],
+          snapshot->final_complex_matrix_real_values[1],
+          snapshot->final_complex_matrix_real_bits[1],
+          snapshot->final_complex_matrix_imag_values[1],
+          snapshot->final_complex_matrix_imag_bits[1],
+          snapshot->final_complex_matrix_real_values[2],
+          snapshot->final_complex_matrix_real_bits[2],
+          snapshot->final_complex_matrix_imag_values[2],
+          snapshot->final_complex_matrix_imag_bits[2],
+          snapshot->final_complex_matrix_real_values[3],
+          snapshot->final_complex_matrix_real_bits[3],
+          snapshot->final_complex_matrix_imag_values[3],
+          snapshot->final_complex_matrix_imag_bits[3]);
+}
+
 static int reportMismatch(const char *name,
                           uint16_t arg,
                           const math_wrappers_snapshot_t *expected,
@@ -321,6 +355,15 @@ static int reportMismatch(const char *name,
           actual->final_register_y_longint_value,
           actual->final_overflow_flag,
           actual->final_carry_flag);
+
+  if(expected->final_register_data_type == dtReal34Matrix ||
+     expected->final_register_data_type == dtComplex34Matrix ||
+     actual->final_register_data_type == dtReal34Matrix ||
+     actual->final_register_data_type == dtComplex34Matrix) {
+    printMatrixSummary("expected", expected);
+    printMatrixSummary("actual", actual);
+  }
+
   return 1;
 }
 
@@ -1232,6 +1275,20 @@ static void configureRealPartComplex(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetRealInput(false, 0, 0);
   mathWrappersSetComplexInput(true, 4, 0, 7, 0);
+}
+
+static void configureRealPartRealMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
+static void configureRealPartComplexMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
 }
 
 static void configureImaginaryPartReal(void) {
@@ -2214,6 +2271,8 @@ int main(void) {
   failures += runCase("fnCheckIsVect3d/type_error", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
+  failures += runCase("fnRealPart/real_matrix", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartRealMatrix);
+  failures += runCase("fnRealPart/complex_matrix", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplexMatrix);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);
   failures += runCase("fnImaginaryPart/complex", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartComplex);
   failures += runCase("fnArg/real_positive", oracle_fnArg, fnArg, 0, true, configureArgRealPositive);

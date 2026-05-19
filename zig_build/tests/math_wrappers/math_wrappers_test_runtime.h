@@ -224,6 +224,16 @@ typedef struct {
   uint64_t final_register_y_shortint_raw;
   int32_t final_register_longint_value;
   int32_t final_register_y_longint_value;
+  uint16_t final_real_matrix_rows;
+  uint16_t final_real_matrix_columns;
+  int32_t final_real_matrix_values[4];
+  uint8_t final_real_matrix_bits[4];
+  uint16_t final_complex_matrix_rows;
+  uint16_t final_complex_matrix_columns;
+  int32_t final_complex_matrix_real_values[4];
+  uint8_t final_complex_matrix_real_bits[4];
+  int32_t final_complex_matrix_imag_values[4];
+  uint8_t final_complex_matrix_imag_bits[4];
   bool_t final_overflow_flag;
   bool_t final_carry_flag;
 } math_wrappers_snapshot_t;
