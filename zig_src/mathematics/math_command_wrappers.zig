@@ -1653,6 +1653,29 @@ fn bnCommon(bnstar: bool) void {
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, no_register, no_register);
 }
 
+fn mantLonI() void {
+    var x_value: runtime.real_t = undefined;
+
+    runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, &x_value, &runtime.ctxtReal39);
+    x_value.exponent = 1 - x_value.digits;
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+    runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
+}
+
+fn mantReal() void {
+    if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function mantReal:", "cannot use NaN as X input of MANT", null, null);
+        return;
+    }
+
+    var result: runtime.real_t = undefined;
+    _ = runtime.decimal128ToNumber(runtime.registerReal34Ptr(runtime.REGISTER_X), &result);
+    result.exponent = 1 - result.digits;
+    runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
+    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2873,7 +2896,23 @@ pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtReal34) {
+        z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    switch (register_data_type) {
+        runtime.dtLongInteger => mantLonI(),
+        runtime.dtReal34 => mantReal(),
+        else => unreachable,
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
