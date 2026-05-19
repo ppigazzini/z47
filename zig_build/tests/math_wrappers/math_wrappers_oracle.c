@@ -420,6 +420,25 @@ void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter) {
 	}
 }
 
+void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
+	(void)unusedButMandatoryParameter;
+
+	switch(getRegisterDataType(REGISTER_X)) {
+		case 2:
+			temporaryInformation = 12 + (real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X)) || real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)));
+			break;
+
+		case 3:
+		case 4:
+		case 1:
+			temporaryInformation = 12 + real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X));
+			break;
+
+		default:
+			break;
+	}
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
