@@ -2855,11 +2855,24 @@ pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
+    var sign: bool = false;
+    var value: u64 = 0;
+    var overflow: bool = false;
+    var fractional: bool = false;
+
     if (!runtime.saveLastX()) {
         return;
     }
 
-    runtime.z47_math_wrappers_integer_part_short_integer();
+    if (!runtime.getRegisterAsShortInt(runtime.REGISTER_X, &sign, &value, &overflow, &fractional)) {
+        return;
+    }
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) != runtime.dtShortInteger) {
+        runtime.convertUInt64ToShortIntegerRegister(@intFromBool(sign), value, 10, runtime.REGISTER_X);
+    }
+    runtime.forceSystemFlag(@intCast(runtime.FLAG_CARRY), @intFromBool(fractional));
+    runtime.forceSystemFlag(@intCast(runtime.FLAG_OVERFLOW), @intFromBool(overflow));
 }
 
 pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
