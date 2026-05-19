@@ -1481,6 +1481,21 @@ fn realPartReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn imagPartCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&imag_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn imagPartReal() callconv(.c) void {
+    runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2727,7 +2742,13 @@ pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void 
 }
 
 pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+        z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter);
+        return;
+    }
+
+    runtime.processRealComplexMonadicFunction(&imagPartReal, &imagPartCplx);
 }
 
 pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
