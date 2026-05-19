@@ -825,8 +825,11 @@ int main(void) {
   failures += runGetU32Case("getRegisterDataType", oracle_getRegisterDataType, getRegisterDataType, setupNoOpCase, LAST_LOCAL_REGISTER + 1);
 
   failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupNamedCase, FIRST_NAMED_VARIABLE + 2);
+  failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupNoOpCase, FIRST_NAMED_VARIABLE);
   failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 31);
   failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupLocalCase, FIRST_LOCAL_REGISTER + 1);
+  failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupNoOpCase, FIRST_LOCAL_REGISTER);
+  failures += runGetPointerCase("getRegisterDataPointer", oracle_getRegisterDataPointer, getRegisterDataPointer, setupNoOpCase, LAST_LOCAL_REGISTER + 1);
 
   failures += runGetU32Case("getRegisterTag", oracle_getRegisterTag, getRegisterTag, setupGlobalCase, REGISTER_X);
   failures += runGetU32Case("getRegisterTag", oracle_getRegisterTag, getRegisterTag, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 40);
