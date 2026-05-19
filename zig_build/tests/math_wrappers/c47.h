@@ -350,6 +350,7 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t long_integer, c
 void convertLongIntegerToShortIntegerRegister(const longInteger_t long_integer, uint32_t base, calcRegister_t regist);
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist);
 void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value);
+void convertShortIntegerRegisterToReal(calcRegister_t source, real_t *destination, realContext_t *real_context);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
 void convertReal34ToLongIntegerRegister(const real34_t *real, calcRegister_t dest, enum rounding roundingMode);
@@ -470,6 +471,7 @@ uint64_t WP34S_int10pow(uint64_t x);
 uint64_t WP34S_intLog10(uint64_t x);
 uint64_t WP34S_intLog2(uint64_t x);
 uint64_t WP34S_intAbs(uint64_t x);
+uint64_t WP34S_intSqrt(uint64_t x);
 uint64_t WP34S_intAdd(uint64_t x, uint64_t y);
 uint64_t WP34S_intSubtract(uint64_t x, uint64_t y);
 uint64_t WP34S_intGCD(uint64_t y, uint64_t x);
@@ -489,6 +491,7 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
 void displayBugScreen(const char *message);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void doNothing(void);
+void fnMatrixSquareRoot(uint16_t unusedButMandatoryParameter);
 void fnDropY(uint16_t unusedButMandatoryParameter);
 const char *getDataTypeName(uint32_t data_type, bool_t article, bool_t abbreviated);
 void realNextToward(const real_t *x, const real_t *y, real_t *result, realContext_t *real_context);

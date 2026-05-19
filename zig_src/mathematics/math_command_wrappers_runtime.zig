@@ -180,6 +180,7 @@ pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_s
 pub extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const mpz_struct, base: u32, regist: calcRegister_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToUInt64(reg: calcRegister_t, sign: ?*i16, value: ?*u64) void;
+pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, real_context: *realContext_t) void;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;
@@ -296,6 +297,7 @@ pub extern fn logxyCplx(denom: *const real_t) void;
 pub extern fn lnComplex(real: *const real_t, imag: *const real_t, ln_real: *real_t, ln_imag: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Logxy(numer: *const real_t, denom: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn sqrt1Px2Complex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn sqrtComplex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 pub extern fn divComplexComplex(
     numer_real: *const real_t,
     numer_imag: *const real_t,
@@ -338,6 +340,7 @@ pub extern fn WP34S_int10pow(x: u64) u64;
 pub extern fn WP34S_intLog10(x: u64) u64;
 pub extern fn WP34S_intLog2(x: u64) u64;
 pub extern fn WP34S_intAbs(x: u64) u64;
+pub extern fn WP34S_intSqrt(x: u64) u64;
 pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
@@ -371,6 +374,7 @@ pub extern fn __gmpz_lcm(result: *mpz_struct, lhs: *const mpz_struct, rhs: *cons
 pub extern fn __gmpz_tdiv_qr(quotient: *mpz_struct, remainder: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
+pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;

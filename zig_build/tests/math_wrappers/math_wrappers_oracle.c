@@ -1449,6 +1449,35 @@ void oracle_fnToRect(uint16_t angleInY) {
 #undef fnSdr
 #undef fnSdl
 
+#ifndef STD_SQUARE_ROOT
+#define STD_SQUARE_ROOT ""
+#endif
+
+#ifndef STD_x_UNDER_ROOT
+#define STD_x_UNDER_ROOT ""
+#endif
+
+void oracle_curtReal(void);
+void oracle_sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_sqrtComplex159(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+void oracle_sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
+#define curtReal oracle_curtReal
+#define rootLonI oracle_rootLonI
+#define sqrtComplex75 oracle_sqrtComplex75
+#define sqrtComplex159 oracle_sqrtComplex159
+#define sqrtComplex oracle_sqrtComplex
+#define fnSquareRoot oracle_fnSquareRoot
+#include "../../../src/c47/mathematics/squareRoot.c"
+#undef fnSquareRoot
+#undef sqrtComplex
+#undef sqrtComplex159
+#undef sqrtComplex75
+#undef rootLonI
+#undef curtReal
+
+void oracle_curtReal(void) {
+}
+
 #define fnPercentMRR oracle_fnPercentMRR
 #include "../../../src/c47/mathematics/percentMRR.c"
 #undef fnPercentMRR

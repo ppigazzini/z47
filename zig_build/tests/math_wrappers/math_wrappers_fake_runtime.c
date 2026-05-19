@@ -1040,6 +1040,11 @@ void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint
   }
 }
 
+void convertShortIntegerRegisterToReal(calcRegister_t source, real_t *destination, realContext_t *realContext) {
+  (void)realContext;
+  setFakeReal(destination, (int32_t)decodeShortInteger(*shortIntegerSlot(source), NULL), 0);
+}
+
 void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
   const int64_t value = mpz_get_si(longInteger);
 
@@ -1945,6 +1950,46 @@ uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
   return product | ((uint64_t)(sign_y ^ sign_x) << 63);
 }
 
+uint64_t WP34S_intSqrt(uint64_t x) {
+  int32_t signValue;
+  const uint64_t value = WP34S_extract_value(x, &signValue);
+  uint64_t nn0;
+  uint64_t nn1;
+
+  if(signValue) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    moreInfoOnError("In function WP34S_intSqrt:", "Cannot extract the square root of a negative short integer!", NULL, NULL);
+    return 0;
+  }
+
+  if(value == 0) {
+    clearSystemFlag(FLAG_CARRY);
+    return WP34S_build_value(0, signValue);
+  }
+
+  nn0 = value / 2 + 1;
+  nn1 = value / nn0 + nn0 / 2;
+  while(nn1 < nn0) {
+    nn0 = nn1;
+    nn1 = (nn0 + value / nn0) / 2;
+  }
+
+  nn0 = nn1 * nn1;
+  if(nn0 > value) {
+    nn1--;
+    nn0 = nn1 * nn1;
+  }
+
+  if(nn0 != value) {
+    setSystemFlag(FLAG_CARRY);
+  }
+  else {
+    clearSystemFlag(FLAG_CARRY);
+  }
+
+  return WP34S_build_value(nn1, signValue);
+}
+
 static uint64_t gcdUnsigned(uint64_t lhs, uint64_t rhs) {
   while(rhs != 0) {
     const uint64_t remainder = lhs % rhs;
@@ -2199,6 +2244,10 @@ void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const
   (void)msg2;
   (void)msg3;
   (void)msg4;
+}
+
+void fnMatrixSquareRoot(uint16_t unusedButMandatoryParameter) {
+  (void)unusedButMandatoryParameter;
 }
 
 void doNothing(void) {

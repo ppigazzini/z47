@@ -107,6 +107,7 @@ void fnLogXY(uint16_t unusedButMandatoryParameter);
 void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
+void fnSquareRoot(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -206,6 +207,7 @@ void oracle_fnLogXY(uint16_t unusedButMandatoryParameter);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
+void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -263,10 +265,10 @@ static int reportMismatch(const char *name,
     return 0;
   }
 
-  fprintf(stderr,
-          "%s(%u) parity mismatch\n"
-          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"
-          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n",
+    fprintf(stderr,
+      "%s(%u) parity mismatch\n"
+      "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"
+      "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -1195,6 +1197,37 @@ static void configureLogXYSpcResZeroZero(void) {
   mathWrappersSetRealInput(true, 0, 0);
   mathWrappersSetRealYInput(true, 0, 0);
   mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureSquareRootReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 9, 0);
+}
+
+static void configureSquareRootRealNegativeComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, -4, 0);
+  mathWrappersSetFlagCpxRes(true);
+}
+
+static void configureSquareRootComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+}
+
+static void configureSquareRootShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(9);
+}
+
+static void configureSquareRootLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 16);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2843,6 +2876,11 @@ int main(void) {
   failures += runCase("fnLogXY/shortint", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYShortInteger);
   failures += runCase("fnLogXY/longint", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYLongInteger);
   failures += runCase("fnLogXY/spcres_zero_zero", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYSpcResZeroZero);
+  failures += runCase("fnSquareRoot/real", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootReal);
+  failures += runCase("fnSquareRoot/real_negative_complex", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootRealNegativeComplex);
+  failures += runCase("fnSquareRoot/complex", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootComplex);
+  failures += runCase("fnSquareRoot/shortint", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootShortInteger);
+  failures += runCase("fnSquareRoot/longint", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootLongInteger);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
