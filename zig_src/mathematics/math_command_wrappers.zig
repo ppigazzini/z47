@@ -3361,6 +3361,37 @@ fn gcdInt() callconv(.c) void {
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
+fn lcmInt() callconv(.c) void {
+    var x: runtime.longInteger_t = undefined;
+    var y: runtime.longInteger_t = undefined;
+    var frac_x = false;
+    var frac_y = false;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&y[0]);
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    if (frac_x) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    if (frac_y) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        return;
+    }
+
+    longIntegerSetPositiveSign(&y[0]);
+    longIntegerSetPositiveSign(&x[0]);
+    runtime.__gmpz_lcm(&x[0], &y[0], &x[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runtime.processIntRealComplexDyadicFunction(&gcdInt, null, &gcdShoI, &gcdInt);
@@ -3368,7 +3399,7 @@ pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_lcm_int, null, &lcmShoI, &runtime.z47_math_wrappers_lcm_int);
+    runtime.processIntRealComplexDyadicFunction(&lcmInt, null, &lcmShoI, &lcmInt);
 }
 
 pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
