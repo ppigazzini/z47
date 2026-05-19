@@ -1903,6 +1903,17 @@ fn wNegCplx() callconv(.c) void {
     }
 }
 
+fn factReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    runtime.WP34S_Factorial(&x_value, &x_value, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3239,7 +3250,7 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexMonadicFunction(&runtime.z47_math_wrappers_fact_real, &runtime.z47_math_wrappers_fact_cplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
+    runtime.processIntRealComplexMonadicFunction(&factReal, &runtime.z47_math_wrappers_fact_cplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
