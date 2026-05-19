@@ -351,6 +351,10 @@ void roundiReal(void);
 #undef fnRandom
 #undef realRandomU01
 
+void oracle_fnCheckType(uint16_t type) {
+	temporaryInformation = 12 + (getRegisterDataType(REGISTER_X) == type);
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart

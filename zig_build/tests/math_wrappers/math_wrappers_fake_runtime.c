@@ -436,6 +436,7 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_pcg_state = pcg32_global.state;
   snapshot.final_pcg_inc = pcg32_global.inc;
   snapshot.final_there_is_something_to_undo = thereIsSomethingToUndo;
+  snapshot.final_temporary_information = temporaryInformation;
   *out = snapshot;
 }
 
