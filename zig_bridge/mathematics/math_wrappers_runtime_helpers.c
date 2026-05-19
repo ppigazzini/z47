@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <math.h>
 #include <string.h>
 
 #include "c47.h"
@@ -88,6 +89,126 @@ end1:
 
 void z47_math_wrappers_lcm_short_integer(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intLCM(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
+}
+
+void z47_math_wrappers_fact_real(void) {
+  real_t x;
+
+  if(getRegisterAsReal(REGISTER_X, &x)) {
+    WP34S_Factorial(&x, &x, &ctxtReal39);
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
+  }
+}
+
+void z47_math_wrappers_fact_cplx(void) {
+  real_t zReal, zImag;
+
+  if(getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+    realAdd(&zReal, const_1, &zReal, &ctxtReal39);
+    WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
+    convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+  }
+}
+
+void z47_math_wrappers_fact_long_integer(void) {
+  longInteger_t x, f;
+
+  convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+
+  if(longIntegerIsNegative(x)) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
+    sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
+    moreInfoOnError("In function factLonI:", tmpString, NULL, NULL);
+#endif
+    longIntegerFree(x);
+    return;
+  }
+
+  if(longIntegerCompareUInt(x, MAX_FACTORIAL) > 0) {
+    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+    longIntegerFree(x);
+    z47_math_wrappers_fact_real();
+    return;
+  }
+
+  uint32_t n;
+  longIntegerToUInt32(x, n);
+#if defined(LINUX)
+  longIntegerInitSizeInBits(f, 1 + (uint32_t)((n * log(n) - n) / log(2)));
+  uInt32ToLongInteger(1u, f);
+  for(uint32_t i = 2; i <= n; i++) {
+    longIntegerMultiplyUInt(f, i, f);
+  }
+#else
+  longIntegerInit(f);
+  longIntegerFactorial(n, f);
+#endif
+
+  convertLongIntegerToLongIntegerRegister(f, REGISTER_X);
+
+  longIntegerFree(f);
+  longIntegerFree(x);
+}
+
+static uint64_t z47_math_wrappers_fact_uint64(uint64_t value) {
+  uint64_t result;
+
+  if(value <= 1) {
+    result = 1;
+  }
+  else {
+    uint64_t m = value;
+
+    if((value & 1) != 0) {
+      m += value;
+      value -= 1;
+    }
+    result = m;
+    value -= 2;
+    while(value > 0) {
+      m += value;
+      result *= m;
+      value -= 2;
+    }
+  }
+
+  return result;
+}
+
+void z47_math_wrappers_fact_short_integer(void) {
+  int16_t sign;
+  uint64_t value;
+
+  convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &value);
+
+  if(sign == 1) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
+    sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
+    moreInfoOnError("In function factShoI:", tmpString, NULL, NULL);
+#endif
+    return;
+  }
+
+  if(value > 20) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
+    sprintf(tmpString, "cannot calculate factorial(%s)", errorMessage);
+    moreInfoOnError("In function factShoI:", tmpString, NULL, NULL);
+#endif
+    return;
+  }
+
+  uint64_t f = z47_math_wrappers_fact_uint64(value);
+  if(f > shortIntegerMask) {
+    setSystemFlag(FLAG_OVERFLOW);
+  }
+
+  convertUInt64ToShortIntegerRegister(0, f, getRegisterTag(REGISTER_X), REGISTER_X);
 }
 
 void z47_math_wrappers_build_sign_result(int32_t r) {

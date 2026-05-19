@@ -3210,7 +3210,8 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runtime.processIntRealComplexMonadicFunction(&runtime.z47_math_wrappers_fact_real, &runtime.z47_math_wrappers_fact_cplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
