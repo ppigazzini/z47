@@ -1521,6 +1521,30 @@ fn realPartCplx() callconv(.c) void {
     runtime.convertRealToResultRegister(&real_value, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn realPartCxma() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    defer runtime.realMatrixFree(&real_matrix);
+
+    const count = @min(
+        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+        real_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        real_matrix.matrixElements[index] = complex_matrix.matrixElements[index].real;
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
+}
+
 fn realPartReal() callconv(.c) void {
     var value: runtime.real_t = undefined;
 
@@ -4049,9 +4073,14 @@ pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnRealPart(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        if (!runtime.saveLastX()) {
+            return;
+        }
+
+        realPartCxma();
         return;
     }
 

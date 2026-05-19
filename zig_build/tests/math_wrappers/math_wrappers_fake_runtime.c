@@ -506,6 +506,15 @@ void mathWrappersSetFreeFlash(uint32_t value) {
 }
 
 void mathWrappersCapture(math_wrappers_snapshot_t *out) {
+  for(uint16_t i = 0; i < 4; ++i) {
+    snapshot.final_real_matrix_values[i] = fakeReal34Value(&fake_real_matrix.matrixElements[i]);
+    snapshot.final_real_matrix_bits[i] = fake_real_matrix.matrixElements[i].bytes[15];
+    snapshot.final_complex_matrix_real_values[i] = fakeReal34Value(&fake_complex_matrix.matrixElements[i].real);
+    snapshot.final_complex_matrix_real_bits[i] = fake_complex_matrix.matrixElements[i].real.bytes[15];
+    snapshot.final_complex_matrix_imag_values[i] = fakeReal34Value(&fake_complex_matrix.matrixElements[i].imag);
+    snapshot.final_complex_matrix_imag_bits[i] = fake_complex_matrix.matrixElements[i].imag.bytes[15];
+  }
+
   snapshot.final_register_data_type = current_register_data_type;
   snapshot.final_register_tag = current_register_tag;
   snapshot.final_register_real34_value = fakeRegisterScalarValue();
@@ -514,6 +523,10 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_y_shortint_raw = shortint_y_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_register_y_longint_value = longint_y_input.value;
+  snapshot.final_real_matrix_rows = fake_real_matrix.header.matrixRows;
+  snapshot.final_real_matrix_columns = fake_real_matrix.header.matrixColumns;
+  snapshot.final_complex_matrix_rows = fake_complex_matrix.header.matrixRows;
+  snapshot.final_complex_matrix_columns = fake_complex_matrix.header.matrixColumns;
   snapshot.final_overflow_flag = overflow_flag;
   snapshot.final_carry_flag = carry_flag;
   snapshot.final_pcg_state = pcg32_global.state;
@@ -569,9 +582,33 @@ void registerMax(calcRegister_t regist1, calcRegister_t regist2, calcRegister_t 
 }
 
 void elementwiseRema(void (*func)(void)) {
-  if(func != NULL) {
-    func();
+  if(func == NULL) {
+    return;
   }
+
+  if(current_register_data_type != dtReal34Matrix) {
+    func();
+    return;
+  }
+
+  real34Matrix_t matrix = fake_real_matrix;
+
+  for(uint16_t i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+    const int32_t value = fakeReal34Value(&matrix.matrixElements[i]);
+    const uint8_t bits = matrix.matrixElements[i].bytes[15] & 0x70;
+
+    current_register_data_type = dtReal34;
+    current_register_tag = amNone;
+    setRegisterScalar(value, bits);
+    setFakeReal(&real_input.value, value, bits);
+    real_input.available = true;
+    func();
+    matrix.matrixElements[i] = *(real34_t *)register_slot;
+  }
+
+  fake_real_matrix = matrix;
+  current_register_data_type = dtReal34Matrix;
+  current_register_tag = amNone;
 }
 
 void elementwiseRemaReal(void (*func)(void)) {
@@ -595,6 +632,10 @@ void adjustResult(calcRegister_t res,
 
 void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void)) {
   snapshot.process_real_complex_monadic_calls++;
+  if(current_register_data_type == dtReal34Matrix) {
+    elementwiseRema(realf);
+    return;
+  }
   if(realf != NULL) {
     realf();
   }
