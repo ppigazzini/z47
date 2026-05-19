@@ -1374,6 +1374,22 @@ static void configureConjugateComplex(void) {
   mathWrappersSetFlagSpcRes(false);
 }
 
+static void configureConjugateRealMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureConjugateComplexMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+  mathWrappersSetFlagSpcRes(false);
+}
+
 static void configureSwapRealImaginaryComplex(void) {
   configureConjugateComplex();
 }
@@ -2309,6 +2325,8 @@ int main(void) {
   failures += runCase("fnMagnitude/longint", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeLongInteger);
   failures += runCase("fnMagnitude/shortint", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeShortInteger);
   failures += runCase("fnConjugate/complex", oracle_fnConjugate, fnConjugate, 0, true, configureConjugateComplex);
+  failures += runCase("fnConjugate/real_matrix", oracle_fnConjugate, fnConjugate, 0, true, configureConjugateRealMatrix);
+  failures += runCase("fnConjugate/complex_matrix", oracle_fnConjugate, fnConjugate, 0, true, configureConjugateComplexMatrix);
   failures += runCase("fnSwapRealImaginary/complex", oracle_fnSwapRealImaginary, fnSwapRealImaginary, 0, true, configureSwapRealImaginaryComplex);
   failures += runCase("fnAtan2/real", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2Real);
   failures += runCase("fnAtan2/zero_domain", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2ZeroDomain);

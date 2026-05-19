@@ -841,10 +841,55 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef complexMagnitude2
 
 #define conjCplx oracle_conjCplx
-#define fnConjugate oracle_fnConjugate
+#define fnConjugate oracle_fnConjugate_retained
 #include "../../../src/c47/mathematics/conjugate.c"
 #undef fnConjugate
 #undef conjCplx
+
+static void oracle_conjRema(void) {
+	complex34Matrix_t cMat;
+
+	convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
+	if(getSystemFlag(FLAG_SPCRES)) {
+		for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
+			real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+		}
+	}
+	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
+}
+
+static void oracle_conjCxma(void) {
+	complex34Matrix_t cMat;
+
+	linkToComplexMatrixRegister(REGISTER_X, &cMat);
+	for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
+		real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+		if(real34IsZero(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i])) && !getSystemFlag(FLAG_SPCRES)) {
+			real34SetPositiveSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+		}
+	}
+	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
+}
+
+void oracle_fnConjugate(uint16_t unusedButMandatoryParameter) {
+	const uint32_t typex = getRegisterDataType(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	if(typex == dtComplex34Matrix) {
+		oracle_conjCxma();
+	}
+	else if(typex == dtReal34Matrix) {
+		oracle_conjRema();
+	}
+	else {
+		oracle_conjCplx();
+	}
+}
 
 #define fnSwapRealImaginary oracle_fnSwapRealImaginary
 #include "../../../src/c47/mathematics/swapRealImaginary.c"
