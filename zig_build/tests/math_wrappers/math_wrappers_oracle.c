@@ -558,6 +558,15 @@ void oracle_fnCheckIsVect2d(uint16_t unusedButMandatoryParameter) {
 	}
 }
 
+void oracle_fnCheckIsVect3d(uint16_t unusedButMandatoryParameter) {
+	(void)unusedButMandatoryParameter;
+
+	if(getRegisterDataType(REGISTER_X) == 6) {
+		const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+		temporaryInformation = 12 + ((header->matrixRows == 1 && header->matrixColumns == 3) || (header->matrixRows == 3 && header->matrixColumns == 1));
+	}
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
