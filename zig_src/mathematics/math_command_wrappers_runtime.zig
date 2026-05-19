@@ -11,6 +11,7 @@ pub const pcg32_random_t = extern struct {
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
+pub const REGISTER_T: calcRegister_t = 103;
 pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 
 pub const amRadian: angularMode_t = 0;

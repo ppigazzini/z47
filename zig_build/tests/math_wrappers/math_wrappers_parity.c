@@ -1969,6 +1969,7 @@ int main(void) {
   failures += runCase("fnCheckForZero/complex_im_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMZQ, true, configureCheckComplexPositiveZero);
   failures += runCase("fnCheckForZero/complex_im_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMNZQ, true, configureCheckForZeroComplexNonzero);
   failures += runCase("fnCheckForZero/complex_re_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISRENZQ, true, configureCheckForZeroComplexNonzero);
+  failures += runCase("fnCheckForZero/type_error", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckRealMatrix);
   failures += runCase("fnCheckType/true", oracle_fnCheckType, fnCheckType, dtLongInteger, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckType/false", oracle_fnCheckType, fnCheckType, dtReal34, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckReal/true", oracle_fnCheckReal, fnCheckReal, 0, true, configureCheckTypeLongInteger);
@@ -1991,6 +1992,7 @@ int main(void) {
   failures += runCase("fnCheckNaN/real_matrix_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNRealMatrixTrue);
   failures += runCase("fnCheckNaN/complex_matrix_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplexMatrixFalse);
   failures += runCase("fnCheckNaN/complex_matrix_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplexMatrixTrue);
+  failures += runCase("fnCheckNaN/type_error", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckInfinite/real_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureFactorialReal);
   failures += runCase("fnCheckInfinite/real_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureSincRealInfinity);
   failures += runCase("fnCheckInfinite/complex_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureFactorialComplex);
@@ -1999,6 +2001,7 @@ int main(void) {
   failures += runCase("fnCheckInfinite/real_matrix_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckInfiniteRealMatrixTrue);
   failures += runCase("fnCheckInfinite/complex_matrix_false", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckNaNComplexMatrixFalse);
   failures += runCase("fnCheckInfinite/complex_matrix_true", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckInfiniteComplexMatrixTrue);
+  failures += runCase("fnCheckInfinite/type_error", oracle_fnCheckInfinite, fnCheckInfinite, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckSpecial/real_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureFactorialReal);
   failures += runCase("fnCheckSpecial/real_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureSignRealNaN);
   failures += runCase("fnCheckSpecial/real_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureSincRealInfinity);
@@ -2011,6 +2014,7 @@ int main(void) {
   failures += runCase("fnCheckSpecial/complex_matrix_false", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNComplexMatrixFalse);
   failures += runCase("fnCheckSpecial/complex_matrix_nan_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckNaNComplexMatrixTrue);
   failures += runCase("fnCheckSpecial/complex_matrix_inf_true", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckInfiniteComplexMatrixTrue);
+  failures += runCase("fnCheckSpecial/type_error", oracle_fnCheckSpecial, fnCheckSpecial, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckPlusZero/longint_true", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckLongIntegerZero);
   failures += runCase("fnCheckPlusZero/longint_false", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckPlusZero/shortint_true", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckShortIntegerZero);
@@ -2018,20 +2022,25 @@ int main(void) {
   failures += runCase("fnCheckPlusZero/real_false", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckRealNegativeZero);
   failures += runCase("fnCheckPlusZero/complex_true", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckComplexPositiveZero);
   failures += runCase("fnCheckPlusZero/complex_false", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckComplexNegativeZero);
+  failures += runCase("fnCheckPlusZero/type_error", oracle_fnCheckPlusZero, fnCheckPlusZero, 0, true, configureCheckRealMatrix);
   failures += runCase("fnCheckMinusZero/longint_false", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckLongIntegerZero);
   failures += runCase("fnCheckMinusZero/shortint_false", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckShortIntegerZero);
   failures += runCase("fnCheckMinusZero/real_false", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckRealPositiveZero);
   failures += runCase("fnCheckMinusZero/real_true", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckRealNegativeZero);
   failures += runCase("fnCheckMinusZero/complex_false", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckComplexPositiveZero);
   failures += runCase("fnCheckMinusZero/complex_true", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckComplexNegativeZero);
+  failures += runCase("fnCheckMinusZero/type_error", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckRealMatrix);
   failures += runCase("fnCheckMatrixSquare/real_true", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareRealSquare);
   failures += runCase("fnCheckMatrixSquare/real_false", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareRealNonsquare);
   failures += runCase("fnCheckMatrixSquare/complex_true", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareComplexSquare);
   failures += runCase("fnCheckMatrixSquare/complex_false", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareComplexNonsquare);
+  failures += runCase("fnCheckMatrixSquare/type_error", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckIsVect2d/true", oracle_fnCheckIsVect2d, fnCheckIsVect2d, 0, true, configureCheckVect2dTrue);
   failures += runCase("fnCheckIsVect2d/false", oracle_fnCheckIsVect2d, fnCheckIsVect2d, 0, true, configureCheckVect2dFalse);
+  failures += runCase("fnCheckIsVect2d/type_error", oracle_fnCheckIsVect2d, fnCheckIsVect2d, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckIsVect3d/true", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckVect3dTrue);
   failures += runCase("fnCheckIsVect3d/false", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckVect2dTrue);
+  failures += runCase("fnCheckIsVect3d/type_error", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);

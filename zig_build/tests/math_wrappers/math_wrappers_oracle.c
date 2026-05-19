@@ -351,6 +351,11 @@ void roundiReal(void);
 #undef fnRandom
 #undef realRandomU01
 
+static void oracle_compareTypeErrorX(void) {
+	temporaryInformation = 12;
+	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, (calcRegister_t)103);
+}
+
 void oracle_fnCheckInteger(uint16_t mode) {
 	switch(getRegisterDataType(REGISTER_X)) {
 		case 0: {
@@ -419,6 +424,7 @@ void oracle_fnCheckInteger(uint16_t mode) {
 		}
 
 		default:
+			oracle_compareTypeErrorX();
 			break;
 	}
 }
@@ -462,6 +468,7 @@ void oracle_fnCheckForZero(uint16_t mode) {
 			break;
 
 		default:
+			oracle_compareTypeErrorX();
 			return;
 	}
 
@@ -586,6 +593,7 @@ void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter) {
 		}
 
 		default:
+			oracle_compareTypeErrorX();
 			break;
 	}
 }
@@ -639,6 +647,7 @@ void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
 		}
 
 		default:
+			oracle_compareTypeErrorX();
 			break;
 	}
 }
@@ -696,6 +705,7 @@ void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
 		}
 
 		default:
+			oracle_compareTypeErrorX();
 			break;
 	}
 }
@@ -735,7 +745,8 @@ void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter) {
 			break;
 
 		default:
-			break;
+			oracle_compareTypeErrorX();
+			return;
 	}
 
 	temporaryInformation = 12 + check;
@@ -771,7 +782,8 @@ void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 			break;
 
 		default:
-			break;
+			oracle_compareTypeErrorX();
+			return;
 	}
 
 	temporaryInformation = 12 + check;
@@ -785,6 +797,8 @@ void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
 	if(t == 6 || t == 7) {
 		const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
 		temporaryInformation = 12 + (header->matrixRows == header->matrixColumns);
+	} else {
+		oracle_compareTypeErrorX();
 	}
 }
 
@@ -794,6 +808,8 @@ void oracle_fnCheckIsVect2d(uint16_t unusedButMandatoryParameter) {
 	if(getRegisterDataType(REGISTER_X) == 6) {
 		const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
 		temporaryInformation = 12 + ((header->matrixRows == 1 && header->matrixColumns == 2) || (header->matrixRows == 2 && header->matrixColumns == 1));
+	} else {
+		oracle_compareTypeErrorX();
 	}
 }
 
@@ -803,6 +819,8 @@ void oracle_fnCheckIsVect3d(uint16_t unusedButMandatoryParameter) {
 	if(getRegisterDataType(REGISTER_X) == 6) {
 		const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
 		temporaryInformation = 12 + ((header->matrixRows == 1 && header->matrixColumns == 3) || (header->matrixRows == 3 && header->matrixColumns == 1));
+	} else {
+		oracle_compareTypeErrorX();
 	}
 }
 
