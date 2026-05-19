@@ -1436,6 +1436,11 @@ static void configureToRect2LongIntegerPair(void) {
   mathWrappersSetCurrentAngularMode(amDegree);
 }
 
+static void configureToRect2InvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
 static void configureFnToRectReal34Pair(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -1678,6 +1683,7 @@ int main(void) {
   failures += runCase("fnToPolar2/invalid_type", oracle_fnToPolar2, fnToPolar2, 0, true, configureToPolar2InvalidType);
   failures += runCase("fnToRect2/real34_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2Real34Pair);
   failures += runCase("fnToRect2/longint_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2LongIntegerPair);
+  failures += runCase("fnToRect2/invalid_type", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2InvalidType);
   failures += runCase("fnToRect/real34_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectReal34Pair);
   failures += runCase("fnToRect/longint_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectLongIntegerPair);
 

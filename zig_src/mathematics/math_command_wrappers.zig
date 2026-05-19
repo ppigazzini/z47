@@ -2952,6 +2952,14 @@ fn tryFnToRect2Real34Pair() bool {
         }
     }
 
+    const x_valid = data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtReal34;
+    const y_valid = data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtReal34;
+
+    if (!x_valid or !y_valid) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return true;
+    }
+
     var radius_reg = if (angle_in_y == 1) runtime.REGISTER_X else runtime.REGISTER_Y;
     var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;
     const radius_type = runtime.getRegisterDataType(radius_reg);

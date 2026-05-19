@@ -517,6 +517,12 @@ void oracle_fnToRect2(uint16_t unusedButMandatoryParameter) {
 		}
 	}
 
+	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
+	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
+		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+		return;
+	}
+
 	if(angleInY == 1) {
 		REG_X = REGISTER_X;
 		REG_Y = REGISTER_Y;
