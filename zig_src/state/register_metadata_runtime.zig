@@ -15,6 +15,8 @@ pub const dtReal34Matrix: u32 = 6;
 pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
 pub const dtConfig: u32 = 9;
+pub const TI_NO_INFO: u8 = 0;
+pub const TI_DEL_ALL_VARIABLES: u8 = 101;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
@@ -54,6 +56,7 @@ pub const ITM_INTEGRAL: u16 = 1700;
 
 pub extern var currentAngularMode: u32;
 pub extern var numberOfNamedVariables: u16;
+pub extern var temporaryInformation: u8;
 
 extern fn z47_register_metadata_get_global_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_set_global_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;

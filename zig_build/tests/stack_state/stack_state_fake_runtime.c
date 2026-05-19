@@ -54,6 +54,7 @@ uint16_t currentInputVariable = INVALID_VARIABLE;
 uint8_t displayStack = 0;
 bool_t thereIsSomethingToUndo = false;
 uint8_t calcMode = 0;
+uint8_t temporaryInformation = TI_NO_INFO;
 uint8_t programRunStop = 0;
 uint8_t Input_Default = ID_43S;
 uint8_t lastErrorCode = ERROR_NONE;
@@ -215,6 +216,7 @@ void stackParityReset(void) {
   displayStack = 0;
   thereIsSomethingToUndo = false;
   calcMode = 0;
+  temporaryInformation = TI_NO_INFO;
   programRunStop = 0;
   Input_Default = ID_43S;
   lastErrorCode = ERROR_NONE;
@@ -1161,6 +1163,7 @@ void stackParityCapture(stack_parity_snapshot_t *snapshot) {
   snapshot->displayStack = displayStack;
   snapshot->thereIsSomethingToUndo = thereIsSomethingToUndo;
   snapshot->calcMode = calcMode;
+  snapshot->temporaryInformation = temporaryInformation;
   snapshot->lastErrorCode = lastErrorCode;
   snapshot->entryStatus = entryStatus;
   snapshot->systemFlags0 = systemFlags0;

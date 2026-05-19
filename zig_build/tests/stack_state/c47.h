@@ -78,7 +78,11 @@ enum {
   PGM_RUNNING = 1,
 };
 
+#define CONFIRMED 9877
 #define NOT_CONFIRMED 9878
+
+#define TI_NO_INFO 0
+#define TI_DEL_ALL_VARIABLES 101
 
 enum {
   CM_AIM = 1,
@@ -185,6 +189,7 @@ extern uint16_t currentInputVariable;
 extern uint8_t displayStack;
 extern bool_t thereIsSomethingToUndo;
 extern uint8_t calcMode;
+extern uint8_t temporaryInformation;
 extern uint8_t programRunStop;
 extern uint8_t Input_Default;
 extern uint8_t lastErrorCode;
@@ -285,6 +290,7 @@ typedef struct {
   uint8_t displayStack;
   bool_t thereIsSomethingToUndo;
   uint8_t calcMode;
+  uint8_t temporaryInformation;
   uint8_t lastErrorCode;
   uint8_t entryStatus;
   uint64_t systemFlags0;

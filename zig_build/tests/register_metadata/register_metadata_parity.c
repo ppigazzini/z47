@@ -376,6 +376,15 @@ static void setupDeleteNamedVariableLiveCase(void) {
   seedNamedPayload(2, dtComplex34, amPolar, COMPLEX34_SIZE_IN_BLOCKS, 0x51);
 }
 
+static void setupDeleteAllVariablesConfirmedCase(void) {
+  stackParitySeedNamedVariableName(0, "ALPHA");
+  stackParitySeedNamedVariableName(1, "BETA");
+  stackParitySeedNamedVariableName(2, "GAMMA");
+  seedNamedPayload(0, dtReal34, amNone, REAL34_SIZE_IN_BLOCKS, 0x61);
+  seedNamedStringLike(1, dtString, amNone, 4, 0x71);
+  seedNamedPayload(2, dtComplex34, amPolar, COMPLEX34_SIZE_IN_BLOCKS, 0x81);
+}
+
 static void setupNoOpCase(void) {
 }
 
@@ -754,6 +763,7 @@ int main(void) {
   failures += runU16VoidCase("fnDeleteVariable", "live-named", oracle_fnDeleteVariable, fnDeleteVariable, setupDeleteNamedVariableLiveCase, FIRST_NAMED_VARIABLE + 1);
   failures += runU16VoidCase("fnDeleteVariable", "undef-source", oracle_fnDeleteVariable, fnDeleteVariable, setupNoOpCase, FIRST_NAMED_VARIABLE);
   failures += runU16VoidCase("fnDeleteVariable", "predefined-item", oracle_fnDeleteVariable, fnDeleteVariable, setupNoOpCase, REGISTER_X);
+  failures += runU16VoidCase("fnDeleteAllVariables", "confirmed", oracle_fnDeleteAllVariables, fnDeleteAllVariables, setupDeleteAllVariablesConfirmedCase, CONFIRMED);
   failures += runU16VoidCase("fnDeleteAllVariables", "request-confirmation", oracle_fnDeleteAllVariables, fnDeleteAllVariables, setupNoOpCase, NOT_CONFIRMED);
   failures += runU16VoidCase("fnClearAllVariables", "request-confirmation", oracle_fnClearAllVariables, fnClearAllVariables, setupNoOpCase, NOT_CONFIRMED);
   failures += runFindNamedVariableCase("findNamedVariable", "reserved-acc", oracle_findNamedVariable, findNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc);
