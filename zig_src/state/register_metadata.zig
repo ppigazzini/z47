@@ -376,8 +376,12 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
 }
 
 pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
-    if (builtin.target.os.tag == .freestanding or isSyntheticReservedCopySource(source_register)) {
+    if (builtin.target.os.tag == .freestanding) {
         runtime.retainedCopySourceRegisterToDestRegister(source_register, dest_register);
+        return;
+    }
+
+    if (isSyntheticReservedCopySource(source_register)) {
         return;
     }
 
