@@ -17,12 +17,16 @@ static uint32_t current_register_y_data_type = dtReal34;
 static uint32_t current_register_y_tag = amNone;
 static uint32_t current_register_z_data_type = dtReal34;
 static uint32_t current_register_z_tag = amNone;
+static uint32_t current_register_t_data_type = dtReal34;
+static uint32_t current_register_t_tag = amNone;
 
 static uint8_t register_slot[32];
 static uint8_t register_y_slot[32];
 static uint8_t register_z_slot[32];
+static uint8_t register_t_slot[32];
 static uint64_t shortint_y_slot;
 static uint64_t shortint_z_slot;
+static uint64_t shortint_t_slot;
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
 static real34Matrix_t fake_real_matrix;
@@ -83,6 +87,11 @@ static struct {
   bool_t available;
   int32_t value;
 } longint_z_input;
+
+static struct {
+  bool_t available;
+  int32_t value;
+} longint_t_input;
 
 static struct {
   bool_t result;
@@ -246,6 +255,9 @@ static uint64_t *shortIntegerSlot(calcRegister_t reg) {
   if(reg == REGISTER_Z) {
     return &shortint_z_slot;
   }
+  if(reg == REGISTER_T) {
+    return &shortint_t_slot;
+  }
   return (uint64_t *)register_slot;
 }
 
@@ -255,6 +267,9 @@ static uint32_t *registerDataTypeSlot(calcRegister_t reg) {
   }
   if(reg == REGISTER_Z) {
     return &current_register_z_data_type;
+  }
+  if(reg == REGISTER_T) {
+    return &current_register_t_data_type;
   }
   return &current_register_data_type;
 }
@@ -266,6 +281,9 @@ static uint32_t *registerTagSlot(calcRegister_t reg) {
   if(reg == REGISTER_Z) {
     return &current_register_z_tag;
   }
+  if(reg == REGISTER_T) {
+    return &current_register_t_tag;
+  }
   return &current_register_tag;
 }
 
@@ -275,6 +293,9 @@ static uint8_t *registerDataSlot(calcRegister_t reg) {
   }
   if(reg == REGISTER_Z) {
     return register_z_slot;
+  }
+  if(reg == REGISTER_T) {
+    return register_t_slot;
   }
   return register_slot;
 }
@@ -324,11 +345,15 @@ void mathWrappersReset(void) {
   current_register_y_tag = amNone;
   current_register_z_data_type = dtReal34;
   current_register_z_tag = amNone;
+  current_register_t_data_type = dtReal34;
+  current_register_t_tag = amNone;
   memset(register_slot, 0, sizeof(register_slot));
   memset(register_y_slot, 0, sizeof(register_y_slot));
   memset(register_z_slot, 0, sizeof(register_z_slot));
+  memset(register_t_slot, 0, sizeof(register_t_slot));
   shortint_y_slot = encodeShortInteger(2);
   shortint_z_slot = encodeShortInteger(3);
+  shortint_t_slot = encodeShortInteger(4);
   register_scalar_available = true;
   setRegisterScalar(7, 0);
   *(uint64_t *)register_slot = encodeShortInteger(-3);
@@ -366,6 +391,9 @@ void mathWrappersReset(void) {
 
   longint_z_input.available = true;
   longint_z_input.value = 11;
+
+  longint_t_input.available = true;
+  longint_t_input.value = 13;
 
   fraction_result.result = true;
   fraction_result.sign = 1;
@@ -467,6 +495,13 @@ void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
   current_register_z_tag = amNone;
 }
 
+void mathWrappersSetRealTInput(bool_t available, int32_t value, uint8_t bits) {
+  (void)available;
+  setRegisterReal34(register_t_slot, value, bits);
+  current_register_t_data_type = dtReal34;
+  current_register_t_tag = amNone;
+}
+
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
   register_scalar_available = available;
   setRegisterScalar(value, bits);
@@ -506,6 +541,14 @@ void mathWrappersSetComplexZInput(bool_t available, int32_t real_value, uint8_t 
   current_register_z_tag = amNone;
 }
 
+void mathWrappersSetComplexTInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits) {
+  (void)available;
+  setRegisterReal34(register_t_slot, real_value, real_bits);
+  setRegisterReal34(register_t_slot + sizeof(real34_t), imag_value, imag_bits);
+  current_register_t_data_type = dtComplex34;
+  current_register_t_tag = amNone;
+}
+
 void mathWrappersSetShortIntegerInput(int64_t value) {
   *shortIntegerSlot(REGISTER_X) = encodeShortInteger(value);
 }
@@ -520,6 +563,12 @@ void mathWrappersSetShortIntegerZInput(int64_t value) {
   *shortIntegerSlot(REGISTER_Z) = encodeShortInteger(value);
   current_register_z_data_type = dtShortInteger;
   current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+void mathWrappersSetShortIntegerTInput(int64_t value) {
+  *shortIntegerSlot(REGISTER_T) = encodeShortInteger(value);
+  current_register_t_data_type = dtShortInteger;
+  current_register_t_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetShortIntegerMode(uint8_t mode) {
@@ -543,6 +592,13 @@ void mathWrappersSetLongIntegerZInput(bool_t available, int32_t value) {
   longint_z_input.value = value;
   current_register_z_data_type = dtLongInteger;
   current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+void mathWrappersSetLongIntegerTInput(bool_t available, int32_t value) {
+  longint_t_input.available = available;
+  longint_t_input.value = value;
+  current_register_t_data_type = dtLongInteger;
+  current_register_t_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
@@ -654,12 +710,22 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_z_complex_real_bits = register_z_slot[15];
   snapshot.final_register_z_complex_imag_value = fakeReal34Value((const real34_t *)(register_z_slot + sizeof(real34_t)));
   snapshot.final_register_z_complex_imag_bits = register_z_slot[sizeof(real34_t) + 15];
+  snapshot.final_register_t_data_type = current_register_t_data_type;
+  snapshot.final_register_t_tag = current_register_t_tag;
+  snapshot.final_register_t_real34_value = fakeReal34Value((const real34_t *)register_t_slot);
+  snapshot.final_register_t_real34_bits = register_t_slot[15];
+  snapshot.final_register_t_complex_real_value = fakeReal34Value((const real34_t *)register_t_slot);
+  snapshot.final_register_t_complex_real_bits = register_t_slot[15];
+  snapshot.final_register_t_complex_imag_value = fakeReal34Value((const real34_t *)(register_t_slot + sizeof(real34_t)));
+  snapshot.final_register_t_complex_imag_bits = register_t_slot[sizeof(real34_t) + 15];
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_y_shortint_raw = shortint_y_slot;
   snapshot.final_register_z_shortint_raw = shortint_z_slot;
+  snapshot.final_register_t_shortint_raw = shortint_t_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_register_y_longint_value = longint_y_input.value;
   snapshot.final_register_z_longint_value = longint_z_input.value;
+  snapshot.final_register_t_longint_value = longint_t_input.value;
   snapshot.final_real_matrix_rows = fake_real_matrix.header.matrixRows;
   snapshot.final_real_matrix_columns = fake_real_matrix.header.matrixColumns;
   snapshot.final_complex_matrix_rows = fake_complex_matrix.header.matrixRows;
@@ -686,6 +752,9 @@ uint32_t getRegisterDataType(calcRegister_t reg) {
   if(reg == REGISTER_Z) {
     return current_register_z_data_type;
   }
+  if(reg == REGISTER_T) {
+    return current_register_t_data_type;
+  }
   return current_register_data_type;
 }
 
@@ -697,12 +766,15 @@ uint32_t getRegisterTag(calcRegister_t reg) {
   if(reg == REGISTER_Z) {
     return current_register_z_tag;
   }
+  if(reg == REGISTER_T) {
+    return current_register_t_tag;
+  }
   return current_register_tag;
 }
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   snapshot.get_register_data_pointer_calls++;
-  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : reg == REGISTER_Z ? current_register_z_data_type : current_register_data_type;
+  const uint32_t data_type = *registerDataTypeSlot(reg);
 
   if(data_type == dtShortInteger) {
     return shortIntegerSlot(reg);
@@ -718,6 +790,9 @@ void *getRegisterDataPointer(calcRegister_t reg) {
   }
   if(reg == REGISTER_Z) {
     return register_z_slot;
+  }
+  if(reg == REGISTER_T) {
+    return register_t_slot;
   }
   return register_slot;
 }
@@ -1120,7 +1195,7 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
 
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t lgInt) {
   mpz_init(lgInt);
-  mpz_set_si(lgInt, reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : longint_input.value);
+  mpz_set_si(lgInt, reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : reg == REGISTER_T ? longint_t_input.value : longint_input.value);
 }
 
 void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realContext_t *realContext) {
@@ -1172,6 +1247,13 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
     longint_z_input.value = value;
     current_register_z_data_type = dtLongInteger;
     current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+    return;
+  }
+  if(reg == REGISTER_T) {
+    longint_t_input.available = true;
+    longint_t_input.value = value;
+    current_register_t_data_type = dtLongInteger;
+    current_register_t_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
     return;
   }
   longint_input.available = true;
