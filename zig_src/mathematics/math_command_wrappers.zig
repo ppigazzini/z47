@@ -2897,7 +2897,8 @@ fn tryFnToPolar2Real34Pair() bool {
     const y_valid = data_type_y == runtime.dtLongInteger or (data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone);
 
     if (!x_valid or !y_valid) {
-        return false;
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return true;
     }
 
     const hp_rp = runtime.getSystemFlag(runtime.FLAG_HPRP);

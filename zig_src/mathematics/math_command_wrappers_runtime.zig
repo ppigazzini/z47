@@ -43,6 +43,7 @@ pub const ifLongIntegerDoAngleReduction = true;
 
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 2;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
