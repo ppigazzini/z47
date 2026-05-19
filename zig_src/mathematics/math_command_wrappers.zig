@@ -597,9 +597,7 @@ pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
 }
 
 fn tenPowLonI() callconv(.c) void {
-    if (runtime.z47_math_wrappers_small_base_power_long_integer(10) == long_integer_power_negative_exponent) {
-        tenPowReal();
-    }
+    smallBasePowerLonI(10, &tenPowReal);
 }
 
 fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn () callconv(.c) void) void {
