@@ -287,6 +287,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
     }
 
     var data_ptr: ?*anyopaque = null;
+    var descriptor: runtime.register_descriptor_t = 0;
 
     if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
         runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
@@ -300,6 +301,14 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
 
     if (reg > runtime.LAST_LOCAL_REGISTER) {
         stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        return;
+    }
+
+    if (reg <= runtime.LAST_NAMED_VARIABLE and !runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+        return;
+    }
+
+    if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
         return;
     }
 
