@@ -4096,7 +4096,9 @@ pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) 
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckIsVect3d(unused_but_mandatory_parameter);
+    if (!tryCheckRealMatrixVector(3)) {
+        z47_math_wrappers_retained_fnCheckIsVect3d(unused_but_mandatory_parameter);
+    }
 }
 
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {

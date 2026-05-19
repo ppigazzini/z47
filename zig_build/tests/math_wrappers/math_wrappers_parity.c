@@ -72,6 +72,7 @@ void fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
 void fnCheckIsVect2d(uint16_t unusedButMandatoryParameter);
+void fnCheckIsVect3d(uint16_t unusedButMandatoryParameter);
 void fnRealPart(uint16_t unusedButMandatoryParameter);
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void fnArg(uint16_t unusedButMandatoryParameter);
@@ -153,6 +154,7 @@ void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckIsVect2d(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckIsVect3d(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnArg(uint16_t unusedButMandatoryParameter);
@@ -939,6 +941,15 @@ static void configureCheckVect2dTrue(void) {
 }
 
 static void configureCheckVect2dFalse(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 3, 1);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckVect3dTrue(void) {
   real34Matrix_t matrix;
 
   configureDefaultSurface();
@@ -1879,6 +1890,8 @@ int main(void) {
   failures += runCase("fnCheckMatrixSquare/complex_false", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareComplexNonsquare);
   failures += runCase("fnCheckIsVect2d/true", oracle_fnCheckIsVect2d, fnCheckIsVect2d, 0, true, configureCheckVect2dTrue);
   failures += runCase("fnCheckIsVect2d/false", oracle_fnCheckIsVect2d, fnCheckIsVect2d, 0, true, configureCheckVect2dFalse);
+  failures += runCase("fnCheckIsVect3d/true", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckVect3dTrue);
+  failures += runCase("fnCheckIsVect3d/false", oracle_fnCheckIsVect3d, fnCheckIsVect3d, 0, true, configureCheckVect2dTrue);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);
