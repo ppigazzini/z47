@@ -1467,6 +1467,83 @@ static void configureAtan2ZeroDomain(void) {
   mathWrappersSetFlagSpcRes(false);
 }
 
+static void configureAtan2XMatrixYReal(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], -3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRealYInput(true, 9, 0);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureAtan2XMatrixYLongInteger(void) {
+  configureAtan2XMatrixYReal();
+  mathWrappersSetLongIntegerYInput(true, -8);
+}
+
+static void configureAtan2XMatrixYMatrix(void) {
+  real34Matrix_t matrix_x;
+  real34Matrix_t matrix_y;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix_x, 2, 2);
+  realMatrixInit(&matrix_y, 2, 2);
+  setMatrixReal34(&matrix_x.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix_x.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix_x.matrixElements[2], -3, 0);
+  setMatrixReal34(&matrix_x.matrixElements[3], 4, 0);
+  setMatrixReal34(&matrix_y.matrixElements[0], 5, 0);
+  setMatrixReal34(&matrix_y.matrixElements[1], -6, 0);
+  setMatrixReal34(&matrix_y.matrixElements[2], 7, 0);
+  setMatrixReal34(&matrix_y.matrixElements[3], 8, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix_x, REGISTER_X);
+  convertReal34MatrixToReal34MatrixRegister(&matrix_y, REGISTER_Y);
+  realMatrixFree(&matrix_x);
+  realMatrixFree(&matrix_y);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureAtan2XRealYMatrix(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 5, 0);
+  setMatrixReal34(&matrix.matrixElements[1], -6, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 7, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 8, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_Y);
+  realMatrixFree(&matrix);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureAtan2XLongIntegerYMatrix(void) {
+  configureAtan2XRealYMatrix();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
+  mathWrappersSetLongIntegerInput(true, -4);
+}
+
+static void configureAtan2XMatrixYMatrixMismatch(void) {
+  real34Matrix_t matrix_x;
+  real34Matrix_t matrix_y;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix_x, 2, 2);
+  realMatrixInit(&matrix_y, 2, 1);
+  convertReal34MatrixToReal34MatrixRegister(&matrix_x, REGISTER_X);
+  convertReal34MatrixToReal34MatrixRegister(&matrix_y, REGISTER_Y);
+  realMatrixFree(&matrix_x);
+  realMatrixFree(&matrix_y);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
 static void configureLnP1Real(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -2392,6 +2469,12 @@ int main(void) {
   failures += runCase("fnSwapRealImaginary/complex_matrix", oracle_fnSwapRealImaginary, fnSwapRealImaginary, 0, true, configureSwapRealImaginaryComplexMatrix);
   failures += runCase("fnAtan2/real", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2Real);
   failures += runCase("fnAtan2/zero_domain", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2ZeroDomain);
+  failures += runCase("fnAtan2/x_matrix_y_real", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XMatrixYReal);
+  failures += runCase("fnAtan2/x_matrix_y_longint", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XMatrixYLongInteger);
+  failures += runCase("fnAtan2/x_matrix_y_matrix", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XMatrixYMatrix);
+  failures += runCase("fnAtan2/x_real_y_matrix", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XRealYMatrix);
+  failures += runCase("fnAtan2/x_longint_y_matrix", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XLongIntegerYMatrix);
+  failures += runCase("fnAtan2/x_matrix_y_matrix_mismatch", oracle_fnAtan2, fnAtan2, 0, true, configureAtan2XMatrixYMatrixMismatch);
   failures += runCase("fnM1Pow/real_zero", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealZero);
   failures += runCase("fnM1Pow/real_one", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealOne);
   failures += runCase("fnM1Pow/real_inf", oracle_fnM1Pow, fnM1Pow, 0, true, configureM1PowRealInfinity);

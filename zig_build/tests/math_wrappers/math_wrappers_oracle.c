@@ -955,7 +955,7 @@ void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
 #define atan2RemaReal oracle_atan2RemaReal
 #define atan2RealRema oracle_atan2RealRema
 #define atan2LonIRema oracle_atan2LonIRema
-#define fnAtan2 oracle_fnAtan2
+#define fnAtan2 oracle_fnAtan2_retained
 void atan2Error(void);
 void atan2RealReal(void);
 void atan2RemaRema(void);
@@ -968,6 +968,90 @@ void atan2LonIRema(void);
 #undef atan2RealRema
 #undef atan2RemaReal
 #undef atan2RemaRema
+
+static void oracle_atan2RealRemaFixed(void) {
+	real_t y;
+	real34Matrix_t x;
+
+	if(!getRegisterAsReal(REGISTER_Y, &y)) {
+		return;
+	}
+
+	linkToRealMatrixRegister(REGISTER_X, &x);
+	for(uint16_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
+		real_t xx;
+		real34ToReal(&x.matrixElements[i], &xx);
+		if(realIsZero(&y) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", NULL, NULL);
+			return;
+		}
+		C47_WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
+		convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
+		roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
+		realToReal34(&xx, &x.matrixElements[i]);
+	}
+
+	convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
+}
+
+static void oracle_atan2RemaRemaFixed(void) {
+	real34Matrix_t y, x;
+
+	linkToRealMatrixRegister(REGISTER_Y, &y);
+	linkToRealMatrixRegister(REGISTER_X, &x);
+
+	if(y.header.matrixRows == x.header.matrixRows && y.header.matrixColumns == x.header.matrixColumns) {
+		for(uint16_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
+			real_t yy, xx;
+			real34ToReal(&y.matrixElements[i], &yy);
+			real34ToReal(&x.matrixElements[i], &xx);
+			if(realIsZero(&yy) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
+				displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+				moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", NULL, NULL);
+				return;
+			}
+			C47_WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
+			convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
+			roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
+			realToReal34(&xx, &x.matrixElements[i]);
+		}
+		convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
+	}
+	else {
+		displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+		moreInfoOnError("In function atan2RemaRema:", "matrix size mismatch", NULL, NULL);
+	}
+}
+
+void oracle_fnAtan2(uint16_t unusedButMandatoryParameter) {
+	const uint32_t typex = getRegisterDataType(REGISTER_X);
+	const uint32_t typey = getRegisterDataType(REGISTER_Y);
+
+	(void)unusedButMandatoryParameter;
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	if((typex == dtLongInteger || typex == dtReal34) && (typey == dtLongInteger || typey == dtReal34)) {
+		oracle_atan2RealReal();
+	}
+	else if(typex == dtReal34Matrix && typey == dtReal34Matrix) {
+		oracle_atan2RemaRemaFixed();
+	}
+	else if(typex == dtReal34Matrix && (typey == dtReal34 || typey == dtLongInteger || typey == dtShortInteger)) {
+		oracle_atan2RealRemaFixed();
+	}
+	else if(typey == dtReal34Matrix && (typex == dtReal34 || typex == dtLongInteger || typex == dtShortInteger)) {
+		oracle_atan2RemaReal();
+	}
+	else {
+		oracle_atan2Error();
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
 #undef atan2RealReal
 #undef atan2Error
 #undef arctan2
