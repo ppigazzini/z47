@@ -1299,6 +1299,14 @@ static void configureImaginaryPartComplex(void) {
   configureRealPartComplex();
 }
 
+static void configureImaginaryPartRealMatrix(void) {
+  configureRealPartRealMatrix();
+}
+
+static void configureImaginaryPartComplexMatrix(void) {
+  configureRealPartComplexMatrix();
+}
+
 static void configureArgRealPositive(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -2275,6 +2283,8 @@ int main(void) {
   failures += runCase("fnRealPart/complex_matrix", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplexMatrix);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);
   failures += runCase("fnImaginaryPart/complex", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartComplex);
+  failures += runCase("fnImaginaryPart/real_matrix", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartRealMatrix);
+  failures += runCase("fnImaginaryPart/complex_matrix", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartComplexMatrix);
   failures += runCase("fnArg/real_positive", oracle_fnArg, fnArg, 0, true, configureArgRealPositive);
   failures += runCase("fnArg/real_negative", oracle_fnArg, fnArg, 0, true, configureArgRealNegative);
   failures += runCase("fnArg/complex", oracle_fnArg, fnArg, 0, true, configureArgComplex);
