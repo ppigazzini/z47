@@ -3259,6 +3259,40 @@ fn lcmShoI() callconv(.c) void {
     );
 }
 
+fn neighbShoI() callconv(.c) void {
+    var subtract = false;
+    var negx = false;
+    var negy = false;
+    var x: u64 = 0;
+    var y: u64 = 0;
+
+    if (runtime.getRegisterAsShortInt(runtime.REGISTER_X, &negx, &x, null, null) and
+        runtime.getRegisterAsShortInt(runtime.REGISTER_Y, &negy, &y, null, null))
+    {
+        if (negx != negy) {
+            subtract = negy;
+        } else if (x == y) {
+            return;
+        } else if (negx) {
+            subtract = y > x;
+        } else {
+            subtract = y < x;
+        }
+
+        if (subtract) {
+            runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intSubtract(
+                runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+                1,
+            );
+        } else {
+            runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intAdd(
+                runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+                1,
+            );
+        }
+    }
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &gcdShoI, &runtime.z47_math_wrappers_gcd_int);
@@ -3336,7 +3370,7 @@ pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &runtime.z47_math_wrappers_neighb_short_integer, &runtime.z47_math_wrappers_neighb_long_integer);
+    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &neighbShoI, &runtime.z47_math_wrappers_neighb_long_integer);
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
