@@ -268,6 +268,7 @@ extern uint64_t systemFlags1;
 #define const_100 ((real_t *)z47_math_wrappers_const_100())
 #define const_180 ((real_t *)z47_math_wrappers_const_180())
 #define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
+#define const39_1on3 ((real_t *)z47_math_wrappers_const_1on3())
 #define const_2e6 ((real_t *)z47_math_wrappers_const_2e6())
 #define const_1e_6 ((real_t *)z47_math_wrappers_const_1e_6())
 #define const34_0 ((real34_t *)z47_math_wrappers_const34_0())
@@ -401,6 +402,7 @@ void WP34S_Ln(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
 void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
+void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
 void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *real_context);
 void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *real_context);
@@ -418,6 +420,7 @@ void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, re
 void sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 void complexMagnitude(const real_t *real, const real_t *imag, real_t *magnitude, realContext_t *realContext);
 void int32ToReal(int32_t source, real_t *destination);
+int32_t realToInt32C47(const real_t *source, bool_t *error);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
@@ -532,6 +535,7 @@ const real_t *z47_math_wrappers_const_2(void);
 const real_t *z47_math_wrappers_const_100(void);
 const real_t *z47_math_wrappers_const_180(void);
 const real_t *z47_math_wrappers_const_1on2(void);
+const real_t *z47_math_wrappers_const_1on3(void);
 const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_1e_6(void);
 const real34_t *z47_math_wrappers_const34_0(void);

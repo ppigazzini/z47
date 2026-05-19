@@ -108,6 +108,7 @@ void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
 void fnSquareRoot(uint16_t unusedButMandatoryParameter);
+void fnCubeRoot(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -208,6 +209,7 @@ void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
+void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -1228,6 +1230,30 @@ static void configureSquareRootLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
   mathWrappersSetLongIntegerInput(true, 16);
+}
+
+static void configureCubeRootReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, -8, 0);
+}
+
+static void configureCubeRootComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+}
+
+static void configureCubeRootShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(-8);
+}
+
+static void configureCubeRootLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 27);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2881,6 +2907,10 @@ int main(void) {
   failures += runCase("fnSquareRoot/complex", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootComplex);
   failures += runCase("fnSquareRoot/shortint", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootShortInteger);
   failures += runCase("fnSquareRoot/longint", oracle_fnSquareRoot, fnSquareRoot, 0, true, configureSquareRootLongInteger);
+  failures += runCase("fnCubeRoot/real", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootReal);
+  failures += runCase("fnCubeRoot/complex", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootComplex);
+  failures += runCase("fnCubeRoot/shortint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootShortInteger);
+  failures += runCase("fnCubeRoot/longint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootLongInteger);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);

@@ -1549,6 +1549,32 @@ void realPower(const real_t *base, const real_t *exponent, real_t *result, realC
   setFakeReal(result, base_value + exponent_value, 0);
 }
 
+void PowerReal(const real_t *base, const real_t *exponent, real_t *result, realContext_t *realContext) {
+  if(exponent == z47_math_wrappers_const_1on3()) {
+    int32_t magnitude = fakeRealValue(base);
+    int32_t root = 0;
+
+    (void)realContext;
+    if(magnitude < 0) {
+      magnitude = -magnitude;
+    }
+    while((root + 1) * (root + 1) * (root + 1) <= magnitude) {
+      root++;
+    }
+    setFakeReal(result, root, 0);
+    return;
+  }
+
+  realPower(base, exponent, result, realContext);
+}
+
+int32_t realToInt32C47(const real_t *source, bool_t *error) {
+  if(error != NULL) {
+    *error = false;
+  }
+  return fakeRealValue(source);
+}
+
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 68, 0);
