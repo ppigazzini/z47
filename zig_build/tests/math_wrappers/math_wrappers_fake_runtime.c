@@ -249,6 +249,36 @@ static uint64_t *shortIntegerSlot(calcRegister_t reg) {
   return (uint64_t *)register_slot;
 }
 
+static uint32_t *registerDataTypeSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &current_register_y_data_type;
+  }
+  if(reg == REGISTER_Z) {
+    return &current_register_z_data_type;
+  }
+  return &current_register_data_type;
+}
+
+static uint32_t *registerTagSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &current_register_y_tag;
+  }
+  if(reg == REGISTER_Z) {
+    return &current_register_z_tag;
+  }
+  return &current_register_tag;
+}
+
+static uint8_t *registerDataSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return register_y_slot;
+  }
+  if(reg == REGISTER_Z) {
+    return register_z_slot;
+  }
+  return register_slot;
+}
+
 static void setFakeRealWithExponent(real_t *value, int32_t signed_value, uint8_t bits, int32_t exponent) {
   setFakeRealWithCoeff(value, signed_value, bits, exponent);
 }
@@ -290,9 +320,12 @@ void mathWrappersReset(void) {
   snapshot.sinh_cosh_cplx_trig_type = -1;
   current_register_data_type = dtReal34;
   current_register_tag = amNone;
+  current_register_y_data_type = dtReal34;
+  current_register_y_tag = amNone;
   current_register_z_data_type = dtReal34;
   current_register_z_tag = amNone;
   memset(register_slot, 0, sizeof(register_slot));
+  memset(register_y_slot, 0, sizeof(register_y_slot));
   memset(register_z_slot, 0, sizeof(register_z_slot));
   shortint_y_slot = encodeShortInteger(2);
   shortint_z_slot = encodeShortInteger(3);
@@ -480,6 +513,7 @@ void mathWrappersSetShortIntegerInput(int64_t value) {
 void mathWrappersSetShortIntegerYInput(int64_t value) {
   *shortIntegerSlot(REGISTER_Y) = encodeShortInteger(value);
   current_register_y_data_type = dtShortInteger;
+  current_register_y_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetShortIntegerZInput(int64_t value) {
@@ -600,10 +634,32 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_tag = current_register_tag;
   snapshot.final_register_real34_value = fakeRegisterScalarValue();
   snapshot.final_register_real34_bits = register_slot[15];
+  snapshot.final_register_complex_real_value = fakeReal34Value((const real34_t *)register_slot);
+  snapshot.final_register_complex_real_bits = register_slot[15];
+  snapshot.final_register_complex_imag_value = fakeReal34Value((const real34_t *)(register_slot + sizeof(real34_t)));
+  snapshot.final_register_complex_imag_bits = register_slot[sizeof(real34_t) + 15];
+  snapshot.final_register_y_data_type = current_register_y_data_type;
+  snapshot.final_register_y_tag = current_register_y_tag;
+  snapshot.final_register_y_real34_value = fakeReal34Value((const real34_t *)register_y_slot);
+  snapshot.final_register_y_real34_bits = register_y_slot[15];
+  snapshot.final_register_y_complex_real_value = fakeReal34Value((const real34_t *)register_y_slot);
+  snapshot.final_register_y_complex_real_bits = register_y_slot[15];
+  snapshot.final_register_y_complex_imag_value = fakeReal34Value((const real34_t *)(register_y_slot + sizeof(real34_t)));
+  snapshot.final_register_y_complex_imag_bits = register_y_slot[sizeof(real34_t) + 15];
+  snapshot.final_register_z_data_type = current_register_z_data_type;
+  snapshot.final_register_z_tag = current_register_z_tag;
+  snapshot.final_register_z_real34_value = fakeReal34Value((const real34_t *)register_z_slot);
+  snapshot.final_register_z_real34_bits = register_z_slot[15];
+  snapshot.final_register_z_complex_real_value = fakeReal34Value((const real34_t *)register_z_slot);
+  snapshot.final_register_z_complex_real_bits = register_z_slot[15];
+  snapshot.final_register_z_complex_imag_value = fakeReal34Value((const real34_t *)(register_z_slot + sizeof(real34_t)));
+  snapshot.final_register_z_complex_imag_bits = register_z_slot[sizeof(real34_t) + 15];
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_y_shortint_raw = shortint_y_slot;
+  snapshot.final_register_z_shortint_raw = shortint_z_slot;
   snapshot.final_register_longint_value = longint_input.value;
   snapshot.final_register_y_longint_value = longint_y_input.value;
+  snapshot.final_register_z_longint_value = longint_z_input.value;
   snapshot.final_real_matrix_rows = fake_real_matrix.header.matrixRows;
   snapshot.final_real_matrix_columns = fake_real_matrix.header.matrixColumns;
   snapshot.final_complex_matrix_rows = fake_complex_matrix.header.matrixRows;
@@ -1107,11 +1163,15 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
   if(reg == REGISTER_Y) {
     longint_y_input.available = true;
     longint_y_input.value = value;
+    current_register_y_data_type = dtLongInteger;
+    current_register_y_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
     return;
   }
   if(reg == REGISTER_Z) {
     longint_z_input.available = true;
     longint_z_input.value = value;
+    current_register_z_data_type = dtLongInteger;
+    current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
     return;
   }
   longint_input.available = true;
@@ -1122,8 +1182,8 @@ void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegi
 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t reg) {
   *shortIntegerSlot(reg) = value | ((uint64_t)(sign != 0) << 63);
-  current_register_data_type = dtShortInteger;
-  current_register_tag = base;
+  *registerDataTypeSlot(reg) = dtShortInteger;
+  *registerTagSlot(reg) = base;
 }
 
 void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value) {
@@ -1259,7 +1319,22 @@ void convertRealToResultRegister(const real_t *real, calcRegister_t reg, angular
   snapshot.convert_real_to_result_bits = real->bits;
   snapshot.convert_real_to_result_angle = angleMode;
   snapshot.convert_real_to_result_raw = *real;
-  (void)reg;
+  if(reg == REGISTER_Y) {
+    current_register_y_data_type = dtReal34;
+    current_register_y_tag = (uint32_t)angleMode;
+    real_y_input.available = true;
+    real_y_input.value = *real;
+    setRegisterReal34(register_y_slot, fakeRealValue(real), real->bits & 0x70);
+    return;
+  }
+  if(reg == REGISTER_Z) {
+    current_register_z_data_type = dtReal34;
+    current_register_z_tag = (uint32_t)angleMode;
+    real_z_input.available = true;
+    real_z_input.value = *real;
+    setRegisterReal34(register_z_slot, fakeRealValue(real), real->bits & 0x70);
+    return;
+  }
   current_register_data_type = dtReal34;
   current_register_tag = (uint32_t)angleMode;
   setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
@@ -1269,6 +1344,22 @@ void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest) 
   snapshot.convert_real_to_real34_result_calls++;
   snapshot.convert_real_to_real34_result_dest = dest;
   snapshot.convert_real_to_real34_result_raw = *real;
+  if(dest == REGISTER_Y) {
+    current_register_y_data_type = dtReal34;
+    current_register_y_tag = amNone;
+    real_y_input.available = true;
+    real_y_input.value = *real;
+    setRegisterReal34(register_y_slot, fakeRealValue(real), real->bits & 0x70);
+    return;
+  }
+  if(dest == REGISTER_Z) {
+    current_register_z_data_type = dtReal34;
+    current_register_z_tag = amNone;
+    real_z_input.available = true;
+    real_z_input.value = *real;
+    setRegisterReal34(register_z_slot, fakeRealValue(real), real->bits & 0x70);
+    return;
+  }
   current_register_data_type = dtReal34;
   current_register_tag = amNone;
   setRegisterScalar(fakeRealValue(real), real->bits & 0x70);
@@ -1280,8 +1371,33 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   snapshot.convert_complex_to_result_real_bits = real->bits;
   snapshot.convert_complex_to_result_imag_value = fakeRealValue(imag);
   snapshot.convert_complex_to_result_imag_bits = imag->bits;
-  (void)reg;
+  if(reg == REGISTER_Y) {
+    current_register_y_data_type = dtComplex34;
+    current_register_y_tag = amNone;
+    complex_y_input.available = true;
+    complex_y_input.real = *real;
+    complex_y_input.imag = *imag;
+    setRegisterReal34(register_y_slot, fakeRealValue(real), real->bits & 0x70);
+    setRegisterReal34(register_y_slot + sizeof(real34_t), fakeRealValue(imag), imag->bits & 0x70);
+    return;
+  }
+  if(reg == REGISTER_Z) {
+    current_register_z_data_type = dtComplex34;
+    current_register_z_tag = amNone;
+    complex_z_input.available = true;
+    complex_z_input.real = *real;
+    complex_z_input.imag = *imag;
+    setRegisterReal34(register_z_slot, fakeRealValue(real), real->bits & 0x70);
+    setRegisterReal34(register_z_slot + sizeof(real34_t), fakeRealValue(imag), imag->bits & 0x70);
+    return;
+  }
+  complex_input.available = true;
+  complex_input.real = *real;
+  complex_input.imag = *imag;
   current_register_data_type = dtComplex34;
+  current_register_tag = amNone;
+  setRegisterReal34(register_slot, fakeRealValue(real), real->bits & 0x70);
+  setRegisterReal34(register_slot + sizeof(real34_t), fakeRealValue(imag), imag->bits & 0x70);
 }
 
 void linkToComplexMatrixRegister(calcRegister_t reg, complex34Matrix_t *matrix) {
