@@ -1651,6 +1651,7 @@ int main(void) {
   failures += runCase("fnRoundi/real_nan", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealNaN);
   failures += runCase("fnRoundi/real_inf", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealInfinity);
   failures += runCase("fnNeighb/real", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbReal);
+  failures += runCase("fnNeighb/shortint", oracle_fnNeighb, fnNeighb, 0, true, configureDyadicShortInteger);
   failures += runCase("fnNeighb/longint", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbLongInteger);
   failures += runCase("fnIxyz/valid", oracle_fnIxyz, fnIxyz, 0, true, configureIxyzValid);
   failures += runCase("fnIxyz/domain", oracle_fnIxyz, fnIxyz, 0, true, configureIxyzDomainError);
