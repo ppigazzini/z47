@@ -1553,6 +1553,17 @@ fn conjCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
 }
 
+fn swapReImCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.convertComplexToResultRegister(&imag_value, &real_value, runtime.REGISTER_X);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2837,7 +2848,17 @@ pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+        z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    swapReImCplx();
 }
 
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
