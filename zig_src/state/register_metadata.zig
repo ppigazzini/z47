@@ -360,7 +360,10 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
         runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
         runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
         runtime.dtConfig => runtime.configSizeInBlocks(),
-        else => runtime.retainedGetRegisterFullSizeInBlocks(reg),
+        else => blk: {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            break :blk 0;
+        },
     };
 }
 
