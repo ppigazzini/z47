@@ -2768,7 +2768,15 @@ fn changeSignTime() void {
 }
 
 fn squareLonI() callconv(.c) void {
-    runtime.z47_math_wrappers_square_long_integer();
+    var x: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    runtime.__gmpz_mul(&x[0], &x[0], &x[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
 fn squareShoI() callconv(.c) void {

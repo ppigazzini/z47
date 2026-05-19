@@ -292,6 +292,7 @@ pub extern fn __gmpz_init(op: *mpz_struct) void;
 pub extern fn __gmpz_cmp(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
 pub extern fn __gmpz_set_si(op: *mpz_struct, value: c_long) void;
 pub extern fn __gmpz_add(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
+pub extern fn __gmpz_mul(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_gcd(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_lcm(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
