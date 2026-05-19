@@ -89,6 +89,14 @@ pub const realContext_t = extern struct {
     clamp: u8,
 };
 
+pub const mpz_struct = extern struct {
+    _mp_alloc: c_int,
+    _mp_size: c_int,
+    _mp_d: [*c]c_ulong,
+};
+
+pub const longInteger_t = [1]mpz_struct;
+
 pub const VoidCallback = ?*const fn () callconv(.c) void;
 
 pub extern var ctxtReal34: realContext_t;
@@ -124,8 +132,10 @@ pub extern fn getRegisterAsReal(reg: calcRegister_t, value: ?*real_t) bool;
 pub extern fn getRegisterAsRealAngle(reg: calcRegister_t, value: *real_t, angle_mode: *angularMode_t, reduce_longinteger_angle: bool) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, real: *real_t, imag: *real_t) bool;
 pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u64, overflow: ?*bool, fractional: ?*bool) bool;
+pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
+pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToUInt64(reg: calcRegister_t, sign: ?*i16, value: ?*u64) void;
 pub extern fn getFlag(flag: u16) bool;
@@ -276,6 +286,10 @@ pub extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real
 pub extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFMA(result: *real_t, lhs: *const real_t, rhs: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
+pub extern fn __gmpz_clear(op: *mpz_struct) void;
+pub extern fn __gmpz_cmp(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
+pub extern fn __gmpz_set_si(op: *mpz_struct, value: c_long) void;
+pub extern fn __gmpz_add(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
