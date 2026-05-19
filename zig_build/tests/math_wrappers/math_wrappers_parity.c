@@ -38,6 +38,7 @@ void fnBnStar(uint16_t unusedButMandatoryParameter);
 void fnLn(uint16_t unusedButMandatoryParameter);
 void fnLnP1(uint16_t unusedButMandatoryParameter);
 void fnSqrt1Px2(uint16_t unusedButMandatoryParameter);
+void fnGetType(uint16_t unusedButMandatoryParameter);
 void fnErf(uint16_t unusedButMandatoryParameter);
 void fnErfc(uint16_t unusedButMandatoryParameter);
 void fn2Pow(uint16_t unusedButMandatoryParameter);
@@ -64,6 +65,9 @@ void fnNeighb(uint16_t unusedButMandatoryParameter);
 void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnRandomI(uint16_t unusedButMandatoryParameter);
+void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
+
+static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits);
 void fnCheckInteger(uint16_t unusedButMandatoryParameter);
 void fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void fnCheckType(uint16_t unusedButMandatoryParameter);
@@ -1125,6 +1129,89 @@ static void configureCheckAngleFalse(void) {
 static void configureCheckMatrixTrue(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureGetTypeLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 7);
+}
+
+static void configureGetTypeRealDegree(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amDegree);
+  mathWrappersSetRealInput(true, 7, 0);
+}
+
+static void configureGetTypeShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(0x1234);
+}
+
+static void configureGetTypeRealMatrixVector2D(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 1, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree | amPolar);
+}
+
+static void configureGetTypeRealMatrixCylinder(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 3, 1);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree);
+}
+
+static void configureGetTypeRealMatrixSquare(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureGetTypeComplexMatrixPolarRow(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 1, 2);
+  setMatrixReal34(&matrix.matrixElements[0].real, 1, 0);
+  setMatrixReal34(&matrix.matrixElements[0].imag, 5, 0);
+  setMatrixReal34(&matrix.matrixElements[1].real, 2, 0);
+  setMatrixReal34(&matrix.matrixElements[1].imag, 6, 0);
+  setMatrixReal34(&matrix.matrixElements[2].real, 3, 0);
+  setMatrixReal34(&matrix.matrixElements[2].imag, 7, 0);
+  setMatrixReal34(&matrix.matrixElements[3].real, 4, 0);
+  setMatrixReal34(&matrix.matrixElements[3].imag, 8, 0);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amDegree | amPolar);
+}
+
+static void configureGetTypeConfig(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtConfig, amNone);
 }
 
 static void configureCheckNaNComplex(void) {
@@ -2502,6 +2589,14 @@ int main(void) {
   failures += runCase("fnCheckAngle/false", oracle_fnCheckAngle, fnCheckAngle, 0, true, configureCheckAngleFalse);
   failures += runCase("fnCheckMatrix/true", oracle_fnCheckMatrix, fnCheckMatrix, 0, true, configureCheckMatrixTrue);
   failures += runCase("fnCheckMatrix/false", oracle_fnCheckMatrix, fnCheckMatrix, 0, true, configureCheckTypeLongInteger);
+  failures += runCase("fnGetType/longint", oracle_fnGetType, fnGetType, 0, true, configureGetTypeLongInteger);
+  failures += runCase("fnGetType/real_degree", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealDegree);
+  failures += runCase("fnGetType/shortint", oracle_fnGetType, fnGetType, 0, true, configureGetTypeShortInteger);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/real_matrix_vector_2d", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealMatrixVector2D);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/real_matrix_cyl", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealMatrixCylinder);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/real_matrix_square", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealMatrixSquare);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/complex_matrix_polar_row", oracle_fnGetType, fnGetType, 0, true, configureGetTypeComplexMatrixPolarRow);
+  failures += runCase("fnGetType/config", oracle_fnGetType, fnGetType, 0, true, configureGetTypeConfig);
   failures += runCase("fnCheckNumber/longint_true", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckNumber/real_true", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureFactorialReal);
   failures += runCase("fnCheckNumber/real_nan_false", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureSignRealNaN);

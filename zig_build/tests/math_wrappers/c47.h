@@ -99,9 +99,12 @@ enum {
   dtReal34 = 1,
   dtComplex34 = 2,
   dtTime = 3,
+  dtDate = 4,
+  dtString = 5,
   dtReal34Matrix = 6,
   dtComplex34Matrix = 7,
   dtShortInteger = 8,
+  dtConfig = 9,
 };
 
 enum {
@@ -551,9 +554,11 @@ uint32_t decQuadIsNegative(const decQuad *dq);
 #define REGISTER_MATRIX_HEADER(reg) ((matrixHeader_t *)(getRegisterDataPointer(reg)))
 #define amPolarCYL 64
 #define amPolarSPH 128
+#define TI_REGTYPE 123
 #define TI_VECTOR 127
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
 #define getComplexRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
+#define getComplexRegisterPolarMode(reg) (getRegisterTag(reg) & amPolar)
 #define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))
 #define setComplexRegisterPolarMode(reg, pm) setRegisterTag((reg), ((((pm) & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | ((pm) & amPolar))
 #define isRegisterMatrix3dVector(reg) ((getRegisterDataType(reg) == dtReal34Matrix) && (((REGISTER_MATRIX_HEADER(reg)->matrixRows == 1) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 3)) || ((REGISTER_MATRIX_HEADER(reg)->matrixRows == 3) && (REGISTER_MATRIX_HEADER(reg)->matrixColumns == 1))))
