@@ -5261,7 +5261,9 @@ fn tryFnToRectReal34Pair(angle_in_y: i8) bool {
     const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;
 
     if (!radius_valid or !angle_valid) {
-        return false;
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
+        runtime.moreInfoOnError("In function fnToRect:", "cannot convert current X/Y pair to rectangular coordinates", null, null);
+        return true;
     }
 
     var angle_mode = runtime.getRegisterAngularMode(angle_reg);
@@ -5319,11 +5321,7 @@ pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const angle_in_y: i8 = @bitCast(@as(u8, @truncate(unused_but_mandatory_parameter)));
 
-    if (tryFnToRectReal34Pair(angle_in_y)) {
-        return;
-    }
-
-    z47_math_wrappers_retained_fnToRect(unused_but_mandatory_parameter);
+    _ = tryFnToRectReal34Pair(angle_in_y);
 }
 
 pub export fn fnParallel(unused_but_mandatory_parameter: u16) callconv(.c) void {
