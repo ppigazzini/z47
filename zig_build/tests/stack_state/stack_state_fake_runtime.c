@@ -817,6 +817,10 @@ void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t
   }
 }
 
+void z47_stack_runtime_sort_register_range(uint16_t range_start, uint16_t range_end) {
+  z47_registers_retained_sort_reg(range_start, range_end);
+}
+
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
   displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
 }

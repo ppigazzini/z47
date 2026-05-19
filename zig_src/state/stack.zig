@@ -247,7 +247,7 @@ pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        runtime.retainedSortReg(s, s + n - 1);
+        runtime.sortRegisterRange(s, s + n - 1);
     }
 }
 
