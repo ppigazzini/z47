@@ -250,6 +250,7 @@ void stackParitySetMemoryBlockAvailable(bool_t available) {
   fake_memory_block_available = available;
 }
 
+#ifdef Z47_REGISTER_METADATA_RUNTIME
 void stackParitySeedBuiltInMenuItem(uint32_t index, uint32_t status, const char *name) {
   if(index >= MAX_FAKE_MENU_ITEMS) {
     return;
@@ -275,6 +276,7 @@ void stackParitySeedUserMenu(uint32_t index, const char *name) {
     numberOfUserMenus = (uint16_t)(index + 1);
   }
 }
+#endif
 
 void *allocC47Blocks(size_t size_in_blocks) {
   uint16_t slot;
@@ -796,6 +798,23 @@ void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t bas
 
 void z47_stack_runtime_request_clear_registers_confirmation(void) {
   confirmation_request = 1;
+}
+
+void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t d) {
+  confirmation_request = 2;
+
+  if(s > d) {
+    for(uint16_t i = 0; i < n; ++i) {
+      copySourceRegisterToDestRegister((calcRegister_t)(s + i), (calcRegister_t)(d + i));
+    }
+    return;
+  }
+
+  if(s < d) {
+    for(uint16_t i = n; i > 0; --i) {
+      copySourceRegisterToDestRegister((calcRegister_t)(s + i - 1), (calcRegister_t)(d + i - 1));
+    }
+  }
 }
 
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
