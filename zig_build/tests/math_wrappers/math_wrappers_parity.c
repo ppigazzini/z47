@@ -205,8 +205,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"
-          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n",
+          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"
+          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -218,6 +218,10 @@ static int reportMismatch(const char *name,
             expected->process_int_real_complex_dyadic_calls,
       expected->get_register_as_longint_calls,
       expected->get_register_as_longint_value,
+      expected->get_register_as_longint_quiet_calls,
+      expected->get_register_as_longint_quiet_error,
+      expected->get_register_as_longint_quiet_fractional,
+      expected->get_register_as_longint_quiet_value,
       expected->convert_long_integer_to_register_calls,
       expected->convert_long_integer_to_register_value,
           expected->cvt2rad_calls,
@@ -270,6 +274,10 @@ static int reportMismatch(const char *name,
           actual->process_int_real_complex_dyadic_calls,
       actual->get_register_as_longint_calls,
           actual->get_register_as_longint_value,
+        actual->get_register_as_longint_quiet_calls,
+        actual->get_register_as_longint_quiet_error,
+        actual->get_register_as_longint_quiet_fractional,
+        actual->get_register_as_longint_quiet_value,
       actual->convert_long_integer_to_register_calls,
           actual->convert_long_integer_to_register_value,
           actual->cvt2rad_calls,
@@ -976,6 +984,28 @@ static void configureCheckIntegerShortIntegerEven(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtShortInteger, 16);
   mathWrappersSetShortIntegerInput(6);
+}
+
+static void configureCheckIntegerRealInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 6, 0);
+  mathWrappersSetLongIntegerQuietResult(false, ERROR_NONE, false, 0);
+}
+
+static void configureCheckIntegerRealFractional(void) {
+  configureCheckIntegerRealInteger();
+  mathWrappersSetLongIntegerQuietResult(true, ERROR_NONE, true, 6);
+}
+
+static void configureCheckIntegerRealNaN(void) {
+  configureCheckIntegerRealInteger();
+  mathWrappersSetRealInput(true, 0, 0x20);
+}
+
+static void configureCheckIntegerTypeError(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
 }
 
 static void configureCheckForZeroRealNonzero(void) {
@@ -2095,6 +2125,12 @@ int main(void) {
   failures += runCase("fnCheckInteger/shortint_even", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_EVEN, true, configureCheckIntegerShortIntegerEven);
   failures += runCase("fnCheckInteger/shortint_odd", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_ODD, true, configureCheckIntegerShortIntegerOdd);
   failures += runCase("fnCheckInteger/shortint_fp", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_FP, true, configureCheckIntegerShortIntegerOdd);
+  failures += runCase("fnCheckInteger/real_int", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerRealInteger);
+  failures += runCase("fnCheckInteger/real_even", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_EVEN, true, configureCheckIntegerRealInteger);
+  failures += runCase("fnCheckInteger/real_fraction", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerRealFractional);
+  failures += runCase("fnCheckInteger/real_fraction_fp", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_FP, true, configureCheckIntegerRealFractional);
+  failures += runCase("fnCheckInteger/real_nan", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerRealNaN);
+  failures += runCase("fnCheckInteger/type_error", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerTypeError);
   failures += runCase("fnCheckForZero/longint_re_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckLongIntegerZero);
   failures += runCase("fnCheckForZero/longint_re_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISRENZQ, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckForZero/shortint_re_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckShortIntegerZero);
