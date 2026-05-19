@@ -564,6 +564,10 @@ pub inline fn real34IsNaN(value: *const real34_t) bool {
     return decQuadIsNaN(value) != 0;
 }
 
+pub inline fn real34IsSpecial(value: *const real34_t) bool {
+    return real34IsNaN(value) or real34IsInfinite(value);
+}
+
 pub inline fn real34IsZero(value: *const real34_t) bool {
     return decQuadIsZero(value) != 0;
 }

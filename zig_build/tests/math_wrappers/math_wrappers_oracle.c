@@ -374,6 +374,33 @@ void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + (t == 6 || t == 7);
 }
 
+void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter) {
+	int result = 1;
+
+	(void)unusedButMandatoryParameter;
+
+	switch(getRegisterDataType(REGISTER_X)) {
+		default:
+			result = 0;
+			break;
+
+		case 0:
+		case 8:
+			break;
+
+		case 2:
+			result = !(decQuadIsNaN(REGISTER_IMAG34_DATA(REGISTER_X)) != 0 || real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X)));
+			/* fall through */
+		case 3:
+		case 4:
+		case 1:
+			result &= !(decQuadIsNaN(REGISTER_REAL34_DATA(REGISTER_X)) != 0 || real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)));
+			break;
+	}
+
+	temporaryInformation = 12 + result;
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
