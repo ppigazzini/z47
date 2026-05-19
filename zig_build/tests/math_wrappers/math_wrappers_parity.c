@@ -2207,6 +2207,48 @@ static void configureToRect2ComplexPolar(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amDegree | amPolar);
 }
 
+static void configureToRect2Vector2D(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 1, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree | amPolar);
+}
+
+static void configureToRect23DSpherical(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 1, 3);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree | amPolar);
+}
+
+static void configureToRect23DCylindrical(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 1, 3);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree);
+}
+
 static void configureFnToRectReal34Pair(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -2597,6 +2639,9 @@ int main(void) {
   failures += runCase("fnToRect2/longint_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2LongIntegerPair);
   failures += runCase("fnToRect2/invalid_type", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2InvalidType);
   failures += runCase("fnToRect2/complex_polar", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2ComplexPolar);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnToRect2/vector_2d", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2Vector2D);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnToRect2/vector_3d_spherical", oracle_fnToRect2, fnToRect2, 0, true, configureToRect23DSpherical);
+  failures += runCaseIgnoringRegisterMetadataGetters("fnToRect2/vector_3d_cylindrical", oracle_fnToRect2, fnToRect2, 0, true, configureToRect23DCylindrical);
   failures += runCase("fnToRect/real34_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectReal34Pair);
   failures += runCase("fnToRect/longint_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectLongIntegerPair);
   failures += runCase("fnToRect/invalid_type", oracle_fnToRect, fnToRect, 1, true, configureFnToRectInvalidType);
