@@ -1,13 +1,14 @@
 # z47 project files
-/.zig-cache
-/zig-out
-/__DEV/
+.zig-cache
+zig-out
+__DEV/
 __pycache__
-./venv
+.venv
 *.pyc
 *.pyo
 *.pyd
 pyproject.toml
+uv.lock
 .pre-commit-config.yaml
 
 # C47 project specific files
