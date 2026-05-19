@@ -693,6 +693,25 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
   }
 }
 
+void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void)) {
+  snapshot.process_real_complex_dyadic_calls++;
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(current_register_data_type == dtComplex34 || current_register_y_data_type == dtComplex34) {
+    if(complexf != NULL) {
+      complexf();
+    }
+  }
+  else if(realf != NULL) {
+    realf();
+  }
+
+  adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
+
 void processIntRealComplexMonadicFunction(void (*realf)(void),
                                          void (*complexf)(void),
                                          void (*shortintf)(void),
@@ -808,16 +827,30 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
 
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   snapshot.get_register_as_complex_calls++;
-  snapshot.get_register_as_complex_real_value = fakeRealValue(&complex_input.real);
-  snapshot.get_register_as_complex_real_bits = complex_input.real.bits;
-  snapshot.get_register_as_complex_imag_value = fakeRealValue(&complex_input.imag);
-  snapshot.get_register_as_complex_imag_bits = complex_input.imag.bits;
-  (void)reg;
-  if(!complex_input.available) {
+  if((reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type) == dtComplex34) {
+    snapshot.get_register_as_complex_real_value = fakeRealValue(&complex_input.real);
+    snapshot.get_register_as_complex_real_bits = complex_input.real.bits;
+    snapshot.get_register_as_complex_imag_value = fakeRealValue(&complex_input.imag);
+    snapshot.get_register_as_complex_imag_bits = complex_input.imag.bits;
+
+    if(!complex_input.available) {
+      return false;
+    }
+
+    *real = complex_input.real;
+    *imag = complex_input.imag;
+    return true;
+  }
+
+  if(!getRegisterAsReal(reg, real)) {
     return false;
   }
-  *real = complex_input.real;
-  *imag = complex_input.imag;
+
+  setFakeReal(imag, 0, 0);
+  snapshot.get_register_as_complex_real_value = fakeRealValue(real);
+  snapshot.get_register_as_complex_real_bits = real->bits;
+  snapshot.get_register_as_complex_imag_value = 0;
+  snapshot.get_register_as_complex_imag_bits = 0;
   return true;
 }
 
@@ -1224,12 +1257,129 @@ void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34M
   }
 }
 
+void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source, calcRegister_t destination) {
+  complex34Matrix_t matrix;
+
+  convertReal34MatrixRegisterToComplex34Matrix(source, &matrix);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, destination);
+}
+
 void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *realMatrix, complex34Matrix_t *complexMatrix) {
   complexMatrix->header = realMatrix->header;
   for(uint16_t i = 0; i < complexMatrix->header.matrixRows * complexMatrix->header.matrixColumns && i < 4; ++i) {
     complexMatrix->matrixElements[i].real = realMatrix->matrixElements[i];
     setRegisterReal34((uint8_t *)&complexMatrix->matrixElements[i].imag, 0, 0);
   }
+}
+
+uint16_t realVectorSize(const real34Matrix_t *matrix) {
+  if(matrix->header.matrixRows == 1) {
+    return matrix->header.matrixColumns;
+  }
+  if(matrix->header.matrixColumns == 1) {
+    return matrix->header.matrixRows;
+  }
+  return 0;
+}
+
+static int32_t fakeReal34VectorValue(const real34Matrix_t *matrix, uint16_t index) {
+  if(index >= 4) {
+    return 0;
+  }
+  return fakeReal34Value(&matrix->matrixElements[index]);
+}
+
+static void setFakeReal34VectorValue(real34Matrix_t *matrix, uint16_t index, int32_t value) {
+  if(index < 4) {
+    setRegisterReal34((uint8_t *)&matrix->matrixElements[index], value, 0);
+  }
+}
+
+void dotRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34_t *res) {
+  const uint16_t count = realVectorSize(y);
+  int32_t sum = 0;
+
+  for(uint16_t i = 0; i < count && i < 4; ++i) {
+    sum += fakeReal34VectorValue(y, i) * fakeReal34VectorValue(x, i);
+  }
+
+  setRegisterReal34((uint8_t *)res, sum, 0);
+}
+
+void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res) {
+  const uint16_t count = realVectorSize(y);
+  const int32_t y0 = fakeReal34VectorValue(y, 0);
+  const int32_t y1 = fakeReal34VectorValue(y, 1);
+  const int32_t y2 = count > 2 ? fakeReal34VectorValue(y, 2) : 0;
+  const int32_t x0 = fakeReal34VectorValue(x, 0);
+  const int32_t x1 = fakeReal34VectorValue(x, 1);
+  const int32_t x2 = count > 2 ? fakeReal34VectorValue(x, 2) : 0;
+
+  res->header = x->header;
+  setFakeReal34VectorValue(res, 0, y1 * x2 - y2 * x1);
+  setFakeReal34VectorValue(res, 1, y2 * x0 - y0 * x2);
+  setFakeReal34VectorValue(res, 2, y0 * x1 - y1 * x0);
+}
+
+uint16_t complexVectorSize(const complex34Matrix_t *matrix) {
+  return realVectorSize((const real34Matrix_t *)matrix);
+}
+
+static int32_t fakeComplexRealValue(const complex34Matrix_t *matrix, uint16_t index) {
+  if(index >= 4) {
+    return 0;
+  }
+  return fakeReal34Value(&matrix->matrixElements[index].real);
+}
+
+static int32_t fakeComplexImagValue(const complex34Matrix_t *matrix, uint16_t index) {
+  if(index >= 4) {
+    return 0;
+  }
+  return fakeReal34Value(&matrix->matrixElements[index].imag);
+}
+
+void dotComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x, real34_t *res_r, real34_t *res_i) {
+  const uint16_t count = complexVectorSize(y);
+  int32_t sum_real = 0;
+  int32_t sum_imag = 0;
+
+  for(uint16_t i = 0; i < count && i < 4; ++i) {
+    const int32_t y_real = fakeComplexRealValue(y, i);
+    const int32_t y_imag = fakeComplexImagValue(y, i);
+    const int32_t x_real = fakeComplexRealValue(x, i);
+    const int32_t x_imag = fakeComplexImagValue(x, i);
+
+    sum_real += y_real * x_real - y_imag * x_imag;
+    sum_imag += y_real * x_imag + y_imag * x_real;
+  }
+
+  setRegisterReal34((uint8_t *)res_r, sum_real, 0);
+  setRegisterReal34((uint8_t *)res_i, sum_imag, 0);
+}
+
+void crossComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res) {
+  const uint16_t count = complexVectorSize(y);
+  const int32_t y0r = fakeComplexRealValue(y, 0);
+  const int32_t y0i = fakeComplexImagValue(y, 0);
+  const int32_t y1r = fakeComplexRealValue(y, 1);
+  const int32_t y1i = fakeComplexImagValue(y, 1);
+  const int32_t y2r = count > 2 ? fakeComplexRealValue(y, 2) : 0;
+  const int32_t y2i = count > 2 ? fakeComplexImagValue(y, 2) : 0;
+  const int32_t x0r = fakeComplexRealValue(x, 0);
+  const int32_t x0i = fakeComplexImagValue(x, 0);
+  const int32_t x1r = fakeComplexRealValue(x, 1);
+  const int32_t x1i = fakeComplexImagValue(x, 1);
+  const int32_t x2r = count > 2 ? fakeComplexRealValue(x, 2) : 0;
+  const int32_t x2i = count > 2 ? fakeComplexImagValue(x, 2) : 0;
+
+  res->header = x->header;
+  setRegisterReal34((uint8_t *)&res->matrixElements[0].real, y1r * x2r - y2r * x1r, 0);
+  setRegisterReal34((uint8_t *)&res->matrixElements[0].imag, y1i * x2i - y2i * x1i, 0);
+  setRegisterReal34((uint8_t *)&res->matrixElements[1].real, y2r * x0r - y0r * x2r, 0);
+  setRegisterReal34((uint8_t *)&res->matrixElements[1].imag, y2i * x0i - y0i * x2i, 0);
+  setRegisterReal34((uint8_t *)&res->matrixElements[2].real, y0r * x1r - y1r * x0r, 0);
+  setRegisterReal34((uint8_t *)&res->matrixElements[2].imag, y0i * x1i - y1i * x0i, 0);
 }
 
 void setRegisterTag(calcRegister_t reg, uint32_t tag) {

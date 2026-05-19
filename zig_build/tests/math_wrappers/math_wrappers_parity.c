@@ -96,6 +96,9 @@ void fnPercent(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
 void fnToRect(uint16_t unusedButMandatoryParameter);
+void fnParallel(uint16_t unusedButMandatoryParameter);
+void fnCross(uint16_t unusedButMandatoryParameter);
+void fnDot(uint16_t unusedButMandatoryParameter);
 void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
@@ -187,6 +190,9 @@ void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
+void oracle_fnParallel(uint16_t unusedButMandatoryParameter);
+void oracle_fnCross(uint16_t unusedButMandatoryParameter);
+void oracle_fnDot(uint16_t unusedButMandatoryParameter);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
@@ -1039,6 +1045,48 @@ static void configureSdrLongInteger(void) {
 static void configureSdrInvalidType(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
+static void configureParallelReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 4, 0);
+  mathWrappersSetRealYInput(true, 9, 0);
+}
+
+static void configureParallelComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configureCrossReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 6, 0);
+  mathWrappersSetRealYInput(true, 7, 0);
+}
+
+static void configureCrossComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configureDotReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 6, 0);
+  mathWrappersSetRealYInput(true, 7, 0);
+}
+
+static void configureDotComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetRealYInput(true, 5, 0);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2668,6 +2716,12 @@ int main(void) {
   failures += runCase("fnRoundi/shortint", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiShortInteger);
   failures += runCase("fnRoundi/matrix", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiMatrix);
   failures += runCase("fnRoundi/invalid_type", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiInvalidType);
+  failures += runCase("fnParallel/real", oracle_fnParallel, fnParallel, 0, true, configureParallelReal);
+  failures += runCase("fnParallel/complex", oracle_fnParallel, fnParallel, 0, true, configureParallelComplex);
+  failures += runCase("fnCross/real", oracle_fnCross, fnCross, 0, true, configureCrossReal);
+  failures += runCase("fnCross/complex", oracle_fnCross, fnCross, 0, true, configureCrossComplex);
+  failures += runCase("fnDot/real", oracle_fnDot, fnDot, 0, true, configureDotReal);
+  failures += runCase("fnDot/complex", oracle_fnDot, fnDot, 0, true, configureDotComplex);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);

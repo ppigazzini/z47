@@ -307,6 +307,7 @@ void adjustResult(calcRegister_t res,
                   calcRegister_t op2,
                   calcRegister_t op3);
 void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
+void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void));
 void processIntRealComplexMonadicFunction(void (*realf)(void),
                                          void (*complexf)(void),
                                          void (*shortintf)(void),
@@ -501,8 +502,15 @@ void complexMatrixFree(complex34Matrix_t *matrix);
 void convertReal34MatrixToReal34MatrixRegister(const real34Matrix_t *matrix, calcRegister_t reg);
 void convertComplex34MatrixToComplex34MatrixRegister(const complex34Matrix_t *matrix, calcRegister_t reg);
 void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t reg, real34Matrix_t *matrix);
+void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source, calcRegister_t destination);
 void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix);
 void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *real_matrix, complex34Matrix_t *complex_matrix);
+uint16_t realVectorSize(const real34Matrix_t *matrix);
+void dotRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34_t *res);
+void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
+uint16_t complexVectorSize(const complex34Matrix_t *matrix);
+void dotComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x, real34_t *res_r, real34_t *res_i);
+void crossComplexVectors(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
 void setLastintegerBasetoZero(void);
 void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest);
