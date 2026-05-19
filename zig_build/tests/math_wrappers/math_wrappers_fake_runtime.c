@@ -15,6 +15,7 @@ static uint32_t current_register_data_type = dtReal34;
 static uint32_t current_register_tag = amNone;
 
 static uint8_t register_slot[32];
+static uint64_t shortint_y_slot;
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
 static real34Matrix_t fake_real_matrix;
@@ -234,6 +235,7 @@ void mathWrappersReset(void) {
   current_register_data_type = dtReal34;
   current_register_tag = amNone;
   memset(register_slot, 0, sizeof(register_slot));
+  shortint_y_slot = encodeShortInteger(2);
   register_scalar_available = true;
   setRegisterScalar(7, 0);
   *(uint64_t *)register_slot = encodeShortInteger(-3);
@@ -358,6 +360,10 @@ void mathWrappersSetShortIntegerInput(int64_t value) {
   *(uint64_t *)register_slot = encodeShortInteger(value);
 }
 
+void mathWrappersSetShortIntegerYInput(int64_t value) {
+  shortint_y_slot = encodeShortInteger(value);
+}
+
 void mathWrappersSetShortIntegerMode(uint8_t mode) {
   shortIntegerMode = mode;
 }
@@ -452,7 +458,9 @@ uint32_t getRegisterTag(calcRegister_t reg) {
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   snapshot.get_register_data_pointer_calls++;
-  (void)reg;
+  if(reg == REGISTER_Y && current_register_data_type == dtShortInteger) {
+    return &shortint_y_slot;
+  }
   return register_slot;
 }
 
@@ -624,10 +632,8 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
 }
 
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional) {
-  (void)reg;
-
   if(current_register_data_type == dtShortInteger) {
-    const uint64_t raw = *(uint64_t *)register_slot;
+    const uint64_t raw = reg == REGISTER_Y ? shortint_y_slot : *(uint64_t *)register_slot;
     if(sign != NULL) {
       *sign = (raw >> 63) != 0;
     }

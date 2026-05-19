@@ -649,6 +649,13 @@ static void configureDyadicLongInteger(void) {
   mathWrappersSetLongIntegerYInput(true, 9);
 }
 
+static void configureDyadicShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(-6);
+  mathWrappersSetShortIntegerYInput(9);
+}
+
 static void configureModuloReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -1627,6 +1634,7 @@ int main(void) {
   failures += runCase("fnWpositive/real_domain", oracle_fnWpositive, fnWpositive, 0, true, configureWpositiveRealDomainError);
   failures += runCase("fnWpositive/complex", oracle_fnWpositive, fnWpositive, 0, true, configureWpositiveComplex);
   failures += runCase("fnGcd/longint", oracle_fnGcd, fnGcd, 0, true, configureDyadicLongInteger);
+  failures += runCase("fnGcd/shortint", oracle_fnGcd, fnGcd, 0, true, configureDyadicShortInteger);
   failures += runCase("fnLcm/longint", oracle_fnLcm, fnLcm, 0, true, configureDyadicLongInteger);
   failures += runCase("fnMod/real", oracle_fnMod, fnMod, 0, true, configureModuloReal);
   failures += runCase("fnMod/longint", oracle_fnMod, fnMod, 0, true, configureModuloLongInteger);
