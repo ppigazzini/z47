@@ -56,6 +56,12 @@ static struct {
 
 static struct {
   bool_t available;
+  real_t real;
+  real_t imag;
+} complex_y_input;
+
+static struct {
+  bool_t available;
   int32_t value;
 } longint_input;
 
@@ -294,6 +300,10 @@ void mathWrappersReset(void) {
   setFakeReal(&complex_input.real, 2, 0);
   setFakeReal(&complex_input.imag, 3, 0);
 
+  complex_y_input.available = true;
+  setFakeReal(&complex_y_input.real, 4, 0);
+  setFakeReal(&complex_y_input.imag, 5, 0);
+
   longint_input.available = true;
   longint_input.value = -4;
 
@@ -414,6 +424,16 @@ void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t r
   setFakeReal(&complex_input.imag, imag_value, imag_bits);
   setRegisterReal34(register_slot, real_value, real_bits);
   setRegisterReal34(register_slot + sizeof(real34_t), imag_value, imag_bits);
+}
+
+void mathWrappersSetComplexYInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits) {
+  complex_y_input.available = available;
+  setFakeReal(&complex_y_input.real, real_value, real_bits);
+  setFakeReal(&complex_y_input.imag, imag_value, imag_bits);
+  setRegisterReal34(register_y_slot, real_value, real_bits);
+  setRegisterReal34(register_y_slot + sizeof(real34_t), imag_value, imag_bits);
+  current_register_y_data_type = dtComplex34;
+  current_register_y_tag = amNone;
 }
 
 void mathWrappersSetShortIntegerInput(int64_t value) {
@@ -828,17 +848,19 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   snapshot.get_register_as_complex_calls++;
   if((reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type) == dtComplex34) {
-    snapshot.get_register_as_complex_real_value = fakeRealValue(&complex_input.real);
-    snapshot.get_register_as_complex_real_bits = complex_input.real.bits;
-    snapshot.get_register_as_complex_imag_value = fakeRealValue(&complex_input.imag);
-    snapshot.get_register_as_complex_imag_bits = complex_input.imag.bits;
+    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : &complex_input;
 
-    if(!complex_input.available) {
+    snapshot.get_register_as_complex_real_value = fakeRealValue(&input->real);
+    snapshot.get_register_as_complex_real_bits = input->real.bits;
+    snapshot.get_register_as_complex_imag_value = fakeRealValue(&input->imag);
+    snapshot.get_register_as_complex_imag_bits = input->imag.bits;
+
+    if(!input->available) {
       return false;
     }
 
-    *real = complex_input.real;
-    *imag = complex_input.imag;
+    *real = input->real;
+    *imag = input->imag;
     return true;
   }
 
