@@ -96,6 +96,8 @@ void fnPercent(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
 void fnToRect(uint16_t unusedButMandatoryParameter);
+void fnSdl(uint16_t unusedButMandatoryParameter);
+void fnSdr(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -184,6 +186,8 @@ void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
+void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
+void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -997,6 +1001,23 @@ static void configureRoundiMatrix(void) {
 }
 
 static void configureRoundiInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
+static void configureSdlReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 12, 0);
+}
+
+static void configureSdlLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 345);
+}
+
+static void configureSdlInvalidType(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtTime, amNone);
 }
@@ -2587,6 +2608,9 @@ int main(void) {
   failures += runCase("fnRoundi/shortint", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiShortInteger);
   failures += runCase("fnRoundi/matrix", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiMatrix);
   failures += runCase("fnRoundi/invalid_type", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiInvalidType);
+  failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
+  failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
+  failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
   failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
   failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
   failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);
