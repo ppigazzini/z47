@@ -305,6 +305,16 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
     var type_reg = reg;
 
     if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
+        if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            return 0;
+        }
+
+        if (reg > runtime.LAST_LOCAL_REGISTER) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            return 0;
+        }
+
         return runtime.retainedGetRegisterMaxDataLengthInBlocks(reg);
     }
 
