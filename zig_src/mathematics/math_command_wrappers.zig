@@ -54,15 +54,6 @@ const z47_math_wrappers_retained_fnCheckReal = runtime.retained.z47_math_wrapper
 const z47_math_wrappers_retained_fnCheckNumber = runtime.retained.z47_math_wrappers_retained_fnCheckNumber;
 const z47_math_wrappers_retained_fnCheckAngle = runtime.retained.z47_math_wrappers_retained_fnCheckAngle;
 const z47_math_wrappers_retained_fnCheckMatrix = runtime.retained.z47_math_wrappers_retained_fnCheckMatrix;
-const z47_math_wrappers_retained_fnCheckMatrixSquare = runtime.retained.z47_math_wrappers_retained_fnCheckMatrixSquare;
-const z47_math_wrappers_retained_fnCheckForZero = runtime.retained.z47_math_wrappers_retained_fnCheckForZero;
-const z47_math_wrappers_retained_fnCheckIsVect2d = runtime.retained.z47_math_wrappers_retained_fnCheckIsVect2d;
-const z47_math_wrappers_retained_fnCheckIsVect3d = runtime.retained.z47_math_wrappers_retained_fnCheckIsVect3d;
-const z47_math_wrappers_retained_fnCheckNaN = runtime.retained.z47_math_wrappers_retained_fnCheckNaN;
-const z47_math_wrappers_retained_fnCheckInfinite = runtime.retained.z47_math_wrappers_retained_fnCheckInfinite;
-const z47_math_wrappers_retained_fnCheckSpecial = runtime.retained.z47_math_wrappers_retained_fnCheckSpecial;
-const z47_math_wrappers_retained_fnCheckPlusZero = runtime.retained.z47_math_wrappers_retained_fnCheckPlusZero;
-const z47_math_wrappers_retained_fnCheckMinusZero = runtime.retained.z47_math_wrappers_retained_fnCheckMinusZero;
 const z47_math_wrappers_retained_fnGetType = runtime.retained.z47_math_wrappers_retained_fnGetType;
 const z47_math_wrappers_retained_fnDblDivide = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
 const z47_math_wrappers_retained_fnDblDivideRemainder = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
@@ -4107,7 +4098,14 @@ pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) vo
     runtime.setTemporaryInformation(register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix);
 }
 
+fn compareTypeErrorX() void {
+    runtime.setTemporaryInformation(false);
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+}
+
 pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
@@ -4116,7 +4114,7 @@ pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(
         return;
     }
 
-    z47_math_wrappers_retained_fnCheckMatrixSquare(unused_but_mandatory_parameter);
+    compareTypeErrorX();
 }
 
 fn setCheckForZeroResult(mode: u16, real_is_zero: bool, imag_is_zero: bool) void {
@@ -4161,7 +4159,7 @@ fn tryCheckForZero(mode: u16) bool {
 
 pub export fn fnCheckForZero(mode: u16) callconv(.c) void {
     if (!tryCheckForZero(mode)) {
-        z47_math_wrappers_retained_fnCheckForZero(mode);
+        compareTypeErrorX();
     }
 }
 
@@ -4176,14 +4174,18 @@ fn tryCheckRealMatrixVector(dimension: u16) bool {
 }
 
 pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
     if (!tryCheckRealMatrixVector(2)) {
-        z47_math_wrappers_retained_fnCheckIsVect2d(unused_but_mandatory_parameter);
+        compareTypeErrorX();
     }
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
     if (!tryCheckRealMatrixVector(3)) {
-        z47_math_wrappers_retained_fnCheckIsVect3d(unused_but_mandatory_parameter);
+        compareTypeErrorX();
     }
 }
 
@@ -4293,7 +4295,10 @@ pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void 
         runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
             runtime.setTemporaryInformation(checkNaNMatrixElements(register_data_type));
         },
-        else => z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter),
+        else => {
+            _ = unused_but_mandatory_parameter;
+            compareTypeErrorX();
+        },
     }
 }
 
@@ -4310,7 +4315,10 @@ pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) 
         runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
             runtime.setTemporaryInformation(checkInfiniteMatrixElements(register_data_type));
         },
-        else => z47_math_wrappers_retained_fnCheckInfinite(unused_but_mandatory_parameter),
+        else => {
+            _ = unused_but_mandatory_parameter;
+            compareTypeErrorX();
+        },
     }
 }
 
@@ -4329,7 +4337,10 @@ pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) v
         runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
             runtime.setTemporaryInformation(checkSpecialMatrixElements(register_data_type));
         },
-        else => z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter),
+        else => {
+            _ = unused_but_mandatory_parameter;
+            compareTypeErrorX();
+        },
     }
 }
 
@@ -4365,14 +4376,18 @@ fn tryCheckZeroScalar(neg: bool) bool {
 }
 
 pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
     if (!tryCheckZeroScalar(false)) {
-        z47_math_wrappers_retained_fnCheckPlusZero(unused_but_mandatory_parameter);
+        compareTypeErrorX();
     }
 }
 
 pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
     if (!tryCheckZeroScalar(true)) {
-        z47_math_wrappers_retained_fnCheckMinusZero(unused_but_mandatory_parameter);
+        compareTypeErrorX();
     }
 }
 
