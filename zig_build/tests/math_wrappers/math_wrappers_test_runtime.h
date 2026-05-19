@@ -218,6 +218,7 @@ typedef struct {
   uint64_t final_register_shortint_raw;
   uint64_t final_register_y_shortint_raw;
   int32_t final_register_longint_value;
+  int32_t final_register_y_longint_value;
   bool_t final_overflow_flag;
   bool_t final_carry_flag;
 } math_wrappers_snapshot_t;
@@ -237,6 +238,12 @@ void mathWrappersSetShortIntegerZInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
+void mathWrappersSetFractionResult(bool_t result,
+                                   int16_t sign,
+                                   uint64_t int_part,
+                                   uint64_t numer,
+                                   uint64_t denom,
+                                   int16_t less_equal_greater);
 void mathWrappersSetFlagCpxRes(bool_t enabled);
 void mathWrappersSetFlagCarry(bool_t enabled);
 void mathWrappersSetFlagOverflow(bool_t enabled);

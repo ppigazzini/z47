@@ -60,6 +60,15 @@ static struct {
 } longint_y_input;
 
 static struct {
+  bool_t result;
+  int16_t sign;
+  uint64_t int_part;
+  uint64_t numer;
+  uint64_t denom;
+  int16_t less_equal_greater;
+} fraction_result;
+
+static struct {
   bool_t enabled;
   real_t sin_value;
   real_t cos_value;
@@ -87,6 +96,8 @@ bool_t thereIsSomethingToUndo = false;
 pcg32_random_t pcg32_global = PCG32_INITIALIZER;
 int32_t significantDigits = 34;
 int32_t temporaryInformation = 0;
+uint64_t systemFlags0 = 0;
+uint64_t systemFlags1 = 0;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_100_value;
@@ -277,6 +288,13 @@ void mathWrappersReset(void) {
   longint_y_input.available = true;
   longint_y_input.value = 9;
 
+  fraction_result.result = true;
+  fraction_result.sign = 1;
+  fraction_result.int_part = 0;
+  fraction_result.numer = 3;
+  fraction_result.denom = 4;
+  fraction_result.less_equal_greater = 0;
+
   trig_outputs.enabled = false;
   spcres_flag = false;
   cpxres_flag = false;
@@ -290,6 +308,8 @@ void mathWrappersReset(void) {
   currentAngularMode = amNone;
   thereIsSomethingToUndo = false;
   lastErrorCode = 0;
+  systemFlags0 = 0;
+  systemFlags1 = 0;
   pcg32_global = (pcg32_random_t)PCG32_INITIALIZER;
 
   ctxtReal34.digits = 34;
@@ -398,6 +418,20 @@ void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
   longint_y_input.value = value;
 }
 
+void mathWrappersSetFractionResult(bool_t result,
+                                   int16_t sign,
+                                   uint64_t int_part,
+                                   uint64_t numer,
+                                   uint64_t denom,
+                                   int16_t less_equal_greater) {
+  fraction_result.result = result;
+  fraction_result.sign = sign;
+  fraction_result.int_part = int_part;
+  fraction_result.numer = numer;
+  fraction_result.denom = denom;
+  fraction_result.less_equal_greater = less_equal_greater;
+}
+
 void mathWrappersSetFlagCpxRes(bool_t enabled) {
   cpxres_flag = enabled;
 }
@@ -457,6 +491,7 @@ void mathWrappersCapture(math_wrappers_snapshot_t *out) {
   snapshot.final_register_shortint_raw = *(uint64_t *)register_slot;
   snapshot.final_register_y_shortint_raw = shortint_y_slot;
   snapshot.final_register_longint_value = longint_input.value;
+  snapshot.final_register_y_longint_value = longint_y_input.value;
   snapshot.final_overflow_flag = overflow_flag;
   snapshot.final_carry_flag = carry_flag;
   snapshot.final_pcg_state = pcg32_global.state;
@@ -748,12 +783,20 @@ void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegis
 }
 
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t reg) {
+  const int32_t value = (int32_t)mpz_get_si(lgInt);
+
   snapshot.convert_long_integer_to_register_calls++;
-  snapshot.convert_long_integer_to_register_value = (int32_t)mpz_get_si(lgInt);
+  snapshot.convert_long_integer_to_register_value = value;
   snapshot.convert_long_integer_to_register_dest = reg;
-  longint_input.value = (int32_t)mpz_get_si(lgInt);
+  if(reg == REGISTER_Y) {
+    longint_y_input.available = true;
+    longint_y_input.value = value;
+    return;
+  }
+  longint_input.available = true;
+  longint_input.value = value;
   current_register_data_type = dtLongInteger;
-  current_register_tag = longint_input.value < 0 ? LI_NEGATIVE : longint_input.value > 0 ? LI_POSITIVE : LI_ZERO;
+  current_register_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t reg) {
@@ -835,6 +878,12 @@ void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, e
   snapshot.convert_long_integer_to_register_calls++;
   snapshot.convert_long_integer_to_register_value = value;
   snapshot.convert_long_integer_to_register_dest = dest;
+  if(dest == REGISTER_Y) {
+    longint_y_input.available = true;
+    longint_y_input.value = value;
+    return;
+  }
+  longint_input.available = true;
   longint_input.value = value;
   current_register_data_type = dtLongInteger;
   current_register_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
@@ -847,9 +896,35 @@ void convertReal34ToLongIntegerRegister(const real34_t *real, calcRegister_t des
   snapshot.convert_long_integer_to_register_calls++;
   snapshot.convert_long_integer_to_register_value = value;
   snapshot.convert_long_integer_to_register_dest = dest;
+  if(dest == REGISTER_Y) {
+    longint_y_input.available = true;
+    longint_y_input.value = value;
+    return;
+  }
+  longint_input.available = true;
   longint_input.value = value;
   current_register_data_type = dtLongInteger;
   current_register_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
+}
+
+bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater) {
+  (void)regist;
+  if(sign != NULL) {
+    *sign = fraction_result.sign;
+  }
+  if(intPart != NULL) {
+    *intPart = fraction_result.int_part;
+  }
+  if(numer != NULL) {
+    *numer = fraction_result.numer;
+  }
+  if(denom != NULL) {
+    *denom = fraction_result.denom;
+  }
+  if(lessEqualGreater != NULL) {
+    *lessEqualGreater = fraction_result.less_equal_greater;
+  }
+  return fraction_result.result;
 }
 
 void convertRealToResultRegister(const real_t *real, calcRegister_t reg, angularMode_t angleMode) {
@@ -1637,6 +1712,22 @@ void saveForUndo(void) {
 
 void liftStack(void) {
   snapshot.lift_stack_calls++;
+  switch(current_register_data_type) {
+    case dtLongInteger:
+      longint_y_input.available = longint_input.available;
+      longint_y_input.value = longint_input.value;
+      break;
+    case dtShortInteger:
+      shortint_y_slot = *(uint64_t *)register_slot;
+      break;
+    case dtTime:
+    case dtReal34:
+      real_y_input.available = real_input.available;
+      real_y_input.value = real_input.value;
+      break;
+    default:
+      break;
+  }
 }
 
 const real_t *z47_math_wrappers_const_1e_6(void) {

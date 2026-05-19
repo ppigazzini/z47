@@ -339,6 +339,21 @@ void roundiReal(void);
 #undef roundiError
 #undef Roundi
 
+void oracle_decompError(void);
+void oracle_decompLonI(void);
+void oracle_decompReal(void);
+#define Decomp oracle_Decomp
+#define decompError oracle_decompError
+#define decompLonI oracle_decompLonI
+#define decompReal oracle_decompReal
+#define fnDecomp oracle_fnDecomp
+#include "../../../src/c47/mathematics/decomp.c"
+#undef fnDecomp
+#undef decompReal
+#undef decompLonI
+#undef decompError
+#undef Decomp
+
 #define fnNeighb oracle_fnNeighb
 #include "../../../src/c47/mathematics/neighb.c"
 #undef fnNeighb

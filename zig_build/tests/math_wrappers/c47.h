@@ -143,6 +143,7 @@ enum {
 #define ERROR_MATRIX_MISMATCH 7
 #define FLAG_CARRY 0x800b
 #define FLAG_CPXRES 0x8004
+#define FLAG_PROPFR 0x8008
 #define FLAG_OVERFLOW 0x800c
 #define FLAG_POLAR 0x8018
 #define FLAG_SPCRES 0x8017
@@ -254,6 +255,8 @@ extern bool_t thereIsSomethingToUndo;
 extern pcg32_random_t pcg32_global;
 extern int32_t significantDigits;
 extern int32_t temporaryInformation;
+extern uint64_t systemFlags0;
+extern uint64_t systemFlags1;
 
 #define const_0 ((real_t *)z47_math_wrappers_const_0())
 #define const_1 ((real_t *)z47_math_wrappers_const_1())
@@ -328,6 +331,7 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
 bool_t getFlag(uint16_t flag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
+bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater);
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realContext_t *real_context);
