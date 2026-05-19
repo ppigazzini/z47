@@ -96,6 +96,7 @@ void fnPercent(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
 void fnToRect(uint16_t unusedButMandatoryParameter);
+void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
 
@@ -186,6 +187,7 @@ void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
+void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
 
@@ -1035,6 +1037,47 @@ static void configureSdrLongInteger(void) {
 }
 
 static void configureSdrInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
+static void configureUnitVectorComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 0, 0, 5, 0);
+}
+
+static void configureUnitVectorRealMatrix(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 0, 0);
+  setMatrixReal34(&matrix.matrixElements[1], 0, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 0, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 5, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureUnitVectorComplexMatrix(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0].real, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[0].imag, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[1].real, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[1].imag, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[2].real, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[2].imag, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[3].real, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[3].imag, 5, 0);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+}
+
+static void configureUnitVectorInvalidType(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtTime, amNone);
 }
@@ -2631,6 +2674,10 @@ int main(void) {
   failures += runCase("fnSdr/real", oracle_fnSdr, fnSdr, 2, true, configureSdrReal);
   failures += runCase("fnSdr/longint", oracle_fnSdr, fnSdr, 2, true, configureSdrLongInteger);
   failures += runCase("fnSdr/invalid_type", oracle_fnSdr, fnSdr, 2, true, configureSdrInvalidType);
+  failures += runCase("fnUnitVector/complex", oracle_fnUnitVector, fnUnitVector, 0, true, configureUnitVectorComplex);
+  failures += runCase("fnUnitVector/real_matrix", oracle_fnUnitVector, fnUnitVector, 0, true, configureUnitVectorRealMatrix);
+  failures += runCase("fnUnitVector/complex_matrix", oracle_fnUnitVector, fnUnitVector, 0, true, configureUnitVectorComplexMatrix);
+  failures += runCase("fnUnitVector/invalid_type", oracle_fnUnitVector, fnUnitVector, 0, true, configureUnitVectorInvalidType);
   failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
   failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
   failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);

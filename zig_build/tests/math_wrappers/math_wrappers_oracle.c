@@ -1436,3 +1436,96 @@ void oracle_fnToRect(uint16_t angleInY) {
 #include "../../../src/c47/mathematics/shiftDigits.c"
 #undef fnSdr
 #undef fnSdl
+
+void oracle_unitVectorError(void);
+void oracle_unitVectorCplx(void);
+void oracle_unitVectorRema(void);
+void oracle_unitVectorCxma(void);
+#define unitVectorError oracle_unitVectorError
+#define unitVectorCplx oracle_unitVectorCplx
+#define unitVectorRema oracle_unitVectorRema
+#define unitVectorCxma oracle_unitVectorCxma
+#define fnUnitVector oracle_fnUnitVector_upstream
+#include "../../../src/c47/mathematics/unitVector.c"
+#undef fnUnitVector
+#undef unitVectorCxma
+#undef unitVectorRema
+#undef unitVectorCplx
+#undef unitVectorError
+
+static void oracle_unitVectorErrorFixed(void) {
+	char message[128];
+	sprintf(message, "cannot calculate the unit vector of %s", getRegisterDataTypeName(REGISTER_X, true, false));
+	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+	moreInfoOnError("In function fnUnitVector:", message, NULL, NULL);
+}
+
+static void oracle_unitVectorRemaFixed(void) {
+	real34Matrix_t matrix;
+	real_t elem, sum;
+
+	linkToRealMatrixRegister(REGISTER_X, &matrix);
+	realSetZero(&sum);
+	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+		real34ToReal(&matrix.matrixElements[i], &elem);
+		realMultiply(&elem, &elem, &elem, &ctxtReal39);
+		realAdd(&sum, &elem, &sum, &ctxtReal39);
+	}
+	realSquareRoot(&sum, &sum, &ctxtReal39);
+	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+		real34ToReal(&matrix.matrixElements[i], &elem);
+		realDivide(&elem, &sum, &elem, &ctxtReal39);
+		realToReal34(&elem, &matrix.matrixElements[i]);
+	}
+	convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+}
+
+static void oracle_unitVectorCxmaFixed(void) {
+	complex34Matrix_t matrix;
+	real_t real, imag, sum;
+
+	linkToComplexMatrixRegister(REGISTER_X, &matrix);
+	realSetZero(&sum);
+	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+		real34ToReal(&matrix.matrixElements[i].real, &real);
+		realMultiply(&real, &real, &real, &ctxtReal39);
+		realAdd(&sum, &real, &sum, &ctxtReal39);
+		real34ToReal(&matrix.matrixElements[i].imag, &imag);
+		realMultiply(&imag, &imag, &imag, &ctxtReal39);
+		realAdd(&sum, &imag, &sum, &ctxtReal39);
+	}
+	realSquareRoot(&sum, &sum, &ctxtReal39);
+	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+		real34ToReal(&matrix.matrixElements[i].real, &real);
+		real34ToReal(&matrix.matrixElements[i].imag, &imag);
+		divComplexComplex(&real, &imag, &sum, const_0, &real, &imag, &ctxtReal39);
+		realToReal34(&real, &matrix.matrixElements[i].real);
+		realToReal34(&imag, &matrix.matrixElements[i].imag);
+	}
+	convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+}
+
+void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter) {
+	(void)unusedButMandatoryParameter;
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	switch(getRegisterDataType(REGISTER_X)) {
+		case dtComplex34:
+			oracle_unitVectorCplx();
+			break;
+		case dtReal34Matrix:
+			oracle_unitVectorRemaFixed();
+			break;
+		case dtComplex34Matrix:
+			oracle_unitVectorCxmaFixed();
+			break;
+		default:
+			oracle_unitVectorErrorFixed();
+			break;
+	}
+
+	adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
