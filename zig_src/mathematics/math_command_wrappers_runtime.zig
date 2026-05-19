@@ -18,6 +18,8 @@ pub const amRadian: angularMode_t = 0;
 pub const amDegree: angularMode_t = 2;
 pub const amNone: angularMode_t = 5;
 pub const amPolar: angularMode_t = 16;
+pub const amPolarCYL: angularMode_t = 64;
+pub const amPolarSPH: angularMode_t = 128;
 pub const amAngleMask: u32 = 15;
 
 pub const DEC_ROUND_CEILING: rounding_t = 0;
@@ -596,6 +598,65 @@ pub fn setComplexRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) voi
         @as(u32, @intCast(amNone));
 
     setRegisterTag(reg, base_tag | (mode_bits & polar_mask));
+}
+
+pub fn isRegisterMatrix3dVector(reg: calcRegister_t) bool {
+    if (getRegisterDataType(reg) != dtReal34Matrix) {
+        return false;
+    }
+
+    const header = registerMatrixHeaderPtr(reg);
+    return (header.matrixRows == 1 and header.matrixColumns == 3) or (header.matrixRows == 3 and header.matrixColumns == 1);
+}
+
+pub fn isRegisterMatrix2dVector(reg: calcRegister_t) bool {
+    if (getRegisterDataType(reg) != dtReal34Matrix) {
+        return false;
+    }
+
+    const header = registerMatrixHeaderPtr(reg);
+    return (header.matrixRows == 1 and header.matrixColumns == 2) or (header.matrixRows == 2 and header.matrixColumns == 1);
+}
+
+pub fn isRegisterMatrixVector(reg: calcRegister_t) bool {
+    return isRegisterMatrix2dVector(reg) or isRegisterMatrix3dVector(reg);
+}
+
+pub fn getVectorRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+    return if (getRegisterDataType(reg) == dtReal34Matrix) @intCast(getRegisterTag(reg) & amAngleMask) else amNone;
+}
+
+pub fn setVectorRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
+    setRegisterTag(reg, (@as(u32, @intCast(mode)) & amAngleMask) | (getRegisterTag(reg) & @as(u32, @intCast(amPolar))));
+}
+
+pub fn getVectorRegisterPolarMode(reg: calcRegister_t) angularMode_t {
+    if (getRegisterDataType(reg) != dtReal34Matrix or (getRegisterTag(reg) & amAngleMask) == @as(u32, @intCast(amNone))) {
+        return amNone;
+    }
+
+    if (isRegisterMatrix3dVector(reg)) {
+        return if ((getRegisterTag(reg) & @as(u32, @intCast(amPolar))) == @as(u32, @intCast(amPolar))) amPolarSPH else amPolarCYL;
+    }
+
+    if (isRegisterMatrix2dVector(reg)) {
+        return @intCast(getRegisterTag(reg) & @as(u32, @intCast(amPolar)));
+    }
+
+    return amNone;
+}
+
+pub fn setVectorRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) void {
+    const current_tag = getRegisterTag(reg);
+    const next_tag: u32 = if (mode == amNone)
+        (current_tag & ~(@as(u32, @intCast(amAngleMask | amPolar)))) + @as(u32, @intCast(amNone))
+    else blk: {
+        const with_polar = (current_tag & @as(u32, @intCast(amAngleMask | amPolar))) |
+            (if (mode == amPolarSPH or mode == amPolar) @as(u32, @intCast(amPolar)) else 0);
+        break :blk with_polar & (if (mode == amPolarCYL) ((~@as(u32, @intCast(amPolar))) & @as(u32, @intCast(amAngleMask | amPolar))) else 255);
+    };
+
+    setRegisterTag(reg, next_tag);
 }
 
 pub fn setTemporaryInformation(condition: bool) void {
