@@ -1914,6 +1914,19 @@ fn factReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn factCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.realAdd(&real_value, runtime.z47_math_wrappers_const_1(), &real_value, &runtime.ctxtReal39);
+    runtime.WP34S_ComplexGamma(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3250,7 +3263,7 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexMonadicFunction(&factReal, &runtime.z47_math_wrappers_fact_cplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
+    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
