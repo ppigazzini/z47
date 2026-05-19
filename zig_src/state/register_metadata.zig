@@ -308,6 +308,14 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
         return;
     }
 
+    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
+        data_ptr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        if (data_ptr != null) {
+            runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
+            return;
+        }
+    }
+
     if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
         return;
     }

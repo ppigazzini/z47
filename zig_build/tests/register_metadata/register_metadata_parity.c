@@ -251,6 +251,7 @@ static void setupLocalLongIntegerCase(void) {
 
 static void setupReservedLongIntegerCase(void) {
   seedReservedBacking();
+  globalRegister[40].pointerToRegisterData = allReservedVariables[40].header.pointerToRegisterData;
 }
 
 static void setupGlobalReal34Case(void) {
@@ -875,6 +876,7 @@ int main(void) {
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2, 7);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNoOpCase, FIRST_NAMED_VARIABLE, 7);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNamedCase, FIRST_NAMED_VARIABLE + 20, 7);
+  failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupReservedLongIntegerCase, FIRST_RESERVED_VARIABLE + 40, 8);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1, 9);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupLocalCase, FIRST_LOCAL_REGISTER + 20, 9);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNoOpCase, LAST_LOCAL_REGISTER + 1, 9);
