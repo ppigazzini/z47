@@ -3245,9 +3245,16 @@ pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void 
     runtime.processRealComplexMonadicFunction(&wInvReal, &wInvCplx);
 }
 
+fn gcdShoI() callconv(.c) void {
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intGCD(
+        runtime.registerShortIntegerPtr(runtime.REGISTER_Y).*,
+        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
+    );
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &runtime.z47_math_wrappers_gcd_short_integer, &runtime.z47_math_wrappers_gcd_int);
+    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &gcdShoI, &runtime.z47_math_wrappers_gcd_int);
 }
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {

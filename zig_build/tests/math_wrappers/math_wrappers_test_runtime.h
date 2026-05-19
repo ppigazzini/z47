@@ -229,6 +229,7 @@ void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits, angularMode_t angle_mode);
 void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetShortIntegerInput(int64_t value);
+void mathWrappersSetShortIntegerYInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
