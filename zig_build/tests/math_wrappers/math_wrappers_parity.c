@@ -1447,6 +1447,11 @@ static void configureToRect2InvalidType(void) {
   mathWrappersSetRegisterSurface(dtTime, amNone);
 }
 
+static void configureToRect2ComplexPolar(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amDegree | amPolar);
+}
+
 static void configureFnToRectReal34Pair(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -1696,6 +1701,7 @@ int main(void) {
   failures += runCase("fnToRect2/real34_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2Real34Pair);
   failures += runCase("fnToRect2/longint_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2LongIntegerPair);
   failures += runCase("fnToRect2/invalid_type", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2InvalidType);
+  failures += runCase("fnToRect2/complex_polar", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2ComplexPolar);
   failures += runCase("fnToRect/real34_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectReal34Pair);
   failures += runCase("fnToRect/longint_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectLongIntegerPair);
   failures += runCase("fnToRect/invalid_type", oracle_fnToRect, fnToRect, 1, true, configureFnToRectInvalidType);

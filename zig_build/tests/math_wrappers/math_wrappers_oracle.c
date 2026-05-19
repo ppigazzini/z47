@@ -497,6 +497,8 @@ void oracle_fnToRect2(uint16_t unusedButMandatoryParameter) {
 	(void)unusedButMandatoryParameter;
 
 	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+		setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+		setComplexRegisterAngularMode(REGISTER_X, amNone);
 		return;
 	}
 
