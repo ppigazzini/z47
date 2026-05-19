@@ -507,6 +507,18 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
         return;
     }
 
+    if (runtime.numberOfNamedVariables == 0) {
+        if (!runtime.allocateFirstNamedVariableHeader()) {
+            runtime.reportRamFull();
+            return;
+        }
+
+        runtime.storeNamedVariableName(0, variable_name);
+        setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(data_type), runtime.amNone);
+        setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
+        return;
+    }
+
     runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 
