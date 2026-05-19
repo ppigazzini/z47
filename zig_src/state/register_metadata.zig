@@ -519,6 +519,11 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
         return;
     }
 
+    if (runtime.numberOfNamedVariables == (runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1)) {
+        runtime.reportTooManyVariables();
+        return;
+    }
+
     runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 

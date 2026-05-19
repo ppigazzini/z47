@@ -743,6 +743,7 @@ int main(void) {
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "too-long", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "full-miss", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupFindOrAllocateNamedVariableFullCase, find_named_variable_miss);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "first-alloc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, find_or_allocate_named_variable_first_alloc, dtReal34, REAL34_SIZE_IN_BLOCKS);
+  failures += runAllocateNamedVariableCase("allocateNamedVariable", "full", oracle_allocateNamedVariable, allocateNamedVariable, setupFindOrAllocateNamedVariableFullCase, find_or_allocate_named_variable_first_alloc, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "too-long", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long, dtReal34, REAL34_SIZE_IN_BLOCKS);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "reserved-acc", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc, dtReal34, REAL34_SIZE_IN_BLOCKS);

@@ -200,6 +200,11 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
   }
 
   if(numberOfNamedVariables != 0) {
+    if(numberOfNamedVariables == (LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE + 1)) {
+      displayCalcErrorMessage(ERROR_TOO_MANY_VARIABLES, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
+
     displayBugScreen("oracle_allocateNamedVariable called with an unsupported grow-allocation case");
     return;
   }
