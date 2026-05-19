@@ -434,7 +434,8 @@ void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
 	dataTypeY = getRegisterDataType(REGISTER_Y);
 	dataAtagY = getRegisterAngularMode(REGISTER_Y);
 
-	if(dataTypeX != dtReal34 || dataAtagX != amNone || dataTypeY != dtReal34 || dataAtagY != amNone) {
+	if(!((dataTypeX == dtLongInteger || (dataTypeX == dtReal34 && dataAtagX == amNone)) &&
+	     (dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && dataAtagY == amNone)))) {
 		return;
 	}
 
@@ -451,8 +452,20 @@ void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
 		return;
 	}
 
-	real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
-	real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	if(dataTypeX == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REG_X, &x, &ctxtReal39);
+	}
+	else {
+		real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
+	}
+
+	if(dataTypeY == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REG_Y, &y, &ctxtReal39);
+	}
+	else {
+		real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	}
+
 	realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
 	convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
 
