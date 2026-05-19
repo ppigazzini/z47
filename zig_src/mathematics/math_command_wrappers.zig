@@ -4038,7 +4038,9 @@ pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnCheckAngle(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckAngle(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_X) != runtime.amNone);
 }
 
 pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) void {

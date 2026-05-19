@@ -362,6 +362,11 @@ void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + (t <= 4 || t == 8);
 }
 
+void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter) {
+	(void)unusedButMandatoryParameter;
+	temporaryInformation = 12 + (getRegisterDataType(REGISTER_X) == 1 && getRegisterAngularMode(REGISTER_X) != 5);
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
