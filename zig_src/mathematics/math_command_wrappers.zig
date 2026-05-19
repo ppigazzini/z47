@@ -1676,6 +1676,33 @@ fn mantReal() void {
     runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
 }
 
+fn roundiReal() void {
+    if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function roundiReal:", "cannot use NaN as X input of ROUNDI", null, null);
+        return;
+    }
+
+    if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function roundiReal:", "cannot use +/-inf as an input of ROUNDI", null, null);
+        return;
+    }
+
+    const exponent = runtime.real34GetExponent(runtime.registerReal34Ptr(runtime.REGISTER_X));
+    if (exponent > 1001) {
+        const error_code = if (runtime.decQuadIsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X)) == 0)
+            runtime.ERROR_OVERFLOW_PLUS_INF
+        else
+            runtime.ERROR_OVERFLOW_MINUS_INF;
+        runtime.displayCalcErrorMessage(error_code, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function roundiReal:", "real exponent exceeds long-integer range", null, null);
+        return;
+    }
+
+    runtime.convertReal34ToLongIntegerRegister(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.REGISTER_X, runtime.DEC_ROUND_HALF_UP);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2916,7 +2943,18 @@ pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type != runtime.dtReal34) {
+        z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    roundiReal();
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
