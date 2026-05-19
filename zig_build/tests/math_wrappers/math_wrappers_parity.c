@@ -1333,11 +1333,25 @@ static void configureMagnitudeReal(void) {
   mathWrappersSetRealInput(true, -5, 0);
 }
 
+static void configureMagnitudeRealMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
+}
+
 static void configureMagnitudeComplex(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetRealInput(false, 0, 0);
   mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+}
+
+static void configureMagnitudeComplexMatrix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(false, 0, 0, 0, 0);
 }
 
 static void configureMagnitudeLongInteger(void) {
@@ -2289,7 +2303,9 @@ int main(void) {
   failures += runCase("fnArg/real_negative", oracle_fnArg, fnArg, 0, true, configureArgRealNegative);
   failures += runCase("fnArg/complex", oracle_fnArg, fnArg, 0, true, configureArgComplex);
   failures += runCase("fnMagnitude/real", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeReal);
+  failures += runCase("fnMagnitude/real_matrix", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeRealMatrix);
   failures += runCase("fnMagnitude/complex", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeComplex);
+  failures += runCase("fnMagnitude/complex_matrix", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeComplexMatrix);
   failures += runCase("fnMagnitude/longint", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeLongInteger);
   failures += runCase("fnMagnitude/shortint", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeShortInteger);
   failures += runCase("fnConjugate/complex", oracle_fnConjugate, fnConjugate, 0, true, configureConjugateComplex);

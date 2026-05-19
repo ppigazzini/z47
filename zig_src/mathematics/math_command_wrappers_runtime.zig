@@ -198,6 +198,7 @@ pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRe
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
 pub extern fn fraction(regist: calcRegister_t, sign: *i16, int_part: *u64, numer: *u64, denom: *u64, less_equal_greater: *i16) bool;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
+pub extern fn real34RectangularToPolar(real: *const real34_t, imag: *const real34_t, magnitude: *real34_t, theta: *real34_t) void;
 pub extern fn realPolarToRectangular(
     magnitude: *const real_t,
     angle: *const real_t,
