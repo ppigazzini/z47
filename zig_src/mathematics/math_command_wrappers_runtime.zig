@@ -240,6 +240,7 @@ pub extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real
 pub extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFMA(result: *real_t, lhs: *const real_t, rhs: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
+pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
