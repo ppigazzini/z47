@@ -6352,8 +6352,8 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.realSetZero(&b_imag);
 
     if (!linpolReadP(&p) or
-        !(type_y == runtime.dtLongInteger or type_y == runtime.dtShortInteger or type_y == runtime.dtReal34) or
-        !(type_z == runtime.dtLongInteger or type_z == runtime.dtShortInteger or type_z == runtime.dtReal34) or
+        !(type_y == runtime.dtLongInteger or type_y == runtime.dtShortInteger or type_y == runtime.dtReal34 or type_y == runtime.dtComplex34) or
+        !(type_z == runtime.dtLongInteger or type_z == runtime.dtShortInteger or type_z == runtime.dtReal34 or type_z == runtime.dtComplex34) or
         is_y_angle or is_z_angle)
     {
         z47_math_wrappers_retained_fnLINPOL(0);

@@ -1336,9 +1336,9 @@ static void configureLINPOLReal(void) {
 
 static void configureLINPOLComplex(void) {
   configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetRealInput(true, 1, 0);
-  mathWrappersSetComplexInput(true, 6, 0, 7, 0);
+  mathWrappersSetComplexYInput(true, 6, 0, 7, 0);
+  mathWrappersSetComplexZInput(true, 2, 0, 3, 0);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -3000,6 +3000,7 @@ int main(void) {
   failures += runCase("fnFib/complex", oracle_fnFib, fnFib, 0, true, configureFibComplex);
   failures += runCase("fnFib/longint", oracle_fnFib, fnFib, 0, true, configureFibLongInteger);
   failures += runCase("fnLINPOL/real", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLReal);
+  failures += runCase("fnLINPOL/complex", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLComplex);
   failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
   failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);
   failures += runCase("fnDec/shortint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecShortInteger);
