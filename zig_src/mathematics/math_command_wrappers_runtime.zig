@@ -350,6 +350,7 @@ pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 pub extern fn __gmpz_clear(op: *mpz_struct) void;
 pub extern fn __gmpz_init(op: *mpz_struct) void;
 pub extern fn __gmpz_cmp_ui(lhs: *const mpz_struct, rhs: c_ulong) c_int;
+pub extern fn __gmpz_tdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_get_ui(op: *const mpz_struct) c_ulong;
 pub extern fn __gmpz_cmp(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
 pub extern fn __gmpz_set_si(op: *mpz_struct, value: c_long) void;

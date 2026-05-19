@@ -5480,7 +5480,41 @@ pub export fn fnSdl(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSdr(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnSdr(unused_but_mandatory_parameter);
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
+        var real_value: runtime.real_t = undefined;
+
+        if (!runtime.saveLastX()) {
+            return;
+        }
+
+        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &real_value);
+        real_value.exponent -= @as(i32, @intCast(unused_but_mandatory_parameter));
+        runtime.convertRealToReal34ResultRegister(&real_value, runtime.REGISTER_X);
+        return;
+    }
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtLongInteger) {
+        var x_value: runtime.longInteger_t = undefined;
+
+        if (!runtime.saveLastX()) {
+            return;
+        }
+
+        runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
+        defer runtime.__gmpz_clear(&x_value[0]);
+
+        for (0..unused_but_mandatory_parameter) |_| {
+            _ = runtime.__gmpz_tdiv_q_ui(&x_value[0], &x_value[0], 10);
+            if (runtime.__gmpz_cmp_ui(&x_value[0], 0) == 0) {
+                break;
+            }
+        }
+
+        runtime.convertLongIntegerToLongIntegerRegister(&x_value[0], runtime.REGISTER_X);
+        return;
+    }
+
+    shiftDigitsError("In function fnSdr:", "SDR");
 }
 
 pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) void {
