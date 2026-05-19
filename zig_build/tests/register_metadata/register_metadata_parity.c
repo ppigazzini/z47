@@ -869,8 +869,11 @@ int main(void) {
 
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupGlobalCase, REGISTER_X, 1, 0x60);
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupNamedCase, FIRST_NAMED_VARIABLE + 2, 1, 0x70);
+  failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupNoOpCase, FIRST_NAMED_VARIABLE, 1, 0x70);
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 31, 1, 0x80);
   failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupLocalCase, FIRST_LOCAL_REGISTER + 1, 1, 0x90);
+  failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupNoOpCase, FIRST_LOCAL_REGISTER, 1, 0x90);
+  failures += runSetPointerCase("setRegisterDataPointer", oracle_setRegisterDataPointer, setRegisterDataPointer, setupNoOpCase, LAST_LOCAL_REGISTER + 1, 1, 0x90);
 
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupGlobalCase, REGISTER_X, amNone);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNamedCase, FIRST_NAMED_VARIABLE + 2, LI_POSITIVE);

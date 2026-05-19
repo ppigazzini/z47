@@ -949,7 +949,7 @@ pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*con
             _ = runtime.trySetNamedDescriptor(reg, withPointer(descriptor, encoded));
             return;
         }
-        runtime.retainedSetRegisterDataPointer(reg, mem_ptr);
+
         return;
     }
 
@@ -962,9 +962,11 @@ pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*con
             _ = runtime.trySetLocalDescriptor(reg, withPointer(descriptor, encoded));
             return;
         }
+
+        return;
     }
 
-    runtime.retainedSetRegisterDataPointer(reg, mem_ptr);
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
 }
 
 pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
