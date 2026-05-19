@@ -220,6 +220,29 @@ bool_t z47_register_metadata_allocate_first_named_variable_header(void) {
 #endif
 }
 
+bool_t z47_register_metadata_append_named_variable_header(uint16_t *index) {
+#ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(numberOfNamedVariables >= MAX_FAKE_NAMED_VARIABLES) {
+    return false;
+  }
+
+  *index = numberOfNamedVariables;
+  numberOfNamedVariables++;
+  return true;
+#else
+  namedVariableHeader_t *origNamedVariables = allNamedVariables;
+
+  *index = numberOfNamedVariables;
+  if((allNamedVariables = reallocC47Blocks(allNamedVariables, TO_BLOCKS(sizeof(namedVariableHeader_t) * numberOfNamedVariables), TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables + 1))))) {
+    numberOfNamedVariables++;
+    return true;
+  }
+
+  allNamedVariables = origNamedVariables;
+  return false;
+#endif
+}
+
 void z47_register_metadata_store_named_variable_name(uint16_t index, const char *variable_name) {
   size_t len = strlen(variable_name);
 
