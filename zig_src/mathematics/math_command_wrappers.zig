@@ -3317,9 +3317,53 @@ fn neighbLonI() callconv(.c) void {
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
+fn longIntegerSetPositiveSign(value: *runtime.mpz_struct) void {
+    if (value._mp_size < 0) {
+        value._mp_size = -value._mp_size;
+    }
+}
+
+fn gcdInt() callconv(.c) void {
+    var x: runtime.longInteger_t = undefined;
+    var y: runtime.longInteger_t = undefined;
+    var frac_x = false;
+    var frac_y = false;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&y[0]);
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    if (frac_x) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    if (frac_y) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+        return;
+    }
+
+    longIntegerSetPositiveSign(&y[0]);
+    longIntegerSetPositiveSign(&x[0]);
+
+    if (y[0]._mp_size == 0 and x[0]._mp_size == 0) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", null, null);
+        return;
+    }
+
+    runtime.__gmpz_gcd(&x[0], &y[0], &x[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &gcdShoI, &runtime.z47_math_wrappers_gcd_int);
+    runtime.processIntRealComplexDyadicFunction(&gcdInt, null, &gcdShoI, &gcdInt);
 }
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
