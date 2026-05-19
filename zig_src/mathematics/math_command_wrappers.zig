@@ -4285,6 +4285,8 @@ pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
+    _ = unused_but_mandatory_parameter;
+
     if (!runtime.saveLastX()) {
         return;
     }
@@ -4294,7 +4296,8 @@ pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtShortInteger => ulpShortInteger(),
         runtime.dtReal34 => ulpReal(),
         else => {
-            z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter);
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function fnUlp:", "cannot calculate ULP for current X type", null, null);
             return;
         },
     }

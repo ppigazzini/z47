@@ -928,6 +928,11 @@ static void configureUlpShortInteger(void) {
   mathWrappersSetShortIntegerInput(12);
 }
 
+static void configureUlpInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
 static void configureMantReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amDegree);
@@ -2535,6 +2540,7 @@ int main(void) {
   failures += runCase("fnUlp/real", oracle_fnUlp, fnUlp, 0, true, configureUlpReal);
   failures += runCase("fnUlp/longint", oracle_fnUlp, fnUlp, 0, true, configureUlpLongInteger);
   failures += runCase("fnUlp/shortint", oracle_fnUlp, fnUlp, 0, true, configureUlpShortInteger);
+  failures += runCase("fnUlp/invalid_type", oracle_fnUlp, fnUlp, 0, true, configureUlpInvalidType);
   failures += runCase("fnMant/real", oracle_fnMant, fnMant, 0, true, configureMantReal);
   failures += runCase("fnMant/real_nan", oracle_fnMant, fnMant, 0, true, configureMantRealNaN);
   failures += runCase("fnMant/longint", oracle_fnMant, fnMant, 0, true, configureMantLongInteger);
