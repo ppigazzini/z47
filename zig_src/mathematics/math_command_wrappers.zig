@@ -1861,6 +1861,48 @@ fn wPosCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
 }
 
+fn wNegReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+    const limit = minusOneOverE();
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    if (realCompareGreaterEqual(&x_value, &limit) and realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_0())) {
+        runtime.WP34S_LambertW(&x_value, &result, true, &runtime.ctxtReal39);
+        runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function wNegReal:", "X < -e^(-1) || 0 < X", null, null);
+    }
+}
+
+fn wNegCplx() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+    const limit = minusOneOverE();
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&imag_value)) {
+        if (realCompareGreaterEqual(&real_value, &limit) and realCompareLessEqual(&real_value, runtime.z47_math_wrappers_const_0())) {
+            runtime.WP34S_LambertW(&real_value, &result, true, &runtime.ctxtReal39);
+            runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function wNegCplx:", "X < -e^(-1) || 0 < X", null, null);
+        }
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function wNegCplx:", "Cannot calculate Wm for complex number with non-zero imaginary part", null, null);
+    }
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3044,7 +3086,8 @@ pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnWnegative(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runtime.processRealComplexMonadicFunction(&wNegReal, &wNegCplx);
 }
 
 pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
