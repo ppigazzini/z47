@@ -8,6 +8,52 @@ double z47_math_wrappers_log(double value) {
   return value > 0.0 ? value : 0.0;
 }
 
+static void z47_math_wrappers_long_integer_gcd(longInteger_t liY, longInteger_t liX, longInteger_t liA) {
+  if(longIntegerIsZero(liY) && longIntegerIsZero(liX)) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", NULL, NULL);
+#endif
+  }
+  else {
+    longIntegerGcd(liY, liX, liA);
+  }
+}
+
+void z47_math_wrappers_gcd_int(void) {
+  longInteger_t liX, liY;
+  bool_t fracX, fracY;
+
+  if(!getRegisterAsLongInt(REGISTER_Y, liY, &fracY)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_X, liX, &fracX)) {
+    goto end2;
+  }
+
+  if(fracX) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    goto end2;
+  }
+  if(fracY) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_Y);
+    goto end2;
+  }
+
+  longIntegerSetPositiveSign(liY);
+  longIntegerSetPositiveSign(liX);
+  z47_math_wrappers_long_integer_gcd(liY, liX, liX);
+  convertLongIntegerToLongIntegerRegister(liX, REGISTER_X);
+end2:
+  longIntegerFree(liX);
+end1:
+  longIntegerFree(liY);
+}
+
+void z47_math_wrappers_gcd_short_integer(void) {
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intGCD(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
+}
+
 void z47_math_wrappers_build_sign_result(int32_t r) {
   longInteger_t lgInt;
 

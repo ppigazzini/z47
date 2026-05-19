@@ -3096,7 +3096,8 @@ pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void 
 }
 
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &runtime.z47_math_wrappers_gcd_short_integer, &runtime.z47_math_wrappers_gcd_int);
 }
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
