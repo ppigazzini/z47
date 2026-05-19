@@ -2011,6 +2011,23 @@ fn rmdReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn neighbReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+    var y_value: runtime.real_t = undefined;
+    var x_angular_mode = runtime.amNone;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+        return;
+    }
+
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
+        x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+    }
+
+    runtime.realNextToward(&x_value, &y_value, &x_value, &runtime.ctxtReal34);
+    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, x_angular_mode);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3305,7 +3322,7 @@ pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_neighb_real, null, &runtime.z47_math_wrappers_neighb_short_integer, &runtime.z47_math_wrappers_neighb_long_integer);
+    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &runtime.z47_math_wrappers_neighb_short_integer, &runtime.z47_math_wrappers_neighb_long_integer);
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
