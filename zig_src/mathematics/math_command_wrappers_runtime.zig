@@ -148,6 +148,7 @@ pub extern var temporaryInformation: u8;
 pub extern var lastErrorCode: u8;
 pub extern var systemFlags0: u64;
 pub extern var systemFlags1: u64;
+pub extern var const_NaN: *const real_t;
 
 pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
@@ -183,6 +184,7 @@ pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;
 pub extern fn clearSystemFlag(flag: i32) void;
+pub extern fn fnChangeBase(base: u16) void;
 pub extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 pub extern fn fnSetFlag(flag: i32) void;
 pub extern fn fnRefreshState() void;
@@ -292,6 +294,7 @@ pub extern fn logxyLonI(denom: *const real_t) void;
 pub extern fn logxyReal(denom: *const real_t) void;
 pub extern fn logxyCplx(denom: *const real_t) void;
 pub extern fn lnComplex(real: *const real_t, imag: *const real_t, ln_real: *real_t, ln_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Logxy(numer: *const real_t, denom: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn sqrt1Px2Complex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 pub extern fn divComplexComplex(
     numer_real: *const real_t,
@@ -375,6 +378,7 @@ pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realIsAnInteger(x: *const real_t) bool;
+pub extern fn real34IsAnInteger(value: *const real34_t) bool;
 pub extern fn divRealComplex(
     numer: *const real_t,
     denom_real: *const real_t,
@@ -591,6 +595,10 @@ pub fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 
 pub fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
     setRegisterTag(reg, @intCast(mode));
+}
+
+pub fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg);
 }
 
 pub fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
