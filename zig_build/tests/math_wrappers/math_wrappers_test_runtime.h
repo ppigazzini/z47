@@ -216,6 +216,7 @@ typedef struct {
   int32_t final_register_real34_value;
   uint8_t final_register_real34_bits;
   uint64_t final_register_shortint_raw;
+  uint64_t final_register_y_shortint_raw;
   int32_t final_register_longint_value;
   bool_t final_overflow_flag;
   bool_t final_carry_flag;

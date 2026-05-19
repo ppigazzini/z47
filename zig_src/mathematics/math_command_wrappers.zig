@@ -3532,6 +3532,86 @@ fn initShortIntegerRegisterAsLongInteger(reg: runtime.calcRegister_t, value: *ru
     }
 }
 
+fn reportDblMultiplyTypeError(reg: runtime.calcRegister_t) void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    _ = runtime.getRegisterDataType(reg);
+    runtime.moreInfoOnError("In function fnDblMultiply:", "the input type is not allowed for DBLx!", null, null);
+}
+
+fn requireDblMultiplyShortInteger(reg: runtime.calcRegister_t) bool {
+    if (runtime.getRegisterDataType(reg) == runtime.dtShortInteger) {
+        return true;
+    }
+
+    reportDblMultiplyTypeError(reg);
+    return false;
+}
+
+fn dblMultiply() void {
+    if (!requireDblMultiplyShortInteger(runtime.REGISTER_X) or
+        !requireDblMultiplyShortInteger(runtime.REGISTER_Y))
+    {
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    const sim = runtime.shortIntegerMode;
+    defer runtime.shortIntegerMode = sim;
+    const word_size: u32 = runtime.shortIntegerWordSize;
+    const base = runtime.getRegisterTag(runtime.REGISTER_Y);
+    var signs_differ = false;
+
+    if (sim == runtime.SIM_1COMPL or sim == runtime.SIM_SIGNMT) {
+        const y_negative = (runtime.registerShortIntegerPtr(runtime.REGISTER_Y).* & runtime.shortIntegerSignBit) != 0;
+        const x_negative = (runtime.registerShortIntegerPtr(runtime.REGISTER_X).* & runtime.shortIntegerSignBit) != 0;
+        signs_differ = y_negative != x_negative;
+    }
+
+    var scale: runtime.longInteger_t = undefined;
+    runtime.__gmpz_init(&scale[0]);
+    defer runtime.__gmpz_clear(&scale[0]);
+    setPowerOfTwo(&scale[0], word_size);
+
+    var y_value: runtime.longInteger_t = undefined;
+    initShortIntegerRegisterAsLongInteger(runtime.REGISTER_Y, &y_value);
+    defer runtime.__gmpz_clear(&y_value[0]);
+
+    var x_value: runtime.longInteger_t = undefined;
+    initShortIntegerRegisterAsLongInteger(runtime.REGISTER_X, &x_value);
+    defer runtime.__gmpz_clear(&x_value[0]);
+
+    var product: runtime.longInteger_t = undefined;
+    runtime.__gmpz_init(&product[0]);
+    defer runtime.__gmpz_clear(&product[0]);
+    runtime.__gmpz_mul(&product[0], &y_value[0], &x_value[0]);
+
+    if (sim == runtime.SIM_1COMPL) {
+        if (signs_differ) {
+            runtime.__gmpz_sub_ui(&product[0], &product[0], 1);
+        }
+        runtime.shortIntegerMode = runtime.SIM_2COMPL;
+    } else if (sim == runtime.SIM_SIGNMT) {
+        longIntegerSetPositiveSign(&product[0]);
+        runtime.shortIntegerMode = runtime.SIM_UNSIGN;
+    }
+
+    runtime.__gmpz_tdiv_qr(&x_value[0], &y_value[0], &product[0], &scale[0]);
+
+    if (sim == runtime.SIM_SIGNMT) {
+        runtime.shortIntegerMode = runtime.SIM_SIGNMT;
+        if (signs_differ) {
+            longIntegerSetNegativeSign(&x_value[0]);
+        }
+    }
+
+    runtime.convertLongIntegerToShortIntegerRegister(&y_value[0], base, runtime.REGISTER_Y);
+    runtime.convertLongIntegerToShortIntegerRegister(&x_value[0], base, runtime.REGISTER_X);
+    runtime.clearSystemFlag(runtime.FLAG_OVERFLOW);
+}
+
 fn reportDblDivideTypeError(reg: runtime.calcRegister_t) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
     _ = runtime.getRegisterDataType(reg);
@@ -4113,7 +4193,8 @@ pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnDblMultiply(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    dblMultiply();
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {

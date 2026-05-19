@@ -293,6 +293,10 @@ void oracle_realLog10(const real_t *x, real_t *res, realContext_t *realContext);
 #include "../../../src/c47/mathematics/remainder.c"
 #undef fnRmd
 
+#define fnDblMultiply oracle_fnDblMultiply
+#include "../../../src/c47/mathematics/dblMultiplication.c"
+#undef fnDblMultiply
+
 #define dblDivide oracle_dblDivide
 #define fnDblDivide oracle_fnDblDivide
 #define fnDblDivideRemainder oracle_fnDblDivideRemainder
