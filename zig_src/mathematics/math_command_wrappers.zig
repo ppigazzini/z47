@@ -1735,6 +1735,47 @@ fn swapReImCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&imag_value, &real_value, runtime.REGISTER_X);
 }
 
+fn swapReImRema() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &real_matrix);
+    runtime.convertReal34MatrixToComplex34Matrix(&real_matrix, &complex_matrix);
+
+    const count = @min(
+        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+        complex_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        complex_matrix.matrixElements[index].imag = complex_matrix.matrixElements[index].real;
+        complex_matrix.matrixElements[index].real = std.mem.zeroes(runtime.real34_t);
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+    runtime.complexMatrixFree(&complex_matrix);
+}
+
+fn swapReImCxma() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    const count = @min(
+        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+        complex_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        const real_value = complex_matrix.matrixElements[index].real;
+        complex_matrix.matrixElements[index].real = complex_matrix.matrixElements[index].imag;
+        complex_matrix.matrixElements[index].imag = real_value;
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
 fn atan2RealReal() callconv(.c) void {
     var y_value: runtime.real_t = undefined;
     var x_value: runtime.real_t = undefined;
@@ -4258,12 +4299,20 @@ pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void
 
 pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter);
+
+    _ = unused_but_mandatory_parameter;
+
+    if (!runtime.saveLastX()) {
         return;
     }
 
-    if (!runtime.saveLastX()) {
+    if (register_data_type == runtime.dtReal34Matrix) {
+        swapReImRema();
+        return;
+    }
+
+    if (register_data_type == runtime.dtComplex34Matrix) {
+        swapReImCxma();
         return;
     }
 
