@@ -671,6 +671,15 @@ static void configureModuloLongInteger(void) {
   mathWrappersSetLongIntegerYInput(true, 9);
 }
 
+static void configureModuloShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(4);
+  mathWrappersSetShortIntegerYInput(9);
+  mathWrappersSetLongIntegerInput(true, 4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
 static void configureRmdReal(void) {
   configureModuloReal();
 }
@@ -1640,6 +1649,7 @@ int main(void) {
   failures += runCase("fnMod/real", oracle_fnMod, fnMod, 0, true, configureModuloReal);
   failures += runCase("fnMod/longint", oracle_fnMod, fnMod, 0, true, configureModuloLongInteger);
   failures += runCase("fnRmd/real", oracle_fnRmd, fnRmd, 0, true, configureRmdReal);
+  failures += runCase("fnRmd/shortint", oracle_fnRmd, fnRmd, 0, true, configureModuloShortInteger);
   failures += runCase("fnRmd/longint", oracle_fnRmd, fnRmd, 0, true, configureRmdLongInteger);
   failures += runCase("fnUlp/real", oracle_fnUlp, fnUlp, 0, true, configureUlpReal);
   failures += runCase("fnUlp/longint", oracle_fnUlp, fnUlp, 0, true, configureUlpLongInteger);

@@ -136,6 +136,7 @@ pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fracti
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
+pub extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const mpz_struct, base: u32, regist: calcRegister_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToUInt64(reg: calcRegister_t, sign: ?*i16, value: ?*u64) void;
 pub extern fn getFlag(flag: u16) bool;
