@@ -60,6 +60,8 @@ void fnNeighb(uint16_t unusedButMandatoryParameter);
 void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnRandomI(uint16_t unusedButMandatoryParameter);
+void fnCheckInteger(uint16_t unusedButMandatoryParameter);
+void fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void fnCheckType(uint16_t unusedButMandatoryParameter);
 void fnCheckReal(uint16_t unusedButMandatoryParameter);
 void fnCheckAngle(uint16_t unusedButMandatoryParameter);
@@ -142,6 +144,8 @@ void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckInteger(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter);
@@ -171,6 +175,17 @@ void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
+
+enum {
+  parity_CHECK_INTEGER = 0,
+  parity_CHECK_INTEGER_EVEN = 1,
+  parity_CHECK_INTEGER_ODD = 2,
+  parity_CHECK_INTEGER_FP = 3,
+  parity_ITM_ISREZQ = 2527,
+  parity_ITM_ISIMZQ = 2528,
+  parity_ITM_ISRENZQ = 2529,
+  parity_ITM_ISIMNZQ = 2530,
+};
 
 static int reportMismatch(const char *name,
                           uint16_t arg,
@@ -820,6 +835,42 @@ static void configureRandomILongInteger(void) {
   mathWrappersSetLongIntegerInput(true, 2);
   mathWrappersSetLongIntegerYInput(true, 5);
   mathWrappersSetPcgState(123456789ULL, 987654321ULL);
+}
+
+static void configureCheckIntegerLongIntegerOdd(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 7);
+}
+
+static void configureCheckIntegerLongIntegerEven(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 6);
+}
+
+static void configureCheckIntegerShortIntegerOdd(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(7);
+}
+
+static void configureCheckIntegerShortIntegerEven(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(6);
+}
+
+static void configureCheckForZeroRealNonzero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 5, 0);
+}
+
+static void configureCheckForZeroComplexNonzero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
 }
 
 static void configureCheckTypeLongInteger(void) {
@@ -1843,6 +1894,23 @@ int main(void) {
   failures += runCase("fnFactorial/longint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialLongInteger);
   failures += runCase("fnFactorial/shortint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialShortInteger);
   failures += runCase("fnRandomI/longint", oracle_fnRandomI, fnRandomI, 0, true, configureRandomILongInteger);
+  failures += runCase("fnCheckInteger/longint_int", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerLongIntegerOdd);
+  failures += runCase("fnCheckInteger/longint_even", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_EVEN, true, configureCheckIntegerLongIntegerEven);
+  failures += runCase("fnCheckInteger/longint_odd", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_ODD, true, configureCheckIntegerLongIntegerOdd);
+  failures += runCase("fnCheckInteger/longint_fp", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_FP, true, configureCheckIntegerLongIntegerOdd);
+  failures += runCase("fnCheckInteger/shortint_int", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER, true, configureCheckIntegerShortIntegerOdd);
+  failures += runCase("fnCheckInteger/shortint_even", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_EVEN, true, configureCheckIntegerShortIntegerEven);
+  failures += runCase("fnCheckInteger/shortint_odd", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_ODD, true, configureCheckIntegerShortIntegerOdd);
+  failures += runCase("fnCheckInteger/shortint_fp", oracle_fnCheckInteger, fnCheckInteger, parity_CHECK_INTEGER_FP, true, configureCheckIntegerShortIntegerOdd);
+  failures += runCase("fnCheckForZero/longint_re_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckLongIntegerZero);
+  failures += runCase("fnCheckForZero/longint_re_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISRENZQ, true, configureCheckTypeLongInteger);
+  failures += runCase("fnCheckForZero/shortint_re_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckShortIntegerZero);
+  failures += runCase("fnCheckForZero/shortint_im_nonzero_false", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMNZQ, true, configureFactorialShortInteger);
+  failures += runCase("fnCheckForZero/real_re_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISREZQ, true, configureCheckRealPositiveZero);
+  failures += runCase("fnCheckForZero/real_im_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMZQ, true, configureCheckForZeroRealNonzero);
+  failures += runCase("fnCheckForZero/complex_im_zero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMZQ, true, configureCheckComplexPositiveZero);
+  failures += runCase("fnCheckForZero/complex_im_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISIMNZQ, true, configureCheckForZeroComplexNonzero);
+  failures += runCase("fnCheckForZero/complex_re_nonzero", oracle_fnCheckForZero, fnCheckForZero, parity_ITM_ISRENZQ, true, configureCheckForZeroComplexNonzero);
   failures += runCase("fnCheckType/true", oracle_fnCheckType, fnCheckType, dtLongInteger, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckType/false", oracle_fnCheckType, fnCheckType, dtReal34, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckReal/true", oracle_fnCheckReal, fnCheckReal, 0, true, configureCheckTypeLongInteger);

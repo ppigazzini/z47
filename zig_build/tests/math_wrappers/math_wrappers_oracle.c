@@ -351,6 +351,142 @@ void roundiReal(void);
 #undef fnRandom
 #undef realRandomU01
 
+void oracle_fnCheckInteger(uint16_t mode) {
+	switch(getRegisterDataType(REGISTER_X)) {
+		case 0: {
+			longInteger_t value;
+			int is_odd;
+
+			convertLongIntegerRegisterToLongInteger(REGISTER_X, value);
+			is_odd = value[0]._mp_size != 0 && (value[0]._mp_d[0] & 1u) != 0;
+			refreshLcd(NULL);
+
+			switch(mode) {
+				case 0:
+					temporaryInformation = 13;
+					break;
+
+				case 1:
+					temporaryInformation = 12 + (!is_odd);
+					break;
+
+				case 2:
+					temporaryInformation = 12 + is_odd;
+					break;
+
+				case 3:
+					temporaryInformation = 12;
+					break;
+
+				default:
+					break;
+			}
+
+			longIntegerFree(value);
+			break;
+		}
+
+		case 8: {
+			uint64_t value;
+			int is_odd;
+
+			convertShortIntegerRegisterToUInt64(REGISTER_X, NULL, &value);
+			is_odd = (value & 1u) != 0;
+			refreshLcd(NULL);
+
+			switch(mode) {
+				case 0:
+					temporaryInformation = 13;
+					break;
+
+				case 1:
+					temporaryInformation = 12 + (!is_odd);
+					break;
+
+				case 2:
+					temporaryInformation = 12 + is_odd;
+					break;
+
+				case 3:
+					temporaryInformation = 12;
+					break;
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+void oracle_fnCheckForZero(uint16_t mode) {
+	int real_is_zero;
+	int imag_is_zero;
+
+	switch(getRegisterDataType(REGISTER_X)) {
+		case 0: {
+			longInteger_t value;
+
+			convertLongIntegerRegisterToLongInteger(REGISTER_X, value);
+			real_is_zero = value[0]._mp_size == 0;
+			imag_is_zero = 1;
+			longIntegerFree(value);
+			break;
+		}
+
+		case 8: {
+			uint64_t value;
+
+			convertShortIntegerRegisterToUInt64(REGISTER_X, NULL, &value);
+			real_is_zero = value == 0;
+			imag_is_zero = 1;
+			break;
+		}
+
+		case 2: {
+			const complex34_t *cpx = REGISTER_COMPLEX34_DATA(REGISTER_X);
+			real_is_zero = real34IsZero(&cpx->real);
+			imag_is_zero = real34IsZero(&cpx->imag);
+			break;
+		}
+
+		case 3:
+		case 4:
+		case 1:
+			real_is_zero = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X));
+			imag_is_zero = 1;
+			break;
+
+		default:
+			return;
+	}
+
+	switch(mode) {
+		case 2527:
+			temporaryInformation = 12 + real_is_zero;
+			break;
+
+		case 2528:
+			temporaryInformation = 12 + imag_is_zero;
+			break;
+
+		case 2529:
+			temporaryInformation = 12 + (!real_is_zero);
+			break;
+
+		case 2530:
+			temporaryInformation = 12 + (!imag_is_zero);
+			break;
+
+		default:
+			break;
+	}
+}
+
 void oracle_fnCheckType(uint16_t type) {
 	temporaryInformation = 12 + (getRegisterDataType(REGISTER_X) == type);
 }
