@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <string.h>
+
 #include "c47.h"
 
 uint32_t z47_register_metadata_get_global_descriptor(calcRegister_t reg) {
@@ -202,6 +204,32 @@ const char *z47_register_metadata_named_variable_name(uint16_t index) {
   }
 
   return (const char *)(allNamedVariables[index].variableName + 1);
+}
+
+bool_t z47_register_metadata_allocate_first_named_variable_header(void) {
+#ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  numberOfNamedVariables = 1;
+  return true;
+#else
+  if((allNamedVariables = allocC47Blocks(TO_BLOCKS(sizeof(namedVariableHeader_t))))) {
+    numberOfNamedVariables = 1;
+    return true;
+  }
+
+  return false;
+#endif
+}
+
+void z47_register_metadata_store_named_variable_name(uint16_t index, const char *variable_name) {
+  size_t len = strlen(variable_name);
+
+  if(len > (sizeof(allNamedVariables[index].variableName) - 1)) {
+    len = sizeof(allNamedVariables[index].variableName) - 1;
+  }
+
+  allNamedVariables[index].variableName[0] = (uint8_t)len;
+  memset(allNamedVariables[index].variableName + 1, 0, sizeof(allNamedVariables[index].variableName) - 1);
+  xcopy(allNamedVariables[index].variableName + 1, variable_name, (uint32_t)len);
 }
 
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right) {
