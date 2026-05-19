@@ -1430,3 +1430,9 @@ void oracle_fnToRect(uint16_t angleInY) {
 		temporaryInformation = TI_X_Y_SWAPPED;
 	}
 }
+
+#define fnSdl oracle_fnSdl
+#define fnSdr oracle_fnSdr
+#include "../../../src/c47/mathematics/shiftDigits.c"
+#undef fnSdr
+#undef fnSdl
