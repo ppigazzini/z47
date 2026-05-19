@@ -2003,7 +2003,7 @@ fn mantReal() void {
     runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
 }
 
-fn roundiReal() void {
+fn roundiReal() callconv(.c) void {
     if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function roundiReal:", "cannot use NaN as X input of ROUNDI", null, null);
@@ -4325,17 +4325,22 @@ pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type != runtime.dtReal34) {
-        z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter);
-        return;
-    }
+    _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    roundiReal();
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtLongInteger, runtime.dtShortInteger => {},
+        runtime.dtReal34 => roundiReal(),
+        runtime.dtReal34Matrix => runtime.elementwiseRema(&roundiReal),
+        else => {
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function roundiError:", "cannot calculate ROUNDI for current X type", null, null);
+        },
+    }
+
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 

@@ -226,6 +226,7 @@ pub extern fn realNextToward(x: *const real_t, y: *const real_t, result: *real_t
 pub extern fn complexMagnitude(real: *const real_t, imag: *const real_t, magnitude: *real_t, real_context: *realContext_t) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
+pub extern fn elementwiseRema(realf: VoidCallback) void;
 pub extern fn elementwiseRemaReal(realf: VoidCallback) void;
 pub extern fn processIntRealComplexMonadicFunction(
     realf: VoidCallback,

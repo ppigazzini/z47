@@ -971,6 +971,36 @@ static void configureRoundiRealInfinity(void) {
   mathWrappersSetRealInput(true, 9, 0x40);
 }
 
+static void configureRoundiLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
+  mathWrappersSetLongIntegerInput(true, -456);
+}
+
+static void configureRoundiShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(0x2345);
+}
+
+static void configureRoundiMatrix(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 1, 0);
+  setMatrixReal34(&matrix.matrixElements[1], -2, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 3, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 4, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureRoundiInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
 static void configureDecompLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
@@ -2553,6 +2583,10 @@ int main(void) {
   failures += runCase("fnRoundi/real", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiReal);
   failures += runCase("fnRoundi/real_nan", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealNaN);
   failures += runCase("fnRoundi/real_inf", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealInfinity);
+  failures += runCase("fnRoundi/longint", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiLongInteger);
+  failures += runCase("fnRoundi/shortint", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiShortInteger);
+  failures += runCase("fnRoundi/matrix", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiMatrix);
+  failures += runCase("fnRoundi/invalid_type", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiInvalidType);
   failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
   failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
   failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);
