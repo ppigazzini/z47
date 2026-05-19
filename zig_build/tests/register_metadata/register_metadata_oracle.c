@@ -10,7 +10,10 @@ void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sour
 void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr);
 void *oracle_getRegisterDataPointer(calcRegister_t regist);
+uint32_t oracle_getRegisterDataType(calcRegister_t regist);
 void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
+void oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
+void oracle_clearRegister(calcRegister_t regist);
 
 const reservedVariableHeader_t allReservedVariables[NUMBER_OF_RESERVED_VARIABLES] = {
   [26] = {
@@ -256,6 +259,55 @@ void oracle_fnDeleteVariable(uint16_t regist) {
   displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
+void oracle_clearRegister(calcRegister_t regist) {
+  if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {
+    if(oracle_getRegisterDataType(regist) == dtReal34) {
+      real34SetZero((real34_t *)oracle_getRegisterDataPointer(regist));
+      oracle_setRegisterDataType(regist, (uint16_t)dtReal34, amNone);
+    }
+    else {
+      oracle_reallocateRegister(regist, dtReal34, 0, amNone);
+      real34SetZero((real34_t *)oracle_getRegisterDataPointer(regist));
+    }
+    return;
+  }
+
+  if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {
+    uint8_t *data = (uint8_t *)oracle_getRegisterDataPointer(regist);
+
+    if(oracle_getRegisterDataType(regist) != dtComplex34) {
+      oracle_reallocateRegister(regist, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      data = (uint8_t *)oracle_getRegisterDataPointer(regist);
+    }
+
+    if(data != NULL) {
+      real34SetZero((real34_t *)data);
+      real34SetZero((real34_t *)(data + REAL34_SIZE_IN_BYTES));
+    }
+    oracle_setRegisterDataType(regist, (uint16_t)dtComplex34, amNone);
+    return;
+  }
+
+  if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {
+    longInteger_t lg_int;
+
+    longIntegerInit(lg_int);
+    uInt32ToLongInteger(0u, lg_int);
+    convertLongIntegerToLongIntegerRegister(lg_int, regist);
+    longIntegerFree(lg_int);
+    return;
+  }
+
+  if(lastIntegerBase != 0) {
+    longInteger_t lg_int;
+
+    longIntegerInit(lg_int);
+    uInt32ToLongInteger(0u, lg_int);
+    convertLongIntegerToShortIntegerRegister(lg_int, lastIntegerBase, regist);
+    longIntegerFree(lg_int);
+  }
+}
+
 static void oracle_initializeSimEqMatrix(const char *variable_name, calcRegister_t reg) {
   matrixHeader_t *matrix_header;
 
@@ -302,13 +354,109 @@ void oracle_fnDeleteAllVariables(uint16_t confirmation) {
   temporaryInformation = programRunStop != PGM_RUNNING ? TI_DEL_ALL_VARIABLES : TI_NO_INFO;
 }
 
+static calcRegister_t oracle_findNamedVariableDirect(const char *variable_name) {
+  for(uint16_t i = 0; i < numberOfNamedVariables && i < MAX_FAKE_NAMED_VARIABLES; ++i) {
+    if(compareString((const char *)(allNamedVariables[i].variableName + 1), variable_name, CMP_NAME) == 0) {
+      return (calcRegister_t)(FIRST_NAMED_VARIABLE + i);
+    }
+  }
+
+  return INVALID_VARIABLE;
+}
+
+static void oracle_refreshSimEqMatrix(const char *variable_name) {
+  calcRegister_t reg = oracle_findNamedVariableDirect(variable_name);
+  matrixHeader_t *matrix_header;
+
+  if(reg == INVALID_VARIABLE) {
+    oracle_allocateNamedVariable(variable_name, dtReal34, REAL34_SIZE_IN_BLOCKS);
+    if(lastErrorCode != ERROR_NONE) {
+      return;
+    }
+
+    reg = oracle_findNamedVariableDirect(variable_name);
+    if(reg == INVALID_VARIABLE) {
+      return;
+    }
+  }
+
+  oracle_reallocateRegister(reg, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS, amNone);
+  if(lastErrorCode == ERROR_RAM_FULL) {
+    return;
+  }
+
+  matrix_header = (matrixHeader_t *)oracle_getRegisterDataPointer(reg);
+  if(matrix_header == NULL) {
+    return;
+  }
+
+  matrix_header->matrixRows = 1;
+  matrix_header->matrixColumns = 1;
+  real34SetZero((real34_t *)((uint8_t *)matrix_header + sizeof(matrixHeader_t)));
+}
+
+static void oracle_refreshSimEqMatABX(void) {
+  oracle_refreshSimEqMatrix("Mat_A");
+  if(lastErrorCode == ERROR_RAM_FULL) {
+    return;
+  }
+
+  oracle_refreshSimEqMatrix("Mat_B");
+  if(lastErrorCode == ERROR_RAM_FULL) {
+    return;
+  }
+
+  oracle_refreshSimEqMatrix("Mat_X");
+}
+
+static bool_t oracle_namedVariableNameEquals(uint16_t index, const char *variable_name) {
+  return compareString((const char *)(allNamedVariables[index].variableName + 1), variable_name, CMP_NAME) == 0;
+}
+
+static bool_t oracle_preserveNamedVariableDuringClear(uint16_t index) {
+  return oracle_namedVariableNameEquals(index, "STATS") ||
+         oracle_namedVariableNameEquals(index, "HISTO") ||
+         oracle_namedVariableNameEquals(index, "Mat_A") ||
+         oracle_namedVariableNameEquals(index, "Mat_B") ||
+         oracle_namedVariableNameEquals(index, "Mat_X");
+}
+
+static void oracle_clearSigma(void) {
+  calcRegister_t reg = oracle_findNamedVariableDirect("HISTO");
+
+  if(reg != INVALID_VARIABLE) {
+    oracle_fnDeleteVariable((uint16_t)reg);
+  }
+
+  reg = oracle_findNamedVariableDirect("STATS");
+  if(reg != INVALID_VARIABLE) {
+    oracle_fnDeleteVariable((uint16_t)reg);
+  }
+
+  lrChosen = 0;
+  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
+  statisticalSumsPointer = NULL;
+}
+
 void oracle_fnClearAllVariables(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED && programRunStop != PGM_RUNNING) {
     z47_register_metadata_request_clear_all_variables_confirmation();
     return;
   }
 
-  displayBugScreen("oracle_fnClearAllVariables called with an unsupported confirmed case");
+  for(uint16_t i = numberOfNamedVariables; i > 0; i--) {
+    const uint16_t index = (uint16_t)(i - 1);
+
+    if(oracle_preserveNamedVariableDuringClear(index)) {
+      continue;
+    }
+
+    oracle_clearRegister((calcRegister_t)(FIRST_NAMED_VARIABLE + index));
+  }
+
+  oracle_clearSigma();
+  oracle_refreshSimEqMatABX();
+  temporaryInformation = programRunStop != PGM_RUNNING ? TI_CLEAR_ALL_VARIABLES : TI_NO_INFO;
 }
 
 calcRegister_t oracle_findNamedVariable(const char *variableName) {

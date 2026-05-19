@@ -82,6 +82,7 @@ enum {
 #define NOT_CONFIRMED 9878
 
 #define TI_NO_INFO 0
+#define TI_CLEAR_ALL_VARIABLES 98
 #define TI_DEL_ALL_VARIABLES 101
 
 enum {

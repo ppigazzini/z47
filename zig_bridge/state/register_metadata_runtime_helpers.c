@@ -334,6 +334,27 @@ void z47_register_metadata_report_too_many_variables(void) {
   displayCalcErrorMessage(ERROR_TOO_MANY_VARIABLES, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
+void z47_register_metadata_clear_sigma(void) {
+#ifndef Z47_REGISTER_METADATA_FAKE_C47_H
+  fnClSigma(CONFIRMED);
+#else
+  calcRegister_t reg = findNamedVariable("HISTO");
+
+  if(reg != INVALID_VARIABLE) {
+    fnDeleteVariable((uint16_t)reg);
+  }
+
+  reg = findNamedVariable("STATS");
+  if(reg != INVALID_VARIABLE) {
+    fnDeleteVariable((uint16_t)reg);
+  }
+
+  lrChosen = 0;
+  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
+  statisticalSumsPointer = NULL;
+#endif
+}
+
 #ifndef Z47_REGISTER_METADATA_FAKE_C47_H
 void z47_register_metadata_request_delete_all_variables_confirmation(void) {
   setConfirmationMode(fnDeleteAllVariables);

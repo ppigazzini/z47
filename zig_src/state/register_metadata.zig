@@ -599,6 +599,54 @@ fn initSimEqMatABX() void {
     initializeSimEqMatrix("Mat_X");
 }
 
+fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
+    const register = findOrAllocateNamedVariable(variable_name);
+    if (register == runtime.INVALID_VARIABLE) {
+        return;
+    }
+
+    reallocateRegister(register, runtime.dtReal34Matrix, runtime.real34SizeInBlocks(), runtime.amNone);
+    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
+        return;
+    }
+
+    const data_ptr = getRegisterDataPointer(register);
+    runtime.initializeMatrixHeader1x1(data_ptr);
+    if (data_ptr) |ptr| {
+        const matrix_element_ptr = @as(
+            ?*anyopaque,
+            @ptrCast(@alignCast(@as([*]u8, @ptrCast(ptr)) + stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()))),
+        );
+        stack_runtime.real34SetZero(matrix_element_ptr);
+    }
+}
+
+fn refreshSimEqMatABX() void {
+    refreshSimEqMatrix("Mat_A");
+    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
+        return;
+    }
+
+    refreshSimEqMatrix("Mat_B");
+    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
+        return;
+    }
+
+    refreshSimEqMatrix("Mat_X");
+}
+
+fn namedVariableNameEquals(index: u16, variable_name: [*:0]const u8) bool {
+    return runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0;
+}
+
+fn preserveNamedVariableDuringClear(index: u16) bool {
+    return namedVariableNameEquals(index, "STATS") or
+        namedVariableNameEquals(index, "HISTO") or
+        namedVariableNameEquals(index, "Mat_A") or
+        namedVariableNameEquals(index, "Mat_B") or
+        namedVariableNameEquals(index, "Mat_X");
+}
+
 pub export fn fnDeleteAllVariables(confirmation: u16) void {
     if (confirmation == stack_runtime.NOT_CONFIRMED and stack_runtime.programRunStop != stack_runtime.PGM_RUNNING) {
         runtime.requestDeleteAllVariablesConfirmation();
@@ -623,7 +671,24 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
         return;
     }
 
-    runtime.retainedFnClearAllVariables(confirmation);
+    var variable_index = runtime.numberOfNamedVariables;
+    while (variable_index > 0) {
+        const index = variable_index - 1;
+        variable_index -= 1;
+
+        if (preserveNamedVariableDuringClear(index)) {
+            continue;
+        }
+
+        stack_runtime.clearRegister(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index)));
+    }
+
+    runtime.clearSigma();
+    refreshSimEqMatABX();
+    runtime.temporaryInformation = if (stack_runtime.programRunStop != stack_runtime.PGM_RUNNING)
+        runtime.TI_CLEAR_ALL_VARIABLES
+    else
+        runtime.TI_NO_INFO;
 }
 
 pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
