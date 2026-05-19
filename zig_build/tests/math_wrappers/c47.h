@@ -144,6 +144,7 @@ enum {
 #define FLAG_POLAR 0x8018
 #define FLAG_SPCRES 0x8017
 #define FLAG_ASLIFT 0x8019
+#define FLAG_HPRP 0x802b
 #define NOPARAM 0
 #define NIM_REGISTER_LINE REGISTER_X
 #define TO_QSPI
@@ -192,9 +193,17 @@ enum {
 
 #define TI_FALSE 0
 #define TI_TRUE 1
+#define TI_RADIUS_THETA 1
+#define TI_RADIUS_THETA_SWAPPED 2
 #define TI_PERC 2
 #define TI_PERCD 3
+#define TI_X_Y 4
+#define TI_X_Y_SWAPPED 5
 #define SET_TI_TRUE_FALSE(condition) do { temporaryInformation = ((condition) ? TI_TRUE : TI_FALSE); } while(0)
+
+enum {
+  bugMsgUnexpectedSValue = 0,
+};
 
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
 #define realSetNegativeSign(operand) ((operand)->bits |= 0x80)
@@ -458,6 +467,7 @@ void lcd_refresh(void);
 void fnChangeBase(uint16_t base);
 void forceSystemFlag(unsigned int sf, int set);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
+void displayBugScreen(const char *message);
 void moreInfoOnError(const char *msg1, const char *msg2, const char *msg3, const char *msg4);
 void doNothing(void);
 void fnDropY(uint16_t unusedButMandatoryParameter);
@@ -484,6 +494,7 @@ double z47_math_wrappers_log(double value);
 
 extern char errorMessage[ERROR_MESSAGE_LENGTH];
 extern char tmpString[ERROR_MESSAGE_LENGTH];
+extern const char *commonBugScreenMessages[];
 
 const real_t *z47_math_wrappers_const_0(void);
 const real_t *z47_math_wrappers_const_1(void);

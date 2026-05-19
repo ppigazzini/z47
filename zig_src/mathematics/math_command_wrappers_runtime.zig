@@ -47,6 +47,7 @@ pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
+pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;
 pub const TI_FALSE: u8 = 12;

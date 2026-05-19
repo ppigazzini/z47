@@ -2875,7 +2875,54 @@ pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv
     z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter);
 }
 
+fn loadToPolarReal34Input(reg: runtime.calcRegister_t, value: *runtime.real_t) void {
+    _ = runtime.decimal128ToNumber(runtime.registerReal34Ptr(reg), value);
+}
+
+fn tryFnToPolar2Real34Pair() bool {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34 or runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        return false;
+    }
+
+    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+    const data_atag_y = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
+
+    if (data_type_x != runtime.dtReal34 or data_atag_x != runtime.amNone or data_type_y != runtime.dtReal34 or data_atag_y != runtime.amNone) {
+        return false;
+    }
+
+    const hp_rp = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    const real_reg = if (hp_rp) runtime.REGISTER_X else runtime.REGISTER_Y;
+    const imag_reg = if (hp_rp) runtime.REGISTER_Y else runtime.REGISTER_X;
+
+    if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    loadToPolarReal34Input(real_reg, &real_value);
+    loadToPolarReal34Input(imag_reg, &imag_value);
+
+    runtime.realRectangularToPolar(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+
+    runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);
+    runtime.reallocateRegister(imag_reg, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    runtime.convertRealToReal34ResultRegister(&real_value, real_reg);
+    runtime.convertRealToReal34ResultRegister(&imag_value, imag_reg);
+    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    return true;
+}
+
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (tryFnToPolar2Real34Pair()) {
+        return;
+    }
+
     z47_math_wrappers_retained_fnToPolar2(unused_but_mandatory_parameter);
 }
 

@@ -95,6 +95,9 @@ const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
 char errorMessage[ERROR_MESSAGE_LENGTH];
 char tmpString[ERROR_MESSAGE_LENGTH];
+const char *commonBugScreenMessages[] = {
+  "%s %u %s",
+};
 
 static uint128_t pow10u(uint32_t exponent) {
   uint128_t result = 1;
@@ -1576,6 +1579,10 @@ void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_regi
   snapshot.display_calc_error_last_code = error_code;
   snapshot.display_calc_error_last_message_reg_line = err_message_register_line;
   snapshot.display_calc_error_last_register_line = err_register_line;
+}
+
+void displayBugScreen(const char *message) {
+  (void)message;
 }
 
 void saveForUndo(void) {
