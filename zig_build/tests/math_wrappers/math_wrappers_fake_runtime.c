@@ -1516,6 +1516,34 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
   setFakeReal(res, fakeRealValue(x) + 67, 0);
 }
 
+void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *realContext) {
+  const int32_t base_value = fakeRealValue(base);
+  const int32_t exponent_value = fakeRealValue(exponent);
+  int32_t power = 1;
+
+  (void)realContext;
+
+  if(exponent_value == 0) {
+    setFakeReal(result, 1, 0);
+    return;
+  }
+
+  if(exponent_value == 1) {
+    *result = *base;
+    return;
+  }
+
+  if(exponent_value > 1 && exponent_value <= 8) {
+    for(int32_t i = 0; i < exponent_value; ++i) {
+      power *= base_value;
+    }
+    setFakeReal(result, power, 0);
+    return;
+  }
+
+  setFakeReal(result, base_value + exponent_value, 0);
+}
+
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(res, fakeRealValue(x) + 68, 0);

@@ -398,6 +398,7 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *real_context);
+void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *real_context);
 void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bnstar, realContext_t *real_context);
 void WP34S_Factorial(const real_t *x, real_t *res, realContext_t *real_context);
 void WP34S_InverseW(const real_t *x, real_t *res, realContext_t *real_context);

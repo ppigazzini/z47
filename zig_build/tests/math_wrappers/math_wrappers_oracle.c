@@ -1449,6 +1449,22 @@ void oracle_fnToRect(uint16_t angleInY) {
 #undef fnSdr
 #undef fnSdl
 
+#define fnPercentMRR oracle_fnPercentMRR
+#include "../../../src/c47/mathematics/percentMRR.c"
+#undef fnPercentMRR
+
+#define fnPercentPlusMG oracle_fnPercentPlusMG
+#include "../../../src/c47/mathematics/percentPlusMG.c"
+#undef fnPercentPlusMG
+
+#define fnPercentT oracle_fnPercentT
+#include "../../../src/c47/mathematics/percentT.c"
+#undef fnPercentT
+
+#define fnDeltaPercent oracle_fnDeltaPercent
+#include "../../../src/c47/mathematics/deltaPercent.c"
+#undef fnDeltaPercent
+
 void oracle_unitVectorError(void);
 void oracle_unitVectorCplx(void);
 void oracle_unitVectorRema(void);
