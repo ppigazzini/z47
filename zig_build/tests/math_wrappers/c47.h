@@ -331,6 +331,7 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag);
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
 bool_t getFlag(uint16_t flag);
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
+int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater);
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);

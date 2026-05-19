@@ -4306,32 +4306,19 @@ fn setCheckIntegerResult(mode: u16, is_odd: bool) void {
     }
 }
 
-fn tryCheckIntegerNative(mode: u16) bool {
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger => {
-            var value: runtime.longInteger_t = undefined;
-            runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
-            defer runtime.__gmpz_clear(&value[0]);
-
-            runtime.fnRefreshState();
-            setCheckIntegerResult(mode, value[0]._mp_size != 0 and (value[0]._mp_d[0] & 1) != 0);
-            return true;
-        },
-        runtime.dtShortInteger => {
-            var value: u64 = 0;
-            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, null, &value);
-
-            runtime.fnRefreshState();
-            setCheckIntegerResult(mode, (value & 1) != 0);
-            return true;
-        },
-        else => return false,
-    }
-}
-
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
-    if (!tryCheckIntegerNative(mode)) {
-        z47_math_wrappers_retained_fnCheckInteger(mode);
+    var value: runtime.longInteger_t = undefined;
+    var fractional = false;
+    const err = runtime.getRegisterAsLongIntQuiet(runtime.REGISTER_X, &value[0], &fractional);
+    defer runtime.__gmpz_clear(&value[0]);
+
+    if (err != @as(c_int, runtime.ERROR_NONE)) {
+        compareTypeErrorX();
+    } else if (fractional) {
+        runtime.setTemporaryInformation(mode == CHECK_INTEGER_FP);
+    } else {
+        runtime.fnRefreshState();
+        setCheckIntegerResult(mode, value[0]._mp_size != 0 and (value[0]._mp_d[0] & 1) != 0);
     }
 }
 

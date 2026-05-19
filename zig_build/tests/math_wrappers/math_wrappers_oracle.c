@@ -384,76 +384,42 @@ static void oracle_compareTypeErrorX(void) {
 }
 
 void oracle_fnCheckInteger(uint16_t mode) {
-	switch(getRegisterDataType(REGISTER_X)) {
-		case 0: {
-			longInteger_t value;
-			int is_odd;
+	longInteger_t value;
+	bool_t frac;
 
-			convertLongIntegerRegisterToLongInteger(REGISTER_X, value);
-			is_odd = value[0]._mp_size != 0 && (value[0]._mp_d[0] & 1u) != 0;
-			refreshLcd(NULL);
-
-			switch(mode) {
-				case 0:
-					temporaryInformation = 13;
-					break;
-
-				case 1:
-					temporaryInformation = 12 + (!is_odd);
-					break;
-
-				case 2:
-					temporaryInformation = 12 + is_odd;
-					break;
-
-				case 3:
-					temporaryInformation = 12;
-					break;
-
-				default:
-					break;
-			}
-
-			longIntegerFree(value);
-			break;
-		}
-
-		case 8: {
-			uint64_t value;
-			int is_odd;
-
-			convertShortIntegerRegisterToUInt64(REGISTER_X, NULL, &value);
-			is_odd = (value & 1u) != 0;
-			refreshLcd(NULL);
-
-			switch(mode) {
-				case 0:
-					temporaryInformation = 13;
-					break;
-
-				case 1:
-					temporaryInformation = 12 + (!is_odd);
-					break;
-
-				case 2:
-					temporaryInformation = 12 + is_odd;
-					break;
-
-				case 3:
-					temporaryInformation = 12;
-					break;
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		default:
-			oracle_compareTypeErrorX();
-			break;
+	if(getRegisterAsLongIntQuiet(REGISTER_X, value, &frac) != ERROR_NONE) {
+		oracle_compareTypeErrorX();
 	}
+	else if(frac) {
+		temporaryInformation = 12 + (mode == 3);
+	}
+	else {
+		const int is_odd = value[0]._mp_size != 0 && (value[0]._mp_d[0] & 1u) != 0;
+		refreshLcd(NULL);
+
+		switch(mode) {
+			case 0:
+				temporaryInformation = 13;
+				break;
+
+			case 1:
+				temporaryInformation = 12 + (!is_odd);
+				break;
+
+			case 2:
+				temporaryInformation = 12 + is_odd;
+				break;
+
+			case 3:
+				temporaryInformation = 12;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	longIntegerFree(value);
 }
 
 void oracle_fnCheckForZero(uint16_t mode) {

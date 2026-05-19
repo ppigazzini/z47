@@ -77,6 +77,11 @@ typedef struct {
   bool_t get_register_as_longint_result;
   int32_t get_register_as_longint_value;
 
+  uint32_t get_register_as_longint_quiet_calls;
+  uint8_t get_register_as_longint_quiet_error;
+  bool_t get_register_as_longint_quiet_fractional;
+  int32_t get_register_as_longint_quiet_value;
+
   uint32_t convert_long_integer_to_register_calls;
   int32_t convert_long_integer_to_register_value;
   calcRegister_t convert_long_integer_to_register_dest;
@@ -238,6 +243,10 @@ void mathWrappersSetShortIntegerZInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
+void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
+                                           int32_t error_code,
+                                           bool_t fractional,
+                                           int32_t value);
 void mathWrappersSetFractionResult(bool_t result,
                                    int16_t sign,
                                    uint64_t int_part,

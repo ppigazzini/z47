@@ -70,6 +70,13 @@ static struct {
 
 static struct {
   bool_t enabled;
+  int32_t error_code;
+  bool_t fractional;
+  int32_t value;
+} longint_quiet_result;
+
+static struct {
+  bool_t enabled;
   real_t sin_value;
   real_t cos_value;
   real_t tan_value;
@@ -295,6 +302,11 @@ void mathWrappersReset(void) {
   fraction_result.denom = 4;
   fraction_result.less_equal_greater = 0;
 
+  longint_quiet_result.enabled = false;
+  longint_quiet_result.error_code = ERROR_NONE;
+  longint_quiet_result.fractional = false;
+  longint_quiet_result.value = 0;
+
   trig_outputs.enabled = false;
   spcres_flag = false;
   cpxres_flag = false;
@@ -416,6 +428,16 @@ void mathWrappersSetLongIntegerInput(bool_t available, int32_t value) {
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
   longint_y_input.available = available;
   longint_y_input.value = value;
+}
+
+void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
+                                           int32_t error_code,
+                                           bool_t fractional,
+                                           int32_t value) {
+  longint_quiet_result.enabled = enabled;
+  longint_quiet_result.error_code = error_code;
+  longint_quiet_result.fractional = fractional;
+  longint_quiet_result.value = value;
 }
 
 void mathWrappersSetFractionResult(bool_t result,
@@ -761,6 +783,67 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
   }
   mpz_set_si(val, input_value);
   return true;
+}
+
+int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
+  int32_t value = 0;
+  uint8_t error_code = ERROR_NONE;
+  bool_t has_fractional = false;
+
+  snapshot.get_register_as_longint_quiet_calls++;
+  mpz_init(val);
+
+  if(longint_quiet_result.enabled) {
+    error_code = (uint8_t)longint_quiet_result.error_code;
+    has_fractional = longint_quiet_result.fractional;
+    value = longint_quiet_result.value;
+    if(error_code == ERROR_NONE) {
+      mpz_set_si(val, value);
+    }
+  }
+  else {
+    switch(current_register_data_type) {
+      case dtLongInteger:
+        value = reg == REGISTER_Y ? longint_y_input.value : longint_input.value;
+        mpz_set_si(val, value);
+        break;
+
+      case dtShortInteger: {
+        longInteger_t tmp;
+
+        convertShortIntegerRegisterToLongInteger(reg, tmp);
+        value = (int32_t)mpz_get_si(tmp);
+        mpz_set(val, tmp);
+        mpz_clear(tmp);
+        break;
+      }
+
+      case dtComplex34:
+      case dtReal34:
+        if(realIsSpecial(&real_input.value)) {
+          error_code = ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
+        }
+        else {
+          value = fakeRealValue(&real_input.value);
+          mpz_set_si(val, value);
+        }
+        break;
+
+      default:
+        error_code = ERROR_INVALID_DATA_TYPE_FOR_OP;
+        break;
+    }
+  }
+
+  snapshot.get_register_as_longint_quiet_error = error_code;
+  snapshot.get_register_as_longint_quiet_fractional = has_fractional;
+  snapshot.get_register_as_longint_quiet_value = value;
+
+  if(fractional != NULL) {
+    *fractional = has_fractional;
+  }
+
+  return error_code;
 }
 
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t lgInt) {
