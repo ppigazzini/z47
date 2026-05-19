@@ -417,3 +417,54 @@ void atan2LonIRema(void);
 #define fnCube oracle_fnCube
 #include "../../../src/c47/mathematics/cube.c"
 #undef fnCube
+
+void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
+	uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
+	calcRegister_t REG_X, REG_Y;
+	real_t x, y;
+
+	(void)unusedButMandatoryParameter;
+
+	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+		return;
+	}
+
+	dataTypeX = getRegisterDataType(REGISTER_X);
+	dataAtagX = getRegisterAngularMode(REGISTER_X);
+	dataTypeY = getRegisterDataType(REGISTER_Y);
+	dataAtagY = getRegisterAngularMode(REGISTER_Y);
+
+	if(dataTypeX != dtReal34 || dataAtagX != amNone || dataTypeY != dtReal34 || dataAtagY != amNone) {
+		return;
+	}
+
+	if(getSystemFlag(FLAG_HPRP)) {
+		REG_X = REGISTER_X;
+		REG_Y = REGISTER_Y;
+	}
+	else {
+		REG_X = REGISTER_Y;
+		REG_Y = REGISTER_X;
+	}
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
+	real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
+	convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
+
+	reallocateRegister(REG_X, dtReal34, 0, amNone);
+	reallocateRegister(REG_Y, dtReal34, 0, currentAngularMode);
+	convertRealToReal34ResultRegister(&x, REG_X);
+	convertRealToReal34ResultRegister(&y, REG_Y);
+
+	if(getSystemFlag(FLAG_HPRP)) {
+		temporaryInformation = TI_RADIUS_THETA;
+	}
+	else {
+		temporaryInformation = TI_RADIUS_THETA_SWAPPED;
+	}
+}
