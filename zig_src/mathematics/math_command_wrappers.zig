@@ -1584,6 +1584,51 @@ fn atan2RealReal() callconv(.c) void {
     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
 }
 
+fn getExponent(result: *i32) bool {
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return false;
+    }
+
+    if (runtime.realIsNaN(&x_value)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function getExponent:", "cannot use NaN as X input of EXPT", null, null);
+        return false;
+    }
+
+    if (runtime.realIsInfinite(&x_value)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function getExponent:", "cannot use +/-inf as an input of EXPT", null, null);
+        return false;
+    }
+
+    result.* = if (runtime.realIsZero(&x_value)) 0 else x_value.exponent + x_value.digits - 1;
+    return true;
+}
+
+fn exptReal() callconv(.c) void {
+    var exponent: i32 = undefined;
+    var x_value: runtime.real_t = undefined;
+
+    if (!getExponent(&exponent)) {
+        return;
+    }
+
+    runtime.int32ToReal(exponent, &x_value);
+    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn exptLonI() callconv(.c) void {
+    var exponent: i32 = undefined;
+
+    if (!getExponent(&exponent)) {
+        return;
+    }
+
+    runtime.z47_math_wrappers_build_sign_result(exponent);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2764,7 +2809,9 @@ pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnExpt(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processIntRealComplexMonadicFunction(&exptReal, null, null, &exptLonI);
 }
 
 pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
