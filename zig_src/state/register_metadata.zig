@@ -859,7 +859,12 @@ pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
             return descriptorTag(descriptor);
         }
-        return runtime.retainedGetRegisterTag(reg);
+
+        if (runtime.numberOfNamedVariables == 0) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        }
+
+        return 0;
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
@@ -870,9 +875,12 @@ pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return descriptorTag(descriptor);
         }
+
+        return 0;
     }
 
-    return runtime.retainedGetRegisterTag(reg);
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    return 0;
 }
 
 pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32) void {
