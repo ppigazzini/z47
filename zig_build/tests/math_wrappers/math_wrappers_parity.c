@@ -78,6 +78,8 @@ void fnCheckNumber(uint16_t unusedButMandatoryParameter);
 void fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void fnCheckSpecial(uint16_t unusedButMandatoryParameter);
+void fnDec(uint16_t unusedButMandatoryParameter);
+void fnInc(uint16_t unusedButMandatoryParameter);
 void fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
@@ -180,6 +182,8 @@ void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter);
+void oracle_fnDec(uint16_t unusedButMandatoryParameter);
+void oracle_fnInc(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
@@ -1256,6 +1260,30 @@ static void configureCubeRootLongInteger(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
   mathWrappersSetLongIntegerInput(true, 27);
+}
+
+static void configureIncDecReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 10, 0);
+}
+
+static void configureIncDecComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+}
+
+static void configureIncDecShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(5);
+}
+
+static void configureIncDecLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 10);
 }
 
 static void configureFibReal(void) {
@@ -2927,6 +2955,14 @@ int main(void) {
   failures += runCase("fnCubeRoot/longint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootLongInteger);
   failures += runCase("fnFib/real", oracle_fnFib, fnFib, 0, true, configureFibReal);
   failures += runCase("fnFib/complex", oracle_fnFib, fnFib, 0, true, configureFibComplex);
+  failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
+  failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);
+  failures += runCase("fnDec/shortint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecShortInteger);
+  failures += runCase("fnDec/longint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecLongInteger);
+  failures += runCase("fnInc/real_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecReal);
+  failures += runCase("fnInc/complex_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecComplex);
+  failures += runCase("fnInc/shortint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecShortInteger);
+  failures += runCase("fnInc/longint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecLongInteger);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
