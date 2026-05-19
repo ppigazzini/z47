@@ -54,6 +54,42 @@ void z47_math_wrappers_gcd_short_integer(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intGCD(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
 }
 
+void z47_math_wrappers_lcm_int(void) {
+  longInteger_t liX, liY;
+  bool_t fracX, fracY;
+
+  if(!getRegisterAsLongInt(REGISTER_Y, liY, &fracY)) {
+    goto end1;
+  }
+  if(!getRegisterAsLongInt(REGISTER_X, liX, &fracX)) {
+    goto end2;
+  }
+
+  if(fracX) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    goto end2;
+  }
+
+  if(fracY) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_Y);
+    goto end2;
+  }
+
+  longIntegerSetPositiveSign(liY);
+  longIntegerSetPositiveSign(liX);
+  longIntegerLcm(liY, liX, liX);
+  convertLongIntegerToLongIntegerRegister(liX, REGISTER_X);
+
+end2:
+  longIntegerFree(liX);
+end1:
+  longIntegerFree(liY);
+}
+
+void z47_math_wrappers_lcm_short_integer(void) {
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intLCM(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
+}
+
 void z47_math_wrappers_build_sign_result(int32_t r) {
   longInteger_t lgInt;
 

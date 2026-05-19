@@ -387,6 +387,8 @@ pub extern fn z47_math_wrappers_fractional_part_short_integer() void;
 pub extern fn z47_math_wrappers_fractional_part_real() void;
 pub extern fn z47_math_wrappers_gcd_int() void;
 pub extern fn z47_math_wrappers_gcd_short_integer() void;
+pub extern fn z47_math_wrappers_lcm_int() void;
+pub extern fn z47_math_wrappers_lcm_short_integer() void;
 pub extern fn z47_math_wrappers_small_base_power_long_integer(base_value: u32) i32;
 pub extern fn z47_math_wrappers_report_int_pow_real_domain_error() void;
 pub extern fn z47_math_wrappers_report_exp_real_domain_error() void;
