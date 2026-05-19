@@ -59,6 +59,7 @@ void fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void fnUlp(uint16_t unusedButMandatoryParameter);
 void fnMant(uint16_t unusedButMandatoryParameter);
 void fnRoundi(uint16_t unusedButMandatoryParameter);
+void fnDecomp(uint16_t unusedButMandatoryParameter);
 void fnNeighb(uint16_t unusedButMandatoryParameter);
 void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
@@ -146,6 +147,7 @@ void oracle_fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
 void oracle_fnMant(uint16_t unusedButMandatoryParameter);
 void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
+void oracle_fnDecomp(uint16_t unusedButMandatoryParameter);
 void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
@@ -203,8 +205,8 @@ static int reportMismatch(const char *name,
 
   fprintf(stderr,
           "%s(%u) parity mismatch\n"
-          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ovf=%d carry=%d\n"
-          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ovf=%d carry=%d\n",
+          "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"
+          "  actual:   dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n",
           name,
           arg,
       expected->final_register_data_type,
@@ -256,6 +258,7 @@ static int reportMismatch(const char *name,
           (unsigned long long)expected->final_register_shortint_raw,
           (unsigned long long)expected->final_register_y_shortint_raw,
           expected->final_register_longint_value,
+          expected->final_register_y_longint_value,
             expected->final_overflow_flag,
             expected->final_carry_flag,
       actual->final_register_data_type,
@@ -307,6 +310,7 @@ static int reportMismatch(const char *name,
           (unsigned long long)actual->final_register_shortint_raw,
           (unsigned long long)actual->final_register_y_shortint_raw,
           actual->final_register_longint_value,
+          actual->final_register_y_longint_value,
           actual->final_overflow_flag,
           actual->final_carry_flag);
   return 1;
@@ -864,6 +868,35 @@ static void configureRoundiRealNaN(void) {
 static void configureRoundiRealInfinity(void) {
   configureRoundiReal();
   mathWrappersSetRealInput(true, 9, 0x40);
+}
+
+static void configureDecompLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
+  mathWrappersSetLongIntegerInput(true, -6);
+}
+
+static void configureDecompRealFraction(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, -7, 0);
+  mathWrappersSetFractionResult(true, -1, 1, 3, 4, 0);
+}
+
+static void configureDecompRealNaN(void) {
+  configureDecompRealFraction();
+  mathWrappersSetRealInput(true, 0, 0x20);
+}
+
+static void configureDecompRealInfinity(void) {
+  configureDecompRealFraction();
+  mathWrappersSetRealInput(true, 0, 0xc0);
+}
+
+static void configureDecompTypeError(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
 }
 
 static void configureNeighbReal(void) {
@@ -2038,6 +2071,12 @@ int main(void) {
   failures += runCase("fnRoundi/real", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiReal);
   failures += runCase("fnRoundi/real_nan", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealNaN);
   failures += runCase("fnRoundi/real_inf", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealInfinity);
+  failures += runCase("fnDecomp/longint", oracle_fnDecomp, fnDecomp, 0, true, configureDecompLongInteger);
+  failures += runCase("fnDecomp/real_fraction", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealFraction);
+  failures += runCase("fnDecomp/real_nan", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealNaN);
+  failures += runCase("fnDecomp/real_infinity", oracle_fnDecomp, fnDecomp, 0, true, configureDecompRealInfinity);
+  failures += runCase("fnDecomp/type_error", oracle_fnDecomp, fnDecomp, 0, true, configureDecompTypeError);
+  failures += runCase("fnDecomp/save_last_x_false", oracle_fnDecomp, fnDecomp, 0, false, configureDecompRealFraction);
   failures += runCase("fnNeighb/real", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbReal);
   failures += runCase("fnNeighb/shortint", oracle_fnNeighb, fnNeighb, 0, true, configureDyadicShortInteger);
   failures += runCase("fnNeighb/longint", oracle_fnNeighb, fnNeighb, 0, true, configureNeighbLongInteger);

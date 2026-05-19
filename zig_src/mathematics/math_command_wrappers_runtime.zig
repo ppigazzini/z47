@@ -23,6 +23,7 @@ pub const amAngleMask: u32 = 15;
 pub const DEC_ROUND_CEILING: rounding_t = 0;
 pub const DEC_ROUND_HALF_UP: rounding_t = 2;
 pub const DEC_ROUND_HALF_EVEN: rounding_t = 3;
+pub const DEC_ROUND_HALF_DOWN: rounding_t = 4;
 pub const DEC_ROUND_DOWN: rounding_t = 5;
 pub const DEC_ROUND_FLOOR: rounding_t = 6;
 
@@ -52,9 +53,11 @@ pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
+pub const FLAG_PROPFR: i32 = 0x8008;
 pub const FLAG_CARRY: i32 = 0x800b;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
+pub const FLAG_ASLIFT: i32 = 0x8019;
 pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;
@@ -124,6 +127,8 @@ pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
 pub extern var temporaryInformation: u8;
 pub extern var lastErrorCode: u8;
+pub extern var systemFlags0: u64;
+pub extern var systemFlags1: u64;
 
 pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
@@ -164,9 +169,11 @@ pub extern fn fnRefreshState() void;
 pub extern fn setLastintegerBasetoZero() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn getRegisterDataTypeName(reg: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+pub extern fn fraction(regist: calcRegister_t, sign: *i16, int_part: *u64, numer: *u64, denom: *u64, less_equal_greater: *i16) bool;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
 pub extern fn realPolarToRectangular(
     magnitude: *const real_t,
