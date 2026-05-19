@@ -877,8 +877,11 @@ int main(void) {
 
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupGlobalCase, REGISTER_X, amNone);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNamedCase, FIRST_NAMED_VARIABLE + 2, LI_POSITIVE);
+  failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNoOpCase, FIRST_NAMED_VARIABLE, LI_POSITIVE);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupReservedDataCase, FIRST_RESERVED_VARIABLE + 40, amNone);
   failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupLocalCase, FIRST_LOCAL_REGISTER + 1, amNone);
+  failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNoOpCase, FIRST_LOCAL_REGISTER, amNone);
+  failures += runSetTagCase("setRegisterTag", oracle_setRegisterTag, setRegisterTag, setupNoOpCase, LAST_LOCAL_REGISTER + 1, amNone);
 
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyGlobalLongIntegerCase, REGISTER_X, REGISTER_Y);
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyNamedStringCase, FIRST_NAMED_VARIABLE + 2, REGISTER_Y);
