@@ -2815,7 +2815,20 @@ fn squareCplx() callconv(.c) void {
 }
 
 fn cubeLonI() callconv(.c) void {
-    runtime.z47_math_wrappers_cube_long_integer();
+    var x: runtime.longInteger_t = undefined;
+    var cube: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    runtime.__gmpz_init(&cube[0]);
+    defer runtime.__gmpz_clear(&cube[0]);
+
+    runtime.__gmpz_mul(&cube[0], &x[0], &x[0]);
+    runtime.__gmpz_mul(&cube[0], &cube[0], &x[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&cube[0], runtime.REGISTER_X);
 }
 
 fn cubeShoI() callconv(.c) void {
