@@ -551,6 +551,40 @@ void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter) {
 			temporaryInformation = 12 + (decQuadIsNaN(REGISTER_REAL34_DATA(REGISTER_X)) != 0);
 			break;
 
+		case 6: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const real34_t *values = (const real34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if(decQuadIsNaN(values + i) != 0) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
+
+		case 7: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const complex34_t *values = (const complex34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if(decQuadIsNaN(&values[i].real) != 0 || decQuadIsNaN(&values[i].imag) != 0) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -569,6 +603,40 @@ void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter) {
 		case 1:
 			temporaryInformation = 12 + real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X));
 			break;
+
+		case 6: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const real34_t *values = (const real34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if(real34IsInfinite(values + i)) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
+
+		case 7: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const complex34_t *values = (const complex34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if(real34IsInfinite(&values[i].real) || real34IsInfinite(&values[i].imag)) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
 
 		default:
 			break;
@@ -591,6 +659,41 @@ void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter) {
 		case 1:
 			temporaryInformation = 12 + ((decQuadIsNaN(REGISTER_REAL34_DATA(REGISTER_X)) != 0) || real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)));
 			break;
+
+		case 6: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const real34_t *values = (const real34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if((decQuadIsNaN(values + i) != 0) || real34IsInfinite(values + i)) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
+
+		case 7: {
+			const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+			const complex34_t *values = (const complex34_t *)((const uint8_t *)header + sizeof(*header));
+			uint32_t elements = header->matrixRows * (uint32_t)header->matrixColumns;
+			int check = 0;
+
+			for(uint32_t i = 0; i < elements; ++i) {
+				if((decQuadIsNaN(&values[i].real) != 0) || real34IsInfinite(&values[i].real) ||
+				   (decQuadIsNaN(&values[i].imag) != 0) || real34IsInfinite(&values[i].imag)) {
+					check = 1;
+					break;
+				}
+			}
+
+			temporaryInformation = 12 + check;
+			break;
+		}
 
 		default:
 			break;

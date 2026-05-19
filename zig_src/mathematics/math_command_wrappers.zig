@@ -4187,6 +4187,99 @@ pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) 
     }
 }
 
+fn checkNaNMatrixElements(register_data_type: u32) bool {
+    const ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable;
+    const header: *align(1) runtime.matrixHeader_t = @ptrCast(ptr);
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const elements: usize = @as(usize, header.matrixRows) * @as(usize, header.matrixColumns);
+
+    switch (register_data_type) {
+        runtime.dtReal34Matrix => {
+            const values: [*]align(1) runtime.real34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsNaN(&values[index])) {
+                    return true;
+                }
+            }
+        },
+        runtime.dtComplex34Matrix => {
+            const values: [*]align(1) runtime.complex34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsNaN(&values[index].real) or runtime.real34IsNaN(&values[index].imag)) {
+                    return true;
+                }
+            }
+        },
+        else => return false,
+    }
+
+    return false;
+}
+
+fn checkInfiniteMatrixElements(register_data_type: u32) bool {
+    const ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable;
+    const header: *align(1) runtime.matrixHeader_t = @ptrCast(ptr);
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const elements: usize = @as(usize, header.matrixRows) * @as(usize, header.matrixColumns);
+
+    switch (register_data_type) {
+        runtime.dtReal34Matrix => {
+            const values: [*]align(1) runtime.real34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsInfinite(&values[index])) {
+                    return true;
+                }
+            }
+        },
+        runtime.dtComplex34Matrix => {
+            const values: [*]align(1) runtime.complex34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsInfinite(&values[index].real) or runtime.real34IsInfinite(&values[index].imag)) {
+                    return true;
+                }
+            }
+        },
+        else => return false,
+    }
+
+    return false;
+}
+
+fn checkSpecialMatrixElements(register_data_type: u32) bool {
+    const ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable;
+    const header: *align(1) runtime.matrixHeader_t = @ptrCast(ptr);
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const elements: usize = @as(usize, header.matrixRows) * @as(usize, header.matrixColumns);
+
+    switch (register_data_type) {
+        runtime.dtReal34Matrix => {
+            const values: [*]align(1) runtime.real34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsNaN(&values[index]) or runtime.real34IsInfinite(&values[index])) {
+                    return true;
+                }
+            }
+        },
+        runtime.dtComplex34Matrix => {
+            const values: [*]align(1) runtime.complex34_t = @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
+            var index: usize = 0;
+            while (index < elements) : (index += 1) {
+                if (runtime.real34IsNaN(&values[index].real) or runtime.real34IsInfinite(&values[index].real) or runtime.real34IsNaN(&values[index].imag) or runtime.real34IsInfinite(&values[index].imag)) {
+                    return true;
+                }
+            }
+        },
+        else => return false,
+    }
+
+    return false;
+}
+
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
@@ -4196,6 +4289,9 @@ pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void 
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
             runtime.setTemporaryInformation(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
+            runtime.setTemporaryInformation(checkNaNMatrixElements(register_data_type));
         },
         else => z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter),
     }
@@ -4210,6 +4306,9 @@ pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) 
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
             runtime.setTemporaryInformation(runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
+            runtime.setTemporaryInformation(checkInfiniteMatrixElements(register_data_type));
         },
         else => z47_math_wrappers_retained_fnCheckInfinite(unused_but_mandatory_parameter),
     }
@@ -4226,6 +4325,9 @@ pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) v
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
             runtime.setTemporaryInformation(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+        },
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => {
+            runtime.setTemporaryInformation(checkSpecialMatrixElements(register_data_type));
         },
         else => z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter),
     }
