@@ -1290,6 +1290,8 @@ void oracle_fnToRect(uint16_t angleInY) {
 	dataTypeY = getRegisterDataType(REG_Y);
 	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
 	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
+		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REG_X);
+		moreInfoOnError("In function fnToRect:", "cannot convert current X/Y pair to rectangular coordinates", NULL, NULL);
 		return;
 	}
 
