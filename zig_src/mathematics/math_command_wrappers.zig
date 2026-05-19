@@ -1992,6 +1992,25 @@ fn modReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn rmdReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+    var y_value: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+        return;
+    }
+
+    if (runtime.realIsZero(&x_value)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", null, null);
+        return;
+    }
+
+    runtime.WP34S_Mod(&y_value, &x_value, &result, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3226,7 +3245,7 @@ pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_rmd_real, null, &runtime.z47_math_wrappers_rmd_short_integer, &runtime.z47_math_wrappers_rmd_long_integer);
+    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &runtime.z47_math_wrappers_rmd_short_integer, &runtime.z47_math_wrappers_rmd_long_integer);
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
