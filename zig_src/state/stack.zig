@@ -176,7 +176,8 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
     }
 
     if (f) {
-        runtime.retainedFnRegCopy(unused_but_mandatory_parameter);
+        _ = unused_but_mandatory_parameter;
+        runtime.doPartialRegisterLoad(s, n, d);
         return;
     }
 

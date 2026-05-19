@@ -336,6 +336,10 @@ void z47_stack_runtime_request_clear_registers_confirmation(void) {
   setConfirmationMode(fnClearRegisters);
 }
 
+void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t d) {
+  doLoad(LM_REGISTERS_PARTIAL, s, n, d, manualLoad);
+}
+
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
   displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }

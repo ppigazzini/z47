@@ -233,6 +233,7 @@ uint8_t z47_stack_runtime_get_input_default(void);
 void z47_stack_runtime_store_zero_long_integer(calcRegister_t reg);
 void z47_stack_runtime_store_zero_short_integer(calcRegister_t reg, uint32_t base);
 void z47_stack_runtime_request_clear_registers_confirmation(void);
+void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t d);
 void z47_stack_runtime_report_register_command_error(uint8_t error_code);
 void z47_stack_runtime_restore_saved_sigma_last_xy_and_add(void);
 bool_t z47_stack_runtime_adjust_result_scalar_core(calcRegister_t res);
