@@ -218,6 +218,7 @@ typedef struct {
   uint64_t final_register_shortint_raw;
   int32_t final_register_longint_value;
   bool_t final_overflow_flag;
+  bool_t final_carry_flag;
 } math_wrappers_snapshot_t;
 
 void mathWrappersReset(void);
@@ -231,10 +232,12 @@ void mathWrappersSetRealAngleInput(bool_t available, int32_t value, uint8_t bits
 void mathWrappersSetComplexInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits);
 void mathWrappersSetShortIntegerInput(int64_t value);
 void mathWrappersSetShortIntegerYInput(int64_t value);
+void mathWrappersSetShortIntegerZInput(int64_t value);
 void mathWrappersSetShortIntegerMode(uint8_t mode);
 void mathWrappersSetLongIntegerInput(bool_t available, int32_t value);
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value);
 void mathWrappersSetFlagCpxRes(bool_t enabled);
+void mathWrappersSetFlagCarry(bool_t enabled);
 void mathWrappersSetFlagOverflow(bool_t enabled);
 void mathWrappersSetFlagSpcRes(bool_t enabled);
 void mathWrappersSetCurrentAngularMode(angularMode_t mode);

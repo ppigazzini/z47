@@ -124,11 +124,13 @@ enum {
 #define STD_DEGREE "deg"
 #define STD_LESS_EQUAL "<="
 #define STD_CROSS "x"
+#define STD_DIVIDE "/"
 #define STD_SUP_BOLD_x "^x"
 
 #define REGISTER_X ((calcRegister_t)100)
 #define REGISTER_Y ((calcRegister_t)101)
 #define REGISTER_Z ((calcRegister_t)102)
+#define REGISTER_T ((calcRegister_t)103)
 
 #define ERR_REGISTER_LINE REGISTER_Z
 #define ERROR_NONE 0
@@ -167,6 +169,7 @@ enum {
 #define uInt32ToLongInteger(source, destination) mpz_set_ui((destination), (source))
 #define int32ToLongInteger(source, destination) mpz_set_si((destination), (source))
 #define longIntegerSetPositiveSign(op) do { if(mpz_sgn((op)) < 0) mpz_neg((op), (op)); } while(0)
+#define longIntegerSetNegativeSign(op) do { if(mpz_sgn((op)) > 0) mpz_neg((op), (op)); } while(0)
 #define longIntegerSign(op) mpz_sgn(op)
 #define longIntegerIsNegative(op) (mpz_sgn(op) < 0)
 #define longIntegerIsZero(op) (mpz_sgn(op) == 0)
@@ -174,6 +177,7 @@ enum {
 #define longIntegerIsOdd(op) mpz_odd_p(op)
 #define longIntegerChangeSign(op) ((op)->_mp_size = -((op)->_mp_size))
 #define longIntegerFree(op) mpz_clear(op)
+#define longIntegerSetZero(op) mpz_set_ui((op), 0)
 #define longIntegerInitSizeInBits(op, bits) mpz_init2((op), (bits))
 #define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
 #define longIntegerMultiply(op_y, op_x, result) mpz_mul((result), (op_y), (op_x))
@@ -240,6 +244,7 @@ extern realContext_t ctxtReal75;
 extern const real_t *const_NaN;
 extern uint8_t lastErrorCode;
 extern uint8_t shortIntegerMode;
+extern uint8_t shortIntegerWordSize;
 extern uint64_t shortIntegerMask;
 extern uint64_t shortIntegerSignBit;
 extern angularMode_t currentAngularMode;
