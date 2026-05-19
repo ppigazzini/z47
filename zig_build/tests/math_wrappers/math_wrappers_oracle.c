@@ -1502,6 +1502,12 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef fnFib
 #undef cosComplex
 
+#define linpol oracle_linpol
+#define fnLINPOL oracle_fnLINPOL
+#include "../../../src/c47/mathematics/linpol.c"
+#undef fnLINPOL
+#undef linpol
+
 #define FIRST_LOCAL_REGISTER REGISTER_X
 #define currentNumberOfLocalRegisters 1
 #define INC_FLAG 0

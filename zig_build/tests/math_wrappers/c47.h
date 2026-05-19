@@ -626,5 +626,9 @@ void realRandomU01(real_t *res);
 void z47_math_wrappers_seed_defaults(uint64_t *seed, uint64_t *seq);
 void z47_math_wrappers_do_int_random_i(void);
 void longIntegerFibonacci(uint32_t n, longInteger_t result);
+void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination);
+void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t destination);
+void internalDateToJulianDay(real34_t *source, real34_t *destination);
+void julianDayToInternalDate(real34_t *source, real34_t *destination);
 
 #endif

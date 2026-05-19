@@ -112,6 +112,7 @@ void fnSdr(uint16_t unusedButMandatoryParameter);
 void fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void fnCubeRoot(uint16_t unusedButMandatoryParameter);
 void fnFib(uint16_t unusedButMandatoryParameter);
+void fnLINPOL(uint16_t unusedButMandatoryParameter);
 
 void oracle_fnMin(uint16_t unusedButMandatoryParameter);
 void oracle_fnMax(uint16_t unusedButMandatoryParameter);
@@ -216,6 +217,7 @@ void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnFib(uint16_t unusedButMandatoryParameter);
+void oracle_fnLINPOL(uint16_t unusedButMandatoryParameter);
 
 typedef void (*math_wrapper_fn)(uint16_t);
 typedef void (*math_wrapper_config_fn)(void);
@@ -1296,6 +1298,21 @@ static void configureFibComplex(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+}
+
+static void configureLINPOLReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 2, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRealZInput(true, 4, 0);
+}
+
+static void configureLINPOLComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetComplexInput(true, 6, 0, 7, 0);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2955,6 +2972,7 @@ int main(void) {
   failures += runCase("fnCubeRoot/longint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootLongInteger);
   failures += runCase("fnFib/real", oracle_fnFib, fnFib, 0, true, configureFibReal);
   failures += runCase("fnFib/complex", oracle_fnFib, fnFib, 0, true, configureFibComplex);
+  failures += runCase("fnLINPOL/real", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLReal);
   failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
   failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);
   failures += runCase("fnDec/shortint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecShortInteger);
