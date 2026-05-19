@@ -857,8 +857,11 @@ int main(void) {
 
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupGlobalCase, REGISTER_X, dtReal34, amNone);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNamedCase, FIRST_NAMED_VARIABLE + 2, dtLongInteger, LI_POSITIVE);
+  failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNoOpCase, FIRST_NAMED_VARIABLE, dtLongInteger, LI_POSITIVE);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupReservedWriteCase, FIRST_RESERVED_VARIABLE + 40, dtReal34, amNone);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupLocalCase, FIRST_LOCAL_REGISTER + 1, dtReal34, amNone);
+  failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNoOpCase, FIRST_LOCAL_REGISTER, dtReal34, amNone);
+  failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNoOpCase, LAST_LOCAL_REGISTER + 1, dtReal34, amNone);
 
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupGlobalLongIntegerCase, REGISTER_X, 6);
   failures += runSetMaxLengthCase("setRegisterMaxDataLengthInBlocks", oracle_setRegisterMaxDataLengthInBlocks, setRegisterMaxDataLengthInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2, 7);
