@@ -1971,20 +1971,24 @@ fn argReal() callconv(.c) void {
         return;
     }
 
-    const result = if (runtime.realIsNaN(&x_value))
-        &x_value
-    else if (runtime.realIsZero(&x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
-        &x_value
-    else if (runtime.realIsNegative(&x_value))
-        runtime.z47_math_wrappers_const_180()
-    else
-        runtime.z47_math_wrappers_const_0();
+    const result = realArgValue(&x_value);
 
     runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
     if (!runtime.realIsNaN(result)) {
         runtime.convertAngle34FromTo(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.amDegree, runtime.currentAngularMode);
         runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
     }
+}
+
+fn realArgValue(x_value: *const runtime.real_t) *const runtime.real_t {
+    return if (runtime.realIsNaN(x_value))
+        x_value
+    else if (runtime.realIsZero(x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
+        x_value
+    else if (runtime.realIsNegative(x_value))
+        runtime.z47_math_wrappers_const_180()
+    else
+        runtime.z47_math_wrappers_const_0();
 }
 
 fn argError() void {
@@ -2004,6 +2008,61 @@ fn argCplx() callconv(.c) void {
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
+}
+
+fn argRema() void {
+    var matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &matrix);
+    defer runtime.realMatrixFree(&matrix);
+
+    const count = @min(
+        @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns),
+        matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        var real_value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(&matrix.matrixElements[index], &real_value);
+        real_value = realArgValue(&real_value).*;
+        runtime.convertAngleFromTo(&real_value, runtime.amDegree, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.realToReal34(&real_value, &matrix.matrixElements[index]);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
+}
+
+fn argCxma() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+    var dummy = std.mem.zeroes(runtime.real34_t);
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    defer runtime.realMatrixFree(&real_matrix);
+
+    const count = @min(
+        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
+        real_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        runtime.real34RectangularToPolar(
+            &complex_matrix.matrixElements[index].real,
+            &complex_matrix.matrixElements[index].imag,
+            &dummy,
+            &real_matrix.matrixElements[index],
+        );
+        runtime.convertAngle34FromTo(&real_matrix.matrixElements[index], runtime.amRadian, runtime.currentAngularMode);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
 }
 
 fn wInvReal() callconv(.c) void {
@@ -4242,10 +4301,8 @@ pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) 
 
 pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter);
-        return;
-    }
+
+    _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
         return;
@@ -4254,6 +4311,8 @@ pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     switch (register_data_type) {
         runtime.dtLongInteger, runtime.dtReal34, runtime.dtShortInteger => argReal(),
         runtime.dtComplex34 => argCplx(),
+        runtime.dtReal34Matrix => argRema(),
+        runtime.dtComplex34Matrix => argCxma(),
         else => argError(),
     }
 
