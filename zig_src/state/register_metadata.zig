@@ -782,7 +782,12 @@ pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
             return descriptorDataType(descriptor);
         }
-        return runtime.retainedGetRegisterDataType(reg);
+
+        if (runtime.numberOfNamedVariables == 0) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        }
+
+        return invalid_data_type;
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
@@ -793,9 +798,11 @@ pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return descriptorDataType(descriptor);
         }
+        return invalid_data_type;
     }
 
-    return runtime.retainedGetRegisterDataType(reg);
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    return invalid_data_type;
 }
 
 pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
