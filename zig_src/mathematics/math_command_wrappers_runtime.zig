@@ -135,6 +135,7 @@ pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u6
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
 pub extern fn convertLongIntegerRegisterToLongInteger(reg: calcRegister_t, long_integer: *mpz_struct) void;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
+pub extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
 pub extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const mpz_struct, base: u32, regist: calcRegister_t) void;
@@ -291,11 +292,14 @@ pub extern fn decNumberFMA(result: *real_t, lhs: *const real_t, rhs: *const real
 pub extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 pub extern fn __gmpz_clear(op: *mpz_struct) void;
 pub extern fn __gmpz_init(op: *mpz_struct) void;
+pub extern fn __gmpz_cmp_ui(lhs: *const mpz_struct, rhs: c_ulong) c_int;
+pub extern fn __gmpz_get_ui(op: *const mpz_struct) c_ulong;
 pub extern fn __gmpz_cmp(lhs: *const mpz_struct, rhs: *const mpz_struct) c_int;
 pub extern fn __gmpz_set_si(op: *mpz_struct, value: c_long) void;
 pub extern fn __gmpz_set_ui(op: *mpz_struct, value: c_ulong) void;
 pub extern fn __gmpz_add(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_mul(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
+pub extern fn __gmpz_mul_ui(result: *mpz_struct, lhs: *const mpz_struct, rhs: c_ulong) void;
 pub extern fn __gmpz_gcd(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_lcm(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;

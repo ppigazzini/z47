@@ -2028,6 +2028,39 @@ fn factShoI() callconv(.c) void {
     runtime.convertUInt64ToShortIntegerRegister(0, result, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
 }
 
+fn factLonI() callconv(.c) void {
+    const max_factorial: u32 = 450;
+
+    var value: runtime.longInteger_t = undefined;
+    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+    defer runtime.__gmpz_clear(&value[0]);
+
+    if (value[0]._mp_size < 0) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function factLonI:", "cannot calculate factorial(long integer)", null, null);
+        return;
+    }
+
+    if (runtime.__gmpz_cmp_ui(&value[0], max_factorial) > 0) {
+        runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        factReal();
+        return;
+    }
+
+    const n: u32 = @intCast(runtime.__gmpz_get_ui(&value[0]));
+    var result: runtime.longInteger_t = undefined;
+    runtime.__gmpz_init(&result[0]);
+    defer runtime.__gmpz_clear(&result[0]);
+    runtime.__gmpz_set_ui(&result[0], 1);
+
+    var multiplier: u32 = 2;
+    while (multiplier <= n) : (multiplier += 1) {
+        runtime.__gmpz_mul_ui(&result[0], &result[0], multiplier);
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&result[0], runtime.REGISTER_X);
+}
+
 fn modReal() callconv(.c) void {
     var x_value: runtime.real_t = undefined;
     var y_value: runtime.real_t = undefined;
@@ -3725,7 +3758,7 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &factShoI, &runtime.z47_math_wrappers_fact_long_integer);
+    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &factShoI, &factLonI);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
