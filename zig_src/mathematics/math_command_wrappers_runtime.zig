@@ -55,6 +55,8 @@ pub const FLAG_SPCRES: i32 = 0x8017;
 pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;
+pub const SIM_1COMPL: u8 = 1;
+pub const SIM_SIGNMT: u8 = 3;
 pub const TI_FALSE: u8 = 12;
 
 pub const DECNEG: u8 = 0x80;
@@ -92,6 +94,8 @@ pub extern var ctxtReal39: realContext_t;
 pub extern var ctxtReal51: realContext_t;
 pub extern var ctxtReal75: realContext_t;
 pub extern var shortIntegerMode: u8;
+pub extern var shortIntegerMask: u64;
+pub extern var shortIntegerSignBit: u64;
 pub extern var currentAngularMode: angularMode_t;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
@@ -177,6 +181,7 @@ pub extern fn unitVectorCplx() void;
 pub extern fn decQuadIsNaN(value: *const real34_t) u32;
 pub extern fn decQuadIsZero(value: *const real34_t) u32;
 pub extern fn decQuadIsNegative(value: *const real34_t) u32;
+pub extern fn real34ToIntegralValue(source: *const real34_t, destination: *real34_t, mode: rounding_t) void;
 pub extern fn real34IsInfinite(value: *const real34_t) bool;
 pub extern fn real34GetExponent(value: *const real34_t) i32;
 pub extern fn real34NextPlus(source: *const real34_t, destination: *real34_t) void;
