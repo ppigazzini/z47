@@ -1945,7 +1945,16 @@ fn fpRealForward() callconv(.c) void {
 }
 
 fn fpShoIForward() callconv(.c) void {
-    runtime.z47_math_wrappers_fractional_part_short_integer();
+    var result: u64 = 0;
+
+    if (runtime.shortIntegerMode == runtime.SIM_1COMPL or runtime.shortIntegerMode == runtime.SIM_SIGNMT) {
+        const value = runtime.registerShortIntegerPtr(runtime.REGISTER_X).*;
+        if ((value & runtime.shortIntegerSignBit) != 0) {
+            result = if (runtime.shortIntegerMode == runtime.SIM_1COMPL) runtime.shortIntegerMask else runtime.shortIntegerSignBit;
+        }
+    }
+
+    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = result;
 }
 
 fn fpLonIForward() callconv(.c) void {
