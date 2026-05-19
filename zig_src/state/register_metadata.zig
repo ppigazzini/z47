@@ -325,7 +325,7 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
             return 0;
         }
 
-        return runtime.retainedGetRegisterMaxDataLengthInBlocks(reg);
+        return 0;
     }
 
     const data_type = getRegisterDataType(type_reg);

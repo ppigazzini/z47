@@ -843,8 +843,10 @@ int main(void) {
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupGlobalComplexMatrixCase, REGISTER_X);
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2);
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupNoOpCase, FIRST_NAMED_VARIABLE);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupNamedCase, FIRST_NAMED_VARIABLE + 20);
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupReservedLongIntegerCase, FIRST_RESERVED_VARIABLE + 40);
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1);
+  failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupLocalCase, FIRST_LOCAL_REGISTER + 20);
   failures += runGetU16Case("getRegisterMaxDataLengthInBlocks", oracle_getRegisterMaxDataLengthInBlocks, getRegisterMaxDataLengthInBlocks, setupNoOpCase, LAST_LOCAL_REGISTER + 1);
 
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalLongIntegerCase, REGISTER_X);
