@@ -208,6 +208,10 @@ const char *z47_register_metadata_named_variable_name(uint16_t index) {
 
 bool_t z47_register_metadata_allocate_first_named_variable_header(void) {
 #ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(!isMemoryBlockAvailable(TO_BLOCKS(sizeof(namedVariableHeader_t)), 1, 0.0f)) {
+    return false;
+  }
+
   numberOfNamedVariables = 1;
   return true;
 #else
@@ -222,6 +226,10 @@ bool_t z47_register_metadata_allocate_first_named_variable_header(void) {
 
 bool_t z47_register_metadata_append_named_variable_header(uint16_t *index) {
 #ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(!isMemoryBlockAvailable(TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables + 1)), 1, 0.0f)) {
+    return false;
+  }
+
   if(numberOfNamedVariables >= MAX_FAKE_NAMED_VARIABLES) {
     return false;
   }

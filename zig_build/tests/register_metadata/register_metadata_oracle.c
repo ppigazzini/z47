@@ -205,12 +205,22 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
       return;
     }
 
+    if(!isMemoryBlockAvailable(TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables + 1)), 1, 0.0f)) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
+
     numberOfNamedVariables++;
     memset(allNamedVariables[numberOfNamedVariables - 1].variableName, 0, sizeof(allNamedVariables[numberOfNamedVariables - 1].variableName));
     allNamedVariables[numberOfNamedVariables - 1].variableName[0] = (uint8_t)strlen(variableName);
     memcpy(allNamedVariables[numberOfNamedVariables - 1].variableName + 1, variableName, (size_t)allNamedVariables[numberOfNamedVariables - 1].variableName[0]);
     oracle_setRegisterDataType((calcRegister_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1), (uint16_t)dataType, amNone);
     oracle_setRegisterDataPointer((calcRegister_t)(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1), allocC47Blocks(fullDataSizeInBlocks));
+    return;
+  }
+
+  if(!isMemoryBlockAvailable(TO_BLOCKS(sizeof(namedVariableHeader_t)), 1, 0.0f)) {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     return;
   }
 
