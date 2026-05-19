@@ -3293,6 +3293,30 @@ fn neighbShoI() callconv(.c) void {
     }
 }
 
+fn neighbLonI() callconv(.c) void {
+    var x: runtime.longInteger_t = undefined;
+    var y: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&y[0]);
+
+    const cmp = runtime.__gmpz_cmp(&y[0], &x[0]);
+
+    if (cmp != 0) {
+        runtime.__gmpz_set_si(&y[0], if (cmp > 0) 1 else -1);
+        runtime.__gmpz_add(&x[0], &x[0], &y[0]);
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_gcd_int, null, &gcdShoI, &runtime.z47_math_wrappers_gcd_int);
@@ -3370,7 +3394,7 @@ pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &neighbShoI, &runtime.z47_math_wrappers_neighb_long_integer);
+    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &neighbShoI, &neighbLonI);
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
