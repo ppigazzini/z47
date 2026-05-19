@@ -4306,20 +4306,19 @@ pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtReal34) {
-        z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter);
-        return;
-    }
+    _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    switch (register_data_type) {
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
         runtime.dtLongInteger => mantLonI(),
         runtime.dtReal34 => mantReal(),
-        else => unreachable,
+        else => {
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function mantError:", "cannot calculate MANT for current X type", null, null);
+        },
     }
 
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
