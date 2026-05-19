@@ -5100,6 +5100,31 @@ fn tryFnToPolar2Real34Pair() bool {
         return true;
     }
 
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix) {
+        if (runtime.isRegisterMatrix3dVector(runtime.REGISTER_X)) {
+            const polar_mode = runtime.getVectorRegisterPolarMode(runtime.REGISTER_X);
+            runtime.setVectorRegisterPolarMode(
+                runtime.REGISTER_X,
+                if (polar_mode == runtime.amNone)
+                    runtime.amPolarSPH
+                else if (polar_mode == runtime.amPolarSPH)
+                    runtime.amPolarCYL
+                else if (polar_mode == runtime.amPolarCYL)
+                    runtime.amPolarSPH
+                else
+                    runtime.amNone,
+            );
+            runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+            return true;
+        }
+
+        if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X)) {
+            runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, runtime.amPolar);
+            runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+            return true;
+        }
+    }
+
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
