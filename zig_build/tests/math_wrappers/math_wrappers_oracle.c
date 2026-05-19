@@ -536,6 +536,7 @@ void oracle_fnToRect2(uint16_t unusedButMandatoryParameter) {
 	dataTypeY = getRegisterDataType(REG_Y);
 	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
 	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
+		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REG_X);
 		return;
 	}
 
