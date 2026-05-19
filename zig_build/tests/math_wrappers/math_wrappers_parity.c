@@ -1647,6 +1647,7 @@ int main(void) {
   failures += runCase("fnLcm/longint", oracle_fnLcm, fnLcm, 0, true, configureDyadicLongInteger);
   failures += runCase("fnLcm/shortint", oracle_fnLcm, fnLcm, 0, true, configureDyadicShortInteger);
   failures += runCase("fnMod/real", oracle_fnMod, fnMod, 0, true, configureModuloReal);
+  failures += runCase("fnMod/shortint", oracle_fnMod, fnMod, 0, true, configureModuloShortInteger);
   failures += runCase("fnMod/longint", oracle_fnMod, fnMod, 0, true, configureModuloLongInteger);
   failures += runCase("fnRmd/real", oracle_fnRmd, fnRmd, 0, true, configureRmdReal);
   failures += runCase("fnRmd/shortint", oracle_fnRmd, fnRmd, 0, true, configureModuloShortInteger);
