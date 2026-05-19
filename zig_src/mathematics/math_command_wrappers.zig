@@ -2955,8 +2955,10 @@ fn tryFnToRect2Real34Pair() bool {
     var angle_reg = if (angle_in_y == 1) runtime.REGISTER_Y else runtime.REGISTER_X;
     const radius_type = runtime.getRegisterDataType(radius_reg);
     const angle_type = runtime.getRegisterDataType(angle_reg);
+    const radius_valid = radius_type == runtime.dtLongInteger or radius_type == runtime.dtReal34;
+    const angle_valid = angle_type == runtime.dtLongInteger or angle_type == runtime.dtReal34;
 
-    if (radius_type != runtime.dtReal34 or angle_type != runtime.dtReal34) {
+    if (!radius_valid or !angle_valid) {
         return false;
     }
 
@@ -2968,10 +2970,10 @@ fn tryFnToRect2Real34Pair() bool {
     var radius_value: runtime.real_t = undefined;
     var angle_value: runtime.real_t = undefined;
 
-    loadToPolarNumericInput(radius_reg, runtime.dtReal34, &radius_value);
-    loadToPolarNumericInput(angle_reg, runtime.dtReal34, &angle_value);
+    loadToPolarNumericInput(radius_reg, radius_type, &radius_value);
+    loadToPolarNumericInput(angle_reg, angle_type, &angle_value);
 
-    if (angle_mode == runtime.amNone) {
+    if (angle_type == runtime.dtReal34 and angle_mode == runtime.amNone) {
         angle_mode = runtime.currentAngularMode;
     }
 
