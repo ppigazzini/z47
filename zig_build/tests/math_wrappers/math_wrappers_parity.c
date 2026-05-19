@@ -1300,6 +1300,12 @@ static void configureFibComplex(void) {
   mathWrappersSetComplexInput(true, 3, 0, 4, 0);
 }
 
+static void configureFibLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_NEGATIVE);
+  mathWrappersSetLongIntegerInput(true, -8);
+}
+
 static void configureLINPOLReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -2972,6 +2978,7 @@ int main(void) {
   failures += runCase("fnCubeRoot/longint", oracle_fnCubeRoot, fnCubeRoot, 0, true, configureCubeRootLongInteger);
   failures += runCase("fnFib/real", oracle_fnFib, fnFib, 0, true, configureFibReal);
   failures += runCase("fnFib/complex", oracle_fnFib, fnFib, 0, true, configureFibComplex);
+  failures += runCase("fnFib/longint", oracle_fnFib, fnFib, 0, true, configureFibLongInteger);
   failures += runCase("fnLINPOL/real", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLReal);
   failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
   failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);

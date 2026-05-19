@@ -5937,8 +5937,34 @@ fn fibCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
 }
 
-fn fibLonIRetained() callconv(.c) void {
-    z47_math_wrappers_retained_fnFib(0);
+fn fibLonI() callconv(.c) void {
+    var value: runtime.longInteger_t = undefined;
+    var result: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&value[0]);
+
+    const neg = value[0]._mp_size < 0;
+    if (neg) {
+        value[0]._mp_size = -value[0]._mp_size;
+    }
+
+    if (runtime.__gmpz_cmp_ui(&value[0], 4791) > 0) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+
+    runtime.__gmpz_init(&result[0]);
+    defer runtime.__gmpz_clear(&result[0]);
+
+    runtime.z47_math_wrappers_long_integer_fibonacci(@intCast(runtime.__gmpz_get_ui(&value[0])), &result[0]);
+    if (neg and (value[0]._mp_size == 0 or (value[0]._mp_d[0] & 1) == 0)) {
+        result[0]._mp_size = -result[0]._mp_size;
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&result[0], runtime.REGISTER_X);
 }
 
 fn imag34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
@@ -6304,7 +6330,7 @@ pub export fn fnDeltaPercent(unused_but_mandatory_parameter: u16) callconv(.c) v
 pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
-    runtime.processIntRealComplexMonadicFunction(&fibReal, &fibCplx, null, &fibLonIRetained);
+    runtime.processIntRealComplexMonadicFunction(&fibReal, &fibCplx, null, &fibLonI);
 }
 
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {

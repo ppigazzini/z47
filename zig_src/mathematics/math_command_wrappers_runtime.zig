@@ -405,6 +405,7 @@ pub extern fn z47_math_wrappers_build_sign_result(result: i32) void;
 pub extern fn z47_math_wrappers_change_sign_long_integer() void;
 pub extern fn z47_math_wrappers_square_long_integer() void;
 pub extern fn z47_math_wrappers_cube_long_integer() void;
+pub extern fn z47_math_wrappers_long_integer_fibonacci(n: u32, result: *mpz_struct) void;
 pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_1() *const real_t;

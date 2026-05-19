@@ -91,6 +91,10 @@ void z47_math_wrappers_lcm_short_integer(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intLCM(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
 }
 
+void z47_math_wrappers_long_integer_fibonacci(uint32_t n, longInteger_t result) {
+  longIntegerFibonacci(n, result);
+}
+
 void z47_math_wrappers_fact_real(void) {
   real_t x;
 
