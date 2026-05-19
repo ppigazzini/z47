@@ -147,6 +147,7 @@ pub extern fn clearSystemFlag(flag: i32) void;
 pub extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 pub extern fn fnSetFlag(flag: i32) void;
 pub extern fn fnRefreshState() void;
+pub extern fn setLastintegerBasetoZero() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
