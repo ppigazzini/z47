@@ -15,9 +15,12 @@ static uint32_t current_register_data_type = dtReal34;
 static uint32_t current_register_tag = amNone;
 static uint32_t current_register_y_data_type = dtReal34;
 static uint32_t current_register_y_tag = amNone;
+static uint32_t current_register_z_data_type = dtReal34;
+static uint32_t current_register_z_tag = amNone;
 
 static uint8_t register_slot[32];
 static uint8_t register_y_slot[32];
+static uint8_t register_z_slot[32];
 static uint64_t shortint_y_slot;
 static uint64_t shortint_z_slot;
 static uint32_t register_scalar_magnitude;
@@ -59,6 +62,12 @@ static struct {
   real_t real;
   real_t imag;
 } complex_y_input;
+
+static struct {
+  bool_t available;
+  real_t real;
+  real_t imag;
+} complex_z_input;
 
 static struct {
   bool_t available;
@@ -276,7 +285,10 @@ void mathWrappersReset(void) {
   snapshot.sinh_cosh_cplx_trig_type = -1;
   current_register_data_type = dtReal34;
   current_register_tag = amNone;
+  current_register_z_data_type = dtReal34;
+  current_register_z_tag = amNone;
   memset(register_slot, 0, sizeof(register_slot));
+  memset(register_z_slot, 0, sizeof(register_z_slot));
   shortint_y_slot = encodeShortInteger(2);
   shortint_z_slot = encodeShortInteger(3);
   register_scalar_available = true;
@@ -303,6 +315,10 @@ void mathWrappersReset(void) {
   complex_y_input.available = true;
   setFakeReal(&complex_y_input.real, 4, 0);
   setFakeReal(&complex_y_input.imag, 5, 0);
+
+  complex_z_input.available = true;
+  setFakeReal(&complex_z_input.real, 6, 0);
+  setFakeReal(&complex_z_input.imag, 7, 0);
 
   longint_input.available = true;
   longint_input.value = -4;
@@ -405,6 +421,9 @@ void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits) {
 void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
   real_z_input.available = available;
   setFakeReal(&real_z_input.value, value, bits);
+  setRegisterReal34(register_z_slot, value, bits);
+  current_register_z_data_type = dtReal34;
+  current_register_z_tag = amNone;
 }
 
 void mathWrappersSetTimeInput(bool_t available, int32_t value, uint8_t bits) {
@@ -436,6 +455,16 @@ void mathWrappersSetComplexYInput(bool_t available, int32_t real_value, uint8_t 
   current_register_y_tag = amNone;
 }
 
+void mathWrappersSetComplexZInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits) {
+  complex_z_input.available = available;
+  setFakeReal(&complex_z_input.real, real_value, real_bits);
+  setFakeReal(&complex_z_input.imag, imag_value, imag_bits);
+  setRegisterReal34(register_z_slot, real_value, real_bits);
+  setRegisterReal34(register_z_slot + sizeof(real34_t), imag_value, imag_bits);
+  current_register_z_data_type = dtComplex34;
+  current_register_z_tag = amNone;
+}
+
 void mathWrappersSetShortIntegerInput(int64_t value) {
   *shortIntegerSlot(REGISTER_X) = encodeShortInteger(value);
 }
@@ -447,6 +476,8 @@ void mathWrappersSetShortIntegerYInput(int64_t value) {
 
 void mathWrappersSetShortIntegerZInput(int64_t value) {
   *shortIntegerSlot(REGISTER_Z) = encodeShortInteger(value);
+  current_register_z_data_type = dtShortInteger;
+  current_register_z_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetShortIntegerMode(uint8_t mode) {
@@ -578,17 +609,29 @@ bool_t saveLastX(void) {
 
 uint32_t getRegisterDataType(calcRegister_t reg) {
   snapshot.get_register_data_type_calls++;
-  return reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
+  if(reg == REGISTER_Y) {
+    return current_register_y_data_type;
+  }
+  if(reg == REGISTER_Z) {
+    return current_register_z_data_type;
+  }
+  return current_register_data_type;
 }
 
 uint32_t getRegisterTag(calcRegister_t reg) {
   snapshot.get_register_tag_calls++;
-  return reg == REGISTER_Y ? current_register_y_tag : current_register_tag;
+  if(reg == REGISTER_Y) {
+    return current_register_y_tag;
+  }
+  if(reg == REGISTER_Z) {
+    return current_register_z_tag;
+  }
+  return current_register_tag;
 }
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   snapshot.get_register_data_pointer_calls++;
-  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
+  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : reg == REGISTER_Z ? current_register_z_data_type : current_register_data_type;
 
   if(data_type == dtShortInteger) {
     return shortIntegerSlot(reg);
@@ -601,6 +644,9 @@ void *getRegisterDataPointer(calcRegister_t reg) {
   }
   if(reg == REGISTER_Y) {
     return register_y_slot;
+  }
+  if(reg == REGISTER_Z) {
+    return register_z_slot;
   }
   return register_slot;
 }
@@ -847,8 +893,8 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
 
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   snapshot.get_register_as_complex_calls++;
-  if((reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type) == dtComplex34) {
-    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : &complex_input;
+  if((reg == REGISTER_Y ? current_register_y_data_type : reg == REGISTER_Z ? current_register_z_data_type : current_register_data_type) == dtComplex34) {
+    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : reg == REGISTER_Z ? &complex_z_input : &complex_input;
 
     snapshot.get_register_as_complex_real_value = fakeRealValue(&input->real);
     snapshot.get_register_as_complex_real_bits = input->real.bits;
