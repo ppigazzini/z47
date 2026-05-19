@@ -52,6 +52,7 @@ pub const ERROR_OUT_OF_RANGE: u8 = 3;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
 pub const ERROR_RAM_FULL: u8 = 6;
+pub const ERROR_MATRIX_MISMATCH: u8 = 7;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_PROPFR: i32 = 0x8008;
@@ -136,6 +137,7 @@ pub extern var shortIntegerSignBit: u64;
 pub extern var currentAngularMode: angularMode_t;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
+pub extern var significantDigits: i32;
 pub extern var temporaryInformation: u8;
 pub extern var lastErrorCode: u8;
 pub extern var systemFlags0: u64;
@@ -199,6 +201,7 @@ pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const r
 pub extern fn fraction(regist: calcRegister_t, sign: *i16, int_part: *u64, numer: *u64, denom: *u64, less_equal_greater: *i16) bool;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
 pub extern fn real34RectangularToPolar(real: *const real34_t, imag: *const real34_t, magnitude: *real34_t, theta: *real34_t) void;
+pub extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: i32, real_context: *realContext_t) void;
 pub extern fn realPolarToRectangular(
     magnitude: *const real_t,
     angle: *const real_t,
@@ -217,6 +220,7 @@ pub extern fn realNextToward(x: *const real_t, y: *const real_t, result: *real_t
 pub extern fn complexMagnitude(real: *const real_t, imag: *const real_t, magnitude: *real_t, real_context: *realContext_t) void;
 
 pub extern fn processRealComplexMonadicFunction(realf: VoidCallback, complexf: VoidCallback) void;
+pub extern fn elementwiseRemaReal(realf: VoidCallback) void;
 pub extern fn processIntRealComplexMonadicFunction(
     realf: VoidCallback,
     complexf: VoidCallback,

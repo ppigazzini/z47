@@ -1776,6 +1776,121 @@ fn swapReImCxma() void {
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
 }
 
+fn atan2RemaReal() void {
+    var y_matrix: runtime.real34Matrix_t = undefined;
+    var x_scalar: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_scalar)) {
+        return;
+    }
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
+    const count = @min(
+        @as(usize, y_matrix.header.matrixRows) * @as(usize, y_matrix.header.matrixColumns),
+        y_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        var y_value: runtime.real_t = undefined;
+        var x_value = x_scalar;
+
+        runtime.real34ToReal(&y_matrix.matrixElements[index], &y_value);
+        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function atan2RemaReal:", "X = 0 and Y = 0", null, null);
+            return;
+        }
+
+        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
+        runtime.realToReal34(&x_value, &y_matrix.matrixElements[index]);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&y_matrix, runtime.REGISTER_X);
+}
+
+fn atan2RemaRema() void {
+    var y_matrix: runtime.real34Matrix_t = undefined;
+    var x_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
+
+    if (y_matrix.header.matrixRows != x_matrix.header.matrixRows or y_matrix.header.matrixColumns != x_matrix.header.matrixColumns) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function atan2RemaRema:", "matrix size mismatch", null, null);
+        return;
+    }
+
+    const count = @min(
+        @as(usize, x_matrix.header.matrixRows) * @as(usize, x_matrix.header.matrixColumns),
+        @min(x_matrix.matrixElements.len, y_matrix.matrixElements.len),
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        var y_value: runtime.real_t = undefined;
+        var x_value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(&y_matrix.matrixElements[index], &y_value);
+        runtime.real34ToReal(&x_matrix.matrixElements[index], &x_value);
+        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", null, null);
+            return;
+        }
+
+        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
+        runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+}
+
+fn atan2RealRema() void {
+    var y_scalar: runtime.real_t = undefined;
+    var x_matrix: runtime.real34Matrix_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_scalar)) {
+        return;
+    }
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
+    const count = @min(
+        @as(usize, x_matrix.header.matrixRows) * @as(usize, x_matrix.header.matrixColumns),
+        x_matrix.matrixElements.len,
+    );
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        var y_value = y_scalar;
+        var x_value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(&x_matrix.matrixElements[index], &x_value);
+        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", null, null);
+            return;
+        }
+
+        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
+        runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+}
+
+fn atan2Error() void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.moreInfoOnError("In function fnAtan2:", "cannot calculate atan2 for current X and Y types", null, null);
+}
+
 fn atan2RealReal() callconv(.c) void {
     var y_value: runtime.real_t = undefined;
     var x_value: runtime.real_t = undefined;
@@ -4381,19 +4496,25 @@ pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-    const x_supported = data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger;
-    const y_supported = data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger;
 
-    if (!x_supported or !y_supported) {
-        z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
-        return;
-    }
+    _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    atan2RealReal();
+    if ((data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger) and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger)) {
+        atan2RealReal();
+    } else if (data_type_x == runtime.dtReal34Matrix and data_type_y == runtime.dtReal34Matrix) {
+        atan2RemaRema();
+    } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtShortInteger)) {
+        atan2RealRema();
+    } else if (data_type_y == runtime.dtReal34Matrix and (data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtShortInteger)) {
+        runtime.elementwiseRemaReal(&atan2RealReal);
+    } else {
+        atan2Error();
+    }
+
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
 }
 

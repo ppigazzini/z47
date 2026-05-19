@@ -13,14 +13,19 @@ static math_wrappers_snapshot_t snapshot;
 static bool_t save_last_x_result = true;
 static uint32_t current_register_data_type = dtReal34;
 static uint32_t current_register_tag = amNone;
+static uint32_t current_register_y_data_type = dtReal34;
+static uint32_t current_register_y_tag = amNone;
 
 static uint8_t register_slot[32];
+static uint8_t register_y_slot[32];
 static uint64_t shortint_y_slot;
 static uint64_t shortint_z_slot;
 static uint32_t register_scalar_magnitude;
 static bool_t register_scalar_available = true;
 static real34Matrix_t fake_real_matrix;
 static complex34Matrix_t fake_complex_matrix;
+static real34Matrix_t fake_real_y_matrix;
+static complex34Matrix_t fake_complex_y_matrix;
 
 static struct {
   bool_t available;
@@ -346,6 +351,8 @@ void mathWrappersReset(void) {
   setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[2], 3, 0);
   setRegisterReal34((uint8_t *)&fake_real_matrix.matrixElements[3], 4, 0);
 
+  fake_real_y_matrix = fake_real_matrix;
+
   fake_complex_matrix.header.matrixRows = 2;
   fake_complex_matrix.header.matrixColumns = 2;
   setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[0].real, 1, 0);
@@ -356,6 +363,8 @@ void mathWrappersReset(void) {
   setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[2].imag, 7, 0);
   setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[3].real, 4, 0);
   setRegisterReal34((uint8_t *)&fake_complex_matrix.matrixElements[3].imag, 8, 0);
+
+  fake_complex_y_matrix = fake_complex_matrix;
 }
 
 void mathWrappersSetSaveLastXResult(bool_t result) {
@@ -378,6 +387,9 @@ void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits) {
 void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits) {
   real_y_input.available = available;
   setFakeReal(&real_y_input.value, value, bits);
+  setRegisterReal34(register_y_slot, value, bits);
+  current_register_y_data_type = dtReal34;
+  current_register_y_tag = amNone;
 }
 
 void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
@@ -410,6 +422,7 @@ void mathWrappersSetShortIntegerInput(int64_t value) {
 
 void mathWrappersSetShortIntegerYInput(int64_t value) {
   *shortIntegerSlot(REGISTER_Y) = encodeShortInteger(value);
+  current_register_y_data_type = dtShortInteger;
 }
 
 void mathWrappersSetShortIntegerZInput(int64_t value) {
@@ -428,6 +441,8 @@ void mathWrappersSetLongIntegerInput(bool_t available, int32_t value) {
 void mathWrappersSetLongIntegerYInput(bool_t available, int32_t value) {
   longint_y_input.available = available;
   longint_y_input.value = value;
+  current_register_y_data_type = dtLongInteger;
+  current_register_y_tag = value < 0 ? LI_NEGATIVE : value > 0 ? LI_POSITIVE : LI_ZERO;
 }
 
 void mathWrappersSetLongIntegerQuietResult(bool_t enabled,
@@ -543,26 +558,29 @@ bool_t saveLastX(void) {
 
 uint32_t getRegisterDataType(calcRegister_t reg) {
   snapshot.get_register_data_type_calls++;
-  (void)reg;
-  return current_register_data_type;
+  return reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
 }
 
 uint32_t getRegisterTag(calcRegister_t reg) {
   snapshot.get_register_tag_calls++;
-  (void)reg;
-  return current_register_tag;
+  return reg == REGISTER_Y ? current_register_y_tag : current_register_tag;
 }
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   snapshot.get_register_data_pointer_calls++;
-  if(current_register_data_type == dtShortInteger) {
+  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
+
+  if(data_type == dtShortInteger) {
     return shortIntegerSlot(reg);
   }
-  if(current_register_data_type == dtReal34Matrix) {
-    return &fake_real_matrix;
+  if(data_type == dtReal34Matrix) {
+    return reg == REGISTER_Y ? (void *)&fake_real_y_matrix : (void *)&fake_real_matrix;
   }
-  if(current_register_data_type == dtComplex34Matrix) {
-    return &fake_complex_matrix;
+  if(data_type == dtComplex34Matrix) {
+    return reg == REGISTER_Y ? (void *)&fake_complex_y_matrix : (void *)&fake_complex_matrix;
+  }
+  if(reg == REGISTER_Y) {
+    return register_y_slot;
   }
   return register_slot;
 }
@@ -612,7 +630,38 @@ void elementwiseRema(void (*func)(void)) {
 }
 
 void elementwiseRemaReal(void (*func)(void)) {
-  elementwiseRema(func);
+  if(func == NULL) {
+    return;
+  }
+
+  real34Matrix_t matrix = fake_real_y_matrix;
+  real_t x_input;
+
+  if(!getRegisterAsReal(REGISTER_X, &x_input)) {
+    return;
+  }
+
+  for(uint16_t i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
+    const int32_t x_value = fakeRealValue(&x_input);
+    const uint8_t x_bits = x_input.bits & 0x70;
+    const int32_t y_value = fakeReal34Value(&matrix.matrixElements[i]);
+    const uint8_t y_bits = matrix.matrixElements[i].bytes[15] & 0x70;
+
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    setRegisterReal34(register_y_slot, y_value, y_bits);
+    setFakeReal(&real_y_input.value, y_value, y_bits);
+    real_y_input.available = true;
+    setRegisterScalar(x_value, x_bits);
+    setFakeReal(&real_input.value, x_value, x_bits);
+    real_input.available = true;
+    func();
+    matrix.matrixElements[i] = *(real34_t *)register_slot;
+  }
+
+  fake_real_matrix = matrix;
+  current_register_data_type = dtReal34Matrix;
+  current_register_tag = amNone;
 }
 
 void adjustResult(calcRegister_t res,
@@ -704,11 +753,21 @@ void processIntRealComplexDyadicFunction(void (*realf)(void),
 
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
   snapshot.get_register_as_real_calls++;
-  if(current_register_data_type == dtTime) {
+  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
+
+  if(data_type == dtTime) {
     if(!register_scalar_available) {
       return false;
     }
     setFakeReal(value, fakeRegisterScalarValue(), register_slot[15] & 0x70);
+    return true;
+  }
+  if(data_type == dtShortInteger) {
+    setFakeReal(value, (int32_t)decodeShortInteger(*shortIntegerSlot(reg), NULL), 0);
+    return true;
+  }
+  if(data_type == dtLongInteger) {
+    setFakeReal(value, reg == REGISTER_Y ? longint_y_input.value : longint_input.value, 0);
     return true;
   }
   if(reg == REGISTER_Y) {
@@ -900,7 +959,15 @@ void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realCont
 void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   const int32_t value = source == REGISTER_Y ? longint_y_input.value : longint_input.value;
 
-  (void)destination;
+  if(destination == REGISTER_Y) {
+    current_register_y_data_type = dtReal34;
+    current_register_y_tag = amNone;
+    real_y_input.available = true;
+    setFakeReal(&real_y_input.value, value, 0);
+    setRegisterReal34(register_y_slot, value, 0);
+    return;
+  }
+
   current_register_data_type = dtReal34;
   current_register_tag = amNone;
   setRegisterScalar(value, 0);
@@ -1083,13 +1150,11 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
 }
 
 void linkToComplexMatrixRegister(calcRegister_t reg, complex34Matrix_t *matrix) {
-  (void)reg;
-  *matrix = fake_complex_matrix;
+  *matrix = reg == REGISTER_Y ? fake_complex_y_matrix : fake_complex_matrix;
 }
 
 void linkToRealMatrixRegister(calcRegister_t reg, real34Matrix_t *matrix) {
-  (void)reg;
-  *matrix = fake_real_matrix;
+  *matrix = reg == REGISTER_Y ? fake_real_y_matrix : fake_real_matrix;
 }
 
 bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
@@ -1120,29 +1185,41 @@ void complexMatrixFree(complex34Matrix_t *matrix) {
 }
 
 void convertReal34MatrixToReal34MatrixRegister(const real34Matrix_t *matrix, calcRegister_t reg) {
-  (void)reg;
+  if(reg == REGISTER_Y) {
+    fake_real_y_matrix = *matrix;
+    current_register_y_data_type = dtReal34Matrix;
+    current_register_y_tag = amNone;
+    return;
+  }
+
   fake_real_matrix = *matrix;
   current_register_data_type = dtReal34Matrix;
   current_register_tag = amNone;
 }
 
 void convertComplex34MatrixToComplex34MatrixRegister(const complex34Matrix_t *matrix, calcRegister_t reg) {
-  (void)reg;
+  if(reg == REGISTER_Y) {
+    fake_complex_y_matrix = *matrix;
+    current_register_y_data_type = dtComplex34Matrix;
+    current_register_y_tag = amNone;
+    return;
+  }
+
   fake_complex_matrix = *matrix;
   current_register_data_type = dtComplex34Matrix;
   current_register_tag = amNone;
 }
 
 void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t reg, real34Matrix_t *matrix) {
-  (void)reg;
-  *matrix = fake_real_matrix;
+  *matrix = reg == REGISTER_Y ? fake_real_y_matrix : fake_real_matrix;
 }
 
 void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix) {
-  (void)reg;
-  matrix->header = fake_real_matrix.header;
+  const real34Matrix_t *source = reg == REGISTER_Y ? &fake_real_y_matrix : &fake_real_matrix;
+
+  matrix->header = source->header;
   for(uint16_t i = 0; i < matrix->header.matrixRows * matrix->header.matrixColumns && i < 4; ++i) {
-    matrix->matrixElements[i].real = fake_real_matrix.matrixElements[i];
+    matrix->matrixElements[i].real = source->matrixElements[i];
     setRegisterReal34((uint8_t *)&matrix->matrixElements[i].imag, 0, 0);
   }
 }
@@ -1156,7 +1233,11 @@ void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *realMatrix, comp
 }
 
 void setRegisterTag(calcRegister_t reg, uint32_t tag) {
-  (void)reg;
+  if(reg == REGISTER_Y) {
+    current_register_y_tag = tag;
+    return;
+  }
+
   current_register_tag = tag;
 }
 
