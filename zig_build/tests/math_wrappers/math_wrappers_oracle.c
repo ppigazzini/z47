@@ -891,9 +891,62 @@ void oracle_fnConjugate(uint16_t unusedButMandatoryParameter) {
 	}
 }
 
-#define fnSwapRealImaginary oracle_fnSwapRealImaginary
+#define fnSwapRealImaginary oracle_fnSwapRealImaginary_retained
 #include "../../../src/c47/mathematics/swapRealImaginary.c"
 #undef fnSwapRealImaginary
+
+static void oracle_swapReImRema(void) {
+	complex34Matrix_t c;
+	real34Matrix_t r;
+
+	linkToRealMatrixRegister(REGISTER_X, &r);
+	convertReal34MatrixToComplex34Matrix(&r, &c);
+
+	for(uint16_t i = 0; i < c.header.matrixRows * c.header.matrixColumns; ++i) {
+		real34Copy(VARIABLE_REAL34_DATA(&c.matrixElements[i]), VARIABLE_IMAG34_DATA(&c.matrixElements[i]));
+		real34SetZero(VARIABLE_REAL34_DATA(&c.matrixElements[i]));
+	}
+
+	convertComplex34MatrixToComplex34MatrixRegister(&c, REGISTER_X);
+	complexMatrixFree(&c);
+}
+
+static void oracle_swapReImCxma(void) {
+	complex34Matrix_t cMat;
+	real34_t tmp;
+
+	linkToComplexMatrixRegister(REGISTER_X, &cMat);
+	for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
+		real34Copy(VARIABLE_REAL34_DATA(&cMat.matrixElements[i]), &tmp);
+		real34Copy(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]), VARIABLE_REAL34_DATA(&cMat.matrixElements[i]));
+		real34Copy(&tmp, VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+	}
+	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
+}
+
+void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
+	real_t a, b;
+	const uint32_t type = getRegisterDataType(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	if(type == dtReal34Matrix) {
+		oracle_swapReImRema();
+	}
+	else if(type == dtComplex34Matrix) {
+		oracle_swapReImCxma();
+	}
+	else {
+		if(!getRegisterAsComplex(REGISTER_X, &a, &b)) {
+			return;
+		}
+		convertComplexToResultRegister(&b, &a, REGISTER_X);
+	}
+}
 
 #define arctan2 oracle_arctan2
 #define atan2Error oracle_atan2Error
