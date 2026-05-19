@@ -595,7 +595,8 @@ void oracle_fnToRect(uint16_t angleInY) {
 
 	dataTypeX = getRegisterDataType(REG_X);
 	dataTypeY = getRegisterDataType(REG_Y);
-	if(dataTypeX != dtReal34 || dataTypeY != dtReal34) {
+	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
+	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
 		return;
 	}
 
@@ -604,11 +605,26 @@ void oracle_fnToRect(uint16_t angleInY) {
 		return;
 	}
 
-	real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
-	if(yAngularMode == amNone) {
+	if(dataTypeX == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REG_X, &x, &ctxtReal39);
+	}
+	else {
+		real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
+	}
+
+	if(dataTypeY == dtLongInteger) {
 		yAngularMode = currentAngularMode;
 	}
-	real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	else if(yAngularMode == amNone) {
+		yAngularMode = currentAngularMode;
+	}
+
+	if(dataTypeY == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REG_Y, &y, &ctxtReal39);
+	}
+	else {
+		real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
+	}
 	convertAngleFromTo(&y, yAngularMode, amRadian, &ctxtReal39);
 	realPolarToRectangular(&x, &y, &x, &y, &ctxtReal39);
 

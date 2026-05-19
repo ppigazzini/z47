@@ -1439,6 +1439,14 @@ static void configureFnToRectReal34Pair(void) {
   mathWrappersSetCurrentAngularMode(amDegree);
 }
 
+static void configureFnToRectLongIntegerPair(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 3);
+  mathWrappersSetLongIntegerYInput(true, 2);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
 int main(void) {
   int failures = 0;
 
@@ -1665,6 +1673,7 @@ int main(void) {
   failures += runCase("fnToRect2/real34_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2Real34Pair);
   failures += runCase("fnToRect2/longint_pair", oracle_fnToRect2, fnToRect2, 0, true, configureToRect2LongIntegerPair);
   failures += runCase("fnToRect/real34_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectReal34Pair);
+  failures += runCase("fnToRect/longint_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectLongIntegerPair);
 
   if(failures != 0) {
     fprintf(stderr, "%d math-command-wrapper parity checks failed\n", failures);
