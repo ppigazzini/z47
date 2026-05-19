@@ -426,6 +426,10 @@ void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
 	(void)unusedButMandatoryParameter;
 
 	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+		setComplexRegisterPolarMode(REGISTER_X, amPolar);
+		if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
+			setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
 		return;
 	}
 

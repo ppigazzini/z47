@@ -2885,7 +2885,11 @@ fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *
 
 fn tryFnToPolar2Real34Pair() bool {
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34 or runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
-        return false;
+        runtime.setComplexRegisterPolarMode(runtime.REGISTER_X, runtime.amPolar);
+        if (runtime.getComplexRegisterAngularMode(runtime.REGISTER_X) == runtime.amNone) {
+            runtime.setComplexRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+        }
+        return true;
     }
 
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
