@@ -1958,7 +1958,7 @@ fn fpShoIForward() callconv(.c) void {
 }
 
 fn fpLonIForward() callconv(.c) void {
-    runtime.z47_math_wrappers_fractional_part_long_integer();
+    runtime.z47_math_wrappers_build_sign_result(0);
 }
 
 fn coshReal() callconv(.c) void {
