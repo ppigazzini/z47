@@ -2181,6 +2181,28 @@ void longIntegerFibonacci(uint32_t n, longInteger_t result) {
   __gmpz_set_ui(result, n + 100);
 }
 
+void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
+  (void)source;
+  (void)destination;
+}
+
+void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t destination) {
+  (void)source;
+  (void)destination;
+}
+
+void internalDateToJulianDay(real34_t *source, real34_t *destination) {
+  if(destination != source) {
+    *destination = *source;
+  }
+}
+
+void julianDayToInternalDate(real34_t *source, real34_t *destination) {
+  if(destination != source) {
+    *destination = *source;
+  }
+}
+
 void liftStack(void) {
   snapshot.lift_stack_calls++;
   switch(current_register_data_type) {

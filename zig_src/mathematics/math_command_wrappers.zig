@@ -5941,6 +5941,82 @@ fn fibLonIRetained() callconv(.c) void {
     z47_math_wrappers_retained_fnFib(0);
 }
 
+fn imag34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
+    const base: [*]u8 = @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?));
+    return @as(*runtime.real34_t, @ptrCast(@alignCast(base + @sizeOf(runtime.real34_t))));
+}
+
+fn linpolScalar(a: *const runtime.real_t, b: *const runtime.real_t, p: *const runtime.real_t, res: *runtime.real_t) void {
+    var x: runtime.real_t = undefined;
+
+    if (runtime.realIsNaN(a) or runtime.realIsNaN(b) or runtime.realIsNaN(p) or runtime.realIsInfinite(p)) {
+        runtime.realSetNaN(res);
+    } else if (runtime.realIsInfinite(a)) {
+        if (runtime.realIsInfinite(b)) {
+            if (runtime.realIsNegative(a) == runtime.realIsNegative(b)) {
+                res.* = a.*;
+            } else {
+                runtime.realSetNaN(res);
+            }
+        } else {
+            res.* = a.*;
+        }
+    } else if (runtime.realIsInfinite(b)) {
+        res.* = b.*;
+    } else if (runtime.realCompareEqual(a, b)) {
+        res.* = a.*;
+    } else if (runtime.realIsNegative(a) != runtime.realIsNegative(b)) {
+        x = p.*;
+        runtime.realChangeSign(&x);
+        runtime.realFMA(&x, a, a, &x, &runtime.ctxtReal75);
+        runtime.realFMA(p, b, &x, res, &runtime.ctxtReal75);
+    } else {
+        runtime.realSubtract(b, a, &x, &runtime.ctxtReal75);
+        runtime.realFMA(&x, p, a, res, &runtime.ctxtReal75);
+    }
+}
+
+fn linpolReadP(p: *runtime.real_t) bool {
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtReal34 => {
+            runtime.real34ToReal(real34DataPointer(runtime.REGISTER_X), p);
+            return true;
+        },
+        runtime.dtLongInteger => {
+            runtime.convertLongIntegerRegisterToReal(runtime.REGISTER_X, p, &runtime.ctxtReal75);
+            return true;
+        },
+        else => return false,
+    }
+}
+
+fn linpolReadCoeff(regist: runtime.calcRegister_t, data_type: u32, real_part: *runtime.real_t, imag_part: *runtime.real_t, real_coefs: *bool) bool {
+    switch (data_type) {
+        runtime.dtLongInteger => {
+            runtime.convertLongIntegerRegisterToReal(regist, real_part, &runtime.ctxtReal75);
+            return true;
+        },
+        runtime.dtShortInteger => {
+            runtime.convertShortIntegerRegisterToReal(regist, real_part, &runtime.ctxtReal39);
+            return true;
+        },
+        runtime.dtReal34 => {
+            if (runtime.getRegisterAngularMode(regist) != runtime.amNone) {
+                return false;
+            }
+            runtime.real34ToReal(real34DataPointer(regist), real_part);
+            return true;
+        },
+        runtime.dtComplex34 => {
+            runtime.real34ToReal(real34DataPointer(regist), real_part);
+            runtime.real34ToReal(imag34DataPointer(regist), imag_part);
+            real_coefs.* = false;
+            return true;
+        },
+        else => return false,
+    }
+}
+
 const inc_flag: u8 = 0;
 const dec_flag: u8 = 1;
 
@@ -6232,7 +6308,55 @@ pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnLINPOL(unused_but_mandatory_parameter);
+    var a_real: runtime.real_t = undefined;
+    var b_real: runtime.real_t = undefined;
+    var a_imag: runtime.real_t = undefined;
+    var b_imag: runtime.real_t = undefined;
+    var p: runtime.real_t = undefined;
+    var result_real: runtime.real_t = undefined;
+    var result_imag: runtime.real_t = undefined;
+    var real_coefs = true;
+    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+    const type_z = runtime.getRegisterDataType(runtime.REGISTER_Z);
+    const is_y_angle = type_y == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_Y) != runtime.amNone;
+    const is_z_angle = type_z == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_Z) != runtime.amNone;
+
+    _ = unused_but_mandatory_parameter;
+    runtime.realSetZero(&a_imag);
+    runtime.realSetZero(&b_imag);
+
+    if (!linpolReadP(&p) or
+        !(type_y == runtime.dtLongInteger or type_y == runtime.dtShortInteger or type_y == runtime.dtReal34) or
+        !(type_z == runtime.dtLongInteger or type_z == runtime.dtShortInteger or type_z == runtime.dtReal34) or
+        is_y_angle or is_z_angle)
+    {
+        z47_math_wrappers_retained_fnLINPOL(0);
+        return;
+    }
+
+    if (!linpolReadCoeff(runtime.REGISTER_Y, type_y, &b_real, &b_imag, &real_coefs) or !linpolReadCoeff(runtime.REGISTER_Z, type_z, &a_real, &a_imag, &real_coefs)) {
+        z47_math_wrappers_retained_fnLINPOL(0);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, runtime.REGISTER_Y, runtime.REGISTER_Z);
+    runtime.fnDrop(0);
+    runtime.fnDrop(0);
+
+    linpolScalar(&a_real, &b_real, &p, &result_real);
+    if (real_coefs) {
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        runtime.convertRealToReal34ResultRegister(&result_real, runtime.REGISTER_X);
+        return;
+    }
+
+    linpolScalar(&a_imag, &b_imag, &p, &result_imag);
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
 }
 
 fn crossReal() callconv(.c) void {
