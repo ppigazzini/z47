@@ -293,6 +293,16 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
         return;
     }
 
+    if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
+        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        return;
+    }
+
+    if (reg > runtime.LAST_LOCAL_REGISTER) {
+        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        return;
+    }
+
     runtime.retainedSetRegisterMaxDataLengthInBlocks(reg, max_data_len);
 }
 
