@@ -1629,6 +1629,30 @@ fn exptLonI() callconv(.c) void {
     runtime.z47_math_wrappers_build_sign_result(exponent);
 }
 
+fn bnCommon(bnstar: bool) void {
+    var x_value: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    runtime.WP34S_Bernoulli(&x_value, &result, bnstar, &runtime.ctxtReal39);
+    if (runtime.realIsNaN(&result)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function fnBn:", if (bnstar) "k must be a non-negative integer" else "k must be a positive integer", null, null);
+    } else {
+        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+        runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, no_register, no_register);
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
@@ -2801,7 +2825,8 @@ pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    bnCommon(false);
 }
 
 pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {

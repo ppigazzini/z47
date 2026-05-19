@@ -181,6 +181,7 @@ pub extern fn WP34S_ArcTanh(x: *const real_t, res: *real_t, real_context: *realC
 pub extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Erf(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Erfc(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bnstar: bool, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
