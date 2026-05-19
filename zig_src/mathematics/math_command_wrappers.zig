@@ -4079,8 +4079,20 @@ pub export fn fnCheckForZero(unused_but_mandatory_parameter: u16) callconv(.c) v
     z47_math_wrappers_retained_fnCheckForZero(unused_but_mandatory_parameter);
 }
 
+fn tryCheckRealMatrixVector(dimension: u16) bool {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) != runtime.dtReal34Matrix) {
+        return false;
+    }
+
+    const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
+    runtime.setTemporaryInformation((header.matrixRows == 1 and header.matrixColumns == dimension) or (header.matrixRows == dimension and header.matrixColumns == 1));
+    return true;
+}
+
 pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckIsVect2d(unused_but_mandatory_parameter);
+    if (!tryCheckRealMatrixVector(2)) {
+        z47_math_wrappers_retained_fnCheckIsVect2d(unused_but_mandatory_parameter);
+    }
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
