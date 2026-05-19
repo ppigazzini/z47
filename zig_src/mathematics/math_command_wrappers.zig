@@ -2830,7 +2830,8 @@ pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    bnCommon(true);
 }
 
 pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
