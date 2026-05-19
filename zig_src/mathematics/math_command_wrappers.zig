@@ -3392,6 +3392,34 @@ fn lcmInt() callconv(.c) void {
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
+fn rmdLonI() callconv(.c) void {
+    var x: runtime.longInteger_t = undefined;
+    var y: runtime.longInteger_t = undefined;
+    var remainder: runtime.longInteger_t = undefined;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&x[0]);
+
+    if (x[0]._mp_size == 0) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", null, null);
+        return;
+    }
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
+        return;
+    }
+    defer runtime.__gmpz_clear(&y[0]);
+
+    runtime.__gmpz_init(&remainder[0]);
+    defer runtime.__gmpz_clear(&remainder[0]);
+
+    runtime.__gmpz_tdiv_r(&remainder[0], &y[0], &x[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_X);
+}
+
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runtime.processIntRealComplexDyadicFunction(&gcdInt, null, &gcdShoI, &gcdInt);
@@ -3409,7 +3437,7 @@ pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &runtime.z47_math_wrappers_rmd_short_integer, &runtime.z47_math_wrappers_rmd_long_integer);
+    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &runtime.z47_math_wrappers_rmd_short_integer, &rmdLonI);
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
