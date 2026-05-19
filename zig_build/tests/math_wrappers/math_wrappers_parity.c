@@ -1288,6 +1288,26 @@ static void configureIncDecLongInteger(void) {
   mathWrappersSetLongIntegerInput(true, 10);
 }
 
+static void configureIncDecRealY(void) {
+  configureDefaultSurface();
+  mathWrappersSetRealYInput(true, 10, 0);
+}
+
+static void configureIncDecComplexY(void) {
+  configureDefaultSurface();
+  mathWrappersSetComplexYInput(true, 3, 0, 4, 0);
+}
+
+static void configureIncDecShortIntegerY(void) {
+  configureDefaultSurface();
+  mathWrappersSetShortIntegerYInput(5);
+}
+
+static void configureIncDecLongIntegerY(void) {
+  configureDefaultSurface();
+  mathWrappersSetLongIntegerYInput(true, 10);
+}
+
 static void configureFibReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -2988,6 +3008,14 @@ int main(void) {
   failures += runCase("fnInc/complex_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecComplex);
   failures += runCase("fnInc/shortint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecShortInteger);
   failures += runCase("fnInc/longint_x", oracle_fnInc, fnInc, REGISTER_X, true, configureIncDecLongInteger);
+  failures += runCase("fnDec/real_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecRealY);
+  failures += runCase("fnDec/complex_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecComplexY);
+  failures += runCase("fnDec/shortint_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecShortIntegerY);
+  failures += runCase("fnDec/longint_y", oracle_fnDec, fnDec, REGISTER_Y, true, configureIncDecLongIntegerY);
+  failures += runCase("fnInc/real_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecRealY);
+  failures += runCase("fnInc/complex_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecComplexY);
+  failures += runCase("fnInc/shortint_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecShortIntegerY);
+  failures += runCase("fnInc/longint_y", oracle_fnInc, fnInc, REGISTER_Y, true, configureIncDecLongIntegerY);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);

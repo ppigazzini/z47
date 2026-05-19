@@ -4703,21 +4703,21 @@ pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
 }
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X) {
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y) {
         z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter);
         return;
     }
 
-    incDecRegisterX(dec_flag);
+    incDecRegister(@intCast(unused_but_mandatory_parameter), dec_flag);
 }
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X) {
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y) {
         z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter);
         return;
     }
 
-    incDecRegisterX(inc_flag);
+    incDecRegister(@intCast(unused_but_mandatory_parameter), inc_flag);
 }
 
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -6046,15 +6046,15 @@ fn linpolReadCoeff(regist: runtime.calcRegister_t, data_type: u32, real_part: *r
 const inc_flag: u8 = 0;
 const dec_flag: u8 = 1;
 
-fn incDecError() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+fn incDecError(regist: runtime.calcRegister_t) void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
     runtime.moreInfoOnError("In function incDecError:", "Cannot increment/decrement, incompatible type.", null, null);
 }
 
-fn incDecLonI(flag: u8) void {
+fn incDecLonI(regist: runtime.calcRegister_t, flag: u8) void {
     var value: runtime.longInteger_t = undefined;
 
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+    runtime.convertLongIntegerRegisterToLongInteger(regist, &value[0]);
     defer runtime.__gmpz_clear(&value[0]);
 
     if (flag == inc_flag) {
@@ -6063,42 +6063,42 @@ fn incDecLonI(flag: u8) void {
         runtime.__gmpz_sub_ui(&value[0], &value[0], 1);
     }
 
-    runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
+    runtime.convertLongIntegerToLongIntegerRegister(&value[0], regist);
 }
 
 fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
     return @as(*runtime.real34_t, @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?)));
 }
 
-fn incDecReal(flag: u8) void {
+fn incDecReal(regist: runtime.calcRegister_t, flag: u8) void {
     var value: runtime.real_t = undefined;
 
-    runtime.real34ToReal(real34DataPointer(runtime.REGISTER_X), &value);
+    runtime.real34ToReal(real34DataPointer(regist), &value);
     if (flag == inc_flag) {
         runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
     } else {
         runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
     }
-    runtime.realToReal34(&value, real34DataPointer(runtime.REGISTER_X));
+    runtime.realToReal34(&value, real34DataPointer(regist));
 }
 
-fn incDecCplx(flag: u8) void {
+fn incDecCplx(regist: runtime.calcRegister_t, flag: u8) void {
     var value: runtime.real_t = undefined;
 
-    runtime.real34ToReal(real34DataPointer(runtime.REGISTER_X), &value);
+    runtime.real34ToReal(real34DataPointer(regist), &value);
     if (flag == inc_flag) {
         runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
     } else {
         runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
     }
-    runtime.realToReal34(&value, real34DataPointer(runtime.REGISTER_X));
+    runtime.realToReal34(&value, real34DataPointer(regist));
 }
 
-fn incDecShoI(flag: u8) void {
+fn incDecShoI(regist: runtime.calcRegister_t, flag: u8) void {
     var sign: i16 = 0;
     var value: u64 = 0;
 
-    runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
+    runtime.convertShortIntegerRegisterToUInt64(regist, &sign, &value);
     if (sign != 0) {
         if (flag != inc_flag) {
             value += 1;
@@ -6112,16 +6112,16 @@ fn incDecShoI(flag: u8) void {
             value -= 1;
         }
     }
-    runtime.convertUInt64ToShortIntegerRegister(sign, value, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
+    runtime.convertUInt64ToShortIntegerRegister(sign, value, runtime.getRegisterTag(regist), regist);
 }
 
-fn incDecRegisterX(flag: u8) void {
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger => incDecLonI(flag),
-        runtime.dtReal34 => incDecReal(flag),
-        runtime.dtComplex34 => incDecCplx(flag),
-        runtime.dtShortInteger => incDecShoI(flag),
-        else => incDecError(),
+fn incDecRegister(regist: runtime.calcRegister_t, flag: u8) void {
+    switch (runtime.getRegisterDataType(regist)) {
+        runtime.dtLongInteger => incDecLonI(regist, flag),
+        runtime.dtReal34 => incDecReal(regist, flag),
+        runtime.dtComplex34 => incDecCplx(regist, flag),
+        runtime.dtShortInteger => incDecShoI(regist, flag),
+        else => incDecError(regist),
     }
 }
 
