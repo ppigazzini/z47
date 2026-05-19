@@ -566,13 +566,55 @@ pub export fn fnDeleteVariable(regist: u16) void {
     runtime.reportCannotDeletePredefItem();
 }
 
+fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
+    allocateNamedVariable(variable_name, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
+    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
+        return;
+    }
+
+    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
+    const data_ptr = getRegisterDataPointer(register);
+
+    runtime.initializeMatrixHeader1x1(data_ptr);
+    if (data_ptr) |ptr| {
+        const matrix_element_ptr = @as(
+            ?*anyopaque,
+            @ptrCast(@alignCast(@as([*]u8, @ptrCast(ptr)) + stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()))),
+        );
+        stack_runtime.real34SetZero(matrix_element_ptr);
+    }
+}
+
+fn initSimEqMatABX() void {
+    initializeSimEqMatrix("Mat_A");
+    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
+        return;
+    }
+
+    initializeSimEqMatrix("Mat_B");
+    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
+        return;
+    }
+
+    initializeSimEqMatrix("Mat_X");
+}
+
 pub export fn fnDeleteAllVariables(confirmation: u16) void {
     if (confirmation == stack_runtime.NOT_CONFIRMED and stack_runtime.programRunStop != stack_runtime.PGM_RUNNING) {
         runtime.requestDeleteAllVariablesConfirmation();
         return;
     }
 
-    runtime.retainedFnDeleteAllVariables(confirmation);
+    var variable_index = runtime.numberOfNamedVariables;
+    while (variable_index > 0) : (variable_index -= 1) {
+        fnDeleteVariable(@intCast(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(variable_index - 1))));
+    }
+
+    initSimEqMatABX();
+    runtime.temporaryInformation = if (stack_runtime.programRunStop != stack_runtime.PGM_RUNNING)
+        runtime.TI_DEL_ALL_VARIABLES
+    else
+        runtime.TI_NO_INFO;
 }
 
 pub export fn fnClearAllVariables(confirmation: u16) void {

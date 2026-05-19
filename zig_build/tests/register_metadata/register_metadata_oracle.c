@@ -9,6 +9,8 @@
 void z47_registers_retained_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr);
+void *oracle_getRegisterDataPointer(calcRegister_t regist);
+void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks);
 
 const reservedVariableHeader_t allReservedVariables[NUMBER_OF_RESERVED_VARIABLES] = {
   [26] = {
@@ -254,13 +256,50 @@ void oracle_fnDeleteVariable(uint16_t regist) {
   displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
+static void oracle_initializeSimEqMatrix(const char *variable_name, calcRegister_t reg) {
+  matrixHeader_t *matrix_header;
+
+  oracle_allocateNamedVariable(variable_name, dtReal34Matrix, (uint16_t)(REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t))));
+  if(lastErrorCode != ERROR_NONE) {
+    return;
+  }
+
+  matrix_header = (matrixHeader_t *)oracle_getRegisterDataPointer(reg);
+  if(matrix_header == NULL) {
+    return;
+  }
+
+  matrix_header->matrixRows = 1;
+  matrix_header->matrixColumns = 1;
+  real34SetZero((real34_t *)((uint8_t *)matrix_header + sizeof(matrixHeader_t)));
+}
+
+static void oracle_initSimEqMatABX(void) {
+  oracle_initializeSimEqMatrix("Mat_A", FIRST_NAMED_VARIABLE);
+  if(lastErrorCode != ERROR_NONE) {
+    return;
+  }
+
+  oracle_initializeSimEqMatrix("Mat_B", FIRST_NAMED_VARIABLE + 1);
+  if(lastErrorCode != ERROR_NONE) {
+    return;
+  }
+
+  oracle_initializeSimEqMatrix("Mat_X", FIRST_NAMED_VARIABLE + 2);
+}
+
 void oracle_fnDeleteAllVariables(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED && programRunStop != PGM_RUNNING) {
     z47_register_metadata_request_delete_all_variables_confirmation();
     return;
   }
 
-  displayBugScreen("oracle_fnDeleteAllVariables called with an unsupported confirmed case");
+  for(uint16_t var = numberOfNamedVariables; var > 0; var--) {
+    oracle_fnDeleteVariable(FIRST_NAMED_VARIABLE + var - 1);
+  }
+
+  oracle_initSimEqMatABX();
+  temporaryInformation = programRunStop != PGM_RUNNING ? TI_DEL_ALL_VARIABLES : TI_NO_INFO;
 }
 
 void oracle_fnClearAllVariables(uint16_t confirmation) {
