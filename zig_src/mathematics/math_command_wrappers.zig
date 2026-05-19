@@ -5440,8 +5440,106 @@ fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) voi
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
+fn unitVectorError() void {
+    var message_buffer: [128]u8 = undefined;
+    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
+
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.moreInfoOnError("In function fnUnitVector:", message, null, null);
+}
+
+fn unitVectorComplex() void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+    var norm: runtime.real_t = undefined;
+
+    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &real_value);
+    runtime.real34ToReal(runtime.registerImag34Ptr(runtime.REGISTER_X), &imag_value);
+
+    runtime.realMultiply(&real_value, &real_value, &norm, &runtime.ctxtReal39);
+    runtime.realFMA(&imag_value, &imag_value, &norm, &norm, &runtime.ctxtReal39);
+    runtime.realSquareRoot(&norm, &norm, &runtime.ctxtReal39);
+    runtime.realDivide(&real_value, &norm, &real_value, &runtime.ctxtReal39);
+    runtime.realDivide(&imag_value, &norm, &imag_value, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+}
+
+fn unitVectorRema() void {
+    var matrix: runtime.real34Matrix_t = undefined;
+    var element: runtime.real_t = undefined;
+    var sum: runtime.real_t = undefined;
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &matrix);
+    runtime.realSetZero(&sum);
+
+    const count = @min(@as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns), matrix.matrixElements.len);
+
+    for (0..count) |index| {
+        runtime.real34ToReal(&matrix.matrixElements[index], &element);
+        runtime.realMultiply(&element, &element, &element, &runtime.ctxtReal39);
+        runtime.realAdd(&sum, &element, &sum, &runtime.ctxtReal39);
+    }
+
+    runtime.realSquareRoot(&sum, &sum, &runtime.ctxtReal39);
+
+    for (0..count) |index| {
+        runtime.real34ToReal(&matrix.matrixElements[index], &element);
+        runtime.realDivide(&element, &sum, &element, &runtime.ctxtReal39);
+        runtime.realToReal34(&element, &matrix.matrixElements[index]);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
+}
+
+fn unitVectorCxma() void {
+    var matrix: runtime.complex34Matrix_t = undefined;
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+    var sum: runtime.real_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &matrix);
+    runtime.realSetZero(&sum);
+
+    const count = @min(@as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns), matrix.matrixElements.len);
+
+    for (0..count) |index| {
+        runtime.real34ToReal(&matrix.matrixElements[index].real, &real_value);
+        runtime.realMultiply(&real_value, &real_value, &real_value, &runtime.ctxtReal39);
+        runtime.realAdd(&sum, &real_value, &sum, &runtime.ctxtReal39);
+        runtime.real34ToReal(&matrix.matrixElements[index].imag, &imag_value);
+        runtime.realMultiply(&imag_value, &imag_value, &imag_value, &runtime.ctxtReal39);
+        runtime.realAdd(&sum, &imag_value, &sum, &runtime.ctxtReal39);
+    }
+
+    runtime.realSquareRoot(&sum, &sum, &runtime.ctxtReal39);
+
+    for (0..count) |index| {
+        runtime.real34ToReal(&matrix.matrixElements[index].real, &real_value);
+        runtime.real34ToReal(&matrix.matrixElements[index].imag, &imag_value);
+        runtime.divComplexComplex(&real_value, &imag_value, &sum, runtime.z47_math_wrappers_const_0(), &real_value, &imag_value, &runtime.ctxtReal39);
+        runtime.realToReal34(&real_value, &matrix.matrixElements[index].real);
+        runtime.realToReal34(&imag_value, &matrix.matrixElements[index].imag);
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, runtime.REGISTER_X);
+}
+
 pub export fn fnUnitVector(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnUnitVector(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtComplex34 => unitVectorComplex(),
+        runtime.dtReal34Matrix => unitVectorRema(),
+        runtime.dtComplex34Matrix => unitVectorCxma(),
+        else => unitVectorError(),
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnSdl(unused_but_mandatory_parameter: u16) callconv(.c) void {
