@@ -1502,6 +1502,35 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef fnFib
 #undef cosComplex
 
+#define FIRST_LOCAL_REGISTER REGISTER_X
+#define currentNumberOfLocalRegisters 1
+#define INC_FLAG 0
+#define DEC_FLAG 1
+#define fnDec oracle_fnDec
+#define fnInc oracle_fnInc
+#define incDecError oracle_incDecError
+#define incDecLonI oracle_incDecLonI
+#define incDecReal oracle_incDecReal
+#define incDecCplx oracle_incDecCplx
+#define incDecShoI oracle_incDecShoI
+void oracle_incDecError(uint16_t regist, uint8_t flag);
+void oracle_incDecLonI(uint16_t regist, uint8_t flag);
+void oracle_incDecReal(uint16_t regist, uint8_t flag);
+void oracle_incDecCplx(uint16_t regist, uint8_t flag);
+void oracle_incDecShoI(uint16_t regist, uint8_t flag);
+#include "../../../src/c47/mathematics/incDec.c"
+#undef incDecShoI
+#undef incDecCplx
+#undef incDecReal
+#undef incDecLonI
+#undef incDecError
+#undef fnInc
+#undef fnDec
+#undef DEC_FLAG
+#undef INC_FLAG
+#undef currentNumberOfLocalRegisters
+#undef FIRST_LOCAL_REGISTER
+
 #define fnPercentMRR oracle_fnPercentMRR
 #include "../../../src/c47/mathematics/percentMRR.c"
 #undef fnPercentMRR

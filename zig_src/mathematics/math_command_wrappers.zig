@@ -4703,11 +4703,21 @@ pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
 }
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter);
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X) {
+        z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter);
+        return;
+    }
+
+    incDecRegisterX(dec_flag);
 }
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter);
+    if (unused_but_mandatory_parameter != runtime.REGISTER_X) {
+        z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter);
+        return;
+    }
+
+    incDecRegisterX(inc_flag);
 }
 
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5929,6 +5939,88 @@ fn fibCplx() callconv(.c) void {
 
 fn fibLonIRetained() callconv(.c) void {
     z47_math_wrappers_retained_fnFib(0);
+}
+
+const inc_flag: u8 = 0;
+const dec_flag: u8 = 1;
+
+fn incDecError() void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.moreInfoOnError("In function incDecError:", "Cannot increment/decrement, incompatible type.", null, null);
+}
+
+fn incDecLonI(flag: u8) void {
+    var value: runtime.longInteger_t = undefined;
+
+    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+    defer runtime.__gmpz_clear(&value[0]);
+
+    if (flag == inc_flag) {
+        runtime.__gmpz_add_ui(&value[0], &value[0], 1);
+    } else {
+        runtime.__gmpz_sub_ui(&value[0], &value[0], 1);
+    }
+
+    runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
+}
+
+fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
+    return @as(*runtime.real34_t, @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?)));
+}
+
+fn incDecReal(flag: u8) void {
+    var value: runtime.real_t = undefined;
+
+    runtime.real34ToReal(real34DataPointer(runtime.REGISTER_X), &value);
+    if (flag == inc_flag) {
+        runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
+    } else {
+        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
+    }
+    runtime.realToReal34(&value, real34DataPointer(runtime.REGISTER_X));
+}
+
+fn incDecCplx(flag: u8) void {
+    var value: runtime.real_t = undefined;
+
+    runtime.real34ToReal(real34DataPointer(runtime.REGISTER_X), &value);
+    if (flag == inc_flag) {
+        runtime.realAdd(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
+    } else {
+        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_1(), &value, &runtime.ctxtReal39);
+    }
+    runtime.realToReal34(&value, real34DataPointer(runtime.REGISTER_X));
+}
+
+fn incDecShoI(flag: u8) void {
+    var sign: i16 = 0;
+    var value: u64 = 0;
+
+    runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
+    if (sign != 0) {
+        if (flag != inc_flag) {
+            value += 1;
+        } else {
+            value -= 1;
+        }
+    } else {
+        if (flag == inc_flag) {
+            value += 1;
+        } else {
+            value -= 1;
+        }
+    }
+    runtime.convertUInt64ToShortIntegerRegister(sign, value, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
+}
+
+fn incDecRegisterX(flag: u8) void {
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtLongInteger => incDecLonI(flag),
+        runtime.dtReal34 => incDecReal(flag),
+        runtime.dtComplex34 => incDecCplx(flag),
+        runtime.dtShortInteger => incDecShoI(flag),
+        else => incDecError(),
+    }
 }
 
 pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) void {
