@@ -524,7 +524,17 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
         return;
     }
 
-    runtime.retainedAllocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
+    var new_index: u16 = 0;
+    if (!runtime.appendNamedVariableHeader(&new_index)) {
+        runtime.reportRamFull();
+        return;
+    }
+
+    runtime.storeNamedVariableName(new_index, variable_name);
+
+    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(new_index));
+    setRegisterDataType(register, @intCast(data_type), runtime.amNone);
+    setRegisterDataPointer(register, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
 }
 
 pub export fn fnDeleteVariable(regist: u16) void {

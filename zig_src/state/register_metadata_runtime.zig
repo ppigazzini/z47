@@ -87,6 +87,7 @@ extern fn z47_register_metadata_user_menu_count() u32;
 extern fn z47_register_metadata_user_menu_name(index: u32) [*c]const u8;
 extern fn z47_register_metadata_named_variable_name(index: u16) [*c]const u8;
 extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
+extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
 extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
 extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
 extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
@@ -242,6 +243,10 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
 
 pub fn allocateFirstNamedVariableHeader() bool {
     return z47_register_metadata_allocate_first_named_variable_header();
+}
+
+pub fn appendNamedVariableHeader(index: *u16) bool {
+    return z47_register_metadata_append_named_variable_header(index);
 }
 
 pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {

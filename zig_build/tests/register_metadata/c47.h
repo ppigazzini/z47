@@ -101,6 +101,7 @@ uint32_t z47_register_metadata_user_menu_count(void);
 const char *z47_register_metadata_user_menu_name(uint32_t index);
 const char *z47_register_metadata_named_variable_name(uint16_t index);
 bool_t z47_register_metadata_allocate_first_named_variable_header(void);
+bool_t z47_register_metadata_append_named_variable_header(uint16_t *index);
 void z47_register_metadata_store_named_variable_name(uint16_t index, const char *variable_name);
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right);
 calcRegister_t z47_register_metadata_find_reserved_variable_name(const char *variable_name, uint8_t glyph_length);
