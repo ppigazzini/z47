@@ -1465,6 +1465,10 @@ void oracle_fnToRect(uint16_t angleInY) {
 #include "../../../src/c47/mathematics/deltaPercent.c"
 #undef fnDeltaPercent
 
+#define fnLogXY oracle_fnLogXY
+#include "../../../src/c47/mathematics/logxy.c"
+#undef fnLogXY
+
 void oracle_unitVectorError(void);
 void oracle_unitVectorCplx(void);
 void oracle_unitVectorRema(void);

@@ -103,6 +103,7 @@ void fnPercentMRR(uint16_t unusedButMandatoryParameter);
 void fnPercentPlusMG(uint16_t unusedButMandatoryParameter);
 void fnPercentT(uint16_t unusedButMandatoryParameter);
 void fnDeltaPercent(uint16_t unusedButMandatoryParameter);
+void fnLogXY(uint16_t unusedButMandatoryParameter);
 void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
@@ -201,6 +202,7 @@ void oracle_fnPercentMRR(uint16_t unusedButMandatoryParameter);
 void oracle_fnPercentPlusMG(uint16_t unusedButMandatoryParameter);
 void oracle_fnPercentT(uint16_t unusedButMandatoryParameter);
 void oracle_fnDeltaPercent(uint16_t unusedButMandatoryParameter);
+void oracle_fnLogXY(uint16_t unusedButMandatoryParameter);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
@@ -1155,6 +1157,42 @@ static void configureDeltaPercentSpcRes(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
   mathWrappersSetRealInput(true, 5, 0);
+  mathWrappersSetRealYInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureLogXYReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 8, 0);
+  mathWrappersSetRealYInput(true, 2, 0);
+}
+
+static void configureLogXYComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configureLogXYShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(8);
+  mathWrappersSetShortIntegerYInput(2);
+}
+
+static void configureLogXYLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 8);
+  mathWrappersSetLongIntegerYInput(true, 2);
+}
+
+static void configureLogXYSpcResZeroZero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0);
   mathWrappersSetRealYInput(true, 0, 0);
   mathWrappersSetFlagSpcRes(true);
 }
@@ -2800,6 +2838,11 @@ int main(void) {
   failures += runCase("fnPercentT/spcres", oracle_fnPercentT, fnPercentT, 0, true, configurePercentTSpcRes);
   failures += runCase("fnDeltaPercent/real", oracle_fnDeltaPercent, fnDeltaPercent, 0, true, configureDeltaPercentReal);
   failures += runCase("fnDeltaPercent/spcres", oracle_fnDeltaPercent, fnDeltaPercent, 0, true, configureDeltaPercentSpcRes);
+  failures += runCase("fnLogXY/real", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYReal);
+  failures += runCase("fnLogXY/complex", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYComplex);
+  failures += runCase("fnLogXY/shortint", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYShortInteger);
+  failures += runCase("fnLogXY/longint", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYLongInteger);
+  failures += runCase("fnLogXY/spcres_zero_zero", oracle_fnLogXY, fnLogXY, 0, true, configureLogXYSpcResZeroZero);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);

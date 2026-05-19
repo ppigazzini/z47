@@ -288,6 +288,7 @@ extern uint64_t systemFlags1;
 #define realCompareLessEqual(number1, number2) (!realCompareLessThan((number2), (number1)))
 #define realCompareGreaterThan(number1, number2) realCompareLessThan((number2), (number1))
 #define WP34S_BigMod(x, y, res, real_context) WP34S_Mod((x), (y), (res), (real_context))
+#define EXTRA_INFO_MESSAGE(function, msg) do { moreInfoOnError((function), (msg), NULL, NULL); } while(0)
 #define real34Copy(source, destination) (*(destination) = *(source))
 #define real34SetZero(destination) memset((destination), 0, sizeof(real34_t))
 #define setRegisterLongIntegerSign(reg, sign) setRegisterTag((reg), (sign))
