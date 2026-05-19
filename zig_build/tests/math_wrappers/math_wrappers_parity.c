@@ -939,6 +939,11 @@ static void configureMantReal(void) {
   mathWrappersSetRealInput(true, 456, 0);
 }
 
+static void configureMantInvalidType(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtTime, amNone);
+}
+
 static void configureMantRealNaN(void) {
   configureMantReal();
   mathWrappersSetRealInput(true, 0, 0x20);
@@ -2544,6 +2549,7 @@ int main(void) {
   failures += runCase("fnMant/real", oracle_fnMant, fnMant, 0, true, configureMantReal);
   failures += runCase("fnMant/real_nan", oracle_fnMant, fnMant, 0, true, configureMantRealNaN);
   failures += runCase("fnMant/longint", oracle_fnMant, fnMant, 0, true, configureMantLongInteger);
+  failures += runCase("fnMant/invalid_type", oracle_fnMant, fnMant, 0, true, configureMantInvalidType);
   failures += runCase("fnRoundi/real", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiReal);
   failures += runCase("fnRoundi/real_nan", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealNaN);
   failures += runCase("fnRoundi/real_inf", oracle_fnRoundi, fnRoundi, 0, true, configureRoundiRealInfinity);
