@@ -37,9 +37,11 @@ pub const dtReal34: u32 = 1;
 pub const dtComplex34: u32 = 2;
 pub const dtTime: u32 = 3;
 pub const dtDate: u32 = 4;
+pub const dtString: u32 = 5;
 pub const dtReal34Matrix: u32 = 6;
 pub const dtComplex34Matrix: u32 = 7;
 pub const dtShortInteger: u32 = 8;
+pub const dtConfig: u32 = 9;
 
 pub const LI_ZERO: u32 = 0;
 pub const LI_NEGATIVE: u32 = 1;
@@ -69,6 +71,7 @@ pub const SIM_1COMPL: u8 = 1;
 pub const SIM_2COMPL: u8 = 2;
 pub const SIM_SIGNMT: u8 = 3;
 pub const TI_FALSE: u8 = 12;
+pub const TI_REGTYPE: u8 = 123;
 pub const TI_VECTOR: u8 = 127;
 
 pub const DECNEG: u8 = 0x80;
@@ -584,6 +587,10 @@ pub fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
 
 pub fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
+}
+
+pub fn getComplexRegisterPolarMode(reg: calcRegister_t) angularMode_t {
+    return @intCast(getRegisterTag(reg) & @as(u32, @intCast(amPolar)));
 }
 
 pub fn setComplexRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {

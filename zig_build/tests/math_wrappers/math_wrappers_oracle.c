@@ -817,6 +817,92 @@ void oracle_fnCheckIsVect3d(uint16_t unusedButMandatoryParameter) {
 	}
 }
 
+static void oracle_pushGetTypeIntegerOut(uint32_t value) {
+	longInteger_t lgInt;
+
+	longIntegerInit(lgInt);
+	uInt32ToLongInteger(value, lgInt);
+	setSystemFlag(FLAG_ASLIFT);
+	liftStack();
+	convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+	longIntegerFree(lgInt);
+	setSystemFlag(FLAG_ASLIFT);
+}
+
+static void oracle_pushGetTypeRealOut(uint32_t value) {
+	real_t realOut;
+	real_t scale;
+
+	uInt32ToReal(value, &realOut);
+	uInt32ToReal(1000, &scale);
+	realDivide(&realOut, &scale, &realOut, &ctxtReal39);
+	setSystemFlag(FLAG_ASLIFT);
+	liftStack();
+	reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+	convertRealToReal34ResultRegister(&realOut, REGISTER_X);
+	setSystemFlag(FLAG_ASLIFT);
+}
+
+void oracle_fnGetType(uint16_t unusedButMandatoryParameter) {
+	const uint32_t dtp = getRegisterDataType(REGISTER_X);
+	const uint32_t dam = getRegisterAngularMode(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+
+	switch(dtp) {
+		case dtLongInteger:
+		case dtTime:
+		case dtDate:
+		case dtString:
+		case dtReal34Matrix:
+		case dtConfig: {
+			if(isRegisterMatrixVector(REGISTER_X)) {
+				const uint32_t angle = 5 - (dam & 0x07);
+				const uint32_t isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+				const uint32_t isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+				const uint32_t T = isCol ? 2 : isRow ? 1 : 0;
+				const uint32_t polRec = isRegisterMatrix2dVector(REGISTER_X) ? 2 : (isRegisterMatrix3dVector(REGISTER_X) ? ((getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL) ? 4 : 3) : 0);
+				oracle_pushGetTypeRealOut(dtp * 1000 + 100 * angle + 10 * polRec + T);
+			}
+			else if(dtp == dtReal34Matrix) {
+				const uint32_t isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+				const uint32_t isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+				if(isCol || isRow) {
+					oracle_pushGetTypeRealOut(dtp * 1000 + (isCol ? 2 : 1));
+				}
+				else {
+					oracle_pushGetTypeIntegerOut(dtp);
+				}
+			}
+			else {
+				oracle_pushGetTypeIntegerOut(dtp);
+			}
+			break;
+		}
+		case dtComplex34Matrix: {
+			const uint32_t isPolar = getComplexRegisterPolarMode(REGISTER_X) != 0;
+			const uint32_t angle = isPolar ? (5 - (dam & 0x07)) : 0;
+			const uint32_t isCol = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows > 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == 1;
+			const uint32_t isRow = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == 1 && REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns > 1;
+			const uint32_t T = isCol ? 2 : isRow ? 1 : 0;
+			const uint32_t polRec = isPolar ? 1 : 0;
+			oracle_pushGetTypeRealOut(dtp * 1000 + 100 * angle + 10 * polRec + T);
+			break;
+		}
+		case dtShortInteger:
+		case dtReal34:
+		case dtComplex34: {
+			const uint32_t value = dtp == dtShortInteger ? 10 * (dtp * 100 + (dam & 0x1f)) : 100 * (dtp * 10 + 5 - (dam & 0x07));
+			oracle_pushGetTypeRealOut(value);
+			break;
+		}
+		default:
+			break;
+	}
+
+	temporaryInformation = TI_REGTYPE;
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
