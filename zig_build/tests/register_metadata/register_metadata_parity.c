@@ -76,6 +76,7 @@ static const char validate_name_cross_after_first[] = "A" "\x80\xd7";
 static const char validate_name_too_long[] = "ABCDEFGH";
 static const char find_named_variable_hit[] = "ALPHA";
 static const char find_named_variable_miss[] = "GAMMA";
+static const char find_or_allocate_named_variable_first_alloc[] = "DELTA";
 static const char allocate_named_variable_empty[] = "";
 static const char allocate_named_variable_too_long[] = "ABCDEFGH";
 static const char allocate_named_variable_reserved_acc[] = "ACC";
@@ -738,6 +739,7 @@ int main(void) {
   failures += runFindNamedVariableCase("findNamedVariable", "too-long", oracle_findNamedVariable, findNamedVariable, setupNoOpCase, allocate_named_variable_too_long);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "reserved-acc", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, allocate_named_variable_reserved_acc);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "named-hit", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupFindNamedVariableHitCase, find_named_variable_hit);
+  failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "first-alloc", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, find_or_allocate_named_variable_first_alloc);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "too-long", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupNoOpCase, allocate_named_variable_too_long);
   failures += runFindNamedVariableCase("findOrAllocateNamedVariable", "full-miss", oracle_findOrAllocateNamedVariable, findOrAllocateNamedVariable, setupFindOrAllocateNamedVariableFullCase, find_named_variable_miss);
   failures += runAllocateNamedVariableCase("allocateNamedVariable", "empty", oracle_allocateNamedVariable, allocateNamedVariable, setupNoOpCase, allocate_named_variable_empty, dtReal34, REAL34_SIZE_IN_BLOCKS);
