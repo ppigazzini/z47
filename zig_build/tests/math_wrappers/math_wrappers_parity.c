@@ -70,6 +70,7 @@ void fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void fnCheckSpecial(uint16_t unusedButMandatoryParameter);
 void fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
+void fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
 void fnRealPart(uint16_t unusedButMandatoryParameter);
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void fnArg(uint16_t unusedButMandatoryParameter);
@@ -149,6 +150,7 @@ void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnArg(uint16_t unusedButMandatoryParameter);
@@ -887,6 +889,42 @@ static void configureCheckComplexNegativeZero(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetRealInput(false, 0, 0);
   mathWrappersSetComplexInput(true, 0, 0x80, 0, 0x80);
+}
+
+static void configureCheckMatrixSquareRealSquare(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckMatrixSquareRealNonsquare(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 1);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+}
+
+static void configureCheckMatrixSquareComplexSquare(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
+}
+
+static void configureCheckMatrixSquareComplexNonsquare(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 1);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
 }
 
 static void configureFactorialShortInteger(void) {
@@ -1815,6 +1853,10 @@ int main(void) {
   failures += runCase("fnCheckMinusZero/real_true", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckRealNegativeZero);
   failures += runCase("fnCheckMinusZero/complex_false", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckComplexPositiveZero);
   failures += runCase("fnCheckMinusZero/complex_true", oracle_fnCheckMinusZero, fnCheckMinusZero, 0, true, configureCheckComplexNegativeZero);
+  failures += runCase("fnCheckMatrixSquare/real_true", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareRealSquare);
+  failures += runCase("fnCheckMatrixSquare/real_false", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareRealNonsquare);
+  failures += runCase("fnCheckMatrixSquare/complex_true", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareComplexSquare);
+  failures += runCase("fnCheckMatrixSquare/complex_false", oracle_fnCheckMatrixSquare, fnCheckMatrixSquare, 0, true, configureCheckMatrixSquareComplexNonsquare);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);

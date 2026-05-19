@@ -4064,6 +4064,14 @@ pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+        const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
+        runtime.setTemporaryInformation(header.matrixRows == header.matrixColumns);
+        return;
+    }
+
     z47_math_wrappers_retained_fnCheckMatrixSquare(unused_but_mandatory_parameter);
 }
 

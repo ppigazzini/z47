@@ -538,6 +538,17 @@ void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + check;
 }
 
+void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter) {
+	const uint32_t t = getRegisterDataType(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+
+	if(t == 6 || t == 7) {
+		const matrixHeader_t *header = (const matrixHeader_t *)getRegisterDataPointer(REGISTER_X);
+		temporaryInformation = 12 + (header->matrixRows == header->matrixColumns);
+	}
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
