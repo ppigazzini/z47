@@ -99,6 +99,10 @@ void fnToRect(uint16_t unusedButMandatoryParameter);
 void fnParallel(uint16_t unusedButMandatoryParameter);
 void fnCross(uint16_t unusedButMandatoryParameter);
 void fnDot(uint16_t unusedButMandatoryParameter);
+void fnPercentMRR(uint16_t unusedButMandatoryParameter);
+void fnPercentPlusMG(uint16_t unusedButMandatoryParameter);
+void fnPercentT(uint16_t unusedButMandatoryParameter);
+void fnDeltaPercent(uint16_t unusedButMandatoryParameter);
 void fnUnitVector(uint16_t unusedButMandatoryParameter);
 void fnSdl(uint16_t unusedButMandatoryParameter);
 void fnSdr(uint16_t unusedButMandatoryParameter);
@@ -193,6 +197,10 @@ void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
 void oracle_fnParallel(uint16_t unusedButMandatoryParameter);
 void oracle_fnCross(uint16_t unusedButMandatoryParameter);
 void oracle_fnDot(uint16_t unusedButMandatoryParameter);
+void oracle_fnPercentMRR(uint16_t unusedButMandatoryParameter);
+void oracle_fnPercentPlusMG(uint16_t unusedButMandatoryParameter);
+void oracle_fnPercentT(uint16_t unusedButMandatoryParameter);
+void oracle_fnDeltaPercent(uint16_t unusedButMandatoryParameter);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdl(uint16_t unusedButMandatoryParameter);
 void oracle_fnSdr(uint16_t unusedButMandatoryParameter);
@@ -1087,6 +1095,68 @@ static void configureDotComplex(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configurePercentMRRReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 8, 0);
+  mathWrappersSetRealYInput(true, 2, 0);
+  mathWrappersSetRealZInput(true, 100, 0);
+}
+
+static void configurePercentMRRSpcResZeroZero(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0);
+  mathWrappersSetRealYInput(true, 0, 0);
+  mathWrappersSetRealZInput(true, 100, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configurePercentPlusMGReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 20, 0);
+  mathWrappersSetRealYInput(true, 50, 0);
+}
+
+static void configurePercentPlusMGSpcRes(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 100, 0);
+  mathWrappersSetRealYInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configurePercentTReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 5, 0);
+  mathWrappersSetRealYInput(true, 20, 0);
+}
+
+static void configurePercentTSpcRes(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 5, 0);
+  mathWrappersSetRealYInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
+}
+
+static void configureDeltaPercentReal(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 15, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+}
+
+static void configureDeltaPercentSpcRes(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 5, 0);
+  mathWrappersSetRealYInput(true, 0, 0);
+  mathWrappersSetFlagSpcRes(true);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -2722,6 +2792,14 @@ int main(void) {
   failures += runCase("fnCross/complex", oracle_fnCross, fnCross, 0, true, configureCrossComplex);
   failures += runCase("fnDot/real", oracle_fnDot, fnDot, 0, true, configureDotReal);
   failures += runCase("fnDot/complex", oracle_fnDot, fnDot, 0, true, configureDotComplex);
+  failures += runCase("fnPercentMRR/real", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRReal);
+  failures += runCase("fnPercentMRR/spcres_zero_zero", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRSpcResZeroZero);
+  failures += runCase("fnPercentPlusMG/real", oracle_fnPercentPlusMG, fnPercentPlusMG, 0, true, configurePercentPlusMGReal);
+  failures += runCase("fnPercentPlusMG/spcres", oracle_fnPercentPlusMG, fnPercentPlusMG, 0, true, configurePercentPlusMGSpcRes);
+  failures += runCase("fnPercentT/real", oracle_fnPercentT, fnPercentT, 0, true, configurePercentTReal);
+  failures += runCase("fnPercentT/spcres", oracle_fnPercentT, fnPercentT, 0, true, configurePercentTSpcRes);
+  failures += runCase("fnDeltaPercent/real", oracle_fnDeltaPercent, fnDeltaPercent, 0, true, configureDeltaPercentReal);
+  failures += runCase("fnDeltaPercent/spcres", oracle_fnDeltaPercent, fnDeltaPercent, 0, true, configureDeltaPercentSpcRes);
   failures += runCase("fnSdl/real", oracle_fnSdl, fnSdl, 2, true, configureSdlReal);
   failures += runCase("fnSdl/longint", oracle_fnSdl, fnSdl, 2, true, configureSdlLongInteger);
   failures += runCase("fnSdl/invalid_type", oracle_fnSdl, fnSdl, 2, true, configureSdlInvalidType);
