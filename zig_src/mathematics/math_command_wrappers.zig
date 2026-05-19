@@ -2932,7 +2932,9 @@ fn tryFnToPolar2Real34Pair() bool {
 
 fn tryFnToRect2Real34Pair() bool {
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34 or runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
-        return false;
+        runtime.setComplexRegisterPolarMode(runtime.REGISTER_X, runtime.amNone);
+        runtime.setComplexRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
+        return true;
     }
 
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
