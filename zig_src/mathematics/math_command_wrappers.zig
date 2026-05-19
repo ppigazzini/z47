@@ -1927,6 +1927,48 @@ fn factCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
 }
 
+fn factShoI() callconv(.c) void {
+    var sign: i16 = 0;
+    var value: u64 = 0;
+
+    runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
+
+    if (sign == 1) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function factShoI:", "cannot calculate factorial(short integer)", null, null);
+        return;
+    }
+
+    if (value > 20) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError("In function factShoI:", "cannot calculate factorial(short integer)", null, null);
+        return;
+    }
+
+    var result: u64 = 1;
+    var remaining = value;
+
+    if (remaining > 1) {
+        var multiplier = remaining;
+        if ((remaining & 1) != 0) {
+            multiplier += remaining;
+            remaining -= 1;
+        }
+        result = multiplier;
+        remaining -= 2;
+        while (remaining > 0) : (remaining -= 2) {
+            multiplier += remaining;
+            result *= multiplier;
+        }
+    }
+
+    if (result > runtime.shortIntegerMask) {
+        runtime.setSystemFlag(runtime.FLAG_OVERFLOW);
+    }
+
+    runtime.convertUInt64ToShortIntegerRegister(0, result, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
+}
+
 pub export fn integerPartNoOp() callconv(.c) void {}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
@@ -3263,7 +3305,7 @@ pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &runtime.z47_math_wrappers_fact_short_integer, &runtime.z47_math_wrappers_fact_long_integer);
+    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &factShoI, &runtime.z47_math_wrappers_fact_long_integer);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {

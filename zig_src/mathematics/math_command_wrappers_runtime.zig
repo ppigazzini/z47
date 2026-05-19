@@ -46,6 +46,7 @@ pub const ifLongIntegerDoAngleReduction = true;
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 2;
+pub const ERROR_OUT_OF_RANGE: u8 = 3;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
 
@@ -126,6 +127,7 @@ pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u6
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
+pub extern fn convertShortIntegerRegisterToUInt64(reg: calcRegister_t, sign: ?*i16, value: ?*u64) void;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;
