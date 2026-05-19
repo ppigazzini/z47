@@ -4027,7 +4027,10 @@ pub export fn fnCheckType(type_: u16) callconv(.c) void {
 }
 
 pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckReal(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    runtime.setTemporaryInformation(register_data_type <= runtime.dtDate or register_data_type == runtime.dtShortInteger);
 }
 
 pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) void {

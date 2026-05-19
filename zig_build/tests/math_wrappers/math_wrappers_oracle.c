@@ -355,6 +355,13 @@ void oracle_fnCheckType(uint16_t type) {
 	temporaryInformation = 12 + (getRegisterDataType(REGISTER_X) == type);
 }
 
+void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter) {
+	const uint32_t t = getRegisterDataType(REGISTER_X);
+
+	(void)unusedButMandatoryParameter;
+	temporaryInformation = 12 + (t <= 4 || t == 8);
+}
+
 #define fnRealPart oracle_fnRealPart
 #include "../../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
