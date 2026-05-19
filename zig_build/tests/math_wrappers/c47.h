@@ -90,6 +90,7 @@ enum {
   amRadian = 0,
   amDegree = 2,
   amNone = 5,
+  amPolar = 16,
   amAngleMask = 15,
 };
 
@@ -536,6 +537,9 @@ uint32_t decQuadIsNegative(const decQuad *dq);
 #define REGISTER_IMAG34_DATA(a) ((real34_t *)((uint8_t *)(getRegisterDataPointer(a)) + sizeof(real34_t)))
 #define REGISTER_COMPLEX34_DATA(a) ((complex34_t *)(getRegisterDataPointer(a)))
 #define getRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
+#define getComplexRegisterAngularMode(reg) (getRegisterTag(reg) & amAngleMask)
+#define setComplexRegisterAngularMode(reg, am) setRegisterTag((reg), ((am) & amAngleMask) | (getRegisterTag(reg) & amPolar))
+#define setComplexRegisterPolarMode(reg, pm) setRegisterTag((reg), ((((pm) & amPolar) != 0) ? (getRegisterTag(reg) & amAngleMask) : amNone) | ((pm) & amPolar))
 #define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
 #define getRegisterShortIntegerBase(reg) getRegisterTag(reg)
 

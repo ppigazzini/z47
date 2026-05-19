@@ -16,6 +16,7 @@ pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 pub const amRadian: angularMode_t = 0;
 pub const amDegree: angularMode_t = 2;
 pub const amNone: angularMode_t = 5;
+pub const amPolar: angularMode_t = 16;
 pub const amAngleMask: u32 = 15;
 
 pub const DEC_ROUND_CEILING: rounding_t = 0;
@@ -415,6 +416,25 @@ pub fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 
 pub fn setRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
     setRegisterTag(reg, @intCast(mode));
+}
+
+pub fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
+    return @intCast(getRegisterTag(reg) & amAngleMask);
+}
+
+pub fn setComplexRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) void {
+    setRegisterTag(reg, (@as(u32, @intCast(mode)) & amAngleMask) | (getRegisterTag(reg) & @as(u32, @intCast(amPolar))));
+}
+
+pub fn setComplexRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) void {
+    const polar_mask: u32 = @intCast(amPolar);
+    const mode_bits: u32 = @intCast(mode);
+    const base_tag = if ((mode_bits & polar_mask) != 0)
+        getRegisterTag(reg) & amAngleMask
+    else
+        @as(u32, @intCast(amNone));
+
+    setRegisterTag(reg, base_tag | (mode_bits & polar_mask));
 }
 
 pub fn setTemporaryInformation(condition: bool) void {
