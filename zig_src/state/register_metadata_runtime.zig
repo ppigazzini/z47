@@ -100,7 +100,6 @@ extern fn z47_registers_retained_allocateNamedVariable(variable_name: [*c]const 
 extern fn z47_registers_retained_fnDeleteVariable(regist: u16) void;
 extern fn z47_registers_retained_fnDeleteAllVariables(confirmation: u16) void;
 extern fn z47_registers_retained_fnClearAllVariables(confirmation: u16) void;
-extern fn z47_registers_retained_findOrAllocateNamedVariable(variable_name: [*c]const u8) calcRegister_t;
 extern fn z47_registers_retained_copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void;
@@ -292,10 +291,6 @@ pub fn retainedFnDeleteAllVariables(confirmation: u16) void {
 
 pub fn retainedFnClearAllVariables(confirmation: u16) void {
     z47_registers_retained_fnClearAllVariables(confirmation);
-}
-
-pub fn retainedFindOrAllocateNamedVariable(variable_name: [*c]const u8) calcRegister_t {
-    return z47_registers_retained_findOrAllocateNamedVariable(variable_name);
 }
 
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
