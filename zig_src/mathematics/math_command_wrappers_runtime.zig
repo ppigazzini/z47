@@ -174,6 +174,7 @@ pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode
 pub extern fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
+pub extern fn C47_WP34S_Atan2(y: *const real_t, x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_SinhCosh(x: *const real_t, sin_out: ?*real_t, cos_out: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcSinh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcTanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
@@ -388,6 +389,7 @@ pub extern fn z47_math_wrappers_report_ln_p1_real_zero_domain_error() void;
 pub extern fn z47_math_wrappers_report_ln_p1_real_infinite_domain_error() void;
 pub extern fn z47_math_wrappers_report_ln_p1_real_negative_domain_error() void;
 pub extern fn z47_math_wrappers_report_ln_p1_cplx_zero_domain_error() void;
+pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
 pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
 pub extern fn z47_math_wrappers_do_int_random_i() void;
 
