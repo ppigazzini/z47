@@ -901,7 +901,11 @@ pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, t
             _ = runtime.trySetNamedDescriptor(reg, withDataTypeTag(descriptor, data_type, tag));
             return;
         }
-        runtime.retainedSetRegisterDataType(reg, data_type, tag);
+
+        if (runtime.numberOfNamedVariables == 0) {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        }
+
         return;
     }
 
@@ -919,9 +923,11 @@ pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, t
             _ = runtime.trySetLocalDescriptor(reg, withDataTypeTag(descriptor, data_type, tag));
             return;
         }
+
+        return;
     }
 
-    runtime.retainedSetRegisterDataType(reg, data_type, tag);
+    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
 }
 
 pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyopaque) void {
