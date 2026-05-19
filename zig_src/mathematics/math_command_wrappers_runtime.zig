@@ -198,6 +198,8 @@ pub extern fn WP34S_Erfc(x: *const real_t, res: *real_t, real_context: *realCont
 pub extern fn WP34S_Bernoulli(x: *const real_t, res: *real_t, bnstar: bool, real_context: *realContext_t) void;
 pub extern fn WP34S_InverseW(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_InverseComplexW(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_LambertW(x: *const real_t, res: *real_t, negative_branch: bool, real_context: *realContext_t) void;
+pub extern fn WP34S_ComplexLambertW(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
@@ -371,6 +373,7 @@ pub const retained = struct {
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_90() *const real_t;
 pub extern fn z47_math_wrappers_const_180() *const real_t;
+pub extern fn z47_math_wrappers_const_1oneE() *const real_t;
 pub extern fn z47_math_wrappers_const_ln2() *const real_t;
 pub extern fn z47_math_wrappers_const_ln10() *const real_t;
 pub extern fn z47_math_wrappers_const_pi() *const real_t;
