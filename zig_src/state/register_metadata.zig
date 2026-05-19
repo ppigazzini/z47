@@ -581,6 +581,10 @@ pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.c
         return register;
     }
 
+    if (runtime.numberOfNamedVariables > (runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE)) {
+        return runtime.INVALID_VARIABLE;
+    }
+
     return runtime.retainedFindOrAllocateNamedVariable(variable_name);
 }
 

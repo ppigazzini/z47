@@ -245,7 +245,7 @@ calcRegister_t oracle_findNamedVariable(const char *variableName) {
     }
   }
 
-  for(uint16_t i = 0; i < numberOfNamedVariables; ++i) {
+  for(uint16_t i = 0; i < numberOfNamedVariables && i < MAX_FAKE_NAMED_VARIABLES; ++i) {
     if(compareString((const char *)(allNamedVariables[i].variableName + 1), variableName, CMP_NAME) == 0) {
       return (calcRegister_t)(FIRST_NAMED_VARIABLE + i);
     }
@@ -261,7 +261,19 @@ calcRegister_t oracle_findOrAllocateNamedVariable(const char *variableName) {
     return INVALID_VARIABLE;
   }
 
-  return oracle_findNamedVariable(variableName);
+  {
+    calcRegister_t regist = oracle_findNamedVariable(variableName);
+    if(regist != INVALID_VARIABLE) {
+      return regist;
+    }
+  }
+
+  if(numberOfNamedVariables > (LAST_NAMED_VARIABLE - FIRST_NAMED_VARIABLE)) {
+    return INVALID_VARIABLE;
+  }
+
+  displayBugScreen("oracle_findOrAllocateNamedVariable called with an unsupported alloc case");
+  return INVALID_VARIABLE;
 }
 
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {

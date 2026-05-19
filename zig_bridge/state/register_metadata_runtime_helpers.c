@@ -191,6 +191,12 @@ const char *z47_register_metadata_user_menu_name(uint32_t index) {
 }
 
 const char *z47_register_metadata_named_variable_name(uint16_t index) {
+#ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(index >= MAX_FAKE_NAMED_VARIABLES) {
+    return "";
+  }
+#endif
+
   if(index >= numberOfNamedVariables) {
     return "";
   }
