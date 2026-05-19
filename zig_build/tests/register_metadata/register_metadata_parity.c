@@ -856,8 +856,12 @@ int main(void) {
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalRealMatrixCase, REGISTER_X);
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupGlobalComplexMatrixCase, REGISTER_X);
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupNamedStringCase, FIRST_NAMED_VARIABLE + 2);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupNoOpCase, FIRST_NAMED_VARIABLE);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupNamedCase, FIRST_NAMED_VARIABLE + 20);
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupReservedLongIntegerCase, FIRST_RESERVED_VARIABLE + 40);
   failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupLocalLongIntegerCase, FIRST_LOCAL_REGISTER + 1);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupLocalCase, FIRST_LOCAL_REGISTER + 20);
+  failures += runGetU16Case("getRegisterFullSizeInBlocks", oracle_getRegisterFullSizeInBlocks, getRegisterFullSizeInBlocks, setupNoOpCase, LAST_LOCAL_REGISTER + 1);
 
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupGlobalCase, REGISTER_X, dtReal34, amNone);
   failures += runSetTypeCase("setRegisterDataType", oracle_setRegisterDataType, setRegisterDataType, setupNamedCase, FIRST_NAMED_VARIABLE + 2, dtLongInteger, LI_POSITIVE);
