@@ -1431,6 +1431,18 @@ void oracle_fnToRect(uint16_t angleInY) {
 	}
 }
 
+#define fnParallel oracle_fnParallel
+#include "../../../src/c47/mathematics/parallel.c"
+#undef fnParallel
+
+#define fnCross oracle_fnCross
+#include "../../../src/c47/mathematics/cross.c"
+#undef fnCross
+
+#define fnDot oracle_fnDot
+#include "../../../src/c47/mathematics/dot.c"
+#undef fnDot
+
 #define fnSdl oracle_fnSdl
 #define fnSdr oracle_fnSdr
 #include "../../../src/c47/mathematics/shiftDigits.c"

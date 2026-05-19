@@ -32,6 +32,7 @@ typedef struct {
   calcRegister_t adjust_result_op3;
 
   uint32_t process_real_complex_monadic_calls;
+  uint32_t process_real_complex_dyadic_calls;
   uint32_t process_int_real_complex_monadic_calls;
   uint32_t process_int_real_complex_dyadic_calls;
 

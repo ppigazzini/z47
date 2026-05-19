@@ -5427,8 +5427,52 @@ pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = tryFnToRectReal34Pair(angle_in_y);
 }
 
+fn doParallelReal() callconv(.c) void {
+    var y_value: runtime.real_t = undefined;
+    var x_value: runtime.real_t = undefined;
+    var product: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+        return;
+    }
+
+    if (!runtime.realIsZero(&x_value)) {
+        runtime.realMultiply(&y_value, &x_value, &product, &runtime.ctxtReal75);
+        runtime.realAdd(&y_value, &x_value, &y_value, &runtime.ctxtReal75);
+        runtime.realDivide(&product, &y_value, &x_value, &runtime.ctxtReal75);
+    }
+
+    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn doParallelComplex() callconv(.c) void {
+    var y_real: runtime.real_t = undefined;
+    var x_real: runtime.real_t = undefined;
+    var product_real: runtime.real_t = undefined;
+    var sum_real: runtime.real_t = undefined;
+    var y_imag: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+    var product_imag: runtime.real_t = undefined;
+    var sum_imag: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag) or !runtime.getRegisterAsComplex(runtime.REGISTER_Y, &y_real, &y_imag)) {
+        return;
+    }
+
+    if (!runtime.realIsZero(&x_real) or !runtime.realIsZero(&x_imag)) {
+        runtime.mulComplexComplex(&y_real, &y_imag, &x_real, &x_imag, &product_real, &product_imag, &runtime.ctxtReal75);
+        runtime.realAdd(&y_real, &x_real, &sum_real, &runtime.ctxtReal75);
+        runtime.realAdd(&y_imag, &x_imag, &sum_imag, &runtime.ctxtReal75);
+        runtime.divComplexComplex(&product_real, &product_imag, &sum_real, &sum_imag, &x_real, &x_imag, &runtime.ctxtReal75);
+    }
+
+    runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
+}
+
 pub export fn fnParallel(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnParallel(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    runtime.processRealComplexDyadicFunction(&doParallelReal, &doParallelComplex);
 }
 
 fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) void {
@@ -5647,12 +5691,95 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     z47_math_wrappers_retained_fnLINPOL(unused_but_mandatory_parameter);
 }
 
+fn crossReal() callconv(.c) void {
+    runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
+}
+
+fn crossCplx() callconv(.c) void {
+    var x_real: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+    var y_real: runtime.real_t = undefined;
+    var y_imag: runtime.real_t = undefined;
+    var result_real: runtime.real_t = undefined;
+    var temp: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag) or !runtime.getRegisterAsComplex(runtime.REGISTER_Y, &y_real, &y_imag)) {
+        return;
+    }
+
+    runtime.realMultiply(&x_real, &y_imag, &temp, &runtime.ctxtReal75);
+    runtime.realChangeSign(&temp);
+    runtime.realFMA(&y_real, &x_imag, &temp, &result_real, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&result_real, runtime.REGISTER_X, runtime.amNone);
+}
+
 pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCross(unused_but_mandatory_parameter);
+    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+
+    _ = unused_but_mandatory_parameter;
+
+    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
+        z47_math_wrappers_retained_fnCross(0);
+        return;
+    }
+
+    runtime.processRealComplexDyadicFunction(&crossReal, &crossCplx);
+}
+
+fn dotCplx(
+    x_real: *const runtime.real_t,
+    x_imag: *const runtime.real_t,
+    y_real: *const runtime.real_t,
+    y_imag: *const runtime.real_t,
+    result_real: *runtime.real_t,
+) void {
+    var product: runtime.real_t = undefined;
+    var temp: runtime.real_t = undefined;
+
+    runtime.realMultiply(x_real, y_real, &product, &runtime.ctxtReal39);
+    runtime.realFMA(x_imag, y_imag, &product, &temp, &runtime.ctxtReal39);
+    runtime.realChangeSign(&product);
+    runtime.realFMA(x_real, y_real, &product, result_real, &runtime.ctxtReal39);
+    runtime.realAdd(result_real, &temp, result_real, &runtime.ctxtReal39);
+}
+
+fn doDotReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+    var y_value: runtime.real_t = undefined;
+    var result: runtime.real_t = undefined;
+
+    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+        runtime.realMultiply(&x_value, &y_value, &result, &runtime.ctxtReal39);
+        runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
+    }
+}
+
+fn doDotCplx() callconv(.c) void {
+    var x_real: runtime.real_t = undefined;
+    var x_imag: runtime.real_t = undefined;
+    var y_real: runtime.real_t = undefined;
+    var y_imag: runtime.real_t = undefined;
+    var result_real: runtime.real_t = undefined;
+
+    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag) and runtime.getRegisterAsComplex(runtime.REGISTER_Y, &y_real, &y_imag)) {
+        dotCplx(&x_real, &x_imag, &y_real, &y_imag, &result_real);
+        runtime.convertRealToResultRegister(&result_real, runtime.REGISTER_X, runtime.amNone);
+    }
 }
 
 pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnDot(unused_but_mandatory_parameter);
+    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+
+    _ = unused_but_mandatory_parameter;
+
+    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
+        z47_math_wrappers_retained_fnDot(0);
+        return;
+    }
+
+    runtime.processRealComplexDyadicFunction(&doDotReal, &doDotCplx);
 }
 
 pub export fn fnLogXY(unused_but_mandatory_parameter: u16) callconv(.c) void {
