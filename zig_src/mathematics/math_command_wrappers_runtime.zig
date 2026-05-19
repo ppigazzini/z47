@@ -96,6 +96,7 @@ pub extern var currentAngularMode: angularMode_t;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
 pub extern var temporaryInformation: u8;
+pub extern var lastErrorCode: u8;
 
 pub extern fn saveLastX() bool;
 pub extern fn saveForUndo() void;
@@ -167,6 +168,7 @@ pub extern fn integerPartCplx(mode: rounding_t) void;
 pub extern fn liftStack() void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 pub extern fn fnDrop(unused_but_mandatory_parameter: u16) void;
+pub extern fn fnDropY(unused_but_mandatory_parameter: u16) void;
 pub extern fn getUptimeMs() u32;
 pub extern fn getFreeRamMemory() u32;
 pub extern fn getFreeFlash() u32;
@@ -185,6 +187,7 @@ pub extern fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, real_context: *re
 pub extern fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Atan2(y: *const real_t, x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_SinhCosh(x: *const real_t, sin_out: ?*real_t, cos_out: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcSinh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcTanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
