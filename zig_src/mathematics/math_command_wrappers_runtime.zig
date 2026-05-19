@@ -251,6 +251,7 @@ pub extern fn real34IsInfinite(value: *const real34_t) bool;
 pub extern fn real34GetExponent(value: *const real34_t) i32;
 pub extern fn real34NextPlus(source: *const real34_t, destination: *real34_t) void;
 pub extern fn real34NextMinus(source: *const real34_t, destination: *real34_t) void;
+pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn real34Subtract(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void;
 pub extern fn convertAngle34FromTo(angle: *real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
 pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
@@ -631,6 +632,10 @@ pub inline fn real34IsZero(value: *const real34_t) bool {
 
 pub inline fn real34IsNegative(value: *const real34_t) bool {
     return decQuadIsNegative(value) != 0;
+}
+
+pub inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
+    _ = decimal128ToNumber(source, destination);
 }
 
 pub inline fn realIsZero(value: *const real_t) bool {

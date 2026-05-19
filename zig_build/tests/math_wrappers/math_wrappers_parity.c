@@ -1307,6 +1307,17 @@ static void configureImaginaryPartComplexMatrix(void) {
   configureRealPartComplexMatrix();
 }
 
+static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits) {
+  uint32_t magnitude = (uint32_t)(signedValue < 0 ? -signedValue : signedValue);
+
+  memset(value, 0, sizeof(*value));
+  memcpy(value->bytes, &magnitude, sizeof(magnitude));
+  value->bytes[15] = bits;
+  if(signedValue < 0) {
+    value->bytes[15] |= 0x80;
+  }
+}
+
 static void configureArgRealPositive(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -1324,6 +1335,39 @@ static void configureArgComplex(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetRealInput(false, 0, 0);
   mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+  mathWrappersSetCurrentAngularMode(amDegree);
+}
+
+static void configureArgRealMatrix(void) {
+  real34Matrix_t matrix;
+
+  configureDefaultSurface();
+  realMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0], 5, 0);
+  setMatrixReal34(&matrix.matrixElements[1], -5, 0);
+  setMatrixReal34(&matrix.matrixElements[2], 0, 0);
+  setMatrixReal34(&matrix.matrixElements[3], 0, 0x20);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+  realMatrixFree(&matrix);
+  mathWrappersSetCurrentAngularMode(amRadian);
+  mathWrappersSetFlagSpcRes(false);
+}
+
+static void configureArgComplexMatrix(void) {
+  complex34Matrix_t matrix;
+
+  configureDefaultSurface();
+  complexMatrixInit(&matrix, 2, 2);
+  setMatrixReal34(&matrix.matrixElements[0].real, 1, 0);
+  setMatrixReal34(&matrix.matrixElements[0].imag, 5, 0);
+  setMatrixReal34(&matrix.matrixElements[1].real, 2, 0);
+  setMatrixReal34(&matrix.matrixElements[1].imag, 1, 0);
+  setMatrixReal34(&matrix.matrixElements[2].real, -3, 0);
+  setMatrixReal34(&matrix.matrixElements[2].imag, 4, 0);
+  setMatrixReal34(&matrix.matrixElements[3].real, 0, 0);
+  setMatrixReal34(&matrix.matrixElements[3].imag, -2, 0);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+  complexMatrixFree(&matrix);
   mathWrappersSetCurrentAngularMode(amDegree);
 }
 
@@ -2332,6 +2376,8 @@ int main(void) {
   failures += runCase("fnArg/real_positive", oracle_fnArg, fnArg, 0, true, configureArgRealPositive);
   failures += runCase("fnArg/real_negative", oracle_fnArg, fnArg, 0, true, configureArgRealNegative);
   failures += runCase("fnArg/complex", oracle_fnArg, fnArg, 0, true, configureArgComplex);
+  failures += runCase("fnArg/real_matrix", oracle_fnArg, fnArg, 0, true, configureArgRealMatrix);
+  failures += runCase("fnArg/complex_matrix", oracle_fnArg, fnArg, 0, true, configureArgComplexMatrix);
   failures += runCase("fnMagnitude/real", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeReal);
   failures += runCase("fnMagnitude/real_matrix", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeRealMatrix);
   failures += runCase("fnMagnitude/complex", oracle_fnMagnitude, fnMagnitude, 0, true, configureMagnitudeComplex);
