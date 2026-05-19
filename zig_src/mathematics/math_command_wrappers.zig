@@ -4022,8 +4022,8 @@ pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) vo
     z47_math_wrappers_retained_fnIsConverged(unused_but_mandatory_parameter);
 }
 
-pub export fn fnCheckType(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnCheckType(unused_but_mandatory_parameter);
+pub export fn fnCheckType(type_: u16) callconv(.c) void {
+    runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == type_);
 }
 
 pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void {

@@ -209,6 +209,7 @@ typedef struct {
   uint64_t final_pcg_state;
   uint64_t final_pcg_inc;
   bool_t final_there_is_something_to_undo;
+  int32_t final_temporary_information;
 
   uint32_t final_register_data_type;
   uint32_t final_register_tag;
