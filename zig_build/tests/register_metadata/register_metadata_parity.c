@@ -904,6 +904,7 @@ int main(void) {
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyReservedLetteredDestCase, REGISTER_Y, FIRST_RESERVED_VARIABLE);
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyReservedDataCase, FIRST_RESERVED_VARIABLE + 40, REGISTER_Y);
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupNoOpCase, RESERVED_VARIABLE_DENMAX, REGISTER_Y);
+  failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupNoOpCase, FIRST_NAMED_VARIABLE, REGISTER_Y);
   failures += runCopyCase("copySourceRegisterToDestRegister", oracle_copySourceRegisterToDestRegister, copySourceRegisterToDestRegister, setupCopyMatrixCase, REGISTER_X, REGISTER_Y);
 
   failures += runReallocateCase("reallocateRegister", oracle_reallocateRegister, reallocateRegister, setupReallocateGlobalLongIntegerCase, REGISTER_X, dtLongInteger, 1, LI_POSITIVE);

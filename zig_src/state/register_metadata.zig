@@ -392,7 +392,6 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 
     if (getRegisterDataType(normalized_dest) != source_type or getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
         const payload_size = copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
-            runtime.retainedCopySourceRegisterToDestRegister(source_register, dest_register);
             return;
         };
 
