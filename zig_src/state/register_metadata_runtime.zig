@@ -100,7 +100,6 @@ extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
-extern fn z47_registers_retained_allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void;
 extern fn z47_registers_retained_fnDeleteVariable(regist: u16) void;
 extern fn z47_registers_retained_fnDeleteAllVariables(confirmation: u16) void;
 extern fn z47_registers_retained_fnClearAllVariables(confirmation: u16) void;
@@ -295,10 +294,6 @@ pub fn retainedGetRegisterDataPointer(reg: calcRegister_t) ?*anyopaque {
 
 pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
-}
-
-pub fn retainedAllocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
-    z47_registers_retained_allocateNamedVariable(variable_name, data_type, full_data_size_in_blocks);
 }
 
 pub fn retainedFnDeleteVariable(regist: u16) void {

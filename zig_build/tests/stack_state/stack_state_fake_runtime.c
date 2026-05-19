@@ -600,27 +600,6 @@ int32_t compareString(const char *left, const char *right, int32_t comparisonTyp
   return strcmp(left, right);
 }
 
-void z47_registers_retained_allocateNamedVariable(const char *variableName, uint32_t dataType, uint16_t fullDataSizeInBlocks) {
-  size_t len;
-
-  if(numberOfNamedVariables != 0) {
-    displayBugScreen("unexpected retained allocateNamedVariable grow-allocation parity fallback");
-    return;
-  }
-
-  len = strlen(variableName);
-  if(len > 14) {
-    len = 14;
-  }
-
-  memset(allNamedVariables[0].variableName, 0, sizeof(allNamedVariables[0].variableName));
-  allNamedVariables[0].variableName[0] = (uint8_t)len;
-  memcpy(allNamedVariables[0].variableName + 1, variableName, len);
-  numberOfNamedVariables = 1;
-  setRegisterDataType(FIRST_NAMED_VARIABLE, (uint16_t)dataType, amNone);
-  setRegisterDataPointer(FIRST_NAMED_VARIABLE, allocC47Blocks(fullDataSizeInBlocks));
-}
-
 void z47_registers_retained_fnDeleteVariable(uint16_t regist) {
   (void)regist;
   displayBugScreen("unexpected retained fnDeleteVariable parity fallback");
