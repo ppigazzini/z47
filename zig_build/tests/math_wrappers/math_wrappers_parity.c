@@ -65,6 +65,7 @@ void fnCheckReal(uint16_t unusedButMandatoryParameter);
 void fnCheckAngle(uint16_t unusedButMandatoryParameter);
 void fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void fnCheckNumber(uint16_t unusedButMandatoryParameter);
+void fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void fnRealPart(uint16_t unusedButMandatoryParameter);
 void fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void fnArg(uint16_t unusedButMandatoryParameter);
@@ -139,6 +140,7 @@ void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnImaginaryPart(uint16_t unusedButMandatoryParameter);
 void oracle_fnArg(uint16_t unusedButMandatoryParameter);
@@ -832,6 +834,13 @@ static void configureCheckAngleFalse(void) {
 static void configureCheckMatrixTrue(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureCheckNaNComplex(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetRealInput(false, 0, 0);
+  mathWrappersSetComplexInput(true, 2, 0, 0, 0x20);
 }
 
 static void configureFactorialShortInteger(void) {
@@ -1733,6 +1742,10 @@ int main(void) {
   failures += runCase("fnCheckNumber/complex_true", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureFactorialComplex);
   failures += runCase("fnCheckNumber/complex_special_false", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureExpComplexSpecial);
   failures += runCase("fnCheckNumber/matrix_false", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureCheckRealMatrix);
+  failures += runCase("fnCheckNaN/real_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureFactorialReal);
+  failures += runCase("fnCheckNaN/real_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureSignRealNaN);
+  failures += runCase("fnCheckNaN/complex_false", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureFactorialComplex);
+  failures += runCase("fnCheckNaN/complex_true", oracle_fnCheckNaN, fnCheckNaN, 0, true, configureCheckNaNComplex);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnImaginaryPart/real", oracle_fnImaginaryPart, fnImaginaryPart, 0, true, configureImaginaryPartReal);
