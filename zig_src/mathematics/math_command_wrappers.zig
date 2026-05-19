@@ -3106,7 +3106,8 @@ pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runtime.processIntRealComplexDyadicFunction(&runtime.z47_math_wrappers_mod_real, null, &runtime.z47_math_wrappers_mod_short_integer, &runtime.z47_math_wrappers_mod_long_integer);
 }
 
 pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
