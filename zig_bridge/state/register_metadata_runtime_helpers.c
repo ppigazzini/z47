@@ -263,6 +263,43 @@ void z47_register_metadata_store_named_variable_name(uint16_t index, const char 
   xcopy(allNamedVariables[index].variableName + 1, variable_name, (uint32_t)len);
 }
 
+void z47_register_metadata_remove_named_variable_recall_assignment(uint16_t index) {
+#ifndef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(index < numberOfNamedVariables) {
+    removeUserItemAssignments(ITM_RCL, (char *)(allNamedVariables[index].variableName + 1));
+  }
+#else
+  (void)index;
+#endif
+}
+
+void z47_register_metadata_clear_named_variable_slot(uint16_t index) {
+#ifdef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(index >= MAX_FAKE_NAMED_VARIABLES) {
+    return;
+  }
+#endif
+
+  if(index >= numberOfNamedVariables) {
+    return;
+  }
+
+  allNamedVariables[index].header.descriptor = 0;
+  memset(allNamedVariables[index].variableName, 0, sizeof(allNamedVariables[index].variableName));
+}
+
+void z47_register_metadata_shrink_named_variable_header_storage(void) {
+#ifndef Z47_REGISTER_METADATA_FAKE_C47_H
+  if(numberOfNamedVariables == 0) {
+    return;
+  }
+
+  reduceC47Blocks(allNamedVariables,
+                  TO_BLOCKS(sizeof(namedVariableHeader_t) * numberOfNamedVariables),
+                  TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables - 1)));
+#endif
+}
+
 int32_t z47_register_metadata_compare_menu_names(const char *left, const char *right) {
   return compareString(left, right, CMP_NAME);
 }

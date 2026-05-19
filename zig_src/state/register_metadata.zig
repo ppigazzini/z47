@@ -542,7 +542,19 @@ pub export fn fnDeleteVariable(regist: u16) void {
     const named_variable_limit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
 
     if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
-        runtime.retainedFnDeleteVariable(regist);
+        const index: u16 = @intCast(register - runtime.FIRST_NAMED_VARIABLE);
+        runtime.removeNamedVariableRecallAssignment(index);
+        stack_runtime.freeRegisterData(register);
+
+        var shift_index = index;
+        while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
+            runtime.setNamedDescriptorUnchecked(shift_index, runtime.namedDescriptorUnchecked(shift_index + 1));
+            runtime.storeNamedVariableName(shift_index, runtime.namedVariableName(shift_index + 1));
+        }
+
+        runtime.clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
+        runtime.shrinkNamedVariableHeaderStorage();
+        runtime.numberOfNamedVariables -= 1;
         return;
     }
 

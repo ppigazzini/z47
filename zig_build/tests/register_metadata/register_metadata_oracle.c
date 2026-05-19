@@ -234,7 +234,15 @@ void oracle_allocateNamedVariable(const char *variableName, uint32_t dataType, u
 
 void oracle_fnDeleteVariable(uint16_t regist) {
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
-    displayBugScreen("oracle_fnDeleteVariable called with an unsupported live-delete case");
+    uint16_t index = (uint16_t)(regist - FIRST_NAMED_VARIABLE);
+
+    freeRegisterData((calcRegister_t)regist);
+    for(uint16_t i = index; i < (numberOfNamedVariables - 1); ++i) {
+      allNamedVariables[i] = allNamedVariables[i + 1];
+    }
+    allNamedVariables[numberOfNamedVariables - 1].header.descriptor = 0;
+    memset(allNamedVariables[numberOfNamedVariables - 1].variableName, 0, sizeof(allNamedVariables[numberOfNamedVariables - 1].variableName));
+    numberOfNamedVariables -= 1;
     return;
   }
 
