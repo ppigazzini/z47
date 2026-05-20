@@ -510,6 +510,58 @@ void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter) {
 	temporaryInformation = 12 + (t == 6 || t == 7);
 }
 
+static bool_t oracle_getConvergenceInput(calcRegister_t reg, real_t *real, real_t *imag, bool_t *isComplex) {
+	switch(getRegisterDataType(reg)) {
+		case dtComplex34:
+			*isComplex = true;
+			return getRegisterAsComplex(reg, real, imag);
+
+		case dtReal34:
+			if(!getRegisterAsReal(reg, real)) {
+				return false;
+			}
+			realSetZero(imag);
+			return true;
+
+		case dtLongInteger:
+			convertLongIntegerRegisterToReal(reg, real, &ctxtReal39);
+			realSetZero(imag);
+			return true;
+
+		case dtShortInteger:
+			convertShortIntegerRegisterToReal(reg, real, &ctxtReal39);
+			realSetZero(imag);
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+void oracle_fnIsConverged(uint16_t mode) {
+	real_t xReal, xImag, yReal, yImag, tol;
+	bool_t isComplex = false;
+
+	convergenceTolerence(&tol);
+	if(!oracle_getConvergenceInput(REGISTER_X, &xReal, &xImag, &isComplex) || !oracle_getConvergenceInput(REGISTER_Y, &yReal, &yImag, &isComplex)) {
+		oracle_compareTypeErrorX();
+		return;
+	}
+
+	if(realIsNaN(&xReal) || realIsNaN(&yReal) || realIsNaN(&xImag) || realIsNaN(&yImag)) {
+		temporaryInformation = 12 + ((mode & 0x4) != 0);
+	}
+	else if(realIsInfinite(&xReal) || realIsInfinite(&yReal) || realIsInfinite(&xImag) || realIsInfinite(&yImag)) {
+		temporaryInformation = 12 + ((mode & 0x2) != 0);
+	}
+	else if(mode & 0x1) {
+		temporaryInformation = 12 + (isComplex ? WP34S_ComplexAbsError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_AbsoluteError(&xReal, &yReal, &tol, &ctxtReal39));
+	}
+	else {
+		temporaryInformation = 12 + (isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
+	}
+}
+
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter) {
 	int result = 1;
 

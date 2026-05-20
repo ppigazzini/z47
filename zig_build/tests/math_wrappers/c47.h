@@ -354,6 +354,11 @@ void convertLongIntegerToShortIntegerRegister(const longInteger_t long_integer, 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist);
 void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value);
 void convertShortIntegerRegisterToReal(calcRegister_t source, real_t *destination, realContext_t *real_context);
+void convergenceTolerence(real_t *tol);
+bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
+bool_t WP34S_AbsoluteError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
+bool_t WP34S_ComplexRelativeError(const real_t *xReal, const real_t *xImag, const real_t *yReal, const real_t *yImag, const real_t *tol, realContext_t *realContext);
+bool_t WP34S_ComplexAbsError(const real_t *xReal, const real_t *xImag, const real_t *yReal, const real_t *yImag, const real_t *tol, realContext_t *realContext);
 void convertRealToResultRegister(const real_t *real, calcRegister_t dest, angularMode_t angle_mode);
 void convertRealToLongIntegerRegister(const real_t *real, calcRegister_t dest, enum rounding roundingMode);
 void convertReal34ToLongIntegerRegister(const real34_t *real, calcRegister_t dest, enum rounding roundingMode);

@@ -2134,6 +2134,46 @@ bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
   return (lhs_value < 0 ? -lhs_value : lhs_value) > (rhs_value < 0 ? -rhs_value : rhs_value);
 }
 
+static int32_t fakeAbsInt32(int32_t value) {
+  return value < 0 ? -value : value;
+}
+
+void convergenceTolerence(real_t *tol) {
+  setFakeReal(tol, 1, 0);
+}
+
+bool_t WP34S_AbsoluteError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext) {
+  (void)realContext;
+  return fakeAbsInt32(fakeRealValue(x) - fakeRealValue(y)) <= fakeAbsInt32(fakeRealValue(tol));
+}
+
+bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext) {
+  const int32_t scale = fakeAbsInt32(fakeRealValue(y)) > 0 ? fakeAbsInt32(fakeRealValue(y)) : 1;
+
+  (void)realContext;
+  return fakeAbsInt32(fakeRealValue(x) - fakeRealValue(y)) * 10 <= scale * fakeAbsInt32(fakeRealValue(tol));
+}
+
+bool_t WP34S_ComplexAbsError(const real_t *xReal,
+                             const real_t *xImag,
+                             const real_t *yReal,
+                             const real_t *yImag,
+                             const real_t *tol,
+                             realContext_t *realContext) {
+  return WP34S_AbsoluteError(xReal, yReal, tol, realContext) &&
+         WP34S_AbsoluteError(xImag, yImag, tol, realContext);
+}
+
+bool_t WP34S_ComplexRelativeError(const real_t *xReal,
+                                  const real_t *xImag,
+                                  const real_t *yReal,
+                                  const real_t *yImag,
+                                  const real_t *tol,
+                                  realContext_t *realContext) {
+  return WP34S_RelativeError(xReal, yReal, tol, realContext) &&
+         WP34S_RelativeError(xImag, yImag, tol, realContext);
+}
+
 void divRealComplex(const real_t *numer,
                     const real_t *denomReal,
                     const real_t *denomImag,
