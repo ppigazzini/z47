@@ -452,6 +452,64 @@ static bool_t isDyadicArithmeticCase(const char *name) {
          strncmp(name, "fnDivide/", 9) == 0;
 }
 
+static bool_t isCrossDotCase(const char *name) {
+  return strncmp(name, "fnCross/", 8) == 0 ||
+         strncmp(name, "fnDot/", 6) == 0;
+}
+
+static void clearRealMatrixSnapshot(math_wrappers_snapshot_t *snapshot) {
+  snapshot->final_real_matrix_rows = 0;
+  snapshot->final_real_matrix_columns = 0;
+  memset(snapshot->final_real_matrix_values, 0, sizeof(snapshot->final_real_matrix_values));
+  memset(snapshot->final_real_matrix_bits, 0, sizeof(snapshot->final_real_matrix_bits));
+}
+
+static void clearComplexMatrixSnapshot(math_wrappers_snapshot_t *snapshot) {
+  snapshot->final_complex_matrix_rows = 0;
+  snapshot->final_complex_matrix_columns = 0;
+  memset(snapshot->final_complex_matrix_real_values, 0, sizeof(snapshot->final_complex_matrix_real_values));
+  memset(snapshot->final_complex_matrix_real_bits, 0, sizeof(snapshot->final_complex_matrix_real_bits));
+  memset(snapshot->final_complex_matrix_imag_values, 0, sizeof(snapshot->final_complex_matrix_imag_values));
+  memset(snapshot->final_complex_matrix_imag_bits, 0, sizeof(snapshot->final_complex_matrix_imag_bits));
+}
+
+static void zeroInactiveRealMatrixTail(math_wrappers_snapshot_t *snapshot) {
+  const uint16_t active = snapshot->final_real_matrix_rows * snapshot->final_real_matrix_columns;
+
+  for(uint16_t i = active; i < 4; ++i) {
+    snapshot->final_real_matrix_values[i] = 0;
+    snapshot->final_real_matrix_bits[i] = 0;
+  }
+}
+
+static void zeroInactiveComplexMatrixTail(math_wrappers_snapshot_t *snapshot) {
+  const uint16_t active = snapshot->final_complex_matrix_rows * snapshot->final_complex_matrix_columns;
+
+  for(uint16_t i = active; i < 4; ++i) {
+    snapshot->final_complex_matrix_real_values[i] = 0;
+    snapshot->final_complex_matrix_real_bits[i] = 0;
+    snapshot->final_complex_matrix_imag_values[i] = 0;
+    snapshot->final_complex_matrix_imag_bits[i] = 0;
+  }
+}
+
+static void normalizeCrossDotSnapshot(math_wrappers_snapshot_t *snapshot) {
+  switch(snapshot->final_register_data_type) {
+    case dtReal34Matrix:
+      zeroInactiveRealMatrixTail(snapshot);
+      clearComplexMatrixSnapshot(snapshot);
+      break;
+    case dtComplex34Matrix:
+      zeroInactiveComplexMatrixTail(snapshot);
+      clearRealMatrixSnapshot(snapshot);
+      break;
+    default:
+      clearRealMatrixSnapshot(snapshot);
+      clearComplexMatrixSnapshot(snapshot);
+      break;
+  }
+}
+
 static void normalizeDyadicArithmeticSnapshot(math_wrappers_snapshot_t *snapshot) {
   math_wrappers_snapshot_t normalized;
 
@@ -518,6 +576,9 @@ static int runCase(const char *name,
   if(isDyadicArithmeticCase(name)) {
     normalizeDyadicArithmeticSnapshot(&expected);
     normalizeDyadicArithmeticSnapshot(&actual);
+  } else if(isCrossDotCase(name)) {
+    normalizeCrossDotSnapshot(&expected);
+    normalizeCrossDotSnapshot(&actual);
   }
   return reportMismatch(name, arg, &expected, &actual);
 }
@@ -552,6 +613,9 @@ static int runCaseIgnoringRegisterMetadataGetters(const char *name,
   if(isDyadicArithmeticCase(name)) {
     normalizeDyadicArithmeticSnapshot(&expected);
     normalizeDyadicArithmeticSnapshot(&actual);
+  } else if(isCrossDotCase(name)) {
+    normalizeCrossDotSnapshot(&expected);
+    normalizeCrossDotSnapshot(&actual);
   }
   return reportMismatch(name, arg, &expected, &actual);
 }
@@ -1170,6 +1234,35 @@ static void configureParallelComplex(void) {
   mathWrappersSetRealYInput(true, 5, 0);
 }
 
+static void seedRealMatrixRegister(calcRegister_t reg,
+                                   int32_t a,
+                                   int32_t b,
+                                   int32_t c,
+                                   int32_t d);
+
+static void seedComplexMatrixRegister(calcRegister_t reg,
+                                      int32_t ar,
+                                      int32_t ai,
+                                      int32_t br,
+                                      int32_t bi,
+                                      int32_t cr,
+                                      int32_t ci,
+                                      int32_t dr,
+                                      int32_t di);
+
+static void seedRealVectorRegister(calcRegister_t reg,
+                                   int32_t a,
+                                   int32_t b,
+                                   int32_t c);
+
+static void seedComplexVectorRegister(calcRegister_t reg,
+                                      int32_t ar,
+                                      int32_t ai,
+                                      int32_t br,
+                                      int32_t bi,
+                                      int32_t cr,
+                                      int32_t ci);
+
 static void configureCrossReal(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -1196,6 +1289,54 @@ static void configureDotComplex(void) {
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
   mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configureCrossRealMatrixRealMatrix(void) {
+  configureDefaultSurface();
+  seedRealVectorRegister(REGISTER_X, 4, 5, 6);
+  seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
+}
+
+static void configureCrossComplexMatrixComplexMatrix(void) {
+  configureDefaultSurface();
+  seedComplexVectorRegister(REGISTER_X, 3, 1, 4, -1, 5, 2);
+  seedComplexVectorRegister(REGISTER_Y, 1, 0, 2, 1, 3, -1);
+}
+
+static void configureCrossRealMatrixComplexMatrix(void) {
+  configureDefaultSurface();
+  seedRealVectorRegister(REGISTER_X, 4, 5, 6);
+  seedComplexVectorRegister(REGISTER_Y, 1, 0, 2, 1, 3, -1);
+}
+
+static void configureCrossComplexMatrixRealMatrix(void) {
+  configureDefaultSurface();
+  seedComplexVectorRegister(REGISTER_X, 3, 1, 4, -1, 5, 2);
+  seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
+}
+
+static void configureDotRealMatrixRealMatrix(void) {
+  configureDefaultSurface();
+  seedRealVectorRegister(REGISTER_X, 4, 5, 6);
+  seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
+}
+
+static void configureDotComplexMatrixComplexMatrix(void) {
+  configureDefaultSurface();
+  seedComplexVectorRegister(REGISTER_X, 3, 1, 4, -1, 5, 2);
+  seedComplexVectorRegister(REGISTER_Y, 1, 0, 2, 1, 3, -1);
+}
+
+static void configureDotRealMatrixComplexMatrix(void) {
+  configureDefaultSurface();
+  seedRealVectorRegister(REGISTER_X, 4, 5, 6);
+  seedComplexVectorRegister(REGISTER_Y, 1, 0, 2, 1, 3, -1);
+}
+
+static void configureDotComplexMatrixRealMatrix(void) {
+  configureDefaultSurface();
+  seedComplexVectorRegister(REGISTER_X, 3, 1, 4, -1, 5, 2);
+  seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
 }
 
 static void configurePercentMRRReal(void) {
@@ -3243,6 +3384,40 @@ static void seedComplexMatrixRegister(calcRegister_t reg,
   complexMatrixFree(&matrix);
 }
 
+static void seedRealVectorRegister(calcRegister_t reg,
+                                   int32_t a,
+                                   int32_t b,
+                                   int32_t c) {
+  real34Matrix_t matrix;
+
+  realMatrixInit(&matrix, 1, 3);
+  setMatrixReal34(&matrix.matrixElements[0], a, 0);
+  setMatrixReal34(&matrix.matrixElements[1], b, 0);
+  setMatrixReal34(&matrix.matrixElements[2], c, 0);
+  convertReal34MatrixToReal34MatrixRegister(&matrix, reg);
+  realMatrixFree(&matrix);
+}
+
+static void seedComplexVectorRegister(calcRegister_t reg,
+                                      int32_t ar,
+                                      int32_t ai,
+                                      int32_t br,
+                                      int32_t bi,
+                                      int32_t cr,
+                                      int32_t ci) {
+  complex34Matrix_t matrix;
+
+  complexMatrixInit(&matrix, 1, 3);
+  setMatrixReal34(&matrix.matrixElements[0].real, ar, 0);
+  setMatrixReal34(&matrix.matrixElements[0].imag, ai, 0);
+  setMatrixReal34(&matrix.matrixElements[1].real, br, 0);
+  setMatrixReal34(&matrix.matrixElements[1].imag, bi, 0);
+  setMatrixReal34(&matrix.matrixElements[2].real, cr, 0);
+  setMatrixReal34(&matrix.matrixElements[2].imag, ci, 0);
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, reg);
+  complexMatrixFree(&matrix);
+}
+
 static void configureAddLongIntegerTime(void) {
   configureDefaultSurface();
   setXAsTimeValue(40);
@@ -3902,8 +4077,16 @@ int main(void) {
   failures += runCase("fnParallel/complex", oracle_fnParallel, fnParallel, 0, true, configureParallelComplex);
   failures += runCase("fnCross/real", oracle_fnCross, fnCross, 0, true, configureCrossReal);
   failures += runCase("fnCross/complex", oracle_fnCross, fnCross, 0, true, configureCrossComplex);
+  failures += runCase("fnCross/rema_rema", oracle_fnCross, fnCross, 0, true, configureCrossRealMatrixRealMatrix);
+  failures += runCase("fnCross/cxma_cxma", oracle_fnCross, fnCross, 0, true, configureCrossComplexMatrixComplexMatrix);
+  failures += runCase("fnCross/rema_cxma", oracle_fnCross, fnCross, 0, true, configureCrossRealMatrixComplexMatrix);
+  failures += runCase("fnCross/cxma_rema", oracle_fnCross, fnCross, 0, true, configureCrossComplexMatrixRealMatrix);
   failures += runCase("fnDot/real", oracle_fnDot, fnDot, 0, true, configureDotReal);
   failures += runCase("fnDot/complex", oracle_fnDot, fnDot, 0, true, configureDotComplex);
+  failures += runCase("fnDot/rema_rema", oracle_fnDot, fnDot, 0, true, configureDotRealMatrixRealMatrix);
+  failures += runCase("fnDot/cxma_cxma", oracle_fnDot, fnDot, 0, true, configureDotComplexMatrixComplexMatrix);
+  failures += runCase("fnDot/rema_cxma", oracle_fnDot, fnDot, 0, true, configureDotRealMatrixComplexMatrix);
+  failures += runCase("fnDot/cxma_rema", oracle_fnDot, fnDot, 0, true, configureDotComplexMatrixRealMatrix);
   failures += runCase("fnPercentMRR/real", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRReal);
   failures += runCase("fnPercentMRR/spcres_zero_zero", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRSpcResZeroZero);
   failures += runCase("fnPercentPlusMG/real", oracle_fnPercentPlusMG, fnPercentPlusMG, 0, true, configurePercentPlusMGReal);
