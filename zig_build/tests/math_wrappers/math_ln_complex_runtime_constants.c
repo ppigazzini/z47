@@ -36,6 +36,18 @@ const real_t *z47_math_wrappers_const_1(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_minus_1(void) {
+  static bool_t initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_ln_complex_init_constant(&value, 0, DECNEG, 1);
+    initialized = true;
+  }
+
+  return &value;
+}
+
 const real_t *z47_math_wrappers_const_2(void) {
   static bool_t initialized = false;
   static real_t value;

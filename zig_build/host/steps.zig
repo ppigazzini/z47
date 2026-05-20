@@ -272,6 +272,68 @@ fn addMathAtanOracle(
     return exe;
 }
 
+fn addMathRealTrigPrimitivesOracle(
+    b: *std.Build,
+    context: host_types.Context,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (context.host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = "math-real-trig-primitives-oracle",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    host_platform.addHostMacros(exe.root_module, context.common);
+    host_platform.addHostSystemPaths(exe.root_module, context.common);
+    exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/testSuite"));
+    exe.root_module.addIncludePath(context.version_headers_dir);
+    exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+
+    const helper_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/mathematics/math_real_trig_owned_export.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    const helper_build_options = b.addOptions();
+    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    const helper_object = b.addObject(.{
+        .name = "math-real-trig-primitives-oracle-owned",
+        .root_module = helper_module,
+    });
+
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_real_trig_primitives_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/io.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_real_trig_primitives_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addObject(helper_object);
+    exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers2_c, .flags = core_c_flags });
+    host_platform.linkGtk3(exe.root_module, context.common);
+    host_platform.linkGmp(exe.root_module, context.host_target);
+    exe.root_module.linkSystemLibrary("m", .{});
+    return exe;
+}
+
 pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) host_types.SimulatorOutputs {
     const sim = host_builders.addSimulator(
         b,
@@ -471,6 +533,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_math_atan_oracle.setCwd(b.path("."));
     const math_atan_oracle_step = b.step("math_atan_oracle", "Run the direct C47_WP34S_Atan helper oracle");
     math_atan_oracle_step.dependOn(&run_math_atan_oracle.step);
+
+    const math_real_trig_primitives_oracle = addMathRealTrigPrimitivesOracle(b, context, optimize);
+    const run_math_real_trig_primitives_oracle = b.addRunArtifact(math_real_trig_primitives_oracle);
+    run_math_real_trig_primitives_oracle.setCwd(b.path("."));
+    const math_real_trig_primitives_oracle_step = b.step("math_real_trig_primitives_oracle", "Run the direct real trig primitive oracle");
+    math_real_trig_primitives_oracle_step.dependOn(&run_math_real_trig_primitives_oracle.step);
 
     const math_atan2_oracle = addMathAtan2Oracle(b, context, optimize);
     const run_math_atan2_oracle = b.addRunArtifact(math_atan2_oracle);
