@@ -30,6 +30,7 @@ pub const StackStateObjects = stack_rewrites.RuntimeObjects;
 pub const Context = struct {
     host_target: std.Build.ResolvedTarget,
     common: CommonConfig,
+    raw_core_sources: [][]const u8,
     core_sources: [][]const u8,
     gtk_sources: [][]const u8,
     test_sources: [][]const u8,

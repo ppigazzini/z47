@@ -61,6 +61,7 @@ pub fn prepareContext(
     return .{
         .host_target = host_target,
         .common = common,
+        .raw_core_sources = core_sources,
         .core_sources = core_sources_without_tone,
         .gtk_sources = try filterSourceByName(b, gtk_sources, "gtkGui.c"),
         .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
