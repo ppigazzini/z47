@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -488,8 +489,136 @@ pub export fn realLog10(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.WP34S_Ln(x, res, real_context);
+    wp34sLn(x, res, real_context);
     runtime.realDivide(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
+}
+
+fn wp34sLn(
+    x_in: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    if (build_options.use_fake_wp34s_model) {
+        runtime.WP34S_Ln(x_in, res, real_context);
+        return;
+    }
+
+    var z: runtime.real_t = undefined;
+    var t: runtime.real_t = undefined;
+    var f: runtime.real_t = undefined;
+    var n: runtime.real_t = undefined;
+    var m: runtime.real_t = undefined;
+    var i: runtime.real_t = undefined;
+    var v: runtime.real_t = undefined;
+    var w: runtime.real_t = undefined;
+    var e: runtime.real_t = undefined;
+    var root2on2: runtime.real_t = undefined;
+    var exponent_adjust: i32 = 0;
+
+    if (runtime.realIsSpecial(x_in)) {
+        if (runtime.realIsNaN(x_in) or runtime.realIsNegative(x_in)) {
+            runtime.realSetNaN(res);
+        } else {
+            copyReal(res, runtime.z47_math_wrappers_const_plus_infinity());
+        }
+        return;
+    }
+
+    if (realCompareLessEqual(x_in, runtime.z47_math_wrappers_const_0())) {
+        if (runtime.realIsNegative(x_in)) {
+            runtime.realSetNaN(res);
+        } else {
+            copyReal(res, runtime.z47_math_wrappers_const_minus_infinity());
+        }
+        return;
+    }
+
+    copyReal(&z, x_in);
+    copyReal(&f, runtime.z47_math_wrappers_const_2());
+    runtime.realSubtract(x_in, runtime.z47_math_wrappers_const_1(), &t, real_context);
+    copyReal(&v, &t);
+    runtime.realSetPositiveSign(&v);
+
+    if (realCompareGreaterThan(&v, runtime.z47_math_wrappers_const_1on2())) {
+        exponent_adjust = z.exponent + z.digits;
+        z.exponent = -z.digits;
+    }
+
+    copyReal(&root2on2, runtime.z47_math_wrappers_const_1on2());
+    runtime.realSquareRoot(&root2on2, &root2on2, real_context);
+
+    while (realCompareLessEqual(&z, &root2on2)) {
+        runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, real_context);
+        runtime.realSquareRoot(&z, &z, real_context);
+    }
+
+    runtime.realAdd(&z, runtime.z47_math_wrappers_const_1(), &t, real_context);
+    runtime.realSubtract(&z, runtime.z47_math_wrappers_const_1(), &v, real_context);
+    runtime.realDivide(&v, &t, &n, real_context);
+    copyReal(&v, &n);
+    runtime.realMultiply(&v, &v, &m, real_context);
+    runtime.int32ToReal(3, &i);
+
+    runtime.int32ToReal(1 - real_context.digits, &t);
+    realPower10(&t, &z, real_context);
+
+    while (true) {
+        runtime.realMultiply(&m, &n, &n, real_context);
+        runtime.realDivide(&n, &i, &e, real_context);
+        runtime.realAdd(&v, &e, &w, real_context);
+        if (runtime.WP34S_RelativeError(&w, &v, &z, real_context)) {
+            break;
+        }
+        copyReal(&v, &w);
+        runtime.realAdd(&i, runtime.z47_math_wrappers_const_2(), &i, real_context);
+    }
+
+    runtime.realMultiply(&f, &w, res, real_context);
+    if (exponent_adjust == 0) {
+        return;
+    }
+
+    runtime.int32ToReal(exponent_adjust, &e);
+    runtime.realMultiply(&e, runtime.z47_math_wrappers_const_ln10(), &w, real_context);
+    runtime.realAdd(res, &w, res, real_context);
+}
+
+fn wp34sLog(
+    x_in: *const runtime.real_t,
+    base: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    var y: runtime.real_t = undefined;
+
+    if (runtime.realIsSpecial(x_in)) {
+        if (runtime.realIsNaN(x_in) or runtime.realIsNegative(x_in)) {
+            runtime.realSetNaN(res);
+        } else {
+            copyReal(res, runtime.z47_math_wrappers_const_plus_infinity());
+        }
+        return;
+    }
+
+    wp34sLn(x_in, &y, real_context);
+    runtime.realDivide(&y, base, res, real_context);
+}
+
+fn wp34sLogxy(
+    y_in: *const runtime.real_t,
+    x_in: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) void {
+    if (build_options.use_fake_wp34s_model) {
+        runtime.WP34S_Logxy(y_in, x_in, res, real_context);
+        return;
+    }
+
+    var ln_x: runtime.real_t = undefined;
+
+    wp34sLn(x_in, &ln_x, real_context);
+    wp34sLog(y_in, &ln_x, res, real_context);
 }
 
 fn expM1Complex(
@@ -738,10 +867,10 @@ fn lnReal() callconv(.c) void {
             runtime.realSetNaN(&x);
         }
     } else if (!runtime.realIsNegative(&x)) {
-        runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+        wp34sLn(&x, &x, &runtime.ctxtReal39);
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&x);
-        runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+        wp34sLn(&x, &x, &runtime.ctxtReal39);
         copyReal(&imag_value, runtime.z47_math_wrappers_const_pi());
         runtime.convertComplexToResultRegister(&x, &imag_value, runtime.REGISTER_X);
         return;
@@ -772,7 +901,8 @@ fn lnCplx() callconv(.c) void {
         copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
         runtime.realSetZero(&x_imag);
     } else {
-        lnComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+        runtime.realRectangularToPolar(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+        wp34sLn(&x_real, &x_real, &runtime.ctxtReal39);
     }
 
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
@@ -845,7 +975,7 @@ fn lnP1Complex(
     }
 
     runtime.realRectangularToPolar(&one_plus_real, imag, ln_real, ln_imag, real_context);
-    runtime.WP34S_Ln(ln_real, ln_real, real_context);
+    wp34sLn(ln_real, ln_real, real_context);
 }
 
 fn sincReal() callconv(.c) void {
@@ -1127,11 +1257,11 @@ pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
             runtime.realSetNaN(&a);
         }
     } else if (!runtime.realIsNegative(&a)) {
-        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        wp34sLn(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&a);
-        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        wp34sLn(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &b, &runtime.ctxtReal39);
         runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
@@ -1164,7 +1294,7 @@ pub export fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
         runtime.realSetZero(&b);
     } else {
         runtime.realRectangularToPolar(&a, &b, &a, &b, &runtime.ctxtReal39);
-        runtime.WP34S_Ln(&a, &a, &runtime.ctxtReal39);
+        wp34sLn(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         runtime.realDivide(&b, denom, &b, &runtime.ctxtReal39);
     }
@@ -1184,7 +1314,7 @@ pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
         return;
     }
 
-    runtime.WP34S_Ln(&x, &x, &runtime.ctxtReal39);
+    wp34sLn(&x, &x, &runtime.ctxtReal39);
     runtime.realDivide(&x, denom, &x, &runtime.ctxtReal34);
     if (!runtime.realIsAnInteger(&x)) {
         runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
@@ -7876,7 +8006,7 @@ fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, r
             }
         }
     } else {
-        runtime.WP34S_Logxy(y_real, x_real, &result_real, real_context);
+        wp34sLogxy(y_real, x_real, &result_real, real_context);
     }
 
     runtime.convertRealToResultRegister(&result_real, runtime.REGISTER_X, runtime.amNone);
