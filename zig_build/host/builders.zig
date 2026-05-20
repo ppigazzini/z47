@@ -3,6 +3,7 @@ const build_common = @import("../common.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const constants_rewrites = @import("../leaf/constants_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
+const gtk_gui_rewrites = @import("gtk_gui_rewrites.zig");
 const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
 const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
@@ -76,8 +77,7 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_button_signal_wrappers.c"), .flags = build_common.common_gtk_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/host/gtk_gui_retained.c"), .flags = build_common.common_gtk_c_flags });
+    gtk_gui_rewrites.addToModule(b, exe.root_module, build_common.common_gtk_c_flags);
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });

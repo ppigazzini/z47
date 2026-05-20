@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include "c47.h"
+
 #include <math.h>
 #include <string.h>
-
-#include "c47.h"
 
 double z47_math_wrappers_log(double value) {
   return value > 0.0 ? value : 0.0;
@@ -916,6 +916,77 @@ const real_t *z47_math_wrappers_const_plus_infinity(void) {
   }
 
   return &value;
+}
+
+#undef const_NaN
+
+static real_t z47_math_wrappers_const_nan_value;
+const real_t *const_NaN = &z47_math_wrappers_const_nan_value;
+
+__attribute__((constructor)) static void z47_math_wrappers_init_nan(void) {
+  realSetNaN(&z47_math_wrappers_const_nan_value);
+}
+
+const real_t *z47_math_wrappers_const_piOn4(void) {
+  return const39_piOn4;
+}
+
+const real_t *z47_math_wrappers_const_3piOn4(void) {
+  return const39_3piOn4;
+}
+
+const real_t *z47_math_wrappers_const_piOn2(void) {
+  return const39_piOn2;
+}
+
+#undef int32ToReal
+void int32ToReal(int32_t source, real_t *destination) {
+  decNumberFromInt32(destination, source);
+}
+
+#undef realNextToward
+void realNextToward(const real_t *x, const real_t *y, real_t *result, realContext_t *realContext) {
+  decNumberNextToward(result, x, y, realContext);
+}
+
+#undef realPower
+void realPower(const real_t *base, const real_t *exponent, real_t *result, realContext_t *realContext) {
+  decNumberPower(result, base, exponent, realContext);
+}
+
+#undef realToReal34
+void realToReal34(const real_t *source, real34_t *destination) {
+  decQuadFromNumber(destination, source, &ctxtReal34);
+}
+
+#undef real34ToIntegralValue
+void real34ToIntegralValue(const real34_t *source, real34_t *destination, enum rounding mode) {
+  decQuadToIntegralValue(destination, source, &ctxtReal34, mode);
+}
+
+#undef real34IsInfinite
+bool_t real34IsInfinite(const real34_t *value) {
+  return decQuadIsInfinite(value);
+}
+
+#undef real34GetExponent
+int32_t real34GetExponent(const real34_t *value) {
+  return decQuadGetExponent(value);
+}
+
+#undef real34NextPlus
+void real34NextPlus(const real34_t *source, real34_t *destination) {
+  decQuadNextPlus(destination, source, &ctxtReal34);
+}
+
+#undef real34NextMinus
+void real34NextMinus(const real34_t *source, real34_t *destination) {
+  decQuadNextMinus(destination, source, &ctxtReal34);
+}
+
+#undef real34Subtract
+void real34Subtract(const real34_t *operand1, const real34_t *operand2, real34_t *res) {
+  decQuadSubtract(res, operand1, operand2, &ctxtReal34);
 }
 
 const real_t *z47_math_wrappers_const_minus_infinity(void) {

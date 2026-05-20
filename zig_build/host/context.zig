@@ -2,6 +2,7 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
 const constants_rewrites = @import("../leaf/constants_rewrites.zig");
+const gtk_gui_rewrites = @import("gtk_gui_rewrites.zig");
 const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
 const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
 const flags_rewrites = @import("../state/flags_rewrites.zig");
@@ -14,22 +15,6 @@ const tone_rewrites = @import("../ui/tone_rewrites.zig");
 const host_generated = @import("generated.zig");
 const host_platform = @import("platform.zig");
 const host_types = @import("types.zig");
-
-fn filterSourceByName(
-    b: *std.Build,
-    sources: []const []const u8,
-    excluded_name: []const u8,
-) ![][]const u8 {
-    var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, sources.len);
-    errdefer filtered.deinit(b.allocator);
-
-    for (sources) |source| {
-        if (std.mem.eql(u8, source, excluded_name)) continue;
-        try filtered.append(b.allocator, source);
-    }
-
-    return try filtered.toOwnedSlice(b.allocator);
-}
 
 pub fn prepareContext(
     b: *std.Build,
@@ -63,7 +48,7 @@ pub fn prepareContext(
         .common = common,
         .raw_core_sources = core_sources,
         .core_sources = core_sources_without_tone,
-        .gtk_sources = try filterSourceByName(b, gtk_sources, "gtkGui.c"),
+        .gtk_sources = try gtk_gui_rewrites.filterGtkSources(b, gtk_sources),
         .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
         .version_headers_dir = version_headers_dir,
         .generated = generated,

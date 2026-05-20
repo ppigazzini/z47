@@ -80,9 +80,10 @@ lane also replaces the broader public keyboard command-entry surface with
 `../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
 retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
 
-The retained GTK boundary is still explicit: the imported
-`../src/c47-gtk/gtkGui.c` path enters the host build through
-`../zig_build/host/gtk_gui_retained.c` and
+The retained GTK boundary is still explicit: `../zig_build/host/context.zig`
+filters the imported `../src/c47-gtk/gtkGui.c` path out of the bulk GTK source
+set through `../zig_build/host/gtk_gui_rewrites.zig`, and that helper then
+re-enters the host build through `../zig_build/host/gtk_gui_retained.c` plus
 `../zig_build/host/gtk_button_signal_wrappers.c`. The presence of a Zig-owned
 build graph still does not mean the host simulator is already a pure-Zig
 application.
