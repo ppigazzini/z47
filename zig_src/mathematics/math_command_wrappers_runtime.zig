@@ -178,6 +178,8 @@ pub extern fn convertLongIntegerRegisterToLongInteger(reg: calcRegister_t, long_
 pub extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, long_integer: *mpz_struct) void;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
+pub extern fn convertTimeRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
+pub extern fn convertReal34RegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
 pub extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const mpz_struct, regist: calcRegister_t) void;
 pub extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const mpz_struct, base: u32, regist: calcRegister_t) void;
@@ -431,6 +433,8 @@ pub extern fn decQuadMultiply(res: *real34_t, operand1: *const real34_t, operand
 pub extern fn decQuadIsNaN(value: *const real34_t) u32;
 pub extern fn decQuadIsZero(value: *const real34_t) u32;
 pub extern fn decQuadIsNegative(value: *const real34_t) u32;
+pub extern fn internalDateToJulianDay(source: *real34_t, destination: *real34_t) void;
+pub extern fn julianDayToInternalDate(source: *real34_t, destination: *real34_t) void;
 pub extern fn real34ToIntegralValue(source: *const real34_t, destination: *real34_t, mode: rounding_t) void;
 pub extern fn real34IsInfinite(value: *const real34_t) bool;
 pub extern fn real34GetExponent(value: *const real34_t) i32;

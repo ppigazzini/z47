@@ -274,6 +274,8 @@ typedef struct {
 void mathWrappersReset(void);
 void mathWrappersSetSaveLastXResult(bool_t result);
 void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag);
+void mathWrappersSetRegisterYSurface(uint32_t data_type, uint32_t tag);
+void mathWrappersSetRegisterZSurface(uint32_t data_type, uint32_t tag);
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealYInput(bool_t available, int32_t value, uint8_t bits);
 void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits);
