@@ -7104,31 +7104,96 @@ fn linpolReadP(p: *runtime.real_t) bool {
     }
 }
 
-fn linpolReadCoeff(regist: runtime.calcRegister_t, data_type: u32, real_part: *runtime.real_t, imag_part: *runtime.real_t, real_coefs: *bool) bool {
+fn linpolReadCoeff(
+    regist: runtime.calcRegister_t,
+    data_type: u32,
+    real_part: *runtime.real_t,
+    imag_part: *runtime.real_t,
+    real_coefs: *bool,
+    data_tag: *runtime.angularMode_t,
+) bool {
     switch (data_type) {
         runtime.dtLongInteger => {
             runtime.convertLongIntegerRegisterToReal(regist, real_part, &runtime.ctxtReal75);
+            data_tag.* = runtime.amNone;
             return true;
         },
         runtime.dtShortInteger => {
             runtime.convertShortIntegerRegisterToReal(regist, real_part, &runtime.ctxtReal39);
+            data_tag.* = runtime.amNone;
             return true;
         },
         runtime.dtReal34 => {
-            if (runtime.getRegisterAngularMode(regist) != runtime.amNone) {
-                return false;
-            }
             runtime.real34ToReal(real34DataPointer(regist), real_part);
+            data_tag.* = runtime.getRegisterAngularMode(regist);
+            return true;
+        },
+        runtime.dtTime => {
+            runtime.convertTimeRegisterToReal34Register(regist, regist);
+            runtime.real34ToReal(real34DataPointer(regist), real_part);
+            data_tag.* = runtime.amNone;
+            return true;
+        },
+        runtime.dtDate => {
+            runtime.internalDateToJulianDay(real34DataPointer(regist), real34DataPointer(regist));
+            runtime.real34ToReal(real34DataPointer(regist), real_part);
+            data_tag.* = runtime.amNone;
             return true;
         },
         runtime.dtComplex34 => {
             runtime.real34ToReal(real34DataPointer(regist), real_part);
             runtime.real34ToReal(imag34DataPointer(regist), imag_part);
             real_coefs.* = false;
+            data_tag.* = runtime.amNone;
             return true;
         },
         else => return false,
     }
+}
+
+fn crossDotMatrixTypeError(function_name: [:0]const u8) void {
+    var message1_buffer: [96]u8 = undefined;
+    var message2_buffer: [64]u8 = undefined;
+    const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
+    const x_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+    const message1 = std.fmt.bufPrintZ(&message1_buffer, "cannot raise {s}", .{y_type_name}) catch "cannot raise current Y type";
+    const message2 = std.fmt.bufPrintZ(&message2_buffer, "to {s}", .{x_type_name}) catch "to current X type";
+
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.moreInfoOnError(function_name, message1, message2, null);
+}
+
+fn linpolInvalidXError() void {
+    var message_buffer: [128]u8 = undefined;
+    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in X", .{type_name}) catch "cannot LINPOL with current X type";
+
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
+}
+
+fn linpolDifferingTypeError() void {
+    var message_buffer: [192]u8 = undefined;
+    const type_name_y = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
+    const type_name_z = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Z, true, false));
+    const message = std.fmt.bufPrintZ(
+        &message_buffer,
+        "cannot LINPOL with differing data types in Y ({s}) and Z ({s})",
+        .{ type_name_y, type_name_z },
+    ) catch "cannot LINPOL with differing data types in Y and Z";
+
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_Y);
+    runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
+}
+
+fn linpolCoeffTypeError(regist: runtime.calcRegister_t) void {
+    var message_buffer: [128]u8 = undefined;
+    const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
+    const register_name = if (regist == runtime.REGISTER_Y) "Y" else "Z";
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in {s}", .{ type_name, register_name }) catch "cannot LINPOL with current coefficient type";
+
+    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
+    runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
 }
 
 const inc_flag: u8 = 0;
@@ -7430,6 +7495,8 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var result_real: runtime.real_t = undefined;
     var result_imag: runtime.real_t = undefined;
     var real_coefs = true;
+    var data_tag_y: runtime.angularMode_t = runtime.amNone;
+    var data_tag_z: runtime.angularMode_t = runtime.amNone;
     const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
     const type_z = runtime.getRegisterDataType(runtime.REGISTER_Z);
     const is_y_angle = type_y == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_Y) != runtime.amNone;
@@ -7439,17 +7506,26 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.realSetZero(&a_imag);
     runtime.realSetZero(&b_imag);
 
-    if (!linpolReadP(&p) or
-        !(type_y == runtime.dtLongInteger or type_y == runtime.dtShortInteger or type_y == runtime.dtReal34 or type_y == runtime.dtComplex34) or
-        !(type_z == runtime.dtLongInteger or type_z == runtime.dtShortInteger or type_z == runtime.dtReal34 or type_z == runtime.dtComplex34) or
-        is_y_angle or is_z_angle)
-    {
-        z47_math_wrappers_retained_fnLINPOL(0);
+    if (!linpolReadP(&p)) {
+        linpolInvalidXError();
         return;
     }
 
-    if (!linpolReadCoeff(runtime.REGISTER_Y, type_y, &b_real, &b_imag, &real_coefs) or !linpolReadCoeff(runtime.REGISTER_Z, type_z, &a_real, &a_imag, &real_coefs)) {
-        z47_math_wrappers_retained_fnLINPOL(0);
+    if ((type_y != type_z and (type_y == runtime.dtTime or type_z == runtime.dtTime)) or
+        (is_y_angle and !is_z_angle) or
+        (is_z_angle and !is_y_angle))
+    {
+        linpolDifferingTypeError();
+        return;
+    }
+
+    if (!linpolReadCoeff(runtime.REGISTER_Y, type_y, &b_real, &b_imag, &real_coefs, &data_tag_y)) {
+        linpolCoeffTypeError(runtime.REGISTER_Y);
+        return;
+    }
+
+    if (!linpolReadCoeff(runtime.REGISTER_Z, type_z, &a_real, &a_imag, &real_coefs, &data_tag_z)) {
+        linpolCoeffTypeError(runtime.REGISTER_Z);
         return;
     }
 
@@ -7463,8 +7539,28 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
     linpolScalar(&a_real, &b_real, &p, &result_real);
     if (real_coefs) {
-        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-        runtime.convertRealToReal34ResultRegister(&result_real, runtime.REGISTER_X);
+        if (type_y == runtime.dtTime) {
+            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
+            runtime.convertRealToReal34ResultRegister(&result_real, runtime.REGISTER_X);
+            runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+        } else if (type_y == runtime.dtDate) {
+            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtDate, 0, runtime.amNone);
+            runtime.realToReal34(&result_real, runtime.registerReal34Ptr(runtime.REGISTER_X));
+            runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.DEC_ROUND_CEILING);
+            runtime.julianDayToInternalDate(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.registerReal34Ptr(runtime.REGISTER_X));
+        } else {
+            if (is_y_angle and is_z_angle) {
+                if (data_tag_y != data_tag_z) {
+                    data_tag_y = runtime.currentAngularMode;
+                }
+            } else {
+                data_tag_y = runtime.amNone;
+            }
+
+            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @as(u32, @intCast(data_tag_y)));
+            runtime.convertRealToReal34ResultRegister(&result_real, runtime.REGISTER_X);
+        }
+
         return;
     }
 
@@ -7569,7 +7665,7 @@ pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 
     if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnCross(0);
+        crossDotMatrixTypeError("In function fnCross:");
         return;
     }
 
@@ -7695,7 +7791,7 @@ pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 
     if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnDot(0);
+        crossDotMatrixTypeError("In function fnDot:");
         return;
     }
 

@@ -1315,6 +1315,19 @@ static void configureCrossComplexMatrixRealMatrix(void) {
   seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
 }
 
+static void configureCrossXMatrixInvalid(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealYInput(true, 7, 0);
+}
+
+static void configureCrossYMatrixInvalid(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 6, 0);
+  mathWrappersSetRegisterYSurface(dtComplex34Matrix, amNone);
+}
+
 static void configureDotRealMatrixRealMatrix(void) {
   configureDefaultSurface();
   seedRealVectorRegister(REGISTER_X, 4, 5, 6);
@@ -1337,6 +1350,19 @@ static void configureDotComplexMatrixRealMatrix(void) {
   configureDefaultSurface();
   seedComplexVectorRegister(REGISTER_X, 3, 1, 4, -1, 5, 2);
   seedRealVectorRegister(REGISTER_Y, 1, 2, 3);
+}
+
+static void configureDotXMatrixInvalid(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34Matrix, amNone);
+  mathWrappersSetRealYInput(true, 7, 0);
+}
+
+static void configureDotYMatrixInvalid(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 2, 0, 3, 0);
+  mathWrappersSetRegisterYSurface(dtReal34Matrix, amNone);
 }
 
 static void configurePercentMRRReal(void) {
@@ -1607,6 +1633,78 @@ static void configureLINPOLComplex(void) {
   mathWrappersSetRealInput(true, 1, 0);
   mathWrappersSetComplexYInput(true, 6, 0, 7, 0);
   mathWrappersSetComplexZInput(true, 2, 0, 3, 0);
+}
+
+static void configureLINPOLIntegerMix(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 1);
+  mathWrappersSetShortIntegerYInput(10);
+  mathWrappersSetLongIntegerZInput(true, 4);
+}
+
+static void configureLINPOLTime(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRegisterYSurface(dtTime, amNone);
+  mathWrappersSetRealZInput(true, 4, 0);
+  mathWrappersSetRegisterZSurface(dtTime, amNone);
+}
+
+static void configureLINPOLDate(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRegisterYSurface(dtDate, amNone);
+  mathWrappersSetRealZInput(true, 4, 0);
+  mathWrappersSetRegisterZSurface(dtDate, amNone);
+}
+
+static void configureLINPOLAngleMixed(void) {
+  configureDefaultSurface();
+  mathWrappersSetCurrentAngularMode(amDegree);
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 90, 0);
+  mathWrappersSetRegisterYSurface(dtReal34, amDegree);
+  mathWrappersSetRealZInput(true, 30, 0);
+  mathWrappersSetRegisterZSurface(dtReal34, amRadian);
+}
+
+static void configureLINPOLInvalidX(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 1, 0, 1, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRealZInput(true, 4, 0);
+}
+
+static void configureLINPOLDifferingYZ(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRegisterYSurface(dtTime, amNone);
+  mathWrappersSetRealZInput(true, 4, 0);
+}
+
+static void configureLINPOLInvalidY(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRegisterYSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealZInput(true, 4, 0);
+}
+
+static void configureLINPOLInvalidZ(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 1, 0);
+  mathWrappersSetRealYInput(true, 10, 0);
+  mathWrappersSetRegisterZSurface(dtComplex34Matrix, amNone);
 }
 
 static void configureUnitVectorComplex(void) {
@@ -4081,12 +4179,16 @@ int main(void) {
   failures += runCase("fnCross/cxma_cxma", oracle_fnCross, fnCross, 0, true, configureCrossComplexMatrixComplexMatrix);
   failures += runCase("fnCross/rema_cxma", oracle_fnCross, fnCross, 0, true, configureCrossRealMatrixComplexMatrix);
   failures += runCase("fnCross/cxma_rema", oracle_fnCross, fnCross, 0, true, configureCrossComplexMatrixRealMatrix);
+  failures += runCase("fnCross/x_matrix_invalid", oracle_fnCross, fnCross, 0, true, configureCrossXMatrixInvalid);
+  failures += runCase("fnCross/y_matrix_invalid", oracle_fnCross, fnCross, 0, true, configureCrossYMatrixInvalid);
   failures += runCase("fnDot/real", oracle_fnDot, fnDot, 0, true, configureDotReal);
   failures += runCase("fnDot/complex", oracle_fnDot, fnDot, 0, true, configureDotComplex);
   failures += runCase("fnDot/rema_rema", oracle_fnDot, fnDot, 0, true, configureDotRealMatrixRealMatrix);
   failures += runCase("fnDot/cxma_cxma", oracle_fnDot, fnDot, 0, true, configureDotComplexMatrixComplexMatrix);
   failures += runCase("fnDot/rema_cxma", oracle_fnDot, fnDot, 0, true, configureDotRealMatrixComplexMatrix);
   failures += runCase("fnDot/cxma_rema", oracle_fnDot, fnDot, 0, true, configureDotComplexMatrixRealMatrix);
+  failures += runCase("fnDot/x_matrix_invalid", oracle_fnDot, fnDot, 0, true, configureDotXMatrixInvalid);
+  failures += runCase("fnDot/y_matrix_invalid", oracle_fnDot, fnDot, 0, true, configureDotYMatrixInvalid);
   failures += runCase("fnPercentMRR/real", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRReal);
   failures += runCase("fnPercentMRR/spcres_zero_zero", oracle_fnPercentMRR, fnPercentMRR, 0, true, configurePercentMRRSpcResZeroZero);
   failures += runCase("fnPercentPlusMG/real", oracle_fnPercentPlusMG, fnPercentPlusMG, 0, true, configurePercentPlusMGReal);
@@ -4114,6 +4216,14 @@ int main(void) {
   failures += runCase("fnFib/longint", oracle_fnFib, fnFib, 0, true, configureFibLongInteger);
   failures += runCase("fnLINPOL/real", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLReal);
   failures += runCase("fnLINPOL/complex", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLComplex);
+  failures += runCase("fnLINPOL/int_mix", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLIntegerMix);
+  failures += runCase("fnLINPOL/time", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLTime);
+  failures += runCase("fnLINPOL/date", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLDate);
+  failures += runCase("fnLINPOL/angle_mixed", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLAngleMixed);
+  failures += runCase("fnLINPOL/x_invalid", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLInvalidX);
+  failures += runCase("fnLINPOL/yz_mismatch", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLDifferingYZ);
+  failures += runCase("fnLINPOL/y_invalid", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLInvalidY);
+  failures += runCase("fnLINPOL/z_invalid", oracle_fnLINPOL, fnLINPOL, 0, true, configureLINPOLInvalidZ);
   failures += runCase("fnDec/real_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecReal);
   failures += runCase("fnDec/complex_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecComplex);
   failures += runCase("fnDec/shortint_x", oracle_fnDec, fnDec, REGISTER_X, true, configureIncDecShortInteger);

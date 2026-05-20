@@ -763,6 +763,16 @@ void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag) {
   current_register_tag = tag;
 }
 
+void mathWrappersSetRegisterYSurface(uint32_t data_type, uint32_t tag) {
+  current_register_y_data_type = data_type;
+  current_register_y_tag = tag;
+}
+
+void mathWrappersSetRegisterZSurface(uint32_t data_type, uint32_t tag) {
+  current_register_z_data_type = data_type;
+  current_register_z_tag = tag;
+}
+
 void mathWrappersSetRealInput(bool_t available, int32_t value, uint8_t bits) {
   real_input.available = available;
   setFakeReal(&real_input.value, value, bits);
@@ -3507,12 +3517,36 @@ void longIntegerFibonacci(uint32_t n, longInteger_t result) {
 
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   (void)source;
-  (void)destination;
+
+  if(destination == REGISTER_Y) {
+    current_register_y_data_type = dtReal34;
+    current_register_y_tag = amNone;
+  }
+  else if(destination == REGISTER_Z) {
+    current_register_z_data_type = dtReal34;
+    current_register_z_tag = amNone;
+  }
+  else {
+    current_register_data_type = dtReal34;
+    current_register_tag = amNone;
+  }
 }
 
 void convertReal34RegisterToTimeRegister(calcRegister_t source, calcRegister_t destination) {
   (void)source;
-  (void)destination;
+
+  if(destination == REGISTER_Y) {
+    current_register_y_data_type = dtTime;
+    current_register_y_tag = amNone;
+  }
+  else if(destination == REGISTER_Z) {
+    current_register_z_data_type = dtTime;
+    current_register_z_tag = amNone;
+  }
+  else {
+    current_register_data_type = dtTime;
+    current_register_tag = amNone;
+  }
 }
 
 void internalDateToJulianDay(real34_t *source, real34_t *destination) {
