@@ -16,7 +16,10 @@ pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 pub const REGISTER_L: calcRegister_t = 108;
 
 pub const amRadian: angularMode_t = 0;
+pub const amGrad: angularMode_t = 1;
 pub const amDegree: angularMode_t = 2;
+pub const amDMS: angularMode_t = 3;
+pub const amMultPi: angularMode_t = 4;
 pub extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 pub const amNone: angularMode_t = 5;
 pub const amPolar: angularMode_t = 16;
@@ -240,6 +243,7 @@ pub extern fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRe
 pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
 pub extern fn fraction(regist: calcRegister_t, sign: *i16, int_part: *u64, numer: *u64, denom: *u64, less_equal_greater: *i16) bool;
 pub extern fn convertAngleFromTo(angle: *real_t, from_angular_mode: angularMode_t, to_angular_mode: angularMode_t, real_context: *realContext_t) void;
+pub extern fn mod2Pi(x: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn real34RectangularToPolar(real: *const real34_t, imag: *const real34_t, magnitude: *real34_t, theta: *real34_t) void;
 pub extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: i32, real_context: *realContext_t) void;
 pub extern fn realPolarToRectangular(
@@ -563,6 +567,9 @@ pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, di
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
+pub extern fn decNumberCompare(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
+pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
@@ -693,6 +700,9 @@ pub extern fn z47_math_wrappers_const_piOn4() *const real_t;
 pub extern fn z47_math_wrappers_const_3piOn4() *const real_t;
 pub extern fn z47_math_wrappers_const_piOn2() *const real_t;
 pub extern fn z47_math_wrappers_const_pi() *const real_t;
+pub extern fn z47_math_wrappers_const75_piOn4() *const real_t;
+pub extern fn z47_math_wrappers_const75_piOn2() *const real_t;
+pub extern fn z47_math_wrappers_const75_pi() *const real_t;
 pub extern fn z47_math_wrappers_const_plus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
 pub extern fn z47_math_wrappers_minus_one_power_long_integer() void;

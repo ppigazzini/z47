@@ -84,6 +84,18 @@ const real_t *z47_math_wrappers_const_2e6(void) {
   return &value;
 }
 
+const real_t *z47_math_wrappers_const_90(void) {
+  return const_90;
+}
+
+const real_t *z47_math_wrappers_const_100(void) {
+  return const_100;
+}
+
+const real_t *z47_math_wrappers_const_180(void) {
+  return const_180;
+}
+
 const real_t *z47_math_wrappers_const_ln10(void) {
   return const39_ln10;
 }
@@ -96,6 +108,17 @@ const real_t *z47_math_wrappers_const_3piOn4(void) {
   return const39_3piOn4;
 }
 
+const real_t *z47_math_wrappers_const75_piOn4(void) {
+  return const75_piOn4;
+}
+
+const real_t *z47_math_wrappers_const75_piOn2(void) {
+  return const75_piOn2;
+}
+
+const real_t *z47_math_wrappers_const75_pi(void) {
+  return const75_pi;
+}
 const real_t *z47_math_wrappers_const_piOn2(void) {
   return const39_piOn2;
 }
