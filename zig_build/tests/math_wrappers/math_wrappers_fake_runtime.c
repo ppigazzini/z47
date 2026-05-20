@@ -120,6 +120,9 @@ static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_100_value;
 static real_t fake_const_180_value;
+static real_t fake_const_pi_on4_value;
+static real_t fake_const_3pi_on4_value;
+static real_t fake_const_pi_on2_value;
 static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 static real_t fake_const_1e_6_value;
@@ -3606,6 +3609,21 @@ const real_t *z47_math_wrappers_const_100(void) {
 
 const real_t *z47_math_wrappers_const_180(void) {
   return &fake_const_180_value;
+}
+
+const real_t *z47_math_wrappers_const_piOn4(void) {
+  setFakeRealWithCoeff(&fake_const_pi_on4_value, 75, 0, -2);
+  return &fake_const_pi_on4_value;
+}
+
+const real_t *z47_math_wrappers_const_3piOn4(void) {
+  setFakeRealWithCoeff(&fake_const_3pi_on4_value, 225, 0, -2);
+  return &fake_const_3pi_on4_value;
+}
+
+const real_t *z47_math_wrappers_const_piOn2(void) {
+  setFakeRealWithCoeff(&fake_const_pi_on2_value, 15, 0, -1);
+  return &fake_const_pi_on2_value;
 }
 
 void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {

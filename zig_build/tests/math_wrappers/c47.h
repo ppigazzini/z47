@@ -303,6 +303,9 @@ extern uint64_t systemFlags1;
 #define const_90 ((real_t *)z47_math_wrappers_const_90())
 #define const39_ln2 ((real_t *)z47_math_wrappers_const_ln2())
 #define const39_ln10 ((real_t *)z47_math_wrappers_const_ln10())
+#define const39_piOn4 ((real_t *)z47_math_wrappers_const_piOn4())
+#define const39_3piOn4 ((real_t *)z47_math_wrappers_const_3piOn4())
+#define const39_piOn2 ((real_t *)z47_math_wrappers_const_piOn2())
 #define const39_PHI ((real_t *)z47_math_wrappers_const_phi())
 #define const39_pi ((real_t *)z47_math_wrappers_const_pi())
 #define const_plusInfinity ((real_t *)z47_math_wrappers_const_plus_infinity())
@@ -623,6 +626,9 @@ const real_t *z47_math_wrappers_const_1oneE(void);
 const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
 const real_t *z47_math_wrappers_const_ln10(void);
+const real_t *z47_math_wrappers_const_piOn4(void);
+const real_t *z47_math_wrappers_const_3piOn4(void);
+const real_t *z47_math_wrappers_const_piOn2(void);
 const real_t *z47_math_wrappers_const_phi(void);
 const real_t *z47_math_wrappers_const_pi(void);
 const real_t *z47_math_wrappers_const_plus_infinity(void);

@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
+const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -939,7 +940,7 @@ fn lnP1Complex(
     threshold.exponent = -6;
     threshold.lsu[0] = 1;
 
-    runtime.realRectangularToPolar(real, imag, &magnitude, &dummy, real_context);
+    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, &magnitude, &dummy, real_context);
     if (realAbsLessThan(&magnitude, &threshold)) {
         var term_real: runtime.real_t = undefined;
         var term_imag: runtime.real_t = undefined;
@@ -987,7 +988,7 @@ fn lnP1Complex(
         return;
     }
 
-    runtime.realRectangularToPolar(&one_plus_real, imag, ln_real, ln_imag, real_context);
+    rectangular_to_polar_owned.realRectangularToPolarZig(&one_plus_real, imag, ln_real, ln_imag, real_context);
     wp34sLn(ln_real, ln_real, real_context);
 }
 
@@ -2262,7 +2263,7 @@ fn argCplx() callconv(.c) void {
         return;
     }
 
-    runtime.realRectangularToPolar(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.realRectangularToPolarZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
@@ -6490,7 +6491,7 @@ fn tryFnToPolar2Real34Pair() bool {
     loadToPolarNumericInput(real_reg, data_type_x, &real_value);
     loadToPolarNumericInput(imag_reg, data_type_y, &imag_value);
 
-    runtime.realRectangularToPolar(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.realRectangularToPolarZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);
