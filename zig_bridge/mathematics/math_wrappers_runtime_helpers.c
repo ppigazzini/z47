@@ -781,6 +781,20 @@ const real_t *z47_math_wrappers_const_90(void) {
 #endif
 }
 
+#ifndef Z47_MATH_WRAPPERS_C47_H
+const real_t *z47_math_wrappers_const_100(void) {
+  return const_100;
+}
+
+#endif
+
+#ifndef Z47_MATH_WRAPPERS_C47_H
+const real_t *z47_math_wrappers_const_180(void) {
+  return const_180;
+}
+
+#endif
+
 const real_t *z47_math_wrappers_const_ln2(void) {
 #ifdef Z47_MATH_WRAPPERS_C47_H
   static bool initialized = false;
@@ -797,6 +811,53 @@ const real_t *z47_math_wrappers_const_ln2(void) {
 #endif
 }
 
+const real_t *z47_math_wrappers_const75_piOn4(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 3);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const75_piOn4;
+#endif
+}
+
+const real_t *z47_math_wrappers_const75_piOn2(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 3);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const75_piOn2;
+#endif
+}
+
+const real_t *z47_math_wrappers_const75_pi(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 3);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const75_pi;
+#endif
+}
 const real_t *z47_math_wrappers_const_ln10(void) {
 #ifdef Z47_MATH_WRAPPERS_C47_H
   static bool initialized = false;
