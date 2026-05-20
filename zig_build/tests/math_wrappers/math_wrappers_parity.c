@@ -59,6 +59,7 @@ void fnDblDivide(uint16_t unusedButMandatoryParameter);
 void fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void fnUlp(uint16_t unusedButMandatoryParameter);
 void fnMant(uint16_t unusedButMandatoryParameter);
+void fnRound(uint16_t unusedButMandatoryParameter);
 void fnRoundi(uint16_t unusedButMandatoryParameter);
 void fnDecomp(uint16_t unusedButMandatoryParameter);
 void fnNeighb(uint16_t unusedButMandatoryParameter);
@@ -175,6 +176,7 @@ void oracle_fnDblDivide(uint16_t unusedButMandatoryParameter);
 void oracle_fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
 void oracle_fnMant(uint16_t unusedButMandatoryParameter);
+void oracle_fnRound(uint16_t unusedButMandatoryParameter);
 void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
 void oracle_fnDecomp(uint16_t unusedButMandatoryParameter);
 void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
@@ -1680,6 +1682,23 @@ static void configureAlmostEqualShortLongTFalse(void) {
   mathWrappersSetRegisterSurface(dtShortInteger, 16);
   mathWrappersSetShortIntegerInput(7);
   mathWrappersSetLongIntegerTInput(true, 9);
+}
+
+static void configureRoundLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 123);
+}
+
+static void configureRoundShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(77);
+}
+
+static void configureRoundShortIntegerSaveLastXFailure(void) {
+  configureRoundShortInteger();
+  mathWrappersSetSaveLastXResult(false);
 }
 
 static void configureIsConvergedRelativeRealTrue(void) {
@@ -3287,6 +3306,9 @@ int main(void) {
   failures += runCase("fnXAlmostEqual/shortint_y_true", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_Y, true, configureAlmostEqualShortIntegerYTrue);
   failures += runCase("fnXAlmostEqual/longint_z_true", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_Z, true, configureAlmostEqualLongIntegerZTrue);
   failures += runCase("fnXAlmostEqual/short_long_t_false", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_T, true, configureAlmostEqualShortLongTFalse);
+  failures += runCase("fnRound/longint", oracle_fnRound, fnRound, 0, true, configureRoundLongInteger);
+  failures += runCase("fnRound/shortint", oracle_fnRound, fnRound, 0, true, configureRoundShortInteger);
+  failures += runCase("fnRound/shortint_save_last_x_false", oracle_fnRound, fnRound, 0, true, configureRoundShortIntegerSaveLastXFailure);
   failures += runCase("fnIsConverged/relative_real_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealTrue);
   failures += runCase("fnIsConverged/relative_real_false", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealFalse);
   failures += runCase("fnIsConverged/absolute_complex_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_ABSOLUTE, true, configureIsConvergedAbsoluteComplexTrue);

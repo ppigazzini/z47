@@ -3,6 +3,7 @@
 #include "c47.h"
 
 void z47_math_wrappers_retained_fnXAlmostEqual(uint16_t regist);
+void z47_math_wrappers_retained_fnRound(uint16_t unusedButMandatoryParameter);
 
 #define fnMin oracle_fnMin
 #include "../../../src/c47/mathematics/min.c"
@@ -686,6 +687,21 @@ void oracle_fnXAlmostEqual(uint16_t regist) {
 	}
 
 	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_EQUAL);
+}
+
+void oracle_fnRound(uint16_t unusedButMandatoryParameter) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+
+	if(xType != dtShortInteger && xType != dtLongInteger) {
+		z47_math_wrappers_retained_fnRound(unusedButMandatoryParameter);
+		return;
+	}
+
+	if(!saveLastX()) {
+		return;
+	}
+
+	adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
 
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter) {
