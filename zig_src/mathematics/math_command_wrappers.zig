@@ -4598,6 +4598,84 @@ fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     return true;
 }
 
+fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
+    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+    const x_is_long = type_x == runtime.dtLongInteger;
+    const y_is_long = type_y == runtime.dtLongInteger;
+    const x_is_short = type_x == runtime.dtShortInteger;
+    const y_is_short = type_y == runtime.dtShortInteger;
+
+    if (!(x_is_long or x_is_short) or !(y_is_long or y_is_short) or (x_is_short and y_is_short)) {
+        return false;
+    }
+
+    if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    var x_value: runtime.longInteger_t = undefined;
+    var y_value: runtime.longInteger_t = undefined;
+
+    if (x_is_long) {
+        runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
+    } else {
+        runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
+    }
+
+    if (y_is_long) {
+        runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y_value[0]);
+    } else {
+        runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y_value[0]);
+    }
+
+    defer runtime.__gmpz_clear(&x_value[0]);
+    defer runtime.__gmpz_clear(&y_value[0]);
+
+    if (x_value[0]._mp_size == 0) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.moreInfoOnError(
+            if (with_remainder) "In function fnIDivR:" else "In function fnIDiv:",
+            "cannot divide current integer pair by 0",
+            null,
+            null,
+        );
+    } else if (with_remainder) {
+        var quotient: runtime.longInteger_t = undefined;
+        var remainder: runtime.longInteger_t = undefined;
+
+        runtime.__gmpz_init(&quotient[0]);
+        runtime.__gmpz_init(&remainder[0]);
+        defer runtime.__gmpz_clear(&quotient[0]);
+        defer runtime.__gmpz_clear(&remainder[0]);
+
+        runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y_value[0], &x_value[0]);
+        runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], runtime.REGISTER_X);
+        if (y_is_short) {
+            runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterShortIntegerBase(runtime.REGISTER_Y), runtime.REGISTER_Y);
+        } else {
+            runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_Y);
+        }
+    } else {
+        var remainder: runtime.longInteger_t = undefined;
+
+        runtime.__gmpz_init(&remainder[0]);
+        defer runtime.__gmpz_clear(&remainder[0]);
+
+        runtime.__gmpz_tdiv_qr(&x_value[0], &remainder[0], &y_value[0], &x_value[0]);
+        runtime.convertLongIntegerToLongIntegerRegister(&x_value[0], runtime.REGISTER_X);
+    }
+
+    if (with_remainder) {
+        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
+        runtime.adjustResult(runtime.REGISTER_Y, false, false, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
+    } else {
+        runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
+    }
+
+    return true;
+}
+
 pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (tryDyadicLongIntegerArithmetic(dyadic_integer_add)) {
         return;
@@ -4627,10 +4705,18 @@ pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (tryDyadicLongIntegerDivide(false)) {
+        return;
+    }
+
     z47_math_wrappers_retained_fnIDiv(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (tryDyadicLongIntegerDivide(true)) {
+        return;
+    }
+
     z47_math_wrappers_retained_fnIDivR(unused_but_mandatory_parameter);
 }
 
