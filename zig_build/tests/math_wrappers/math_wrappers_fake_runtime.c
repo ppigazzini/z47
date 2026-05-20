@@ -34,75 +34,41 @@ static complex34Matrix_t fake_complex_matrix;
 static real34Matrix_t fake_real_y_matrix;
 static complex34Matrix_t fake_complex_y_matrix;
 
-static struct {
+typedef struct {
   bool_t available;
   real_t value;
-} real_input;
+} real_register_input_t;
 
-static struct {
-  bool_t available;
-  real_t value;
-} real_y_input;
-
-static struct {
-  bool_t available;
-  real_t value;
-} real_z_input;
-
-static struct {
-  bool_t available;
-  real_t value;
-} real_t_input;
-
-static struct {
+typedef struct {
   bool_t available;
   real_t value;
   angularMode_t angle_mode;
-} real_angle_input;
+} real_angle_input_t;
 
-static struct {
+typedef struct {
   bool_t available;
   real_t real;
   real_t imag;
-} complex_input;
+} complex_register_input_t;
 
-static struct {
-  bool_t available;
-  real_t real;
-  real_t imag;
-} complex_y_input;
-
-static struct {
-  bool_t available;
-  real_t real;
-  real_t imag;
-} complex_z_input;
-
-static struct {
-  bool_t available;
-  real_t real;
-  real_t imag;
-} complex_t_input;
-
-static struct {
+typedef struct {
   bool_t available;
   int32_t value;
-} longint_input;
+} longint_register_input_t;
 
-static struct {
-  bool_t available;
-  int32_t value;
-} longint_y_input;
-
-static struct {
-  bool_t available;
-  int32_t value;
-} longint_z_input;
-
-static struct {
-  bool_t available;
-  int32_t value;
-} longint_t_input;
+static real_register_input_t real_input;
+static real_register_input_t real_y_input;
+static real_register_input_t real_z_input;
+static real_register_input_t real_t_input;
+static real_angle_input_t real_angle_input;
+static complex_register_input_t complex_input;
+static complex_register_input_t complex_y_input;
+static complex_register_input_t complex_z_input;
+static complex_register_input_t complex_t_input;
+static longint_register_input_t longint_input;
+static longint_register_input_t longint_y_input;
+static longint_register_input_t longint_z_input;
+static longint_register_input_t longint_t_input;
 
 static struct {
   bool_t result;
@@ -158,12 +124,25 @@ static real_t fake_const_plus_infinity_value;
 static real_t fake_const_minus_infinity_value;
 static real_t fake_const_1e_6_value;
 static real34_t fake_const34_zero_value;
+static real34_t fake_const34_86400_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
 char errorMessage[ERROR_MESSAGE_LENGTH];
 char tmpString[ERROR_MESSAGE_LENGTH];
 const char *commonBugScreenMessages[] = {
   "%s %u %s",
+};
+const font_t standardFont = {0};
+const font_t numericFont = {0};
+uint8_t roundingMode = 0;
+const enum rounding roundingModeTable[7] = {
+  DEC_ROUND_HALF_EVEN,
+  DEC_ROUND_HALF_UP,
+  DEC_ROUND_HALF_DOWN,
+  DEC_ROUND_UP,
+  DEC_ROUND_DOWN,
+  DEC_ROUND_CEILING,
+  DEC_ROUND_FLOOR,
 };
 
 static uint128_t pow10u(uint32_t exponent) {
@@ -181,6 +160,8 @@ static uint128_t loadFakeCoeff(const real_t *value) {
   memcpy(&coeff, value->lsu, sizeof(coeff));
   return coeff;
 }
+
+static int32_t fakeRealValue(const real_t *value);
 
 static void storeFakeCoeff(real_t *value, uint128_t coeff) {
   memset(value->lsu, 0, sizeof(value->lsu));
@@ -311,6 +292,169 @@ static uint8_t *registerDataSlot(calcRegister_t reg) {
   return register_slot;
 }
 
+typedef struct {
+  uint32_t data_type;
+  uint32_t tag;
+  uint8_t data_slot[32];
+  uint64_t shortint_raw;
+  real_register_input_t real_value;
+  complex_register_input_t complex_value;
+  longint_register_input_t longint_value;
+  real34Matrix_t real_matrix;
+  complex34Matrix_t complex_matrix;
+} fakeRegisterSurface_t;
+
+static real_register_input_t *realInputSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &real_y_input;
+  }
+  if(reg == REGISTER_Z) {
+    return &real_z_input;
+  }
+  if(reg == REGISTER_T) {
+    return &real_t_input;
+  }
+  return &real_input;
+}
+
+static complex_register_input_t *complexInputSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &complex_y_input;
+  }
+  if(reg == REGISTER_Z) {
+    return &complex_z_input;
+  }
+  if(reg == REGISTER_T) {
+    return &complex_t_input;
+  }
+  return &complex_input;
+}
+
+static longint_register_input_t *longIntInputSlot(calcRegister_t reg) {
+  if(reg == REGISTER_Y) {
+    return &longint_y_input;
+  }
+  if(reg == REGISTER_Z) {
+    return &longint_z_input;
+  }
+  if(reg == REGISTER_T) {
+    return &longint_t_input;
+  }
+  return &longint_input;
+}
+
+static real34Matrix_t *realMatrixSlot(calcRegister_t reg) {
+  return reg == REGISTER_Y ? &fake_real_y_matrix : &fake_real_matrix;
+}
+
+static complex34Matrix_t *complexMatrixSlot(calcRegister_t reg) {
+  return reg == REGISTER_Y ? &fake_complex_y_matrix : &fake_complex_matrix;
+}
+
+static uint16_t cappedMatrixElementCount(uint16_t rows, uint16_t columns) {
+  const uint32_t count = (uint32_t)rows * (uint32_t)columns;
+  return (uint16_t)(count < 4 ? count : 4);
+}
+
+static void refreshXScalarMirror(void) {
+  const int32_t value = fakeRealValue(&real_input.value);
+
+  register_scalar_available = real_input.available;
+  register_scalar_magnitude = register_scalar_available ? (uint32_t)(value < 0 ? -value : value) : 0;
+}
+
+static void captureRegisterSurface(calcRegister_t reg, fakeRegisterSurface_t *surface) {
+  memset(surface, 0, sizeof(*surface));
+  surface->data_type = *registerDataTypeSlot(reg);
+  surface->tag = *registerTagSlot(reg);
+  memcpy(surface->data_slot, registerDataSlot(reg), sizeof(surface->data_slot));
+  surface->shortint_raw = *shortIntegerSlot(reg);
+  surface->real_value = *realInputSlot(reg);
+  surface->complex_value = *complexInputSlot(reg);
+  surface->longint_value = *longIntInputSlot(reg);
+  if(reg == REGISTER_X || reg == REGISTER_Y) {
+    surface->real_matrix = *realMatrixSlot(reg);
+    surface->complex_matrix = *complexMatrixSlot(reg);
+  }
+}
+
+static void restoreRegisterSurface(calcRegister_t reg, const fakeRegisterSurface_t *surface) {
+  *registerDataTypeSlot(reg) = surface->data_type;
+  *registerTagSlot(reg) = surface->tag;
+  memcpy(registerDataSlot(reg), surface->data_slot, sizeof(surface->data_slot));
+  *shortIntegerSlot(reg) = surface->shortint_raw;
+  *realInputSlot(reg) = surface->real_value;
+  *complexInputSlot(reg) = surface->complex_value;
+  *longIntInputSlot(reg) = surface->longint_value;
+  if(reg == REGISTER_X || reg == REGISTER_Y) {
+    *realMatrixSlot(reg) = surface->real_matrix;
+    *complexMatrixSlot(reg) = surface->complex_matrix;
+  }
+  if(reg == REGISTER_X) {
+    refreshXScalarMirror();
+  }
+}
+
+static void matrixMismatch(void) {
+  displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+static uint16_t matrixIndex(uint16_t row, uint16_t column, uint16_t columns) {
+  return (uint16_t)(row * columns + column);
+}
+
+static bool_t realMatrixShapesMatch(const real34Matrix_t *lhs, const real34Matrix_t *rhs) {
+  return lhs->header.matrixRows == rhs->header.matrixRows && lhs->header.matrixColumns == rhs->header.matrixColumns;
+}
+
+static bool_t complexMatrixShapesMatch(const complex34Matrix_t *lhs, const complex34Matrix_t *rhs) {
+  return lhs->header.matrixRows == rhs->header.matrixRows && lhs->header.matrixColumns == rhs->header.matrixColumns;
+}
+
+static void real34ToRealPair(const real34_t *source, real_t *destination) {
+  real34ToReal(source, destination);
+}
+
+static void complex34ToRealPair(const complex34_t *source, real_t *real, real_t *imag) {
+  real34ToReal(&source->real, real);
+  real34ToReal(&source->imag, imag);
+}
+
+static void realPairToComplex34(const real_t *real, const real_t *imag, complex34_t *destination) {
+  realToReal34(real, &destination->real);
+  realToReal34(imag, &destination->imag);
+}
+
+static void addComplexValues(const real_t *lhs_real,
+                             const real_t *lhs_imag,
+                             const real_t *rhs_real,
+                             const real_t *rhs_imag,
+                             real_t *sum_real,
+                             real_t *sum_imag,
+                             realContext_t *realContext) {
+  realAdd(lhs_real, rhs_real, sum_real, realContext);
+  realAdd(lhs_imag, rhs_imag, sum_imag, realContext);
+}
+
+static void subtractComplexValues(const real_t *lhs_real,
+                                  const real_t *lhs_imag,
+                                  const real_t *rhs_real,
+                                  const real_t *rhs_imag,
+                                  real_t *diff_real,
+                                  real_t *diff_imag,
+                                  realContext_t *realContext) {
+  realSubtract(lhs_real, rhs_real, diff_real, realContext);
+  realSubtract(lhs_imag, rhs_imag, diff_imag, realContext);
+}
+
+static bool_t realIsZeroLike(const real_t *value) {
+  return realCompareEqual(value, const_0);
+}
+
+static bool_t complexIsZeroLike(const real_t *real, const real_t *imag) {
+  return realIsZeroLike(real) && realIsZeroLike(imag);
+}
+
 static void setFakeRealWithExponent(real_t *value, int32_t signed_value, uint8_t bits, int32_t exponent) {
   setFakeRealWithCoeff(value, signed_value, bits, exponent);
 }
@@ -436,6 +580,7 @@ void mathWrappersReset(void) {
   shortIntegerMode = SIM_UNSIGN;
   shortIntegerWordSize = 64;
   currentAngularMode = amNone;
+  roundingMode = 0;
   thereIsSomethingToUndo = false;
   lastErrorCode = 0;
   systemFlags0 = 0;
@@ -454,6 +599,7 @@ void mathWrappersReset(void) {
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
   setFakeRealWithExponent(&fake_const_1e_6_value, 1, 0, -6);
   setRegisterReal34((uint8_t *)&fake_const34_zero_value, 0, 0);
+  setRegisterReal34((uint8_t *)&fake_const34_86400_value, 86400, 0);
   setRegisterReal34(register_slot, 2, 0);
   setRegisterReal34(register_slot + sizeof(real34_t), 3, 0);
 
@@ -486,8 +632,94 @@ void mathWrappersSetSaveLastXResult(bool_t result) {
 }
 
 void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegister_t dest_register) {
-  (void)source_register;
-  (void)dest_register;
+  fakeRegisterSurface_t surface;
+
+  captureRegisterSurface(source_register, &surface);
+  restoreRegisterSurface(dest_register, &surface);
+}
+
+void fnSwapXY(uint16_t unusedButMandatoryParameter) {
+  fakeRegisterSurface_t x_surface;
+  fakeRegisterSurface_t y_surface;
+
+  (void)unusedButMandatoryParameter;
+  captureRegisterSurface(REGISTER_X, &x_surface);
+  captureRegisterSurface(REGISTER_Y, &y_surface);
+  restoreRegisterSurface(REGISTER_X, &y_surface);
+  restoreRegisterSurface(REGISTER_Y, &x_surface);
+}
+
+int16_t stringByteLength(const char *value) {
+  return value == NULL ? 0 : (int16_t)strlen(value);
+}
+
+int16_t stringGlyphLength(const char *value) {
+  return stringByteLength(value);
+}
+
+void xcopy(void *destination, const void *source, size_t length) {
+  memcpy(destination, source, length);
+}
+
+void fractionToDisplayString(calcRegister_t regist, char *displayString) {
+  (void)regist;
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "fraction");
+}
+
+void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
+  int16_t sign = 0;
+  uint64_t value = 0;
+
+  (void)determineFont;
+  (void)baseOverride;
+  convertShortIntegerRegisterToUInt64(regist, &sign, &value);
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "%s%llu", sign ? "-" : "", (unsigned long long)value);
+}
+
+void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac) {
+  (void)tag;
+  (void)font;
+  (void)maxWidth;
+  (void)displayHasNDigits;
+  (void)limitExponent;
+  (void)frontSpace;
+  (void)limitIrfrac;
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "%d", fakeReal34Value(real34));
+}
+
+void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar) {
+  (void)font;
+  (void)maxWidth;
+  (void)displayHasNDigits;
+  (void)limitExponent;
+  (void)frontSpace;
+  (void)limitIrfrac;
+  (void)tagAngle;
+  (void)tagPolar;
+  snprintf(displayString,
+           ERROR_MESSAGE_LENGTH,
+           "%d%+di",
+           fakeReal34Value(&complex34->real),
+           fakeReal34Value(&complex34->imag));
+}
+
+void dateToDisplayString(calcRegister_t regist, char *displayString) {
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "date:%d", fakeRealValue(&realInputSlot(regist)->value));
+}
+
+void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t ignoreTDisp) {
+  (void)ignoreTDisp;
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "time:%d", fakeRealValue(&realInputSlot(regist)->value));
+}
+
+void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) {
+  const real34Matrix_t *matrix = regist == REGISTER_Y ? &fake_real_y_matrix : &fake_real_matrix;
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "[%ux%u real matrix]", matrix->header.matrixRows, matrix->header.matrixColumns);
+}
+
+void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) {
+  const complex34Matrix_t *matrix = regist == REGISTER_Y ? &fake_complex_y_matrix : &fake_complex_matrix;
+  snprintf(displayString, ERROR_MESSAGE_LENGTH, "[%ux%u complex matrix]", matrix->header.matrixRows, matrix->header.matrixColumns);
 }
 
 real34_t *decQuadDivide(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context) {
@@ -1299,6 +1531,15 @@ void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegis
   setRegisterScalar(value, 0);
 }
 
+void convertLongIntegerRegisterToTimeRegister(calcRegister_t source, calcRegister_t destination) {
+  convertLongIntegerRegisterToReal34Register(source, destination);
+  *registerDataTypeSlot(destination) = dtTime;
+}
+
+void convertLongIntegerToReal34(longInteger_t source, real34_t *destination) {
+  setRegisterReal34((uint8_t *)destination, (int32_t)mpz_get_si(source), 0);
+}
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t reg) {
   const int32_t value = (int32_t)mpz_get_si(lgInt);
 
@@ -1352,6 +1593,43 @@ void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint
 void convertShortIntegerRegisterToReal(calcRegister_t source, real_t *destination, realContext_t *realContext) {
   (void)realContext;
   setFakeReal(destination, (int32_t)decodeShortInteger(*shortIntegerSlot(source), NULL), 0);
+}
+
+void convertShortIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
+  const int32_t value = (int32_t)decodeShortInteger(*shortIntegerSlot(source), NULL);
+
+  *registerDataTypeSlot(destination) = dtReal34;
+  *registerTagSlot(destination) = amNone;
+  if(destination == REGISTER_Y) {
+    real_y_input.available = true;
+    setFakeReal(&real_y_input.value, value, 0);
+    setRegisterReal34(register_y_slot, value, 0);
+    return;
+  }
+  if(destination == REGISTER_Z) {
+    real_z_input.available = true;
+    setFakeReal(&real_z_input.value, value, 0);
+    setRegisterReal34(register_z_slot, value, 0);
+    return;
+  }
+  if(destination == REGISTER_T) {
+    real_t_input.available = true;
+    setFakeReal(&real_t_input.value, value, 0);
+    setRegisterReal34(register_t_slot, value, 0);
+    return;
+  }
+  real_input.available = true;
+  setFakeReal(&real_input.value, value, 0);
+  setRegisterScalar(value, 0);
+  refreshXScalarMirror();
+}
+
+void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, calcRegister_t destination) {
+  longInteger_t value;
+
+  convertShortIntegerRegisterToLongInteger(source, value);
+  convertLongIntegerToLongIntegerRegister(value, destination);
+  longIntegerFree(value);
 }
 
 void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
@@ -1617,6 +1895,10 @@ void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t reg, real34Matrix_
   *matrix = reg == REGISTER_Y ? fake_real_y_matrix : fake_real_matrix;
 }
 
+void convertComplex34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix) {
+  *matrix = reg == REGISTER_Y ? fake_complex_y_matrix : fake_complex_matrix;
+}
+
 void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix) {
   const real34Matrix_t *source = reg == REGISTER_Y ? &fake_real_y_matrix : &fake_real_matrix;
 
@@ -1640,6 +1922,616 @@ void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *realMatrix, comp
     complexMatrix->matrixElements[i].real = realMatrix->matrixElements[i];
     setRegisterReal34((uint8_t *)&complexMatrix->matrixElements[i].imag, 0, 0);
   }
+}
+
+void elementwiseRealRema(void (*func)(void)) {
+  real34Matrix_t matrix;
+  real_t y_input_value;
+  real34_t y_value;
+
+  if(func == NULL || !getRegisterAsReal(REGISTER_Y, &y_input_value)) {
+    return;
+  }
+
+  realToReal34(&y_input_value, &y_value);
+  convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &matrix);
+
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix.header.matrixRows, matrix.header.matrixColumns); ++i) {
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    real34Copy(&y_value, REGISTER_REAL34_DATA(REGISTER_Y));
+    real34Copy(&matrix.matrixElements[i], REGISTER_REAL34_DATA(REGISTER_X));
+    real_y_input.available = true;
+    setFakeReal(&real_y_input.value, fakeReal34Value(&y_value), y_value.bytes[15] & 0x70);
+    real_input.available = true;
+    setFakeReal(&real_input.value, fakeReal34Value(&matrix.matrixElements[i]), matrix.matrixElements[i].bytes[15] & 0x70);
+    func();
+    matrix.matrixElements[i] = *REGISTER_REAL34_DATA(REGISTER_X);
+  }
+
+  convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
+}
+
+void elementwiseCxmaReal(void (*func)(void)) {
+  complex34Matrix_t matrix;
+  real_t x_input_value;
+  real34_t x_value;
+
+  if(func == NULL || !getRegisterAsReal(REGISTER_X, &x_input_value)) {
+    return;
+  }
+
+  realToReal34(&x_input_value, &x_value);
+  convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &matrix);
+
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix.header.matrixRows, matrix.header.matrixColumns); ++i) {
+    reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    complex34Copy(&matrix.matrixElements[i], REGISTER_COMPLEX34_DATA(REGISTER_Y));
+    real34Copy(&x_value, REGISTER_REAL34_DATA(REGISTER_X));
+    complex_y_input.available = true;
+    complex34ToRealPair(&matrix.matrixElements[i], &complex_y_input.real, &complex_y_input.imag);
+    real_input.available = true;
+    setFakeReal(&real_input.value, fakeReal34Value(&x_value), x_value.bytes[15] & 0x70);
+    func();
+    matrix.matrixElements[i] = *REGISTER_COMPLEX34_DATA(REGISTER_X);
+  }
+
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+}
+
+void elementwiseRealCxma(void (*func)(void)) {
+  complex34Matrix_t matrix;
+  real_t y_input_value;
+  real34_t y_value;
+
+  if(func == NULL || !getRegisterAsReal(REGISTER_Y, &y_input_value)) {
+    return;
+  }
+
+  realToReal34(&y_input_value, &y_value);
+  convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &matrix);
+
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix.header.matrixRows, matrix.header.matrixColumns); ++i) {
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+    real34Copy(&y_value, REGISTER_REAL34_DATA(REGISTER_Y));
+    complex34Copy(&matrix.matrixElements[i], REGISTER_COMPLEX34_DATA(REGISTER_X));
+    real_y_input.available = true;
+    setFakeReal(&real_y_input.value, fakeReal34Value(&y_value), y_value.bytes[15] & 0x70);
+    complex_input.available = true;
+    complex34ToRealPair(&matrix.matrixElements[i], &complex_input.real, &complex_input.imag);
+    func();
+    matrix.matrixElements[i] = *REGISTER_COMPLEX34_DATA(REGISTER_X);
+  }
+
+  convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
+}
+
+static void multiplyComplexScalars(const complex34_t *lhs, const complex34_t *rhs, complex34_t *res, realContext_t *realContext) {
+  real_t lhs_real;
+  real_t lhs_imag;
+  real_t rhs_real;
+  real_t rhs_imag;
+  real_t prod_real;
+  real_t prod_imag;
+
+  complex34ToRealPair(lhs, &lhs_real, &lhs_imag);
+  complex34ToRealPair(rhs, &rhs_real, &rhs_imag);
+  mulComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &prod_real, &prod_imag, realContext);
+  realPairToComplex34(&prod_real, &prod_imag, res);
+}
+
+static void divideComplexScalars(const complex34_t *lhs, const complex34_t *rhs, complex34_t *res, realContext_t *realContext) {
+  real_t lhs_real;
+  real_t lhs_imag;
+  real_t rhs_real;
+  real_t rhs_imag;
+  real_t quot_real;
+  real_t quot_imag;
+
+  complex34ToRealPair(lhs, &lhs_real, &lhs_imag);
+  complex34ToRealPair(rhs, &rhs_real, &rhs_imag);
+  divComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &quot_real, &quot_imag, realContext);
+  realPairToComplex34(&quot_real, &quot_imag, res);
+}
+
+static void negateComplex34(const complex34_t *value, complex34_t *res) {
+  *res = *value;
+  real34ChangeSign(&res->real);
+  real34ChangeSign(&res->imag);
+}
+
+uint32_t getInfiniteComplexAngle(real_t *x, real_t *y) {
+  if(!realIsInfinite(x)) {
+    return 2 + 4 * realIsNegative(y);
+  }
+  if(!realIsInfinite(y)) {
+    return 4 * realIsNegative(x);
+  }
+  if(realIsPositive(x)) {
+    return 1 + 6 * realIsNegative(y);
+  }
+  return 3 + 2 * realIsNegative(y);
+}
+
+void setInfiniteComplexAngle(uint32_t angle, real_t *x, real_t *y) {
+  switch(angle) {
+    case 3:
+    case 4:
+    case 5:
+      realSetMinusInfinity(x);
+      break;
+    case 2:
+    case 6:
+      realSetZero(x);
+      break;
+    default:
+      realSetPlusInfinity(x);
+      break;
+  }
+
+  switch(angle) {
+    case 5:
+    case 6:
+    case 7:
+      realSetMinusInfinity(y);
+      break;
+    case 0:
+    case 4:
+      realSetZero(y);
+      break;
+    default:
+      realSetPlusInfinity(y);
+      break;
+  }
+}
+
+void addRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  if(!realMatrixShapesMatch(y, x)) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  realMatrixInit(&out, y->header.matrixRows, y->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(y->header.matrixRows, y->header.matrixColumns); ++i) {
+    real34Add(&y->matrixElements[i], &x->matrixElements[i], &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void subtractRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  if(!realMatrixShapesMatch(y, x)) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  realMatrixInit(&out, y->header.matrixRows, y->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(y->header.matrixRows, y->header.matrixColumns); ++i) {
+    real34Subtract(&y->matrixElements[i], &x->matrixElements[i], &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void addComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res) {
+  complex34Matrix_t out;
+
+  if(!complexMatrixShapesMatch(y, x)) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  complexMatrixInit(&out, y->header.matrixRows, y->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(y->header.matrixRows, y->header.matrixColumns); ++i) {
+    real34Add(&y->matrixElements[i].real, &x->matrixElements[i].real, &out.matrixElements[i].real);
+    real34Add(&y->matrixElements[i].imag, &x->matrixElements[i].imag, &out.matrixElements[i].imag);
+  }
+  *res = out;
+}
+
+void subtractComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res) {
+  complex34Matrix_t out;
+
+  if(!complexMatrixShapesMatch(y, x)) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  complexMatrixInit(&out, y->header.matrixRows, y->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(y->header.matrixRows, y->header.matrixColumns); ++i) {
+    real34Subtract(&y->matrixElements[i].real, &x->matrixElements[i].real, &out.matrixElements[i].real);
+    real34Subtract(&y->matrixElements[i].imag, &x->matrixElements[i].imag, &out.matrixElements[i].imag);
+  }
+  *res = out;
+}
+
+void multiplyRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real34Multiply(&matrix->matrixElements[i], x, &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void _multiplyRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real_t value;
+
+    real34ToRealPair(&matrix->matrixElements[i], &value);
+    realMultiply(&value, x, &value, realContext);
+    realToReal34(&value, &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  if(y->header.matrixColumns != x->header.matrixRows) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  realMatrixInit(&out, y->header.matrixRows, x->header.matrixColumns);
+  for(uint16_t row = 0; row < y->header.matrixRows; ++row) {
+    for(uint16_t col = 0; col < x->header.matrixColumns; ++col) {
+      real_t sum;
+
+      realSetZero(&sum);
+      for(uint16_t iter = 0; iter < y->header.matrixColumns; ++iter) {
+        real_t lhs;
+        real_t rhs;
+        real_t prod;
+
+        real34ToRealPair(&y->matrixElements[matrixIndex(row, iter, y->header.matrixColumns)], &lhs);
+        real34ToRealPair(&x->matrixElements[matrixIndex(iter, col, x->header.matrixColumns)], &rhs);
+        realMultiply(&lhs, &rhs, &prod, &ctxtReal39);
+        realAdd(&sum, &prod, &sum, &ctxtReal39);
+      }
+      realToReal34(&sum, &out.matrixElements[matrixIndex(row, col, x->header.matrixColumns)]);
+    }
+  }
+  *res = out;
+}
+
+void multiplyComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
+  real_t xr_real;
+  real_t xi_real;
+
+  real34ToRealPair(xr, &xr_real);
+  real34ToRealPair(xi, &xi_real);
+  _multiplyComplexMatrix(matrix, &xr_real, &xi_real, res, &ctxtReal39);
+}
+
+void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext) {
+  complex34Matrix_t out;
+  complex34_t rhs;
+
+  realToReal34(xr, &rhs.real);
+  realToReal34(xi, &rhs.imag);
+  complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    multiplyComplexScalars(&matrix->matrixElements[i], &rhs, &out.matrixElements[i], realContext);
+  }
+  *res = out;
+}
+
+void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res) {
+  complex34Matrix_t out;
+
+  if(y->header.matrixColumns != x->header.matrixRows) {
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  complexMatrixInit(&out, y->header.matrixRows, x->header.matrixColumns);
+  for(uint16_t row = 0; row < y->header.matrixRows; ++row) {
+    for(uint16_t col = 0; col < x->header.matrixColumns; ++col) {
+      real_t sum_real;
+      real_t sum_imag;
+
+      realSetZero(&sum_real);
+      realSetZero(&sum_imag);
+      for(uint16_t iter = 0; iter < y->header.matrixColumns; ++iter) {
+        real_t lhs_real;
+        real_t lhs_imag;
+        real_t rhs_real;
+        real_t rhs_imag;
+        real_t prod_real;
+        real_t prod_imag;
+
+        complex34ToRealPair(&y->matrixElements[matrixIndex(row, iter, y->header.matrixColumns)], &lhs_real, &lhs_imag);
+        complex34ToRealPair(&x->matrixElements[matrixIndex(iter, col, x->header.matrixColumns)], &rhs_real, &rhs_imag);
+        mulComplexComplex(&lhs_real, &lhs_imag, &rhs_real, &rhs_imag, &prod_real, &prod_imag, &ctxtReal39);
+        realAdd(&sum_real, &prod_real, &sum_real, &ctxtReal39);
+        realAdd(&sum_imag, &prod_imag, &sum_imag, &ctxtReal39);
+      }
+      realPairToComplex34(&sum_real, &sum_imag, &out.matrixElements[matrixIndex(row, col, x->header.matrixColumns)]);
+    }
+  }
+  *res = out;
+}
+
+void divideRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real34Divide(&matrix->matrixElements[i], x, &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void divideByRealMatrix(const real34_t *y, const real34Matrix_t *matrix, real34Matrix_t *res) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real34Divide(y, &matrix->matrixElements[i], &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void _divideRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real_t value;
+
+    real34ToRealPair(&matrix->matrixElements[i], &value);
+    realDivide(&value, x, &value, realContext);
+    realToReal34(&value, &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+void _divideByRealMatrix(const real_t *y, const real34Matrix_t *matrix, real34Matrix_t *res, realContext_t *realContext) {
+  real34Matrix_t out;
+
+  realMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    real_t x;
+
+    real34ToRealPair(&matrix->matrixElements[i], &x);
+    realDivide(y, &x, &x, realContext);
+    realToReal34(&x, &out.matrixElements[i]);
+  }
+  *res = out;
+}
+
+static bool_t invertRealMatrix(const real34Matrix_t *matrix, real34Matrix_t *inverse) {
+  if(matrix->header.matrixRows != matrix->header.matrixColumns) {
+    return false;
+  }
+
+  if(matrix->header.matrixRows == 1) {
+    real34_t one;
+
+    realMatrixInit(inverse, 1, 1);
+    setRegisterReal34((uint8_t *)&one, 1, 0);
+    real34Divide(&one, &matrix->matrixElements[0], &inverse->matrixElements[0]);
+    return true;
+  }
+
+  if(matrix->header.matrixRows != 2) {
+    return false;
+  }
+
+  {
+    real_t a;
+    real_t b;
+    real_t c;
+    real_t d;
+    real_t ad;
+    real_t bc;
+    real_t det;
+    real_t inv_real;
+
+    real34ToRealPair(&matrix->matrixElements[0], &a);
+    real34ToRealPair(&matrix->matrixElements[1], &b);
+    real34ToRealPair(&matrix->matrixElements[2], &c);
+    real34ToRealPair(&matrix->matrixElements[3], &d);
+    realMultiply(&a, &d, &ad, &ctxtReal39);
+    realMultiply(&b, &c, &bc, &ctxtReal39);
+    realSubtract(&ad, &bc, &det, &ctxtReal39);
+    if(realIsZeroLike(&det)) {
+      return false;
+    }
+
+    realMatrixInit(inverse, 2, 2);
+    realDivide(&d, &det, &inv_real, &ctxtReal39);
+    realToReal34(&inv_real, &inverse->matrixElements[0]);
+    realChangeSign(&b);
+    realDivide(&b, &det, &inv_real, &ctxtReal39);
+    realToReal34(&inv_real, &inverse->matrixElements[1]);
+    realChangeSign(&c);
+    realDivide(&c, &det, &inv_real, &ctxtReal39);
+    realToReal34(&inv_real, &inverse->matrixElements[2]);
+    real34ToRealPair(&matrix->matrixElements[0], &a);
+    realDivide(&a, &det, &inv_real, &ctxtReal39);
+    realToReal34(&inv_real, &inverse->matrixElements[3]);
+  }
+
+  return true;
+}
+
+void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res) {
+  real34Matrix_t inverse;
+
+  if(y->header.matrixColumns != x->header.matrixRows || !invertRealMatrix(x, &inverse)) {
+    real34Matrix_t out;
+
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  multiplyRealMatrices(y, &inverse, res);
+}
+
+void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res) {
+  real_t xr_real;
+  real_t xi_real;
+
+  real34ToRealPair(xr, &xr_real);
+  real34ToRealPair(xi, &xi_real);
+  _divideComplexMatrix(matrix, &xr_real, &xi_real, res, &ctxtReal39);
+}
+
+void divideByComplexMatrix(const real34_t *yr, const real34_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res) {
+  real_t yr_real;
+  real_t yi_real;
+
+  real34ToRealPair(yr, &yr_real);
+  real34ToRealPair(yi, &yi_real);
+  _divideByComplexMatrix(&yr_real, &yi_real, matrix, res, &ctxtReal39);
+}
+
+void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext) {
+  complex34Matrix_t out;
+  complex34_t rhs;
+
+  realToReal34(xr, &rhs.real);
+  realToReal34(xi, &rhs.imag);
+  complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    divideComplexScalars(&matrix->matrixElements[i], &rhs, &out.matrixElements[i], realContext);
+  }
+  *res = out;
+}
+
+void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext) {
+  complex34Matrix_t out;
+  complex34_t lhs;
+
+  realToReal34(yr, &lhs.real);
+  realToReal34(yi, &lhs.imag);
+  complexMatrixInit(&out, matrix->header.matrixRows, matrix->header.matrixColumns);
+  for(uint16_t i = 0; i < cappedMatrixElementCount(matrix->header.matrixRows, matrix->header.matrixColumns); ++i) {
+    divideComplexScalars(&lhs, &matrix->matrixElements[i], &out.matrixElements[i], realContext);
+  }
+  *res = out;
+}
+
+static bool_t invertComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *inverse) {
+  if(matrix->header.matrixRows != matrix->header.matrixColumns) {
+    return false;
+  }
+
+  if(matrix->header.matrixRows == 1) {
+    complex34_t one;
+
+    complexMatrixInit(inverse, 1, 1);
+    setRegisterReal34((uint8_t *)&one.real, 1, 0);
+    setRegisterReal34((uint8_t *)&one.imag, 0, 0);
+    divideComplexScalars(&one, &matrix->matrixElements[0], &inverse->matrixElements[0], &ctxtReal39);
+    return true;
+  }
+
+  if(matrix->header.matrixRows != 2) {
+    return false;
+  }
+
+  {
+    real_t a_real;
+    real_t a_imag;
+    real_t b_real;
+    real_t b_imag;
+    real_t c_real;
+    real_t c_imag;
+    real_t d_real;
+    real_t d_imag;
+    real_t ad_real;
+    real_t ad_imag;
+    real_t bc_real;
+    real_t bc_imag;
+    real_t det_real;
+    real_t det_imag;
+    real_t inv_real;
+    real_t inv_imag;
+    complex34_t term;
+
+    complex34ToRealPair(&matrix->matrixElements[0], &a_real, &a_imag);
+    complex34ToRealPair(&matrix->matrixElements[1], &b_real, &b_imag);
+    complex34ToRealPair(&matrix->matrixElements[2], &c_real, &c_imag);
+    complex34ToRealPair(&matrix->matrixElements[3], &d_real, &d_imag);
+    mulComplexComplex(&a_real, &a_imag, &d_real, &d_imag, &ad_real, &ad_imag, &ctxtReal39);
+    mulComplexComplex(&b_real, &b_imag, &c_real, &c_imag, &bc_real, &bc_imag, &ctxtReal39);
+    subtractComplexValues(&ad_real, &ad_imag, &bc_real, &bc_imag, &det_real, &det_imag, &ctxtReal39);
+    if(complexIsZeroLike(&det_real, &det_imag)) {
+      return false;
+    }
+
+    complexMatrixInit(inverse, 2, 2);
+
+    realToReal34(&det_real, &term.real);
+    realToReal34(&det_imag, &term.imag);
+
+    divComplexComplex(&d_real, &d_imag, &det_real, &det_imag, &inv_real, &inv_imag, &ctxtReal39);
+    realPairToComplex34(&inv_real, &inv_imag, &inverse->matrixElements[0]);
+
+    {
+      complex34_t neg_b;
+
+      negateComplex34(&matrix->matrixElements[1], &neg_b);
+      divideComplexScalars(&neg_b, &term, &inverse->matrixElements[1], &ctxtReal39);
+    }
+    {
+      complex34_t neg_c;
+
+      negateComplex34(&matrix->matrixElements[2], &neg_c);
+      divideComplexScalars(&neg_c, &term, &inverse->matrixElements[2], &ctxtReal39);
+    }
+    divideComplexScalars(&matrix->matrixElements[0], &term, &inverse->matrixElements[3], &ctxtReal39);
+  }
+
+  return true;
+}
+
+void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res) {
+  complex34Matrix_t inverse;
+
+  if(y->header.matrixColumns != x->header.matrixRows || !invertComplexMatrix(x, &inverse)) {
+    complex34Matrix_t out;
+
+    out.header.matrixRows = 0;
+    out.header.matrixColumns = 0;
+    *res = out;
+    matrixMismatch();
+    return;
+  }
+
+  multiplyComplexMatrices(y, &inverse, res);
 }
 
 uint16_t realVectorSize(const real34Matrix_t *matrix) {
@@ -2659,6 +3551,10 @@ const real_t *z47_math_wrappers_const_1e_6(void) {
   return &fake_const_1e_6_value;
 }
 
+const real34_t *z47_math_wrappers_const34_86400(void) {
+  return &fake_const34_86400_value;
+}
+
 const real_t *z47_math_wrappers_const_100(void) {
   return &fake_const_100_value;
 }
@@ -2673,8 +3569,11 @@ void reallocateRegister(calcRegister_t regist, uint32_t data_type, uint16_t data
   snapshot.reallocate_register_data_type = data_type;
   snapshot.reallocate_register_data_size_without_data_len_blocks = data_size_without_data_len_blocks;
   snapshot.reallocate_register_tag = tag;
-  current_register_data_type = data_type;
-  current_register_tag = tag;
+  *registerDataTypeSlot(regist) = data_type;
+  *registerTagSlot(regist) = tag;
+  if(regist == REGISTER_X && data_type != dtReal34 && data_type != dtTime && data_type != dtDate) {
+    register_scalar_available = false;
+  }
 }
 
 void fnDrop(uint16_t unusedButMandatoryParameter) {
