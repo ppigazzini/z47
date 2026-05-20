@@ -104,6 +104,9 @@ void fnAtan2(uint16_t unusedButMandatoryParameter);
 void fnSquare(uint16_t unusedButMandatoryParameter);
 void fnCube(uint16_t unusedButMandatoryParameter);
 void fnPercent(uint16_t unusedButMandatoryParameter);
+void fnAdd(uint16_t unusedButMandatoryParameter);
+void fnSubtract(uint16_t unusedButMandatoryParameter);
+void fnMultiply(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
 void fnToRect(uint16_t unusedButMandatoryParameter);
@@ -218,6 +221,9 @@ void oracle_fnAtan2(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCube(uint16_t unusedButMandatoryParameter);
 void oracle_fnPercent(uint16_t unusedButMandatoryParameter);
+void oracle_fnAdd(uint16_t unusedButMandatoryParameter);
+void oracle_fnSubtract(uint16_t unusedButMandatoryParameter);
+void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
@@ -2814,6 +2820,84 @@ static void configurePercentReal(void) {
   mathWrappersSetComplexInput(false, 0, 0, 0, 0);
 }
 
+static void configureAddLongIntegerLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 7);
+  mathWrappersSetLongIntegerYInput(true, 5);
+}
+
+static void configureAddLongIntegerShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(7);
+  mathWrappersSetLongIntegerYInput(true, 5);
+}
+
+static void configureAddShortIntegerLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 7);
+  mathWrappersSetShortIntegerYInput(5);
+}
+
+static void configureAddLongIntegerSaveLastXFailure(void) {
+  configureAddLongIntegerLongInteger();
+  mathWrappersSetSaveLastXResult(false);
+}
+
+static void configureSubtractLongIntegerLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureSubtractLongIntegerShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureSubtractShortIntegerLongIntegerNegative(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 9);
+  mathWrappersSetShortIntegerYInput(4);
+}
+
+static void configureSubtractLongIntegerSaveLastXFailure(void) {
+  configureSubtractLongIntegerLongInteger();
+  mathWrappersSetSaveLastXResult(false);
+}
+
+static void configureMultiplyLongIntegerLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureMultiplyLongIntegerShortInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(4);
+  mathWrappersSetLongIntegerYInput(true, 9);
+}
+
+static void configureMultiplyShortIntegerLongInteger(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 4);
+  mathWrappersSetShortIntegerYInput(9);
+}
+
+static void configureMultiplyLongIntegerSaveLastXFailure(void) {
+  configureMultiplyLongIntegerLongInteger();
+  mathWrappersSetSaveLastXResult(false);
+}
+
 static void configureToPolar2Real34Pair(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34, amNone);
@@ -3442,6 +3526,18 @@ int main(void) {
   failures += runCase("fnCube/shortint", oracle_fnCube, fnCube, 0, true, configureCubeShortInteger);
   failures += runCase("fnCube/longint", oracle_fnCube, fnCube, 0, true, configureCubeLongInteger);
   failures += runCase("fnPercent/real", oracle_fnPercent, fnPercent, 0, true, configurePercentReal);
+  failures += runCase("fnAdd/longint_longint", oracle_fnAdd, fnAdd, 0, true, configureAddLongIntegerLongInteger);
+  failures += runCase("fnAdd/longint_shortint", oracle_fnAdd, fnAdd, 0, true, configureAddLongIntegerShortInteger);
+  failures += runCase("fnAdd/shortint_longint", oracle_fnAdd, fnAdd, 0, true, configureAddShortIntegerLongInteger);
+  failures += runCase("fnAdd/save_last_x_false", oracle_fnAdd, fnAdd, 0, true, configureAddLongIntegerSaveLastXFailure);
+  failures += runCase("fnSubtract/longint_longint", oracle_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerLongInteger);
+  failures += runCase("fnSubtract/longint_shortint", oracle_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerShortInteger);
+  failures += runCase("fnSubtract/shortint_longint_negative", oracle_fnSubtract, fnSubtract, 0, true, configureSubtractShortIntegerLongIntegerNegative);
+  failures += runCase("fnSubtract/save_last_x_false", oracle_fnSubtract, fnSubtract, 0, true, configureSubtractLongIntegerSaveLastXFailure);
+  failures += runCase("fnMultiply/longint_longint", oracle_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerLongInteger);
+  failures += runCase("fnMultiply/longint_shortint", oracle_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerShortInteger);
+  failures += runCase("fnMultiply/shortint_longint", oracle_fnMultiply, fnMultiply, 0, true, configureMultiplyShortIntegerLongInteger);
+  failures += runCase("fnMultiply/save_last_x_false", oracle_fnMultiply, fnMultiply, 0, true, configureMultiplyLongIntegerSaveLastXFailure);
   failures += runCase("fnToPolar2/real34_pair", oracle_fnToPolar2, fnToPolar2, 0, true, configureToPolar2Real34Pair);
   failures += runCase("fnToPolar2/longint_pair", oracle_fnToPolar2, fnToPolar2, 0, true, configureToPolar2LongIntegerPair);
   failures += runCase("fnToPolar2/invalid_type", oracle_fnToPolar2, fnToPolar2, 0, true, configureToPolar2InvalidType);

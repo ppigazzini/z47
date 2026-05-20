@@ -4,6 +4,9 @@
 
 void z47_math_wrappers_retained_fnXAlmostEqual(uint16_t regist);
 void z47_math_wrappers_retained_fnRound(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_retained_fnAdd(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_retained_fnSubtract(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_retained_fnMultiply(uint16_t unusedButMandatoryParameter);
 
 #define fnMin oracle_fnMin
 #include "../../../src/c47/mathematics/min.c"
@@ -702,6 +705,79 @@ void oracle_fnRound(uint16_t unusedButMandatoryParameter) {
 	}
 
 	adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+}
+
+enum {
+	ORACLE_INTEGER_ADD = 0,
+	ORACLE_INTEGER_SUBTRACT = 1,
+	ORACLE_INTEGER_MULTIPLY = 2,
+};
+
+static bool_t oracle_tryIntegerLongArithmetic(uint8_t operation) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t yType = getRegisterDataType(REGISTER_Y);
+	const bool_t xIsLong = xType == dtLongInteger;
+	const bool_t yIsLong = yType == dtLongInteger;
+	const bool_t xIsShort = xType == dtShortInteger;
+	const bool_t yIsShort = yType == dtShortInteger;
+	longInteger_t x;
+	longInteger_t y;
+
+	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort) || (xIsShort && yIsShort)) {
+		return false;
+	}
+
+	if(!saveLastX()) {
+		return true;
+	}
+
+	if(xIsLong) {
+		convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+	}
+	else {
+		convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
+	}
+
+	if(yIsLong) {
+		convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
+	}
+	else {
+		convertShortIntegerRegisterToLongInteger(REGISTER_Y, y);
+	}
+
+	if(operation == ORACLE_INTEGER_SUBTRACT) {
+		mpz_sub(x, y, x);
+	}
+	else if(operation == ORACLE_INTEGER_MULTIPLY) {
+		mpz_mul(x, y, x);
+	}
+	else {
+		mpz_add(x, y, x);
+	}
+
+	convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+	mpz_clear(y);
+	mpz_clear(x);
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
+void oracle_fnAdd(uint16_t unusedButMandatoryParameter) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_ADD)) {
+		z47_math_wrappers_retained_fnAdd(unusedButMandatoryParameter);
+	}
+}
+
+void oracle_fnSubtract(uint16_t unusedButMandatoryParameter) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_SUBTRACT)) {
+		z47_math_wrappers_retained_fnSubtract(unusedButMandatoryParameter);
+	}
+}
+
+void oracle_fnMultiply(uint16_t unusedButMandatoryParameter) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_MULTIPLY)) {
+		z47_math_wrappers_retained_fnMultiply(unusedButMandatoryParameter);
+	}
 }
 
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter) {
