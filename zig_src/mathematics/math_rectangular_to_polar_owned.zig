@@ -1,4 +1,5 @@
 const build_options = @import("math_command_wrappers_build_options");
+const atan2_owned = @import("math_atan2_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
@@ -87,5 +88,5 @@ pub fn realRectangularToPolarZig(
     runtime.realMultiply(real, real, magnitude, real_context);
     runtime.realFMA(imag, imag, magnitude, magnitude, real_context);
     runtime.realSquareRoot(magnitude, magnitude, real_context);
-    runtime.C47_WP34S_Atan2(imag, real, theta, real_context);
+    atan2_owned.c47Wp34sAtan2Zig(imag, real, theta, real_context);
 }
