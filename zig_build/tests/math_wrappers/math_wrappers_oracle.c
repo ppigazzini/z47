@@ -725,11 +725,30 @@ static bool_t oracle_tryIntegerLongArithmetic(uint8_t operation) {
 	longInteger_t x;
 	longInteger_t y;
 
-	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort) || (xIsShort && yIsShort)) {
+	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort)) {
 		return false;
 	}
 
 	if(!saveLastX()) {
+		return true;
+	}
+
+	if(xIsShort && yIsShort) {
+		uint64_t *const xShort = (uint64_t *)getRegisterDataPointer(REGISTER_X);
+		const uint64_t *const yShort = (const uint64_t *)getRegisterDataPointer(REGISTER_Y);
+
+		setRegisterTag(REGISTER_X, getRegisterTag(REGISTER_Y));
+		if(operation == ORACLE_INTEGER_SUBTRACT) {
+			*xShort = WP34S_intSubtract(*yShort, *xShort);
+		}
+		else if(operation == ORACLE_INTEGER_MULTIPLY) {
+			*xShort = WP34S_intMultiply(*yShort, *xShort);
+		}
+		else {
+			*xShort = WP34S_intAdd(*yShort, *xShort);
+		}
+
+		adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 		return true;
 	}
 
@@ -792,11 +811,32 @@ static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {
 	longInteger_t x;
 	longInteger_t y;
 
-	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort) || (xIsShort && yIsShort)) {
+	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort)) {
 		return false;
 	}
 
 	if(!saveLastX()) {
+		return true;
+	}
+
+	if(xIsShort && yIsShort && !withRemainder) {
+		int16_t sign = 0;
+		uint64_t divisor = 0;
+
+		convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &divisor);
+		if(divisor == 0) {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError(withRemainder ? "In function fnIDivR:" : "In function fnIDiv:", "cannot divide current integer pair by 0", NULL, NULL);
+		}
+		else {
+			uint64_t *const xShort = (uint64_t *)getRegisterDataPointer(REGISTER_X);
+			const uint64_t *const yShort = (const uint64_t *)getRegisterDataPointer(REGISTER_Y);
+
+			*xShort = WP34S_intDivide(*yShort, *xShort);
+			setRegisterTag(REGISTER_X, getRegisterShortIntegerBase(REGISTER_Y));
+		}
+
+		adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
 		return true;
 	}
 
@@ -825,12 +865,19 @@ static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {
 		mpz_init(quotient);
 		mpz_init(remainder);
 		mpz_tdiv_qr(quotient, remainder, y, x);
-		convertLongIntegerToLongIntegerRegister(quotient, REGISTER_X);
-		if(yIsShort) {
-			convertLongIntegerToShortIntegerRegister(remainder, getRegisterShortIntegerBase(REGISTER_Y), REGISTER_Y);
+		if(xIsShort && yIsShort) {
+			const uint32_t baseY = getRegisterShortIntegerBase(REGISTER_Y);
+			convertLongIntegerToShortIntegerRegister(quotient, baseY, REGISTER_X);
+			convertLongIntegerToShortIntegerRegister(remainder, baseY, REGISTER_Y);
 		}
 		else {
-			convertLongIntegerToLongIntegerRegister(remainder, REGISTER_Y);
+			convertLongIntegerToLongIntegerRegister(quotient, REGISTER_X);
+			if(yIsShort) {
+				convertLongIntegerToShortIntegerRegister(remainder, getRegisterShortIntegerBase(REGISTER_Y), REGISTER_Y);
+			}
+			else {
+				convertLongIntegerToLongIntegerRegister(remainder, REGISTER_Y);
+			}
 		}
 		mpz_clear(quotient);
 		mpz_clear(remainder);
