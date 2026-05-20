@@ -4552,6 +4552,10 @@ const dyadic_integer_add: u8 = 0;
 const dyadic_integer_subtract: u8 = 1;
 const dyadic_integer_multiply: u8 = 2;
 
+fn shortIntegerData(reg: runtime.calcRegister_t) *u64 {
+    return @as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(reg).?)));
+}
+
 fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
@@ -4560,11 +4564,27 @@ fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     const x_is_short = type_x == runtime.dtShortInteger;
     const y_is_short = type_y == runtime.dtShortInteger;
 
-    if (!(x_is_long or x_is_short) or !(y_is_long or y_is_short) or (x_is_short and y_is_short)) {
+    if (!(x_is_long or x_is_short) or !(y_is_long or y_is_short)) {
         return false;
     }
 
     if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    if (x_is_short and y_is_short) {
+        const x_value = shortIntegerData(runtime.REGISTER_X);
+        const y_value = shortIntegerData(runtime.REGISTER_Y);
+
+        runtime.setRegisterTag(runtime.REGISTER_X, runtime.getRegisterTag(runtime.REGISTER_Y));
+        x_value.* = switch (operation) {
+            dyadic_integer_add => runtime.WP34S_intAdd(y_value.*, x_value.*),
+            dyadic_integer_subtract => runtime.WP34S_intSubtract(y_value.*, x_value.*),
+            dyadic_integer_multiply => runtime.WP34S_intMultiply(y_value.*, x_value.*),
+            else => unreachable,
+        };
+
+        runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
         return true;
     }
 
@@ -4606,11 +4626,35 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
     const x_is_short = type_x == runtime.dtShortInteger;
     const y_is_short = type_y == runtime.dtShortInteger;
 
-    if (!(x_is_long or x_is_short) or !(y_is_long or y_is_short) or (x_is_short and y_is_short)) {
+    if (!(x_is_long or x_is_short) or !(y_is_long or y_is_short)) {
         return false;
     }
 
     if (!runtime.saveLastX()) {
+        return true;
+    }
+
+    if (x_is_short and y_is_short and !with_remainder) {
+        var divisor_magnitude: u64 = 0;
+        runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, null, &divisor_magnitude);
+
+        if (divisor_magnitude == 0) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            runtime.moreInfoOnError(
+                if (with_remainder) "In function fnIDivR:" else "In function fnIDiv:",
+                "cannot divide current integer pair by 0",
+                null,
+                null,
+            );
+        } else {
+            const x_raw = shortIntegerData(runtime.REGISTER_X);
+            const y_raw = shortIntegerData(runtime.REGISTER_Y);
+
+            x_raw.* = runtime.WP34S_intDivide(y_raw.*, x_raw.*);
+            runtime.setRegisterTag(runtime.REGISTER_X, runtime.getRegisterShortIntegerBase(runtime.REGISTER_Y));
+        }
+
+        runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
         return true;
     }
 
@@ -4650,11 +4694,17 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
         defer runtime.__gmpz_clear(&remainder[0]);
 
         runtime.__gmpz_tdiv_qr(&quotient[0], &remainder[0], &y_value[0], &x_value[0]);
-        runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], runtime.REGISTER_X);
-        if (y_is_short) {
-            runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterShortIntegerBase(runtime.REGISTER_Y), runtime.REGISTER_Y);
+        if (x_is_short and y_is_short) {
+            const base_y = runtime.getRegisterShortIntegerBase(runtime.REGISTER_Y);
+            runtime.convertLongIntegerToShortIntegerRegister(&quotient[0], base_y, runtime.REGISTER_X);
+            runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], base_y, runtime.REGISTER_Y);
         } else {
-            runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_Y);
+            runtime.convertLongIntegerToLongIntegerRegister(&quotient[0], runtime.REGISTER_X);
+            if (y_is_short) {
+                runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterShortIntegerBase(runtime.REGISTER_Y), runtime.REGISTER_Y);
+            } else {
+                runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_Y);
+            }
         }
     } else {
         var remainder: runtime.longInteger_t = undefined;

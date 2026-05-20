@@ -485,6 +485,7 @@ uint64_t WP34S_intAbs(uint64_t x);
 uint64_t WP34S_intSqrt(uint64_t x);
 uint64_t WP34S_intAdd(uint64_t x, uint64_t y);
 uint64_t WP34S_intSubtract(uint64_t x, uint64_t y);
+uint64_t WP34S_intDivide(uint64_t y, uint64_t x);
 uint64_t WP34S_intGCD(uint64_t y, uint64_t x);
 uint64_t WP34S_intLCM(uint64_t y, uint64_t x);
 uint64_t WP34S_intMultiply(uint64_t y, uint64_t x);

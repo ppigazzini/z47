@@ -1068,7 +1068,8 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   snapshot.get_register_as_complex_calls++;
   if(*registerDataTypeSlot(reg) == dtComplex34) {
-    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : reg == REGISTER_Z ? &complex_z_input : reg == REGISTER_T ? &complex_t_input : &complex_input;
+  const void *inputPtr = reg == REGISTER_Y ? (const void *)&complex_y_input : reg == REGISTER_Z ? (const void *)&complex_z_input : reg == REGISTER_T ? (const void *)&complex_t_input : (const void *)&complex_input;
+  const typeof(complex_input) *input = inputPtr;
 
     snapshot.get_register_as_complex_real_value = fakeRealValue(&input->real);
     snapshot.get_register_as_complex_real_bits = input->real.bits;
@@ -2350,6 +2351,33 @@ uint64_t WP34S_intMultiply(uint64_t y, uint64_t x) {
   snapshot.wp34s_int_multiply_lhs = y;
   snapshot.wp34s_int_multiply_rhs = x;
   return product | ((uint64_t)(sign_y ^ sign_x) << 63);
+}
+
+uint64_t WP34S_intDivide(uint64_t y, uint64_t x) {
+  int32_t sign_y;
+  int32_t sign_x;
+  const uint64_t dividend = WP34S_extract_value(y, &sign_y);
+  const uint64_t divisor = WP34S_extract_value(x, &sign_x);
+  const uint64_t quotient = divisor == 0 ? 0 : dividend / divisor;
+
+  if(divisor == 0) {
+	 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    return 0;
+  }
+
+  clearSystemFlag(FLAG_OVERFLOW);
+  if(quotient * divisor != dividend) {
+    setSystemFlag(FLAG_CARRY);
+  }
+  else {
+    clearSystemFlag(FLAG_CARRY);
+  }
+
+  if(shortIntegerMode == SIM_UNSIGN) {
+    return quotient & shortIntegerMask;
+  }
+
+  return (uint64_t)WP34S_build_value(quotient & ~shortIntegerSignBit, sign_y ^ sign_x);
 }
 
 uint64_t WP34S_intSqrt(uint64_t x) {
