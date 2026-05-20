@@ -223,7 +223,14 @@ pub extern fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Mat
 pub extern fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const complex34Matrix_t, reg: calcRegister_t) void;
 pub extern fn convertReal34MatrixRegisterToReal34Matrix(reg: calcRegister_t, matrix: *real34Matrix_t) void;
 pub extern fn convertReal34MatrixRegisterToComplex34Matrix(reg: calcRegister_t, matrix: *complex34Matrix_t) void;
+pub extern fn convertReal34MatrixRegisterToComplex34MatrixRegister(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertReal34MatrixToComplex34Matrix(real_matrix: *const real34Matrix_t, complex_matrix: *complex34Matrix_t) void;
+pub extern fn realVectorSize(matrix: *const real34Matrix_t) u16;
+pub extern fn dotRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34_t) void;
+pub extern fn crossRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn complexVectorSize(matrix: *const complex34Matrix_t) u16;
+pub extern fn dotComplexVectors(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res_r: *real34_t, res_i: *real34_t) void;
+pub extern fn crossComplexVectors(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 pub extern fn getRegisterDataTypeName(reg: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
