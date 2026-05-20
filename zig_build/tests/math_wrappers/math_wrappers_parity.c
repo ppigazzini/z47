@@ -67,6 +67,13 @@ void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnRandomI(uint16_t unusedButMandatoryParameter);
 void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
 void fnIsConverged(uint16_t unusedButMandatoryParameter);
+void fnXLessThan(uint16_t unusedButMandatoryParameter);
+void fnXLessEqual(uint16_t unusedButMandatoryParameter);
+void fnXGreaterThan(uint16_t unusedButMandatoryParameter);
+void fnXGreaterEqual(uint16_t unusedButMandatoryParameter);
+void fnXEqualsTo(uint16_t unusedButMandatoryParameter);
+void fnXNotEqual(uint16_t unusedButMandatoryParameter);
+void fnXAlmostEqual(uint16_t unusedButMandatoryParameter);
 
 static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits);
 void fnCheckInteger(uint16_t unusedButMandatoryParameter);
@@ -175,6 +182,13 @@ void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
 void oracle_fnIsConverged(uint16_t unusedButMandatoryParameter);
+void oracle_fnXLessThan(uint16_t unusedButMandatoryParameter);
+void oracle_fnXLessEqual(uint16_t unusedButMandatoryParameter);
+void oracle_fnXGreaterThan(uint16_t unusedButMandatoryParameter);
+void oracle_fnXGreaterEqual(uint16_t unusedButMandatoryParameter);
+void oracle_fnXEqualsTo(uint16_t unusedButMandatoryParameter);
+void oracle_fnXNotEqual(uint16_t unusedButMandatoryParameter);
+void oracle_fnXAlmostEqual(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckInteger(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t unusedButMandatoryParameter);
@@ -1596,6 +1610,76 @@ static void configureCheckAngleFalse(void) {
 static void configureCheckMatrixTrue(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureCompareRealYLess(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 3, 0);
+  mathWrappersSetRealYInput(true, 5, 0);
+}
+
+static void configureCompareLongIntegerYEqual(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 7);
+  mathWrappersSetLongIntegerYInput(true, 7);
+}
+
+static void configureCompareShortIntegerZGreater(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(8);
+  mathWrappersSetShortIntegerZInput(5);
+}
+
+static void configureCompareRealTEqual(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 7, 0);
+  mathWrappersSetRealTInput(true, 7, 0);
+}
+
+static void configureCompareComplexYEqual(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+  mathWrappersSetComplexYInput(true, 3, 0, 4, 0);
+}
+
+static void configureCompareComplexYDifferent(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+  mathWrappersSetComplexYInput(true, 3, 0, 5, 0);
+}
+
+static void configureCompareComplexZOrderError(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 3, 0, 4, 0);
+  mathWrappersSetComplexZInput(true, 3, 0, 4, 0);
+}
+
+static void configureAlmostEqualShortIntegerYTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(7);
+  mathWrappersSetShortIntegerYInput(7);
+}
+
+static void configureAlmostEqualLongIntegerZTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 9);
+  mathWrappersSetLongIntegerZInput(true, 9);
+}
+
+static void configureAlmostEqualShortLongTFalse(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtShortInteger, 16);
+  mathWrappersSetShortIntegerInput(7);
+  mathWrappersSetLongIntegerTInput(true, 9);
 }
 
 static void configureIsConvergedRelativeRealTrue(void) {
@@ -3193,6 +3277,16 @@ int main(void) {
   failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/real_matrix_square", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealMatrixSquare);
   failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/complex_matrix_polar_row", oracle_fnGetType, fnGetType, 0, true, configureGetTypeComplexMatrixPolarRow);
   failures += runCase("fnGetType/config", oracle_fnGetType, fnGetType, 0, true, configureGetTypeConfig);
+  failures += runCase("fnXLessThan/real_y_true", oracle_fnXLessThan, fnXLessThan, REGISTER_Y, true, configureCompareRealYLess);
+  failures += runCase("fnXLessThan/complex_z_type_error", oracle_fnXLessThan, fnXLessThan, REGISTER_Z, true, configureCompareComplexZOrderError);
+  failures += runCase("fnXLessEqual/longint_y_equal", oracle_fnXLessEqual, fnXLessEqual, REGISTER_Y, true, configureCompareLongIntegerYEqual);
+  failures += runCase("fnXGreaterThan/shortint_z_true", oracle_fnXGreaterThan, fnXGreaterThan, REGISTER_Z, true, configureCompareShortIntegerZGreater);
+  failures += runCase("fnXGreaterEqual/real_t_equal", oracle_fnXGreaterEqual, fnXGreaterEqual, REGISTER_T, true, configureCompareRealTEqual);
+  failures += runCase("fnXEqualsTo/complex_y_true", oracle_fnXEqualsTo, fnXEqualsTo, REGISTER_Y, true, configureCompareComplexYEqual);
+  failures += runCase("fnXNotEqual/complex_y_true", oracle_fnXNotEqual, fnXNotEqual, REGISTER_Y, true, configureCompareComplexYDifferent);
+  failures += runCase("fnXAlmostEqual/shortint_y_true", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_Y, true, configureAlmostEqualShortIntegerYTrue);
+  failures += runCase("fnXAlmostEqual/longint_z_true", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_Z, true, configureAlmostEqualLongIntegerZTrue);
+  failures += runCase("fnXAlmostEqual/short_long_t_false", oracle_fnXAlmostEqual, fnXAlmostEqual, REGISTER_T, true, configureAlmostEqualShortLongTFalse);
   failures += runCase("fnIsConverged/relative_real_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealTrue);
   failures += runCase("fnIsConverged/relative_real_false", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealFalse);
   failures += runCase("fnIsConverged/absolute_complex_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_ABSOLUTE, true, configureIsConvergedAbsoluteComplexTrue);

@@ -52,6 +52,11 @@ static struct {
 static struct {
   bool_t available;
   real_t value;
+} real_t_input;
+
+static struct {
+  bool_t available;
+  real_t value;
   angularMode_t angle_mode;
 } real_angle_input;
 
@@ -72,6 +77,12 @@ static struct {
   real_t real;
   real_t imag;
 } complex_z_input;
+
+static struct {
+  bool_t available;
+  real_t real;
+  real_t imag;
+} complex_t_input;
 
 static struct {
   bool_t available;
@@ -367,6 +378,9 @@ void mathWrappersReset(void) {
   real_z_input.available = true;
   setFakeReal(&real_z_input.value, 3, 0);
 
+  real_t_input.available = true;
+  setFakeReal(&real_t_input.value, 4, 0);
+
   real_angle_input.available = true;
   setFakeReal(&real_angle_input.value, 5, 0);
   real_angle_input.angle_mode = amRadian;
@@ -382,6 +396,10 @@ void mathWrappersReset(void) {
   complex_z_input.available = true;
   setFakeReal(&complex_z_input.real, 6, 0);
   setFakeReal(&complex_z_input.imag, 7, 0);
+
+  complex_t_input.available = true;
+  setFakeReal(&complex_t_input.real, 8, 0);
+  setFakeReal(&complex_t_input.imag, 9, 0);
 
   longint_input.available = true;
   longint_input.value = -4;
@@ -496,7 +514,8 @@ void mathWrappersSetRealZInput(bool_t available, int32_t value, uint8_t bits) {
 }
 
 void mathWrappersSetRealTInput(bool_t available, int32_t value, uint8_t bits) {
-  (void)available;
+  real_t_input.available = available;
+  setFakeReal(&real_t_input.value, value, bits);
   setRegisterReal34(register_t_slot, value, bits);
   current_register_t_data_type = dtReal34;
   current_register_t_tag = amNone;
@@ -542,7 +561,9 @@ void mathWrappersSetComplexZInput(bool_t available, int32_t real_value, uint8_t 
 }
 
 void mathWrappersSetComplexTInput(bool_t available, int32_t real_value, uint8_t real_bits, int32_t imag_value, uint8_t imag_bits) {
-  (void)available;
+  complex_t_input.available = available;
+  setFakeReal(&complex_t_input.real, real_value, real_bits);
+  setFakeReal(&complex_t_input.imag, imag_value, imag_bits);
   setRegisterReal34(register_t_slot, real_value, real_bits);
   setRegisterReal34(register_t_slot + sizeof(real34_t), imag_value, imag_bits);
   current_register_t_data_type = dtComplex34;
@@ -984,7 +1005,7 @@ void processIntRealComplexDyadicFunction(void (*realf)(void),
 
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
   snapshot.get_register_as_real_calls++;
-  const uint32_t data_type = reg == REGISTER_Y ? current_register_y_data_type : current_register_data_type;
+  const uint32_t data_type = *registerDataTypeSlot(reg);
 
   if(data_type == dtTime) {
     if(!register_scalar_available) {
@@ -998,7 +1019,7 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
     return true;
   }
   if(data_type == dtLongInteger) {
-    setFakeReal(value, reg == REGISTER_Y ? longint_y_input.value : longint_input.value, 0);
+    setFakeReal(value, reg == REGISTER_Y ? longint_y_input.value : reg == REGISTER_Z ? longint_z_input.value : reg == REGISTER_T ? longint_t_input.value : longint_input.value, 0);
     return true;
   }
   if(reg == REGISTER_Y) {
@@ -1013,6 +1034,13 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *value) {
       return false;
     }
     *value = real_z_input.value;
+    return true;
+  }
+  if(reg == REGISTER_T) {
+    if(!real_t_input.available) {
+      return false;
+    }
+    *value = real_t_input.value;
     return true;
   }
   if(!real_input.available) {
@@ -1039,8 +1067,8 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *value, angularMode_t *
 
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
   snapshot.get_register_as_complex_calls++;
-  if((reg == REGISTER_Y ? current_register_y_data_type : reg == REGISTER_Z ? current_register_z_data_type : current_register_data_type) == dtComplex34) {
-    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : reg == REGISTER_Z ? &complex_z_input : &complex_input;
+  if(*registerDataTypeSlot(reg) == dtComplex34) {
+    const typeof(complex_input) *input = reg == REGISTER_Y ? &complex_y_input : reg == REGISTER_Z ? &complex_z_input : reg == REGISTER_T ? &complex_t_input : &complex_input;
 
     snapshot.get_register_as_complex_real_value = fakeRealValue(&input->real);
     snapshot.get_register_as_complex_real_bits = input->real.bits;
@@ -1069,8 +1097,8 @@ bool_t getRegisterAsComplex(calcRegister_t reg, real_t *real, real_t *imag) {
 }
 
 bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional) {
-  if(current_register_data_type == dtShortInteger) {
-    const uint64_t raw = reg == REGISTER_Y ? shortint_y_slot : *(uint64_t *)register_slot;
+  if(*registerDataTypeSlot(reg) == dtShortInteger) {
+    const uint64_t raw = *shortIntegerSlot(reg);
     if(sign != NULL) {
       *sign = (raw >> 63) != 0;
     }
