@@ -4578,7 +4578,17 @@ pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
+        z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 fn decompError() void {
