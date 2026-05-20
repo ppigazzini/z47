@@ -1,4 +1,6 @@
 const std = @import("std");
+const atan_owned = @import("math_atan_owned.zig");
+const atan2_owned = @import("math_atan2_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
@@ -1947,7 +1949,7 @@ fn atan2RemaReal() void {
             return;
         }
 
-        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, &y_matrix.matrixElements[index]);
@@ -1987,7 +1989,7 @@ fn atan2RemaRema() void {
             return;
         }
 
-        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
@@ -2022,7 +2024,7 @@ fn atan2RealRema() void {
             return;
         }
 
-        runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
@@ -2050,7 +2052,7 @@ fn atan2RealReal() callconv(.c) void {
         return;
     }
 
-    runtime.C47_WP34S_Atan2(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+    atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
@@ -2884,7 +2886,7 @@ fn arctanReal() callconv(.c) void {
             return;
         }
     } else {
-        runtime.C47_WP34S_Atan(&x, &x, &runtime.ctxtReal39);
+        atan_owned.c47Wp34sAtanZig(&x, &x, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     }
 
