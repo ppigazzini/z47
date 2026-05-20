@@ -4,6 +4,7 @@
 
 void z47_math_wrappers_retained_fnXAlmostEqual(uint16_t regist);
 void z47_math_wrappers_retained_fnRound(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_retained_fnDivide(uint16_t unusedButMandatoryParameter);
 void z47_math_wrappers_retained_fnAdd(uint16_t unusedButMandatoryParameter);
 void z47_math_wrappers_retained_fnSubtract(uint16_t unusedButMandatoryParameter);
 void z47_math_wrappers_retained_fnMultiply(uint16_t unusedButMandatoryParameter);
@@ -783,21 +784,347 @@ static bool_t oracle_tryIntegerLongArithmetic(uint8_t operation) {
 	return true;
 }
 
+static void oracle_applyDyadicRealOperation(uint8_t operation, const real_t *lhs, const real_t *rhs, real_t *result) {
+	if(operation == ORACLE_INTEGER_SUBTRACT) {
+		realSubtract(lhs, rhs, result, &ctxtReal39);
+	}
+	else if(operation == ORACLE_INTEGER_MULTIPLY) {
+		realMultiply(lhs, rhs, result, &ctxtReal39);
+	}
+	else {
+		realAdd(lhs, rhs, result, &ctxtReal39);
+	}
+}
+
+static void oracle_applyDyadicReal34Operation(uint8_t operation, const real34_t *lhs, const real34_t *rhs, real34_t *result) {
+	if(operation == ORACLE_INTEGER_SUBTRACT) {
+		real34Subtract(lhs, rhs, result);
+	}
+	else if(operation == ORACLE_INTEGER_MULTIPLY) {
+		real34Multiply(lhs, rhs, result);
+	}
+	else {
+		real34Add(lhs, rhs, result);
+	}
+}
+
+static bool_t oracle_tryScalarIntRealArithmetic(uint8_t operation) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t yType = getRegisterDataType(REGISTER_Y);
+	const bool_t xIsReal = xType == dtReal34;
+	const bool_t yIsReal = yType == dtReal34;
+	const bool_t xIsInt = xType == dtLongInteger || xType == dtShortInteger;
+	const bool_t yIsInt = yType == dtLongInteger || yType == dtShortInteger;
+
+	if(!((xIsReal && yIsInt) || (yIsReal && xIsInt))) {
+		return false;
+	}
+
+	if(!saveLastX()) {
+		return true;
+	}
+
+	if(xIsReal) {
+		real_t y;
+		real_t x;
+		angularMode_t xAngularMode = getRegisterAngularMode(REGISTER_X);
+
+		if(yType == dtLongInteger) {
+			convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
+		}
+		else {
+			convertShortIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
+		}
+		real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+		if(xAngularMode == amNone) {
+			oracle_applyDyadicRealOperation(operation, &y, &x, &x);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+		}
+		else {
+			convertAngleFromTo(&x, xAngularMode, currentAngularMode, &ctxtReal39);
+			oracle_applyDyadicRealOperation(operation, &y, &x, &x);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+			setRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
+	}
+	else {
+		real_t y;
+		real_t x;
+		angularMode_t yAngularMode = getRegisterAngularMode(REGISTER_Y);
+
+		real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+		if(xType == dtLongInteger) {
+			convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+		}
+		else {
+			convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+		}
+		reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+		if(yAngularMode == amNone) {
+			oracle_applyDyadicRealOperation(operation, &y, &x, &x);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+		}
+		else {
+			convertAngleFromTo(&y, yAngularMode, currentAngularMode, &ctxtReal39);
+			oracle_applyDyadicRealOperation(operation, &y, &x, &x);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+			setRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
+static bool_t oracle_tryScalarRealArithmetic(uint8_t operation) {
+	const angularMode_t yAngularMode = getRegisterAngularMode(REGISTER_Y);
+	const angularMode_t xAngularMode = getRegisterAngularMode(REGISTER_X);
+
+	if(getRegisterDataType(REGISTER_X) != dtReal34 || getRegisterDataType(REGISTER_Y) != dtReal34) {
+		return false;
+	}
+
+	if(!saveLastX()) {
+		return true;
+	}
+
+	if(operation == ORACLE_INTEGER_ADD || operation == ORACLE_INTEGER_SUBTRACT) {
+		if(yAngularMode == amNone && xAngularMode == amNone) {
+			oracle_applyDyadicReal34Operation(operation, REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+		}
+		else {
+			real_t y;
+			real_t x;
+			angularMode_t resolvedYMode = yAngularMode;
+			angularMode_t resolvedXMode = xAngularMode;
+
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+			if(resolvedYMode == amNone) {
+				resolvedYMode = currentAngularMode;
+			}
+			else if(resolvedXMode == amNone) {
+				resolvedXMode = currentAngularMode;
+			}
+			convertAngleFromTo(&y, resolvedYMode, currentAngularMode, &ctxtReal39);
+			convertAngleFromTo(&x, resolvedXMode, currentAngularMode, &ctxtReal39);
+			oracle_applyDyadicRealOperation(operation, &y, &x, &x);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+			setRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
+	}
+	else {
+		if(yAngularMode == amNone && xAngularMode == amNone) {
+			real34Multiply(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+		}
+		else if(yAngularMode != amNone && xAngularMode != amNone) {
+			real34Multiply(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+			setRegisterAngularMode(REGISTER_X, amNone);
+		}
+		else {
+			real_t y;
+			real_t x;
+
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+			realMultiply(&y, &x, &x, &ctxtReal39);
+			convertAngleFromTo(&x, yAngularMode != amNone ? yAngularMode : xAngularMode, currentAngularMode, &ctxtReal39);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+			setRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
 void oracle_fnAdd(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_ADD)) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_ADD) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_ADD) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_ADD)) {
 		z47_math_wrappers_retained_fnAdd(unusedButMandatoryParameter);
 	}
 }
 
 void oracle_fnSubtract(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_SUBTRACT)) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_SUBTRACT) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_SUBTRACT) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_SUBTRACT)) {
 		z47_math_wrappers_retained_fnSubtract(unusedButMandatoryParameter);
 	}
 }
 
 void oracle_fnMultiply(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_MULTIPLY)) {
+	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_MULTIPLY) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_MULTIPLY) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_MULTIPLY)) {
 		z47_math_wrappers_retained_fnMultiply(unusedButMandatoryParameter);
+	}
+}
+
+static bool_t oracle_tryScalarIntegerOverRealDivide(void) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t yType = getRegisterDataType(REGISTER_Y);
+	real_t y;
+
+	if(xType != dtReal34 || (yType != dtLongInteger && yType != dtShortInteger)) {
+		return false;
+	}
+
+	copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+
+	if(yType == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
+	}
+	else {
+		convertShortIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
+	}
+
+	setRegisterAngularMode(REGISTER_X, amNone);
+	if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+		if(realIsZero(&y)) {
+			if(getSystemFlag(FLAG_SPCRES)) {
+				convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+			}
+			else {
+				displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+				moreInfoOnError(yType == dtLongInteger ? "In function divLonIReal:" : "In function divShoIReal:", "cannot divide 0 by 0", NULL, NULL);
+			}
+		}
+		else if(getSystemFlag(FLAG_SPCRES)) {
+			realToReal34(realIsNegative(&y) ? const_minusInfinity : const_plusInfinity, REGISTER_REAL34_DATA(REGISTER_X));
+		}
+		else {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError(yType == dtLongInteger ? "In function divLonIReal:" : "In function divShoIReal:", yType == dtLongInteger ? "cannot divide a long integer by 0" : "cannot divide a short integer by 0", NULL, NULL);
+		}
+	}
+	else {
+		real_t x;
+
+		real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+		realDivide(&y, &x, &x, &ctxtReal39);
+		convertRealToReal34ResultRegister(&x, REGISTER_X);
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
+static bool_t oracle_tryScalarRealOverIntegerDivide(void) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t yType = getRegisterDataType(REGISTER_Y);
+	real_t x;
+
+	if((xType != dtLongInteger && xType != dtShortInteger) || yType != dtReal34) {
+		return false;
+	}
+
+	copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+
+	if(xType == dtLongInteger) {
+		convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+	}
+	else {
+		convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+	}
+
+	reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+	if(realIsZero(&x)) {
+		if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) {
+			if(getSystemFlag(FLAG_SPCRES)) {
+				convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+			}
+			else {
+				displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+				moreInfoOnError(xType == dtLongInteger ? "In function divRealLonI:" : "In function divRealShoI:", "cannot divide 0 by 0", NULL, NULL);
+			}
+		}
+		else if(getSystemFlag(FLAG_SPCRES)) {
+			realToReal34(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_Y)) ? const_plusInfinity : const_minusInfinity, REGISTER_REAL34_DATA(REGISTER_X));
+		}
+		else {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError(xType == dtLongInteger ? "In function divRealLonI:" : "In function divRealShoI:", "cannot divide a real34 by 0", NULL, NULL);
+		}
+	}
+	else {
+		real_t y;
+		angularMode_t yAngularMode;
+
+		real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+		yAngularMode = getRegisterAngularMode(REGISTER_Y);
+		if(yAngularMode == amNone) {
+			realDivide(&y, &x, &x, &ctxtReal39);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+		}
+		else {
+			convertAngleFromTo(&y, yAngularMode, currentAngularMode, &ctxtReal39);
+			realDivide(&y, &x, &x, &ctxtReal39);
+			convertRealToReal34ResultRegister(&x, REGISTER_X);
+			setRegisterAngularMode(REGISTER_X, currentAngularMode);
+		}
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
+static bool_t oracle_tryScalarRealOverRealDivide(void) {
+	if(getRegisterDataType(REGISTER_X) != dtReal34 || getRegisterDataType(REGISTER_Y) != dtReal34) {
+		return false;
+	}
+
+	copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
+	if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+		if(getSystemFlag(FLAG_SPCRES)) {
+			convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+		}
+		else {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError("In function divRealReal:", "cannot divide 0 by 0", NULL, NULL);
+		}
+	}
+	else if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+		if(getSystemFlag(FLAG_SPCRES)) {
+			realToReal34(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_Y)) ? const_plusInfinity : const_minusInfinity, REGISTER_REAL34_DATA(REGISTER_X));
+		}
+		else {
+			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+			moreInfoOnError("In function divRealReal:", "cannot divide a real34 by 0", NULL, NULL);
+		}
+	}
+	else {
+		real_t y;
+		real_t x;
+		angularMode_t yAngularMode;
+		angularMode_t xAngularMode;
+
+		yAngularMode = getRegisterAngularMode(REGISTER_Y);
+		xAngularMode = getRegisterAngularMode(REGISTER_X);
+		if(yAngularMode == amNone) {
+			real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
+			setRegisterAngularMode(REGISTER_X, amNone);
+		}
+		else {
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+			real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+			if(xAngularMode != amNone) {
+				convertAngleFromTo(&x, xAngularMode, yAngularMode, &ctxtReal39);
+				realDivide(&y, &x, &x, &ctxtReal39);
+				convertRealToReal34ResultRegister(&x, REGISTER_X);
+				setRegisterAngularMode(REGISTER_X, amNone);
+			}
+			else {
+				realDivide(&y, &x, &x, &ctxtReal39);
+				convertAngleFromTo(&x, yAngularMode, currentAngularMode, &ctxtReal39);
+				convertRealToReal34ResultRegister(&x, REGISTER_X);
+				setRegisterAngularMode(REGISTER_X, currentAngularMode);
+			}
+		}
+	}
+
+	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+	return true;
+}
+
+void oracle_fnDivide(uint16_t unusedButMandatoryParameter) {
+	if(!oracle_tryScalarIntegerOverRealDivide() && !oracle_tryScalarRealOverIntegerDivide() && !oracle_tryScalarRealOverRealDivide()) {
+		z47_math_wrappers_retained_fnDivide(unusedButMandatoryParameter);
 	}
 }
 

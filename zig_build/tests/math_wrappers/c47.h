@@ -135,8 +135,13 @@ enum {
 #define REGISTER_Z ((calcRegister_t)102)
 #define REGISTER_T ((calcRegister_t)103)
 
+#define REGISTER_L ((calcRegister_t)108)
 #define ERR_REGISTER_LINE REGISTER_Z
 #define ERROR_NONE 0
+void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegister_t dest_register);
+real34_t *decQuadAdd(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
+real34_t *decQuadDivide(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
+real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
 #define ERROR_INVALID_DATA_TYPE_FOR_OP 2
 #define ERROR_OUT_OF_RANGE 3
@@ -242,6 +247,9 @@ enum {
 #define real34IsZero(source) decQuadIsZero((const decQuad *)(source))
 #define real34IsNegative(source) decQuadIsNegative((const decQuad *)(source))
 #define real34IsPositive(source) (!real34IsNegative((source)))
+#define real34Add(operand1, operand2, res) decQuadAdd((res), (operand1), (operand2), &ctxtReal34)
+#define real34Divide(operand1, operand2, res) decQuadDivide((res), (operand1), (operand2), &ctxtReal34)
+#define real34Multiply(operand1, operand2, res) decQuadMultiply((res), (operand1), (operand2), &ctxtReal34)
 
 extern realContext_t ctxtReal34;
 extern realContext_t ctxtReal39;

@@ -13,9 +13,11 @@ pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_T: calcRegister_t = 103;
 pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+pub const REGISTER_L: calcRegister_t = 108;
 
 pub const amRadian: angularMode_t = 0;
 pub const amDegree: angularMode_t = 2;
+pub extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 pub const amNone: angularMode_t = 5;
 pub const amPolar: angularMode_t = 16;
 pub const amPolarCYL: angularMode_t = 64;
@@ -278,6 +280,9 @@ pub extern fn getFreeRamMemory() u32;
 pub extern fn getFreeFlash() u32;
 
 pub extern fn unitVectorCplx() void;
+pub extern fn decQuadAdd(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
+pub extern fn decQuadDivide(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
+pub extern fn decQuadMultiply(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
 pub extern fn decQuadIsNaN(value: *const real34_t) u32;
 pub extern fn decQuadIsZero(value: *const real34_t) u32;
 pub extern fn decQuadIsNegative(value: *const real34_t) u32;
@@ -288,6 +293,18 @@ pub extern fn real34NextPlus(source: *const real34_t, destination: *real34_t) vo
 pub extern fn real34NextMinus(source: *const real34_t, destination: *real34_t) void;
 pub extern fn realToReal34(source: *const real_t, destination: *real34_t) void;
 pub extern fn real34Subtract(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void;
+
+pub inline fn real34Add(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+    _ = decQuadAdd(res, operand1, operand2, &ctxtReal34);
+}
+
+pub inline fn real34Divide(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+    _ = decQuadDivide(res, operand1, operand2, &ctxtReal34);
+}
+
+pub inline fn real34Multiply(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+    _ = decQuadMultiply(res, operand1, operand2, &ctxtReal34);
+}
 pub extern fn convertAngle34FromTo(angle: *real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
 pub extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, mode: angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_Asin(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
