@@ -173,6 +173,7 @@ pub extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: ?*bool, val: ?*u6
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
 pub extern fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) c_int;
 pub extern fn convertLongIntegerRegisterToLongInteger(reg: calcRegister_t, long_integer: *mpz_struct) void;
+pub extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, long_integer: *mpz_struct) void;
 pub extern fn convertLongIntegerRegisterToReal(reg: calcRegister_t, real: *real_t, real_context: *realContext_t) void;
 pub extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertReal34ToLongIntegerRegister(real: *const real34_t, dest: calcRegister_t, rounding_mode: rounding_t) void;
