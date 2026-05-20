@@ -105,15 +105,19 @@ fn buildXlsxCommand(allocator: std.mem.Allocator, fonts_path: []const u8) std.me
     return switch (builtin.target.os.tag) {
         .linux => allocPrintZ(
             allocator,
-            "LD_LIBRARY_PATH=\"$HOME/.local/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}\" xlsxio_xlsx2csv -b \"{s}/sortingOrder.xlsx\" >/dev/null",
-            .{fonts_path},
+            "if command -v xlsxio_xlsx2csv >/dev/null 2>&1; then LD_LIBRARY_PATH=\"$HOME/.local/lib${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}\" xlsxio_xlsx2csv -b \"{s}/sortingOrder.xlsx\" >/dev/null; else python3 zig_build/tools/xlsx_to_sorting_csv.py \"{s}/sortingOrder.xlsx\" \"{s}/sortingOrder.xlsx.sortingOrder.csv\"; fi",
+            .{ fonts_path, fonts_path, fonts_path },
         ),
         .macos => allocPrintZ(
             allocator,
-            "DYLD_LIBRARY_PATH=\"$HOME/.local/lib${{DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}}\" xlsxio_xlsx2csv -b \"{s}/sortingOrder.xlsx\" >/dev/null",
-            .{fonts_path},
+            "if command -v xlsxio_xlsx2csv >/dev/null 2>&1; then DYLD_LIBRARY_PATH=\"$HOME/.local/lib${{DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}}\" xlsxio_xlsx2csv -b \"{s}/sortingOrder.xlsx\" >/dev/null; else python3 zig_build/tools/xlsx_to_sorting_csv.py \"{s}/sortingOrder.xlsx\" \"{s}/sortingOrder.xlsx.sortingOrder.csv\"; fi",
+            .{ fonts_path, fonts_path, fonts_path },
         ),
-        else => allocPrintZ(allocator, "xlsxio_xlsx2csv -b \"{s}/sortingOrder.xlsx\"", .{fonts_path}),
+        else => allocPrintZ(
+            allocator,
+            "python3 zig_build/tools/xlsx_to_sorting_csv.py \"{s}/sortingOrder.xlsx\" \"{s}/sortingOrder.xlsx.sortingOrder.csv\"",
+            .{ fonts_path, fonts_path },
+        ),
     };
 }
 
