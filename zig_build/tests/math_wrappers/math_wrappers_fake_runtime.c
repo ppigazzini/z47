@@ -2993,18 +2993,19 @@ decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decN
   snapshot.dec_number_multiply_rhs_value = fakeRealValue(rhs);
   snapshot.dec_number_multiply_rhs_bits = rhs->bits;
   (void)realContext;
-  setFakeReal(result, fakeRealValue(lhs) * fakeRealValue(rhs), 0);
+  setFakeRealWithCoeff(result, signedFakeCoeff(lhs) * signedFakeCoeff(rhs), 0, lhs->exponent + rhs->exponent);
   return result;
 }
 
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
   const int32_t rhs_value = fakeRealValue(rhs);
+  const int32_t lhs_value = fakeRealValue(lhs);
 
   snapshot.dec_number_divide_calls++;
-  snapshot.dec_number_divide_lhs_value = fakeRealValue(lhs);
+  snapshot.dec_number_divide_lhs_value = lhs_value;
   snapshot.dec_number_divide_rhs_value = rhs_value;
   (void)realContext;
-  setFakeReal(result, rhs_value == 0 ? 0 : (fakeRealValue(lhs) * 100) / rhs_value, 0);
+  setFakeRealWithCoeff(result, rhs_value == 0 ? 0 : ((int128_t)lhs_value * 100) / rhs_value, 0, 0);
   return result;
 }
 
@@ -3115,15 +3116,25 @@ void convergenceTolerence(real_t *tol) {
 }
 
 bool_t WP34S_AbsoluteError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext) {
+  const int128_t diff = (int128_t)fakeRealValue(x) - (int128_t)fakeRealValue(y);
+  const int128_t tol_value = (int128_t)fakeRealValue(tol);
+
   (void)realContext;
-  return fakeAbsInt32(fakeRealValue(x) - fakeRealValue(y)) <= fakeAbsInt32(fakeRealValue(tol));
+  return (diff < 0 ? -diff : diff) <= (tol_value < 0 ? -tol_value : tol_value);
 }
 
 bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext) {
-  const int32_t scale = fakeAbsInt32(fakeRealValue(y)) > 0 ? fakeAbsInt32(fakeRealValue(y)) : 1;
+  const int128_t x_value = (int128_t)fakeRealValue(x);
+  const int128_t y_value = (int128_t)fakeRealValue(y);
+  const int128_t tol_value = (int128_t)fakeRealValue(tol);
+  const int128_t diff = x_value - y_value;
+  const int128_t abs_y = y_value < 0 ? -y_value : y_value;
+  const int128_t abs_tol = tol_value < 0 ? -tol_value : tol_value;
+  const int128_t abs_diff = diff < 0 ? -diff : diff;
+  const int128_t scale = abs_y > 0 ? abs_y : 1;
 
   (void)realContext;
-  return fakeAbsInt32(fakeRealValue(x) - fakeRealValue(y)) * 10 <= scale * fakeAbsInt32(fakeRealValue(tol));
+  return abs_diff * 10 <= scale * abs_tol;
 }
 
 bool_t WP34S_ComplexAbsError(const real_t *xReal,
