@@ -485,6 +485,47 @@ void mathWrappersSetSaveLastXResult(bool_t result) {
   snapshot.save_last_x_result = result;
 }
 
+void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegister_t dest_register) {
+  (void)source_register;
+  (void)dest_register;
+}
+
+real34_t *decQuadDivide(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context) {
+  real_t lhs;
+  real_t rhs;
+  real_t quotient;
+
+  real34ToReal(operand1, &lhs);
+  real34ToReal(operand2, &rhs);
+  realDivide(&lhs, &rhs, &quotient, context);
+  realToReal34(&quotient, res);
+  return res;
+}
+
+real34_t *decQuadAdd(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context) {
+  real_t lhs;
+  real_t rhs;
+  real_t sum;
+
+  real34ToReal(operand1, &lhs);
+  real34ToReal(operand2, &rhs);
+  realAdd(&lhs, &rhs, &sum, context);
+  realToReal34(&sum, res);
+  return res;
+}
+
+real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context) {
+  real_t lhs;
+  real_t rhs;
+  real_t product;
+
+  real34ToReal(operand1, &lhs);
+  real34ToReal(operand2, &rhs);
+  realMultiply(&lhs, &rhs, &product, context);
+  realToReal34(&product, res);
+  return res;
+}
+
 void mathWrappersSetRegisterSurface(uint32_t data_type, uint32_t tag) {
   current_register_data_type = data_type;
   current_register_tag = tag;
