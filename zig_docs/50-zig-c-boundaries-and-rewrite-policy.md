@@ -21,7 +21,7 @@ z47 uses three explicit implementation modes.
 | Surface | Current classification | Notes |
 | --- | --- | --- |
 | `../src/c47` core | existing C compiled by Zig, with selected leaf, mathematics-wrapper, state, and UI replacements | broad stateful core still mostly remains imported C |
-| `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C |
+| `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C, with `gtkGui.c` routed through an explicit retained host boundary |
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
 | `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
 | GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependency stack |
@@ -30,6 +30,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with build-managed `translate-c` boundary | raster font generator entrypoint |
+| `../zig_build/host/gtk_gui_rewrites.zig` | existing C compiled by Zig plus explicit retained-boundary routing | filters the imported `gtkGui.c` out of the bulk GTK source list and re-adds it through the retained host wrapper sources |
 | `../zig_src/leaf/shortint_core.zig` and logical leaf files | manual Zig rewrite | parity-gated short-integer leaf slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
 | `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrapper_rewrites.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx`, while the matrix fallback still routes through retained `fnInvertMatrix` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack_rewrites.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
