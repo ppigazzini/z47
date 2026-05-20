@@ -76,6 +76,22 @@ const real_t *z47_math_wrappers_const_ln10(void) {
   return const39_ln10;
 }
 
+const real_t *z47_math_wrappers_const_piOn4(void) {
+  return const39_piOn4;
+}
+
+const real_t *z47_math_wrappers_const_3piOn4(void) {
+  return const39_3piOn4;
+}
+
+const real_t *z47_math_wrappers_const_piOn2(void) {
+  return const39_piOn2;
+}
+
+const real_t *z47_math_wrappers_const_pi(void) {
+  return const39_pi;
+}
+
 const real_t *z47_math_wrappers_const_plus_infinity(void) {
   return const_plusInfinity;
 }

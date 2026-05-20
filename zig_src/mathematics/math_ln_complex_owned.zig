@@ -1,5 +1,6 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
+const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
@@ -178,6 +179,6 @@ pub fn lnComplexZig(
         return;
     }
 
-    runtime.realRectangularToPolar(real, imag, ln_real, ln_imag, real_context);
+    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, ln_real, ln_imag, real_context);
     wp34sLn(ln_real, ln_real, real_context);
 }
