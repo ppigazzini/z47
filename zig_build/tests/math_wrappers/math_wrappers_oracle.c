@@ -938,22 +938,71 @@ static bool_t oracle_tryScalarRealArithmetic(uint8_t operation) {
 	return true;
 }
 
+#define fnAdd oracle_full_fnAdd
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#endif
+#include "../../../src/c47/mathematics/addition.h"
+#include "../../../src/c47/mathematics/addition.c"
+#undef fnAdd
+
+#define fnSubtract oracle_full_fnSubtract
+#include "../../../src/c47/mathematics/subtraction.h"
+#include "../../../src/c47/mathematics/subtraction.c"
+#undef fnSubtract
+
+#define fnMultiply oracle_full_fnMultiply
+#define mulComplexi oracle_mulComplexi
+#define mulComplexComplex oracle_mulComplexComplex
+#define mulComplexReal oracle_mulComplexReal
+#include "../../../src/c47/mathematics/multiplication.h"
+#include "../../../src/c47/mathematics/multiplication.c"
+#undef mulComplexReal
+#undef mulComplexComplex
+#undef mulComplexi
+#undef fnMultiply
+
+#define fnDivide oracle_full_fnDivide
+#define divRealComplex oracle_divRealComplex
+#define divComplexComplex oracle_divComplexComplex
+#include "../../../src/c47/mathematics/division.h"
+#include "../../../src/c47/mathematics/division.c"
+#undef divComplexComplex
+#undef divRealComplex
+#undef fnDivide
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 void oracle_fnAdd(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_ADD) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_ADD) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_ADD)) {
-		z47_math_wrappers_retained_fnAdd(unusedButMandatoryParameter);
+	if(oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_ADD) ||
+	   oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_ADD) ||
+	   oracle_tryScalarRealArithmetic(ORACLE_INTEGER_ADD)) {
+		return;
 	}
+
+	oracle_full_fnAdd(unusedButMandatoryParameter);
 }
 
 void oracle_fnSubtract(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_SUBTRACT) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_SUBTRACT) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_SUBTRACT)) {
-		z47_math_wrappers_retained_fnSubtract(unusedButMandatoryParameter);
+	if(oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_SUBTRACT) ||
+	   oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_SUBTRACT) ||
+	   oracle_tryScalarRealArithmetic(ORACLE_INTEGER_SUBTRACT)) {
+		return;
 	}
+
+	oracle_full_fnSubtract(unusedButMandatoryParameter);
 }
 
 void oracle_fnMultiply(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_MULTIPLY) && !oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_MULTIPLY) && !oracle_tryScalarRealArithmetic(ORACLE_INTEGER_MULTIPLY)) {
-		z47_math_wrappers_retained_fnMultiply(unusedButMandatoryParameter);
+	if(oracle_tryIntegerLongArithmetic(ORACLE_INTEGER_MULTIPLY) ||
+	   oracle_tryScalarIntRealArithmetic(ORACLE_INTEGER_MULTIPLY) ||
+	   oracle_tryScalarRealArithmetic(ORACLE_INTEGER_MULTIPLY)) {
+		return;
 	}
+
+	oracle_full_fnMultiply(unusedButMandatoryParameter);
 }
 
 static bool_t oracle_tryScalarIntegerOverRealDivide(void) {
@@ -1123,9 +1172,13 @@ static bool_t oracle_tryScalarRealOverRealDivide(void) {
 }
 
 void oracle_fnDivide(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryScalarIntegerOverRealDivide() && !oracle_tryScalarRealOverIntegerDivide() && !oracle_tryScalarRealOverRealDivide()) {
-		z47_math_wrappers_retained_fnDivide(unusedButMandatoryParameter);
+	if(oracle_tryScalarIntegerOverRealDivide() ||
+	   oracle_tryScalarRealOverIntegerDivide() ||
+	   oracle_tryScalarRealOverRealDivide()) {
+		return;
 	}
+
+	oracle_full_fnDivide(unusedButMandatoryParameter);
 }
 
 static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {

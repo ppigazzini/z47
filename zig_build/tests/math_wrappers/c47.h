@@ -44,6 +44,12 @@ typedef struct {
 } complex34Matrix_t;
 
 typedef struct {
+  uint8_t unused;
+} font_t;
+
+typedef int irfracOption_t;
+
+typedef struct {
   uint64_t state;
   uint64_t inc;
 } pcg32_random_t;
@@ -149,8 +155,11 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define ERROR_OVERFLOW_MINUS_INF 5
 #define ERROR_RAM_FULL 6
 #define ERROR_MATRIX_MISMATCH 7
+#define ERROR_SINGULAR_MATRIX 22
+#define ERROR_STRING_WOULD_BE_TOO_LONG 33
 #define FLAG_CARRY 0x800b
 #define FLAG_CPXRES 0x8004
+#define FLAG_FRACT 0x8007
 #define FLAG_PROPFR 0x8008
 #define FLAG_OVERFLOW 0x800c
 #define FLAG_POLAR 0x8018
@@ -159,11 +168,20 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define FLAG_HPRP 0x802b
 #define NOPARAM 0
 #define NIM_REGISTER_LINE REGISTER_X
+#define TEMP_REGISTER_1 REGISTER_Z
 #define TO_QSPI
+#define TO_BLOCKS(length) (length)
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS 10
 #define MAX_LONG_INTEGER_SIZE_IN_BITS 3328
 #define MAX_FACTORIAL 450
 #define ERROR_MESSAGE_LENGTH 256
+#define TMP_STR_LENGTH 2560
+#define MAX_NUMBER_OF_GLYPHS_IN_STRING 255
+#define NUMBER_OF_DISPLAY_DIGITS 34
+#define LIMITEXP 0
+#define FRONTSPACE false
+#define FULLIRFRAC 0
+#define noBaseOverride 0
 #define SCREEN_WIDTH 32
 #define LINUX 1
 
@@ -301,6 +319,7 @@ extern uint64_t systemFlags1;
 #define WP34S_BigMod(x, y, res, real_context) WP34S_Mod((x), (y), (res), (real_context))
 #define EXTRA_INFO_MESSAGE(function, msg) do { moreInfoOnError((function), (msg), NULL, NULL); } while(0)
 #define real34Copy(source, destination) (*(destination) = *(source))
+#define complex34Copy(source, destination) (*(destination) = *(source))
 #define real34SetZero(destination) memset((destination), 0, sizeof(real34_t))
 #define setRegisterLongIntegerSign(reg, sign) setRegisterTag((reg), (sign))
 #define VARIABLE_REAL34_DATA(variable) (&((variable)->real))
@@ -351,8 +370,11 @@ int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fra
 bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater);
 void convertLongIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
 void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t long_integer);
+void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, calcRegister_t destination);
 void convertLongIntegerRegisterToReal(calcRegister_t reg, real_t *real, realContext_t *real_context);
 void convertLongIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination);
+void convertLongIntegerRegisterToTimeRegister(calcRegister_t source, calcRegister_t destination);
+void convertLongIntegerToReal34(longInteger_t source, real34_t *destination);
 void *getRegisterDataPointer(calcRegister_t reg);
 uint32_t getRegisterDataType(calcRegister_t reg);
 uint32_t getRegisterTag(calcRegister_t reg);
@@ -362,6 +384,7 @@ void convertLongIntegerToShortIntegerRegister(const longInteger_t long_integer, 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist);
 void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value);
 void convertShortIntegerRegisterToReal(calcRegister_t source, real_t *destination, realContext_t *real_context);
+void convertShortIntegerRegisterToReal34Register(calcRegister_t source, calcRegister_t destination);
 void convergenceTolerence(real_t *tol);
 bool_t WP34S_RelativeError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
 bool_t WP34S_AbsoluteError(const real_t *x, const real_t *y, const real_t *tol, realContext_t *realContext);
@@ -385,6 +408,8 @@ void real34RectangularToPolar(const real34_t *real, const real34_t *imag, real34
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest);
 void setRegisterAngularMode(calcRegister_t reg, angularMode_t mode);
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext);
+uint32_t getInfiniteComplexAngle(real_t *x, real_t *y);
+void setInfiniteComplexAngle(uint32_t angle, real_t *x, real_t *y);
 void realPolarToRectangular(const real_t *magnitude,
                             const real_t *angle,
                             real_t *real,
@@ -506,6 +531,7 @@ void fnRefreshState(void);
 void refreshLcd(void *unused);
 void lcd_refresh(void);
 void fnChangeBase(uint16_t base);
+void fnSwapXY(uint16_t unusedButMandatoryParameter);
 void forceSystemFlag(unsigned int sf, int set);
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line);
 void displayBugScreen(const char *message);
@@ -517,6 +543,17 @@ const char *getDataTypeName(uint32_t data_type, bool_t article, bool_t abbreviat
 void realNextToward(const real_t *x, const real_t *y, real_t *result, realContext_t *real_context);
 const char *getRegisterDataTypeName(calcRegister_t reg, bool_t article, bool_t abbreviated);
 void longIntegerRegisterToDisplayString(calcRegister_t reg, char *buffer, int buffer_length, int screen_width, int limit, bool_t allow_large);
+int16_t stringByteLength(const char *value);
+int16_t stringGlyphLength(const char *value);
+void xcopy(void *destination, const void *source, size_t length);
+void fractionToDisplayString(calcRegister_t regist, char *displayString);
+void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride);
+void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac);
+void complex34ToDisplayString(const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, irfracOption_t limitIrfrac, uint16_t tagAngle, bool_t tagPolar);
+void dateToDisplayString(calcRegister_t regist, char *displayString);
+void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t ignoreTDisp);
+void real34MatrixToDisplayString(calcRegister_t regist, char *displayString);
+void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString);
 void roundToSignificantDigits(const real_t *source, real_t *destination, int32_t digits, realContext_t *real_context);
 void linkToComplexMatrixRegister(calcRegister_t reg, complex34Matrix_t *matrix);
 void linkToRealMatrixRegister(calcRegister_t reg, real34Matrix_t *matrix);
@@ -527,9 +564,33 @@ void complexMatrixFree(complex34Matrix_t *matrix);
 void convertReal34MatrixToReal34MatrixRegister(const real34Matrix_t *matrix, calcRegister_t reg);
 void convertComplex34MatrixToComplex34MatrixRegister(const complex34Matrix_t *matrix, calcRegister_t reg);
 void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t reg, real34Matrix_t *matrix);
+void convertComplex34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix);
 void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source, calcRegister_t destination);
 void convertReal34MatrixRegisterToComplex34Matrix(calcRegister_t reg, complex34Matrix_t *matrix);
 void convertReal34MatrixToComplex34Matrix(const real34Matrix_t *real_matrix, complex34Matrix_t *complex_matrix);
+void elementwiseRealRema(void (*func)(void));
+void elementwiseCxmaReal(void (*func)(void));
+void elementwiseRealCxma(void (*func)(void));
+void addRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
+void subtractRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
+void addComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
+void subtractComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
+void multiplyRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res);
+void _multiplyRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext);
+void multiplyRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
+void multiplyComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res);
+void _multiplyComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext);
+void multiplyComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
+void divideRealMatrix(const real34Matrix_t *matrix, const real34_t *x, real34Matrix_t *res);
+void _divideRealMatrix(const real34Matrix_t *matrix, const real_t *x, real34Matrix_t *res, realContext_t *realContext);
+void _divideByRealMatrix(const real_t *y, const real34Matrix_t *matrix, real34Matrix_t *res, realContext_t *realContext);
+void divideByRealMatrix(const real34_t *y, const real34Matrix_t *matrix, real34Matrix_t *res);
+void divideRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
+void divideComplexMatrix(const complex34Matrix_t *matrix, const real34_t *xr, const real34_t *xi, complex34Matrix_t *res);
+void _divideComplexMatrix(const complex34Matrix_t *matrix, const real_t *xr, const real_t *xi, complex34Matrix_t *res, realContext_t *realContext);
+void _divideByComplexMatrix(const real_t *yr, const real_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res, realContext_t *realContext);
+void divideByComplexMatrix(const real34_t *yr, const real34_t *yi, const complex34Matrix_t *matrix, complex34Matrix_t *res);
+void divideComplexMatrices(const complex34Matrix_t *y, const complex34Matrix_t *x, complex34Matrix_t *res);
 uint16_t realVectorSize(const real34Matrix_t *matrix);
 void dotRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34_t *res);
 void crossRealVectors(const real34Matrix_t *y, const real34Matrix_t *x, real34Matrix_t *res);
@@ -557,6 +618,7 @@ const real_t *z47_math_wrappers_const_1on3(void);
 const real_t *z47_math_wrappers_const_2e6(void);
 const real_t *z47_math_wrappers_const_1e_6(void);
 const real34_t *z47_math_wrappers_const34_0(void);
+const real34_t *z47_math_wrappers_const34_86400(void);
 const real_t *z47_math_wrappers_const_1oneE(void);
 const real_t *z47_math_wrappers_const_90(void);
 const real_t *z47_math_wrappers_const_ln2(void);
@@ -583,11 +645,18 @@ uint32_t decQuadIsNaN(const decQuad *dq);
 uint32_t decQuadIsZero(const decQuad *dq);
 uint32_t decQuadIsNegative(const decQuad *dq);
 
+extern const font_t standardFont;
+extern const font_t numericFont;
+extern uint8_t roundingMode;
+extern const enum rounding roundingModeTable[7];
+
 #define REGISTER_SHORT_INTEGER_DATA(a) ((uint64_t *)(getRegisterDataPointer(a)))
 #define REGISTER_REAL34_DATA(a) ((real34_t *)(getRegisterDataPointer(a)))
 #define REGISTER_IMAG34_DATA(a) ((real34_t *)((uint8_t *)(getRegisterDataPointer(a)) + sizeof(real34_t)))
 #define REGISTER_COMPLEX34_DATA(a) ((complex34_t *)(getRegisterDataPointer(a)))
+#define REGISTER_STRING_DATA(a) ((char *)(getRegisterDataPointer(a)))
 #define REGISTER_MATRIX_HEADER(reg) ((matrixHeader_t *)(getRegisterDataPointer(reg)))
+#define const34_86400 ((real34_t *)z47_math_wrappers_const34_86400())
 #define amPolarCYL 64
 #define amPolarSPH 128
 #define TI_REGTYPE 123
@@ -622,6 +691,7 @@ static inline void z47_test_setVectorRegisterPolarMode(calcRegister_t reg, uint3
 #define setVectorRegisterPolarMode(reg, pm) z47_test_setVectorRegisterPolarMode((reg), (pm))
 #define getRegisterLongIntegerSign(reg) getRegisterTag(reg)
 #define getRegisterShortIntegerBase(reg) getRegisterTag(reg)
+#define setRegisterShortIntegerBase(reg, base) setRegisterTag((reg), (base))
 
 void sinCosReal(trigType_t trigType);
 void sinCosCplx(trigType_t trigType);
