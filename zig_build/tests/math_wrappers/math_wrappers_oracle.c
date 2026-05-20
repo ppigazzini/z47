@@ -2,6 +2,8 @@
 
 #include "c47.h"
 
+void z47_math_wrappers_retained_fnXAlmostEqual(uint16_t regist);
+
 #define fnMin oracle_fnMin
 #include "../../../src/c47/mathematics/min.c"
 #undef fnMin
@@ -560,6 +562,130 @@ void oracle_fnIsConverged(uint16_t mode) {
 	else {
 		temporaryInformation = 12 + (isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
 	}
+}
+
+#define ORACLE_COMPARE_MODE_LESS_THAN 0x1
+#define ORACLE_COMPARE_MODE_EQUAL 0x2
+#define ORACLE_COMPARE_MODE_LESS_EQUAL 0x3
+#define ORACLE_COMPARE_MODE_GREATER_THAN 0x4
+#define ORACLE_COMPARE_MODE_NOT_EQUAL 0x5
+#define ORACLE_COMPARE_MODE_GREATER_EQUAL 0x6
+
+static void oracle_compareTypeError(calcRegister_t reg) {
+	temporaryInformation = 12;
+	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+	sprintf(errorMessage, "cannot convert Register %d from %s", reg, getRegisterDataTypeName(reg, true, false));
+	moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
+}
+
+static int oracle_isOwnedCompareType(uint32_t dataType) {
+	return dataType == dtLongInteger || dataType == dtShortInteger || dataType == dtReal34 || dataType == dtComplex34;
+}
+
+static void oracle_cmpToResult(int result, uint8_t mode) {
+	if(result < 0) {
+		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_LESS_THAN) != 0);
+	}
+	else if(result > 0) {
+		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_GREATER_THAN) != 0);
+	}
+	else {
+		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_EQUAL) != 0);
+	}
+}
+
+static void oracle_compareRealsToTemporaryInformation(real_t *left, real_t *right, uint8_t mode) {
+	if(realIsNaN(left) || realIsNaN(right)) {
+		temporaryInformation = 12;
+		return;
+	}
+
+	if(realCompareEqual(left, right)) {
+		oracle_cmpToResult(0, mode);
+	}
+	else if(realCompareLessThan(left, right)) {
+		oracle_cmpToResult(-1, mode);
+	}
+	else {
+		oracle_cmpToResult(1, mode);
+	}
+}
+
+static void oracle_compareComplexToTemporaryInformation(real_t *leftReal,
+	                                                    real_t *leftImag,
+	                                                    real_t *rightReal,
+	                                                    real_t *rightImag,
+	                                                    uint8_t mode,
+	                                                    calcRegister_t reg) {
+	if(mode != ORACLE_COMPARE_MODE_EQUAL && mode != ORACLE_COMPARE_MODE_NOT_EQUAL) {
+		oracle_compareTypeError(reg);
+		return;
+	}
+
+	oracle_compareRealsToTemporaryInformation(leftReal, rightReal, mode);
+	if(temporaryInformation != 12) {
+		oracle_compareRealsToTemporaryInformation(leftImag, rightImag, mode);
+	}
+}
+
+static void oracle_compareScalarRegister(calcRegister_t reg, uint8_t mode) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t regType = getRegisterDataType(reg);
+	real_t xReal, xImag, regReal, regImag;
+	bool_t isComplex = false;
+
+	if(!oracle_isOwnedCompareType(xType) || !oracle_isOwnedCompareType(regType)) {
+		oracle_compareTypeError(reg);
+		return;
+	}
+
+	if(!oracle_getConvergenceInput(REGISTER_X, &xReal, &xImag, &isComplex) || !oracle_getConvergenceInput(reg, &regReal, &regImag, &isComplex)) {
+		oracle_compareTypeError(reg);
+		return;
+	}
+
+	if(isComplex) {
+		oracle_compareComplexToTemporaryInformation(&xReal, &xImag, &regReal, &regImag, mode, reg);
+	}
+	else {
+		oracle_compareRealsToTemporaryInformation(&xReal, &regReal, mode);
+	}
+}
+
+void oracle_fnXLessThan(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_LESS_THAN);
+}
+
+void oracle_fnXLessEqual(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_LESS_EQUAL);
+}
+
+void oracle_fnXGreaterThan(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_GREATER_THAN);
+}
+
+void oracle_fnXGreaterEqual(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_GREATER_EQUAL);
+}
+
+void oracle_fnXEqualsTo(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_EQUAL);
+}
+
+void oracle_fnXNotEqual(uint16_t regist) {
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_NOT_EQUAL);
+}
+
+void oracle_fnXAlmostEqual(uint16_t regist) {
+	const uint32_t xType = getRegisterDataType(REGISTER_X);
+	const uint32_t regType = getRegisterDataType((calcRegister_t)regist);
+
+	if((xType != dtShortInteger && xType != dtLongInteger) || (regType != dtShortInteger && regType != dtLongInteger)) {
+		z47_math_wrappers_retained_fnXAlmostEqual(regist);
+		return;
+	}
+
+	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_EQUAL);
 }
 
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter) {
