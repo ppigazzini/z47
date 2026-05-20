@@ -24,6 +24,68 @@ fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path
     return run_test_suite;
 }
 
+fn addMathLnComplexOracle(
+    b: *std.Build,
+    context: host_types.Context,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (context.host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = "math-ln-complex-oracle",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    host_platform.addHostMacros(exe.root_module, context.common);
+    host_platform.addHostSystemPaths(exe.root_module, context.common);
+    exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/testSuite"));
+    exe.root_module.addIncludePath(context.version_headers_dir);
+    exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+
+    const math_ln_complex_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/mathematics/math_ln_complex_owned_export.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    const math_ln_complex_build_options = b.addOptions();
+    math_ln_complex_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    math_ln_complex_module.addOptions("math_command_wrappers_build_options", math_ln_complex_build_options);
+    const math_ln_complex_object = b.addObject(.{
+        .name = "math-ln-complex-oracle-owned",
+        .root_module = math_ln_complex_module,
+    });
+
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_ln_complex_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/io.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_ln_complex_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addObject(math_ln_complex_object);
+    exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers2_c, .flags = core_c_flags });
+    host_platform.linkGtk3(exe.root_module, context.common);
+    host_platform.linkGmp(exe.root_module, context.host_target);
+    exe.root_module.linkSystemLibrary("m", .{});
+    return exe;
+}
+
 pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.builtin.OptimizeMode) host_types.SimulatorOutputs {
     const sim = host_builders.addSimulator(
         b,
@@ -205,6 +267,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_math_command_wrappers_parity.setCwd(b.path("."));
     const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the math-command wrapper parity suite");
     math_command_wrappers_parity_step.dependOn(&run_math_command_wrappers_parity.step);
+
+    const math_ln_complex_oracle = addMathLnComplexOracle(b, context, optimize);
+    const run_math_ln_complex_oracle = b.addRunArtifact(math_ln_complex_oracle);
+    run_math_ln_complex_oracle.setCwd(b.path("."));
+    const math_ln_complex_oracle_step = b.step("math_ln_complex_oracle", "Run the direct lnComplex helper oracle");
+    math_ln_complex_oracle_step.dependOn(&run_math_ln_complex_oracle.step);
 
     const math_random_parity = math_command_wrapper_rewrites.addRandomParityExecutable(b, context.host_target, optimize);
     const run_math_random_parity = b.addRunArtifact(math_random_parity);

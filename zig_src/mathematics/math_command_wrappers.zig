@@ -1,5 +1,6 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
+const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -827,14 +828,17 @@ fn lnComplexZig(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {
-        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(ln_imag);
-        return;
-    }
+    ln_complex_owned.lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+}
 
-    runtime.realRectangularToPolar(real, imag, ln_real, ln_imag, real_context);
-    wp34sLn(ln_real, ln_real, real_context);
+pub export fn z47_math_wrappers_owned_lnComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    ln_real: *runtime.real_t,
+    ln_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
 }
 
 pub export fn lnComplex(
@@ -844,14 +848,7 @@ pub export fn lnComplex(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {
-        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(ln_imag);
-        return;
-    }
-
-    runtime.realRectangularToPolar(real, imag, ln_real, ln_imag, real_context);
-    runtime.WP34S_Ln(ln_real, ln_real, real_context);
+    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
 }
 
 fn lnReal() callconv(.c) void {
