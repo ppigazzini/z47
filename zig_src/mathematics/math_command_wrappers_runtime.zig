@@ -181,6 +181,25 @@ pub extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const mpz_
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, reg: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToUInt64(reg: calcRegister_t, sign: ?*i16, value: ?*u64) void;
 pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, real_context: *realContext_t) void;
+pub extern fn convergenceTolerence(tol: *real_t) void;
+pub extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
+pub extern fn WP34S_AbsoluteError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
+pub extern fn WP34S_ComplexRelativeError(
+    x_real: *const real_t,
+    x_imag: *const real_t,
+    y_real: *const real_t,
+    y_imag: *const real_t,
+    tol: *const real_t,
+    real_context: *realContext_t,
+) bool;
+pub extern fn WP34S_ComplexAbsError(
+    x_real: *const real_t,
+    x_imag: *const real_t,
+    y_real: *const real_t,
+    y_imag: *const real_t,
+    tol: *const real_t,
+    real_context: *realContext_t,
+) bool;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
 pub extern fn setSystemFlag(flag: i32) void;

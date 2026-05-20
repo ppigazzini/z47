@@ -66,6 +66,7 @@ void fnIxyz(uint16_t unusedButMandatoryParameter);
 void fnFactorial(uint16_t unusedButMandatoryParameter);
 void fnRandomI(uint16_t unusedButMandatoryParameter);
 void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
+void fnIsConverged(uint16_t unusedButMandatoryParameter);
 
 static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits);
 void fnCheckInteger(uint16_t unusedButMandatoryParameter);
@@ -173,6 +174,7 @@ void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
+void oracle_fnIsConverged(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckInteger(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t unusedButMandatoryParameter);
@@ -227,6 +229,10 @@ enum {
   parity_CHECK_INTEGER_EVEN = 1,
   parity_CHECK_INTEGER_ODD = 2,
   parity_CHECK_INTEGER_FP = 3,
+  parity_IS_CONVERGED_RELATIVE = 0,
+  parity_IS_CONVERGED_ABSOLUTE = 1,
+  parity_IS_CONVERGED_INF = 2,
+  parity_IS_CONVERGED_NAN = 4,
   parity_ITM_ISREZQ = 2527,
   parity_ITM_ISIMZQ = 2528,
   parity_ITM_ISRENZQ = 2529,
@@ -1590,6 +1596,54 @@ static void configureCheckAngleFalse(void) {
 static void configureCheckMatrixTrue(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+}
+
+static void configureIsConvergedRelativeRealTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 10, 0);
+  mathWrappersSetRealYInput(true, 11, 0);
+}
+
+static void configureIsConvergedRelativeRealFalse(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 10, 0);
+  mathWrappersSetRealYInput(true, 15, 0);
+}
+
+static void configureIsConvergedAbsoluteComplexTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtComplex34, amNone);
+  mathWrappersSetComplexInput(true, 10, 0, 20, 0);
+  mathWrappersSetComplexYInput(true, 11, 0, 21, 0);
+}
+
+static void configureIsConvergedIntegerRelativeTrue(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
+  mathWrappersSetLongIntegerInput(true, 10);
+  mathWrappersSetShortIntegerYInput(11);
+}
+
+static void configureIsConvergedNaNAllowed(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0x20);
+  mathWrappersSetRealYInput(true, 10, 0);
+}
+
+static void configureIsConvergedInfAllowed(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34, amNone);
+  mathWrappersSetRealInput(true, 0, 0x40);
+  mathWrappersSetRealYInput(true, 10, 0);
+}
+
+static void configureIsConvergedTypeError(void) {
+  configureDefaultSurface();
+  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
+  mathWrappersSetRealYInput(true, 10, 0);
 }
 
 static void configureGetTypeLongInteger(void) {
@@ -3139,6 +3193,13 @@ int main(void) {
   failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/real_matrix_square", oracle_fnGetType, fnGetType, 0, true, configureGetTypeRealMatrixSquare);
   failures += runCaseIgnoringRegisterMetadataGetters("fnGetType/complex_matrix_polar_row", oracle_fnGetType, fnGetType, 0, true, configureGetTypeComplexMatrixPolarRow);
   failures += runCase("fnGetType/config", oracle_fnGetType, fnGetType, 0, true, configureGetTypeConfig);
+  failures += runCase("fnIsConverged/relative_real_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealTrue);
+  failures += runCase("fnIsConverged/relative_real_false", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedRelativeRealFalse);
+  failures += runCase("fnIsConverged/absolute_complex_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_ABSOLUTE, true, configureIsConvergedAbsoluteComplexTrue);
+  failures += runCase("fnIsConverged/integers_relative_true", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedIntegerRelativeTrue);
+  failures += runCase("fnIsConverged/nan_allowed", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_NAN, true, configureIsConvergedNaNAllowed);
+  failures += runCase("fnIsConverged/inf_allowed", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_INF, true, configureIsConvergedInfAllowed);
+  failures += runCase("fnIsConverged/type_error", oracle_fnIsConverged, fnIsConverged, parity_IS_CONVERGED_RELATIVE, true, configureIsConvergedTypeError);
   failures += runCase("fnCheckNumber/longint_true", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureCheckTypeLongInteger);
   failures += runCase("fnCheckNumber/real_true", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureFactorialReal);
   failures += runCase("fnCheckNumber/real_nan_false", oracle_fnCheckNumber, fnCheckNumber, 0, true, configureSignRealNaN);
