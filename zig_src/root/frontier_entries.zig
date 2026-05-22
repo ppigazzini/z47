@@ -18,6 +18,51 @@ const SETTING_SINT_MODE: c_int = 0x0083;
 
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
+const TI_RESET: u8 = 8;
+
+const CM_NORMAL: u8 = 0;
+const CM_CONFIRMATION: u8 = 11;
+const CM_NO_UNDO: u8 = 16;
+
+const ERROR_NONE: u8 = 0;
+const ERROR_NO_SUMMATION_DATA: u8 = 28;
+const ERROR_PRINTING_DISABLED: u8 = 63;
+
+const CONFIRMED: u16 = 9877;
+const NOT_CONFIRMED: u16 = 9878;
+const NOPARAM: u16 = 9876;
+
+const USER_KRESET: u16 = 24;
+const ITM_RIBBON_C47: u16 = 2509;
+const ITM_RIBBON_R47: u16 = 2511;
+
+const FIRST_GLOBAL_REGISTER: u16 = 0;
+const LAST_GLOBAL_REGISTER: u16 = 125;
+const FIRST_NAMED_VARIABLE: u16 = 256;
+const FIRST_LOCAL_REGISTER: u16 = 7000;
+
+const REGISTER_X: i16 = 100;
+const REGISTER_Z: i16 = 102;
+const REGISTER_T: u16 = 103;
+const REGISTER_D: u16 = 107;
+const REGISTER_W: u16 = 125;
+
+const ERR_REGISTER_LINE: i16 = REGISTER_Z;
+const NIM_REGISTER_LINE: i16 = REGISTER_X;
+
+const FLAG_SSIZE8: c_int = 0x8018;
+
+const PGM_STOPPED: u8 = 0;
+const PGM_RUNNING: u8 = 1;
+const PGM_WAITING: u8 = 2;
+const PGM_SINGLE_STEP: u8 = 6;
+
+const PRN_ALL: u16 = 0;
+const PRN_STK: u16 = 1;
+const PRN_REGS: u16 = 2;
+const PRN_Xr: u16 = 6;
+
+const LINE_FULL: c_int = 0;
 
 const MNU_GAP_L: i16 = 2151;
 const MNU_GAP_RX: i16 = 2152;
@@ -33,6 +78,7 @@ const STRACE: u16 = 3;
 const PRINT_BYTE: c_int = 0;
 const PRINT_CHAR: c_int = 1;
 const PRINT_TAB: c_int = 2;
+const PRINT_ALPHA: c_int = 3;
 
 const DF_DMX_MIN: i16 = 99;
 const DF_HIDE_MIN: i16 = 12;
@@ -64,6 +110,18 @@ extern var fractionDigits: u8;
 extern var currentAngularMode: c_int;
 extern var exponentLimit: i16;
 extern var exponentHideLimit: i16;
+extern var calcMode: u8;
+extern var previousCalcMode: u8;
+extern var programRunStop: u8;
+extern var lastErrorCode: u8;
+extern var previousErrorCode: u8;
+extern var currentKeyCode: u8;
+extern var thereIsSomethingToUndo: bool;
+extern var numberOfNamedVariables: u16;
+extern var statisticalSumsPointer: ?*anyopaque;
+
+const ConfirmedFunction = *const fn (u16) callconv(.c) void;
+extern var confirmedFunction: ?ConfirmedFunction;
 
 const PrinterState = extern struct {
     print_on: bool,
@@ -89,6 +147,32 @@ extern fn setLineDelay(delay: u16) void;
 extern fn print_lf() void;
 extern fn printProgram(list: bool, lines: u16) void;
 extern fn cmdPrint(arg: u16, op: c_int) void;
+extern fn popSoftmenu() void;
+extern fn setConfirmationMode(func: ConfirmedFunction) void;
+extern fn fnClSigma(unused_but_mandatory_parameter: u16) void;
+extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
+extern fn clearRegister(regist: i16) void;
+extern fn fnExitAllMenus(unused_but_mandatory_parameter: u16) void;
+extern fn fnDeleteUserMenus(confirmation: u16) void;
+extern fn fnRESET_MyM(param: u16) void;
+extern fn fnRESET_Mya() void;
+extern fn createHOME() void;
+extern fn createPFN() void;
+extern fn initUserKeyArgument() void;
+extern fn fnDeleteAllVariables(confirmation: u16) void;
+extern fn fnClFAll(confirmation: u16) void;
+extern fn z47_frontier_push_u32_to_x(value: u32) void;
+extern fn z47_frontier_release_saved_statistical_sums() void;
+extern fn z47_frontier_is_r47_fam() bool;
+
+extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
+extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) bool;
+extern fn z47_frontier_current_number_of_local_registers() u16;
+extern fn z47_frontier_print_exit_pressed() bool;
+extern fn z47_frontier_print_sigma_line(index: u16) void;
+extern fn z47_frontier_print_alpha_register(register_no: u16) void;
 extern fn z47_frontier_print_set_printer_sbi(status: bool) void;
 extern fn z47_frontier_print_get_unicode_value(regist: i16) u16;
 
@@ -381,6 +465,168 @@ pub export fn fnHide(h: u16) callconv(.c) void {
     if (exponentHideLimit > 0 and exponentHideLimit < DF_HIDE_MIN) {
         exponentHideLimit = DF_HIDE_MIN;
     }
+}
+
+pub export fn fnConfirmationYes(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (calcMode == CM_CONFIRMATION) {
+        calcMode = previousCalcMode;
+        popSoftmenu();
+        if (confirmedFunction) |func| {
+            func(CONFIRMED);
+        }
+    }
+}
+
+pub export fn fnConfirmationNo(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (calcMode == CM_CONFIRMATION) {
+        calcMode = previousCalcMode;
+        popSoftmenu();
+    }
+}
+
+pub export fn fnGetRange(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
+}
+
+pub export fn fnGetHide(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
+}
+
+pub export fn fnGetLastErr(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
+}
+
+pub export fn fnClAll(confirmation: u16) callconv(.c) void {
+    if (confirmation == NOT_CONFIRMED) {
+        setConfirmationMode(&fnClAll);
+        return;
+    }
+
+    fnClPAll(CONFIRMED);
+    fnClSigma(CONFIRMED);
+    z47_frontier_release_saved_statistical_sums();
+
+    allocateLocalRegisters(0);
+
+    var regist: u16 = FIRST_GLOBAL_REGISTER;
+    while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
+        clearRegister(@as(i16, @intCast(regist)));
+    }
+    thereIsSomethingToUndo = false;
+
+    fnExitAllMenus(NOPARAM);
+    fnDeleteUserMenus(CONFIRMED);
+
+    if (z47_frontier_is_r47_fam()) {
+        fnRESET_MyM(ITM_RIBBON_R47);
+    } else {
+        fnRESET_MyM(ITM_RIBBON_C47);
+    }
+
+    fnRESET_Mya();
+    createHOME();
+    createPFN();
+
+    fnKeysManagement(USER_KRESET);
+    initUserKeyArgument();
+    fnDeleteAllVariables(CONFIRMED);
+    fnClFAll(CONFIRMED);
+
+    temporaryInformation = TI_RESET;
+    if (programRunStop == PGM_WAITING) {
+        programRunStop = PGM_STOPPED;
+    }
+}
+
+pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    runtime.z47_frontier_retained_fnP_User(unused_but_mandatory_parameter);
+}
+
+pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
+    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        z47_frontier_print_alpha_register(register_no);
+        return;
+    }
+
+    runtime.z47_frontier_retained_fnP_Alpha(register_no);
+}
+
+pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    currentKeyCode = 255;
+
+    if (statisticalSumsPointer != null) {
+        if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+            if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) and (programRunStop == PGM_RUNNING or programRunStop == PGM_SINGLE_STEP)) {
+                displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+            }
+
+            var regist: u16 = 0;
+            while (regist < 28) : (regist += 1) {
+                z47_frontier_print_sigma_line(regist);
+                if (z47_frontier_print_exit_pressed()) {
+                    return;
+                }
+            }
+        }
+        return;
+    }
+
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
+    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        var s: u16 = 0;
+        var n: u16 = 0;
+
+        switch (option) {
+            PRN_ALL => {
+                if (z47_frontier_print_reg_range(@as(u16, @intCast(REGISTER_X)), REGISTER_W)) return;
+                if (z47_frontier_print_reg_range(0, 99)) return;
+
+                const local_count = z47_frontier_current_number_of_local_registers();
+                if (local_count > 0) {
+                    if (z47_frontier_print_reg_range(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + local_count - 1)) return;
+                }
+
+                if (numberOfNamedVariables > 0) {
+                    _ = z47_frontier_print_reg_range(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+                }
+            },
+            PRN_REGS => {
+                lastErrorCode = getRegParam(null, &s, &n, null);
+                if (lastErrorCode == ERROR_NONE) {
+                    _ = z47_frontier_print_reg_range(s, (s + n) - 1);
+                } else {
+                    displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                }
+            },
+            PRN_Xr => {
+                printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_FULL, false);
+            },
+            PRN_STK => {
+                const stack_top: u16 = if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
+                _ = z47_frontier_print_reg_range(stack_top, @as(u16, @intCast(REGISTER_X)));
+            },
+            else => {
+                runtime.z47_frontier_retained_fnP_All_Regs(option);
+            },
+        }
+        return;
+    }
+
+    if (calcMode != CM_NORMAL and calcMode != CM_NO_UNDO) {
+        return;
+    }
+
+    runtime.z47_frontier_retained_fnP_All_Regs(option);
 }
 
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {

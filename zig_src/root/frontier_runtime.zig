@@ -2,6 +2,10 @@ pub extern fn z47_frontier_retained_fnSNAP(unused_but_mandatory_parameter: u16) 
 pub extern fn z47_frontier_retained_fnDynamicMenu(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_frontier_retained_fnNop(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_frontier_retained_fnCFGsettings(unused_but_mandatory_parameter: u16) void;
+pub extern fn z47_frontier_retained_fnP_User(unused_but_mandatory_parameter: u16) void;
+pub extern fn z47_frontier_retained_fnP_Alpha(register_no: u16) void;
+pub extern fn z47_frontier_retained_fnP_Sigma(unused_but_mandatory_parameter: u16) void;
+pub extern fn z47_frontier_retained_fnP_All_Regs(option: u16) void;
 pub extern fn z47_frontier_retained_fnKeysManagement(choice: u16) void;
 pub extern fn z47_frontier_retained_fnPlotStat(plot_mode: u16) void;
 pub extern fn z47_frontier_retained_fnEditMatrix(regist: u16) void;
