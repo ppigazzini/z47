@@ -3,13 +3,11 @@ const std = @import("std");
 const retained_gtk_sources = [_][]const u8{
     "c47-gtk.c",
     "gtkGui.c",
-    "hal/io.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
     "zig_build/host/gtk_c47_gtk_retained.c",
     "zig_build/host/gtk_gui_retained.c",
-    "zig_build/host/gtk_hal_io_retained.c",
 };
 
 pub fn filterGtkSources(b: *std.Build, gtk_sources: [][]const u8) ![][]const u8 {
