@@ -827,14 +827,14 @@ fn firmwareSdkStartupSource(board: Board) []const u8 {
 fn firmwareBoardHalSources(board: Board) []const []const u8 {
     return switch (board) {
         .dmcp => &.{
-            "src/c47-dmcp/hal/audio.c",
-            "src/c47-dmcp/hal/io.c",
-            "src/c47-dmcp/hal/print_ir.c",
+            "zig_bridge/dmcp/hal_audio_retained.c",
+            "zig_bridge/dmcp/hal_io_retained.c",
+            "zig_bridge/dmcp/hal_print_ir_retained.c",
         },
         .dmcp5 => &.{
-            "src/c47-dmcp5/hal/audio.c",
-            "src/c47-dmcp5/hal/io.c",
-            "src/c47-dmcp5/hal/print_ir.c",
+            "zig_bridge/dmcp5/hal_audio_retained.c",
+            "zig_bridge/dmcp5/hal_io_retained.c",
+            "zig_bridge/dmcp5/hal_print_ir_retained.c",
         },
     };
 }
