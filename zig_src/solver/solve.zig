@@ -69,3 +69,7 @@ pub export fn fnTvmEndMode(unused_but_mandatory_parameter: u16) callconv(.c) voi
 pub export fn fnProgrammableSum(label: u16) callconv(.c) void {
     runtime.z47_solver_retained_fnProgrammableSum(label);
 }
+
+pub export fn fnProgrammableProduct(label: u16) callconv(.c) void {
+    runtime.z47_solver_retained_fnProgrammableProduct(label);
+}
