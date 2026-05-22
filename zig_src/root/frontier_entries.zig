@@ -450,50 +450,397 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
-pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
+const DisplayFormatCommand = enum {
+    fix,
+    sci,
+    eng,
+    all,
+    sig_fig,
+    unit,
+    dsp,
+    time,
+};
+
+const DisplayFormatStage = enum {
+    clamp_digits,
+    reset_fraction_mode,
+    reset_cycle_mode,
+    apply_command,
+    refresh_state,
+};
+
+const DisplayFormatPhase = enum {
+    prepare,
+    apply,
+    finalize,
+};
+
+const DisplayFormatPlan = struct {
+    phases: [3]DisplayFormatPhase,
+};
+
+const DisplayFormatTelemetry = struct {
+    prepare_started: bool,
+    prepare_completed: bool,
+    apply_started: bool,
+    apply_completed: bool,
+    finalize_started: bool,
+    finalize_completed: bool,
+    aborted: bool,
+};
+
+const DisplayFormatContext = struct {
+    command: DisplayFormatCommand,
+    requested_digits: u16,
+    clamped_digits: u8,
+    should_reset_fraction: bool,
+    should_reset_cycle: bool,
+    should_refresh: bool,
+};
+
+fn displayFormatContextInit(command: DisplayFormatCommand, display_format_n: u16) DisplayFormatContext {
+    return .{
+        .command = command,
+        .requested_digits = display_format_n,
+        .clamped_digits = 0,
+        .should_reset_fraction = true,
+        .should_reset_cycle = false,
+        .should_refresh = true,
+    };
+}
+
+fn displayFormatPlanBuild() DisplayFormatPlan {
+    return .{ .phases = .{ .prepare, .apply, .finalize } };
+}
+
+fn displayFormatTelemetryInit() DisplayFormatTelemetry {
+    return .{
+        .prepare_started = false,
+        .prepare_completed = false,
+        .apply_started = false,
+        .apply_completed = false,
+        .finalize_started = false,
+        .finalize_completed = false,
+        .aborted = false,
+    };
+}
+
+fn displayFormatTelemetryStart(telemetry: *DisplayFormatTelemetry, phase: DisplayFormatPhase) void {
+    switch (phase) {
+        .prepare => telemetry.prepare_started = true,
+        .apply => telemetry.apply_started = true,
+        .finalize => telemetry.finalize_started = true,
+    }
+}
+
+fn displayFormatTelemetryComplete(telemetry: *DisplayFormatTelemetry, phase: DisplayFormatPhase) void {
+    switch (phase) {
+        .prepare => telemetry.prepare_completed = true,
+        .apply => telemetry.apply_completed = true,
+        .finalize => telemetry.finalize_completed = true,
+    }
+}
+
+fn displayFormatTelemetryAbort(telemetry: *DisplayFormatTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn displayFormatPhaseCanRun(telemetry: DisplayFormatTelemetry, phase: DisplayFormatPhase) bool {
+    return switch (phase) {
+        .prepare => true,
+        .apply => telemetry.prepare_completed and !telemetry.aborted,
+        .finalize => telemetry.apply_completed and !telemetry.aborted,
+    };
+}
+
+fn displayFormatCommandNeedsFractionReset(command: DisplayFormatCommand) bool {
+    return switch (command) {
+        .time => false,
+        else => true,
+    };
+}
+
+fn displayFormatCommandNeedsCycleReset(command: DisplayFormatCommand) bool {
+    return switch (command) {
+        .fix, .sci, .eng, .all, .sig_fig, .unit => true,
+        else => false,
+    };
+}
+
+fn displayFormatCommandNeedsRefresh(command: DisplayFormatCommand) bool {
+    return switch (command) {
+        .time => false,
+        else => true,
+    };
+}
+
+fn displayFormatComputeCommandPolicy(ctx: *DisplayFormatContext) void {
+    ctx.should_reset_fraction = displayFormatCommandNeedsFractionReset(ctx.command);
+    ctx.should_reset_cycle = displayFormatCommandNeedsCycleReset(ctx.command);
+    ctx.should_refresh = displayFormatCommandNeedsRefresh(ctx.command);
+}
+
+fn displayFormatClampDigits(ctx: *DisplayFormatContext) void {
+    ctx.clamped_digits = clampDisplayDigits(ctx.requested_digits);
+}
+
+fn displayFormatResetFractionModeIfNeeded(ctx: DisplayFormatContext) void {
+    if (!ctx.should_reset_fraction) {
+        return;
+    }
+    clearSystemFlag(FLAG_FRACT);
+}
+
+fn displayFormatResetCycleModeIfNeeded(ctx: DisplayFormatContext) void {
+    if (!ctx.should_reset_cycle) {
+        return;
+    }
+    DM_Cycling = 0;
+}
+
+fn displayFormatSetModeFix() void {
     displayFormat = DF_FIX;
-    fnRefreshState();
+}
+
+fn displayFormatSetModeSci() void {
+    displayFormat = DF_SCI;
+}
+
+fn displayFormatSetModeEng() void {
+    displayFormat = DF_ENG;
+}
+
+fn displayFormatSetModeAll() void {
+    displayFormat = DF_ALL;
+}
+
+fn displayFormatSetModeSigFig() void {
+    displayFormat = DF_SF;
+}
+
+fn displayFormatSetModeUnit() void {
+    displayFormat = DF_UN;
+}
+
+fn displayFormatApplyFix(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeFix();
+}
+
+fn displayFormatApplySci(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeSci();
+}
+
+fn displayFormatApplyEng(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeEng();
+}
+
+fn displayFormatApplyAll(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeAll();
+}
+
+fn displayFormatApplySigFig(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeSigFig();
+}
+
+fn displayFormatApplyUnit(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+    displayFormatSetModeUnit();
+}
+
+fn displayFormatApplyDsp(ctx: DisplayFormatContext) void {
+    displayFormatDigits = ctx.clamped_digits;
+}
+
+fn displayFormatApplyTime(ctx: DisplayFormatContext) void {
+    timeDisplayFormatDigits = ctx.clamped_digits;
+}
+
+fn displayFormatApplyCommand(ctx: DisplayFormatContext) void {
+    switch (ctx.command) {
+        .fix => displayFormatApplyFix(ctx),
+        .sci => displayFormatApplySci(ctx),
+        .eng => displayFormatApplyEng(ctx),
+        .all => displayFormatApplyAll(ctx),
+        .sig_fig => displayFormatApplySigFig(ctx),
+        .unit => displayFormatApplyUnit(ctx),
+        .dsp => displayFormatApplyDsp(ctx),
+        .time => displayFormatApplyTime(ctx),
+    }
+}
+
+fn displayFormatRefreshStateIfNeeded(ctx: DisplayFormatContext) void {
+    if (ctx.should_refresh) {
+        fnRefreshState();
+    }
+}
+
+fn displayFormatExecuteStage(stage: DisplayFormatStage, ctx: *DisplayFormatContext) void {
+    switch (stage) {
+        .clamp_digits => displayFormatClampDigits(ctx),
+        .reset_fraction_mode => displayFormatResetFractionModeIfNeeded(ctx.*),
+        .reset_cycle_mode => displayFormatResetCycleModeIfNeeded(ctx.*),
+        .apply_command => displayFormatApplyCommand(ctx.*),
+        .refresh_state => displayFormatRefreshStateIfNeeded(ctx.*),
+    }
+}
+
+fn displayFormatPrepareStages() [3]DisplayFormatStage {
+    return .{
+        .clamp_digits,
+        .reset_fraction_mode,
+        .reset_cycle_mode,
+    };
+}
+
+fn displayFormatApplyStages() [1]DisplayFormatStage {
+    return .{.apply_command};
+}
+
+fn displayFormatFinalizeStages() [1]DisplayFormatStage {
+    return .{.refresh_state};
+}
+
+fn displayFormatRunStageList(comptime count: usize, stages: [count]DisplayFormatStage, ctx: *DisplayFormatContext) void {
+    for (stages) |stage| {
+        displayFormatExecuteStage(stage, ctx);
+    }
+}
+
+fn displayFormatRunPrepare(ctx: *DisplayFormatContext) void {
+    const stages = displayFormatPrepareStages();
+    displayFormatRunStageList(stages.len, stages, ctx);
+}
+
+fn displayFormatRunApply(ctx: *DisplayFormatContext) void {
+    const stages = displayFormatApplyStages();
+    displayFormatRunStageList(stages.len, stages, ctx);
+}
+
+fn displayFormatRunFinalize(ctx: *DisplayFormatContext) void {
+    const stages = displayFormatFinalizeStages();
+    displayFormatRunStageList(stages.len, stages, ctx);
+}
+
+fn displayFormatExecutePhase(phase: DisplayFormatPhase, ctx: *DisplayFormatContext) void {
+    switch (phase) {
+        .prepare => displayFormatRunPrepare(ctx),
+        .apply => displayFormatRunApply(ctx),
+        .finalize => displayFormatRunFinalize(ctx),
+    }
+}
+
+fn displayFormatExecutePhaseWithTelemetry(phase: DisplayFormatPhase, ctx: *DisplayFormatContext, telemetry: *DisplayFormatTelemetry) bool {
+    if (!displayFormatPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    displayFormatTelemetryStart(telemetry, phase);
+    displayFormatExecutePhase(phase, ctx);
+    displayFormatTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn displayFormatTelemetryPipeline(command: DisplayFormatCommand, display_format_n: u16) void {
+    var ctx = displayFormatContextInit(command, display_format_n);
+    displayFormatComputeCommandPolicy(&ctx);
+
+    var telemetry = displayFormatTelemetryInit();
+    const plan = displayFormatPlanBuild();
+    for (plan.phases) |phase| {
+        if (!displayFormatExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            displayFormatTelemetryAbort(&telemetry);
+            return;
+        }
+    }
+}
+
+fn displayFormatUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn displayFormatDispatch(command: DisplayFormatCommand, display_format_n: u16) void {
+    if (displayFormatUseTelemetryPipeline()) {
+        displayFormatTelemetryPipeline(command, display_format_n);
+        return;
+    }
+
+    switch (command) {
+        .fix => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_FIX;
+            fnRefreshState();
+        },
+        .sci => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_SCI;
+            fnRefreshState();
+        },
+        .eng => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_ENG;
+            fnRefreshState();
+        },
+        .all => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_ALL;
+            fnRefreshState();
+        },
+        .sig_fig => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_SF;
+            fnRefreshState();
+        },
+        .unit => {
+            displayFormatReset(display_format_n);
+            displayFormat = DF_UN;
+            fnRefreshState();
+        },
+        .dsp => {
+            displayFormatDigits = clampDisplayDigits(display_format_n);
+            clearSystemFlag(FLAG_FRACT);
+            fnRefreshState();
+        },
+        .time => {
+            timeDisplayFormatDigits = clampDisplayDigits(display_format_n);
+        },
+    }
+}
+
+pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
+    displayFormatDispatch(.fix, display_format_n);
 }
 
 pub export fn fnDisplayFormatSci(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
-    displayFormat = DF_SCI;
-    fnRefreshState();
+    displayFormatDispatch(.sci, display_format_n);
 }
 
 pub export fn fnDisplayFormatEng(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
-    displayFormat = DF_ENG;
-    fnRefreshState();
+    displayFormatDispatch(.eng, display_format_n);
 }
 
 pub export fn fnDisplayFormatAll(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
-    displayFormat = DF_ALL;
-    fnRefreshState();
+    displayFormatDispatch(.all, display_format_n);
 }
 
 pub export fn fnDisplayFormatSigFig(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
-    displayFormat = DF_SF;
-    fnRefreshState();
+    displayFormatDispatch(.sig_fig, display_format_n);
 }
 
 pub export fn fnDisplayFormatUnit(display_format_n: u16) callconv(.c) void {
-    displayFormatReset(display_format_n);
-    displayFormat = DF_UN;
-    fnRefreshState();
+    displayFormatDispatch(.unit, display_format_n);
 }
 
 pub export fn fnDisplayFormatDsp(display_format_n: u16) callconv(.c) void {
-    displayFormatDigits = clampDisplayDigits(display_format_n);
-    clearSystemFlag(FLAG_FRACT);
-    fnRefreshState();
+    displayFormatDispatch(.dsp, display_format_n);
 }
 
 pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
-    timeDisplayFormatDigits = clampDisplayDigits(display_format_n);
+    displayFormatDispatch(.time, display_format_n);
 }
 
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -514,74 +861,213 @@ pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) vo
     showSoftmenu(-MNU_SYSFL);
 }
 
-pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
+const PrinterControlCommand = enum {
+    on_off,
+    mode,
+    set_model,
+    set_delay,
+    advance,
+    list,
+    byte,
+    char,
+    tab,
+    lcd,
+};
+
+const PrinterControlStage = enum {
+    decode,
+    begin_sbi,
+    apply,
+    end_sbi,
+};
+
+const PrinterControlPhase = enum {
+    preflight,
+    execute,
+    finalize,
+};
+
+const PrinterControlPlan = struct {
+    phases: [3]PrinterControlPhase,
+};
+
+const PrinterControlTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    execute_started: bool,
+    execute_completed: bool,
+    finalize_started: bool,
+    finalize_completed: bool,
+    aborted: bool,
+};
+
+const PrinterControlContext = struct {
+    command: PrinterControlCommand,
+    value: u16,
+    use_sbi: bool,
+    should_apply: bool,
+};
+
+fn printerControlContextInit(command: PrinterControlCommand, value: u16) PrinterControlContext {
+    return .{
+        .command = command,
+        .value = value,
+        .use_sbi = false,
+        .should_apply = true,
+    };
+}
+
+fn printerControlPlanBuild() PrinterControlPlan {
+    return .{ .phases = .{ .preflight, .execute, .finalize } };
+}
+
+fn printerControlTelemetryInit() PrinterControlTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .execute_started = false,
+        .execute_completed = false,
+        .finalize_started = false,
+        .finalize_completed = false,
+        .aborted = false,
+    };
+}
+
+fn printerControlTelemetryStart(telemetry: *PrinterControlTelemetry, phase: PrinterControlPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .execute => telemetry.execute_started = true,
+        .finalize => telemetry.finalize_started = true,
+    }
+}
+
+fn printerControlTelemetryComplete(telemetry: *PrinterControlTelemetry, phase: PrinterControlPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .execute => telemetry.execute_completed = true,
+        .finalize => telemetry.finalize_completed = true,
+    }
+}
+
+fn printerControlTelemetryAbort(telemetry: *PrinterControlTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn printerControlPhaseCanRun(telemetry: PrinterControlTelemetry, phase: PrinterControlPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .execute => telemetry.preflight_completed and !telemetry.aborted,
+        .finalize => telemetry.execute_completed and !telemetry.aborted,
+    };
+}
+
+fn printerControlNeedsSbi(command: PrinterControlCommand) bool {
+    return switch (command) {
+        .advance, .byte, .char, .tab => true,
+        else => false,
+    };
+}
+
+fn printerControlDecode(ctx: *PrinterControlContext) void {
+    ctx.use_sbi = printerControlNeedsSbi(ctx.command);
+    ctx.should_apply = true;
+}
+
+fn printerControlBeginSbi(ctx: PrinterControlContext) void {
+    if (ctx.use_sbi) {
+        z47_frontier_print_set_printer_sbi(true);
+    }
+}
+
+fn printerControlEndSbi(ctx: PrinterControlContext) void {
+    if (ctx.use_sbi) {
+        z47_frontier_print_set_printer_sbi(false);
+    }
+}
+
+fn printerControlApplyOn() void {
+    printerState.print_on = true;
+    setSystemFlag(FLAG_PRTACT);
+    fnSetFlag(FLAG_PRTEN);
+}
+
+fn printerControlApplyOff() void {
+    printerState.print_on = false;
+    clearSystemFlag(FLAG_PRTACT);
+    fnClearFlag(FLAG_PRTEN);
+}
+
+fn printerControlApplyOnOff(op: u16) void {
     if (op == PRON) {
-        printerState.print_on = true;
-        setSystemFlag(FLAG_PRTACT);
-        fnSetFlag(FLAG_PRTEN);
+        printerControlApplyOn();
     } else if (op == PROFF) {
-        printerState.print_on = false;
-        clearSystemFlag(FLAG_PRTACT);
-        fnClearFlag(FLAG_PRTEN);
+        printerControlApplyOff();
     }
 }
 
-pub export fn fnP_PrinterMode(mode: u16) callconv(.c) void {
+fn printerControlModeManual() void {
+    fnClearFlag(FLAG_NORM);
+    fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
+}
+
+fn printerControlModeNormal() void {
+    fnSetFlag(FLAG_NORM);
+    fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
+}
+
+fn printerControlModeTrace() void {
+    fnClearFlag(FLAG_NORM);
+    fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
+}
+
+fn printerControlModeStepTrace() void {
+    fnSetFlag(FLAG_NORM);
+    fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
+}
+
+fn printerControlApplyMode(mode: u16) void {
     if (mode == MAN) {
-        fnClearFlag(FLAG_NORM);
-        fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
+        printerControlModeManual();
     } else if (mode == NORM) {
-        fnSetFlag(FLAG_NORM);
-        fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
+        printerControlModeNormal();
     } else if (mode == TRACE) {
-        fnClearFlag(FLAG_NORM);
-        fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
+        printerControlModeTrace();
     } else if (mode == STRACE) {
-        fnSetFlag(FLAG_NORM);
-        fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
+        printerControlModeStepTrace();
     }
 }
 
-pub export fn fnSetPrinter(model: u16) callconv(.c) void {
+fn printerControlApplyModel(model: u16) void {
     printerState.printer_model = @as(c_int, @intCast(model));
 }
 
-pub export fn fnP_SetDelay(delay: u16) callconv(.c) void {
+fn printerControlApplyDelay(delay: u16) void {
     printerState.delay = delay;
     setLineDelay(delay);
 }
 
-pub export fn fnP_Advance(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    z47_frontier_print_set_printer_sbi(true);
+fn printerControlApplyAdvance() void {
     print_lf();
-    z47_frontier_print_set_printer_sbi(false);
 }
 
-pub export fn fnP_PrinterList(lines: u16) callconv(.c) void {
+fn printerControlApplyList(lines: u16) void {
     printProgram(true, lines);
 }
 
-pub export fn fnP_Byte(byte: u16) callconv(.c) void {
-    z47_frontier_print_set_printer_sbi(true);
+fn printerControlApplyByte(byte: u16) void {
     cmdPrint(byte, PRINT_BYTE);
-    z47_frontier_print_set_printer_sbi(false);
 }
 
-pub export fn fnP_Char(register_no: u16) callconv(.c) void {
-    z47_frontier_print_set_printer_sbi(true);
+fn printerControlApplyChar(register_no: u16) void {
     const character = z47_frontier_print_get_unicode_value(@as(i16, @intCast(register_no)));
     cmdPrint(character, PRINT_CHAR);
-    z47_frontier_print_set_printer_sbi(false);
 }
 
-pub export fn fnP_Tab(column: u16) callconv(.c) void {
-    z47_frontier_print_set_printer_sbi(true);
+fn printerControlApplyTab(column: u16) void {
     cmdPrint(column, PRINT_TAB);
-    z47_frontier_print_set_printer_sbi(false);
 }
 
-pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
+fn printerControlApplyLcd(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
         return;
@@ -589,103 +1075,369 @@ pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
     fnSNAP(9876);
 }
 
-pub export fn fnSetGapChar(char_param: u16) callconv(.c) void {
-    const group = char_param & 49152;
-    const value = char_param & 16383;
-    if (group == 0) {
-        gapItemLeft = value;
-    } else if (group == 32768) {
-        gapItemRight = value;
-    } else if (group == 49152) {
-        gapItemRadix = value;
+fn printerControlApply(ctx: PrinterControlContext) void {
+    if (!ctx.should_apply) {
+        return;
+    }
+
+    switch (ctx.command) {
+        .on_off => printerControlApplyOnOff(ctx.value),
+        .mode => printerControlApplyMode(ctx.value),
+        .set_model => printerControlApplyModel(ctx.value),
+        .set_delay => printerControlApplyDelay(ctx.value),
+        .advance => printerControlApplyAdvance(),
+        .list => printerControlApplyList(ctx.value),
+        .byte => printerControlApplyByte(ctx.value),
+        .char => printerControlApplyChar(ctx.value),
+        .tab => printerControlApplyTab(ctx.value),
+        .lcd => printerControlApplyLcd(ctx.value),
     }
 }
 
-pub export fn fnSettingsDispFormatGrpL(param: u16) callconv(.c) void {
-    grpGroupingLeft = @as(u8, @intCast(param));
+fn printerControlExecuteStage(stage: PrinterControlStage, ctx: *PrinterControlContext) void {
+    switch (stage) {
+        .decode => printerControlDecode(ctx),
+        .begin_sbi => printerControlBeginSbi(ctx.*),
+        .apply => printerControlApply(ctx.*),
+        .end_sbi => printerControlEndSbi(ctx.*),
+    }
 }
 
-pub export fn fnSettingsDispFormatGrp1Lo(param: u16) callconv(.c) void {
-    grpGroupingGr1LeftOverflow = @as(u8, @intCast(param));
+fn printerControlPreflightStages() [1]PrinterControlStage {
+    return .{.decode};
 }
 
-pub export fn fnSettingsDispFormatGrp1L(param: u16) callconv(.c) void {
-    grpGroupingGr1Left = @as(u8, @intCast(param));
+fn printerControlExecuteStages() [2]PrinterControlStage {
+    return .{ .begin_sbi, .apply };
 }
 
-pub export fn fnSettingsDispFormatGrpR(param: u16) callconv(.c) void {
-    grpGroupingRight = @as(u8, @intCast(param));
+fn printerControlFinalizeStages() [1]PrinterControlStage {
+    return .{.end_sbi};
 }
 
-pub export fn fnMenuGapL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn printerControlRunStageList(comptime count: usize, stages: [count]PrinterControlStage, ctx: *PrinterControlContext) void {
+    for (stages) |stage| {
+        printerControlExecuteStage(stage, ctx);
+    }
+}
+
+fn printerControlRunPreflight(ctx: *PrinterControlContext) void {
+    const stages = printerControlPreflightStages();
+    printerControlRunStageList(stages.len, stages, ctx);
+}
+
+fn printerControlRunExecute(ctx: *PrinterControlContext) void {
+    const stages = printerControlExecuteStages();
+    printerControlRunStageList(stages.len, stages, ctx);
+}
+
+fn printerControlRunFinalize(ctx: *PrinterControlContext) void {
+    const stages = printerControlFinalizeStages();
+    printerControlRunStageList(stages.len, stages, ctx);
+}
+
+fn printerControlExecutePhase(phase: PrinterControlPhase, ctx: *PrinterControlContext) void {
+    switch (phase) {
+        .preflight => printerControlRunPreflight(ctx),
+        .execute => printerControlRunExecute(ctx),
+        .finalize => printerControlRunFinalize(ctx),
+    }
+}
+
+fn printerControlExecutePhaseWithTelemetry(phase: PrinterControlPhase, ctx: *PrinterControlContext, telemetry: *PrinterControlTelemetry) bool {
+    if (!printerControlPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    printerControlTelemetryStart(telemetry, phase);
+    printerControlExecutePhase(phase, ctx);
+    printerControlTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn printerControlTelemetryPipeline(command: PrinterControlCommand, value: u16) void {
+    var ctx = printerControlContextInit(command, value);
+    var telemetry = printerControlTelemetryInit();
+    const plan = printerControlPlanBuild();
+    for (plan.phases) |phase| {
+        if (!printerControlExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            printerControlTelemetryAbort(&telemetry);
+            return;
+        }
+    }
+}
+
+fn printerControlUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn printerControlDispatch(command: PrinterControlCommand, value: u16) void {
+    if (printerControlUseTelemetryPipeline()) {
+        printerControlTelemetryPipeline(command, value);
+        return;
+    }
+
+    switch (command) {
+        .on_off => fnP_PrinterOnOff(value),
+        .mode => fnP_PrinterMode(value),
+        .set_model => fnSetPrinter(value),
+        .set_delay => fnP_SetDelay(value),
+        .advance => fnP_Advance(value),
+        .list => fnP_PrinterList(value),
+        .byte => fnP_Byte(value),
+        .char => fnP_Char(value),
+        .tab => fnP_Tab(value),
+        .lcd => fnP_LCD(value),
+    }
+}
+
+pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
+    printerControlDispatch(.on_off, op);
+}
+
+pub export fn fnP_PrinterMode(mode: u16) callconv(.c) void {
+    printerControlDispatch(.mode, mode);
+}
+
+pub export fn fnSetPrinter(model: u16) callconv(.c) void {
+    printerControlDispatch(.set_model, model);
+}
+
+pub export fn fnP_SetDelay(delay: u16) callconv(.c) void {
+    printerControlDispatch(.set_delay, delay);
+}
+
+pub export fn fnP_Advance(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    printerControlDispatch(.advance, unused_but_mandatory_parameter);
+}
+
+pub export fn fnP_PrinterList(lines: u16) callconv(.c) void {
+    printerControlDispatch(.list, lines);
+}
+
+pub export fn fnP_Byte(byte: u16) callconv(.c) void {
+    printerControlDispatch(.byte, byte);
+}
+
+pub export fn fnP_Char(register_no: u16) callconv(.c) void {
+    printerControlDispatch(.char, register_no);
+}
+
+pub export fn fnP_Tab(column: u16) callconv(.c) void {
+    printerControlDispatch(.tab, column);
+}
+
+pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    printerControlDispatch(.lcd, unused_but_mandatory_parameter);
+}
+
+const FrontendSettingsCommand = enum {
+    set_gap_char,
+    set_group_left,
+    set_group_1lo,
+    set_group_1l,
+    set_group_right,
+    menu_gap_l,
+    menu_gap_rx,
+    menu_gap_r,
+    integer_mode,
+    who,
+    version,
+    set_rounding_mode,
+    set_significant_digits,
+    set_base_nr,
+    set_fraction_digits,
+    angular_mode,
+    fraction_type,
+    set_range,
+    set_hide,
+    confirmation_yes,
+    confirmation_no,
+    get_range,
+    get_hide,
+    get_last_error,
+};
+
+const FrontendSettingsStage = enum {
+    decode,
+    validate,
+    apply,
+    finalize,
+};
+
+const FrontendSettingsPhase = enum {
+    preflight,
+    execution,
+    completion,
+};
+
+const FrontendSettingsPlan = struct {
+    phases: [3]FrontendSettingsPhase,
+};
+
+const FrontendSettingsTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    execution_started: bool,
+    execution_completed: bool,
+    completion_started: bool,
+    completion_completed: bool,
+    aborted: bool,
+};
+
+const FrontendSettingsContext = struct {
+    command: FrontendSettingsCommand,
+    value: u16,
+    valid: bool,
+};
+
+fn frontendSettingsContextInit(command: FrontendSettingsCommand, value: u16) FrontendSettingsContext {
+    return .{ .command = command, .value = value, .valid = true };
+}
+
+fn frontendSettingsPlanBuild() FrontendSettingsPlan {
+    return .{ .phases = .{ .preflight, .execution, .completion } };
+}
+
+fn frontendSettingsTelemetryInit() FrontendSettingsTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .execution_started = false,
+        .execution_completed = false,
+        .completion_started = false,
+        .completion_completed = false,
+        .aborted = false,
+    };
+}
+
+fn frontendSettingsTelemetryStart(telemetry: *FrontendSettingsTelemetry, phase: FrontendSettingsPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .execution => telemetry.execution_started = true,
+        .completion => telemetry.completion_started = true,
+    }
+}
+
+fn frontendSettingsTelemetryComplete(telemetry: *FrontendSettingsTelemetry, phase: FrontendSettingsPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .execution => telemetry.execution_completed = true,
+        .completion => telemetry.completion_completed = true,
+    }
+}
+
+fn frontendSettingsTelemetryAbort(telemetry: *FrontendSettingsTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn frontendSettingsPhaseCanRun(telemetry: FrontendSettingsTelemetry, phase: FrontendSettingsPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .execution => telemetry.preflight_completed and !telemetry.aborted,
+        .completion => telemetry.execution_completed and !telemetry.aborted,
+    };
+}
+
+fn frontendSettingsDecode(ctx: *FrontendSettingsContext) void {
+    _ = ctx;
+}
+
+fn frontendSettingsValidate(ctx: *FrontendSettingsContext) bool {
+    _ = ctx;
+    return true;
+}
+
+fn frontendSettingsApplySetGapChar(value: u16) void {
+    const group = value & 49152;
+    const payload = value & 16383;
+    if (group == 0) {
+        gapItemLeft = payload;
+    } else if (group == 32768) {
+        gapItemRight = payload;
+    } else if (group == 49152) {
+        gapItemRadix = payload;
+    }
+}
+
+fn frontendSettingsApplyGroupLeft(value: u16) void {
+    grpGroupingLeft = @as(u8, @intCast(value));
+}
+
+fn frontendSettingsApplyGroup1Lo(value: u16) void {
+    grpGroupingGr1LeftOverflow = @as(u8, @intCast(value));
+}
+
+fn frontendSettingsApplyGroup1L(value: u16) void {
+    grpGroupingGr1Left = @as(u8, @intCast(value));
+}
+
+fn frontendSettingsApplyGroupRight(value: u16) void {
+    grpGroupingRight = @as(u8, @intCast(value));
+}
+
+fn frontendSettingsApplyMenuGapL() void {
     showSoftmenu(-MNU_GAP_L);
 }
 
-pub export fn fnMenuGapRX(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyMenuGapRx() void {
     showSoftmenu(-MNU_GAP_RX);
 }
 
-pub export fn fnMenuGapR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyMenuGapR() void {
     showSoftmenu(-MNU_GAP_R);
 }
 
-pub export fn fnIntegerMode(mode: u16) callconv(.c) void {
-    if (shortIntegerMode != @as(u8, @intCast(mode))) {
+fn frontendSettingsApplyIntegerMode(value: u16) void {
+    if (shortIntegerMode != @as(u8, @intCast(value))) {
         setSystemFlagChanged(SETTING_SINT_MODE);
     }
-    shortIntegerMode = @as(u8, @intCast(mode));
+    shortIntegerMode = @as(u8, @intCast(value));
     fnRefreshState();
 }
 
-pub export fn fnWho(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyWho() void {
     temporaryInformation = TI_WHO;
 }
 
-pub export fn fnVersion(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyVersion() void {
     temporaryInformation = TI_VERSION;
 }
 
-pub export fn fnSetRoundingMode(rm: u16) callconv(.c) void {
-    roundingMode = @as(u8, @intCast(rm));
+fn frontendSettingsApplyRounding(value: u16) void {
+    roundingMode = @as(u8, @intCast(value));
 }
 
-pub export fn fnSetSignificantDigits(s: u16) callconv(.c) void {
-    significantDigits = @as(u8, @intCast(s));
+fn frontendSettingsApplySignificantDigits(value: u16) void {
+    significantDigits = @as(u8, @intCast(value));
     if (significantDigits == 0) {
         significantDigits = 34;
     }
 }
 
-pub export fn fnSetBaseNr(s: u16) callconv(.c) void {
-    dispBase = @as(u8, @intCast(s));
+fn frontendSettingsApplyBaseNr(value: u16) void {
+    dispBase = @as(u8, @intCast(value));
     if (dispBase == 1) {
         dispBase = 0;
     }
 }
 
-pub export fn fnSetFractionDigits(s: u16) callconv(.c) void {
-    fractionDigits = @as(u8, @intCast(s));
+fn frontendSettingsApplyFractionDigits(value: u16) void {
+    fractionDigits = @as(u8, @intCast(value));
     if (fractionDigits == 0) {
         fractionDigits = 34;
     }
 }
 
-pub export fn fnAngularMode(am: u16) callconv(.c) void {
-    if (currentAngularMode != @as(c_int, @intCast(am))) {
+fn frontendSettingsApplyAngularMode(value: u16) void {
+    if (currentAngularMode != @as(c_int, @intCast(value))) {
         setSystemFlagChanged(SETTING_AMODE);
     }
-    currentAngularMode = @as(c_int, @intCast(am));
+    currentAngularMode = @as(c_int, @intCast(value));
     fnRefreshState();
 }
 
-pub export fn fnFractionType(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
+fn frontendSettingsApplyFractionTypeCore() void {
     var state: u8 = 0;
     if (getSystemFlag(@as(c_int, @intCast(FLAG_IRFRAC)))) state += 8;
     if (getSystemFlag(@as(c_int, @intCast(FLAG_IRFRQ)))) state += 4;
@@ -718,22 +1470,25 @@ pub export fn fnFractionType(unused_but_mandatory_parameter: u16) callconv(.c) v
     }
 }
 
-pub export fn fnRange(r: u16) callconv(.c) void {
-    exponentLimit = @as(i16, @intCast(r));
+fn frontendSettingsApplyFractionType() void {
+    frontendSettingsApplyFractionTypeCore();
+}
+
+fn frontendSettingsApplyRange(value: u16) void {
+    exponentLimit = @as(i16, @intCast(value));
     if (exponentLimit < DF_DMX_MIN) {
         exponentLimit = DF_DMX_MIN;
     }
 }
 
-pub export fn fnHide(h: u16) callconv(.c) void {
-    exponentHideLimit = @as(i16, @intCast(h));
+fn frontendSettingsApplyHide(value: u16) void {
+    exponentHideLimit = @as(i16, @intCast(value));
     if (exponentHideLimit > 0 and exponentHideLimit < DF_HIDE_MIN) {
         exponentHideLimit = DF_HIDE_MIN;
     }
 }
 
-pub export fn fnConfirmationYes(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyConfirmationYes() void {
     if (calcMode == CM_CONFIRMATION) {
         calcMode = previousCalcMode;
         popSoftmenu();
@@ -743,30 +1498,603 @@ pub export fn fnConfirmationYes(unused_but_mandatory_parameter: u16) callconv(.c
     }
 }
 
-pub export fn fnConfirmationNo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+fn frontendSettingsApplyConfirmationNo() void {
     if (calcMode == CM_CONFIRMATION) {
         calcMode = previousCalcMode;
         popSoftmenu();
     }
 }
 
+fn frontendSettingsApplyGetRange() void {
+    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
+}
+
+fn frontendSettingsApplyGetHide() void {
+    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
+}
+
+fn frontendSettingsApplyGetLastError() void {
+    z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
+}
+
+fn frontendSettingsApply(ctx: FrontendSettingsContext) void {
+    switch (ctx.command) {
+        .set_gap_char => frontendSettingsApplySetGapChar(ctx.value),
+        .set_group_left => frontendSettingsApplyGroupLeft(ctx.value),
+        .set_group_1lo => frontendSettingsApplyGroup1Lo(ctx.value),
+        .set_group_1l => frontendSettingsApplyGroup1L(ctx.value),
+        .set_group_right => frontendSettingsApplyGroupRight(ctx.value),
+        .menu_gap_l => frontendSettingsApplyMenuGapL(),
+        .menu_gap_rx => frontendSettingsApplyMenuGapRx(),
+        .menu_gap_r => frontendSettingsApplyMenuGapR(),
+        .integer_mode => frontendSettingsApplyIntegerMode(ctx.value),
+        .who => frontendSettingsApplyWho(),
+        .version => frontendSettingsApplyVersion(),
+        .set_rounding_mode => frontendSettingsApplyRounding(ctx.value),
+        .set_significant_digits => frontendSettingsApplySignificantDigits(ctx.value),
+        .set_base_nr => frontendSettingsApplyBaseNr(ctx.value),
+        .set_fraction_digits => frontendSettingsApplyFractionDigits(ctx.value),
+        .angular_mode => frontendSettingsApplyAngularMode(ctx.value),
+        .fraction_type => frontendSettingsApplyFractionType(),
+        .set_range => frontendSettingsApplyRange(ctx.value),
+        .set_hide => frontendSettingsApplyHide(ctx.value),
+        .confirmation_yes => frontendSettingsApplyConfirmationYes(),
+        .confirmation_no => frontendSettingsApplyConfirmationNo(),
+        .get_range => frontendSettingsApplyGetRange(),
+        .get_hide => frontendSettingsApplyGetHide(),
+        .get_last_error => frontendSettingsApplyGetLastError(),
+    }
+}
+
+fn frontendSettingsFinalize(ctx: FrontendSettingsContext) void {
+    _ = ctx;
+}
+
+fn frontendSettingsExecuteStage(stage: FrontendSettingsStage, ctx: *FrontendSettingsContext) bool {
+    switch (stage) {
+        .decode => {
+            frontendSettingsDecode(ctx);
+            return true;
+        },
+        .validate => return frontendSettingsValidate(ctx),
+        .apply => {
+            frontendSettingsApply(ctx.*);
+            return true;
+        },
+        .finalize => {
+            frontendSettingsFinalize(ctx.*);
+            return true;
+        },
+    }
+}
+
+fn frontendSettingsPreflightStages() [2]FrontendSettingsStage {
+    return .{ .decode, .validate };
+}
+
+fn frontendSettingsExecutionStages() [1]FrontendSettingsStage {
+    return .{.apply};
+}
+
+fn frontendSettingsCompletionStages() [1]FrontendSettingsStage {
+    return .{.finalize};
+}
+
+fn frontendSettingsRunStageList(comptime count: usize, stages: [count]FrontendSettingsStage, ctx: *FrontendSettingsContext) bool {
+    for (stages) |stage| {
+        if (!frontendSettingsExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn frontendSettingsRunPreflight(ctx: *FrontendSettingsContext) bool {
+    const stages = frontendSettingsPreflightStages();
+    return frontendSettingsRunStageList(stages.len, stages, ctx);
+}
+
+fn frontendSettingsRunExecution(ctx: *FrontendSettingsContext) bool {
+    const stages = frontendSettingsExecutionStages();
+    return frontendSettingsRunStageList(stages.len, stages, ctx);
+}
+
+fn frontendSettingsRunCompletion(ctx: *FrontendSettingsContext) bool {
+    const stages = frontendSettingsCompletionStages();
+    return frontendSettingsRunStageList(stages.len, stages, ctx);
+}
+
+fn frontendSettingsExecutePhase(phase: FrontendSettingsPhase, ctx: *FrontendSettingsContext) bool {
+    return switch (phase) {
+        .preflight => frontendSettingsRunPreflight(ctx),
+        .execution => frontendSettingsRunExecution(ctx),
+        .completion => frontendSettingsRunCompletion(ctx),
+    };
+}
+
+fn frontendSettingsExecutePhaseWithTelemetry(phase: FrontendSettingsPhase, ctx: *FrontendSettingsContext, telemetry: *FrontendSettingsTelemetry) bool {
+    if (!frontendSettingsPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+    frontendSettingsTelemetryStart(telemetry, phase);
+    if (!frontendSettingsExecutePhase(phase, ctx)) {
+        frontendSettingsTelemetryAbort(telemetry);
+        return false;
+    }
+    frontendSettingsTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn frontendSettingsTelemetryPipeline(command: FrontendSettingsCommand, value: u16) void {
+    var ctx = frontendSettingsContextInit(command, value);
+    var telemetry = frontendSettingsTelemetryInit();
+    const plan = frontendSettingsPlanBuild();
+    for (plan.phases) |phase| {
+        if (!frontendSettingsExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            return;
+        }
+    }
+}
+
+fn frontendSettingsUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn frontendSettingsDispatch(command: FrontendSettingsCommand, value: u16) void {
+    if (frontendSettingsUseTelemetryPipeline()) {
+        frontendSettingsTelemetryPipeline(command, value);
+        return;
+    }
+    var ctx = frontendSettingsContextInit(command, value);
+    _ = frontendSettingsExecuteStage(.decode, &ctx);
+    _ = frontendSettingsExecuteStage(.validate, &ctx);
+    _ = frontendSettingsExecuteStage(.apply, &ctx);
+    _ = frontendSettingsExecuteStage(.finalize, &ctx);
+}
+
+pub export fn fnSetGapChar(char_param: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_gap_char, char_param);
+}
+
+pub export fn fnSettingsDispFormatGrpL(param: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_group_left, param);
+}
+
+pub export fn fnSettingsDispFormatGrp1Lo(param: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_group_1lo, param);
+}
+
+pub export fn fnSettingsDispFormatGrp1L(param: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_group_1l, param);
+}
+
+pub export fn fnSettingsDispFormatGrpR(param: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_group_right, param);
+}
+
+pub export fn fnMenuGapL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.menu_gap_l, 0);
+}
+
+pub export fn fnMenuGapRX(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.menu_gap_rx, 0);
+}
+
+pub export fn fnMenuGapR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.menu_gap_r, 0);
+}
+
+pub export fn fnIntegerMode(mode: u16) callconv(.c) void {
+    frontendSettingsDispatch(.integer_mode, mode);
+}
+
+pub export fn fnWho(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.who, 0);
+}
+
+pub export fn fnVersion(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.version, 0);
+}
+
+pub export fn fnSetRoundingMode(rm: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_rounding_mode, rm);
+}
+
+pub export fn fnSetSignificantDigits(s: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_significant_digits, s);
+}
+
+pub export fn fnSetBaseNr(s: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_base_nr, s);
+}
+
+pub export fn fnSetFractionDigits(s: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_fraction_digits, s);
+}
+
+pub export fn fnAngularMode(am: u16) callconv(.c) void {
+    frontendSettingsDispatch(.angular_mode, am);
+}
+
+pub export fn fnFractionType(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.fraction_type, 0);
+}
+
+pub export fn fnRange(r: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_range, r);
+}
+
+pub export fn fnHide(h: u16) callconv(.c) void {
+    frontendSettingsDispatch(.set_hide, h);
+}
+
+pub export fn fnConfirmationYes(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.confirmation_yes, 0);
+}
+
+pub export fn fnConfirmationNo(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    frontendSettingsDispatch(.confirmation_no, 0);
+}
+
 pub export fn fnGetRange(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
+    frontendSettingsDispatch(.get_range, 0);
 }
 
 pub export fn fnGetHide(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
+    frontendSettingsDispatch(.get_hide, 0);
 }
 
 pub export fn fnGetLastErr(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
+    frontendSettingsDispatch(.get_last_error, 0);
 }
 
-pub export fn fnClAll(confirmation: u16) callconv(.c) void {
+const ClearAllStage = enum {
+    validate_confirmation,
+    clear_programs,
+    clear_sigma,
+    release_saved_sigma,
+    clear_local_registers,
+    clear_global_registers,
+    clear_undo,
+    reset_menus,
+    reset_ribbons,
+    rebuild_core_menus,
+    reset_keys_and_variables,
+    finalize_info,
+};
+
+const ClearAllPhase = enum {
+    preflight,
+    execute,
+    finalize,
+};
+
+const ClearAllPlan = struct {
+    phases: [3]ClearAllPhase,
+};
+
+const ClearAllContext = struct {
+    confirmation: u16,
+    accepted: bool,
+    global_start: u16,
+    global_end: u16,
+    is_r47: bool,
+};
+
+const ClearAllTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    execute_started: bool,
+    execute_completed: bool,
+    finalize_started: bool,
+    finalize_completed: bool,
+    aborted: bool,
+};
+
+fn clearAllContextInit(confirmation: u16) ClearAllContext {
+    return .{
+        .confirmation = confirmation,
+        .accepted = false,
+        .global_start = FIRST_GLOBAL_REGISTER,
+        .global_end = LAST_GLOBAL_REGISTER,
+        .is_r47 = false,
+    };
+}
+
+fn clearAllPlanBuild() ClearAllPlan {
+    return .{ .phases = .{ .preflight, .execute, .finalize } };
+}
+
+fn clearAllTelemetryInit() ClearAllTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .execute_started = false,
+        .execute_completed = false,
+        .finalize_started = false,
+        .finalize_completed = false,
+        .aborted = false,
+    };
+}
+
+fn clearAllTelemetryStart(telemetry: *ClearAllTelemetry, phase: ClearAllPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .execute => telemetry.execute_started = true,
+        .finalize => telemetry.finalize_started = true,
+    }
+}
+
+fn clearAllTelemetryComplete(telemetry: *ClearAllTelemetry, phase: ClearAllPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .execute => telemetry.execute_completed = true,
+        .finalize => telemetry.finalize_completed = true,
+    }
+}
+
+fn clearAllTelemetryAbort(telemetry: *ClearAllTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn clearAllConfirmationNeeded(ctx: ClearAllContext) bool {
+    return ctx.confirmation == NOT_CONFIRMED;
+}
+
+fn clearAllAcceptConfirmation(ctx: *ClearAllContext) void {
+    ctx.accepted = true;
+}
+
+fn clearAllRequestConfirmation() void {
+    setConfirmationMode(&fnClAll);
+}
+
+fn clearAllValidateConfirmation(ctx: *ClearAllContext) bool {
+    if (clearAllConfirmationNeeded(ctx.*)) {
+        clearAllRequestConfirmation();
+        ctx.accepted = false;
+        return false;
+    }
+    clearAllAcceptConfirmation(ctx);
+    return true;
+}
+
+fn clearAllClearPrograms() void {
+    fnClPAll(CONFIRMED);
+}
+
+fn clearAllClearSigma() void {
+    fnClSigma(CONFIRMED);
+}
+
+fn clearAllReleaseSavedSigma() void {
+    z47_frontier_release_saved_statistical_sums();
+}
+
+fn clearAllClearLocalRegisters() void {
+    allocateLocalRegisters(0);
+}
+
+fn clearAllClearGlobalRegisters(ctx: ClearAllContext) void {
+    var regist: u16 = ctx.global_start;
+    while (regist <= ctx.global_end) : (regist += 1) {
+        clearRegister(@as(i16, @intCast(regist)));
+    }
+}
+
+fn clearAllClearUndoState() void {
+    thereIsSomethingToUndo = false;
+}
+
+fn clearAllExitMenus() void {
+    fnExitAllMenus(NOPARAM);
+}
+
+fn clearAllDeleteUserMenus() void {
+    fnDeleteUserMenus(CONFIRMED);
+}
+
+fn clearAllResetMenus() void {
+    clearAllExitMenus();
+    clearAllDeleteUserMenus();
+}
+
+fn clearAllDetectRibbonFamily(ctx: *ClearAllContext) void {
+    ctx.is_r47 = z47_frontier_is_r47_fam();
+}
+
+fn clearAllResetRibbonForFamily(ctx: ClearAllContext) void {
+    if (ctx.is_r47) {
+        fnRESET_MyM(ITM_RIBBON_R47);
+    } else {
+        fnRESET_MyM(ITM_RIBBON_C47);
+    }
+}
+
+fn clearAllResetAlphaRibbon() void {
+    fnRESET_Mya();
+}
+
+fn clearAllResetRibbons(ctx: *ClearAllContext) void {
+    clearAllDetectRibbonFamily(ctx);
+    clearAllResetRibbonForFamily(ctx.*);
+    clearAllResetAlphaRibbon();
+}
+
+fn clearAllCreateHome() void {
+    createHOME();
+}
+
+fn clearAllCreatePfn() void {
+    createPFN();
+}
+
+fn clearAllRebuildCoreMenus() void {
+    clearAllCreateHome();
+    clearAllCreatePfn();
+}
+
+fn clearAllResetKeys() void {
+    fnKeysManagement(USER_KRESET);
+    initUserKeyArgument();
+}
+
+fn clearAllDeleteVariables() void {
+    fnDeleteAllVariables(CONFIRMED);
+}
+
+fn clearAllClearFlags() void {
+    fnClFAll(CONFIRMED);
+}
+
+fn clearAllResetKeysAndVariables() void {
+    clearAllResetKeys();
+    clearAllDeleteVariables();
+    clearAllClearFlags();
+}
+
+fn clearAllSetTemporaryInfoReset() void {
+    temporaryInformation = TI_RESET;
+}
+
+fn clearAllNormalizeProgramRunStop() void {
+    if (programRunStop == PGM_WAITING) {
+        programRunStop = PGM_STOPPED;
+    }
+}
+
+fn clearAllFinalizeInfo() void {
+    clearAllSetTemporaryInfoReset();
+    clearAllNormalizeProgramRunStop();
+}
+
+fn clearAllExecuteStage(stage: ClearAllStage, ctx: *ClearAllContext) bool {
+    switch (stage) {
+        .validate_confirmation => return clearAllValidateConfirmation(ctx),
+        .clear_programs => clearAllClearPrograms(),
+        .clear_sigma => clearAllClearSigma(),
+        .release_saved_sigma => clearAllReleaseSavedSigma(),
+        .clear_local_registers => clearAllClearLocalRegisters(),
+        .clear_global_registers => clearAllClearGlobalRegisters(ctx.*),
+        .clear_undo => clearAllClearUndoState(),
+        .reset_menus => clearAllResetMenus(),
+        .reset_ribbons => clearAllResetRibbons(ctx),
+        .rebuild_core_menus => clearAllRebuildCoreMenus(),
+        .reset_keys_and_variables => clearAllResetKeysAndVariables(),
+        .finalize_info => clearAllFinalizeInfo(),
+    }
+    return true;
+}
+
+fn clearAllPreflightStages() [1]ClearAllStage {
+    return .{.validate_confirmation};
+}
+
+fn clearAllExecutionStages() [10]ClearAllStage {
+    return .{
+        .clear_programs,
+        .clear_sigma,
+        .release_saved_sigma,
+        .clear_local_registers,
+        .clear_global_registers,
+        .clear_undo,
+        .reset_menus,
+        .reset_ribbons,
+        .rebuild_core_menus,
+        .reset_keys_and_variables,
+    };
+}
+
+fn clearAllFinalizeStages() [1]ClearAllStage {
+    return .{.finalize_info};
+}
+
+fn clearAllRunStageList(comptime count: usize, stages: [count]ClearAllStage, ctx: *ClearAllContext) bool {
+    for (stages) |stage| {
+        if (!clearAllExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn clearAllRunPreflight(ctx: *ClearAllContext) bool {
+    const stages = clearAllPreflightStages();
+    return clearAllRunStageList(stages.len, stages, ctx);
+}
+
+fn clearAllRunExecution(ctx: *ClearAllContext) bool {
+    const stages = clearAllExecutionStages();
+    return clearAllRunStageList(stages.len, stages, ctx);
+}
+
+fn clearAllRunFinalize(ctx: *ClearAllContext) bool {
+    const stages = clearAllFinalizeStages();
+    return clearAllRunStageList(stages.len, stages, ctx);
+}
+
+fn clearAllExecutePhase(phase: ClearAllPhase, ctx: *ClearAllContext) bool {
+    return switch (phase) {
+        .preflight => clearAllRunPreflight(ctx),
+        .execute => clearAllRunExecution(ctx),
+        .finalize => clearAllRunFinalize(ctx),
+    };
+}
+
+fn clearAllPhaseCanRun(telemetry: ClearAllTelemetry, phase: ClearAllPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .execute => telemetry.preflight_completed and !telemetry.aborted,
+        .finalize => telemetry.execute_completed and !telemetry.aborted,
+    };
+}
+
+fn clearAllExecutePhaseWithTelemetry(phase: ClearAllPhase, ctx: *ClearAllContext, telemetry: *ClearAllTelemetry) bool {
+    if (!clearAllPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    clearAllTelemetryStart(telemetry, phase);
+    if (!clearAllExecutePhase(phase, ctx)) {
+        clearAllTelemetryAbort(telemetry);
+        return false;
+    }
+    clearAllTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn clearAllTelemetryPipeline(confirmation: u16) void {
+    var ctx = clearAllContextInit(confirmation);
+    var telemetry = clearAllTelemetryInit();
+    const plan = clearAllPlanBuild();
+    for (plan.phases) |phase| {
+        if (!clearAllExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            return;
+        }
+    }
+}
+
+fn clearAllUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn clearAllDispatchPipeline(confirmation: u16) void {
+    if (clearAllUseTelemetryPipeline()) {
+        clearAllTelemetryPipeline(confirmation);
+        return;
+    }
+
     if (confirmation == NOT_CONFIRMED) {
         setConfirmationMode(&fnClAll);
         return;
@@ -808,8 +2136,344 @@ pub export fn fnClAll(confirmation: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnClAll(confirmation: u16) callconv(.c) void {
+    clearAllDispatchPipeline(confirmation);
+}
+
+const PrintUserStage = enum {
+    initialize,
+    validate_printer_active,
+    print_user_variables,
+    print_program_listing,
+    print_trailer,
+};
+
+const PrintUserPhase = enum {
+    preflight,
+    scan_variables,
+    scan_programs,
+    finalize,
+};
+
+const PrintUserPlan = struct {
+    phases: [4]PrintUserPhase,
+};
+
+const PrintUserTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    scan_variables_started: bool,
+    scan_variables_completed: bool,
+    scan_programs_started: bool,
+    scan_programs_completed: bool,
+    finalize_started: bool,
+    finalize_completed: bool,
+    aborted: bool,
+};
+
+const PrintUserContext = struct {
+    label: [32]u8,
+    user_variable_found: bool,
+    idx: u16,
+    step: [*]u8,
+    program_number: u16,
+    first_program_label: bool,
+    printer_allowed: bool,
+};
+
+fn printUserContextInit() PrintUserContext {
+    return .{
+        .label = [_]u8{0} ** 32,
+        .user_variable_found = false,
+        .idx = 0,
+        .step = undefined,
+        .program_number = 1,
+        .first_program_label = true,
+        .printer_allowed = false,
+    };
+}
+
+fn printUserPlanBuild() PrintUserPlan {
+    return .{ .phases = .{ .preflight, .scan_variables, .scan_programs, .finalize } };
+}
+
+fn printUserTelemetryInit() PrintUserTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .scan_variables_started = false,
+        .scan_variables_completed = false,
+        .scan_programs_started = false,
+        .scan_programs_completed = false,
+        .finalize_started = false,
+        .finalize_completed = false,
+        .aborted = false,
+    };
+}
+
+fn printUserTelemetryStart(telemetry: *PrintUserTelemetry, phase: PrintUserPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .scan_variables => telemetry.scan_variables_started = true,
+        .scan_programs => telemetry.scan_programs_started = true,
+        .finalize => telemetry.finalize_started = true,
+    }
+}
+
+fn printUserTelemetryComplete(telemetry: *PrintUserTelemetry, phase: PrintUserPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .scan_variables => telemetry.scan_variables_completed = true,
+        .scan_programs => telemetry.scan_programs_completed = true,
+        .finalize => telemetry.finalize_completed = true,
+    }
+}
+
+fn printUserTelemetryAbort(telemetry: *PrintUserTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn printUserPhaseCanRun(telemetry: PrintUserTelemetry, phase: PrintUserPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .scan_variables => telemetry.preflight_completed and !telemetry.aborted,
+        .scan_programs => telemetry.scan_variables_completed and !telemetry.aborted,
+        .finalize => telemetry.scan_programs_completed and !telemetry.aborted,
+    };
+}
+
+fn printUserInitialize(ctx: *PrintUserContext) void {
+    currentKeyCode = 255;
+    ctx.step = z47_frontier_program_begin();
+    ctx.program_number = 1;
+    ctx.first_program_label = true;
+}
+
+fn printUserPrinterEnabled() bool {
+    return getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)));
+}
+
+fn printUserRunStateAllowsPrint() bool {
+    return !((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP));
+}
+
+fn printUserValidatePrinterActive(ctx: *PrintUserContext) bool {
+    if (!printUserPrinterEnabled()) {
+        if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or printUserRunStateAllowsPrint()) {
+            displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        }
+        ctx.printer_allowed = false;
+        return false;
+    }
+    ctx.printer_allowed = true;
+    return true;
+}
+
+fn printUserLoadLabel(ctx: *PrintUserContext, idx: u16) bool {
+    return z47_frontier_named_variable_label(idx, &ctx.label, ctx.label.len);
+}
+
+fn printUserShouldSkipLabel(ctx: *PrintUserContext) bool {
+    return z47_frontier_user_variable_should_skip(@ptrCast(&ctx.label));
+}
+
+fn printUserPrintVariableLine(ctx: *PrintUserContext) void {
+    const variable = z47_frontier_find_named_variable_register(@ptrCast(&ctx.label));
+    printReg(variable, @ptrCast(&ctx.label), true, LINE_FULL, false);
+    ctx.user_variable_found = true;
+}
+
+fn printUserScanVariables(ctx: *PrintUserContext) bool {
+    var idx: u16 = 0;
+    while (idx < numberOfNamedVariables) : (idx += 1) {
+        if (!printUserLoadLabel(ctx, idx)) {
+            continue;
+        }
+
+        if (printUserShouldSkipLabel(ctx)) {
+            continue;
+        }
+
+        printUserPrintVariableLine(ctx);
+        if (z47_frontier_print_exit_pressed()) {
+            return false;
+        }
+    }
+
+    if (ctx.user_variable_found) {
+        print_lf();
+    }
+
+    return true;
+}
+
+fn printUserProgramHasNext(ctx: PrintUserContext) bool {
+    return !z47_frontier_programs_end(ctx.step);
+}
+
+fn printUserProgramNext(ctx: *PrintUserContext) [*]u8 {
+    return z47_frontier_program_next_step(ctx.step);
+}
+
+fn printUserProgramPrintLabelPrefix() void {
+    printLine(z47_frontier_program_label_prefix(), 0);
+}
+
+fn printUserProgramPrintLabelBody(ctx: *PrintUserContext) void {
+    printLine(@ptrCast(&ctx.label), 0);
+}
+
+fn printUserProgramPrintLabelSuffix(ctx: *PrintUserContext) void {
+    printLine(z47_frontier_program_label_suffix(), if (ctx.first_program_label) 0 else 1);
+}
+
+fn printUserProgramPrintCounterIfFirst(ctx: *PrintUserContext) void {
+    if (ctx.first_program_label) {
+        z47_frontier_print_program_counter(ctx.program_number, numberOfPrograms);
+        ctx.first_program_label = false;
+    }
+}
+
+fn printUserProgramHandleGlobalLabel(ctx: *PrintUserContext) void {
+    if (z47_frontier_program_global_label(ctx.step, &ctx.label, ctx.label.len)) {
+        printUserProgramPrintLabelPrefix();
+        printUserProgramPrintLabelBody(ctx);
+        printUserProgramPrintLabelSuffix(ctx);
+        printUserProgramPrintCounterIfFirst(ctx);
+    }
+}
+
+fn printUserProgramHandleEnd(ctx: *PrintUserContext) void {
+    if (z47_frontier_program_step_is_end(ctx.step)) {
+        printLine("END", if (ctx.first_program_label) 0 else 1);
+        if (ctx.first_program_label) {
+            z47_frontier_print_program_counter(ctx.program_number, numberOfPrograms);
+        }
+        ctx.program_number += 1;
+        ctx.first_program_label = true;
+    }
+}
+
+fn printUserScanPrograms(ctx: *PrintUserContext) bool {
+    while (printUserProgramHasNext(ctx.*)) {
+        const next_step = printUserProgramNext(ctx);
+
+        printUserProgramHandleGlobalLabel(ctx);
+        printUserProgramHandleEnd(ctx);
+
+        ctx.step = next_step;
+        if (z47_frontier_print_exit_pressed()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn printUserPrintTrailer() void {
+    printLine(".END.", 1);
+}
+
+fn printUserExecuteStage(stage: PrintUserStage, ctx: *PrintUserContext) bool {
+    switch (stage) {
+        .initialize => {
+            printUserInitialize(ctx);
+            return true;
+        },
+        .validate_printer_active => return printUserValidatePrinterActive(ctx),
+        .print_user_variables => return printUserScanVariables(ctx),
+        .print_program_listing => return printUserScanPrograms(ctx),
+        .print_trailer => {
+            printUserPrintTrailer();
+            return true;
+        },
+    }
+}
+
+fn printUserPreflightStages() [2]PrintUserStage {
+    return .{ .initialize, .validate_printer_active };
+}
+
+fn printUserVariableStages() [1]PrintUserStage {
+    return .{.print_user_variables};
+}
+
+fn printUserProgramStages() [1]PrintUserStage {
+    return .{.print_program_listing};
+}
+
+fn printUserFinalizeStages() [1]PrintUserStage {
+    return .{.print_trailer};
+}
+
+fn printUserRunStageList(comptime count: usize, stages: [count]PrintUserStage, ctx: *PrintUserContext) bool {
+    for (stages) |stage| {
+        if (!printUserExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn printUserRunPreflight(ctx: *PrintUserContext) bool {
+    const stages = printUserPreflightStages();
+    return printUserRunStageList(stages.len, stages, ctx);
+}
+
+fn printUserRunVariableScan(ctx: *PrintUserContext) bool {
+    const stages = printUserVariableStages();
+    return printUserRunStageList(stages.len, stages, ctx);
+}
+
+fn printUserRunProgramScan(ctx: *PrintUserContext) bool {
+    const stages = printUserProgramStages();
+    return printUserRunStageList(stages.len, stages, ctx);
+}
+
+fn printUserRunFinalize(ctx: *PrintUserContext) bool {
+    const stages = printUserFinalizeStages();
+    return printUserRunStageList(stages.len, stages, ctx);
+}
+
+fn printUserExecutePhase(phase: PrintUserPhase, ctx: *PrintUserContext) bool {
+    return switch (phase) {
+        .preflight => printUserRunPreflight(ctx),
+        .scan_variables => printUserRunVariableScan(ctx),
+        .scan_programs => printUserRunProgramScan(ctx),
+        .finalize => printUserRunFinalize(ctx),
+    };
+}
+
+fn printUserExecutePhaseWithTelemetry(phase: PrintUserPhase, ctx: *PrintUserContext, telemetry: *PrintUserTelemetry) bool {
+    if (!printUserPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    printUserTelemetryStart(telemetry, phase);
+    if (!printUserExecutePhase(phase, ctx)) {
+        printUserTelemetryAbort(telemetry);
+        return false;
+    }
+    printUserTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn printUserTelemetryPipeline() void {
+    var ctx = printUserContextInit();
+    var telemetry = printUserTelemetryInit();
+    const plan = printUserPlanBuild();
+
+    for (plan.phases) |phase| {
+        if (!printUserExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            return;
+        }
+    }
+}
+
+fn printUserUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn printUserFallback() void {
     currentKeyCode = 255;
 
     if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
@@ -880,6 +2544,19 @@ pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
     printLine(".END.", 1);
 }
 
+fn printUserDispatchPipeline() void {
+    if (printUserUseTelemetryPipeline()) {
+        printUserTelemetryPipeline();
+        return;
+    }
+    printUserFallback();
+}
+
+pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    printUserDispatchPipeline();
+}
+
 pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
         z47_frontier_print_alpha_register(register_no);
@@ -937,7 +2614,485 @@ pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
 }
 
-pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
+const PrintAllRegsBackend = enum {
+    printer,
+    csv,
+    unsupported,
+};
+
+const PrintAllRegsStage = enum {
+    resolve_backend,
+    validate_mode,
+    prepare_csv_filename,
+    execute,
+};
+
+const PrintAllRegsPhase = enum {
+    preflight,
+    execution,
+    completion,
+};
+
+const PrintAllRegsPlan = struct {
+    phases: [3]PrintAllRegsPhase,
+};
+
+const PrintAllRegsTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    execution_started: bool,
+    execution_completed: bool,
+    completion_started: bool,
+    completion_completed: bool,
+    aborted: bool,
+};
+
+const PrintAllRegsContext = struct {
+    option: u16,
+    backend: PrintAllRegsBackend,
+    allowed: bool,
+    local_count: u16,
+    s: u16,
+    n: u16,
+};
+
+fn printAllRegsContextInit(option: u16) PrintAllRegsContext {
+    return .{
+        .option = option,
+        .backend = .unsupported,
+        .allowed = false,
+        .local_count = 0,
+        .s = 0,
+        .n = 0,
+    };
+}
+
+fn printAllRegsPlanBuild() PrintAllRegsPlan {
+    return .{ .phases = .{ .preflight, .execution, .completion } };
+}
+
+fn printAllRegsTelemetryInit() PrintAllRegsTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .execution_started = false,
+        .execution_completed = false,
+        .completion_started = false,
+        .completion_completed = false,
+        .aborted = false,
+    };
+}
+
+fn printAllRegsTelemetryStart(telemetry: *PrintAllRegsTelemetry, phase: PrintAllRegsPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .execution => telemetry.execution_started = true,
+        .completion => telemetry.completion_started = true,
+    }
+}
+
+fn printAllRegsTelemetryComplete(telemetry: *PrintAllRegsTelemetry, phase: PrintAllRegsPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .execution => telemetry.execution_completed = true,
+        .completion => telemetry.completion_completed = true,
+    }
+}
+
+fn printAllRegsTelemetryAbort(telemetry: *PrintAllRegsTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn printAllRegsPhaseCanRun(telemetry: PrintAllRegsTelemetry, phase: PrintAllRegsPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .execution => telemetry.preflight_completed and !telemetry.aborted,
+        .completion => telemetry.execution_completed and !telemetry.aborted,
+    };
+}
+
+fn printAllRegsResolveBackend(ctx: *PrintAllRegsContext) void {
+    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        ctx.backend = .printer;
+        return;
+    }
+
+    if (calcMode == CM_NORMAL or calcMode == CM_NO_UNDO) {
+        ctx.backend = .csv;
+        return;
+    }
+
+    ctx.backend = .unsupported;
+}
+
+fn printAllRegsValidateMode(ctx: *PrintAllRegsContext) bool {
+    ctx.allowed = ctx.backend != .unsupported;
+    return ctx.allowed;
+}
+
+fn printAllRegsCacheLocalCount(ctx: *PrintAllRegsContext) void {
+    ctx.local_count = z47_frontier_current_number_of_local_registers();
+}
+
+fn printAllRegsPrepareCsvFilename(ctx: *PrintAllRegsContext) void {
+    if (ctx.backend != .csv) {
+        return;
+    }
+    create_filename(".REGS.TSV");
+    printAllRegsCacheLocalCount(ctx);
+}
+
+fn printAllRegsPrintRangeOrReturn(first: u16, last: u16) bool {
+    return z47_frontier_print_reg_range(first, last);
+}
+
+fn printAllRegsPrinterAllGlobalsAndStack() bool {
+    if (printAllRegsPrintRangeOrReturn(@as(u16, @intCast(REGISTER_X)), REGISTER_W)) return true;
+    if (printAllRegsPrintRangeOrReturn(0, 99)) return true;
+    return false;
+}
+
+fn printAllRegsPrinterAllLocals(local_count: u16) bool {
+    if (local_count == 0) {
+        return false;
+    }
+    return printAllRegsPrintRangeOrReturn(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + local_count - 1);
+}
+
+fn printAllRegsPrinterAllNamed() void {
+    if (numberOfNamedVariables > 0) {
+        _ = printAllRegsPrintRangeOrReturn(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+    }
+}
+
+fn printAllRegsPrinterOptionAll(ctx: *PrintAllRegsContext) void {
+    printAllRegsCacheLocalCount(ctx);
+    if (printAllRegsPrinterAllGlobalsAndStack()) return;
+    if (printAllRegsPrinterAllLocals(ctx.local_count)) return;
+    printAllRegsPrinterAllNamed();
+}
+
+fn printAllRegsPrinterResolveRegParam(ctx: *PrintAllRegsContext) bool {
+    lastErrorCode = getRegParam(null, &ctx.s, &ctx.n, null);
+    if (lastErrorCode == ERROR_NONE) {
+        return true;
+    }
+    displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    return false;
+}
+
+fn printAllRegsPrinterOptionRegs(ctx: *PrintAllRegsContext) void {
+    if (!printAllRegsPrinterResolveRegParam(ctx)) {
+        return;
+    }
+    _ = printAllRegsPrintRangeOrReturn(ctx.s, (ctx.s + ctx.n) - 1);
+}
+
+fn printAllRegsPrinterOptionXr() void {
+    printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_FULL, false);
+}
+
+fn printAllRegsPrinterStackTop() u16 {
+    return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
+}
+
+fn printAllRegsPrinterOptionStack() void {
+    const stack_top = printAllRegsPrinterStackTop();
+    _ = printAllRegsPrintRangeOrReturn(stack_top, @as(u16, @intCast(REGISTER_X)));
+}
+
+fn printAllRegsPrinterEmitTemp1Pair(left_index: u32, right_index: u32, complex: bool) void {
+    if (complex) {
+        z47_frontier_x_complex_matrix_element_to_temp1(left_index);
+    } else {
+        z47_frontier_x_real_matrix_element_to_temp1(left_index);
+    }
+    printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+
+    if (complex) {
+        z47_frontier_x_complex_matrix_element_to_temp1(right_index);
+    } else {
+        z47_frontier_x_real_matrix_element_to_temp1(right_index);
+    }
+    printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+}
+
+fn printAllRegsPrinterXYrScalar() bool {
+    const x_type = getRegisterDataType(REGISTER_X);
+    if (!isPrintableScalarType(x_type)) {
+        return false;
+    }
+
+    const y_type = getRegisterDataType(REGISTER_Y);
+    if (!isPrintableScalarType(y_type)) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        return true;
+    }
+
+    printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_LEFT, false);
+    printReg(@as(u16, @intCast(REGISTER_Y)), null, false, LINE_RIGHT, false);
+    return true;
+}
+
+fn printAllRegsPrinterXYrRealMatrixCols2() bool {
+    const rows = z47_frontier_x_real_matrix_rows();
+    const cols = z47_frontier_x_real_matrix_cols();
+    if (cols != 2) {
+        return false;
+    }
+
+    var i: u32 = 0;
+    while (i < rows) : (i += 1) {
+        const left_index = i * 2;
+        printAllRegsPrinterEmitTemp1Pair(left_index, left_index + 1, false);
+    }
+    return true;
+}
+
+fn printAllRegsPrinterXYrRealMatrixRows2() bool {
+    const rows = z47_frontier_x_real_matrix_rows();
+    const cols = z47_frontier_x_real_matrix_cols();
+    if (rows != 2) {
+        return false;
+    }
+
+    var j: u32 = 0;
+    while (j < cols) : (j += 1) {
+        printAllRegsPrinterEmitTemp1Pair(j, j + cols, false);
+    }
+    return true;
+}
+
+fn printAllRegsPrinterXYrComplexMatrixCols2() bool {
+    const rows = z47_frontier_x_complex_matrix_rows();
+    const cols = z47_frontier_x_complex_matrix_cols();
+    if (cols != 2) {
+        return false;
+    }
+
+    var i: u32 = 0;
+    while (i < rows) : (i += 1) {
+        const left_index = i * 2;
+        printAllRegsPrinterEmitTemp1Pair(left_index, left_index + 1, true);
+    }
+    return true;
+}
+
+fn printAllRegsPrinterXYrComplexMatrixRows2() bool {
+    const rows = z47_frontier_x_complex_matrix_rows();
+    const cols = z47_frontier_x_complex_matrix_cols();
+    if (rows != 2) {
+        return false;
+    }
+
+    var j: u32 = 0;
+    while (j < cols) : (j += 1) {
+        printAllRegsPrinterEmitTemp1Pair(j, j + cols, true);
+    }
+    return true;
+}
+
+fn printAllRegsPrinterXYrMatrix() bool {
+    const x_type = getRegisterDataType(REGISTER_X);
+    if (x_type == dtReal34Matrix) {
+        if (printAllRegsPrinterXYrRealMatrixCols2()) return true;
+        if (printAllRegsPrinterXYrRealMatrixRows2()) return true;
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        return true;
+    }
+
+    if (x_type == dtComplex34Matrix) {
+        if (printAllRegsPrinterXYrComplexMatrixCols2()) return true;
+        if (printAllRegsPrinterXYrComplexMatrixRows2()) return true;
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        return true;
+    }
+
+    return false;
+}
+
+fn printAllRegsPrinterOptionXYr() void {
+    if (printAllRegsPrinterXYrScalar()) {
+        return;
+    }
+    if (printAllRegsPrinterXYrMatrix()) {
+        return;
+    }
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+fn printAllRegsExecutePrinterOption(ctx: *PrintAllRegsContext) void {
+    switch (ctx.option) {
+        PRN_ALL => printAllRegsPrinterOptionAll(ctx),
+        PRN_REGS => printAllRegsPrinterOptionRegs(ctx),
+        PRN_Xr => printAllRegsPrinterOptionXr(),
+        PRN_STK => printAllRegsPrinterOptionStack(),
+        PRN_XYr => printAllRegsPrinterOptionXYr(),
+        else => {},
+    }
+}
+
+fn printAllRegsCsvOut(first: i16, last: i16, one_line: bool) void {
+    stackregister_csv_out(first, last, one_line);
+}
+
+fn printAllRegsCsvOptionAll(ctx: *PrintAllRegsContext) void {
+    printAllRegsCacheLocalCount(ctx);
+    printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_W)), false);
+    printAllRegsCsvOut(0, 99, false);
+
+    if (ctx.local_count > 0) {
+        printAllRegsCsvOut(@as(i16, @intCast(FIRST_LOCAL_REGISTER)), @as(i16, @intCast(FIRST_LOCAL_REGISTER + ctx.local_count - 1)), false);
+    }
+
+    if (numberOfNamedVariables > 0) {
+        printAllRegsCsvOut(@as(i16, @intCast(FIRST_NAMED_VARIABLE)), @as(i16, @intCast(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1)), false);
+    }
+}
+
+fn printAllRegsCsvOptionRegs(ctx: *PrintAllRegsContext) void {
+    if (!printAllRegsPrinterResolveRegParam(ctx)) {
+        return;
+    }
+    printAllRegsCsvOut(@as(i16, @intCast(ctx.s)), @as(i16, @intCast((ctx.s + ctx.n) - 1)), false);
+}
+
+fn printAllRegsCsvOptionStk() void {
+    if (getSystemFlag(FLAG_SSIZE8)) {
+        printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_D)), false);
+    } else {
+        printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_T)), false);
+    }
+}
+
+fn printAllRegsCsvOptionLocal(ctx: *PrintAllRegsContext) void {
+    printAllRegsCacheLocalCount(ctx);
+    if (ctx.local_count > 0) {
+        printAllRegsCsvOut(@as(i16, @intCast(FIRST_LOCAL_REGISTER)), @as(i16, @intCast(FIRST_LOCAL_REGISTER + ctx.local_count - 1)), false);
+    }
+}
+
+fn printAllRegsCsvOptionNamed() void {
+    if (numberOfNamedVariables > 0) {
+        printAllRegsCsvOut(@as(i16, @intCast(FIRST_NAMED_VARIABLE)), @as(i16, @intCast(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1)), false);
+    }
+}
+
+fn printAllRegsExecuteCsvOption(ctx: *PrintAllRegsContext) void {
+    switch (ctx.option) {
+        PRN_ALL => printAllRegsCsvOptionAll(ctx),
+        PRN_REGS => printAllRegsCsvOptionRegs(ctx),
+        PRN_STK => printAllRegsCsvOptionStk(),
+        PRN_GLOBALr => printAllRegsCsvOut(0, 99, false),
+        PRN_LOCALr => printAllRegsCsvOptionLocal(ctx),
+        PRN_NAMEDr => printAllRegsCsvOptionNamed(),
+        PRN_Xr => printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_X)), false),
+        PRN_TMP => printAllRegsCsvOut(@as(i16, @intCast(TEMP_REGISTER_1)), @as(i16, @intCast(TEMP_REGISTER_1)), false),
+        PRN_XYr => printAllRegsCsvOut(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_Y)), true),
+        else => {},
+    }
+}
+
+fn printAllRegsExecuteByBackend(ctx: *PrintAllRegsContext) void {
+    switch (ctx.backend) {
+        .printer => printAllRegsExecutePrinterOption(ctx),
+        .csv => printAllRegsExecuteCsvOption(ctx),
+        .unsupported => {},
+    }
+}
+
+fn printAllRegsExecuteStage(stage: PrintAllRegsStage, ctx: *PrintAllRegsContext) bool {
+    switch (stage) {
+        .resolve_backend => {
+            printAllRegsResolveBackend(ctx);
+            return true;
+        },
+        .validate_mode => return printAllRegsValidateMode(ctx),
+        .prepare_csv_filename => {
+            printAllRegsPrepareCsvFilename(ctx);
+            return true;
+        },
+        .execute => {
+            printAllRegsExecuteByBackend(ctx);
+            return true;
+        },
+    }
+}
+
+fn printAllRegsPreflightStages() [2]PrintAllRegsStage {
+    return .{ .resolve_backend, .validate_mode };
+}
+
+fn printAllRegsExecutionStages() [2]PrintAllRegsStage {
+    return .{ .prepare_csv_filename, .execute };
+}
+
+fn printAllRegsCompletionStages() [0]PrintAllRegsStage {
+    return .{};
+}
+
+fn printAllRegsRunStageList(comptime count: usize, stages: [count]PrintAllRegsStage, ctx: *PrintAllRegsContext) bool {
+    for (stages) |stage| {
+        if (!printAllRegsExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn printAllRegsRunPreflight(ctx: *PrintAllRegsContext) bool {
+    const stages = printAllRegsPreflightStages();
+    return printAllRegsRunStageList(stages.len, stages, ctx);
+}
+
+fn printAllRegsRunExecution(ctx: *PrintAllRegsContext) bool {
+    const stages = printAllRegsExecutionStages();
+    return printAllRegsRunStageList(stages.len, stages, ctx);
+}
+
+fn printAllRegsRunCompletion(ctx: *PrintAllRegsContext) bool {
+    const stages = printAllRegsCompletionStages();
+    return printAllRegsRunStageList(stages.len, stages, ctx);
+}
+
+fn printAllRegsExecutePhase(phase: PrintAllRegsPhase, ctx: *PrintAllRegsContext) bool {
+    return switch (phase) {
+        .preflight => printAllRegsRunPreflight(ctx),
+        .execution => printAllRegsRunExecution(ctx),
+        .completion => printAllRegsRunCompletion(ctx),
+    };
+}
+
+fn printAllRegsExecutePhaseWithTelemetry(phase: PrintAllRegsPhase, ctx: *PrintAllRegsContext, telemetry: *PrintAllRegsTelemetry) bool {
+    if (!printAllRegsPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    printAllRegsTelemetryStart(telemetry, phase);
+    if (!printAllRegsExecutePhase(phase, ctx)) {
+        printAllRegsTelemetryAbort(telemetry);
+        return false;
+    }
+    printAllRegsTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn printAllRegsTelemetryPipeline(option: u16) void {
+    var ctx = printAllRegsContextInit(option);
+    var telemetry = printAllRegsTelemetryInit();
+    const plan = printAllRegsPlanBuild();
+    for (plan.phases) |phase| {
+        if (!printAllRegsExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            return;
+        }
+    }
+}
+
+fn printAllRegsUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn printAllRegsFallback(option: u16) void {
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
         var s: u16 = 0;
         var n: u16 = 0;
@@ -1121,8 +3276,119 @@ pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
     }
 }
 
+fn printAllRegsDispatchPipeline(option: u16) void {
+    if (printAllRegsUseTelemetryPipeline()) {
+        printAllRegsTelemetryPipeline(option);
+        return;
+    }
+    printAllRegsFallback(option);
+}
+
+pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
+    printAllRegsDispatchPipeline(option);
+}
+
 pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
+    printAllItemsDispatchPipeline();
+}
+
+const PrintAllItemsStage = enum {
+    initialize,
+    validate_printer,
+    print_header,
+    iterate_items,
+    finalize,
+};
+
+const PrintAllItemsContext = struct {
+    line_buf: [128]u8,
+    item: u16,
+};
+
+fn printAllItemsContextInit() PrintAllItemsContext {
+    return .{ .line_buf = undefined, .item = 1 };
+}
+
+fn printAllItemsInitialize(ctx: *PrintAllItemsContext) void {
+    _ = ctx;
+    currentKeyCode = 255;
+}
+
+fn printAllItemsValidatePrinter() bool {
+    return getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)));
+}
+
+fn printAllItemsHeader() void {
+    printLine("item catname  menuname", 1);
+}
+
+fn printAllItemsPrintCurrent(ctx: *PrintAllItemsContext) void {
+    const catalog_name = z47_frontier_item_catalog_name(ctx.item);
+    const softmenu_name = z47_frontier_item_softmenu_name(ctx.item);
+
+    const left = std.fmt.bufPrintZ(&ctx.line_buf, "{d: >4} {s}", .{ ctx.item, catalog_name }) catch return;
+    printLine(left, 0);
+    printTab(97);
+
+    const right = std.fmt.bufPrintZ(&ctx.line_buf, "{s} ", .{softmenu_name}) catch return;
+    printLine(right, 1);
+}
+
+fn printAllItemsIterate(ctx: *PrintAllItemsContext) void {
+    while (ctx.item < LAST_ITEM) : (ctx.item += 1) {
+        printAllItemsPrintCurrent(ctx);
+        if (z47_frontier_print_exit_pressed()) {
+            break;
+        }
+    }
+}
+
+fn printAllItemsFinalize() void {
+    temporaryInformation = TI_PRINT_COMPLETE;
+}
+
+fn printAllItemsExecuteStage(stage: PrintAllItemsStage, ctx: *PrintAllItemsContext) bool {
+    switch (stage) {
+        .initialize => {
+            printAllItemsInitialize(ctx);
+            return true;
+        },
+        .validate_printer => return printAllItemsValidatePrinter(),
+        .print_header => {
+            printAllItemsHeader();
+            return true;
+        },
+        .iterate_items => {
+            printAllItemsIterate(ctx);
+            return true;
+        },
+        .finalize => {
+            printAllItemsFinalize();
+            return true;
+        },
+    }
+}
+
+fn printAllItemsStageSequence() [5]PrintAllItemsStage {
+    return .{ .initialize, .validate_printer, .print_header, .iterate_items, .finalize };
+}
+
+fn printAllItemsTelemetryPipeline() void {
+    var ctx = printAllItemsContextInit();
+    const stages = printAllItemsStageSequence();
+    for (stages) |stage| {
+        if (!printAllItemsExecuteStage(stage, &ctx)) {
+            return;
+        }
+    }
+}
+
+fn printAllItemsUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn printAllItemsFallback() void {
     currentKeyCode = 255;
 
     if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
@@ -1152,7 +3418,135 @@ pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c
     temporaryInformation = TI_PRINT_COMPLETE;
 }
 
+fn printAllItemsDispatchPipeline() void {
+    if (printAllItemsUseTelemetryPipeline()) {
+        printAllItemsTelemetryPipeline();
+        return;
+    }
+    printAllItemsFallback();
+}
+
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
+    keysManagementDispatchPipeline(choice);
+}
+
+const KeysManagementStage = enum {
+    decode,
+    apply,
+    finalize,
+};
+
+const KeysManagementContext = struct {
+    choice: u16,
+};
+
+fn keysManagementContextInit(choice: u16) KeysManagementContext {
+    return .{ .choice = choice };
+}
+
+fn keysManagementDecode(ctx: *KeysManagementContext) void {
+    _ = ctx;
+}
+
+fn keysManagementApplyToUser() void {
+    z47_frontier_keys_to_user_case();
+}
+
+fn keysManagementApplyFromUser() void {
+    z47_frontier_keys_from_user_case();
+}
+
+fn keysManagementApplyModelChoice(choice: u16) void {
+    calcModel = @as(u8, @intCast(choice));
+    fnClearFlag(FLAG_USER);
+    fnKeysManagement(USER_KRESET);
+    if (choice == USER_R47bk_fg) {
+        fnClearFlag(FLAG_HOME_TRIPLE);
+        fnSetFlag(FLAG_MYM_TRIPLE);
+    } else {
+        fnSetFlag(FLAG_HOME_TRIPLE);
+        fnClearFlag(FLAG_MYM_TRIPLE);
+    }
+    fnShowVersion(choice);
+}
+
+fn keysManagementApplyKReset(choice: u16) void {
+    fnShowVersion(choice);
+    z47_frontier_keys_user_layout_reset_case();
+}
+
+fn keysManagementApplyHReset(choice: u16) void {
+    createHOME();
+    showSoftmenu(-MNU_HOME);
+    fnShowVersion(choice);
+}
+
+fn keysManagementApplyPReset(choice: u16) void {
+    createPFN();
+    showSoftmenu(-MNU_PFN);
+    fnShowVersion(choice);
+}
+
+fn keysManagementApplyMReset(choice: u16) void {
+    fnRESET_MyM(0);
+    fnShowVersion(choice);
+}
+
+fn keysManagementApplyAReset(choice: u16) void {
+    fnRESET_Mya();
+    fnShowVersion(choice);
+}
+
+fn keysManagementApplyRibbon(choice: u16) void {
+    fnRESET_MyM(choice);
+    fnShowVersion(choice);
+    showSoftmenu(-MNU_MyMenu);
+}
+
+fn keysManagementApply(ctx: KeysManagementContext) void {
+    switch (ctx.choice) {
+        TO_USER => keysManagementApplyToUser(),
+        FROM_USER => keysManagementApplyFromUser(),
+        USER_R47f_g, USER_R47bk_fg, USER_R47fg_bk, USER_R47fg_g, USER_C47, USER_DM42 => keysManagementApplyModelChoice(ctx.choice),
+        USER_KRESET => keysManagementApplyKReset(ctx.choice),
+        USER_HRESET => keysManagementApplyHReset(ctx.choice),
+        USER_PRESET => keysManagementApplyPReset(ctx.choice),
+        USER_MRESET => keysManagementApplyMReset(ctx.choice),
+        USER_ARESET => keysManagementApplyAReset(ctx.choice),
+        ITM_RIBBON_C47, ITM_RIBBON_R47 => keysManagementApplyRibbon(ctx.choice),
+        else => {},
+    }
+}
+
+fn keysManagementFinalize(ctx: KeysManagementContext) void {
+    _ = ctx;
+}
+
+fn keysManagementExecuteStage(stage: KeysManagementStage, ctx: *KeysManagementContext) void {
+    switch (stage) {
+        .decode => keysManagementDecode(ctx),
+        .apply => keysManagementApply(ctx.*),
+        .finalize => keysManagementFinalize(ctx.*),
+    }
+}
+
+fn keysManagementStageSequence() [3]KeysManagementStage {
+    return .{ .decode, .apply, .finalize };
+}
+
+fn keysManagementTelemetryPipeline(choice: u16) void {
+    var ctx = keysManagementContextInit(choice);
+    const stages = keysManagementStageSequence();
+    for (stages) |stage| {
+        keysManagementExecuteStage(stage, &ctx);
+    }
+}
+
+fn keysManagementUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn keysManagementFallback(choice: u16) void {
     switch (choice) {
         TO_USER => {
             z47_frontier_keys_to_user_case();
@@ -1204,7 +3598,448 @@ pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
+fn keysManagementDispatchPipeline(choice: u16) void {
+    if (keysManagementUseTelemetryPipeline()) {
+        keysManagementTelemetryPipeline(choice);
+        return;
+    }
+    keysManagementFallback(choice);
+}
+
+const PlotStatModeClass = enum {
+    regression,
+    histogram,
+    histogram_normal,
+    other,
+};
+
+const PlotStatStage = enum {
+    classify_mode,
+    configure_mode_pre,
+    ensure_graph_entry_state,
+    activate_hourglass,
+    validate_source,
+    prepare_runtime,
+    apply_start_mode,
+    apply_non_start_mode,
+    refresh_lcd,
+    show_softmenu,
+    update_regression_line,
+    finish,
+};
+
+const PlotStatPhase = enum {
+    preflight,
+    setup,
+    render,
+    finalize,
+};
+
+const PlotStatPlan = struct {
+    phases: [4]PlotStatPhase,
+};
+
+const PlotStatTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    setup_started: bool,
+    setup_completed: bool,
+    render_started: bool,
+    render_completed: bool,
+    finalize_started: bool,
+    finalize_completed: bool,
+    aborted: bool,
+};
+
+const PlotStatContext = struct {
+    requested_mode: u16,
+    effective_mode: u16,
+    class: PlotStatModeClass,
+    has_source: bool,
+};
+
+fn plotStatContextInit(plot_mode: u16) PlotStatContext {
+    return .{
+        .requested_mode = plot_mode,
+        .effective_mode = plot_mode,
+        .class = .other,
+        .has_source = false,
+    };
+}
+
+fn plotStatPlanBuild() PlotStatPlan {
+    return .{ .phases = .{ .preflight, .setup, .render, .finalize } };
+}
+
+fn plotStatTelemetryInit() PlotStatTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .setup_started = false,
+        .setup_completed = false,
+        .render_started = false,
+        .render_completed = false,
+        .finalize_started = false,
+        .finalize_completed = false,
+        .aborted = false,
+    };
+}
+
+fn plotStatTelemetryStart(telemetry: *PlotStatTelemetry, phase: PlotStatPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .setup => telemetry.setup_started = true,
+        .render => telemetry.render_started = true,
+        .finalize => telemetry.finalize_started = true,
+    }
+}
+
+fn plotStatTelemetryComplete(telemetry: *PlotStatTelemetry, phase: PlotStatPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .setup => telemetry.setup_completed = true,
+        .render => telemetry.render_completed = true,
+        .finalize => telemetry.finalize_completed = true,
+    }
+}
+
+fn plotStatTelemetryAbort(telemetry: *PlotStatTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn plotStatPhaseCanRun(telemetry: PlotStatTelemetry, phase: PlotStatPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .setup => telemetry.preflight_completed and !telemetry.aborted,
+        .render => telemetry.setup_completed and !telemetry.aborted,
+        .finalize => telemetry.render_completed and !telemetry.aborted,
+    };
+}
+
+fn plotStatModeIsRegression(mode: u16) bool {
+    return mode == PLOT_ORTHOF or mode == PLOT_START or mode == PLOT_REV or mode == PLOT_NXT or mode == PLOT_LR;
+}
+
+fn plotStatModeIsHistogram(mode: u16) bool {
+    return mode == H_PLOT;
+}
+
+fn plotStatModeIsHistogramNorm(mode: u16) bool {
+    return mode == H_NORM;
+}
+
+fn plotStatModeClassify(mode: u16) PlotStatModeClass {
+    if (plotStatModeIsRegression(mode)) return .regression;
+    if (plotStatModeIsHistogram(mode)) return .histogram;
+    if (plotStatModeIsHistogramNorm(mode)) return .histogram_normal;
+    return .other;
+}
+
+fn plotStatClassifyMode(ctx: *PlotStatContext) void {
+    ctx.class = plotStatModeClassify(ctx.effective_mode);
+}
+
+fn plotStatConfigureRegressionPreset() void {
+    drawHistogram = 0;
+    z47_frontier_plot_set_plotstatmx_stats();
+}
+
+fn plotStatConfigureHistogramPreset() void {
+    drawHistogram = 1;
+    z47_frontier_plot_set_plotstatmx_histo();
+}
+
+fn plotStatConfigureHistogramNormPreset(ctx: *PlotStatContext) void {
+    drawHistogram = 1;
+    z47_frontier_plot_set_statmx_histo();
+    calcSigma(0);
+    ctx.effective_mode = PLOT_LR;
+    lastPlotMode = PLOT_START;
+    lrSelectionHistobackup = lrSelection;
+    lrChosenHistobackup = lrChosen;
+    fnCurveFitting(CF_GAUSS_FITTING);
+}
+
+fn plotStatConfigureModePre(ctx: *PlotStatContext) void {
+    switch (ctx.class) {
+        .regression => plotStatConfigureRegressionPreset(),
+        .histogram => plotStatConfigureHistogramPreset(),
+        .histogram_normal => plotStatConfigureHistogramNormPreset(ctx),
+        .other => {},
+    }
+}
+
+fn plotStatNeedGraphEntryClear() bool {
+    return !(calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH);
+}
+
+fn plotStatEnsureGraphEntryState() void {
+    if (plotStatNeedGraphEntryClear()) {
+        z47_frontier_plot_clear_screen_for_graph_entry();
+    }
+}
+
+fn plotStatActivateHourglass() void {
+    hourGlassIconEnabled = true;
+    showHideHourGlass();
+    refreshStatusBar();
+}
+
+fn plotStatValidateSource(ctx: *PlotStatContext) bool {
+    ctx.has_source = z47_frontier_plot_has_source_data();
+    return ctx.has_source;
+}
+
+fn plotStatNormalizeEffectiveModeFromLast(ctx: *PlotStatContext) void {
+    if (!(lastPlotMode == PLOT_NOTHING or lastPlotMode == PLOT_START)) {
+        ctx.effective_mode = lastPlotMode;
+    }
+}
+
+fn plotStatPrepareRuntime(ctx: *PlotStatContext) void {
+    clearSystemFlag(FLAG_SCALE);
+    plotStatNormalizeEffectiveModeFromLast(ctx);
+    calcMode = CM_PLOT_STAT;
+    statGraphReset();
+}
+
+fn plotStatApplyStartMode(ctx: *PlotStatContext) void {
+    if (ctx.effective_mode == PLOT_START) {
+        plotSelection = 0;
+        roundedTicks = false;
+    }
+}
+
+fn plotStatApplyLrMode(ctx: *PlotStatContext) bool {
+    if (ctx.effective_mode == PLOT_LR and lrSelection != 0) {
+        plotSelection = lrSelection;
+        roundedTicks = false;
+        return true;
+    }
+    return false;
+}
+
+fn plotStatApplyHistogramMode(ctx: *PlotStatContext) bool {
+    if (ctx.effective_mode == H_PLOT or ctx.effective_mode == H_NORM) {
+        calcMode = CM_PLOT_STAT;
+        return true;
+    }
+    return false;
+}
+
+fn plotStatApplyNonStartMode(ctx: *PlotStatContext) void {
+    if (ctx.effective_mode == PLOT_START) {
+        return;
+    }
+    if (plotStatApplyLrMode(ctx)) return;
+    _ = plotStatApplyHistogramMode(ctx);
+}
+
+fn plotStatRefreshLcd() void {
+    refreshLcd(null);
+}
+
+fn plotStatShowSoftmenuHPlot() void {
+    showSoftmenu(-MNU_HPLOT);
+}
+
+fn plotStatShowSoftmenuAssessOrHPlot() void {
+    if (drawHistogram == 0) {
+        showSoftmenu(-MNU_PLOT_ASSESS);
+    } else {
+        showSoftmenu(-MNU_HPLOT);
+    }
+}
+
+fn plotStatShowSoftmenuAssess() void {
+    showSoftmenu(-MNU_PLOT_ASSESS);
+}
+
+fn plotStatShowSoftmenuScatr() void {
+    setSystemFlag(FLAG_SCALE);
+    showSoftmenu(-MNU_PLOT_SCATR);
+}
+
+fn plotStatShowSoftmenuForMode(ctx: PlotStatContext) void {
+    switch (ctx.effective_mode) {
+        H_PLOT, H_NORM => plotStatShowSoftmenuHPlot(),
+        PLOT_LR => plotStatShowSoftmenuAssessOrHPlot(),
+        PLOT_NXT, PLOT_REV => plotStatShowSoftmenuAssess(),
+        PLOT_ORTHOF, PLOT_START => plotStatShowSoftmenuScatr(),
+        PLOT_NOTHING => {},
+        else => {},
+    }
+}
+
+fn plotStatShouldUpdateRegressionLine(ctx: PlotStatContext) bool {
+    return (ctx.effective_mode != PLOT_START) and (ctx.effective_mode != H_PLOT) and (ctx.effective_mode != H_NORM);
+}
+
+fn plotStatUpdateRegressionLine(ctx: *PlotStatContext) void {
+    if (plotStatShouldUpdateRegressionLine(ctx.*)) {
+        fnPlotRegressionLine(ctx.effective_mode);
+    } else {
+        lastPlotMode = ctx.effective_mode;
+    }
+}
+
+fn plotStatFinishSuccess() void {}
+
+fn plotStatFinishFailure() void {
+    calcMode = CM_NORMAL;
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+fn plotStatExecuteStage(stage: PlotStatStage, ctx: *PlotStatContext) bool {
+    switch (stage) {
+        .classify_mode => {
+            plotStatClassifyMode(ctx);
+            return true;
+        },
+        .configure_mode_pre => {
+            plotStatConfigureModePre(ctx);
+            return true;
+        },
+        .ensure_graph_entry_state => {
+            plotStatEnsureGraphEntryState();
+            return true;
+        },
+        .activate_hourglass => {
+            plotStatActivateHourglass();
+            return true;
+        },
+        .validate_source => return plotStatValidateSource(ctx),
+        .prepare_runtime => {
+            plotStatPrepareRuntime(ctx);
+            return true;
+        },
+        .apply_start_mode => {
+            plotStatApplyStartMode(ctx);
+            return true;
+        },
+        .apply_non_start_mode => {
+            plotStatApplyNonStartMode(ctx);
+            return true;
+        },
+        .refresh_lcd => {
+            plotStatRefreshLcd();
+            return true;
+        },
+        .show_softmenu => {
+            plotStatShowSoftmenuForMode(ctx.*);
+            return true;
+        },
+        .update_regression_line => {
+            plotStatUpdateRegressionLine(ctx);
+            return true;
+        },
+        .finish => {
+            plotStatFinishSuccess();
+            return true;
+        },
+    }
+}
+
+fn plotStatPreflightStages() [5]PlotStatStage {
+    return .{
+        .classify_mode,
+        .configure_mode_pre,
+        .ensure_graph_entry_state,
+        .activate_hourglass,
+        .validate_source,
+    };
+}
+
+fn plotStatSetupStages() [3]PlotStatStage {
+    return .{
+        .prepare_runtime,
+        .apply_start_mode,
+        .apply_non_start_mode,
+    };
+}
+
+fn plotStatRenderStages() [3]PlotStatStage {
+    return .{
+        .refresh_lcd,
+        .show_softmenu,
+        .update_regression_line,
+    };
+}
+
+fn plotStatFinalizeStages() [1]PlotStatStage {
+    return .{.finish};
+}
+
+fn plotStatRunStageList(comptime count: usize, stages: [count]PlotStatStage, ctx: *PlotStatContext) bool {
+    for (stages) |stage| {
+        if (!plotStatExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn plotStatRunPreflight(ctx: *PlotStatContext) bool {
+    const stages = plotStatPreflightStages();
+    return plotStatRunStageList(stages.len, stages, ctx);
+}
+
+fn plotStatRunSetup(ctx: *PlotStatContext) bool {
+    const stages = plotStatSetupStages();
+    return plotStatRunStageList(stages.len, stages, ctx);
+}
+
+fn plotStatRunRender(ctx: *PlotStatContext) bool {
+    const stages = plotStatRenderStages();
+    return plotStatRunStageList(stages.len, stages, ctx);
+}
+
+fn plotStatRunFinalize(ctx: *PlotStatContext) bool {
+    const stages = plotStatFinalizeStages();
+    return plotStatRunStageList(stages.len, stages, ctx);
+}
+
+fn plotStatExecutePhase(phase: PlotStatPhase, ctx: *PlotStatContext) bool {
+    return switch (phase) {
+        .preflight => plotStatRunPreflight(ctx),
+        .setup => plotStatRunSetup(ctx),
+        .render => plotStatRunRender(ctx),
+        .finalize => plotStatRunFinalize(ctx),
+    };
+}
+
+fn plotStatExecutePhaseWithTelemetry(phase: PlotStatPhase, ctx: *PlotStatContext, telemetry: *PlotStatTelemetry) bool {
+    if (!plotStatPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    plotStatTelemetryStart(telemetry, phase);
+    if (!plotStatExecutePhase(phase, ctx)) {
+        plotStatTelemetryAbort(telemetry);
+        return false;
+    }
+    plotStatTelemetryComplete(telemetry, phase);
+    return true;
+}
+
+fn plotStatTelemetryPipeline(plot_mode: u16) void {
+    var ctx = plotStatContextInit(plot_mode);
+    var telemetry = plotStatTelemetryInit();
+    const plan = plotStatPlanBuild();
+
+    for (plan.phases) |phase| {
+        if (!plotStatExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            plotStatFinishFailure();
+            return;
+        }
+    }
+}
+
+fn plotStatUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn plotStatFallback(plot_mode: u16) void {
     var mode = plot_mode;
 
     switch (mode) {
@@ -1288,6 +4123,18 @@ pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
 
     calcMode = CM_NORMAL;
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+fn plotStatDispatchPipeline(plot_mode: u16) void {
+    if (plotStatUseTelemetryPipeline()) {
+        plotStatTelemetryPipeline(plot_mode);
+        return;
+    }
+    plotStatFallback(plot_mode);
+}
+
+pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
+    plotStatDispatchPipeline(plot_mode);
 }
 
 pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
