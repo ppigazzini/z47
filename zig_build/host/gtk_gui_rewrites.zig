@@ -1,12 +1,8 @@
 const std = @import("std");
 
-const retained_gtk_sources = [_][]const u8{
-    "gtkGui.c",
-};
+const retained_gtk_sources = [_][]const u8{};
 
-const runtime_helper_sources = [_][]const u8{
-    "zig_build/host/gtk_gui_retained.c",
-};
+const runtime_helper_sources = [_][]const u8{};
 
 pub fn filterGtkSources(b: *std.Build, gtk_sources: [][]const u8) ![][]const u8 {
     var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, gtk_sources.len);
