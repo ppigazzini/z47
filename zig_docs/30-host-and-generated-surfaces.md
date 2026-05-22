@@ -88,6 +88,12 @@ re-enters the host build through `../zig_build/host/gtk_gui_retained.c` plus
 build graph still does not mean the host simulator is already a pure-Zig
 application.
 
+The host solver boundary now includes an explicit command-entry rewrite lane:
+`../zig_build/solver/solve_rewrites.zig` filters imported
+`../src/c47/solver/solve.c`, re-enters the retained body through
+`../zig_bridge/solver/solve_retained.c`, and compiles the Zig-owned
+`fnPgmSlv` entrypoint from `../zig_src/solver/solve.zig`.
+
 ## Host Test Steps
 
 Current grouped host test steps:

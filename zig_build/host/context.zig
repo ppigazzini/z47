@@ -9,6 +9,7 @@ const flags_rewrites = @import("../state/flags_rewrites.zig");
 const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
 const memory_rewrites = @import("../state/memory_rewrites.zig");
 const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
+const solve_rewrites = @import("../solver/solve_rewrites.zig");
 const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
 const stack_rewrites = @import("../state/stack_rewrites.zig");
 const tone_rewrites = @import("../ui/tone_rewrites.zig");
@@ -35,7 +36,8 @@ pub fn prepareContext(
     const core_sources_without_calc_state = try calc_state_rewrites.filterCoreSources(b, core_sources_without_program_serialization);
     const core_sources_without_keyboard_state = try keyboard_state_rewrites.filterCoreSources(b, core_sources_without_calc_state);
     const core_sources_without_math_command_wrappers = try math_command_wrapper_rewrites.filterCoreSources(b, core_sources_without_keyboard_state);
-    const core_sources_without_constants = try constants_rewrites.filterCoreSources(b, core_sources_without_math_command_wrappers);
+    const core_sources_without_solver = try solve_rewrites.filterCoreSources(b, core_sources_without_math_command_wrappers);
+    const core_sources_without_constants = try constants_rewrites.filterCoreSources(b, core_sources_without_solver);
     const core_sources_without_tone = try tone_rewrites.filterCoreSources(b, core_sources_without_constants);
 
     const version_headers_dir = try host_generated.addVersionHeaders(b, ci_commit_tag);
