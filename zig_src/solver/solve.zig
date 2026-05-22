@@ -55,3 +55,8 @@ pub export fn fnIntegrate(label_or_variable: u16) callconv(.c) void {
 pub export fn fnIntegrateYX(label_or_variable: u16) callconv(.c) void {
     runtime.z47_solver_retained_fnIntegrateYX(label_or_variable);
 }
+
+pub export fn fnTvmBeginMode(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    runtime.tvmBeginMode();
+}
