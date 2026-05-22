@@ -27,3 +27,7 @@ pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
     runtime.z47_frontier_retained_fnKeysManagement(choice);
 }
+
+pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
+    runtime.z47_frontier_retained_fnPlotStat(plot_mode);
+}
