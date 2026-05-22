@@ -5648,30 +5648,30 @@ int keyCntA = 0;
       //gtk_widget_set_name(lbl21Fa,  "fShiftedUnderline"); //JMALPHA2
 
 
-      g_signal_connect(btn21,  "button-press-event",   G_CALLBACK(btnPressed),  "00");
-      g_signal_connect(btn22,  "button-press-event",   G_CALLBACK(btnPressed),  "01");
-      g_signal_connect(btn23,  "button-press-event",   G_CALLBACK(btnPressed),  "02");
-      g_signal_connect(btn24,  "button-press-event",   G_CALLBACK(btnPressed),  "03");
-      g_signal_connect(btn25,  "button-press-event",   G_CALLBACK(btnPressed),  "04");
-      g_signal_connect(btn26,  "button-press-event",   G_CALLBACK(btnPressed),  "05");
-      g_signal_connect(btn21,  "button-release-event", G_CALLBACK(btnReleased), "00");
-      g_signal_connect(btn22,  "button-release-event", G_CALLBACK(btnReleased), "01");
-      g_signal_connect(btn23,  "button-release-event", G_CALLBACK(btnReleased), "02");
-      g_signal_connect(btn24,  "button-release-event", G_CALLBACK(btnReleased), "03");
-      g_signal_connect(btn25,  "button-release-event", G_CALLBACK(btnReleased), "04");
-      g_signal_connect(btn26,  "button-release-event", G_CALLBACK(btnReleased), "05");
-      g_signal_connect(btn21A, "button-press-event",   G_CALLBACK(btnPressed),  "00");    //vv dr - new AIM
-      g_signal_connect(btn22A, "button-press-event",   G_CALLBACK(btnPressed),  "01");
-      g_signal_connect(btn23A, "button-press-event",   G_CALLBACK(btnPressed),  "02");
-      g_signal_connect(btn24A, "button-press-event",   G_CALLBACK(btnPressed),  "03");
-      g_signal_connect(btn25A, "button-press-event",   G_CALLBACK(btnPressed),  "04");
-      g_signal_connect(btn26A, "button-press-event",   G_CALLBACK(btnPressed),  "05");
-      g_signal_connect(btn21A, "button-release-event", G_CALLBACK(btnReleased), "00");
-      g_signal_connect(btn22A, "button-release-event", G_CALLBACK(btnReleased), "01");
-      g_signal_connect(btn23A, "button-release-event", G_CALLBACK(btnReleased), "02");
-      g_signal_connect(btn24A, "button-release-event", G_CALLBACK(btnReleased), "03");
-      g_signal_connect(btn25A, "button-release-event", G_CALLBACK(btnReleased), "04");
-      g_signal_connect(btn26A, "button-release-event", G_CALLBACK(btnReleased), "05");  //^^
+      g_signal_connect(btn21,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "00");
+      g_signal_connect(btn22,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "01");
+      g_signal_connect(btn23,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "02");
+      g_signal_connect(btn24,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "03");
+      g_signal_connect(btn25,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "04");
+      g_signal_connect(btn26,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "05");
+      g_signal_connect(btn21,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "00");
+      g_signal_connect(btn22,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "01");
+      g_signal_connect(btn23,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "02");
+      g_signal_connect(btn24,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "03");
+      g_signal_connect(btn25,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "04");
+      g_signal_connect(btn26,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "05");
+      g_signal_connect(btn21A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "00");    //vv dr - new AIM
+      g_signal_connect(btn22A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "01");
+      g_signal_connect(btn23A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "02");
+      g_signal_connect(btn24A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "03");
+      g_signal_connect(btn25A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "04");
+      g_signal_connect(btn26A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "05");
+      g_signal_connect(btn21A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "00");
+      g_signal_connect(btn22A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "01");
+      g_signal_connect(btn23A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "02");
+      g_signal_connect(btn24A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "03");
+      g_signal_connect(btn25A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "04");
+      g_signal_connect(btn26A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "05");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl21F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl22F,  0, 0);
@@ -5815,30 +5815,30 @@ int keyCntA = 0;
       //gtk_widget_set_name(lbl34H,  "fShifted");  //JM CAPS JMALPHA2
       //gtk_widget_set_name(lbl34H,  "gShifted");  //JM removed1
 
-      g_signal_connect(btn31,  "button-press-event",   G_CALLBACK(btnPressed), "06");
-      g_signal_connect(btn32,  "button-press-event",   G_CALLBACK(btnPressed), "07");
-      g_signal_connect(btn33,  "button-press-event",   G_CALLBACK(btnPressed), "08");
-      g_signal_connect(btn34,  "button-press-event",   G_CALLBACK(btnPressed), "09");
-      g_signal_connect(btn35,  "button-press-event",   G_CALLBACK(btnPressed), "10");
-      g_signal_connect(btn36,  "button-press-event",   G_CALLBACK(btnPressed), "11");
-      g_signal_connect(btn31,  "button-release-event", G_CALLBACK(btnReleased), "06");
-      g_signal_connect(btn32,  "button-release-event", G_CALLBACK(btnReleased), "07");
-      g_signal_connect(btn33,  "button-release-event", G_CALLBACK(btnReleased), "08");
-      g_signal_connect(btn34,  "button-release-event", G_CALLBACK(btnReleased), "09");
-      g_signal_connect(btn35,  "button-release-event", G_CALLBACK(btnReleased), "10");
-      g_signal_connect(btn36,  "button-release-event", G_CALLBACK(btnReleased), "11");
-      g_signal_connect(btn31A, "button-press-event",   G_CALLBACK(btnPressed), "06");    //vv dr - new AIM
-      g_signal_connect(btn32A, "button-press-event",   G_CALLBACK(btnPressed), "07");
-      g_signal_connect(btn33A, "button-press-event",   G_CALLBACK(btnPressed), "08");
-      g_signal_connect(btn34A, "button-press-event",   G_CALLBACK(btnPressed), "09");
-      g_signal_connect(btn35A, "button-press-event",   G_CALLBACK(btnPressed), "10");
-      g_signal_connect(btn36A, "button-press-event",   G_CALLBACK(btnPressed), "11");
-      g_signal_connect(btn31A, "button-release-event", G_CALLBACK(btnReleased), "06");
-      g_signal_connect(btn32A, "button-release-event", G_CALLBACK(btnReleased), "07");
-      g_signal_connect(btn33A, "button-release-event", G_CALLBACK(btnReleased), "08");
-      g_signal_connect(btn34A, "button-release-event", G_CALLBACK(btnReleased), "09");
-      g_signal_connect(btn35A, "button-release-event", G_CALLBACK(btnReleased), "10");
-      g_signal_connect(btn36A, "button-release-event", G_CALLBACK(btnReleased), "11");  //^^
+      g_signal_connect(btn31,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "06");
+      g_signal_connect(btn32,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "07");
+      g_signal_connect(btn33,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "08");
+      g_signal_connect(btn34,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "09");
+      g_signal_connect(btn35,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "10");
+      g_signal_connect(btn36,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "11");
+      g_signal_connect(btn31,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "06");
+      g_signal_connect(btn32,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "07");
+      g_signal_connect(btn33,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "08");
+      g_signal_connect(btn34,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "09");
+      g_signal_connect(btn35,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "10");
+      g_signal_connect(btn36,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "11");
+      g_signal_connect(btn31A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "06");    //vv dr - new AIM
+      g_signal_connect(btn32A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "07");
+      g_signal_connect(btn33A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "08");
+      g_signal_connect(btn34A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "09");
+      g_signal_connect(btn35A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "10");
+      g_signal_connect(btn36A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal), "11");
+      g_signal_connect(btn31A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "06");
+      g_signal_connect(btn32A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "07");
+      g_signal_connect(btn33A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "08");
+      g_signal_connect(btn34A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "09");
+      g_signal_connect(btn35A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "10");
+      g_signal_connect(btn36A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "11");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl31F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl32F,  0, 0);
@@ -5955,22 +5955,22 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn44A, KEY_WIDTH_1,                0);    //^^
 
 
-      g_signal_connect(btn41, "button-press-event",    G_CALLBACK(btnPressed),  "12");
-      g_signal_connect(btn42, "button-press-event",    G_CALLBACK(btnPressed),  "13");
-      g_signal_connect(btn43,  "button-press-event",   G_CALLBACK(btnPressed),  "14");
-      g_signal_connect(btn44,  "button-press-event",   G_CALLBACK(btnPressed),  "15");
-      g_signal_connect(btn45,  "button-press-event",   G_CALLBACK(btnPressed),  "16");
-      g_signal_connect(btn41,  "button-release-event", G_CALLBACK(btnReleased), "12");
-      g_signal_connect(btn42,  "button-release-event", G_CALLBACK(btnReleased), "13");
-      g_signal_connect(btn43,  "button-release-event", G_CALLBACK(btnReleased), "14");
-      g_signal_connect(btn44,  "button-release-event", G_CALLBACK(btnReleased), "15");
-      g_signal_connect(btn45,  "button-release-event", G_CALLBACK(btnReleased), "16");
-      g_signal_connect(btn42A, "button-press-event",   G_CALLBACK(btnPressed),  "13");    //vv dr - new AIM
-      g_signal_connect(btn43A, "button-press-event",   G_CALLBACK(btnPressed),  "14");
-      g_signal_connect(btn44A, "button-press-event",   G_CALLBACK(btnPressed),  "15");
-      g_signal_connect(btn42A, "button-release-event", G_CALLBACK(btnReleased), "13");
-      g_signal_connect(btn43A, "button-release-event", G_CALLBACK(btnReleased), "14");
-      g_signal_connect(btn44A, "button-release-event", G_CALLBACK(btnReleased), "15");  //^^
+      g_signal_connect(btn41, "button-press-event",    G_CALLBACK(z47_btnPressed_signal),  "12");
+      g_signal_connect(btn42, "button-press-event",    G_CALLBACK(z47_btnPressed_signal),  "13");
+      g_signal_connect(btn43,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "14");
+      g_signal_connect(btn44,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "15");
+      g_signal_connect(btn45,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "16");
+      g_signal_connect(btn41,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "12");
+      g_signal_connect(btn42,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "13");
+      g_signal_connect(btn43,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "14");
+      g_signal_connect(btn44,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "15");
+      g_signal_connect(btn45,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "16");
+      g_signal_connect(btn42A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "13");    //vv dr - new AIM
+      g_signal_connect(btn43A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "14");
+      g_signal_connect(btn44A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "15");
+      g_signal_connect(btn42A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "13");
+      g_signal_connect(btn43A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "14");
+      g_signal_connect(btn44A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "15");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl41F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl42F,  0, 0);
@@ -6076,24 +6076,24 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn54A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn55A, KEY_WIDTH_2, 0);  //^^
 
-      g_signal_connect(btn51,  "button-press-event",   G_CALLBACK(btnPressed),  "17");
-      g_signal_connect(btn52,  "button-press-event",   G_CALLBACK(btnPressed),  "18");
-      g_signal_connect(btn53,  "button-press-event",   G_CALLBACK(btnPressed),  "19");
-      g_signal_connect(btn54,  "button-press-event",   G_CALLBACK(btnPressed),  "20");
-      g_signal_connect(btn55,  "button-press-event",   G_CALLBACK(btnPressed),  "21");
-      g_signal_connect(btn51,  "button-release-event", G_CALLBACK(btnReleased), "17");
-      g_signal_connect(btn52,  "button-release-event", G_CALLBACK(btnReleased), "18");
-      g_signal_connect(btn53,  "button-release-event", G_CALLBACK(btnReleased), "19");
-      g_signal_connect(btn54,  "button-release-event", G_CALLBACK(btnReleased), "20");
-      g_signal_connect(btn55,  "button-release-event", G_CALLBACK(btnReleased), "21");
-      g_signal_connect(btn52A, "button-press-event",   G_CALLBACK(btnPressed),  "18");    //vv dr - new AIM
-      g_signal_connect(btn53A, "button-press-event",   G_CALLBACK(btnPressed),  "19");
-      g_signal_connect(btn54A, "button-press-event",   G_CALLBACK(btnPressed),  "20");
-      g_signal_connect(btn55A, "button-press-event",   G_CALLBACK(btnPressed),  "21");
-      g_signal_connect(btn52A, "button-release-event", G_CALLBACK(btnReleased), "18");
-      g_signal_connect(btn53A, "button-release-event", G_CALLBACK(btnReleased), "19");
-      g_signal_connect(btn54A, "button-release-event", G_CALLBACK(btnReleased), "20");
-      g_signal_connect(btn55A, "button-release-event", G_CALLBACK(btnReleased), "21");  //^^
+      g_signal_connect(btn51,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "17");
+      g_signal_connect(btn52,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "18");
+      g_signal_connect(btn53,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "19");
+      g_signal_connect(btn54,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "20");
+      g_signal_connect(btn55,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "21");
+      g_signal_connect(btn51,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "17");
+      g_signal_connect(btn52,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "18");
+      g_signal_connect(btn53,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "19");
+      g_signal_connect(btn54,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "20");
+      g_signal_connect(btn55,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "21");
+      g_signal_connect(btn52A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "18");    //vv dr - new AIM
+      g_signal_connect(btn53A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "19");
+      g_signal_connect(btn54A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "20");
+      g_signal_connect(btn55A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "21");
+      g_signal_connect(btn52A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "18");
+      g_signal_connect(btn53A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "19");
+      g_signal_connect(btn54A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "20");
+      g_signal_connect(btn55A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "21");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl51F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl52F,  0, 0);
@@ -6199,24 +6199,24 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn64A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn65A, KEY_WIDTH_2, 0);  //^^
 
-      g_signal_connect(btn61,  "button-press-event",   G_CALLBACK(btnPressed),  "22");
-      g_signal_connect(btn62,  "button-press-event",   G_CALLBACK(btnPressed),  "23");
-      g_signal_connect(btn63,  "button-press-event",   G_CALLBACK(btnPressed),  "24");
-      g_signal_connect(btn64,  "button-press-event",   G_CALLBACK(btnPressed),  "25");
-      g_signal_connect(btn65,  "button-press-event",   G_CALLBACK(btnPressed),  "26");
-      g_signal_connect(btn61,  "button-release-event", G_CALLBACK(btnReleased), "22");
-      g_signal_connect(btn62,  "button-release-event", G_CALLBACK(btnReleased), "23");
-      g_signal_connect(btn63,  "button-release-event", G_CALLBACK(btnReleased), "24");
-      g_signal_connect(btn64,  "button-release-event", G_CALLBACK(btnReleased), "25");
-      g_signal_connect(btn65,  "button-release-event", G_CALLBACK(btnReleased), "26");
-      g_signal_connect(btn62A, "button-press-event",   G_CALLBACK(btnPressed),  "23");    //vv - new AIM
-      g_signal_connect(btn63A, "button-press-event",   G_CALLBACK(btnPressed),  "24");
-      g_signal_connect(btn64A, "button-press-event",   G_CALLBACK(btnPressed),  "25");
-      g_signal_connect(btn65A, "button-press-event",   G_CALLBACK(btnPressed),  "26");
-      g_signal_connect(btn62A, "button-release-event", G_CALLBACK(btnReleased), "23");
-      g_signal_connect(btn63A, "button-release-event", G_CALLBACK(btnReleased), "24");
-      g_signal_connect(btn64A, "button-release-event", G_CALLBACK(btnReleased), "25");
-      g_signal_connect(btn65A, "button-release-event", G_CALLBACK(btnReleased), "26");  //^^
+      g_signal_connect(btn61,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "22");
+      g_signal_connect(btn62,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "23");
+      g_signal_connect(btn63,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "24");
+      g_signal_connect(btn64,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "25");
+      g_signal_connect(btn65,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "26");
+      g_signal_connect(btn61,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "22");
+      g_signal_connect(btn62,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "23");
+      g_signal_connect(btn63,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "24");
+      g_signal_connect(btn64,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "25");
+      g_signal_connect(btn65,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "26");
+      g_signal_connect(btn62A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "23");    //vv - new AIM
+      g_signal_connect(btn63A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "24");
+      g_signal_connect(btn64A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "25");
+      g_signal_connect(btn65A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "26");
+      g_signal_connect(btn62A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "23");
+      g_signal_connect(btn63A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "24");
+      g_signal_connect(btn64A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "25");
+      g_signal_connect(btn65A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "26");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl61F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl62F,  0, 0);
@@ -6327,26 +6327,26 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn75A, KEY_WIDTH_2, 0);  //^^
 
 
-      g_signal_connect(btn71,  "button-press-event",   G_CALLBACK(btnPressed),  "27");
-      g_signal_connect(btn72,  "button-press-event",   G_CALLBACK(btnPressed),  "28");
-      g_signal_connect(btn73,  "button-press-event",   G_CALLBACK(btnPressed),  "29");
-      g_signal_connect(btn74,  "button-press-event",   G_CALLBACK(btnPressed),  "30");
-      g_signal_connect(btn75,  "button-press-event",   G_CALLBACK(btnPressed),  "31");
-      g_signal_connect(btn71,  "button-release-event", G_CALLBACK(btnReleased), "27");
-      g_signal_connect(btn72,  "button-release-event", G_CALLBACK(btnReleased), "28");
-      g_signal_connect(btn73,  "button-release-event", G_CALLBACK(btnReleased), "29");
-      g_signal_connect(btn74,  "button-release-event", G_CALLBACK(btnReleased), "30");
-      g_signal_connect(btn75,  "button-release-event", G_CALLBACK(btnReleased), "31");
-      g_signal_connect(btn71A, "button-press-event",   G_CALLBACK(btnPressed),  "27");
-      g_signal_connect(btn72A, "button-press-event",   G_CALLBACK(btnPressed),  "28");    //vv dr - new AIM
-      g_signal_connect(btn73A, "button-press-event",   G_CALLBACK(btnPressed),  "29");
-      g_signal_connect(btn74A, "button-press-event",   G_CALLBACK(btnPressed),  "30");
-      g_signal_connect(btn75A, "button-press-event",   G_CALLBACK(btnPressed),  "31");
-      g_signal_connect(btn71A, "button-release-event", G_CALLBACK(btnReleased), "27");
-      g_signal_connect(btn72A, "button-release-event", G_CALLBACK(btnReleased), "28");
-      g_signal_connect(btn73A, "button-release-event", G_CALLBACK(btnReleased), "29");
-      g_signal_connect(btn74A, "button-release-event", G_CALLBACK(btnReleased), "30");
-      g_signal_connect(btn75A, "button-release-event", G_CALLBACK(btnReleased), "31");  //^^
+      g_signal_connect(btn71,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "27");
+      g_signal_connect(btn72,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "28");
+      g_signal_connect(btn73,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "29");
+      g_signal_connect(btn74,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "30");
+      g_signal_connect(btn75,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "31");
+      g_signal_connect(btn71,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "27");
+      g_signal_connect(btn72,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "28");
+      g_signal_connect(btn73,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "29");
+      g_signal_connect(btn74,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "30");
+      g_signal_connect(btn75,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "31");
+      g_signal_connect(btn71A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "27");
+      g_signal_connect(btn72A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "28");    //vv dr - new AIM
+      g_signal_connect(btn73A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "29");
+      g_signal_connect(btn74A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "30");
+      g_signal_connect(btn75A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "31");
+      g_signal_connect(btn71A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "27");
+      g_signal_connect(btn72A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "28");
+      g_signal_connect(btn73A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "29");
+      g_signal_connect(btn74A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "30");
+      g_signal_connect(btn75A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "31");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl71F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl72F,  0, 0);
@@ -6456,24 +6456,24 @@ int keyCntA = 0;
 
       //gtk_widget_set_name(lblOn,  "On");
 
-      g_signal_connect(btn81,  "button-press-event",   G_CALLBACK(btnPressed),  "32");
-      g_signal_connect(btn82,  "button-press-event",   G_CALLBACK(btnPressed),  "33");
-      g_signal_connect(btn83,  "button-press-event",   G_CALLBACK(btnPressed),  "34");
-      g_signal_connect(btn84,  "button-press-event",   G_CALLBACK(btnPressed),  "35");
-      g_signal_connect(btn85,  "button-press-event",   G_CALLBACK(btnPressed),  "36");
-      g_signal_connect(btn81,  "button-release-event", G_CALLBACK(btnReleased), "32");
-      g_signal_connect(btn82,  "button-release-event", G_CALLBACK(btnReleased), "33");
-      g_signal_connect(btn83,  "button-release-event", G_CALLBACK(btnReleased), "34");
-      g_signal_connect(btn84,  "button-release-event", G_CALLBACK(btnReleased), "35");
-      g_signal_connect(btn85,  "button-release-event", G_CALLBACK(btnReleased), "36");
-      g_signal_connect(btn82A, "button-press-event",   G_CALLBACK(btnPressed),  "33");    //vv dr - new AIM
-      g_signal_connect(btn83A, "button-press-event",   G_CALLBACK(btnPressed),  "34");
-      g_signal_connect(btn84A, "button-press-event",   G_CALLBACK(btnPressed),  "35");
-      g_signal_connect(btn85A, "button-press-event",   G_CALLBACK(btnPressed),  "36");
-      g_signal_connect(btn82A, "button-release-event", G_CALLBACK(btnReleased), "33");
-      g_signal_connect(btn83A, "button-release-event", G_CALLBACK(btnReleased), "34");
-      g_signal_connect(btn84A, "button-release-event", G_CALLBACK(btnReleased), "35");
-      g_signal_connect(btn85A, "button-release-event", G_CALLBACK(btnReleased), "36");  //^^
+      g_signal_connect(btn81,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "32");
+      g_signal_connect(btn82,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "33");
+      g_signal_connect(btn83,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "34");
+      g_signal_connect(btn84,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "35");
+      g_signal_connect(btn85,  "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "36");
+      g_signal_connect(btn81,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "32");
+      g_signal_connect(btn82,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "33");
+      g_signal_connect(btn83,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "34");
+      g_signal_connect(btn84,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "35");
+      g_signal_connect(btn85,  "button-release-event", G_CALLBACK(z47_btnReleased_signal), "36");
+      g_signal_connect(btn82A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "33");    //vv dr - new AIM
+      g_signal_connect(btn83A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "34");
+      g_signal_connect(btn84A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "35");
+      g_signal_connect(btn85A, "button-press-event",   G_CALLBACK(z47_btnPressed_signal),  "36");
+      g_signal_connect(btn82A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "33");
+      g_signal_connect(btn83A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "34");
+      g_signal_connect(btn84A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "35");
+      g_signal_connect(btn85A, "button-release-event", G_CALLBACK(z47_btnReleased_signal), "36");  //^^
 
       gtk_fixed_put(GTK_FIXED(grid), lbl81F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl82F,  0, 0);
