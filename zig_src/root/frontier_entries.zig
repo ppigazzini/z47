@@ -8,11 +8,18 @@ const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_INTING: c_uint = 0xc025;
 const FLAG_SOLVING: c_uint = 0xc026;
+const FLAG_WRAPEND: c_uint = 0xc01a;
+const FLAG_WRAPEDG: c_uint = 0xc03f;
 const FLAG_FRCYC: c_uint = 0x8041;
 const FLAG_IRFRAC: c_uint = 0x8047;
 const FLAG_IRFRQ: c_uint = 0xc048;
 const FLAG_PRTEN: u16 = 0x8067;
 const FLAG_NORM: u16 = 0x8068;
+const FLAG_SCALE: c_uint = 0x8052;
+const FLAG_GROW: c_uint = 0x801d;
+const FLAG_USER: u16 = 0x8014;
+const FLAG_MYM_TRIPLE: u16 = 0x805f;
+const FLAG_HOME_TRIPLE: u16 = 0x8060;
 
 const SETTING_AMODE: c_int = 0x0080;
 const SETTING_SINT_MODE: c_int = 0x0083;
@@ -21,13 +28,20 @@ const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
 const TI_RESET: u8 = 8;
 const TI_PRINT_COMPLETE: u8 = 136;
+const TI_NO_INFO: u8 = 0;
+const TI_DEL_ALL_PRGMS: u8 = 99;
 
 const CM_NORMAL: u8 = 0;
 const CM_AIM: u8 = 1;
+const CM_MIM: u8 = 12;
+const CM_PLOT_STAT: u8 = 8;
 const CM_CONFIRMATION: u8 = 11;
+const CM_GRAPH: u8 = 15;
 const CM_NO_UNDO: u8 = 16;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERROR_OPERATION_UNDEFINED: u8 = 13;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_MATRIX_MISMATCH: u8 = 21;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
@@ -36,10 +50,31 @@ const ERROR_PRINTING_DISABLED: u8 = 63;
 const CONFIRMED: u16 = 9877;
 const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;
+const INVALID_VARIABLE: u16 = 2199;
 
 const USER_KRESET: u16 = 24;
+const TO_USER: u16 = 29;
+const FROM_USER: u16 = 30;
+const USER_DM42: u16 = 45;
+const USER_C47: u16 = 46;
+const USER_ARESET: u16 = 48;
+const USER_MRESET: u16 = 49;
+const USER_HRESET: u16 = 58;
+const USER_PRESET: u16 = 59;
+const USER_R47f_g: u16 = 61;
+const USER_R47bk_fg: u16 = 62;
+const USER_R47fg_bk: u16 = 63;
+const USER_R47fg_g: u16 = 64;
+const DEC_FLAG: u16 = 1;
 const ITM_RIBBON_C47: u16 = 2509;
 const ITM_RIBBON_R47: u16 = 2511;
+const ITM_M_GOTO_ROW: i16 = 992;
+const ITM_END: u16 = 1458;
+const ITM_FF: u16 = 112;
+const MNU_SYSFL: i16 = 1379;
+const MNU_HOME: i16 = 1921;
+const MNU_PFN: i16 = 1403;
+const MNU_MyMenu: i16 = 1349;
 
 const FIRST_GLOBAL_REGISTER: u16 = 0;
 const LAST_GLOBAL_REGISTER: u16 = 125;
@@ -52,12 +87,19 @@ const REGISTER_Y: i16 = 101;
 const REGISTER_Z: i16 = 102;
 const REGISTER_T: u16 = 103;
 const REGISTER_D: u16 = 107;
+const REGISTER_I: u16 = 109;
+const REGISTER_J: u16 = 110;
 const REGISTER_W: u16 = 125;
 
 const ERR_REGISTER_LINE: i16 = REGISTER_Z;
 const NIM_REGISTER_LINE: i16 = REGISTER_X;
 
 const FLAG_SSIZE8: c_int = 0x8018;
+const SCRUPD_AUTO: u8 = 0x00;
+const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
+const SCRUPD_SKIP_MENU_ONE_TIME: u8 = 0x40;
+
+const TAM_BUFFER_LENGTH: usize = 32;
 
 const PGM_STOPPED: u8 = 0;
 const PGM_RUNNING: u8 = 1;
@@ -74,6 +116,18 @@ const PRN_Xr: u16 = 6;
 const PRN_XYr: u16 = 7;
 const PRN_TMP: u16 = 8;
 
+const PLOT_ORTHOF: u16 = 0;
+const PLOT_NXT: u16 = 1;
+const PLOT_REV: u16 = 2;
+const PLOT_LR: u16 = 3;
+const PLOT_START: u16 = 4;
+const PLOT_NOTHING: u16 = 5;
+const H_PLOT: u16 = 7;
+const H_NORM: u16 = 8;
+
+const CF_GAUSS_FITTING: u16 = 256;
+const CF_ORTHOGONAL_FITTING: u16 = 512;
+
 const TEMP_REGISTER_1: u16 = 135;
 
 const LINE_FULL: c_int = 0;
@@ -83,6 +137,9 @@ const LINE_RIGHT: c_int = 2;
 const MNU_GAP_L: i16 = 2151;
 const MNU_GAP_RX: i16 = 2152;
 const MNU_GAP_R: i16 = 2153;
+const MNU_PLOT_SCATR: i16 = 1395;
+const MNU_PLOT_ASSESS: i16 = 1396;
+const MNU_HPLOT: i16 = 1402;
 
 const PROFF: u16 = 0;
 const PRON: u16 = 1;
@@ -119,6 +176,7 @@ const dtShortInteger: u32 = 8;
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
 extern var timeDisplayFormatDigits: u8;
+extern var calcModel: u8;
 extern var DM_Cycling: u8;
 extern var gapItemLeft: u16;
 extern var gapItemRight: u16;
@@ -142,9 +200,32 @@ extern var programRunStop: u8;
 extern var lastErrorCode: u8;
 extern var previousErrorCode: u8;
 extern var currentKeyCode: u8;
+extern var screenUpdatingMode: u8;
 extern var thereIsSomethingToUndo: bool;
 extern var numberOfNamedVariables: u16;
 extern var statisticalSumsPointer: ?*anyopaque;
+extern var hourGlassIconEnabled: bool;
+extern var drawHistogram: u8;
+extern var roundedTicks: bool;
+extern var plotSelection: u16;
+extern var lrSelection: u16;
+extern var lrChosen: u16;
+extern var lastPlotMode: u16;
+extern var lrSelectionHistobackup: u16;
+extern var lrChosenHistobackup: u16;
+extern var beginOfProgramMemory: [*]u8;
+extern var firstFreeProgramByte: [*]u8;
+extern var freeProgramBytes: u16;
+extern var currentStep: [*]u8;
+extern var firstDisplayedStep: [*]u8;
+extern var firstDisplayedLocalStepNumber: u16;
+extern var currentLocalStepNumber: u16;
+extern var beginOfCurrentProgram: [*]u8;
+extern var endOfCurrentProgram: [*]u8;
+extern var matrixIndex: u16;
+extern var tmpRow: u16;
+extern var aimBuffer: [*]u8;
+extern var nimBufferDisplay: [*]u8;
 
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 extern var confirmedFunction: ?ConfirmedFunction;
@@ -169,6 +250,10 @@ extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn fnRefreshState() void;
 extern fn showSoftmenu(menu: i16) void;
+extern fn runFunction(func: i16) void;
+extern fn resetShiftState() void;
+extern fn refreshScreen(source: u16) void;
+extern fn refreshLcd(surface: ?*anyopaque) void;
 extern fn setLineDelay(delay: u16) void;
 extern fn print_lf() void;
 extern fn printLine(buff: [*:0]const u8, with_lf: c_int) void;
@@ -176,9 +261,34 @@ extern fn printJustified(buff: [*:0]const u8) void;
 extern fn printTab(col: u16) void;
 extern fn printProgram(list: bool, lines: u16) void;
 extern fn cmdPrint(arg: u16, op: c_int) void;
+extern fn printTraceMatElement(where: u16) void;
 extern fn popSoftmenu() void;
 extern fn setConfirmationMode(func: ConfirmedFunction) void;
 extern fn fnClSigma(unused_but_mandatory_parameter: u16) void;
+extern fn calcSigma(max_offset: u16) void;
+extern fn fnCurveFitting(curve_fitting: u16) void;
+extern fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool;
+extern fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16;
+extern fn z47_frontier_matrix_get_register_as_int(regist: u16, as_array_pointer: bool) i16;
+extern fn z47_frontier_matrix_set_register_as_int(regist: u16, as_array_pointer: bool, to_store: i16) void;
+extern fn z47_frontier_matrix_open_rows() u16;
+extern fn z47_frontier_matrix_open_cols() u16;
+extern fn z47_frontier_matrix_commit_open_to_register() void;
+extern fn z47_frontier_matrix_calc_mode_normal_gui() void;
+extern fn z47_frontier_matrix_hide_cursor() void;
+extern fn z47_frontier_matrix_reload_open_matrix_from_register() void;
+extern fn z47_frontier_matrix_inc_dec_i(mode: u16) void;
+extern fn z47_frontier_matrix_inc_dec_j(mode: u16) void;
+extern fn z47_frontier_matrix_insert_row(add: bool) void;
+extern fn z47_frontier_matrix_insert_col(add: bool) void;
+extern fn z47_frontier_matrix_delete_row() void;
+extern fn z47_frontier_matrix_delete_col() void;
+extern fn z47_frontier_matrix_finalize_open_matrix_memory() void;
+extern fn leaveTamModeIfEnabled() void;
+extern fn saveStatsMatrix() void;
+extern fn getMatrixFromRegister(regist: u16) void;
+extern fn showMatrixEditor() void;
+extern fn mimEnter(commit: bool) void;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;
 extern fn fnExitAllMenus(unused_but_mandatory_parameter: u16) void;
@@ -188,11 +298,26 @@ extern fn fnRESET_Mya() void;
 extern fn createHOME() void;
 extern fn createPFN() void;
 extern fn initUserKeyArgument() void;
+extern fn showHideHourGlass() void;
+extern fn refreshStatusBar() void;
+extern fn statGraphReset() void;
+extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
+extern fn scanLabelsAndPrograms() void;
+extern fn removeUserItemAssignments(user_item: i16, user_item_name: [*:0]const u8) void;
 extern fn fnDeleteAllVariables(confirmation: u16) void;
 extern fn fnClFAll(confirmation: u16) void;
 extern fn z47_frontier_push_u32_to_x(value: u32) void;
 extern fn z47_frontier_release_saved_statistical_sums() void;
 extern fn z47_frontier_is_r47_fam() bool;
+extern fn z47_frontier_keys_to_user_case() void;
+extern fn z47_frontier_keys_from_user_case() void;
+extern fn z47_frontier_keys_user_layout_reset_case() void;
+extern fn z47_frontier_plot_set_plotstatmx_stats() void;
+extern fn z47_frontier_plot_set_plotstatmx_histo() void;
+extern fn z47_frontier_plot_set_statmx_histo() void;
+extern fn z47_frontier_plot_has_source_data() bool;
+extern fn z47_frontier_plot_clear_screen_for_graph_entry() void;
+extern fn z47_frontier_program_current_program_in_ram() bool;
 
 extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
 extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
@@ -227,7 +352,14 @@ extern fn z47_frontier_print_program_counter(program_number: u16, total_programs
 extern fn z47_frontier_format_register_label(register_no: u16, label: [*]u8, label_size: u16) void;
 extern fn z47_frontier_item_catalog_name(item: u16) [*:0]const u8;
 extern fn z47_frontier_item_softmenu_name(item: u16) [*:0]const u8;
+extern fn z47_frontier_print_backup_aim_message_area() void;
+extern fn z47_frontier_print_restore_aim_message_area() void;
+extern fn z47_frontier_snap_screenshot_with_message_backup() void;
+extern fn z47_frontier_snap_backup_tam(dst: [*]u8) void;
+extern fn z47_frontier_snap_restore_tam(src: [*]const u8) void;
 extern var numberOfPrograms: u16;
+extern fn tmpString_csv_out(nn: u8) void;
+extern fn fnShowVersion(option: u16) void;
 
 fn clampDisplayDigits(display_format_n: u16) u8 {
     const clamped: u16 = if (display_format_n > DSP_MAX) DSP_MAX else display_format_n;
@@ -248,7 +380,22 @@ fn isPrintableScalarType(dt: u32) bool {
 }
 
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnSNAP(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    resetShiftState();
+    refreshScreen(80);
+    z47_frontier_snap_screenshot_with_message_backup();
+
+    var tam_backup: [TAM_BUFFER_LENGTH]u8 = undefined;
+    z47_frontier_snap_backup_tam(&tam_backup);
+    if (calcMode == CM_AIM) {
+        fnP_Alpha(NOPARAM);
+    } else {
+        fnP_All_Regs(PRN_STK);
+    }
+    z47_frontier_snap_restore_tam(&tam_backup);
+
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
 pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
@@ -302,11 +449,13 @@ pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnNop(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
 }
 
 pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnCFGsettings(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    runFunction(@as(i16, @intCast(ITM_FF)));
+    showSoftmenu(-MNU_SYSFL);
 }
 
 pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
@@ -681,7 +830,14 @@ pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
         return;
     }
 
-    runtime.z47_frontier_retained_fnP_Alpha(register_no);
+    if (calcMode != CM_AIM) {
+        return;
+    }
+
+    z47_frontier_print_backup_aim_message_area();
+    create_filename(".REGS.TSV");
+    tmpString_csv_out(5);
+    z47_frontier_print_restore_aim_message_area();
 }
 
 pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
@@ -941,17 +1097,587 @@ pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c
 }
 
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnKeysManagement(choice);
+    switch (choice) {
+        TO_USER => {
+            z47_frontier_keys_to_user_case();
+        },
+        FROM_USER => {
+            z47_frontier_keys_from_user_case();
+        },
+        USER_R47f_g, USER_R47bk_fg, USER_R47fg_bk, USER_R47fg_g, USER_C47, USER_DM42 => {
+            calcModel = @as(u8, @intCast(choice));
+            fnClearFlag(FLAG_USER);
+            fnKeysManagement(USER_KRESET);
+            if (choice == USER_R47bk_fg) {
+                fnClearFlag(FLAG_HOME_TRIPLE);
+                fnSetFlag(FLAG_MYM_TRIPLE);
+            } else {
+                fnSetFlag(FLAG_HOME_TRIPLE);
+                fnClearFlag(FLAG_MYM_TRIPLE);
+            }
+            fnShowVersion(choice);
+        },
+        USER_KRESET => {
+            fnShowVersion(choice);
+            z47_frontier_keys_user_layout_reset_case();
+        },
+        USER_HRESET => {
+            createHOME();
+            showSoftmenu(-MNU_HOME);
+            fnShowVersion(choice);
+        },
+        USER_PRESET => {
+            createPFN();
+            showSoftmenu(-MNU_PFN);
+            fnShowVersion(choice);
+        },
+        USER_MRESET => {
+            fnRESET_MyM(0);
+            fnShowVersion(choice);
+        },
+        USER_ARESET => {
+            fnRESET_Mya();
+            fnShowVersion(choice);
+        },
+        ITM_RIBBON_C47, ITM_RIBBON_R47 => {
+            fnRESET_MyM(choice);
+            fnShowVersion(choice);
+            showSoftmenu(-MNU_MyMenu);
+        },
+        else => {},
+    }
 }
 
 pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnPlotStat(plot_mode);
+    var mode = plot_mode;
+
+    switch (mode) {
+        PLOT_ORTHOF, PLOT_START, PLOT_REV, PLOT_NXT, PLOT_LR => {
+            drawHistogram = 0;
+            z47_frontier_plot_set_plotstatmx_stats();
+        },
+        H_PLOT => {
+            drawHistogram = 1;
+            z47_frontier_plot_set_plotstatmx_histo();
+        },
+        H_NORM => {
+            drawHistogram = 1;
+            z47_frontier_plot_set_statmx_histo();
+            calcSigma(0);
+            mode = PLOT_LR;
+            lastPlotMode = PLOT_START;
+            lrSelectionHistobackup = lrSelection;
+            lrChosenHistobackup = lrChosen;
+            fnCurveFitting(CF_GAUSS_FITTING);
+        },
+        else => {},
+    }
+
+    if (!(calcMode == CM_PLOT_STAT or calcMode == CM_GRAPH)) {
+        z47_frontier_plot_clear_screen_for_graph_entry();
+    }
+
+    hourGlassIconEnabled = true;
+    showHideHourGlass();
+    refreshStatusBar();
+
+    if (z47_frontier_plot_has_source_data()) {
+        clearSystemFlag(FLAG_SCALE);
+
+        if (!(lastPlotMode == PLOT_NOTHING or lastPlotMode == PLOT_START)) {
+            mode = lastPlotMode;
+        }
+        calcMode = CM_PLOT_STAT;
+        statGraphReset();
+
+        if (mode == PLOT_START) {
+            plotSelection = 0;
+            roundedTicks = false;
+        } else {
+            if (mode == PLOT_LR and lrSelection != 0) {
+                plotSelection = lrSelection;
+                roundedTicks = false;
+            } else if (mode == H_PLOT or mode == H_NORM) {
+                calcMode = CM_PLOT_STAT;
+            }
+        }
+
+        refreshLcd(null);
+
+        switch (mode) {
+            H_PLOT, H_NORM => showSoftmenu(-MNU_HPLOT),
+            PLOT_LR => {
+                if (drawHistogram == 0) {
+                    showSoftmenu(-MNU_PLOT_ASSESS);
+                } else {
+                    showSoftmenu(-MNU_HPLOT);
+                }
+            },
+            PLOT_NXT, PLOT_REV => showSoftmenu(-MNU_PLOT_ASSESS),
+            PLOT_ORTHOF, PLOT_START => {
+                setSystemFlag(FLAG_SCALE);
+                showSoftmenu(-MNU_PLOT_SCATR);
+            },
+            PLOT_NOTHING => {},
+            else => {},
+        }
+
+        if ((mode != PLOT_START) and (mode != H_PLOT) and (mode != H_NORM)) {
+            fnPlotRegressionLine(mode);
+        } else {
+            lastPlotMode = mode;
+        }
+        return;
+    }
+
+    calcMode = CM_NORMAL;
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    return z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
+}
+
+pub export fn getJRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    return z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
+}
+
+pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
+}
+
+pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
+}
+
+fn matrixLastRow(rows: u16) i16 {
+    return @as(i16, @intCast(rows - 1));
+}
+
+fn matrixLastCol(cols: u16) i16 {
+    return @as(i16, @intCast(cols - 1));
+}
+
+fn matrixWrapEdgeFlag() void {
+    setSystemFlag(FLAG_WRAPEDG);
+}
+
+fn matrixWrapEndFlag() void {
+    setSystemFlag(FLAG_WRAPEND);
+}
+
+fn matrixAtTopLeft() bool {
+    return getIRegisterAsInt(true) == 0 and getJRegisterAsInt(true) == 0;
+}
+
+fn matrixAtBottomRight(rows: u16, cols: u16) bool {
+    return getIRegisterAsInt(true) == matrixLastRow(rows) and getJRegisterAsInt(true) == matrixLastCol(cols);
+}
+
+fn matrixAdvanceIByOneWithGrow(rows: u16) void {
+    const reached_last_row = getIRegisterAsInt(true) == matrixLastRow(rows);
+    const should_wrap_to_top = !getSystemFlag(@as(c_int, @intCast(FLAG_GROW))) and reached_last_row;
+    if (should_wrap_to_top) {
+        setIRegisterAsInt(true, 0);
+    } else {
+        setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
+    }
+}
+
+fn matrixDecIWithBottomWrap(rows: u16) void {
+    if (getIRegisterAsInt(true) == 0) {
+        setIRegisterAsInt(true, matrixLastRow(rows));
+    } else {
+        setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
+    }
+}
+
+fn matrixIncJWithLeftWrap(cols: u16) void {
+    if (getJRegisterAsInt(true) == matrixLastCol(cols)) {
+        setJRegisterAsInt(true, 0);
+    } else {
+        setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
+    }
+}
+
+fn matrixDecJWithRightWrap(cols: u16) void {
+    if (getJRegisterAsInt(true) == 0) {
+        setJRegisterAsInt(true, matrixLastCol(cols));
+    } else {
+        setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
+    }
+}
+
+fn matrixWrapNegativeI(rows: u16, cols: u16) void {
+    setIRegisterAsInt(true, matrixLastRow(rows));
+    matrixWrapEdgeFlag();
+    matrixDecJWithRightWrap(cols);
+    if (matrixAtBottomRight(rows, cols)) {
+        matrixWrapEndFlag();
+    }
+}
+
+fn matrixWrapOverflowI(rows: u16, cols: u16) void {
+    _ = rows;
+    setIRegisterAsInt(true, 0);
+    matrixWrapEdgeFlag();
+    matrixIncJWithLeftWrap(cols);
+    if (matrixAtTopLeft()) {
+        matrixWrapEndFlag();
+    }
+}
+
+fn matrixWrapNegativeJ(rows: u16, cols: u16) void {
+    setJRegisterAsInt(true, matrixLastCol(cols));
+    matrixWrapEdgeFlag();
+    matrixDecIWithBottomWrap(rows);
+    if (matrixAtBottomRight(rows, cols)) {
+        matrixWrapEndFlag();
+    }
+}
+
+fn matrixWrapOverflowJ(rows: u16, cols: u16) void {
+    _ = cols;
+    setJRegisterAsInt(true, 0);
+    matrixWrapEdgeFlag();
+    matrixAdvanceIByOneWithGrow(rows);
+    if (matrixAtTopLeft()) {
+        matrixWrapEndFlag();
+    }
+}
+
+fn matrixModeUndefinedError() void {
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+fn matrixInEditorMode() bool {
+    return calcMode == CM_MIM;
+}
+
+fn matrixPrepareMutation() bool {
+    if (calcMode != CM_MIM) {
+        matrixModeUndefinedError();
+        return false;
+    }
+    mimEnter(false);
+    return true;
+}
+
+fn matrixFinishMutation() void {
+    mimEnter(true);
+}
+
+fn matrixCommitPositionChange(row: u16, col: u16) void {
+    z47_frontier_matrix_commit_open_to_register();
+    setIRegisterAsInt(false, @as(i16, @intCast(row)));
+    setJRegisterAsInt(false, @as(i16, @intCast(col)));
+    z47_frontier_matrix_calc_mode_normal_gui();
+}
+
+pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
+    clearSystemFlag(FLAG_WRAPEDG);
+    clearSystemFlag(FLAG_WRAPEND);
+
+    if (getIRegisterAsInt(true) < 0) {
+        matrixWrapNegativeI(rows, cols);
+    } else {
+        if (getIRegisterAsInt(true) == @as(i16, @intCast(rows))) {
+            matrixWrapOverflowI(rows, cols);
+        }
+    }
+
+    if (getJRegisterAsInt(true) < 0) {
+        matrixWrapNegativeJ(rows, cols);
+    } else {
+        if (getJRegisterAsInt(true) == @as(i16, @intCast(cols))) {
+            matrixWrapOverflowJ(rows, cols);
+        }
+    }
+
+    return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
 }
 
 pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnEditMatrix(regist);
+    const reg: u16 = if (regist == NOPARAM) @as(u16, @intCast(REGISTER_X)) else regist;
+
+    if (z47_frontier_matrix_is_register_matrix_vector(reg) and z47_frontier_matrix_vector_polar_mode(reg) != 0) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+    }
+
+    leaveTamModeIfEnabled();
+    saveStatsMatrix();
+
+    const dt = getRegisterDataType(@as(i16, @intCast(reg)));
+    if (dt == dtReal34Matrix or dt == dtComplex34Matrix) {
+        calcMode = CM_MIM;
+        matrixIndex = reg;
+        getMatrixFromRegister(reg);
+
+        setIRegisterAsInt(true, 0);
+        setJRegisterAsInt(true, 0);
+        aimBuffer[0] = 0;
+        nimBufferDisplay[0] = 0;
+
+        showMatrixEditor();
+        refreshScreen(80);
+        printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
+        return;
+    }
+
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnOldMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    if (calcMode == CM_MIM) {
+        aimBuffer[0] = 0;
+        nimBufferDisplay[0] = 0;
+        z47_frontier_matrix_hide_cursor();
+        z47_frontier_matrix_reload_open_matrix_from_register();
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnGoToElement(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    if (calcMode == CM_MIM) {
+        mimEnter(false);
+        runFunction(ITM_M_GOTO_ROW);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnGoToRow(row: u16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        tmpRow = row;
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnGoToColumn(col: u16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        const rows = z47_frontier_matrix_open_rows();
+        const cols = z47_frontier_matrix_open_cols();
+
+        if (tmpRow == 0 or tmpRow > rows or col == 0 or col > cols) {
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, @as(i16, @intCast(REGISTER_X)));
+            return;
+        }
+
+        z47_frontier_matrix_commit_open_to_register();
+        setIRegisterAsInt(false, @as(i16, @intCast(tmpRow)));
+        setJRegisterAsInt(false, @as(i16, @intCast(col)));
+        z47_frontier_matrix_calc_mode_normal_gui();
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
+    if (grow_flag != 0) {
+        setSystemFlag(FLAG_GROW);
+    } else {
+        clearSystemFlag(FLAG_GROW);
+    }
+}
+
+pub export fn fnIncDecI(mode: u16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        z47_frontier_matrix_inc_dec_i(mode);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        z47_frontier_matrix_inc_dec_j(mode);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn _fnInsRow(add: bool) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        mimEnter(false);
+        z47_frontier_matrix_insert_row(add);
+        mimEnter(true);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn _fnInsCol(add: bool) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        mimEnter(false);
+        z47_frontier_matrix_insert_col(add);
+        mimEnter(true);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnInsRow(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    _fnInsRow(false);
+}
+
+pub export fn fnAddRow(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    _fnInsRow(true);
+}
+
+pub export fn fnInsCol(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    _fnInsCol(false);
+}
+
+pub export fn fnAddCol(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    _fnInsCol(true);
+}
+
+pub export fn fnDelRow(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    if (calcMode == CM_MIM) {
+        mimEnter(false);
+        z47_frontier_matrix_delete_row();
+        mimEnter(true);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
+    _ = unused_param_but_mandatory;
+    if (calcMode == CM_MIM) {
+        mimEnter(false);
+        z47_frontier_matrix_delete_col();
+        mimEnter(true);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn mimFinalize() callconv(.c) void {
+    z47_frontier_matrix_finalize_open_matrix_memory();
+    matrixIndex = INVALID_VARIABLE;
+}
+
+pub export fn mimRestore() callconv(.c) void {
+    const idx = matrixIndex;
+    mimFinalize();
+    if (idx != INVALID_VARIABLE) {
+        getMatrixFromRegister(idx);
+        matrixIndex = idx;
+    }
+}
+
+pub export fn mimAddNumber(item: i16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        runtime.z47_frontier_retained_mimAddNumber(item);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
+    if (calcMode == CM_MIM) {
+        runtime.z47_frontier_retained_mimRunFunction(func, param);
+        return;
+    }
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnClPAll(confirmation);
+    if (confirmation == NOT_CONFIRMED) {
+        setConfirmationMode(&fnClPAll);
+        return;
+    }
+
+    removeUserItemAssignments(3, "");
+
+    const was_in_ram = z47_frontier_program_current_program_in_ram();
+    resizeProgramMemory(1);
+
+    beginOfProgramMemory[0] = @as(u8, @intCast((ITM_END >> 8) | 0x80));
+    beginOfProgramMemory[1] = @as(u8, @intCast(ITM_END & 0xff));
+    beginOfProgramMemory[2] = 255;
+    beginOfProgramMemory[3] = 255;
+
+    firstFreeProgramByte = beginOfProgramMemory + 2;
+    freeProgramBytes = 0;
+    temporaryInformation = TI_NO_INFO;
+    programRunStop = PGM_STOPPED;
+
+    if (was_in_ram) {
+        currentStep = beginOfProgramMemory;
+        firstDisplayedStep = beginOfProgramMemory;
+        firstDisplayedLocalStepNumber = 0;
+        currentLocalStepNumber = 1;
+        beginOfCurrentProgram = beginOfProgramMemory;
+        endOfCurrentProgram = firstFreeProgramByte;
+    }
+
+    scanLabelsAndPrograms();
+    if (programRunStop != PGM_RUNNING) {
+        temporaryInformation = TI_DEL_ALL_PRGMS;
+    } else {
+        temporaryInformation = TI_NO_INFO;
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
+}
+
+pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
+    switch (plot_mode) {
+        PLOT_ORTHOF => {
+            plotSelection = CF_ORTHOGONAL_FITTING;
+            lrChosen = CF_ORTHOGONAL_FITTING;
+        },
+        PLOT_NXT => {
+            plotSelection = plotSelection << 1;
+            if (plotSelection == 0) {
+                plotSelection = 1;
+            }
+
+            while ((plotSelection != ((if (lrSelection == 0) @as(u16, 1023) else lrSelection) & plotSelection)) and (plotSelection < 1024)) {
+                plotSelection = plotSelection << 1;
+            }
+
+            if (plotSelection >= 1024) {
+                plotSelection = 0;
+            }
+        },
+        PLOT_REV => {
+            if (plotSelection == 0) {
+                plotSelection = 1024;
+            }
+            plotSelection = plotSelection >> 1;
+            if (plotSelection >= 1024) {
+                plotSelection = 0;
+            }
+
+            while ((plotSelection != ((if (lrSelection == 0) @as(u16, 1023) else lrSelection) & plotSelection)) and (plotSelection < 1024) and (plotSelection > 0)) {
+                plotSelection = plotSelection >> 1;
+            }
+        },
+        PLOT_LR => {
+            plotSelection = lrChosen;
+            if (plotSelection == 0) {
+                plotSelection = 1;
+            }
+            while ((plotSelection != ((if (lrSelection == 0) @as(u16, 1023) else lrSelection) & plotSelection)) and (plotSelection < 1024)) {
+                plotSelection = plotSelection << 1;
+            }
+            if (plotSelection >= 1024) {
+                plotSelection = 0;
+            }
+        },
+        PLOT_START, PLOT_NOTHING => {},
+        else => {},
+    }
 }

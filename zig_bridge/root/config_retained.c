@@ -75,3 +75,43 @@ void z47_frontier_retained_fnKeysManagement(uint16_t choice);
 #define fnClAll z47_frontier_retained_fnClAll
 #define fnKeysManagement z47_frontier_retained_fnKeysManagement
 #include "../../src/c47/config.c"
+
+void z47_frontier_keys_to_user_case(void) {
+	if(Norm_Key_00_key != -1) {
+		kbd_usr[Norm_Key_00_key].primary = Norm_Key_00.func;
+		setUserKeyArgument(Norm_Key_00_key * 6, Norm_Key_00.funcParam);
+		fnRefreshState();
+		fnSetFlag(FLAG_USER);
+	}
+	else {
+		Norm_Key_00.used = false;
+		displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+	}
+}
+
+void z47_frontier_keys_from_user_case(void) {
+	if(Norm_Key_00_key != -1) {
+		Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
+		Norm_Key_00.funcParam[0] = 0;
+		Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+		char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
+		if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL))) {
+			strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));
+		}
+		fnRefreshState();
+		fnClearFlag(FLAG_USER);
+	}
+	else {
+		Norm_Key_00.used = false;
+		displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+	}
+}
+
+void z47_frontier_keys_user_layout_reset_case(void) {
+	xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));
+	Norm_Key_00.func = Norm_Key_00_item_in_layout;
+	Norm_Key_00.funcParam[0] = 0;
+	Norm_Key_00.used = false;
+	fnRefreshState();
+	fnClearFlag(FLAG_USER);
+}

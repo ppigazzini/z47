@@ -211,3 +211,11 @@ const char *z47_frontier_item_catalog_name(uint16_t item) {
 const char *z47_frontier_item_softmenu_name(uint16_t item) {
 	return indexOfItems[item].itemSoftmenuName;
 }
+
+void z47_frontier_print_backup_aim_message_area(void) {
+	xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);
+}
+
+void z47_frontier_print_restore_aim_message_area(void) {
+	xcopy(aimBuffer, tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);
+}
