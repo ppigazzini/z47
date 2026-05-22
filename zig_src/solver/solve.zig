@@ -47,3 +47,7 @@ pub export fn fnPgmInt(label: u16) callconv(.c) void {
 
     runtime.reportOutOfRangePgmInt(label);
 }
+
+pub export fn fnIntegrate(label_or_variable: u16) callconv(.c) void {
+    runtime.z47_solver_retained_fnIntegrate(label_or_variable);
+}
