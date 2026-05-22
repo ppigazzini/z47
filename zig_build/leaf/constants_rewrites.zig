@@ -100,6 +100,15 @@ pub fn addParityExecutable(
     optimize: std.builtin.OptimizeMode,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
+    const parity_driver = b.addObject(.{
+        .name = "constants-parity-driver",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/tests/constants/constants_parity.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
     const exe = b.addExecutable(.{
         .name = "constants-parity",
         .root_module = b.createModule(.{
@@ -113,7 +122,7 @@ pub fn addParityExecutable(
     exe.root_module.addIncludePath(b.path("zig_build/tests/constants"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/constants/constants_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/constants/constants_oracle.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/constants/constants_parity.c"), .flags = &.{} });
+    exe.root_module.addObject(parity_driver);
     exe.root_module.addObject(runtime_object);
     return exe;
 }

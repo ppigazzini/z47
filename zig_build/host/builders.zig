@@ -79,7 +79,7 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
-    gtk_gui_rewrites.addToModule(b, exe.root_module, build_common.common_gtk_c_flags);
+    gtk_gui_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags);
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_runtime_helpers.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });
