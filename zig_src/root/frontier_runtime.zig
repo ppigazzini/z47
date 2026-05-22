@@ -7,3 +7,4 @@ pub extern fn z47_frontier_retained_fnP_PrinterOnOff(op: u16) void;
 pub extern fn z47_frontier_retained_fnKeysManagement(choice: u16) void;
 pub extern fn z47_frontier_retained_fnPlotStat(plot_mode: u16) void;
 pub extern fn z47_frontier_retained_fnEditMatrix(regist: u16) void;
+pub extern fn z47_frontier_retained_fnClPAll(confirmation: u16) void;
