@@ -5,6 +5,7 @@ const replaced_core_sources = [_][]const u8{
     "solver/integrate.c",
     "solver/tvm.c",
     "solver/sumprod.c",
+    "solver/isumprod.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
@@ -15,6 +16,7 @@ const runtime_helper_sources = [_][]const u8{
     "zig_bridge/solver/tvm_runtime_helpers.c",
     "zig_bridge/solver/tvm_retained.c",
     "zig_bridge/solver/sumprod_retained.c",
+    "zig_bridge/solver/isumprod_retained.c",
 };
 
 fn addRuntimeObject(
