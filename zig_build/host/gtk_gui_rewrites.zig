@@ -2,6 +2,8 @@ const std = @import("std");
 
 const retained_gtk_sources = [_][]const u8{
     "hal/gui.c",
+    "hal/audio.c",
+    "hal/print_ir.c",
 };
 
 const runtime_helper_sources = [_][]const u8{};
@@ -43,5 +45,28 @@ pub fn addToModule(
             .link_libc = true,
         }),
     });
+
+    const gui_wrappers = b.addObject(.{
+        .name = b.fmt("{s}-gtk-gui-wrappers", .{name_prefix}),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/host/gtk_gui_wrappers.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
+    const hal_runtime = b.addObject(.{
+        .name = b.fmt("{s}-gtk-hal-runtime", .{name_prefix}),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/host/gtk_hal_runtime.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
     module.addObject(signal_wrappers);
+    module.addObject(gui_wrappers);
+    module.addObject(hal_runtime);
 }

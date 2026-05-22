@@ -17,6 +17,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   #include "gtkGui.h"
   extern gboolean z47_btnPressed_signal(GtkWidget *widget, GdkEvent *event, gpointer data);
   extern gboolean z47_btnReleased_signal(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gboolean z47_btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gboolean z47_btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -5266,16 +5268,6 @@ void check_all_btn_widgets_for_consistency(void) {
 }
 #endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
 
-  static gboolean btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    btnFnPressed(widget, event, data);
-    return FALSE;  // Let GTK continue event processing
-  }
-
-  static gboolean btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    btnFnReleased(widget, event, data);
-    return FALSE;  // Let GTK continue event processing
-  }
-
 static guint ui_settle_timer = 0;
 
 // Helper to clear the active flag after UI settles
@@ -5537,18 +5529,18 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       gtk_widget_set_name(btn15, "calcKey");
       gtk_widget_set_name(btn16, "calcKey");
 
-      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "1");
-      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "2");
-      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "3");
-      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "4");
-      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "5");
-      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(btnFnPressed_wrapper),  "6");
-      g_signal_connect(btn11, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "1");
-      g_signal_connect(btn12, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "2");
-      g_signal_connect(btn13, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "3");
-      g_signal_connect(btn14, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "4");
-      g_signal_connect(btn15, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "5");
-      g_signal_connect(btn16, "button-release-event", G_CALLBACK(btnFnReleased_wrapper), "6");
+      g_signal_connect(btn11, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "1");
+      g_signal_connect(btn12, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "2");
+      g_signal_connect(btn13, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "3");
+      g_signal_connect(btn14, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "4");
+      g_signal_connect(btn15, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "5");
+      g_signal_connect(btn16, "button-press-event",   G_CALLBACK(z47_btnFnPressed_wrapper),  "6");
+      g_signal_connect(btn11, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "1");
+      g_signal_connect(btn12, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "2");
+      g_signal_connect(btn13, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "3");
+      g_signal_connect(btn14, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "4");
+      g_signal_connect(btn15, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "5");
+      g_signal_connect(btn16, "button-release-event", G_CALLBACK(z47_btnFnReleased_wrapper), "6");
 
       gtk_widget_set_focus_on_click(btn11, FALSE);
       gtk_widget_set_focus_on_click(btn12, FALSE);
