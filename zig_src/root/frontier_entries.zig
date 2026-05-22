@@ -31,3 +31,7 @@ pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
 pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
     runtime.z47_frontier_retained_fnPlotStat(plot_mode);
 }
+
+pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
+    runtime.z47_frontier_retained_fnEditMatrix(regist);
+}
