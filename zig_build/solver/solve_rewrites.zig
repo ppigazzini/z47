@@ -14,11 +14,8 @@ const replaced_core_sources = [_][]const u8{
 const runtime_helper_sources = [_][]const u8{
     "zig_bridge/solver/equation_retained.c",
     "zig_bridge/solver/graph_retained.c",
-    "zig_bridge/solver/solve_runtime_helpers.c",
     "zig_bridge/solver/solve_retained.c",
-    "zig_bridge/solver/integrate_runtime_helpers.c",
     "zig_bridge/solver/integrate_retained.c",
-    "zig_bridge/solver/tvm_runtime_helpers.c",
     "zig_bridge/solver/tvm_retained.c",
     "zig_bridge/solver/sumprod_retained.c",
     "zig_bridge/solver/isumprod_retained.c",
