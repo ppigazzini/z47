@@ -19,6 +19,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gboolean z47_btnReleased_signal(GtkWidget *widget, GdkEvent *event, gpointer data);
   extern gboolean z47_btnFnPressed_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data);
   extern gboolean z47_btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gint z47_destroyCalc(GtkWidget *widget, GdkEventAny *event, gpointer data);
+  extern gboolean z47_onConfigureEvent(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -93,28 +95,11 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     char *cssData;
   #endif // (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 
-
-
-  static gint destroyCalc(GtkWidget* w, GdkEventAny* e, gpointer data) {
-    fnStopTimerApp();
-    saveCalc();
-    gtk_main_quit();
-
-    return 0;
-  }
-
-
   // The screen-changed event does not seem to be generated reliably.
   //static void onScreenChanged(GtkWidget *w, GdkScreen *oldScreen, gpointer data) {
   //  debugf("Screen changed: force a redraw");
   //  gtk_widget_queue_draw(w);
   //}
-
-  static gboolean onConfigureEvent(GtkWidget *w, GdkEventConfigure *event, gpointer data) {
-    //debugf("Configure event: force a redraw");
-    gtk_widget_queue_draw(w);
-    return FALSE;
-  }
 
 
 //  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
@@ -5358,12 +5343,12 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       #else
         gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
       #endif // CALCMODEL == USER_R47
-      g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
+      g_signal_connect(frmCalc, "destroy", G_CALLBACK(z47_destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
-      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onConfigureEvent), NULL);
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onConfigureEvent), NULL);
 
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
       g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
