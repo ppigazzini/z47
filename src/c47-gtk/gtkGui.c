@@ -21,6 +21,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gboolean z47_btnFnReleased_wrapper(GtkWidget *widget, GdkEvent *event, gpointer data);
   extern gint z47_destroyCalc(GtkWidget *widget, GdkEventAny *event, gpointer data);
   extern gboolean z47_onConfigureEvent(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
+  extern gboolean z47_onUIActivity(GtkWidget *widget, GdkEvent *event, gpointer data);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -5253,35 +5254,6 @@ void check_all_btn_widgets_for_consistency(void) {
 }
 #endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
 
-static guint ui_settle_timer = 0;
-
-// Helper to clear the active flag after UI settles
-static gboolean clear_ui_active_flag(gpointer data) {
-    ui_is_active = FALSE;
-    ui_settle_timer = 0;
-    return FALSE;
-}
-
-// Single handler for all UI events
-static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
-  static gint64 first_call_time = 0;
-
-  // Record first call time
-  if(first_call_time == 0) {
-      first_call_time = g_get_monotonic_time();
-  }
-  // Ignore events in first 500ms after startup
-  if((g_get_monotonic_time() - first_call_time) < 500000) {
-      return FALSE;
-  }
-  ui_is_active = TRUE;
-  if(ui_settle_timer) {
-      g_source_remove(ui_settle_timer);
-  }
-  ui_settle_timer = g_timeout_add(100, clear_ui_active_flag, NULL);
-  return FALSE;
-}
-
 
   /********************************************//**
   * \brief Creates the calc's GUI window with all the widgets
@@ -5350,10 +5322,10 @@ static gboolean onUIActivity(GtkWidget *w, GdkEvent *event, gpointer data) {
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onConfigureEvent), NULL);
 
-      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(onUIActivity), NULL);
-      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(onUIActivity), NULL);
-      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(onUIActivity), NULL);
-      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(onUIActivity), NULL);
+      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onUIActivity), NULL);
+      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(z47_onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(z47_onUIActivity), NULL);
+      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(z47_onUIActivity), NULL);
 
       #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
         gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
