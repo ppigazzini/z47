@@ -10,6 +10,7 @@ pub extern fn z47_solver_retained_fnIntegrateYX(label_or_variable: u16) void;
 pub extern fn z47_solver_retained_fnProgrammableSum(label: u16) void;
 pub extern fn z47_solver_retained_fnProgrammableProduct(label: u16) void;
 pub extern fn z47_solver_retained_fnProgrammableiSum(label: u16) void;
+pub extern fn z47_solver_retained_fnProgrammableiProduct(label: u16) void;
 
 extern fn z47_solver_is_label(label: u16) bool_t;
 extern fn z47_solver_is_stack_register(label: u16) bool_t;
