@@ -81,3 +81,7 @@ pub export fn fnProgrammableiSum(label: u16) callconv(.c) void {
 pub export fn fnProgrammableiProduct(label: u16) callconv(.c) void {
     runtime.z47_solver_retained_fnProgrammableiProduct(label);
 }
+
+pub export fn fn1stDeriv(label: u16) callconv(.c) void {
+    runtime.z47_solver_retained_fn1stDeriv(label);
+}
