@@ -15,6 +15,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   #include <gdk/gdk.h>
 
   #include "gtkGui.h"
+  extern gboolean z47_btnPressed_signal(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gboolean z47_btnReleased_signal(GtkWidget *widget, GdkEvent *event, gpointer data);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
