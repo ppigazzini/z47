@@ -8,6 +8,7 @@ const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_INTING: c_uint = 0xc025;
 const FLAG_SOLVING: c_uint = 0xc026;
+const FLAG_ASLIFT: c_uint = 0xc023;
 const FLAG_WRAPEND: c_uint = 0xc01a;
 const FLAG_WRAPEDG: c_uint = 0xc03f;
 const FLAG_FRCYC: c_uint = 0x8041;
@@ -69,6 +70,25 @@ const DEC_FLAG: u16 = 1;
 const ITM_RIBBON_C47: u16 = 2509;
 const ITM_RIBBON_R47: u16 = 2511;
 const ITM_M_GOTO_ROW: i16 = 992;
+const ITM_ENTER: i16 = 35;
+const ITM_CHS: i16 = 97;
+const ITM_CONSTpi: i16 = 109;
+const ITM_0: i16 = 540;
+const ITM_1: i16 = 541;
+const ITM_2: i16 = 542;
+const ITM_3: i16 = 543;
+const ITM_4: i16 = 544;
+const ITM_5: i16 = 545;
+const ITM_6: i16 = 546;
+const ITM_7: i16 = 547;
+const ITM_8: i16 = 548;
+const ITM_9: i16 = 549;
+const ITM_PERIOD: i16 = 820;
+const ITM_EXPONENT: i16 = 990;
+const ITM_CC: i16 = 1730;
+const ITM_BACKSPACE: i16 = 1738;
+const ITM_op_j_pol: i16 = 1795;
+const ITM_op_j: i16 = 1830;
 const ITM_END: u16 = 1458;
 const ITM_FF: u16 = 112;
 const MNU_SYSFL: i16 = 1379;
@@ -284,11 +304,41 @@ extern fn z47_frontier_matrix_insert_col(add: bool) void;
 extern fn z47_frontier_matrix_delete_row() void;
 extern fn z47_frontier_matrix_delete_col() void;
 extern fn z47_frontier_matrix_finalize_open_matrix_memory() void;
+extern fn z47_frontier_matrix_aim_is_empty() bool;
+extern fn z47_frontier_matrix_reset_cursor_pos() void;
+extern fn z47_frontier_matrix_init_aim_exponent() void;
+extern fn z47_frontier_matrix_init_aim_period() void;
+extern fn z47_frontier_matrix_init_aim_digit() void;
+extern fn z47_frontier_matrix_aim_is_single_plus_digit() bool;
+extern fn z47_frontier_matrix_aim_clear_single_plus_digit() void;
+extern fn z47_frontier_matrix_zero_current_element() void;
+extern fn z47_frontier_matrix_change_sign_current_element() void;
+extern fn z47_frontier_matrix_make_j_element() void;
+extern fn z47_frontier_matrix_set_current_to_pi() void;
+extern fn z47_frontier_matrix_can_append_pi_literal() bool;
+extern fn z47_frontier_matrix_append_pi_literal_and_enter() void;
+extern fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void;
+extern fn z47_frontier_matrix_open_is_complex() bool;
+extern fn z47_frontier_matrix_capture_selected_before() void;
+extern fn z47_frontier_matrix_load_selected_into_register_x() void;
+extern fn z47_frontier_matrix_run_item_function(func: i16, param: u16) void;
+extern fn z47_frontier_matrix_register_type(reg: u16) u32;
+extern fn z47_frontier_matrix_convert_register_x_long_to_real34() void;
+extern fn z47_frontier_matrix_convert_register_x_short_to_real34() void;
+extern fn z47_frontier_matrix_apply_register_x_to_selected() bool;
+extern fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void;
+extern fn z47_frontier_matrix_update_height_cache() void;
+extern fn z47_frontier_matrix_softmenu_has_m_edit() bool;
+extern fn z47_frontier_matrix_softmenu_top_is_m_edit() bool;
+extern fn z47_frontier_matrix_show_m_edit_softmenu() void;
+extern fn z47_frontier_matrix_scroll_row_get() u16;
+extern fn z47_frontier_matrix_scroll_row_set(row: u16) void;
+extern fn z47_frontier_matrix_render_editor_body(col_vector: bool, rows: i16, cols: i16, mat_sel_row: i16, mat_sel_col: i16) void;
+extern fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void;
+extern fn z47_frontier_matrix_mim_enter_commit_open_matrix() void;
 extern fn leaveTamModeIfEnabled() void;
 extern fn saveStatsMatrix() void;
 extern fn getMatrixFromRegister(regist: u16) void;
-extern fn showMatrixEditor() void;
-extern fn mimEnter(commit: bool) void;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;
 extern fn fnExitAllMenus(unused_but_mandatory_parameter: u16) void;
@@ -318,6 +368,8 @@ extern fn z47_frontier_plot_set_statmx_histo() void;
 extern fn z47_frontier_plot_has_source_data() bool;
 extern fn z47_frontier_plot_clear_screen_for_graph_entry() void;
 extern fn z47_frontier_program_current_program_in_ram() bool;
+extern fn z47_frontier_dynamic_menu_softmenu_id() i16;
+extern fn z47_frontier_dynamic_menu_item() i16;
 
 extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
 extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
@@ -445,7 +497,11 @@ pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
 }
 
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnDynamicMenu(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    std.debug.print("fnDynamicMenu:\n       softmenuId = {d}\n  dynamicMenuItem = {d}\n", .{
+        z47_frontier_dynamic_menu_softmenu_id(),
+        z47_frontier_dynamic_menu_item(),
+    });
 }
 
 pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -1354,6 +1410,18 @@ fn matrixInEditorMode() bool {
     return calcMode == CM_MIM;
 }
 
+fn matrixEnsureEditorMode() bool {
+    if (matrixInEditorMode()) {
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn matrixEnsureEditorModeOrReturn() bool {
+    return matrixEnsureEditorMode();
+}
+
 fn matrixPrepareMutation() bool {
     if (calcMode != CM_MIM) {
         matrixModeUndefinedError();
@@ -1372,6 +1440,390 @@ fn matrixCommitPositionChange(row: u16, col: u16) void {
     setIRegisterAsInt(false, @as(i16, @intCast(row)));
     setJRegisterAsInt(false, @as(i16, @intCast(col)));
     z47_frontier_matrix_calc_mode_normal_gui();
+}
+
+const MatrixEditorGeometry = struct {
+    rows: i16,
+    cols: i16,
+    col_vector: bool,
+};
+
+const MatrixEditorSelection = struct {
+    row: i16,
+    col: i16,
+};
+
+fn matrixEditorLoadGeometry() MatrixEditorGeometry {
+    var rows: i16 = @as(i16, @intCast(z47_frontier_matrix_open_rows()));
+    var cols: i16 = @as(i16, @intCast(z47_frontier_matrix_open_cols()));
+    var col_vector = false;
+
+    if (cols == 1 and rows > 1) {
+        col_vector = true;
+        cols = rows;
+        rows = 1;
+    }
+
+    return .{ .rows = rows, .cols = cols, .col_vector = col_vector };
+}
+
+fn matrixEditorEnsureSoftmenu() void {
+    if (!z47_frontier_matrix_softmenu_has_m_edit()) {
+        z47_frontier_matrix_show_m_edit_softmenu();
+    }
+    if (z47_frontier_matrix_softmenu_top_is_m_edit()) {
+        z47_frontier_matrix_calc_mode_normal_gui();
+    }
+}
+
+fn matrixEditorWrapCoordinates(geometry: MatrixEditorGeometry) bool {
+    const wrap_rows: u16 = if (geometry.col_vector) @as(u16, @intCast(geometry.cols)) else @as(u16, @intCast(geometry.rows));
+    const wrap_cols: u16 = if (geometry.col_vector) 1 else @as(u16, @intCast(geometry.cols));
+    return wrapIJ(wrap_rows, wrap_cols);
+}
+
+fn matrixEditorApplyWrapGrowthIfNeeded(geometry: MatrixEditorGeometry) void {
+    if (matrixEditorWrapCoordinates(geometry)) {
+        z47_frontier_matrix_insert_row(false);
+        z47_frontier_matrix_commit_open_to_register();
+    }
+}
+
+fn matrixEditorReadSelection(geometry: MatrixEditorGeometry) MatrixEditorSelection {
+    return .{
+        .row = if (geometry.col_vector) getJRegisterAsInt(true) else getIRegisterAsInt(true),
+        .col = if (geometry.col_vector) getIRegisterAsInt(true) else getJRegisterAsInt(true),
+    };
+}
+
+fn matrixEditorComputeScrollRow(rows: i16, selected_row: i16, current_scroll_row: i16) i16 {
+    if (selected_row == 0 or rows <= 5) {
+        return 0;
+    }
+    if (selected_row == rows - 1) {
+        return selected_row - 4;
+    }
+    if (selected_row < current_scroll_row + 1) {
+        return selected_row - 1;
+    }
+    if (selected_row > current_scroll_row + 3) {
+        return selected_row - 3;
+    }
+    return current_scroll_row;
+}
+
+fn matrixEditorUpdateScrollRow(geometry: MatrixEditorGeometry, selection: MatrixEditorSelection) void {
+    const existing: i16 = @as(i16, @intCast(z47_frontier_matrix_scroll_row_get()));
+    const next = matrixEditorComputeScrollRow(geometry.rows, selection.row, existing);
+    z47_frontier_matrix_scroll_row_set(@as(u16, @intCast(next)));
+}
+
+fn matrixEditorRender(geometry: MatrixEditorGeometry, selection: MatrixEditorSelection) void {
+    z47_frontier_matrix_render_editor_body(geometry.col_vector, geometry.rows, geometry.cols, selection.row, selection.col);
+}
+
+fn matrixEditorRefreshView() void {
+    matrixEditorEnsureSoftmenu();
+
+    const geometry = matrixEditorLoadGeometry();
+    matrixEditorApplyWrapGrowthIfNeeded(geometry);
+
+    const selection = matrixEditorReadSelection(geometry);
+    matrixEditorUpdateScrollRow(geometry, selection);
+    matrixEditorRender(geometry, selection);
+}
+
+fn matrixMimRunEnterValidation() bool {
+    return matrixEnsureEditorModeOrReturn();
+}
+
+fn matrixMimRunLiftFlagSnapshot() bool {
+    return getSystemFlag(@as(c_int, @intCast(FLAG_ASLIFT)));
+}
+
+fn matrixMimRunHasError() bool {
+    return lastErrorCode != ERROR_NONE;
+}
+
+fn matrixMimRunErrorCode() u8 {
+    return lastErrorCode;
+}
+
+fn matrixMimRunWasSuccessful() bool {
+    return !matrixMimRunHasError();
+}
+
+fn matrixMimRunClearErrorState() void {
+    lastErrorCode = ERROR_NONE;
+}
+
+fn matrixMimRunPrepareExecution() void {
+    z47_frontier_matrix_capture_selected_before();
+    mimEnter(true);
+    clearSystemFlag(FLAG_ASLIFT);
+    matrixMimRunClearErrorState();
+    z47_frontier_matrix_load_selected_into_register_x();
+}
+
+fn matrixMimRunExecute(func: i16, param: u16) void {
+    z47_frontier_matrix_run_item_function(func, param);
+}
+
+fn matrixMimRunTypeNeedsConversion(register_type: u32) bool {
+    return register_type == dtLongInteger or register_type == dtShortInteger;
+}
+
+fn matrixMimRunTypeIsAccepted(register_type: u32) bool {
+    return register_type == dtReal34 or register_type == dtComplex34;
+}
+
+fn matrixMimRunConvertRegisterXToReal34IfNeeded(register_type: u32) void {
+    if (register_type == dtLongInteger) {
+        z47_frontier_matrix_convert_register_x_long_to_real34();
+        return;
+    }
+    if (register_type == dtShortInteger) {
+        z47_frontier_matrix_convert_register_x_short_to_real34();
+    }
+}
+
+fn matrixMimRunNormalizeRegisterXType() void {
+    const register_type = z47_frontier_matrix_register_type(@as(u16, @intCast(REGISTER_X)));
+    if (matrixMimRunTypeNeedsConversion(register_type)) {
+        matrixMimRunConvertRegisterXToReal34IfNeeded(register_type);
+        return;
+    }
+    if (matrixMimRunTypeIsAccepted(register_type)) {
+        return;
+    }
+    _ = matrixMimRunErrorCode();
+    lastErrorCode = ERROR_INVALID_DATA_TYPE_FOR_OP;
+}
+
+fn matrixMimRunApplyResultIfValid() bool {
+    if (!matrixMimRunWasSuccessful()) {
+        return false;
+    }
+    return z47_frontier_matrix_apply_register_x_to_selected();
+}
+
+fn matrixMimRunRestoreLinkedXIfNeeded(converted: bool) void {
+    if (matrixIndex == @as(u16, @intCast(REGISTER_X)) and !converted) {
+        z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted();
+    }
+}
+
+fn matrixMimRunRestoreLiftFlag(lift_stack_flag: bool) void {
+    if (lift_stack_flag) {
+        setSystemFlag(FLAG_ASLIFT);
+    }
+}
+
+fn matrixMimRunFinalizeView() void {
+    z47_frontier_matrix_update_height_cache();
+    refreshLcd(null);
+}
+
+const MatrixMimRunContext = struct {
+    lift_stack_flag: bool,
+    converted: bool,
+};
+
+fn matrixMimRunContextInit() MatrixMimRunContext {
+    return .{
+        .lift_stack_flag = matrixMimRunLiftFlagSnapshot(),
+        .converted = false,
+    };
+}
+
+fn matrixMimRunContextSetConverted(ctx: *MatrixMimRunContext, converted: bool) void {
+    ctx.converted = converted;
+}
+
+fn matrixMimRunContextConverted(ctx: MatrixMimRunContext) bool {
+    return ctx.converted;
+}
+
+fn matrixMimRunContextRestoreLift(ctx: MatrixMimRunContext) void {
+    matrixMimRunRestoreLiftFlag(ctx.lift_stack_flag);
+}
+
+fn matrixMimRunApplyAndCapture(ctx: *MatrixMimRunContext) void {
+    const converted = matrixMimRunApplyResultIfValid();
+    matrixMimRunContextSetConverted(ctx, converted);
+}
+
+fn matrixMimRunRestoreLinkedState(ctx: MatrixMimRunContext) void {
+    matrixMimRunRestoreLinkedXIfNeeded(matrixMimRunContextConverted(ctx));
+}
+
+fn matrixMimRunCommitView(ctx: MatrixMimRunContext) void {
+    matrixMimRunRestoreLinkedState(ctx);
+    matrixMimRunContextRestoreLift(ctx);
+    matrixMimRunFinalizeView();
+}
+
+fn matrixMimRunExecuteAndNormalize(func: i16, param: u16) void {
+    matrixMimRunExecute(func, param);
+    matrixMimRunNormalizeRegisterXType();
+}
+
+fn matrixMimRunPipeline(func: i16, param: u16) void {
+    var ctx = matrixMimRunContextInit();
+
+    matrixMimRunPrepareExecution();
+    matrixMimRunExecuteAndNormalize(func, param);
+    matrixMimRunApplyAndCapture(&ctx);
+    matrixMimRunCommitView(ctx);
+}
+
+const MatrixMimAddDecision = struct {
+    handled: bool,
+    stop: bool,
+    enqueue_item: bool,
+};
+
+fn matrixMimAddNoopDecision() MatrixMimAddDecision {
+    return .{ .handled = false, .stop = false, .enqueue_item = false };
+}
+
+fn matrixMimAddStopDecision() MatrixMimAddDecision {
+    return .{ .handled = true, .stop = true, .enqueue_item = false };
+}
+
+fn matrixMimAddEnqueueDecision() MatrixMimAddDecision {
+    return .{ .handled = true, .stop = false, .enqueue_item = true };
+}
+
+fn matrixMimAddShouldInitializeAim(item: i16) bool {
+    return item == ITM_EXPONENT or
+        item == ITM_PERIOD or
+        item == ITM_0 or
+        item == ITM_1 or
+        item == ITM_2 or
+        item == ITM_3 or
+        item == ITM_4 or
+        item == ITM_5 or
+        item == ITM_6 or
+        item == ITM_7 or
+        item == ITM_8 or
+        item == ITM_9;
+}
+
+fn matrixMimAddInitializeAim(item: i16) MatrixMimAddDecision {
+    if (!matrixMimAddShouldInitializeAim(item)) {
+        return matrixMimAddNoopDecision();
+    }
+
+    if (!z47_frontier_matrix_aim_is_empty()) {
+        return matrixMimAddEnqueueDecision();
+    }
+
+    if (item == ITM_EXPONENT) {
+        z47_frontier_matrix_init_aim_exponent();
+        return matrixMimAddEnqueueDecision();
+    }
+
+    if (item == ITM_PERIOD) {
+        z47_frontier_matrix_init_aim_period();
+        return matrixMimAddEnqueueDecision();
+    }
+
+    z47_frontier_matrix_init_aim_digit();
+    return matrixMimAddEnqueueDecision();
+}
+
+fn matrixMimAddHandleBackspace(item: i16) MatrixMimAddDecision {
+    if (item != ITM_BACKSPACE) {
+        return matrixMimAddNoopDecision();
+    }
+
+    if (z47_frontier_matrix_aim_is_empty()) {
+        z47_frontier_matrix_zero_current_element();
+        return matrixMimAddStopDecision();
+    }
+
+    if (z47_frontier_matrix_aim_is_single_plus_digit()) {
+        z47_frontier_matrix_aim_clear_single_plus_digit();
+    }
+    return matrixMimAddEnqueueDecision();
+}
+
+fn matrixMimAddHandleSign(item: i16) MatrixMimAddDecision {
+    if (item != ITM_CHS) {
+        return matrixMimAddNoopDecision();
+    }
+
+    if (z47_frontier_matrix_aim_is_empty()) {
+        z47_frontier_matrix_change_sign_current_element();
+        return matrixMimAddStopDecision();
+    }
+
+    return matrixMimAddEnqueueDecision();
+}
+
+fn matrixMimAddHandleImaginaryUnit(item: i16) MatrixMimAddDecision {
+    if (!(item == ITM_op_j_pol or item == ITM_op_j or item == ITM_CC)) {
+        return matrixMimAddNoopDecision();
+    }
+
+    if (z47_frontier_matrix_aim_is_empty()) {
+        z47_frontier_matrix_make_j_element();
+        return matrixMimAddStopDecision();
+    }
+
+    return matrixMimAddEnqueueDecision();
+}
+
+fn matrixMimAddHandlePi(item: i16) MatrixMimAddDecision {
+    if (item != ITM_CONSTpi) {
+        return matrixMimAddNoopDecision();
+    }
+
+    if (z47_frontier_matrix_aim_is_empty()) {
+        z47_frontier_matrix_set_current_to_pi();
+        return matrixMimAddStopDecision();
+    }
+
+    if (z47_frontier_matrix_can_append_pi_literal()) {
+        z47_frontier_matrix_append_pi_literal_and_enter();
+        return matrixMimAddStopDecision();
+    }
+
+    return matrixMimAddStopDecision();
+}
+
+fn matrixMimAddApplyDecision(item: i16, decision: MatrixMimAddDecision) bool {
+    if (!decision.handled) {
+        return false;
+    }
+    if (decision.stop) {
+        return true;
+    }
+    if (decision.enqueue_item) {
+        z47_frontier_matrix_add_item_to_nim_buffer(item);
+        calcMode = CM_MIM;
+    }
+    return true;
+}
+
+fn matrixMimAddDispatch(item: i16) bool {
+    if (matrixMimAddApplyDecision(item, matrixMimAddInitializeAim(item))) {
+        return true;
+    }
+    if (matrixMimAddApplyDecision(item, matrixMimAddHandleBackspace(item))) {
+        return true;
+    }
+    if (matrixMimAddApplyDecision(item, matrixMimAddHandleSign(item))) {
+        return true;
+    }
+    if (matrixMimAddApplyDecision(item, matrixMimAddHandleImaginaryUnit(item))) {
+        return true;
+    }
+    if (matrixMimAddApplyDecision(item, matrixMimAddHandlePi(item))) {
+        return true;
+    }
+    return false;
 }
 
 pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
@@ -1395,6 +1847,10 @@ pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
     }
 
     return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
+}
+
+pub export fn showMatrixEditor() callconv(.c) void {
+    matrixEditorRefreshView();
 }
 
 pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
@@ -1485,6 +1941,38 @@ pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
     }
 }
 
+fn matrixMimEnterHasPendingAimInput() bool {
+    return !z47_frontier_matrix_aim_is_empty();
+}
+
+fn matrixMimEnterApplyAimInput() void {
+    if (!matrixMimEnterHasPendingAimInput()) {
+        return;
+    }
+    z47_frontier_matrix_mim_enter_apply_aim_buffer();
+}
+
+fn matrixMimEnterCommitIfRequested(commit: bool) void {
+    if (!commit) {
+        return;
+    }
+    z47_frontier_matrix_mim_enter_commit_open_matrix();
+}
+
+fn matrixMimEnterFinalize() void {
+    z47_frontier_matrix_update_height_cache();
+}
+
+fn matrixMimEnterPipeline(commit: bool) void {
+    matrixMimEnterApplyAimInput();
+    matrixMimEnterCommitIfRequested(commit);
+    matrixMimEnterFinalize();
+}
+
+pub export fn mimEnter(commit: bool) callconv(.c) void {
+    matrixMimEnterPipeline(commit);
+}
+
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
     if (calcMode == CM_MIM) {
         z47_frontier_matrix_inc_dec_i(mode);
@@ -1501,24 +1989,68 @@ pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
-pub export fn _fnInsRow(add: bool) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        mimEnter(false);
-        z47_frontier_matrix_insert_row(add);
-        mimEnter(true);
+const MatrixMutation = enum {
+    insert_row_before,
+    insert_row_after,
+    insert_col_before,
+    insert_col_after,
+    delete_row,
+    delete_col,
+};
+
+fn matrixMutationIsAllowed() bool {
+    return matrixInEditorMode();
+}
+
+fn matrixMutationRejectIfNotAllowed() bool {
+    if (matrixMutationIsAllowed()) {
+        return false;
+    }
+    matrixModeUndefinedError();
+    return true;
+}
+
+fn matrixMutationBegin() void {
+    mimEnter(false);
+}
+
+fn matrixMutationEnd() void {
+    mimEnter(true);
+}
+
+fn matrixMutationRunWithBoundaries(kind: MatrixMutation) void {
+    matrixMutationBegin();
+    matrixMutationApply(kind);
+    matrixMutationEnd();
+}
+
+fn matrixMutationApply(kind: MatrixMutation) void {
+    switch (kind) {
+        .insert_row_before => z47_frontier_matrix_insert_row(false),
+        .insert_row_after => z47_frontier_matrix_insert_row(true),
+        .insert_col_before => z47_frontier_matrix_insert_col(false),
+        .insert_col_after => z47_frontier_matrix_insert_col(true),
+        .delete_row => z47_frontier_matrix_delete_row(),
+        .delete_col => z47_frontier_matrix_delete_col(),
+    }
+}
+
+fn matrixMutationPipeline(kind: MatrixMutation) void {
+    if (matrixMutationRejectIfNotAllowed()) {
         return;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+
+    matrixMutationRunWithBoundaries(kind);
+}
+
+pub export fn _fnInsRow(add: bool) callconv(.c) void {
+    const kind: MatrixMutation = if (add) .insert_row_after else .insert_row_before;
+    matrixMutationPipeline(kind);
 }
 
 pub export fn _fnInsCol(add: bool) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        mimEnter(false);
-        z47_frontier_matrix_insert_col(add);
-        mimEnter(true);
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    const kind: MatrixMutation = if (add) .insert_col_after else .insert_col_before;
+    matrixMutationPipeline(kind);
 }
 
 pub export fn fnInsRow(unused_param_but_mandatory: u16) callconv(.c) void {
@@ -1543,24 +2075,12 @@ pub export fn fnAddCol(unused_param_but_mandatory: u16) callconv(.c) void {
 
 pub export fn fnDelRow(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    if (calcMode == CM_MIM) {
-        mimEnter(false);
-        z47_frontier_matrix_delete_row();
-        mimEnter(true);
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixMutationPipeline(.delete_row);
 }
 
 pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    if (calcMode == CM_MIM) {
-        mimEnter(false);
-        z47_frontier_matrix_delete_col();
-        mimEnter(true);
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixMutationPipeline(.delete_col);
 }
 
 pub export fn mimFinalize() callconv(.c) void {
@@ -1578,19 +2098,18 @@ pub export fn mimRestore() callconv(.c) void {
 }
 
 pub export fn mimAddNumber(item: i16) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        runtime.z47_frontier_retained_mimAddNumber(item);
+    if (!matrixEnsureEditorModeOrReturn()) {
         return;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+
+    _ = matrixMimAddDispatch(item);
 }
 
 pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        runtime.z47_frontier_retained_mimRunFunction(func, param);
+    if (!matrixMimRunEnterValidation()) {
         return;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixMimRunPipeline(func, param);
 }
 
 pub export fn fnClPAll(confirmation: u16) callconv(.c) void {

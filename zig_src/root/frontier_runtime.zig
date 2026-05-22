@@ -1,4 +1,3 @@
-pub extern fn z47_frontier_retained_fnDynamicMenu(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_frontier_retained_fnP_Sigma(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_frontier_retained_fnP_All_Regs(option: u16) void;
 pub extern fn z47_frontier_retained_fnEditMatrix(regist: u16) void;
