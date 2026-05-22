@@ -3,4 +3,11 @@
 #include "c47.h"
 
 #define fnDisplayFormatFix z47_frontier_retained_fnDisplayFormatFix
+#define fnDisplayFormatSci z47_frontier_retained_fnDisplayFormatSci
+#define fnDisplayFormatEng z47_frontier_retained_fnDisplayFormatEng
+#define fnDisplayFormatAll z47_frontier_retained_fnDisplayFormatAll
+#define fnDisplayFormatSigFig z47_frontier_retained_fnDisplayFormatSigFig
+#define fnDisplayFormatUnit z47_frontier_retained_fnDisplayFormatUnit
+#define fnDisplayFormatDsp z47_frontier_retained_fnDisplayFormatDsp
+#define fnDisplayFormatTime z47_frontier_retained_fnDisplayFormatTime
 #include "../../src/c47/display.c"
