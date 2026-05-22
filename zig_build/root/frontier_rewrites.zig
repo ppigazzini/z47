@@ -1,10 +1,12 @@
 const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
+    "display.c",
     "screen.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
+    "zig_bridge/root/display_retained.c",
     "zig_bridge/root/screen_retained.c",
 };
 
