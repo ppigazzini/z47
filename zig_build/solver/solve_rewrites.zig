@@ -2,11 +2,14 @@ const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
     "solver/solve.c",
+    "solver/integrate.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
     "zig_bridge/solver/solve_runtime_helpers.c",
     "zig_bridge/solver/solve_retained.c",
+    "zig_bridge/solver/integrate_runtime_helpers.c",
+    "zig_bridge/solver/integrate_retained.c",
 };
 
 fn addRuntimeObject(
