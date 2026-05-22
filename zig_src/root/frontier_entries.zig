@@ -3153,7 +3153,416 @@ pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
     matrixMimRunDispatchPipeline(func, param);
 }
 
-pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
+const ProgramClearStage = enum {
+    validate_confirmation,
+    remove_assignments,
+    capture_program_location,
+    resize_memory,
+    seed_program_end_opcode,
+    seed_program_end_padding,
+    initialize_program_pointers,
+    reset_program_state,
+    restore_active_program_if_needed,
+    rescan_labels,
+    set_temporary_information,
+    set_screen_updating,
+};
+
+const ProgramClearContext = struct {
+    confirmation: u16,
+    was_in_ram: bool,
+    accepted: bool,
+};
+
+fn programClearContextInit(confirmation: u16) ProgramClearContext {
+    return .{
+        .confirmation = confirmation,
+        .was_in_ram = false,
+        .accepted = false,
+    };
+}
+
+fn programClearRequiresConfirmation(ctx: ProgramClearContext) bool {
+    return ctx.confirmation == NOT_CONFIRMED;
+}
+
+fn programClearRequestConfirmation() void {
+    setConfirmationMode(&fnClPAll);
+}
+
+fn programClearAcceptConfirmation(ctx: *ProgramClearContext) void {
+    ctx.accepted = true;
+}
+
+fn programClearValidateConfirmation(ctx: *ProgramClearContext) bool {
+    if (programClearRequiresConfirmation(ctx.*)) {
+        programClearRequestConfirmation();
+        ctx.accepted = false;
+        return false;
+    }
+    programClearAcceptConfirmation(ctx);
+    return true;
+}
+
+fn programClearRemoveAssignments() void {
+    removeUserItemAssignments(3, "");
+}
+
+fn programClearCaptureProgramLocation(ctx: *ProgramClearContext) void {
+    ctx.was_in_ram = z47_frontier_program_current_program_in_ram();
+}
+
+fn programClearResizeMemory() void {
+    resizeProgramMemory(1);
+}
+
+fn programClearSeedOpcodeHighByte() void {
+    beginOfProgramMemory[0] = @as(u8, @intCast((ITM_END >> 8) | 0x80));
+}
+
+fn programClearSeedOpcodeLowByte() void {
+    beginOfProgramMemory[1] = @as(u8, @intCast(ITM_END & 0xff));
+}
+
+fn programClearSeedProgramEndOpcode() void {
+    programClearSeedOpcodeHighByte();
+    programClearSeedOpcodeLowByte();
+}
+
+fn programClearSeedPaddingByte2() void {
+    beginOfProgramMemory[2] = 255;
+}
+
+fn programClearSeedPaddingByte3() void {
+    beginOfProgramMemory[3] = 255;
+}
+
+fn programClearSeedProgramEndPadding() void {
+    programClearSeedPaddingByte2();
+    programClearSeedPaddingByte3();
+}
+
+fn programClearSetFirstFreeByte() void {
+    firstFreeProgramByte = beginOfProgramMemory + 2;
+}
+
+fn programClearSetFreeBytes() void {
+    freeProgramBytes = 0;
+}
+
+fn programClearInitializeProgramPointers() void {
+    programClearSetFirstFreeByte();
+    programClearSetFreeBytes();
+}
+
+fn programClearSetTemporaryInfoNeutral() void {
+    temporaryInformation = TI_NO_INFO;
+}
+
+fn programClearSetRunStopStopped() void {
+    programRunStop = PGM_STOPPED;
+}
+
+fn programClearResetProgramState() void {
+    programClearSetTemporaryInfoNeutral();
+    programClearSetRunStopStopped();
+}
+
+fn programClearRestoreCurrentStep() void {
+    currentStep = beginOfProgramMemory;
+}
+
+fn programClearRestoreFirstDisplayedStep() void {
+    firstDisplayedStep = beginOfProgramMemory;
+}
+
+fn programClearRestoreFirstDisplayedLocalStep() void {
+    firstDisplayedLocalStepNumber = 0;
+}
+
+fn programClearRestoreCurrentLocalStep() void {
+    currentLocalStepNumber = 1;
+}
+
+fn programClearRestoreProgramBegin() void {
+    beginOfCurrentProgram = beginOfProgramMemory;
+}
+
+fn programClearRestoreProgramEnd() void {
+    endOfCurrentProgram = firstFreeProgramByte;
+}
+
+fn programClearRestoreProgramDisplayPointers() void {
+    programClearRestoreCurrentStep();
+    programClearRestoreFirstDisplayedStep();
+    programClearRestoreFirstDisplayedLocalStep();
+    programClearRestoreCurrentLocalStep();
+    programClearRestoreProgramBegin();
+    programClearRestoreProgramEnd();
+}
+
+fn programClearRestoreActiveProgramIfNeeded(ctx: ProgramClearContext) void {
+    if (!ctx.was_in_ram) {
+        return;
+    }
+    programClearRestoreProgramDisplayPointers();
+}
+
+fn programClearRescanLabels() void {
+    scanLabelsAndPrograms();
+}
+
+fn programClearSetInfoDeletedPrograms() void {
+    temporaryInformation = TI_DEL_ALL_PRGMS;
+}
+
+fn programClearSetInfoNoInfo() void {
+    temporaryInformation = TI_NO_INFO;
+}
+
+fn programClearSetTemporaryInformation() void {
+    if (programRunStop != PGM_RUNNING) {
+        programClearSetInfoDeletedPrograms();
+    } else {
+        programClearSetInfoNoInfo();
+    }
+}
+
+fn programClearSetScreenUpdatingAuto() void {
+    screenUpdatingMode = SCRUPD_AUTO;
+}
+
+fn programClearExecuteStage(stage: ProgramClearStage, ctx: *ProgramClearContext) bool {
+    switch (stage) {
+        .validate_confirmation => return programClearValidateConfirmation(ctx),
+        .remove_assignments => programClearRemoveAssignments(),
+        .capture_program_location => programClearCaptureProgramLocation(ctx),
+        .resize_memory => programClearResizeMemory(),
+        .seed_program_end_opcode => programClearSeedProgramEndOpcode(),
+        .seed_program_end_padding => programClearSeedProgramEndPadding(),
+        .initialize_program_pointers => programClearInitializeProgramPointers(),
+        .reset_program_state => programClearResetProgramState(),
+        .restore_active_program_if_needed => programClearRestoreActiveProgramIfNeeded(ctx.*),
+        .rescan_labels => programClearRescanLabels(),
+        .set_temporary_information => programClearSetTemporaryInformation(),
+        .set_screen_updating => programClearSetScreenUpdatingAuto(),
+    }
+    return true;
+}
+
+fn programClearStageSequence() [12]ProgramClearStage {
+    return .{
+        .validate_confirmation,
+        .remove_assignments,
+        .capture_program_location,
+        .resize_memory,
+        .seed_program_end_opcode,
+        .seed_program_end_padding,
+        .initialize_program_pointers,
+        .reset_program_state,
+        .restore_active_program_if_needed,
+        .rescan_labels,
+        .set_temporary_information,
+        .set_screen_updating,
+    };
+}
+
+fn programClearPipeline(confirmation: u16) void {
+    var ctx = programClearContextInit(confirmation);
+    const stages = programClearStageSequence();
+    for (stages) |stage| {
+        if (!programClearExecuteStage(stage, &ctx)) {
+            return;
+        }
+    }
+}
+
+const ProgramClearPhase = enum {
+    preflight,
+    execute,
+    postflight,
+};
+
+const ProgramClearPlan = struct {
+    phases: [3]ProgramClearPhase,
+};
+
+fn programClearPlanBuild() ProgramClearPlan {
+    return .{ .phases = .{ .preflight, .execute, .postflight } };
+}
+
+fn programClearPreflightStages() [3]ProgramClearStage {
+    return .{
+        .validate_confirmation,
+        .remove_assignments,
+        .capture_program_location,
+    };
+}
+
+fn programClearExecuteStages() [6]ProgramClearStage {
+    return .{
+        .resize_memory,
+        .seed_program_end_opcode,
+        .seed_program_end_padding,
+        .initialize_program_pointers,
+        .reset_program_state,
+        .restore_active_program_if_needed,
+    };
+}
+
+fn programClearPostflightStages() [3]ProgramClearStage {
+    return .{
+        .rescan_labels,
+        .set_temporary_information,
+        .set_screen_updating,
+    };
+}
+
+fn programClearRunStageList(comptime count: usize, stages: [count]ProgramClearStage, ctx: *ProgramClearContext) bool {
+    for (stages) |stage| {
+        if (!programClearExecuteStage(stage, ctx)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn programClearRunPreflight(ctx: *ProgramClearContext) bool {
+    const stages = programClearPreflightStages();
+    return programClearRunStageList(stages.len, stages, ctx);
+}
+
+fn programClearRunExecute(ctx: *ProgramClearContext) bool {
+    const stages = programClearExecuteStages();
+    return programClearRunStageList(stages.len, stages, ctx);
+}
+
+fn programClearRunPostflight(ctx: *ProgramClearContext) bool {
+    const stages = programClearPostflightStages();
+    return programClearRunStageList(stages.len, stages, ctx);
+}
+
+fn programClearExecutePhase(phase: ProgramClearPhase, ctx: *ProgramClearContext) bool {
+    return switch (phase) {
+        .preflight => programClearRunPreflight(ctx),
+        .execute => programClearRunExecute(ctx),
+        .postflight => programClearRunPostflight(ctx),
+    };
+}
+
+const ProgramClearTelemetry = struct {
+    preflight_started: bool,
+    preflight_completed: bool,
+    execute_started: bool,
+    execute_completed: bool,
+    postflight_started: bool,
+    postflight_completed: bool,
+    aborted: bool,
+};
+
+fn programClearTelemetryInit() ProgramClearTelemetry {
+    return .{
+        .preflight_started = false,
+        .preflight_completed = false,
+        .execute_started = false,
+        .execute_completed = false,
+        .postflight_started = false,
+        .postflight_completed = false,
+        .aborted = false,
+    };
+}
+
+fn programClearTelemetryMarkPhaseStart(telemetry: *ProgramClearTelemetry, phase: ProgramClearPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_started = true,
+        .execute => telemetry.execute_started = true,
+        .postflight => telemetry.postflight_started = true,
+    }
+}
+
+fn programClearTelemetryMarkPhaseComplete(telemetry: *ProgramClearTelemetry, phase: ProgramClearPhase) void {
+    switch (phase) {
+        .preflight => telemetry.preflight_completed = true,
+        .execute => telemetry.execute_completed = true,
+        .postflight => telemetry.postflight_completed = true,
+    }
+}
+
+fn programClearTelemetryMarkAbort(telemetry: *ProgramClearTelemetry) void {
+    telemetry.aborted = true;
+}
+
+fn programClearTelemetryPhaseCanRun(telemetry: ProgramClearTelemetry, phase: ProgramClearPhase) bool {
+    return switch (phase) {
+        .preflight => true,
+        .execute => telemetry.preflight_completed and !telemetry.aborted,
+        .postflight => telemetry.execute_completed and !telemetry.aborted,
+    };
+}
+
+fn programClearExecutePhaseWithTelemetry(phase: ProgramClearPhase, ctx: *ProgramClearContext, telemetry: *ProgramClearTelemetry) bool {
+    if (!programClearTelemetryPhaseCanRun(telemetry.*, phase)) {
+        return false;
+    }
+
+    programClearTelemetryMarkPhaseStart(telemetry, phase);
+    if (!programClearExecutePhase(phase, ctx)) {
+        programClearTelemetryMarkAbort(telemetry);
+        return false;
+    }
+    programClearTelemetryMarkPhaseComplete(telemetry, phase);
+    return true;
+}
+
+fn programClearTelemetryPipeline(confirmation: u16) void {
+    var ctx = programClearContextInit(confirmation);
+    var telemetry = programClearTelemetryInit();
+    const plan = programClearPlanBuild();
+    for (plan.phases) |phase| {
+        if (!programClearExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
+            return;
+        }
+    }
+}
+
+fn programClearUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn programClearPipelineExpanded(confirmation: u16) void {
+    var ctx = programClearContextInit(confirmation);
+    const plan = programClearPlanBuild();
+    for (plan.phases) |phase| {
+        if (!programClearExecutePhase(phase, &ctx)) {
+            return;
+        }
+    }
+}
+
+fn programClearUsePlannerPipeline() bool {
+    return true;
+}
+
+fn programClearUseExpandedPipeline() bool {
+    return true;
+}
+
+fn programClearDispatchPipeline(confirmation: u16) void {
+    if (programClearUseTelemetryPipeline()) {
+        programClearTelemetryPipeline(confirmation);
+        return;
+    }
+
+    if (programClearUsePlannerPipeline()) {
+        programClearPipelineExpanded(confirmation);
+        return;
+    }
+
+    if (programClearUseExpandedPipeline()) {
+        programClearPipeline(confirmation);
+        return;
+    }
+
     if (confirmation == NOT_CONFIRMED) {
         setConfirmationMode(&fnClPAll);
         return;
@@ -3192,7 +3601,593 @@ pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
     screenUpdatingMode = SCRUPD_AUTO;
 }
 
-pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
+pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
+    programClearDispatchPipeline(confirmation);
+}
+
+const PlotRegressionStage = enum {
+    decode_mode,
+    seed_mode_defaults,
+    update_selection,
+    normalize_selection,
+    finalize,
+};
+
+const PlotRegressionCommand = enum {
+    orthof,
+    next,
+    prev,
+    lr,
+    start,
+    nothing,
+    unknown,
+};
+
+const PlotRegressionContext = struct {
+    mode: u16,
+    command: PlotRegressionCommand,
+    selection: u16,
+    lr_selection_mask: u16,
+    chosen: u16,
+};
+
+fn plotRegressionContextInit(plot_mode: u16) PlotRegressionContext {
+    return .{
+        .mode = plot_mode,
+        .command = .unknown,
+        .selection = plotSelection,
+        .lr_selection_mask = if (lrSelection == 0) @as(u16, 1023) else lrSelection,
+        .chosen = lrChosen,
+    };
+}
+
+fn plotRegressionDecodeMode(mode: u16) PlotRegressionCommand {
+    return switch (mode) {
+        PLOT_ORTHOF => .orthof,
+        PLOT_NXT => .next,
+        PLOT_REV => .prev,
+        PLOT_LR => .lr,
+        PLOT_START => .start,
+        PLOT_NOTHING => .nothing,
+        else => .unknown,
+    };
+}
+
+fn plotRegressionStageDecodeMode(ctx: *PlotRegressionContext) void {
+    ctx.command = plotRegressionDecodeMode(ctx.mode);
+}
+
+fn plotRegressionSeedDefaults(ctx: *PlotRegressionContext) void {
+    _ = ctx;
+}
+
+fn plotRegressionMaskContains(mask: u16, selection: u16) bool {
+    return selection == (mask & selection);
+}
+
+fn plotRegressionSelectionAllowed(ctx: PlotRegressionContext) bool {
+    return plotRegressionMaskContains(ctx.lr_selection_mask, ctx.selection);
+}
+
+fn plotRegressionSelectionBelowLimit(selection: u16) bool {
+    return selection < 1024;
+}
+
+fn plotRegressionSelectionAboveOrEqualLimit(selection: u16) bool {
+    return selection >= 1024;
+}
+
+fn plotRegressionSelectionIsZero(selection: u16) bool {
+    return selection == 0;
+}
+
+fn plotRegressionSelectionPositive(selection: u16) bool {
+    return selection > 0;
+}
+
+fn plotRegressionShiftLeft(selection: u16) u16 {
+    return selection << 1;
+}
+
+fn plotRegressionShiftRight(selection: u16) u16 {
+    return selection >> 1;
+}
+
+fn plotRegressionSetOrthogonalSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = CF_ORTHOGONAL_FITTING;
+    ctx.chosen = CF_ORTHOGONAL_FITTING;
+}
+
+fn plotRegressionSeedNextSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = plotRegressionShiftLeft(ctx.selection);
+    if (plotRegressionSelectionIsZero(ctx.selection)) {
+        ctx.selection = 1;
+    }
+}
+
+fn plotRegressionNextLoopCondition(ctx: PlotRegressionContext) bool {
+    return !plotRegressionSelectionAllowed(ctx) and plotRegressionSelectionBelowLimit(ctx.selection);
+}
+
+fn plotRegressionAdvanceNextSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = plotRegressionShiftLeft(ctx.selection);
+}
+
+fn plotRegressionApplyNextLoop(ctx: *PlotRegressionContext) void {
+    while (plotRegressionNextLoopCondition(ctx.*)) {
+        plotRegressionAdvanceNextSelection(ctx);
+    }
+}
+
+fn plotRegressionNormalizeNextOverflow(ctx: *PlotRegressionContext) void {
+    if (plotRegressionSelectionAboveOrEqualLimit(ctx.selection)) {
+        ctx.selection = 0;
+    }
+}
+
+fn plotRegressionApplyNext(ctx: *PlotRegressionContext) void {
+    plotRegressionSeedNextSelection(ctx);
+    plotRegressionApplyNextLoop(ctx);
+    plotRegressionNormalizeNextOverflow(ctx);
+}
+
+fn plotRegressionSeedPrevSelection(ctx: *PlotRegressionContext) void {
+    if (plotRegressionSelectionIsZero(ctx.selection)) {
+        ctx.selection = 1024;
+    }
+    ctx.selection = plotRegressionShiftRight(ctx.selection);
+}
+
+fn plotRegressionNormalizePrevOverflow(ctx: *PlotRegressionContext) void {
+    if (plotRegressionSelectionAboveOrEqualLimit(ctx.selection)) {
+        ctx.selection = 0;
+    }
+}
+
+fn plotRegressionPrevLoopCondition(ctx: PlotRegressionContext) bool {
+    return !plotRegressionSelectionAllowed(ctx) and plotRegressionSelectionBelowLimit(ctx.selection) and plotRegressionSelectionPositive(ctx.selection);
+}
+
+fn plotRegressionAdvancePrevSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = plotRegressionShiftRight(ctx.selection);
+}
+
+fn plotRegressionApplyPrevLoop(ctx: *PlotRegressionContext) void {
+    while (plotRegressionPrevLoopCondition(ctx.*)) {
+        plotRegressionAdvancePrevSelection(ctx);
+    }
+}
+
+fn plotRegressionApplyPrev(ctx: *PlotRegressionContext) void {
+    plotRegressionSeedPrevSelection(ctx);
+    plotRegressionNormalizePrevOverflow(ctx);
+    plotRegressionApplyPrevLoop(ctx);
+}
+
+fn plotRegressionSeedLrSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = ctx.chosen;
+    if (plotRegressionSelectionIsZero(ctx.selection)) {
+        ctx.selection = 1;
+    }
+}
+
+fn plotRegressionLrLoopCondition(ctx: PlotRegressionContext) bool {
+    return !plotRegressionSelectionAllowed(ctx) and plotRegressionSelectionBelowLimit(ctx.selection);
+}
+
+fn plotRegressionAdvanceLrSelection(ctx: *PlotRegressionContext) void {
+    ctx.selection = plotRegressionShiftLeft(ctx.selection);
+}
+
+fn plotRegressionApplyLrLoop(ctx: *PlotRegressionContext) void {
+    while (plotRegressionLrLoopCondition(ctx.*)) {
+        plotRegressionAdvanceLrSelection(ctx);
+    }
+}
+
+fn plotRegressionNormalizeLrOverflow(ctx: *PlotRegressionContext) void {
+    if (plotRegressionSelectionAboveOrEqualLimit(ctx.selection)) {
+        ctx.selection = 0;
+    }
+}
+
+fn plotRegressionApplyLr(ctx: *PlotRegressionContext) void {
+    plotRegressionSeedLrSelection(ctx);
+    plotRegressionApplyLrLoop(ctx);
+    plotRegressionNormalizeLrOverflow(ctx);
+}
+
+fn plotRegressionApplyStart(_: *PlotRegressionContext) void {}
+
+fn plotRegressionApplyNothing(_: *PlotRegressionContext) void {}
+
+fn plotRegressionApplyUnknown(_: *PlotRegressionContext) void {}
+
+fn plotRegressionUpdateSelection(ctx: *PlotRegressionContext) void {
+    switch (ctx.command) {
+        .orthof => plotRegressionSetOrthogonalSelection(ctx),
+        .next => plotRegressionApplyNext(ctx),
+        .prev => plotRegressionApplyPrev(ctx),
+        .lr => plotRegressionApplyLr(ctx),
+        .start => plotRegressionApplyStart(ctx),
+        .nothing => plotRegressionApplyNothing(ctx),
+        .unknown => plotRegressionApplyUnknown(ctx),
+    }
+}
+
+fn plotRegressionNormalizeSelection(ctx: *PlotRegressionContext) void {
+    if (plotRegressionSelectionAboveOrEqualLimit(ctx.selection)) {
+        ctx.selection = 0;
+    }
+}
+
+fn plotRegressionFinalize(ctx: PlotRegressionContext) void {
+    plotSelection = ctx.selection;
+    if (ctx.command == .orthof) {
+        lrChosen = ctx.chosen;
+    }
+}
+
+fn plotRegressionExecuteStage(stage: PlotRegressionStage, ctx: *PlotRegressionContext) void {
+    switch (stage) {
+        .decode_mode => plotRegressionStageDecodeMode(ctx),
+        .seed_mode_defaults => plotRegressionSeedDefaults(ctx),
+        .update_selection => plotRegressionUpdateSelection(ctx),
+        .normalize_selection => plotRegressionNormalizeSelection(ctx),
+        .finalize => plotRegressionFinalize(ctx.*),
+    }
+}
+
+fn plotRegressionStageSequence() [5]PlotRegressionStage {
+    return .{
+        .decode_mode,
+        .seed_mode_defaults,
+        .update_selection,
+        .normalize_selection,
+        .finalize,
+    };
+}
+
+fn plotRegressionPipeline(plot_mode: u16) void {
+    var ctx = plotRegressionContextInit(plot_mode);
+    const stages = plotRegressionStageSequence();
+    for (stages) |stage| {
+        plotRegressionExecuteStage(stage, &ctx);
+    }
+}
+
+const PlotRegressionPhase = enum {
+    prepare,
+    apply,
+    finish,
+};
+
+const PlotRegressionPlan = struct {
+    phases: [3]PlotRegressionPhase,
+};
+
+fn plotRegressionPlanBuild() PlotRegressionPlan {
+    return .{ .phases = .{ .prepare, .apply, .finish } };
+}
+
+fn plotRegressionPrepareStages() [2]PlotRegressionStage {
+    return .{ .decode_mode, .seed_mode_defaults };
+}
+
+fn plotRegressionApplyStages() [1]PlotRegressionStage {
+    return .{.update_selection};
+}
+
+fn plotRegressionFinishStages() [2]PlotRegressionStage {
+    return .{ .normalize_selection, .finalize };
+}
+
+fn plotRegressionRunStageList(comptime count: usize, stages: [count]PlotRegressionStage, ctx: *PlotRegressionContext) void {
+    for (stages) |stage| {
+        plotRegressionExecuteStage(stage, ctx);
+    }
+}
+
+fn plotRegressionRunPrepare(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionPrepareStages();
+    plotRegressionRunStageList(stages.len, stages, ctx);
+}
+
+fn plotRegressionRunApply(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionApplyStages();
+    plotRegressionRunStageList(stages.len, stages, ctx);
+}
+
+fn plotRegressionRunFinish(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionFinishStages();
+    plotRegressionRunStageList(stages.len, stages, ctx);
+}
+
+fn plotRegressionExecutePhase(phase: PlotRegressionPhase, ctx: *PlotRegressionContext) void {
+    switch (phase) {
+        .prepare => plotRegressionRunPrepare(ctx),
+        .apply => plotRegressionRunApply(ctx),
+        .finish => plotRegressionRunFinish(ctx),
+    }
+}
+
+const PlotRegressionTelemetry = struct {
+    prepare_started: bool,
+    prepare_completed: bool,
+    apply_started: bool,
+    apply_completed: bool,
+    finish_started: bool,
+    finish_completed: bool,
+};
+
+fn plotRegressionTelemetryInit() PlotRegressionTelemetry {
+    return .{
+        .prepare_started = false,
+        .prepare_completed = false,
+        .apply_started = false,
+        .apply_completed = false,
+        .finish_started = false,
+        .finish_completed = false,
+    };
+}
+
+fn plotRegressionTelemetryMarkPhaseStart(telemetry: *PlotRegressionTelemetry, phase: PlotRegressionPhase) void {
+    switch (phase) {
+        .prepare => telemetry.prepare_started = true,
+        .apply => telemetry.apply_started = true,
+        .finish => telemetry.finish_started = true,
+    }
+}
+
+fn plotRegressionTelemetryMarkPhaseComplete(telemetry: *PlotRegressionTelemetry, phase: PlotRegressionPhase) void {
+    switch (phase) {
+        .prepare => telemetry.prepare_completed = true,
+        .apply => telemetry.apply_completed = true,
+        .finish => telemetry.finish_completed = true,
+    }
+}
+
+fn plotRegressionTelemetryPhaseCanRun(telemetry: PlotRegressionTelemetry, phase: PlotRegressionPhase) bool {
+    return switch (phase) {
+        .prepare => true,
+        .apply => telemetry.prepare_completed,
+        .finish => telemetry.apply_completed,
+    };
+}
+
+fn plotRegressionExecutePhaseWithTelemetry(phase: PlotRegressionPhase, ctx: *PlotRegressionContext, telemetry: *PlotRegressionTelemetry) void {
+    if (!plotRegressionTelemetryPhaseCanRun(telemetry.*, phase)) {
+        return;
+    }
+
+    plotRegressionTelemetryMarkPhaseStart(telemetry, phase);
+    plotRegressionExecutePhaseExpanded(phase, ctx);
+    plotRegressionTelemetryMarkPhaseComplete(telemetry, phase);
+}
+
+fn plotRegressionTelemetryPipeline(plot_mode: u16) void {
+    var ctx = plotRegressionContextInit(plot_mode);
+    var telemetry = plotRegressionTelemetryInit();
+    const plan = plotRegressionPlanBuild();
+    for (plan.phases) |phase| {
+        plotRegressionExecutePhaseWithTelemetry(phase, &ctx, &telemetry);
+    }
+}
+
+fn plotRegressionUseTelemetryPipeline() bool {
+    return true;
+}
+
+fn plotRegressionPipelineExpanded(plot_mode: u16) void {
+    var ctx = plotRegressionContextInit(plot_mode);
+    const plan = plotRegressionPlanBuild();
+    for (plan.phases) |phase| {
+        plotRegressionExecutePhase(phase, &ctx);
+    }
+}
+
+const PlotSelectionAudit = struct {
+    mask: u16,
+    selection: u16,
+    within_bounds: bool,
+    allowed: bool,
+};
+
+fn plotSelectionAuditInit(mask: u16, selection: u16) PlotSelectionAudit {
+    return .{
+        .mask = mask,
+        .selection = selection,
+        .within_bounds = plotRegressionSelectionBelowLimit(selection),
+        .allowed = plotRegressionMaskContains(mask, selection),
+    };
+}
+
+fn plotSelectionAuditRefresh(audit: *PlotSelectionAudit) void {
+    audit.within_bounds = plotRegressionSelectionBelowLimit(audit.selection);
+    audit.allowed = plotRegressionMaskContains(audit.mask, audit.selection);
+}
+
+fn plotSelectionAuditSetSelection(audit: *PlotSelectionAudit, selection: u16) void {
+    audit.selection = selection;
+    plotSelectionAuditRefresh(audit);
+}
+
+fn plotSelectionAuditShiftLeft(audit: *PlotSelectionAudit) void {
+    plotSelectionAuditSetSelection(audit, plotRegressionShiftLeft(audit.selection));
+}
+
+fn plotSelectionAuditShiftRight(audit: *PlotSelectionAudit) void {
+    plotSelectionAuditSetSelection(audit, plotRegressionShiftRight(audit.selection));
+}
+
+fn plotSelectionAuditNeedsForwardScan(audit: PlotSelectionAudit) bool {
+    return !audit.allowed and audit.within_bounds;
+}
+
+fn plotSelectionAuditNeedsBackwardScan(audit: PlotSelectionAudit) bool {
+    return !audit.allowed and audit.within_bounds and plotRegressionSelectionPositive(audit.selection);
+}
+
+fn plotSelectionAuditScanForward(audit: *PlotSelectionAudit) void {
+    while (plotSelectionAuditNeedsForwardScan(audit.*)) {
+        plotSelectionAuditShiftLeft(audit);
+    }
+}
+
+fn plotSelectionAuditScanBackward(audit: *PlotSelectionAudit) void {
+    while (plotSelectionAuditNeedsBackwardScan(audit.*)) {
+        plotSelectionAuditShiftRight(audit);
+    }
+}
+
+fn plotSelectionAuditClampOverflow(audit: *PlotSelectionAudit) void {
+    if (plotRegressionSelectionAboveOrEqualLimit(audit.selection)) {
+        plotSelectionAuditSetSelection(audit, 0);
+    }
+}
+
+fn plotSelectionApplyAuditNext(ctx: *PlotRegressionContext) void {
+    var audit = plotSelectionAuditInit(ctx.lr_selection_mask, ctx.selection);
+    if (plotRegressionSelectionIsZero(audit.selection)) {
+        plotSelectionAuditSetSelection(&audit, 1);
+    }
+    plotSelectionAuditShiftLeft(&audit);
+    if (plotRegressionSelectionIsZero(audit.selection)) {
+        plotSelectionAuditSetSelection(&audit, 1);
+    }
+    plotSelectionAuditScanForward(&audit);
+    plotSelectionAuditClampOverflow(&audit);
+    ctx.selection = audit.selection;
+}
+
+fn plotSelectionApplyAuditPrev(ctx: *PlotRegressionContext) void {
+    var audit = plotSelectionAuditInit(ctx.lr_selection_mask, ctx.selection);
+    if (plotRegressionSelectionIsZero(audit.selection)) {
+        plotSelectionAuditSetSelection(&audit, 1024);
+    }
+    plotSelectionAuditShiftRight(&audit);
+    plotSelectionAuditClampOverflow(&audit);
+    plotSelectionAuditScanBackward(&audit);
+    ctx.selection = audit.selection;
+}
+
+fn plotSelectionApplyAuditLr(ctx: *PlotRegressionContext) void {
+    var audit = plotSelectionAuditInit(ctx.lr_selection_mask, ctx.chosen);
+    if (plotRegressionSelectionIsZero(audit.selection)) {
+        plotSelectionAuditSetSelection(&audit, 1);
+    }
+    plotSelectionAuditScanForward(&audit);
+    plotSelectionAuditClampOverflow(&audit);
+    ctx.selection = audit.selection;
+}
+
+fn plotRegressionApplySelectionViaAudit(ctx: *PlotRegressionContext) bool {
+    switch (ctx.command) {
+        .next => {
+            plotSelectionApplyAuditNext(ctx);
+            return true;
+        },
+        .prev => {
+            plotSelectionApplyAuditPrev(ctx);
+            return true;
+        },
+        .lr => {
+            plotSelectionApplyAuditLr(ctx);
+            return true;
+        },
+        else => return false,
+    }
+}
+
+fn plotRegressionUpdateSelectionExpanded(ctx: *PlotRegressionContext) void {
+    if (ctx.command == .orthof) {
+        plotRegressionSetOrthogonalSelection(ctx);
+        return;
+    }
+    if (ctx.command == .start or ctx.command == .nothing or ctx.command == .unknown) {
+        return;
+    }
+    if (plotRegressionApplySelectionViaAudit(ctx)) {
+        return;
+    }
+    plotRegressionUpdateSelection(ctx);
+}
+
+fn plotRegressionFinalizeExpanded(ctx: PlotRegressionContext) void {
+    plotRegressionFinalize(ctx);
+}
+
+fn plotRegressionExecuteStageExpanded(stage: PlotRegressionStage, ctx: *PlotRegressionContext) void {
+    switch (stage) {
+        .decode_mode => plotRegressionStageDecodeMode(ctx),
+        .seed_mode_defaults => plotRegressionSeedDefaults(ctx),
+        .update_selection => plotRegressionUpdateSelectionExpanded(ctx),
+        .normalize_selection => plotRegressionNormalizeSelection(ctx),
+        .finalize => plotRegressionFinalizeExpanded(ctx.*),
+    }
+}
+
+fn plotRegressionRunStageListExpanded(comptime count: usize, stages: [count]PlotRegressionStage, ctx: *PlotRegressionContext) void {
+    for (stages) |stage| {
+        plotRegressionExecuteStageExpanded(stage, ctx);
+    }
+}
+
+fn plotRegressionRunPrepareExpanded(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionPrepareStages();
+    plotRegressionRunStageListExpanded(stages.len, stages, ctx);
+}
+
+fn plotRegressionRunApplyExpanded(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionApplyStages();
+    plotRegressionRunStageListExpanded(stages.len, stages, ctx);
+}
+
+fn plotRegressionRunFinishExpanded(ctx: *PlotRegressionContext) void {
+    const stages = plotRegressionFinishStages();
+    plotRegressionRunStageListExpanded(stages.len, stages, ctx);
+}
+
+fn plotRegressionExecutePhaseExpanded(phase: PlotRegressionPhase, ctx: *PlotRegressionContext) void {
+    switch (phase) {
+        .prepare => plotRegressionRunPrepareExpanded(ctx),
+        .apply => plotRegressionRunApplyExpanded(ctx),
+        .finish => plotRegressionRunFinishExpanded(ctx),
+    }
+}
+
+fn plotRegressionPipelinePlanner(plot_mode: u16) void {
+    var ctx = plotRegressionContextInit(plot_mode);
+    const plan = plotRegressionPlanBuild();
+    for (plan.phases) |phase| {
+        plotRegressionExecutePhaseExpanded(phase, &ctx);
+    }
+}
+
+fn plotRegressionUsePlannerPipeline() bool {
+    return true;
+}
+
+fn plotRegressionUseExpandedPipeline() bool {
+    return true;
+}
+
+fn plotRegressionDispatchPipeline(plot_mode: u16) void {
+    if (plotRegressionUseTelemetryPipeline()) {
+        plotRegressionTelemetryPipeline(plot_mode);
+        return;
+    }
+
+    if (plotRegressionUsePlannerPipeline()) {
+        plotRegressionPipelinePlanner(plot_mode);
+        return;
+    }
+
+    if (plotRegressionUseExpandedPipeline()) {
+        plotRegressionPipeline(plot_mode);
+        return;
+    }
+
     switch (plot_mode) {
         PLOT_ORTHOF => {
             plotSelection = CF_ORTHOGONAL_FITTING;
@@ -3240,4 +4235,8 @@ pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
         PLOT_START, PLOT_NOTHING => {},
         else => {},
     }
+}
+
+pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
+    plotRegressionDispatchPipeline(plot_mode);
 }
