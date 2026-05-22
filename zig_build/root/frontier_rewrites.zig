@@ -2,12 +2,14 @@ const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
     "display.c",
+    "items.c",
     "softmenus.c",
     "screen.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
     "zig_bridge/root/display_retained.c",
+    "zig_bridge/root/items_retained.c",
     "zig_bridge/root/softmenus_retained.c",
     "zig_bridge/root/screen_retained.c",
 };
