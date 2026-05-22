@@ -1,6 +1,8 @@
 const std = @import("std");
 
-const retained_gtk_sources = [_][]const u8{};
+const retained_gtk_sources = [_][]const u8{
+    "hal/gui.c",
+};
 
 const runtime_helper_sources = [_][]const u8{};
 
