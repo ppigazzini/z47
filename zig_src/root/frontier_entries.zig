@@ -1533,6 +1533,89 @@ fn matrixEditorRefreshView() void {
     matrixEditorRender(geometry, selection);
 }
 
+const MatrixEditorStage = enum {
+    ensure_softmenu,
+    load_geometry,
+    apply_wrap_growth,
+    read_selection,
+    update_scroll,
+    render,
+};
+
+const MatrixEditorContext = struct {
+    geometry: MatrixEditorGeometry,
+    selection: MatrixEditorSelection,
+};
+
+fn matrixEditorContextInit() MatrixEditorContext {
+    return .{
+        .geometry = .{ .rows = 0, .cols = 0, .col_vector = false },
+        .selection = .{ .row = 0, .col = 0 },
+    };
+}
+
+fn matrixEditorContextLoadGeometry(ctx: *MatrixEditorContext) void {
+    ctx.geometry = matrixEditorLoadGeometry();
+}
+
+fn matrixEditorContextApplyWrapGrowth(ctx: MatrixEditorContext) void {
+    matrixEditorApplyWrapGrowthIfNeeded(ctx.geometry);
+}
+
+fn matrixEditorContextReadSelection(ctx: *MatrixEditorContext) void {
+    ctx.selection = matrixEditorReadSelection(ctx.geometry);
+}
+
+fn matrixEditorContextUpdateScroll(ctx: MatrixEditorContext) void {
+    matrixEditorUpdateScrollRow(ctx.geometry, ctx.selection);
+}
+
+fn matrixEditorContextRender(ctx: MatrixEditorContext) void {
+    matrixEditorRender(ctx.geometry, ctx.selection);
+}
+
+fn matrixEditorStageSequence() [6]MatrixEditorStage {
+    return .{
+        .ensure_softmenu,
+        .load_geometry,
+        .apply_wrap_growth,
+        .read_selection,
+        .update_scroll,
+        .render,
+    };
+}
+
+fn matrixEditorExecuteStage(stage: MatrixEditorStage, ctx: *MatrixEditorContext) void {
+    switch (stage) {
+        .ensure_softmenu => matrixEditorEnsureSoftmenu(),
+        .load_geometry => matrixEditorContextLoadGeometry(ctx),
+        .apply_wrap_growth => matrixEditorContextApplyWrapGrowth(ctx.*),
+        .read_selection => matrixEditorContextReadSelection(ctx),
+        .update_scroll => matrixEditorContextUpdateScroll(ctx.*),
+        .render => matrixEditorContextRender(ctx.*),
+    }
+}
+
+fn matrixEditorRefreshViewExpanded() void {
+    var ctx = matrixEditorContextInit();
+    const stages = matrixEditorStageSequence();
+    for (stages) |stage| {
+        matrixEditorExecuteStage(stage, &ctx);
+    }
+}
+
+fn matrixEditorUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixEditorRefreshDispatcher() void {
+    if (matrixEditorUseExpandedPipeline()) {
+        matrixEditorRefreshViewExpanded();
+        return;
+    }
+    matrixEditorRefreshView();
+}
+
 fn matrixMimRunEnterValidation() bool {
     return matrixEnsureEditorModeOrReturn();
 }
@@ -1675,6 +1758,136 @@ fn matrixMimRunPipeline(func: i16, param: u16) void {
     matrixMimRunExecuteAndNormalize(func, param);
     matrixMimRunApplyAndCapture(&ctx);
     matrixMimRunCommitView(ctx);
+}
+
+const MatrixMimRunStage = enum {
+    validate_mode,
+    snapshot_selection,
+    commit_pending_input,
+    clear_lift_flag,
+    load_selected_into_x,
+    execute_item,
+    normalize_x_type,
+    apply_result,
+    restore_linked_x,
+    restore_lift_flag,
+    finalize_view,
+};
+
+const MatrixMimRunExtendedContext = struct {
+    func: i16,
+    param: u16,
+    base: MatrixMimRunContext,
+};
+
+fn matrixMimRunExtendedInit(func: i16, param: u16) MatrixMimRunExtendedContext {
+    return .{
+        .func = func,
+        .param = param,
+        .base = matrixMimRunContextInit(),
+    };
+}
+
+fn matrixMimRunStageValidateMode() bool {
+    return matrixMimRunEnterValidation();
+}
+
+fn matrixMimRunStageSnapshotSelection() void {
+    z47_frontier_matrix_capture_selected_before();
+}
+
+fn matrixMimRunStageCommitPendingInput() void {
+    mimEnter(true);
+}
+
+fn matrixMimRunStageClearLiftFlagAndErrorState() void {
+    clearSystemFlag(FLAG_ASLIFT);
+    matrixMimRunClearErrorState();
+}
+
+fn matrixMimRunStageLoadSelectedIntoX() void {
+    z47_frontier_matrix_load_selected_into_register_x();
+}
+
+fn matrixMimRunStageExecuteItem(ctx: MatrixMimRunExtendedContext) void {
+    matrixMimRunExecute(ctx.func, ctx.param);
+}
+
+fn matrixMimRunStageNormalizeXType() void {
+    matrixMimRunNormalizeRegisterXType();
+}
+
+fn matrixMimRunStageApplyResult(ctx: *MatrixMimRunExtendedContext) void {
+    matrixMimRunApplyAndCapture(&ctx.base);
+}
+
+fn matrixMimRunStageRestoreLinkedX(ctx: MatrixMimRunExtendedContext) void {
+    matrixMimRunRestoreLinkedState(ctx.base);
+}
+
+fn matrixMimRunStageRestoreLiftFlag(ctx: MatrixMimRunExtendedContext) void {
+    matrixMimRunContextRestoreLift(ctx.base);
+}
+
+fn matrixMimRunStageFinalizeView() void {
+    matrixMimRunFinalizeView();
+}
+
+fn matrixMimRunExecuteStage(stage: MatrixMimRunStage, ctx: *MatrixMimRunExtendedContext) bool {
+    switch (stage) {
+        .validate_mode => {
+            if (!matrixMimRunStageValidateMode()) return false;
+        },
+        .snapshot_selection => matrixMimRunStageSnapshotSelection(),
+        .commit_pending_input => matrixMimRunStageCommitPendingInput(),
+        .clear_lift_flag => matrixMimRunStageClearLiftFlagAndErrorState(),
+        .load_selected_into_x => matrixMimRunStageLoadSelectedIntoX(),
+        .execute_item => matrixMimRunStageExecuteItem(ctx.*),
+        .normalize_x_type => matrixMimRunStageNormalizeXType(),
+        .apply_result => matrixMimRunStageApplyResult(ctx),
+        .restore_linked_x => matrixMimRunStageRestoreLinkedX(ctx.*),
+        .restore_lift_flag => matrixMimRunStageRestoreLiftFlag(ctx.*),
+        .finalize_view => matrixMimRunStageFinalizeView(),
+    }
+    return true;
+}
+
+fn matrixMimRunStageSequence() [11]MatrixMimRunStage {
+    return .{
+        .validate_mode,
+        .snapshot_selection,
+        .commit_pending_input,
+        .clear_lift_flag,
+        .load_selected_into_x,
+        .execute_item,
+        .normalize_x_type,
+        .apply_result,
+        .restore_linked_x,
+        .restore_lift_flag,
+        .finalize_view,
+    };
+}
+
+fn matrixMimRunPipelineExpanded(func: i16, param: u16) void {
+    var ctx = matrixMimRunExtendedInit(func, param);
+    const stages = matrixMimRunStageSequence();
+    for (stages) |stage| {
+        if (!matrixMimRunExecuteStage(stage, &ctx)) {
+            return;
+        }
+    }
+}
+
+fn matrixMimRunUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixMimRunDispatchPipeline(func: i16, param: u16) void {
+    if (matrixMimRunUseExpandedPipeline()) {
+        matrixMimRunPipelineExpanded(func, param);
+        return;
+    }
+    matrixMimRunPipeline(func, param);
 }
 
 const MatrixMimAddDecision = struct {
@@ -1826,9 +2039,284 @@ fn matrixMimAddDispatch(item: i16) bool {
     return false;
 }
 
-pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
+const MatrixMimAddItemClass = enum {
+    exponent,
+    period,
+    digit,
+    backspace,
+    sign,
+    imaginary_unit,
+    pi,
+    unsupported,
+};
+
+const MatrixMimAddPlan = struct {
+    class: MatrixMimAddItemClass,
+    allow_when_aim_empty: bool,
+    allow_when_aim_nonempty: bool,
+    requests_enqueue: bool,
+    requests_stop: bool,
+};
+
+fn matrixMimAddIsDigit(item: i16) bool {
+    return item == ITM_0 or
+        item == ITM_1 or
+        item == ITM_2 or
+        item == ITM_3 or
+        item == ITM_4 or
+        item == ITM_5 or
+        item == ITM_6 or
+        item == ITM_7 or
+        item == ITM_8 or
+        item == ITM_9;
+}
+
+fn matrixMimAddIsImaginaryUnit(item: i16) bool {
+    return item == ITM_op_j_pol or item == ITM_op_j or item == ITM_CC;
+}
+
+fn matrixMimAddClassify(item: i16) MatrixMimAddItemClass {
+    if (item == ITM_EXPONENT) return .exponent;
+    if (item == ITM_PERIOD) return .period;
+    if (matrixMimAddIsDigit(item)) return .digit;
+    if (item == ITM_BACKSPACE) return .backspace;
+    if (item == ITM_CHS) return .sign;
+    if (matrixMimAddIsImaginaryUnit(item)) return .imaginary_unit;
+    if (item == ITM_CONSTpi) return .pi;
+    return .unsupported;
+}
+
+fn matrixMimAddPlanForClass(class: MatrixMimAddItemClass) MatrixMimAddPlan {
+    return switch (class) {
+        .exponent => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .period => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .digit => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .backspace => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .sign => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .imaginary_unit => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = true, .requests_stop = false },
+        .pi => .{ .class = class, .allow_when_aim_empty = true, .allow_when_aim_nonempty = true, .requests_enqueue = false, .requests_stop = true },
+        .unsupported => .{ .class = class, .allow_when_aim_empty = false, .allow_when_aim_nonempty = false, .requests_enqueue = false, .requests_stop = true },
+    };
+}
+
+fn matrixMimAddPlanAllows(plan: MatrixMimAddPlan, aim_empty: bool) bool {
+    if (aim_empty) {
+        return plan.allow_when_aim_empty;
+    }
+    return plan.allow_when_aim_nonempty;
+}
+
+fn matrixMimAddPlanWantsStop(plan: MatrixMimAddPlan) bool {
+    return plan.requests_stop;
+}
+
+fn matrixMimAddPlanWantsEnqueue(plan: MatrixMimAddPlan) bool {
+    return plan.requests_enqueue;
+}
+
+fn matrixMimAddInitAimForClass(class: MatrixMimAddItemClass) void {
+    switch (class) {
+        .exponent => z47_frontier_matrix_init_aim_exponent(),
+        .period => z47_frontier_matrix_init_aim_period(),
+        .digit => z47_frontier_matrix_init_aim_digit(),
+        else => {},
+    }
+}
+
+fn matrixMimAddHandleAimEmptyClass(class: MatrixMimAddItemClass) MatrixMimAddDecision {
+    switch (class) {
+        .exponent, .period, .digit => {
+            matrixMimAddInitAimForClass(class);
+            return matrixMimAddEnqueueDecision();
+        },
+        .backspace => {
+            z47_frontier_matrix_zero_current_element();
+            return matrixMimAddStopDecision();
+        },
+        .sign => {
+            z47_frontier_matrix_change_sign_current_element();
+            return matrixMimAddStopDecision();
+        },
+        .imaginary_unit => {
+            z47_frontier_matrix_make_j_element();
+            return matrixMimAddStopDecision();
+        },
+        .pi => {
+            z47_frontier_matrix_set_current_to_pi();
+            return matrixMimAddStopDecision();
+        },
+        .unsupported => return matrixMimAddStopDecision(),
+    }
+}
+
+fn matrixMimAddHandleAimNonEmptyClass(class: MatrixMimAddItemClass) MatrixMimAddDecision {
+    switch (class) {
+        .exponent, .period, .digit => {
+            return matrixMimAddEnqueueDecision();
+        },
+        .backspace => {
+            if (z47_frontier_matrix_aim_is_single_plus_digit()) {
+                z47_frontier_matrix_aim_clear_single_plus_digit();
+            }
+            return matrixMimAddEnqueueDecision();
+        },
+        .sign => return matrixMimAddEnqueueDecision(),
+        .imaginary_unit => return matrixMimAddEnqueueDecision(),
+        .pi => {
+            if (z47_frontier_matrix_can_append_pi_literal()) {
+                z47_frontier_matrix_append_pi_literal_and_enter();
+            }
+            return matrixMimAddStopDecision();
+        },
+        .unsupported => return matrixMimAddStopDecision(),
+    }
+}
+
+fn matrixMimAddPlanEvaluate(item: i16, aim_empty: bool) MatrixMimAddDecision {
+    const class = matrixMimAddClassify(item);
+    const plan = matrixMimAddPlanForClass(class);
+
+    if (!matrixMimAddPlanAllows(plan, aim_empty)) {
+        return matrixMimAddStopDecision();
+    }
+
+    if (aim_empty) {
+        return matrixMimAddHandleAimEmptyClass(class);
+    }
+    return matrixMimAddHandleAimNonEmptyClass(class);
+}
+
+fn matrixMimAddApplyPlanner(item: i16) bool {
+    const aim_empty = z47_frontier_matrix_aim_is_empty();
+    const decision = matrixMimAddPlanEvaluate(item, aim_empty);
+    if (!decision.handled) {
+        return false;
+    }
+    if (matrixMimAddPlanWantsStop(matrixMimAddPlanForClass(matrixMimAddClassify(item))) and decision.stop) {
+        return true;
+    }
+    if (decision.enqueue_item and matrixMimAddPlanWantsEnqueue(matrixMimAddPlanForClass(matrixMimAddClassify(item)))) {
+        z47_frontier_matrix_add_item_to_nim_buffer(item);
+        calcMode = CM_MIM;
+    }
+    return true;
+}
+
+fn matrixMimAddDispatchExpanded(item: i16) bool {
+    if (matrixMimAddApplyPlanner(item)) {
+        return true;
+    }
+    return matrixMimAddDispatch(item);
+}
+
+const MatrixWrapStage = enum {
+    clear_flags,
+    handle_i,
+    handle_j,
+    complete,
+};
+
+const MatrixWrapContext = struct {
+    rows: u16,
+    cols: u16,
+    wrapped_i: bool,
+    wrapped_j: bool,
+};
+
+fn matrixWrapContextInit(rows: u16, cols: u16) MatrixWrapContext {
+    return .{
+        .rows = rows,
+        .cols = cols,
+        .wrapped_i = false,
+        .wrapped_j = false,
+    };
+}
+
+fn matrixWrapContextSetWrappedI(ctx: *MatrixWrapContext) void {
+    ctx.wrapped_i = true;
+}
+
+fn matrixWrapContextSetWrappedJ(ctx: *MatrixWrapContext) void {
+    ctx.wrapped_j = true;
+}
+
+fn matrixWrapClearFlags() void {
     clearSystemFlag(FLAG_WRAPEDG);
     clearSystemFlag(FLAG_WRAPEND);
+}
+
+fn matrixWrapHandleINegative(ctx: *MatrixWrapContext) void {
+    matrixWrapNegativeI(ctx.rows, ctx.cols);
+    matrixWrapContextSetWrappedI(ctx);
+}
+
+fn matrixWrapHandleIOverflow(ctx: *MatrixWrapContext) void {
+    matrixWrapOverflowI(ctx.rows, ctx.cols);
+    matrixWrapContextSetWrappedI(ctx);
+}
+
+fn matrixWrapHandleJNegative(ctx: *MatrixWrapContext) void {
+    matrixWrapNegativeJ(ctx.rows, ctx.cols);
+    matrixWrapContextSetWrappedJ(ctx);
+}
+
+fn matrixWrapHandleJOverflow(ctx: *MatrixWrapContext) void {
+    matrixWrapOverflowJ(ctx.rows, ctx.cols);
+    matrixWrapContextSetWrappedJ(ctx);
+}
+
+fn matrixWrapHandleIStage(ctx: *MatrixWrapContext) void {
+    if (getIRegisterAsInt(true) < 0) {
+        matrixWrapHandleINegative(ctx);
+        return;
+    }
+    if (getIRegisterAsInt(true) == @as(i16, @intCast(ctx.rows))) {
+        matrixWrapHandleIOverflow(ctx);
+    }
+}
+
+fn matrixWrapHandleJStage(ctx: *MatrixWrapContext) void {
+    if (getJRegisterAsInt(true) < 0) {
+        matrixWrapHandleJNegative(ctx);
+        return;
+    }
+    if (getJRegisterAsInt(true) == @as(i16, @intCast(ctx.cols))) {
+        matrixWrapHandleJOverflow(ctx);
+    }
+}
+
+fn matrixWrapStageSequence() [4]MatrixWrapStage {
+    return .{ .clear_flags, .handle_i, .handle_j, .complete };
+}
+
+fn matrixWrapExecuteStage(stage: MatrixWrapStage, ctx: *MatrixWrapContext) void {
+    switch (stage) {
+        .clear_flags => matrixWrapClearFlags(),
+        .handle_i => matrixWrapHandleIStage(ctx),
+        .handle_j => matrixWrapHandleJStage(ctx),
+        .complete => {},
+    }
+}
+
+fn matrixWrapPipelineExpanded(rows: u16, cols: u16) bool {
+    var ctx = matrixWrapContextInit(rows, cols);
+    const stages = matrixWrapStageSequence();
+    for (stages) |stage| {
+        matrixWrapExecuteStage(stage, &ctx);
+    }
+    return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
+}
+
+fn matrixWrapUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixWrapDispatch(rows: u16, cols: u16) bool {
+    if (matrixWrapUseExpandedPipeline()) {
+        return matrixWrapPipelineExpanded(rows, cols);
+    }
+
+    matrixWrapClearFlags();
 
     if (getIRegisterAsInt(true) < 0) {
         matrixWrapNegativeI(rows, cols);
@@ -1849,91 +2337,391 @@ pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
     return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
 }
 
+pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
+    return matrixWrapDispatch(rows, cols);
+}
+
 pub export fn showMatrixEditor() callconv(.c) void {
-    matrixEditorRefreshView();
+    matrixEditorRefreshDispatcher();
+}
+
+const MatrixEditStage = enum {
+    resolve_register,
+    validate_vector_mode,
+    leave_tam_mode,
+    save_stats_matrix,
+    validate_type,
+    configure_editor_state,
+    refresh_editor_view,
+};
+
+const MatrixEditContext = struct {
+    reg: u16,
+    dt: u32,
+    valid: bool,
+};
+
+fn matrixEditContextInit(regist: u16) MatrixEditContext {
+    const reg: u16 = if (regist == NOPARAM) @as(u16, @intCast(REGISTER_X)) else regist;
+    return .{ .reg = reg, .dt = 0, .valid = false };
+}
+
+fn matrixEditResolveRegister(ctx: *MatrixEditContext) void {
+    ctx.dt = getRegisterDataType(@as(i16, @intCast(ctx.reg)));
+}
+
+fn matrixEditValidateVectorMode(ctx: MatrixEditContext) bool {
+    if (z47_frontier_matrix_is_register_matrix_vector(ctx.reg) and z47_frontier_matrix_vector_polar_mode(ctx.reg) != 0) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return false;
+    }
+    return true;
+}
+
+fn matrixEditLeaveTamMode() void {
+    leaveTamModeIfEnabled();
+}
+
+fn matrixEditSaveStatsMatrix() void {
+    saveStatsMatrix();
+}
+
+fn matrixEditValidateType(ctx: *MatrixEditContext) bool {
+    if (ctx.dt == dtReal34Matrix or ctx.dt == dtComplex34Matrix) {
+        ctx.valid = true;
+        return true;
+    }
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    ctx.valid = false;
+    return false;
+}
+
+fn matrixEditConfigureEditorState(ctx: MatrixEditContext) void {
+    if (!ctx.valid) return;
+    calcMode = CM_MIM;
+    matrixIndex = ctx.reg;
+    getMatrixFromRegister(ctx.reg);
+
+    setIRegisterAsInt(true, 0);
+    setJRegisterAsInt(true, 0);
+    aimBuffer[0] = 0;
+    nimBufferDisplay[0] = 0;
+}
+
+fn matrixEditRefreshEditorView(ctx: MatrixEditContext) void {
+    if (!ctx.valid) return;
+    showMatrixEditor();
+    refreshScreen(80);
+    printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
+}
+
+fn matrixEditExecuteStage(stage: MatrixEditStage, ctx: *MatrixEditContext) bool {
+    switch (stage) {
+        .resolve_register => matrixEditResolveRegister(ctx),
+        .validate_vector_mode => {
+            if (!matrixEditValidateVectorMode(ctx.*)) return false;
+        },
+        .leave_tam_mode => matrixEditLeaveTamMode(),
+        .save_stats_matrix => matrixEditSaveStatsMatrix(),
+        .validate_type => {
+            if (!matrixEditValidateType(ctx)) return false;
+        },
+        .configure_editor_state => matrixEditConfigureEditorState(ctx.*),
+        .refresh_editor_view => matrixEditRefreshEditorView(ctx.*),
+    }
+    return true;
+}
+
+fn matrixEditStageSequence() [7]MatrixEditStage {
+    return .{
+        .resolve_register,
+        .validate_vector_mode,
+        .leave_tam_mode,
+        .save_stats_matrix,
+        .validate_type,
+        .configure_editor_state,
+        .refresh_editor_view,
+    };
+}
+
+fn matrixEditPipeline(regist: u16) void {
+    var ctx = matrixEditContextInit(regist);
+    const stages = matrixEditStageSequence();
+    for (stages) |stage| {
+        if (!matrixEditExecuteStage(stage, &ctx)) {
+            return;
+        }
+    }
 }
 
 pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
-    const reg: u16 = if (regist == NOPARAM) @as(u16, @intCast(REGISTER_X)) else regist;
-
-    if (z47_frontier_matrix_is_register_matrix_vector(reg) and z47_frontier_matrix_vector_polar_mode(reg) != 0) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-    }
-
-    leaveTamModeIfEnabled();
-    saveStatsMatrix();
-
-    const dt = getRegisterDataType(@as(i16, @intCast(reg)));
-    if (dt == dtReal34Matrix or dt == dtComplex34Matrix) {
-        calcMode = CM_MIM;
-        matrixIndex = reg;
-        getMatrixFromRegister(reg);
-
-        setIRegisterAsInt(true, 0);
-        setJRegisterAsInt(true, 0);
-        aimBuffer[0] = 0;
-        nimBufferDisplay[0] = 0;
-
-        showMatrixEditor();
-        refreshScreen(80);
-        printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
-        return;
-    }
-
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixEditPipeline(regist);
 }
 
 pub export fn fnOldMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
+    oldMatrixPipeline();
+}
+
+const OldMatrixStage = enum {
+    validate_mode,
+    clear_buffers,
+    hide_cursor,
+    reload_register,
+};
+
+fn oldMatrixStageValidateMode() bool {
     if (calcMode == CM_MIM) {
-        aimBuffer[0] = 0;
-        nimBufferDisplay[0] = 0;
-        z47_frontier_matrix_hide_cursor();
-        z47_frontier_matrix_reload_open_matrix_from_register();
-        return;
+        return true;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn oldMatrixStageClearBuffers() void {
+    aimBuffer[0] = 0;
+    nimBufferDisplay[0] = 0;
+}
+
+fn oldMatrixStageHideCursor() void {
+    z47_frontier_matrix_hide_cursor();
+}
+
+fn oldMatrixStageReloadRegister() void {
+    z47_frontier_matrix_reload_open_matrix_from_register();
+}
+
+fn oldMatrixStageExecute(stage: OldMatrixStage) bool {
+    switch (stage) {
+        .validate_mode => return oldMatrixStageValidateMode(),
+        .clear_buffers => oldMatrixStageClearBuffers(),
+        .hide_cursor => oldMatrixStageHideCursor(),
+        .reload_register => oldMatrixStageReloadRegister(),
+    }
+    return true;
+}
+
+fn oldMatrixStageSequence() [4]OldMatrixStage {
+    return .{ .validate_mode, .clear_buffers, .hide_cursor, .reload_register };
+}
+
+fn oldMatrixPipeline() void {
+    const stages = oldMatrixStageSequence();
+    for (stages) |stage| {
+        if (!oldMatrixStageExecute(stage)) {
+            return;
+        }
+    }
 }
 
 pub export fn fnGoToElement(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
+    goToElementPipeline();
+}
+
+const GoToElementStage = enum {
+    validate_mode,
+    commit_partial,
+    run_row_prompt,
+};
+
+fn goToElementValidateMode() bool {
     if (calcMode == CM_MIM) {
-        mimEnter(false);
-        runFunction(ITM_M_GOTO_ROW);
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn goToElementCommitPartial() void {
+    mimEnter(false);
+}
+
+fn goToElementRunRowPrompt() void {
+    runFunction(ITM_M_GOTO_ROW);
+}
+
+fn goToElementExecuteStage(stage: GoToElementStage) bool {
+    switch (stage) {
+        .validate_mode => return goToElementValidateMode(),
+        .commit_partial => goToElementCommitPartial(),
+        .run_row_prompt => goToElementRunRowPrompt(),
+    }
+    return true;
+}
+
+fn goToElementStageSequence() [3]GoToElementStage {
+    return .{ .validate_mode, .commit_partial, .run_row_prompt };
+}
+
+fn goToElementPipeline() void {
+    const stages = goToElementStageSequence();
+    for (stages) |stage| {
+        if (!goToElementExecuteStage(stage)) {
+            return;
+        }
+    }
+}
+
+const MatrixGotoStage = enum {
+    validate_mode,
+    validate_bounds,
+    commit_position,
+    finalize,
+};
+
+const MatrixGotoContext = struct {
+    row: u16,
+    col: u16,
+    valid: bool,
+};
+
+fn matrixGotoContextInit(row: u16, col: u16) MatrixGotoContext {
+    return .{ .row = row, .col = col, .valid = false };
+}
+
+fn matrixGotoValidateMode() bool {
+    if (calcMode == CM_MIM) {
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn matrixGotoValidateBounds(ctx: *MatrixGotoContext) bool {
+    const rows = z47_frontier_matrix_open_rows();
+    const cols = z47_frontier_matrix_open_cols();
+    const in_bounds = !(ctx.row == 0 or ctx.row > rows or ctx.col == 0 or ctx.col > cols);
+    if (!in_bounds) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, @as(i16, @intCast(REGISTER_X)));
+        ctx.valid = false;
+        return false;
+    }
+    ctx.valid = true;
+    return true;
+}
+
+fn matrixGotoCommitPosition(ctx: MatrixGotoContext) void {
+    if (!ctx.valid) return;
+    z47_frontier_matrix_commit_open_to_register();
+    setIRegisterAsInt(false, @as(i16, @intCast(ctx.row)));
+    setJRegisterAsInt(false, @as(i16, @intCast(ctx.col)));
+}
+
+fn matrixGotoFinalize() void {
+    z47_frontier_matrix_calc_mode_normal_gui();
+}
+
+fn matrixGotoExecuteStage(stage: MatrixGotoStage, ctx: *MatrixGotoContext) bool {
+    switch (stage) {
+        .validate_mode => return matrixGotoValidateMode(),
+        .validate_bounds => return matrixGotoValidateBounds(ctx),
+        .commit_position => {
+            matrixGotoCommitPosition(ctx.*);
+            return true;
+        },
+        .finalize => {
+            matrixGotoFinalize();
+            return true;
+        },
+    }
+}
+
+fn matrixGotoStageSequence() [4]MatrixGotoStage {
+    return .{ .validate_mode, .validate_bounds, .commit_position, .finalize };
+}
+
+fn matrixGotoPipeline(row: u16, col: u16) void {
+    var ctx = matrixGotoContextInit(row, col);
+    const stages = matrixGotoStageSequence();
+    for (stages) |stage| {
+        if (!matrixGotoExecuteStage(stage, &ctx)) {
+            return;
+        }
+    }
+}
+
+fn matrixGotoRowModeValidation() bool {
+    if (calcMode == CM_MIM) {
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn matrixGotoRowSetTarget(row: u16) void {
+    tmpRow = row;
+}
+
+fn matrixGotoRowPipeline(row: u16) void {
+    if (!matrixGotoRowModeValidation()) {
         return;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixGotoRowSetTarget(row);
 }
 
 pub export fn fnGoToRow(row: u16) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        tmpRow = row;
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixGotoRowPipeline(row);
 }
 
 pub export fn fnGoToColumn(col: u16) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        const rows = z47_frontier_matrix_open_rows();
-        const cols = z47_frontier_matrix_open_cols();
-
-        if (tmpRow == 0 or tmpRow > rows or col == 0 or col > cols) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, @as(i16, @intCast(REGISTER_X)));
-            return;
-        }
-
-        z47_frontier_matrix_commit_open_to_register();
-        setIRegisterAsInt(false, @as(i16, @intCast(tmpRow)));
-        setJRegisterAsInt(false, @as(i16, @intCast(col)));
-        z47_frontier_matrix_calc_mode_normal_gui();
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixGotoPipeline(tmpRow, col);
 }
 
 pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
+    matrixGrowModeDispatchPipeline(grow_flag);
+}
+
+const MatrixGrowModeStage = enum {
+    decode_flag,
+    apply_flag,
+};
+
+const MatrixGrowModeContext = struct {
+    grow_enabled: bool,
+};
+
+fn matrixGrowModeContextInit(grow_flag: u16) MatrixGrowModeContext {
+    return .{ .grow_enabled = grow_flag != 0 };
+}
+
+fn matrixGrowModeApplyFlag(ctx: MatrixGrowModeContext) void {
+    if (ctx.grow_enabled) {
+        setSystemFlag(FLAG_GROW);
+    } else {
+        clearSystemFlag(FLAG_GROW);
+    }
+}
+
+fn matrixGrowModeExecuteStage(stage: MatrixGrowModeStage, ctx: MatrixGrowModeContext) void {
+    switch (stage) {
+        .decode_flag => {},
+        .apply_flag => matrixGrowModeApplyFlag(ctx),
+    }
+}
+
+fn matrixGrowModeStageSequence() [2]MatrixGrowModeStage {
+    return .{ .decode_flag, .apply_flag };
+}
+
+fn matrixGrowModePipeline(grow_flag: u16) void {
+    const ctx = matrixGrowModeContextInit(grow_flag);
+    const stages = matrixGrowModeStageSequence();
+    for (stages) |stage| {
+        matrixGrowModeExecuteStage(stage, ctx);
+    }
+}
+
+fn matrixGrowModeUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixGrowModeDispatchPipeline(grow_flag: u16) void {
+    if (matrixGrowModeUseExpandedPipeline()) {
+        matrixGrowModePipeline(grow_flag);
+        return;
+    }
+
     if (grow_flag != 0) {
         setSystemFlag(FLAG_GROW);
     } else {
@@ -1969,24 +2757,138 @@ fn matrixMimEnterPipeline(commit: bool) void {
     matrixMimEnterFinalize();
 }
 
-pub export fn mimEnter(commit: bool) callconv(.c) void {
+const MatrixMimEnterStage = enum {
+    apply_aim,
+    commit_if_requested,
+    finalize,
+};
+
+const MatrixMimEnterContext = struct {
+    commit: bool,
+};
+
+fn matrixMimEnterContextInit(commit: bool) MatrixMimEnterContext {
+    return .{ .commit = commit };
+}
+
+fn matrixMimEnterExecuteStage(stage: MatrixMimEnterStage, ctx: MatrixMimEnterContext) void {
+    switch (stage) {
+        .apply_aim => matrixMimEnterApplyAimInput(),
+        .commit_if_requested => matrixMimEnterCommitIfRequested(ctx.commit),
+        .finalize => matrixMimEnterFinalize(),
+    }
+}
+
+fn matrixMimEnterStageSequence() [3]MatrixMimEnterStage {
+    return .{ .apply_aim, .commit_if_requested, .finalize };
+}
+
+fn matrixMimEnterPipelineExpanded(commit: bool) void {
+    const ctx = matrixMimEnterContextInit(commit);
+    const stages = matrixMimEnterStageSequence();
+    for (stages) |stage| {
+        matrixMimEnterExecuteStage(stage, ctx);
+    }
+}
+
+fn matrixMimEnterUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixMimEnterDispatchPipeline(commit: bool) void {
+    if (matrixMimEnterUseExpandedPipeline()) {
+        matrixMimEnterPipelineExpanded(commit);
+        return;
+    }
     matrixMimEnterPipeline(commit);
 }
 
+pub export fn mimEnter(commit: bool) callconv(.c) void {
+    matrixMimEnterDispatchPipeline(commit);
+}
+
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
-    if (calcMode == CM_MIM) {
-        z47_frontier_matrix_inc_dec_i(mode);
-        return;
-    }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    matrixIncDecDispatchPipeline(.row, mode);
 }
 
 pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
+    matrixIncDecDispatchPipeline(.col, mode);
+}
+
+const MatrixIncDecAxis = enum {
+    row,
+    col,
+};
+
+const MatrixIncDecStage = enum {
+    validate_mode,
+    apply_step,
+};
+
+const MatrixIncDecContext = struct {
+    axis: MatrixIncDecAxis,
+    mode: u16,
+};
+
+fn matrixIncDecContextInit(axis: MatrixIncDecAxis, mode: u16) MatrixIncDecContext {
+    return .{ .axis = axis, .mode = mode };
+}
+
+fn matrixIncDecValidateMode() bool {
     if (calcMode == CM_MIM) {
-        z47_frontier_matrix_inc_dec_j(mode);
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+fn matrixIncDecApplyStep(ctx: MatrixIncDecContext) void {
+    switch (ctx.axis) {
+        .row => z47_frontier_matrix_inc_dec_i(ctx.mode),
+        .col => z47_frontier_matrix_inc_dec_j(ctx.mode),
+    }
+}
+
+fn matrixIncDecExecuteStage(stage: MatrixIncDecStage, ctx: MatrixIncDecContext) bool {
+    switch (stage) {
+        .validate_mode => return matrixIncDecValidateMode(),
+        .apply_step => matrixIncDecApplyStep(ctx),
+    }
+    return true;
+}
+
+fn matrixIncDecStageSequence() [2]MatrixIncDecStage {
+    return .{ .validate_mode, .apply_step };
+}
+
+fn matrixIncDecPipeline(axis: MatrixIncDecAxis, mode: u16) void {
+    const ctx = matrixIncDecContextInit(axis, mode);
+    const stages = matrixIncDecStageSequence();
+    for (stages) |stage| {
+        if (!matrixIncDecExecuteStage(stage, ctx)) {
+            return;
+        }
+    }
+}
+
+fn matrixIncDecUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixIncDecDispatchPipeline(axis: MatrixIncDecAxis, mode: u16) void {
+    if (matrixIncDecUseExpandedPipeline()) {
+        matrixIncDecPipeline(axis, mode);
         return;
     }
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+
+    if (calcMode == CM_MIM) {
+        switch (axis) {
+            .row => z47_frontier_matrix_inc_dec_i(mode),
+            .col => z47_frontier_matrix_inc_dec_j(mode),
+        }
+        return;
+    }
+    matrixModeUndefinedError();
 }
 
 const MatrixMutation = enum {
@@ -2043,14 +2945,67 @@ fn matrixMutationPipeline(kind: MatrixMutation) void {
     matrixMutationRunWithBoundaries(kind);
 }
 
+const MatrixMutationStage = enum {
+    validate_mode,
+    begin,
+    apply,
+    end,
+};
+
+const MatrixMutationContext = struct {
+    kind: MatrixMutation,
+};
+
+fn matrixMutationContextInit(kind: MatrixMutation) MatrixMutationContext {
+    return .{ .kind = kind };
+}
+
+fn matrixMutationExecuteStage(stage: MatrixMutationStage, ctx: MatrixMutationContext) bool {
+    switch (stage) {
+        .validate_mode => {
+            if (matrixMutationRejectIfNotAllowed()) return false;
+        },
+        .begin => matrixMutationBegin(),
+        .apply => matrixMutationApply(ctx.kind),
+        .end => matrixMutationEnd(),
+    }
+    return true;
+}
+
+fn matrixMutationStageSequence() [4]MatrixMutationStage {
+    return .{ .validate_mode, .begin, .apply, .end };
+}
+
+fn matrixMutationPipelineExpanded(kind: MatrixMutation) void {
+    const ctx = matrixMutationContextInit(kind);
+    const stages = matrixMutationStageSequence();
+    for (stages) |stage| {
+        if (!matrixMutationExecuteStage(stage, ctx)) {
+            return;
+        }
+    }
+}
+
+fn matrixMutationUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixMutationDispatchPipeline(kind: MatrixMutation) void {
+    if (matrixMutationUseExpandedPipeline()) {
+        matrixMutationPipelineExpanded(kind);
+        return;
+    }
+    matrixMutationPipeline(kind);
+}
+
 pub export fn _fnInsRow(add: bool) callconv(.c) void {
     const kind: MatrixMutation = if (add) .insert_row_after else .insert_row_before;
-    matrixMutationPipeline(kind);
+    matrixMutationDispatchPipeline(kind);
 }
 
 pub export fn _fnInsCol(add: bool) callconv(.c) void {
     const kind: MatrixMutation = if (add) .insert_col_after else .insert_col_before;
-    matrixMutationPipeline(kind);
+    matrixMutationDispatchPipeline(kind);
 }
 
 pub export fn fnInsRow(unused_param_but_mandatory: u16) callconv(.c) void {
@@ -2075,22 +3030,111 @@ pub export fn fnAddCol(unused_param_but_mandatory: u16) callconv(.c) void {
 
 pub export fn fnDelRow(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    matrixMutationPipeline(.delete_row);
+    matrixMutationDispatchPipeline(.delete_row);
 }
 
 pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    matrixMutationPipeline(.delete_col);
+    matrixMutationDispatchPipeline(.delete_col);
 }
 
 pub export fn mimFinalize() callconv(.c) void {
+    matrixFinalizeDispatchPipeline();
+}
+
+pub export fn mimRestore() callconv(.c) void {
+    matrixRestoreDispatchPipeline();
+}
+
+const MatrixFinalizeStage = enum {
+    release_open_matrix,
+    clear_matrix_index,
+};
+
+fn matrixFinalizeExecuteStage(stage: MatrixFinalizeStage) void {
+    switch (stage) {
+        .release_open_matrix => z47_frontier_matrix_finalize_open_matrix_memory(),
+        .clear_matrix_index => matrixIndex = INVALID_VARIABLE,
+    }
+}
+
+fn matrixFinalizeStageSequence() [2]MatrixFinalizeStage {
+    return .{ .release_open_matrix, .clear_matrix_index };
+}
+
+fn matrixFinalizePipeline() void {
+    const stages = matrixFinalizeStageSequence();
+    for (stages) |stage| {
+        matrixFinalizeExecuteStage(stage);
+    }
+}
+
+fn matrixFinalizeUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixFinalizeDispatchPipeline() void {
+    if (matrixFinalizeUseExpandedPipeline()) {
+        matrixFinalizePipeline();
+        return;
+    }
     z47_frontier_matrix_finalize_open_matrix_memory();
     matrixIndex = INVALID_VARIABLE;
 }
 
-pub export fn mimRestore() callconv(.c) void {
+const MatrixRestoreStage = enum {
+    capture_index,
+    finalize,
+    reload_if_valid,
+};
+
+const MatrixRestoreContext = struct {
+    idx: u16,
+};
+
+fn matrixRestoreContextInit() MatrixRestoreContext {
+    return .{ .idx = matrixIndex };
+}
+
+fn matrixRestoreReloadIfValid(ctx: MatrixRestoreContext) void {
+    if (ctx.idx != INVALID_VARIABLE) {
+        getMatrixFromRegister(ctx.idx);
+        matrixIndex = ctx.idx;
+    }
+}
+
+fn matrixRestoreExecuteStage(stage: MatrixRestoreStage, ctx: MatrixRestoreContext) void {
+    switch (stage) {
+        .capture_index => {},
+        .finalize => matrixFinalizeDispatchPipeline(),
+        .reload_if_valid => matrixRestoreReloadIfValid(ctx),
+    }
+}
+
+fn matrixRestoreStageSequence() [3]MatrixRestoreStage {
+    return .{ .capture_index, .finalize, .reload_if_valid };
+}
+
+fn matrixRestorePipeline() void {
+    const ctx = matrixRestoreContextInit();
+    const stages = matrixRestoreStageSequence();
+    for (stages) |stage| {
+        matrixRestoreExecuteStage(stage, ctx);
+    }
+}
+
+fn matrixRestoreUseExpandedPipeline() bool {
+    return true;
+}
+
+fn matrixRestoreDispatchPipeline() void {
+    if (matrixRestoreUseExpandedPipeline()) {
+        matrixRestorePipeline();
+        return;
+    }
+
     const idx = matrixIndex;
-    mimFinalize();
+    matrixFinalizeDispatchPipeline();
     if (idx != INVALID_VARIABLE) {
         getMatrixFromRegister(idx);
         matrixIndex = idx;
@@ -2102,14 +3146,11 @@ pub export fn mimAddNumber(item: i16) callconv(.c) void {
         return;
     }
 
-    _ = matrixMimAddDispatch(item);
+    _ = matrixMimAddDispatchExpanded(item);
 }
 
 pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
-    if (!matrixMimRunEnterValidation()) {
-        return;
-    }
-    matrixMimRunPipeline(func, param);
+    matrixMimRunDispatchPipeline(func, param);
 }
 
 pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
