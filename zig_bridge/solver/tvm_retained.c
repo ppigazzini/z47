@@ -3,4 +3,5 @@
 #include "c47.h"
 
 #define fnTvmBeginMode z47_solver_retained_fnTvmBeginMode
+#define fnTvmEndMode z47_solver_retained_fnTvmEndMode
 #include "../../src/c47/solver/tvm.c"

@@ -60,3 +60,8 @@ pub export fn fnTvmBeginMode(unused_but_mandatory_parameter: u16) callconv(.c) v
     _ = unused_but_mandatory_parameter;
     runtime.tvmBeginMode();
 }
+
+pub export fn fnTvmEndMode(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    runtime.tvmEndMode();
+}
