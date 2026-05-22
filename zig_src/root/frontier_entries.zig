@@ -19,3 +19,7 @@ pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.z47_frontier_retained_fnCFGsettings(unused_but_mandatory_parameter);
 }
+
+pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
+    runtime.z47_frontier_retained_fnP_PrinterOnOff(op);
+}
