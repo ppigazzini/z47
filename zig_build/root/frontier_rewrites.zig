@@ -1,6 +1,10 @@
 const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
+    "assign.c",
+    "bufferize.c",
+    "c47.c",
+    "charString.c",
     "c47Extensions/addons.c",
     "config.c",
     "display.c",
@@ -8,13 +12,18 @@ const replaced_core_sources = [_][]const u8{
     "plotstat.c",
     "programming/manage.c",
     "printing/print.c",
+    "registerValueConversions.c",
     "softmenus.c",
     "screen.c",
     "ui/matrixEditor.c",
 };
 
 const runtime_helper_sources = [_][]const u8{
+    "zig_bridge/root/assign_retained.c",
     "zig_bridge/root/addons_retained.c",
+    "zig_bridge/root/bufferize_retained.c",
+    "zig_bridge/root/c47_retained.c",
+    "zig_bridge/root/char_string_retained.c",
     "zig_bridge/root/config_retained.c",
     "zig_bridge/root/display_retained.c",
     "zig_bridge/root/items_retained.c",
@@ -22,6 +31,7 @@ const runtime_helper_sources = [_][]const u8{
     "zig_bridge/root/matrix_editor_retained.c",
     "zig_bridge/root/plotstat_retained.c",
     "zig_bridge/root/print_retained.c",
+    "zig_bridge/root/register_value_conversions_retained.c",
     "zig_bridge/root/softmenus_retained.c",
     "zig_bridge/root/screen_retained.c",
 };

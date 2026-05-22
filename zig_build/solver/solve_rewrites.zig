@@ -1,6 +1,8 @@
 const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
+    "solver/equation.c",
+    "solver/graph.c",
     "solver/solve.c",
     "solver/integrate.c",
     "solver/tvm.c",
@@ -10,6 +12,8 @@ const replaced_core_sources = [_][]const u8{
 };
 
 const runtime_helper_sources = [_][]const u8{
+    "zig_bridge/solver/equation_retained.c",
+    "zig_bridge/solver/graph_retained.c",
     "zig_bridge/solver/solve_runtime_helpers.c",
     "zig_bridge/solver/solve_retained.c",
     "zig_bridge/solver/integrate_runtime_helpers.c",
