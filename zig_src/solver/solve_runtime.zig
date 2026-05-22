@@ -1,10 +1,25 @@
 pub const bool_t = bool;
 pub const calcRegister_t = i16;
+pub const FIRST_LABEL: u16 = 2044;
+pub const LAST_LABEL: u16 = 6999;
+pub const REGISTER_X: calcRegister_t = 100;
+pub const REGISTER_Z: calcRegister_t = 102;
+pub const REGISTER_T: calcRegister_t = 103;
+pub const INVALID_VARIABLE: u16 = 2199;
+pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+pub const ERROR_LABEL_NOT_FOUND: u8 = 6;
+pub const ERROR_OUT_OF_RANGE: u8 = 8;
+pub const FLAG_ENDPMT: u32 = 0xc029;
+pub const SOLVER_STATUS_USES_FORMULA: u16 = 0x0100;
 
 pub extern var currentSolverProgram: u16;
+pub extern var currentSolverStatus: u16;
 
 pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
 pub extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+pub extern fn clearSystemFlag(flag: u32) void;
+pub extern fn setSystemFlag(flag: u32) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t, regist: calcRegister_t) void;
 pub extern fn z47_solver_retained_fnIntegrate(label_or_variable: u16) void;
 pub extern fn z47_solver_retained_fnIntegrateYX(label_or_variable: u16) void;
 pub extern fn z47_solver_retained_fnProgrammableSum(label: u16) void;
@@ -13,58 +28,50 @@ pub extern fn z47_solver_retained_fnProgrammableiSum(label: u16) void;
 pub extern fn z47_solver_retained_fnProgrammableiProduct(label: u16) void;
 pub extern fn z47_solver_retained_fn1stDeriv(label: u16) void;
 
-extern fn z47_solver_is_label(label: u16) bool_t;
-extern fn z47_solver_is_stack_register(label: u16) bool_t;
-extern fn z47_solver_is_invalid_variable(variable: u16) bool_t;
-extern fn z47_solver_label_to_program(label: u16) u16;
-extern fn z47_solver_report_label_not_found(buf: [*:0]const u8) void;
-extern fn z47_solver_report_out_of_range(label: u16) void;
-extern fn z47_solver_report_label_not_found_pgm_int(buf: [*:0]const u8) void;
-extern fn z47_solver_report_out_of_range_pgm_int(label: u16) void;
-extern fn z47_solver_clear_uses_formula_status() void;
-extern fn z47_solver_tvm_begin_mode() void;
-extern fn z47_solver_tvm_end_mode() void;
-
 pub inline fn isLabel(label: u16) bool {
-    return z47_solver_is_label(label);
+    return FIRST_LABEL <= label and label <= LAST_LABEL;
 }
 
 pub inline fn isStackRegister(label: u16) bool {
-    return z47_solver_is_stack_register(label);
+    return REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T;
 }
 
 pub inline fn isInvalidVariable(variable: u16) bool {
-    return z47_solver_is_invalid_variable(variable);
+    return variable == INVALID_VARIABLE;
 }
 
 pub inline fn labelToProgram(label: u16) u16 {
-    return z47_solver_label_to_program(label);
+    return label - FIRST_LABEL;
 }
 
 pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
-    z47_solver_report_label_not_found(buf);
+    _ = buf;
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub inline fn reportOutOfRange(label: u16) void {
-    z47_solver_report_out_of_range(label);
+    _ = label;
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub inline fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
-    z47_solver_report_label_not_found_pgm_int(buf);
+    _ = buf;
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub inline fn reportOutOfRangePgmInt(label: u16) void {
-    z47_solver_report_out_of_range_pgm_int(label);
+    _ = label;
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub inline fn clearUsesFormulaStatus() void {
-    z47_solver_clear_uses_formula_status();
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
 }
 
 pub inline fn tvmBeginMode() void {
-    z47_solver_tvm_begin_mode();
+    clearSystemFlag(FLAG_ENDPMT);
 }
 
 pub inline fn tvmEndMode() void {
-    z47_solver_tvm_end_mode();
+    setSystemFlag(FLAG_ENDPMT);
 }

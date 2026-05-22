@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     tone: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/ui/tone_runtime_helpers.c");
         cmd.addFileArg(self.tone.getEmittedBin());
     }
 };
@@ -90,7 +89,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/ui/tone_runtime_helpers.c"), .flags = c_flags });
+    _ = c_flags;
     module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
 }
 
@@ -114,7 +113,6 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_parity.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/ui/tone_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addObject(runtime_object);
     return exe;
 }
