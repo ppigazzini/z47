@@ -173,28 +173,20 @@ static void _storeValue(uint16_t regist) {
   if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
     PLOT_ZMY = zoomOverride;  //PLOT EQN
   }
-
-  const rangeCheckedVar_t *rangeVar = NULL;
-  for(uint32_t i = 0; rangeCheckedVars[i].name != NULL; i++) {
-    if(rangeCheckedVars[i].regist == regist) {
-      rangeVar = rangeCheckedVars + i;
-      break;
-    }
-  }
-  if(rangeVar != NULL) {
+  if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnLint(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       longInteger_t x;
       convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-      if(longIntegerCompareInt(x, rangeVar->lowerBound) >= 0 && longIntegerCompareInt(x, rangeVar->upperBound) <= 0) {
+      if(longIntegerCompareInt(x, 0) >= 0 && longIntegerCompareInt(x, 3) <= 0) {
         copySourceRegisterToDestRegister(REGISTER_X, regist);
         copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
       }
       else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function _storeValue:", "Invalid value for reserved variable", rangeVar->name, NULL);
+          moreInfoOnError("In function _storeValue:", "Invalid value for GRAMOD", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       longIntegerFree(x);
