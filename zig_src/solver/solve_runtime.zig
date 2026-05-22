@@ -12,6 +12,9 @@ extern fn z47_solver_is_invalid_variable(variable: u16) bool_t;
 extern fn z47_solver_label_to_program(label: u16) u16;
 extern fn z47_solver_report_label_not_found(buf: [*:0]const u8) void;
 extern fn z47_solver_report_out_of_range(label: u16) void;
+extern fn z47_solver_report_label_not_found_pgm_int(buf: [*:0]const u8) void;
+extern fn z47_solver_report_out_of_range_pgm_int(label: u16) void;
+extern fn z47_solver_clear_uses_formula_status() void;
 
 pub inline fn isLabel(label: u16) bool {
     return z47_solver_is_label(label);
@@ -35,4 +38,16 @@ pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
 
 pub inline fn reportOutOfRange(label: u16) void {
     z47_solver_report_out_of_range(label);
+}
+
+pub inline fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
+    z47_solver_report_label_not_found_pgm_int(buf);
+}
+
+pub inline fn reportOutOfRangePgmInt(label: u16) void {
+    z47_solver_report_out_of_range_pgm_int(label);
+}
+
+pub inline fn clearUsesFormulaStatus() void {
+    z47_solver_clear_uses_formula_status();
 }
