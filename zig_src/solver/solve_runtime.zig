@@ -1,0 +1,38 @@
+pub const bool_t = bool;
+pub const calcRegister_t = i16;
+
+pub extern var currentSolverProgram: u16;
+
+pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
+pub extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+
+extern fn z47_solver_is_label(label: u16) bool_t;
+extern fn z47_solver_is_stack_register(label: u16) bool_t;
+extern fn z47_solver_is_invalid_variable(variable: u16) bool_t;
+extern fn z47_solver_label_to_program(label: u16) u16;
+extern fn z47_solver_report_label_not_found(buf: [*:0]const u8) void;
+extern fn z47_solver_report_out_of_range(label: u16) void;
+
+pub inline fn isLabel(label: u16) bool {
+    return z47_solver_is_label(label);
+}
+
+pub inline fn isStackRegister(label: u16) bool {
+    return z47_solver_is_stack_register(label);
+}
+
+pub inline fn isInvalidVariable(variable: u16) bool {
+    return z47_solver_is_invalid_variable(variable);
+}
+
+pub inline fn labelToProgram(label: u16) u16 {
+    return z47_solver_label_to_program(label);
+}
+
+pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
+    z47_solver_report_label_not_found(buf);
+}
+
+pub inline fn reportOutOfRange(label: u16) void {
+    z47_solver_report_out_of_range(label);
+}
