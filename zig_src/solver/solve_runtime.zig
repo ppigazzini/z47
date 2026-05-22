@@ -6,6 +6,7 @@ pub extern var currentSolverProgram: u16;
 pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
 pub extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
 pub extern fn z47_solver_retained_fnIntegrate(label_or_variable: u16) void;
+pub extern fn z47_solver_retained_fnIntegrateYX(label_or_variable: u16) void;
 
 extern fn z47_solver_is_label(label: u16) bool_t;
 extern fn z47_solver_is_stack_register(label: u16) bool_t;

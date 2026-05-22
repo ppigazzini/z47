@@ -51,3 +51,7 @@ pub export fn fnPgmInt(label: u16) callconv(.c) void {
 pub export fn fnIntegrate(label_or_variable: u16) callconv(.c) void {
     runtime.z47_solver_retained_fnIntegrate(label_or_variable);
 }
+
+pub export fn fnIntegrateYX(label_or_variable: u16) callconv(.c) void {
+    runtime.z47_solver_retained_fnIntegrateYX(label_or_variable);
+}
