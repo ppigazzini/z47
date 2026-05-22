@@ -2,6 +2,7 @@ const std = @import("std");
 
 const replaced_core_sources = [_][]const u8{
     "c47Extensions/addons.c",
+    "config.c",
     "display.c",
     "items.c",
     "printing/print.c",
@@ -11,6 +12,7 @@ const replaced_core_sources = [_][]const u8{
 
 const runtime_helper_sources = [_][]const u8{
     "zig_bridge/root/addons_retained.c",
+    "zig_bridge/root/config_retained.c",
     "zig_bridge/root/display_retained.c",
     "zig_bridge/root/items_retained.c",
     "zig_bridge/root/print_retained.c",
