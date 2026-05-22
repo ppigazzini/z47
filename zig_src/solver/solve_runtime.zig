@@ -17,6 +17,8 @@ extern fn z47_solver_report_out_of_range(label: u16) void;
 extern fn z47_solver_report_label_not_found_pgm_int(buf: [*:0]const u8) void;
 extern fn z47_solver_report_out_of_range_pgm_int(label: u16) void;
 extern fn z47_solver_clear_uses_formula_status() void;
+extern fn z47_solver_tvm_begin_mode() void;
+extern fn z47_solver_tvm_end_mode() void;
 
 pub inline fn isLabel(label: u16) bool {
     return z47_solver_is_label(label);
@@ -52,4 +54,12 @@ pub inline fn reportOutOfRangePgmInt(label: u16) void {
 
 pub inline fn clearUsesFormulaStatus() void {
     z47_solver_clear_uses_formula_status();
+}
+
+pub inline fn tvmBeginMode() void {
+    z47_solver_tvm_begin_mode();
+}
+
+pub inline fn tvmEndMode() void {
+    z47_solver_tvm_end_mode();
 }
