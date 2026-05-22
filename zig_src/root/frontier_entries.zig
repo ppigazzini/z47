@@ -1,3 +1,4 @@
+const std = @import("std");
 const runtime = @import("frontier_runtime.zig");
 
 const DSP_MAX: u16 = 19;
@@ -19,8 +20,10 @@ const SETTING_SINT_MODE: c_int = 0x0083;
 const TI_VERSION: u8 = 10;
 const TI_WHO: u8 = 11;
 const TI_RESET: u8 = 8;
+const TI_PRINT_COMPLETE: u8 = 136;
 
 const CM_NORMAL: u8 = 0;
+const CM_AIM: u8 = 1;
 const CM_CONFIRMATION: u8 = 11;
 const CM_NO_UNDO: u8 = 16;
 
@@ -42,6 +45,7 @@ const FIRST_GLOBAL_REGISTER: u16 = 0;
 const LAST_GLOBAL_REGISTER: u16 = 125;
 const FIRST_NAMED_VARIABLE: u16 = 256;
 const FIRST_LOCAL_REGISTER: u16 = 7000;
+const LAST_ITEM: u16 = 2732;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_Y: i16 = 101;
@@ -167,6 +171,9 @@ extern fn fnRefreshState() void;
 extern fn showSoftmenu(menu: i16) void;
 extern fn setLineDelay(delay: u16) void;
 extern fn print_lf() void;
+extern fn printLine(buff: [*:0]const u8, with_lf: c_int) void;
+extern fn printJustified(buff: [*:0]const u8) void;
+extern fn printTab(col: u16) void;
 extern fn printProgram(list: bool, lines: u16) void;
 extern fn cmdPrint(arg: u16, op: c_int) void;
 extern fn popSoftmenu() void;
@@ -206,6 +213,21 @@ extern fn create_filename(file_suffix: [*:0]const u8) void;
 extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, one_line: bool) void;
 extern fn z47_frontier_print_set_printer_sbi(status: bool) void;
 extern fn z47_frontier_print_get_unicode_value(regist: i16) u16;
+extern fn z47_frontier_named_variable_label(index: u16, buffer: [*]u8, buffer_size: u16) bool;
+extern fn z47_frontier_user_variable_should_skip(label: [*:0]const u8) bool;
+extern fn z47_frontier_find_named_variable_register(label: [*:0]const u8) u16;
+extern fn z47_frontier_program_begin() [*]u8;
+extern fn z47_frontier_programs_end(step: [*]u8) bool;
+extern fn z47_frontier_program_next_step(step: [*]u8) [*]u8;
+extern fn z47_frontier_program_global_label(step: [*]u8, label: [*]u8, label_size: u16) bool;
+extern fn z47_frontier_program_step_is_end(step: [*]u8) bool;
+extern fn z47_frontier_program_label_prefix() [*:0]const u8;
+extern fn z47_frontier_program_label_suffix() [*:0]const u8;
+extern fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) void;
+extern fn z47_frontier_format_register_label(register_no: u16, label: [*]u8, label_size: u16) void;
+extern fn z47_frontier_item_catalog_name(item: u16) [*:0]const u8;
+extern fn z47_frontier_item_softmenu_name(item: u16) [*:0]const u8;
+extern var numberOfPrograms: u16;
 
 fn clampDisplayDigits(display_format_n: u16) u8 {
     const clamped: u16 = if (display_format_n > DSP_MAX) DSP_MAX else display_format_n;
@@ -582,7 +604,75 @@ pub export fn fnClAll(confirmation: u16) callconv(.c) void {
 }
 
 pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    runtime.z47_frontier_retained_fnP_User(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    currentKeyCode = 255;
+
+    if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or ((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP))) {
+            displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        }
+        return;
+    }
+
+    var label: [32]u8 = [_]u8{0} ** 32;
+    var user_variable_found = false;
+    var idx: u16 = 0;
+    while (idx < numberOfNamedVariables) : (idx += 1) {
+        if (!z47_frontier_named_variable_label(idx, &label, label.len)) {
+            continue;
+        }
+
+        if (z47_frontier_user_variable_should_skip(@ptrCast(&label))) {
+            continue;
+        }
+
+        const variable = z47_frontier_find_named_variable_register(@ptrCast(&label));
+        printReg(variable, @ptrCast(&label), true, LINE_FULL, false);
+        user_variable_found = true;
+
+        if (z47_frontier_print_exit_pressed()) {
+            return;
+        }
+    }
+
+    if (user_variable_found) {
+        print_lf();
+    }
+
+    var step = z47_frontier_program_begin();
+    var program_number: u16 = 1;
+    var first_program_label = true;
+
+    while (!z47_frontier_programs_end(step)) {
+        const next_step = z47_frontier_program_next_step(step);
+
+        if (z47_frontier_program_global_label(step, &label, label.len)) {
+            printLine(z47_frontier_program_label_prefix(), 0);
+            printLine(@ptrCast(&label), 0);
+            printLine(z47_frontier_program_label_suffix(), if (first_program_label) 0 else 1);
+
+            if (first_program_label) {
+                z47_frontier_print_program_counter(program_number, numberOfPrograms);
+                first_program_label = false;
+            }
+        }
+
+        if (z47_frontier_program_step_is_end(step)) {
+            printLine("END", if (first_program_label) 0 else 1);
+            if (first_program_label) {
+                z47_frontier_print_program_counter(program_number, numberOfPrograms);
+            }
+            program_number += 1;
+            first_program_label = true;
+        }
+
+        step = next_step;
+        if (z47_frontier_print_exit_pressed()) {
+            return;
+        }
+    }
+
+    printLine(".END.", 1);
 }
 
 pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
@@ -592,6 +682,22 @@ pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
     }
 
     runtime.z47_frontier_retained_fnP_Alpha(register_no);
+}
+
+pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
+    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        var label: [32]u8 = [_]u8{0} ** 32;
+        z47_frontier_format_register_label(register_no, &label, label.len);
+        printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
+        return;
+    }
+
+    if (calcMode != CM_NORMAL) {
+        return;
+    }
+
+    create_filename(".REGS.TSV");
+    stackregister_csv_out(@as(i16, @intCast(register_no)), @as(i16, @intCast(register_no)), false);
 }
 
 pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -801,6 +907,37 @@ pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
         },
         else => {},
     }
+}
+
+pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    currentKeyCode = 255;
+
+    if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        return;
+    }
+
+    printLine("item catname  menuname", 1);
+
+    var line_buf: [128]u8 = undefined;
+    var item: u16 = 1;
+    while (item < LAST_ITEM) : (item += 1) {
+        const catalog_name = z47_frontier_item_catalog_name(item);
+        const softmenu_name = z47_frontier_item_softmenu_name(item);
+
+        const left = std.fmt.bufPrintZ(&line_buf, "{d: >4} {s}", .{ item, catalog_name }) catch continue;
+        printLine(left, 0);
+        printTab(97);
+
+        const right = std.fmt.bufPrintZ(&line_buf, "{s} ", .{softmenu_name}) catch continue;
+        printLine(right, 1);
+
+        if (z47_frontier_print_exit_pressed()) {
+            break;
+        }
+    }
+
+    temporaryInformation = TI_PRINT_COMPLETE;
 }
 
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {

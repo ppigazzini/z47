@@ -16,6 +16,12 @@
 #define fnP_Alpha z47_frontier_retained_fnP_Alpha
 #define fnP_Sigma z47_frontier_retained_fnP_Sigma
 #define fnP_All_Regs z47_frontier_retained_fnP_All_Regs
+#define fnP_Regs z47_frontier_retained_fnP_Regs
+#define fnP_PrintAllItems z47_frontier_retained_fnP_PrintAllItems
+
+void z47_frontier_retained_fnP_Regs(uint16_t registerNo);
+void z47_frontier_retained_fnP_PrintAllItems(uint16_t unusedButMandatoryParameter);
+
 #include "../../src/c47/printing/print.c"
 
 bool_t z47_frontier_print_reg_range(uint16_t first_register_no, uint16_t last_register_no) {
@@ -89,4 +95,119 @@ void z47_frontier_print_set_printer_sbi(bool_t status) {
 
 uint16_t z47_frontier_print_get_unicode_value(calcRegister_t regist) {
 	return _getUnicodeValue(regist);
+}
+
+bool_t z47_frontier_named_variable_label(uint16_t index, char *buffer, uint16_t buffer_size) {
+	if(index >= numberOfNamedVariables || buffer == NULL || buffer_size == 0) {
+		return false;
+	}
+
+	uint16_t length = allNamedVariables[index].variableName[0];
+	if(length >= buffer_size) {
+		length = buffer_size - 1;
+	}
+
+	xcopy(buffer, allNamedVariables[index].variableName + 1, length);
+	buffer[length] = 0;
+	return true;
+}
+
+bool_t z47_frontier_user_variable_should_skip(const char *label) {
+	if(label == NULL) {
+		return true;
+	}
+
+	return compareString(label, "STATS", CMP_NAME) == 0 ||
+	       compareString(label, "HISTO", CMP_NAME) == 0 ||
+	       compareString(label, "Mat_A", CMP_NAME) == 0 ||
+	       compareString(label, "Mat_B", CMP_NAME) == 0 ||
+	       compareString(label, "Mat_X", CMP_NAME) == 0;
+}
+
+calcRegister_t z47_frontier_find_named_variable_register(const char *label) {
+	return findNamedVariable(label);
+}
+
+uint8_t *z47_frontier_program_begin(void) {
+	return beginOfProgramMemory;
+}
+
+bool_t z47_frontier_programs_end(uint8_t *step) {
+	return isAtEndOfPrograms(step);
+}
+
+uint8_t *z47_frontier_program_next_step(uint8_t *step) {
+	return findNextStep(step);
+}
+
+bool_t z47_frontier_program_global_label(uint8_t *step, char *label, uint16_t label_size) {
+	if(step == NULL || label == NULL || label_size == 0) {
+		return false;
+	}
+
+	if(!checkOpCodeOfStep(step, ITM_LBL)) {
+		return false;
+	}
+
+	if(*(step + 1) <= LAST_LOCAL_LABEL) {
+		return false;
+	}
+
+	uint16_t length = *(step + 2);
+	if(length >= label_size) {
+		length = label_size - 1;
+	}
+	xcopy(label, step + 3, length);
+	label[length] = 0;
+	return true;
+}
+
+bool_t z47_frontier_program_step_is_end(uint8_t *step) {
+	return isAtEndOfProgram(step);
+}
+
+const char *z47_frontier_program_label_prefix(void) {
+	return "LBL " STD_LEFT_SINGLE_QUOTE;
+}
+
+const char *z47_frontier_program_label_suffix(void) {
+	return STD_RIGHT_SINGLE_QUOTE;
+}
+
+void z47_frontier_print_program_counter(uint16_t program_number, uint16_t total_programs) {
+	sprintf(tmpString, "Prgm #" "%" PRIu16 "/" "%" PRIu16 "", program_number, total_programs);
+	printJustified(tmpString);
+}
+
+void z47_frontier_format_register_label(uint16_t register_no, char *label, uint16_t label_size) {
+	if(label == NULL || label_size == 0) {
+		return;
+	}
+
+	label[0] = 0;
+
+	if(REGISTER_X <= register_no && register_no <= REGISTER_W) {
+		label[0] = letteredRegisterName((calcRegister_t)register_no);
+		label[1] = 0;
+	}
+	else if(register_no < REGISTER_X) {
+		snprintf(label, label_size, "R%02u", register_no);
+	}
+	else if(FIRST_LOCAL_REGISTER <= register_no && register_no <= LAST_LOCAL_REGISTER) {
+		snprintf(label, label_size, "R.%03u", register_no - 100);
+	}
+	else if(FIRST_NAMED_VARIABLE <= register_no && register_no <= LAST_NAMED_VARIABLE) {
+		snprintf(label, label_size, "%s", (char *)allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName + 1);
+	}
+	else if(FIRST_NAMED_RESERVED_VARIABLE <= register_no && register_no <= LAST_RESERVED_VARIABLE) {
+		snprintf(label, label_size, "%s", (char *)allReservedVariables[register_no - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+	}
+}
+
+const char *z47_frontier_item_catalog_name(uint16_t item) {
+	return indexOfItems[item].itemCatalogName;
+}
+
+const char *z47_frontier_item_softmenu_name(uint16_t item) {
+	return indexOfItems[item].itemSoftmenuName;
 }
