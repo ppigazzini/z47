@@ -1330,6 +1330,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSetMatrixDimensions       (uint16_t unusedButMandatoryParameter) {}
   void fnSetMatrixDimensionsGr     (uint16_t unusedButMandatoryParameter) {}
   void fnGetMatrixDimensions       (uint16_t unusedButMandatoryParameter) {}
+  void fnGetMatrixDimensions42     (uint16_t unusedButMandatoryParameter) {}
   void fnTranspose                 (uint16_t unusedButMandatoryParameter) {}
   void fnLuDecomposition           (uint16_t unusedButMandatoryParameter) {}
   void fnDeterminant               (uint16_t unusedButMandatoryParameter) {}
@@ -3291,7 +3292,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1524 */  { fnNop,                           TM_VARONLY,                  "MVAR",                                        "MVAR",                                        (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
 /* 1525 */  { fnDelRow,                        NOPARAM,                     "M.DELR",                                      "DELR",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1526 */  { fnSetMatrixDimensions,           TM_M_DIM,                    "M.DIM",                                       "DIM",                                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     | HG_ENABLED         },
-/* 1527 */  { fnGetMatrixDimensions,           REGISTER_X,                  "42DIM#",                                      "42DIM#",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
+/* 1527 */  { fnGetMatrixDimensions42,         NOPARAM,                     "42DIM#",                                      "42DIM#",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1528 */  { fnSetDateFormat,                 ITM_MDY,                     "MDY",                                         "MDY",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1529 */  { fnEditMatrix,                    NOPARAM,                     "M.EDIT",                                      "EDIT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1530 */  { fnEditMatrix,                    TM_REGISTER,                 "M.EDITN",                                     "EDITN",                                       (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
