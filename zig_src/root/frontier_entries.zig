@@ -25,6 +25,8 @@ const CM_CONFIRMATION: u8 = 11;
 const CM_NO_UNDO: u8 = 16;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+const ERROR_MATRIX_MISMATCH: u8 = 21;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
 const ERROR_PRINTING_DISABLED: u8 = 63;
 
@@ -42,6 +44,7 @@ const FIRST_NAMED_VARIABLE: u16 = 256;
 const FIRST_LOCAL_REGISTER: u16 = 7000;
 
 const REGISTER_X: i16 = 100;
+const REGISTER_Y: i16 = 101;
 const REGISTER_Z: i16 = 102;
 const REGISTER_T: u16 = 103;
 const REGISTER_D: u16 = 107;
@@ -60,9 +63,18 @@ const PGM_SINGLE_STEP: u8 = 6;
 const PRN_ALL: u16 = 0;
 const PRN_STK: u16 = 1;
 const PRN_REGS: u16 = 2;
+const PRN_GLOBALr: u16 = 3;
+const PRN_LOCALr: u16 = 4;
+const PRN_NAMEDr: u16 = 5;
 const PRN_Xr: u16 = 6;
+const PRN_XYr: u16 = 7;
+const PRN_TMP: u16 = 8;
+
+const TEMP_REGISTER_1: u16 = 135;
 
 const LINE_FULL: c_int = 0;
+const LINE_LEFT: c_int = 1;
+const LINE_RIGHT: c_int = 2;
 
 const MNU_GAP_L: i16 = 2151;
 const MNU_GAP_RX: i16 = 2152;
@@ -89,6 +101,16 @@ const DF_SCI: u8 = 2;
 const DF_ENG: u8 = 3;
 const DF_SF: u8 = 4;
 const DF_UN: u8 = 5;
+
+const dtLongInteger: u32 = 0;
+const dtReal34: u32 = 1;
+const dtComplex34: u32 = 2;
+const dtTime: u32 = 3;
+const dtDate: u32 = 4;
+const dtString: u32 = 5;
+const dtReal34Matrix: u32 = 6;
+const dtComplex34Matrix: u32 = 7;
+const dtShortInteger: u32 = 8;
 
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
@@ -173,6 +195,15 @@ extern fn z47_frontier_current_number_of_local_registers() u16;
 extern fn z47_frontier_print_exit_pressed() bool;
 extern fn z47_frontier_print_sigma_line(index: u16) void;
 extern fn z47_frontier_print_alpha_register(register_no: u16) void;
+extern fn getRegisterDataType(regist: i16) u32;
+extern fn z47_frontier_x_real_matrix_rows() u16;
+extern fn z47_frontier_x_real_matrix_cols() u16;
+extern fn z47_frontier_x_complex_matrix_rows() u16;
+extern fn z47_frontier_x_complex_matrix_cols() u16;
+extern fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) void;
+extern fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) void;
+extern fn create_filename(file_suffix: [*:0]const u8) void;
+extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, one_line: bool) void;
 extern fn z47_frontier_print_set_printer_sbi(status: bool) void;
 extern fn z47_frontier_print_get_unicode_value(regist: i16) u16;
 
@@ -185,6 +216,13 @@ fn displayFormatReset(display_format_n: u16) void {
     displayFormatDigits = clampDisplayDigits(display_format_n);
     clearSystemFlag(FLAG_FRACT);
     DM_Cycling = 0;
+}
+
+fn isPrintableScalarType(dt: u32) bool {
+    return switch (dt) {
+        dtLongInteger, dtReal34, dtShortInteger, dtString, dtDate, dtTime => true,
+        else => false,
+    };
 }
 
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -615,8 +653,89 @@ pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
                 const stack_top: u16 = if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
                 _ = z47_frontier_print_reg_range(stack_top, @as(u16, @intCast(REGISTER_X)));
             },
+            PRN_XYr => {
+                const x_type = getRegisterDataType(REGISTER_X);
+                if (isPrintableScalarType(x_type)) {
+                    const y_type = getRegisterDataType(REGISTER_Y);
+                    if (isPrintableScalarType(y_type)) {
+                        printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_LEFT, false);
+                        printReg(@as(u16, @intCast(REGISTER_Y)), null, false, LINE_RIGHT, false);
+                        return;
+                    }
+                    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+                    return;
+                }
+
+                if (x_type == dtReal34Matrix) {
+                    const rows = z47_frontier_x_real_matrix_rows();
+                    const cols = z47_frontier_x_real_matrix_cols();
+
+                    if (cols == 2) {
+                        var i: u32 = 0;
+                        while (i < rows) : (i += 1) {
+                            const left_index = i * 2;
+                            z47_frontier_x_real_matrix_element_to_temp1(left_index);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+
+                            z47_frontier_x_real_matrix_element_to_temp1(left_index + 1);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+                        }
+                        return;
+                    }
+
+                    if (rows == 2) {
+                        var j: u32 = 0;
+                        while (j < cols) : (j += 1) {
+                            z47_frontier_x_real_matrix_element_to_temp1(j);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+
+                            z47_frontier_x_real_matrix_element_to_temp1(j + cols);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+                        }
+                        return;
+                    }
+
+                    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+                    return;
+                }
+
+                if (x_type == dtComplex34Matrix) {
+                    const rows = z47_frontier_x_complex_matrix_rows();
+                    const cols = z47_frontier_x_complex_matrix_cols();
+
+                    if (cols == 2) {
+                        var i: u32 = 0;
+                        while (i < rows) : (i += 1) {
+                            const left_index = i * 2;
+                            z47_frontier_x_complex_matrix_element_to_temp1(left_index);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+
+                            z47_frontier_x_complex_matrix_element_to_temp1(left_index + 1);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+                        }
+                        return;
+                    }
+
+                    if (rows == 2) {
+                        var j: u32 = 0;
+                        while (j < cols) : (j += 1) {
+                            z47_frontier_x_complex_matrix_element_to_temp1(j);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+
+                            z47_frontier_x_complex_matrix_element_to_temp1(j + cols);
+                            printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+                        }
+                        return;
+                    }
+
+                    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+                    return;
+                }
+
+                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            },
             else => {
-                runtime.z47_frontier_retained_fnP_All_Regs(option);
+                // No-op for unsupported print-to-printer options in this command.
             },
         }
         return;
@@ -626,7 +745,62 @@ pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
         return;
     }
 
-    runtime.z47_frontier_retained_fnP_All_Regs(option);
+    create_filename(".REGS.TSV");
+
+    var s: u16 = 0;
+    var n: u16 = 0;
+    const local_count = z47_frontier_current_number_of_local_registers();
+
+    switch (option) {
+        PRN_ALL => {
+            stackregister_csv_out(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_W)), false);
+            stackregister_csv_out(0, 99, false);
+            if (local_count > 0) {
+                stackregister_csv_out(@as(i16, @intCast(FIRST_LOCAL_REGISTER)), @as(i16, @intCast(FIRST_LOCAL_REGISTER + local_count - 1)), false);
+            }
+            if (numberOfNamedVariables > 0) {
+                stackregister_csv_out(@as(i16, @intCast(FIRST_NAMED_VARIABLE)), @as(i16, @intCast(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1)), false);
+            }
+        },
+        PRN_REGS => {
+            lastErrorCode = getRegParam(null, &s, &n, null);
+            if (lastErrorCode == ERROR_NONE) {
+                stackregister_csv_out(@as(i16, @intCast(s)), @as(i16, @intCast((s + n) - 1)), false);
+            } else {
+                displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            }
+        },
+        PRN_STK => {
+            if (getSystemFlag(FLAG_SSIZE8)) {
+                stackregister_csv_out(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_D)), false);
+            } else {
+                stackregister_csv_out(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_T)), false);
+            }
+        },
+        PRN_GLOBALr => {
+            stackregister_csv_out(0, 99, false);
+        },
+        PRN_LOCALr => {
+            if (local_count > 0) {
+                stackregister_csv_out(@as(i16, @intCast(FIRST_LOCAL_REGISTER)), @as(i16, @intCast(FIRST_LOCAL_REGISTER + local_count - 1)), false);
+            }
+        },
+        PRN_NAMEDr => {
+            if (numberOfNamedVariables > 0) {
+                stackregister_csv_out(@as(i16, @intCast(FIRST_NAMED_VARIABLE)), @as(i16, @intCast(FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1)), false);
+            }
+        },
+        PRN_Xr => {
+            stackregister_csv_out(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_X)), false);
+        },
+        PRN_TMP => {
+            stackregister_csv_out(@as(i16, @intCast(TEMP_REGISTER_1)), @as(i16, @intCast(TEMP_REGISTER_1)), false);
+        },
+        PRN_XYr => {
+            stackregister_csv_out(@as(i16, @intCast(REGISTER_X)), @as(i16, @intCast(REGISTER_Y)), true);
+        },
+        else => {},
+    }
 }
 
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
