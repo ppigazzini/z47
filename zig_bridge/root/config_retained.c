@@ -2,7 +2,45 @@
 
 #include "c47.h"
 
+void z47_frontier_retained_fnSetGapChar(uint16_t charParam);
+void z47_frontier_retained_fnSettingsDispFormatGrpL(uint16_t param);
+void z47_frontier_retained_fnSettingsDispFormatGrp1Lo(uint16_t param);
+void z47_frontier_retained_fnSettingsDispFormatGrp1L(uint16_t param);
+void z47_frontier_retained_fnSettingsDispFormatGrpR(uint16_t param);
+void z47_frontier_retained_fnMenuGapL(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnMenuGapRX(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnMenuGapR(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnIntegerMode(uint16_t mode);
+void z47_frontier_retained_fnWho(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnVersion(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnSetRoundingMode(uint16_t RM);
+void z47_frontier_retained_fnSetSignificantDigits(uint16_t S);
+void z47_frontier_retained_fnSetBaseNr(uint16_t S);
+void z47_frontier_retained_fnSetFractionDigits(uint16_t S);
+void z47_frontier_retained_fnAngularMode(uint16_t am);
+void z47_frontier_retained_fnFractionType(uint16_t unusedButMandatoryParameter);
+void z47_frontier_retained_fnRange(uint16_t R);
+void z47_frontier_retained_fnHide(uint16_t H);
 void z47_frontier_retained_fnKeysManagement(uint16_t choice);
 
+#define fnSetGapChar z47_frontier_retained_fnSetGapChar
+#define fnSettingsDispFormatGrpL z47_frontier_retained_fnSettingsDispFormatGrpL
+#define fnSettingsDispFormatGrp1Lo z47_frontier_retained_fnSettingsDispFormatGrp1Lo
+#define fnSettingsDispFormatGrp1L z47_frontier_retained_fnSettingsDispFormatGrp1L
+#define fnSettingsDispFormatGrpR z47_frontier_retained_fnSettingsDispFormatGrpR
+#define fnMenuGapL z47_frontier_retained_fnMenuGapL
+#define fnMenuGapRX z47_frontier_retained_fnMenuGapRX
+#define fnMenuGapR z47_frontier_retained_fnMenuGapR
+#define fnIntegerMode z47_frontier_retained_fnIntegerMode
+#define fnWho z47_frontier_retained_fnWho
+#define fnVersion z47_frontier_retained_fnVersion
+#define fnSetRoundingMode z47_frontier_retained_fnSetRoundingMode
+#define fnSetSignificantDigits z47_frontier_retained_fnSetSignificantDigits
+#define fnSetBaseNr z47_frontier_retained_fnSetBaseNr
+#define fnSetFractionDigits z47_frontier_retained_fnSetFractionDigits
+#define fnAngularMode z47_frontier_retained_fnAngularMode
+#define fnFractionType z47_frontier_retained_fnFractionType
+#define fnRange z47_frontier_retained_fnRange
+#define fnHide z47_frontier_retained_fnHide
 #define fnKeysManagement z47_frontier_retained_fnKeysManagement
 #include "../../src/c47/config.c"
