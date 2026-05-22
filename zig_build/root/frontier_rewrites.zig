@@ -56,6 +56,7 @@ const replaced_core_sources = [_][]const u8{
     "realType.c",
     "recall.c",
     "registerValueConversions.c",
+    "reservedRegisterLookupGenerator.c",
     "browsers/asnBrowser.c",
     "browsers/flagBrowser.c",
     "browsers/fontBrowser.c",
