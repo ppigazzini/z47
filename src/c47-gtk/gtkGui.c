@@ -22,6 +22,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gint z47_destroyCalc(GtkWidget *widget, GdkEventAny *event, gpointer data);
   extern gboolean z47_onConfigureEvent(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
   extern gboolean z47_onUIActivity(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gboolean z47_keyPressed_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
+  extern gboolean z47_keyReleased_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -529,7 +531,7 @@ Jacos Mac, Control works
 
 
 
-  gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
+  gboolean z47_keyReleased_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     if(event_keyval == event->keyval + CTRL_State) {
       event_keyval = 99999999;
     }
@@ -688,7 +690,7 @@ returnKeyReleasedFalse:
   }
 
 
-  gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
+  gboolean z47_keyPressed_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
 
     char strr[30];
@@ -5316,8 +5318,8 @@ void check_all_btn_widgets_for_consistency(void) {
         gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
       #endif // CALCMODEL == USER_R47
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(z47_destroyCalc), NULL);
-      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
-      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
+      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(z47_keyPressed_wrapper), NULL);
+      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(z47_keyReleased_wrapper), NULL);  //JM CTRL
 
       //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
       g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onConfigureEvent), NULL);
@@ -6490,8 +6492,8 @@ int keyCntA = 0;
       gtk_widget_set_name(frmCalc, "mainWindow");
       gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
-      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
-      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
+      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(z47_keyPressed_wrapper), NULL);
+      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(z47_keyReleased_wrapper), NULL);  //JM CTRL
 
       gtk_widget_add_events(GTK_WIDGET(frmCalc), GDK_CONFIGURE);
 
