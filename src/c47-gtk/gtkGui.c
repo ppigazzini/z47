@@ -175,23 +175,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   //JM NUMERIC SECTION FOR ALPHAMODE - FORCE Numeral - Numbers from PC --> produce numbers.
-  void btnClicked_NU(GtkWidget *w, gpointer data) {
-    bool_t numLock_MEM;
-    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
-
-    clearSystemFlag(FLAG_NUMLOCK);
-    shiftF = false;       //JM
-    shiftG = true;      //JM
-    btnClicked(w, data);
-
-    if(numLock_MEM) {
-      setSystemFlag(FLAG_NUMLOCK);
-    }
-    else {
-      clearSystemFlag(FLAG_NUMLOCK);
-    }
-    refreshStatusBar();
-  }
+  extern void btnClicked_NU(GtkWidget *w, gpointer data);
 
 //  //Shifted numbers !@#$%^&*() from PC --> activate shift and use numnber 1234567890. Restore case.
 //  void btnClicked_SNU(GtkWidget *w, gpointer data) {
@@ -430,26 +414,10 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //  }
 
 
-  static void sendKey(int16_t sent) {
-    #if defined(VERBOSEKEYS)
-      printf("Sending ... %i\n", sent);
-    #endif //VERBOSEKEYS
-    showHideAlphaMode();
-    if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
-      pemAlpha(sent);
-    }
-    else {
-        processAimInput(sent);
-      }
-    }
+  extern void sendKey(int16_t sent);
 
 
-  static bool_t checkNormal(int16_t keyNr, int16_t item) {
-    int16_t result = Norm_Key_00_item_in_layout;
-    int16_t ss = Check_Norm_Key_00_Assigned(&result, keyNr);
-    //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
-    return (ss == item);
-  }
+  extern bool_t checkNormal(int16_t keyNr, int16_t item);
 
 
 #if defined(DONOTINCLUDE)
