@@ -350,6 +350,25 @@ pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
     _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
 }
 
+pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
+    gtk_init(argc, argv);
+    setupUI();
+
+    // Keep the legacy settle pass that aligns shifted labels before restore.
+    calcModeAimGui();
+    while (gtk_events_pending() != 0) {
+        _ = gtk_main_iteration();
+    }
+    calcModeNormalGui();
+    while (gtk_events_pending() != 0) {
+        _ = gtk_main_iteration();
+    }
+}
+
+pub export fn z47_startup_enter_mainloop() callconv(.c) void {
+    gtk_main();
+}
+
 fn normKey00ItemInLayout() i16 {
     return switch (calcModel) {
         USER_C47, USER_DM42 => ITM_SIGMAPLUS,
@@ -819,6 +838,13 @@ pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*
 extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnFnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnFnClickedR(widget: ?*anyopaque, data: [*:0]const u8) void;
+extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
+extern fn setupUI() void;
+extern fn calcModeAimGui() void;
+extern fn calcModeNormalGui() void;
+extern fn gtk_events_pending() c_int;
+extern fn gtk_main_iteration() c_int;
+extern fn gtk_main() void;
 extern fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn z47_keyReleased_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;

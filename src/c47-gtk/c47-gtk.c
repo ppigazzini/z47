@@ -11,6 +11,9 @@
 #if defined(PC_BUILD)
   #include "gtkGui.h"
 
+  extern void z47_startup_init_ui(int *argc, char ***argv);
+  extern void z47_startup_enter_mainloop(void);
+
   char                modelString[50];
   bool_t              mockup = false;
   uint16_t            dumpMenus = 0;
@@ -269,20 +272,7 @@
       printf("calcModel A re-set to %d\n", calcModelNew);
     }
 
-    gtk_init(&argc, &argv);
-    setupUI();
-
-    // Without the following 8 lines of code
-    // the f- and g-shifted labels are
-    // miss aligned! I dont know why!
-    calcModeAimGui();
-    while(gtk_events_pending()) {
-      gtk_main_iteration();
-    }
-    calcModeNormalGui();
-    while(gtk_events_pending()) {
-      gtk_main_iteration();
-    }
+    z47_startup_init_ui(&argc, &argv);
 
     restoreCalc();
 
@@ -384,7 +374,7 @@
       refreshScreen(191);
     }
 
-    gtk_main();
+    z47_startup_enter_mainloop();
 
     return 0;
   }
