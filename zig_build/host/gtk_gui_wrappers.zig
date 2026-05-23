@@ -23,6 +23,7 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
+const USER_R47: u8 = 66;
 const ITM_NULL: i16 = 0;
 const ITM_SIGMAPLUS: i16 = 433;
 const FLAG_ALPHA: u16 = 0x800e;
@@ -33,6 +34,17 @@ const CM_PEM: u8 = 3;
 const CM_AIM: u8 = 1;
 const CM_EIM: u8 = 13;
 const CM_TIMER: u8 = 14;
+const TM_FLAGR: u16 = 10004;
+const TM_FLAGW: u16 = 10005;
+const TM_STORCL: u16 = 10006;
+const TM_LABEL: u16 = 10009;
+const TM_SOLVE: u16 = 10010;
+const TM_MENU: u16 = 10017;
+const TM_LBLONLY: u16 = 10018;
+const MNU_MVAR: i16 = 1398;
+const GDK_KEY_Up: u32 = 65362;
+const GDK_KEY_Down: u32 = 65364;
+const GDK_KEY_apostrophe: u32 = 39;
 const TI_NO_INFO: u8 = 0;
 const SCRUPD_AUTO: u8 = 0x00;
 
@@ -54,6 +66,12 @@ extern fn clearSystemFlag(flag: u16) void;
 extern fn setSystemFlag(flag: u16) void;
 extern fn getSystemFlag(flag: u16) bool;
 extern fn Check_Norm_Key_00_Assigned(result: *i16, tempkey: i16) i16;
+extern fn currentMenu() i16;
+extern fn showSoftmenu(id: i16) void;
+extern fn runFunction(func: i16) void;
+extern fn closeNim() void;
+extern fn refreshScreen(source: u16) void;
+extern fn btnFnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 
 fn normKey00ItemInLayout() i16 {
     return switch (calcModel) {
@@ -63,6 +81,22 @@ fn normKey00ItemInLayout() i16 {
         USER_R47fg_g => ITM_NULL,
         else => -1,
     };
+}
+
+fn shortcutProfileValue() u8 {
+    if (calcModel == USER_C47) return USER_C47;
+    if (calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g) {
+        return USER_R47;
+    }
+    return 0;
+}
+
+fn isLabelText() bool {
+    return (tam.mode == TM_MENU or tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or tam.mode == TM_STORCL or tam.alpha) and getSystemFlag(FLAG_ALPHA);
+}
+
+fn alphaArrowsOffAndUpDn() bool {
+    return tam.mode == TM_FLAGR or tam.mode == TM_FLAGW or tam.mode == TM_STORCL or tam.mode == TM_MENU;
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -96,6 +130,120 @@ pub export fn checkNormal(keyNr: i16, item: i16) callconv(.c) bool {
     var result: i16 = normKey00ItemInLayout();
     const ss = Check_Norm_Key_00_Assigned(&result, keyNr);
     return ss == item;
+}
+
+pub export fn shortCutCommand(
+    widget: ?*anyopaque,
+    key: c_int,
+    keyCode: c_int,
+    condition1: bool,
+    exitIfInNIM: bool,
+    disable: bool,
+    shift: [*:0]const u8,
+    keyForBtnClicked: [*:0]const u8,
+    modes: u16,
+    requiredCalcMode2: i16,
+    itemForRunFunction: i16,
+) callconv(.c) bool {
+    _ = currentMenu;
+    _ = shortcutProfileValue;
+    if (disable) return false;
+
+    if (isLabelText() and key != '\'' and key != @as(c_int, @intCast(GDK_KEY_Up)) and key != @as(c_int, @intCast(GDK_KEY_Down))) {
+        return false;
+    }
+
+    if ((shiftF or shiftG) and
+        !(shift[0] == 0 and keyForBtnClicked[0] != '-') and
+        !(shiftF and shift[0] == 'f' and keyForBtnClicked[0] != '-') and
+        !(shiftG and shift[0] == 'g' and keyForBtnClicked[0] != '-')) {
+        return false;
+    }
+
+    if (key == keyCode and condition1) {
+        temporaryInformation = TI_NO_INFO;
+
+        if (exitIfInNIM and calcMode == CM_NIM and calcMode != requiredCalcMode2) {
+            closeNim();
+        }
+
+        if (itemForRunFunction < 0) {
+            showSoftmenu(itemForRunFunction);
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(1);
+            return true;
+        }
+
+        if (((@as(u32, 1) << @as(u5, @intCast(calcMode))) & @as(u32, modes)) != 0 or calcMode == @as(u8, @intCast(requiredCalcMode2))) {
+            if (keyForBtnClicked[0] != '-') {
+                if (shift[0] == 'f') {
+                    shiftF = true;
+                    shiftG = false;
+                } else if (shift[0] == 'g') {
+                    shiftF = false;
+                    shiftG = true;
+                }
+                btnClicked(widget, keyForBtnClicked);
+                screenUpdatingMode = SCRUPD_AUTO;
+                refreshScreen(2);
+                return true;
+            }
+
+            if (itemForRunFunction >= 0) {
+                runFunction(itemForRunFunction);
+                screenUpdatingMode = SCRUPD_AUTO;
+                refreshScreen(3);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+pub export fn shortCutFNCommand(
+    widget: ?*anyopaque,
+    key: c_int,
+    keyCode: c_int,
+    condition1: bool,
+    disable: bool,
+    shift: [*:0]const u8,
+    keyForBtnClicked: [*:0]const u8,
+    modes: u16,
+    requiredCalcMode2: i16,
+    itemForRunFunction: i16,
+) callconv(.c) bool {
+    if (disable) return false;
+    if (isLabelText()) return false;
+
+    if (key == keyCode and condition1) {
+        temporaryInformation = TI_NO_INFO;
+
+        if (((@as(u32, 1) << @as(u5, @intCast(calcMode))) & @as(u32, modes)) != 0 or calcMode == @as(u8, @intCast(requiredCalcMode2))) {
+            if (keyForBtnClicked[0] != '-') {
+                if (shift[0] == 'f') {
+                    shiftF = true;
+                    shiftG = false;
+                } else if (shift[0] == 'g') {
+                    shiftF = false;
+                    shiftG = true;
+                }
+                btnFnClicked(widget, keyForBtnClicked);
+                screenUpdatingMode = SCRUPD_AUTO;
+                refreshScreen(5);
+                return true;
+            }
+
+            if (itemForRunFunction >= 0) {
+                runFunction(itemForRunFunction);
+                screenUpdatingMode = SCRUPD_AUTO;
+                refreshScreen(6);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
