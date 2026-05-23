@@ -26,6 +26,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gboolean z47_keyPressed_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
   extern gboolean z47_keyReleased_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
   extern void z47_setupUI_preamble(void);
+  extern void z47_setupUI_no_keyboard_shell(void);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -6130,38 +6131,7 @@ int keyCntA = 0;
       gtk_widget_show_all(frmCalc);
 
     #else // SIMULATOR_ON_SCREEN_KEYBOARD == 0
-      // The main window
-      frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_default_size(GTK_WINDOW(frmCalc), SCREEN_WIDTH*BIG_SCREEN_COEF, SCREEN_HEIGHT*BIG_SCREEN_COEF);
-      gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
-      gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
-
-      gtk_widget_set_name(frmCalc, "mainWindow");
-      gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
-      g_signal_connect(frmCalc, "destroy", G_CALLBACK(z47_destroyCalc), NULL);
-      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(z47_keyPressed_wrapper), NULL);
-      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(z47_keyReleased_wrapper), NULL);  //JM CTRL
-
-      gtk_widget_add_events(GTK_WIDGET(frmCalc), GDK_CONFIGURE);
-
-      // Fixed grid to freely put widgets on it
-      grid = gtk_fixed_new();
-      gtk_container_add(GTK_CONTAINER(frmCalc), grid);
-
-      // Big LCD screen
-      screen = gtk_drawing_area_new();
-      gtk_widget_set_size_request(screen, SCREEN_WIDTH*BIG_SCREEN_COEF, SCREEN_HEIGHT*BIG_SCREEN_COEF);
-      gtk_fixed_put(GTK_FIXED(grid), screen, 0, 0);
-      screenStride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH)/4;
-      int numBytes = screenStride * SCREEN_HEIGHT * 4;
-      screenData = malloc(numBytes);
-      if(screenData == NULL) {
-        sprintf(errorMessage, "error allocating %d x %d = %d bytes for screenData", screenStride * 4, SCREEN_HEIGHT, numBytes);
-        moreInfoOnError("In function setupUI:", errorMessage, NULL, NULL);
-        exit(1);
-      }
-
-      g_signal_connect(screen, "draw", G_CALLBACK(z47_drawScreen_wrapper), NULL);
+      z47_setupUI_no_keyboard_shell();
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
