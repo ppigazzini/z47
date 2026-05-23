@@ -22,6 +22,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gint z47_destroyCalc(GtkWidget *widget, GdkEventAny *event, gpointer data);
   extern gboolean z47_onConfigureEvent(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
   extern gboolean z47_onUIActivity(GtkWidget *widget, GdkEvent *event, gpointer data);
+  extern gboolean z47_drawScreen_wrapper(GtkWidget *widget, cairo_t *cr, gpointer data);
   extern gboolean z47_keyPressed_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
   extern gboolean z47_keyReleased_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
 
@@ -5446,7 +5447,7 @@ void check_all_btn_widgets_for_consistency(void) {
         exit(1);
       }
 
-      g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
+      g_signal_connect(screen, "draw", G_CALLBACK(z47_drawScreen_wrapper), NULL);
 
 
       // 1st row: F1 to F6 buttons
@@ -6514,7 +6515,7 @@ int keyCntA = 0;
         exit(1);
       }
 
-      g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
+      g_signal_connect(screen, "draw", G_CALLBACK(z47_drawScreen_wrapper), NULL);
 
       gtk_widget_show_all(frmCalc);
     #endif //  (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
