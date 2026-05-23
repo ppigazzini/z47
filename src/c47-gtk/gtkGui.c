@@ -25,6 +25,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   extern gboolean z47_drawScreen_wrapper(GtkWidget *widget, cairo_t *cr, gpointer data);
   extern gboolean z47_keyPressed_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
   extern gboolean z47_keyReleased_wrapper(GtkWidget *w, GdkEventKey *event, gpointer data);
+  extern void z47_setupUI_preamble(void);
 
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
@@ -336,7 +337,7 @@ Jacos Mac, Control works
 
 
 
-  gboolean z47_keyReleased_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
+  gboolean z47_keyReleased_c_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     if(event_keyval == event->keyval + CTRL_State) {
       event_keyval = 99999999;
     }
@@ -495,7 +496,7 @@ returnKeyReleasedFalse:
   }
 
 
-  gboolean z47_keyPressed_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {
+  gboolean z47_keyPressed_c_impl(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
 
     char strr[30];
@@ -5070,7 +5071,7 @@ void check_all_btn_widgets_for_consistency(void) {
   ***********************************************/
   void setupUI(void) {
     #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
-      int            numBytes, xPos, yPos;
+      int            xPos, yPos;
       GError         *error;
       GtkCssProvider *cssProvider;
       GdkDisplay     *cssDisplay;
@@ -5092,166 +5093,7 @@ void check_all_btn_widgets_for_consistency(void) {
       g_object_unref(cssProvider);
       free(cssData);
 
-      // Get the monitor geometry to determine whether the calc is portrait or landscape
-      GdkRectangle monitor;
-      gdk_monitor_get_geometry(gdk_display_get_monitor(gdk_display_get_default(), 0), &monitor);
-      //gdk_screen_get_monitor_geometry(gdk_screen_get_default(), 0, &monitor);
-
-      if(calcAutoLandscapePortrait) {
-        calcLandscape = (monitor.height < 1025);
-      }
-
-      // The main window
-      frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-      if(calcLandscape) {
-        gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
-      }
-      else {
-        #if NARROW_SCREEN == 0
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  526, 980);
-        #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-          gtk_window_set_default_size(GTK_WINDOW(frmCalc),  400, 862);
-        #endif // NARROW_SCREEN == 0
-      }
-
-      gtk_widget_set_name(frmCalc, "mainWindow");
-      gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
-      #if CALCMODEL == USER_R47
-        gtk_window_set_title(GTK_WINDOW(frmCalc), "R47");                   //JM NAME
-      #else
-        gtk_window_set_title(GTK_WINDOW(frmCalc), "C47");                   //JM NAME
-      #endif // CALCMODEL == USER_R47
-      g_signal_connect(frmCalc, "destroy", G_CALLBACK(z47_destroyCalc), NULL);
-      g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(z47_keyPressed_wrapper), NULL);
-      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(z47_keyReleased_wrapper), NULL);  //JM CTRL
-
-      //g_signal_connect(frmCalc, "screen-changed", G_CALLBACK(onScreenChanged), NULL); // The screen-changed event does not seem to be generated reliably.
-      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onConfigureEvent), NULL);
-
-      g_signal_connect(frmCalc, "configure-event", G_CALLBACK(z47_onUIActivity), NULL);
-      g_signal_connect(frmCalc, "button-press-event", G_CALLBACK(z47_onUIActivity), NULL);
-      g_signal_connect(frmCalc, "focus-in-event", G_CALLBACK(z47_onUIActivity), NULL);
-      g_signal_connect(frmCalc, "focus-out-event", G_CALLBACK(z47_onUIActivity), NULL);
-
-      #if (BIG_SCREEN_COEF > 1) || NARROW_SCREEN
-        gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
-        gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
-      #endif // BIG_SCREEN_COEF > 1 || NARROW_SCREEN
-
-      gtk_widget_add_events(GTK_WIDGET(frmCalc), GDK_CONFIGURE);
-
-      // Fixed grid to freely put widgets on it
-      grid = gtk_fixed_new();
-      gtk_container_add(GTK_CONTAINER(frmCalc), grid);
-
-
-
-      if(modelString[0] == 0) {
-        strcpy(modelString, "res/");
-        strcat(modelString, isR47FAM ? "R47" : "C47");
-        if(calcLandscape) {
-          strcat(modelString,"short.png");
-        }
-        else {
-          strcat(modelString,".png");
-        }
-      }
-      else {
-        char modelString2[50];
-        strcpy(modelString2,"res/");
-        strcat(modelString2,modelString);
-        strcpy(modelString,modelString2);
-      }
-
-
-      // Backround image
-      #if NARROW_SCREEN == 0
-        backgroundImage = gtk_image_new_from_file(modelString);
-        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
-      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
-      #endif // NARROW_SCREEN == 0
-
-
-
-
-      // Frame around the f key
-      lblFKey2 = gtk_label_new("");
-      gtk_widget_set_name(lblFKey2, "fSoftkeyArea");
-      if(kbd_usr[10].primary == ITM_SHIFTf) {                        //JM only draw the thin lines under the expansion f/g keys if the origianl fg key is used.
-        gtk_widget_set_size_request(lblFKey2, 61-8-2-2,  5-2);
-        gtk_fixed_put(GTK_FIXED(grid), lblFKey2, 350+4+2, 563-1);
-      }
-
-      // Frame around the g key
-      lblGKey2 = gtk_label_new("");
-      gtk_widget_set_name(lblGKey2, "gSoftkeyArea");
-      if(kbd_usr[11].primary == ITM_SHIFTg) {                        //JM only draw the thin lines under the expansion f/g keys if the origianl fg key is used.
-        gtk_widget_set_size_request(lblGKey2, 61-8-2-2,  5-2);
-        gtk_fixed_put(GTK_FIXED(grid), lblGKey2, 350+4+2 + DELTA_KEYS_X, 563-1);
-      }
-
-      // Frame around the Sigma+ key
-      //lblEKey = gtk_label_new("");
-      //gtk_widget_set_name(lblEKey,"eSoftkeyArea");
-      //gtk_widget_set_size_request(lblEKey, 61-8-2-2,  5-2);
-      //gtk_fixed_put(GTK_FIXED(grid), lblEKey, 350+4+2 - 4 * DELTA_KEYS_X, 563-1 - DELTA_KEYS_Y);
-
-      // Frame around the Sigma- key
-      //lblEEKey = gtk_label_new("");
-      //gtk_widget_set_name(lblEEKey,"eSoftkeyArea");
-      //gtk_widget_set_size_request(lblEEKey, 61-8-2-2,  5-2);
-      //gtk_fixed_put(GTK_FIXED(grid), lblEEKey, 350+4+2 - 4 * DELTA_KEYS_X, 563-1 - 2*DELTA_KEYS_Y);
-
-
-      // Frame around the SIN key
-      //lblSKey = gtk_label_new("");
-      //gtk_widget_set_name(lblSKey,"eSoftkeyArea");
-      //gtk_widget_set_size_request(lblSKey, 61-8-2-2,  5-2);
-      //gtk_fixed_put(GTK_FIXED(grid), lblSKey, 350+4+2 - 1 * DELTA_KEYS_X, 563-1 -0* DELTA_KEYS_Y);
-
-      // Area for the softkeys
-      //lblSoftkeyArea1 = gtk_label_new("");
-      //gtk_widget_set_name(lblSoftkeyArea1, "softkeyArea");
-      //gtk_widget_set_size_request(lblSoftkeyArea1, 460, 40);
-      //gtk_fixed_put(GTK_FIXED(grid), lblSoftkeyArea1, 33, 72+168+50);
-
-      //lblSoftkeyArea2 = gtk_label_new("");
-      //gtk_widget_set_name(lblSoftkeyArea2, "softkeyArea");
-      //gtk_widget_set_size_request(lblSoftkeyArea2, 460, 44);
-      //gtk_fixed_put(GTK_FIXED(grid), lblSoftkeyArea2, 33, 72+168+50+66);
-
-
-
-      // Behind screen
-      /*lblBehindScreen = gtk_label_new("");                          //vv JM
-      gtk_widget_set_name(lblBehindScreen, "behindScreen");
-      gtk_widget_set_size_request(lblBehindScreen, 412, 252);
-      gtk_fixed_put(GTK_FIXED(grid), lblBehindScreen, 57, 66);*/    //^^
-
-
-
-      // LCD screen 400x240
-      screen = gtk_drawing_area_new();
-      gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");  //JM
-      #if NARROW_SCREEN == 0
-        gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
-      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-        gtk_fixed_put(GTK_FIXED(grid), screen, 0, 0);
-      #endif // NARROW_SCREEN == 0
-      screenStride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH)/4;
-      numBytes = screenStride * SCREEN_HEIGHT * 4;
-      screenData = malloc(numBytes);
-      if(screenData == NULL) {
-        sprintf(errorMessage, "error allocating %d x %d = %d bytes for screenData", screenStride * 4, SCREEN_HEIGHT, numBytes);
-        moreInfoOnError("In function setupUI:", errorMessage, NULL, NULL);
-        exit(1);
-      }
-
-      g_signal_connect(screen, "draw", G_CALLBACK(z47_drawScreen_wrapper), NULL);
+      z47_setupUI_preamble();
 
 
       // 1st row: F1 to F6 buttons
