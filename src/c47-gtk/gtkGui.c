@@ -6491,7 +6491,7 @@ int keyCntA = 0;
 
       gtk_widget_set_name(frmCalc, "mainWindow");
       gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
-      g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
+      g_signal_connect(frmCalc, "destroy", G_CALLBACK(z47_destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(z47_keyPressed_wrapper), NULL);
       g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(z47_keyReleased_wrapper), NULL);  //JM CTRL
 
