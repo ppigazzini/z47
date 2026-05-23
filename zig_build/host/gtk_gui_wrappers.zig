@@ -317,6 +317,39 @@ pub export fn z47_setupUI_preamble() callconv(.c) void {
     setupUiPreamble();
 }
 
+pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
+    frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(@ptrCast(frmCalc), SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
+    gtk_window_set_decorated(@ptrCast(frmCalc), 0);
+    gtk_window_set_position(@ptrCast(frmCalc), GTK_WIN_POS_CENTER);
+
+    gtk_widget_set_name(frmCalc, "mainWindow");
+    gtk_window_set_resizable(@ptrCast(frmCalc), 0);
+    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
+    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
+
+    gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
+
+    grid = gtk_fixed_new();
+    gtk_container_add(@ptrCast(frmCalc), grid);
+
+    screen = gtk_drawing_area_new();
+    gtk_widget_set_size_request(screen, SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
+    gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
+
+    screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
+    const numBytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
+    const raw = malloc(numBytes);
+    if (raw == null) {
+        moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
+        exit(1);
+    }
+    screenData = @ptrCast(@alignCast(raw.?));
+
+    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+}
+
 fn normKey00ItemInLayout() i16 {
     return switch (calcModel) {
         USER_C47, USER_DM42 => ITM_SIGMAPLUS,
