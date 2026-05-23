@@ -4,6 +4,8 @@ const retained_gtk_sources = [_][]const u8{
     "hal/gui.c",
     "hal/audio.c",
     "hal/print_ir.c",
+    "hal/io.c",
+    "hal/lcd.c",
 };
 
 const runtime_helper_sources = [_][]const u8{};
@@ -66,7 +68,29 @@ pub fn addToModule(
         }),
     });
 
+    const io_runtime = b.addObject(.{
+        .name = b.fmt("{s}-gtk-io-runtime", .{name_prefix}),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/host/gtk_io_runtime.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
+    const lcd_runtime = b.addObject(.{
+        .name = b.fmt("{s}-gtk-lcd-runtime", .{name_prefix}),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/host/gtk_lcd_runtime.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
     module.addObject(signal_wrappers);
     module.addObject(gui_wrappers);
     module.addObject(hal_runtime);
+    module.addObject(io_runtime);
+    module.addObject(lcd_runtime);
 }
