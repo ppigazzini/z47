@@ -8,6 +8,14 @@ pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque,
     return 0;
 }
 
+pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    return z47_keyPressed_impl(widget, event, data);
+}
+
+pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    return z47_keyReleased_impl(widget, event, data);
+}
+
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     _ = widget;
     _ = event;
@@ -60,6 +68,8 @@ pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*
 
 extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnFnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+extern fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn fnStopTimerApp() void;
 extern fn saveCalc() void;
 extern fn gtk_main_quit() void;
