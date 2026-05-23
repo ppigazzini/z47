@@ -16,6 +16,10 @@ pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, d
     return z47_keyReleased_impl(widget, event, data);
 }
 
+pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    return drawScreen(widget, cr, data);
+}
+
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     _ = widget;
     _ = event;
@@ -70,6 +74,7 @@ extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 extern fn btnFnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn fnStopTimerApp() void;
 extern fn saveCalc() void;
 extern fn gtk_main_quit() void;
