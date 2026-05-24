@@ -34,6 +34,9 @@ const FLAG_QUIET: u16 = 0x8019;
 const FLAG_PRTACT: u16 = 0xc020;
 
 const REGISTER_X: i16 = 100;
+const REGISTER_Y: i16 = 101;
+
+const ERROR_NONE: c_int = 0;
 
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
@@ -48,6 +51,7 @@ extern fn beep_volume_down() void;
 extern fn liftStack() void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
+extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: [*c]c_int) c_int;
 extern fn print_byte(byte: u8) void;
 extern fn printer_get_delay() u16;
 extern fn printer_set_delay(delay: u16) u16;
@@ -97,8 +101,31 @@ extern fn set_reset_state_file(path: [*c]const u8) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strtok(str: [*c]u8, delim: [*c]const u8) [*c]u8;
 
+const GmpInt = extern struct {
+    mp_alloc: c_int,
+    mp_size: c_int,
+    mp_d: [*c]c_ulong,
+};
+
+extern fn __gmpz_init(x: [*c]GmpInt) void;
+extern fn __gmpz_clear(x: [*c]GmpInt) void;
+extern fn __gmpz_get_ui(x: [*c]const GmpInt) c_ulong;
+
 fn isExitKey(key: c_int) bool {
     return key == KEY_EXIT or key == KEY_BSP;
+}
+
+fn registerToUInt32(reg: i16) ?u32 {
+    var li: [1]GmpInt = undefined;
+    __gmpz_init(&li[0]);
+    defer __gmpz_clear(&li[0]);
+
+    var fractional: c_int = 0;
+    if (getRegisterAsLongIntQuiet(reg, &li[0], &fractional) != ERROR_NONE) {
+        return null;
+    }
+
+    return @truncate(@as(u64, @intCast(__gmpz_get_ui(&li[0]))));
 }
 
 pub export fn audioTone(frequency: u32) callconv(.c) void {
@@ -167,6 +194,14 @@ pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
 
 pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
+
+    if (getSystemFlag(FLAG_QUIET) != 0) {
+        return;
+    }
+
+    const frequency = registerToUInt32(REGISTER_Y) orelse return;
+    const ms_delay = registerToUInt32(REGISTER_X) orelse return;
+    _Buzz(frequency, ms_delay);
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
