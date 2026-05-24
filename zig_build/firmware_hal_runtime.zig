@@ -48,6 +48,8 @@ const SCRUPD_AUTO: u8 = 0x00;
 const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
 const DT_REAL34_MATRIX: u32 = 6;
+const DT_LONG_INTEGER: u32 = 0;
+const DT_REAL34: u32 = 1;
 const DEC_ROUND_DOWN: c_int = 5;
 
 var io_write_enabled: c_int = 0;
@@ -65,6 +67,7 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
 extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: [*c]c_int) c_int;
 extern fn getRegisterDataType(regist: i16) u32;
+extern fn getRegisterDataPointer(regist: i16) ?*anyopaque;
 extern fn print_byte(byte: u8) void;
 extern fn printer_get_delay() u16;
 extern fn printer_set_delay(delay: u16) u16;
@@ -150,6 +153,18 @@ fn isExitKey(key: c_int) bool {
 }
 
 fn registerToUInt32(reg: i16) ?u32 {
+    const data_type = getRegisterDataType(reg);
+    if (data_type == DT_REAL34) {
+        const raw_ptr = getRegisterDataPointer(reg) orelse return null;
+        const real_ptr: [*c]const DecQuad = @ptrCast(raw_ptr);
+        return real34ToUInt32(real_ptr);
+    }
+
+    if (data_type != DT_LONG_INTEGER) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        return null;
+    }
+
     var li: [1]GmpInt = undefined;
     __gmpz_init(&li[0]);
     defer __gmpz_clear(&li[0]);
