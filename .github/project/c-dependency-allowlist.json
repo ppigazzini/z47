@@ -1,0 +1,24 @@
+{
+  "description": "Phase A C dependency audit policy",
+  "scan_globs": [
+    "build.zig",
+    "zig_build/**/*.zig"
+  ],
+  "allowed_external_prefixes": [
+    "dep/decNumberICU/",
+    "decNumberICU/",
+    "dep/DMCP_SDK/",
+    "dep/DMCP5_SDK/",
+    "dep/forcecrc32.c"
+  ],
+  "first_party_prefixes": [
+    "src/",
+    "zig_bridge/",
+    "zig_build/tests/"
+  ],
+  "generated_prefixes": [
+    "generated/",
+    "zig_build/generated/"
+  ],
+  "baseline_file": ".github/project/c-dependency-first-party-baseline.txt"
+}
