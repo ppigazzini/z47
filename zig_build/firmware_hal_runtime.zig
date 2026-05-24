@@ -6,6 +6,10 @@ const MRET_EXIT: c_int = -2;
 const MRET_SAVESTATE: c_int = 777;
 const MRET_LOADSTATE: c_int = 888;
 
+const KEY_ENTER: c_int = 13;
+const KEY_BSP: c_int = 17;
+const KEY_EXIT: c_int = 33;
+
 const FA_READ: u8 = 0x01;
 const FA_WRITE: u8 = 0x02;
 const FA_OPEN_EXISTING: u8 = 0x00;
@@ -29,6 +33,8 @@ const IO_MODE_UPDATE: c_int = 2;
 const FLAG_QUIET: u16 = 0x8019;
 const FLAG_PRTACT: u16 = 0xc020;
 
+const REGISTER_X: i16 = 100;
+
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
 
@@ -40,6 +46,8 @@ extern fn get_beep_volume() u16;
 extern fn beep_volume_up() void;
 extern fn beep_volume_down() void;
 extern fn liftStack() void;
+extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
+extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
 extern fn print_byte(byte: u8) void;
 extern fn printer_get_delay() u16;
 extern fn printer_set_delay(delay: u16) u16;
@@ -89,6 +97,10 @@ extern fn set_reset_state_file(path: [*c]const u8) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strtok(str: [*c]u8, delim: [*c]const u8) [*c]u8;
 
+fn isExitKey(key: c_int) bool {
+    return key == KEY_EXIT or key == KEY_BSP;
+}
+
 pub export fn audioTone(frequency: u32) callconv(.c) void {
     start_buzzer_freq(frequency);
     sys_delay(250);
@@ -120,6 +132,8 @@ pub export fn getBeepVolume() callconv(.c) u16 {
 pub export fn fnGetVolume(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     liftStack();
+    convertUInt64ToShortIntegerRegister(0, get_beep_volume(), 10, REGISTER_X);
+    convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
 }
 
 pub export fn fnVolumeUp(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -329,7 +343,10 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    _ = fname;
+    lcd_puts(t24, "Saving state ...");
+    lcd_puts(t24, fname);
+    lcd_refresh();
+
     if (data != null) {
         _ = strcpy(@ptrCast(data.?), fpath);
     }
@@ -339,6 +356,33 @@ pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*a
 
 pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
     _ = fname;
+
+    lcd_puts(t24, "");
+    lcd_puts(t24, "WARNING: Current calculator state");
+    lcd_puts(t24, "will be lost.");
+    lcd_puts(t24, "");
+    lcd_puts(t24, "");
+    lcd_puts(t24, "Press [ENTER] to confirm.");
+    lcd_refresh();
+
+    wait_for_key_release(-1);
+
+    while (true) {
+        const key = runner_get_key(null);
+        if (isExitKey(key)) {
+            return 0;
+        }
+        if (is_menu_auto_off() != 0) {
+            return MRET_EXIT;
+        }
+        if (key == KEY_ENTER) {
+            break;
+        }
+    }
+
+    lcd_putsRAt(t24, 6, "  Loading ...");
+    lcd_refresh_wait();
+
     if (data != null) {
         _ = strcpy(@ptrCast(data.?), fpath);
     }
@@ -347,7 +391,10 @@ pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*a
 }
 
 pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    _ = fname;
+    lcd_puts(t24, "Saving program ...");
+    lcd_puts(t24, fname);
+    lcd_refresh();
+
     if (data != null) {
         _ = strcpy(@ptrCast(data.?), fpath);
     }
@@ -356,6 +403,10 @@ pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?
 
 pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
     _ = fname;
+
+    lcd_putsRAt(t24, 6, "  Loading ...");
+    lcd_refresh_wait();
+
     if (data != null) {
         _ = strcpy(@ptrCast(data.?), fpath);
     }
@@ -363,9 +414,27 @@ pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?
 }
 
 pub export fn show_warning(str: [*c]u8) callconv(.c) void {
+    const delim = "\n";
     var ptr = strtok(str, "\n");
-    while (ptr != null and ptr[0] != 0) {
-        ptr = strtok(null, "\n");
+
+    lcd_clear_buf();
+    lcd_putsRAt(t24, 0, "                   WARNING");
+    lcd_setLine(t24, 1);
+
+    while (ptr != null) {
+        lcd_puts(t24, ptr);
+        ptr = strtok(null, delim);
+    }
+
+    lcd_putsRAt(t24, 8, "Press [ENTER] to continue.");
+    lcd_refresh();
+    wait_for_key_release(-1);
+
+    while (true) {
+        const key = runner_get_key(null);
+        if (key == KEY_ENTER or isExitKey(key) or is_menu_auto_off() != 0) {
+            break;
+        }
     }
 }
 
