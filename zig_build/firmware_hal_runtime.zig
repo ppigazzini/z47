@@ -35,8 +35,20 @@ const FLAG_PRTACT: u16 = 0xc020;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_Y: i16 = 101;
+const REGISTER_Z: i16 = 102;
 
 const ERROR_NONE: c_int = 0;
+const ERROR_MATRIX_MISMATCH: u8 = 21;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+
+const NIM_REGISTER_LINE: i16 = REGISTER_X;
+const ERR_REGISTER_LINE: i16 = REGISTER_Z;
+
+const SCRUPD_AUTO: u8 = 0x00;
+const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
+
+const DT_REAL34_MATRIX: u32 = 6;
+const DEC_ROUND_DOWN: c_int = 5;
 
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
@@ -52,6 +64,7 @@ extern fn liftStack() void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
 extern fn convertShortIntegerRegisterToLongIntegerRegister(source: i16, destination: i16) void;
 extern fn getRegisterAsLongIntQuiet(reg: i16, val: [*c]GmpInt, fractional: [*c]c_int) c_int;
+extern fn getRegisterDataType(regist: i16) u32;
 extern fn print_byte(byte: u8) void;
 extern fn printer_get_delay() u16;
 extern fn printer_set_delay(delay: u16) u16;
@@ -97,6 +110,11 @@ extern fn runner_get_key(arg: ?*anyopaque) c_int;
 extern fn is_menu_auto_off() c_int;
 extern fn disp_disk_info(title: [*c]const u8) void;
 extern fn set_reset_state_file(path: [*c]const u8) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern var screenUpdatingMode: u8;
+extern fn key_empty() c_int;
+extern fn key_pop() c_int;
+extern fn key_pop_all() void;
 
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strtok(str: [*c]u8, delim: [*c]const u8) [*c]u8;
@@ -107,9 +125,25 @@ const GmpInt = extern struct {
     mp_d: [*c]c_ulong,
 };
 
+const DecContext = opaque {};
+
+const DecQuad = extern union {
+    bytes: [16]u8,
+    shorts: [8]u16,
+    words: [4]u32,
+};
+
+const Real34Matrix = extern struct {
+    header_raw: u32,
+    matrixElements: [*c]DecQuad,
+};
+
 extern fn __gmpz_init(x: [*c]GmpInt) void;
 extern fn __gmpz_clear(x: [*c]GmpInt) void;
 extern fn __gmpz_get_ui(x: [*c]const GmpInt) c_ulong;
+extern fn linkToRealMatrixRegister(regist: i16, linked_matrix: [*c]Real34Matrix) void;
+extern fn decQuadToUInt32(source: [*c]const DecQuad, context: *DecContext, round: c_int) u32;
+extern var ctxtReal34: DecContext;
 
 fn isExitKey(key: c_int) bool {
     return key == KEY_EXIT or key == KEY_BSP;
@@ -126,6 +160,18 @@ fn registerToUInt32(reg: i16) ?u32 {
     }
 
     return @truncate(@as(u64, @intCast(__gmpz_get_ui(&li[0]))));
+}
+
+fn matrixRows(header_raw: u32) u16 {
+    return @truncate(header_raw & 0x0fff);
+}
+
+fn matrixCols(header_raw: u32) u16 {
+    return @truncate((header_raw >> 12) & 0x0fff);
+}
+
+fn real34ToUInt32(value: [*c]const DecQuad) u32 {
+    return decQuadToUInt32(value, &ctxtReal34, DEC_ROUND_DOWN);
 }
 
 pub export fn audioTone(frequency: u32) callconv(.c) void {
@@ -205,7 +251,53 @@ pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
-    _ = regist;
+    const reg: i16 = @intCast(regist);
+
+    if (getRegisterDataType(reg) != DT_REAL34_MATRIX) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+    }
+
+    if (getSystemFlag(FLAG_QUIET) != 0) {
+        return;
+    }
+
+    var matrix: Real34Matrix = undefined;
+    linkToRealMatrixRegister(reg, &matrix);
+
+    const cols = matrixCols(matrix.header_raw);
+    if (cols != 2 and cols != 3) {
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    }
+
+    screenUpdatingMode = SCRUPD_AUTO;
+    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+
+    const rows = matrixRows(matrix.header_raw);
+    var i: u16 = 0;
+    while (i < rows) : (i += 1) {
+        const base: usize = @as(usize, i) * cols;
+        const frequency = real34ToUInt32(&matrix.matrixElements[base]);
+        const ms_delay = real34ToUInt32(&matrix.matrixElements[base + 1]);
+
+        if (cols == 3) {
+            const volume: u16 = @truncate(real34ToUInt32(&matrix.matrixElements[base + 2]));
+            fnSetVolume(volume);
+        }
+
+        _Buzz(frequency, ms_delay);
+        if (ms_delay > 0) {
+            sys_delay(@divTrunc(ms_delay, 8));
+        }
+
+        while (key_empty() == 0) {
+            if (key_pop() == KEY_EXIT) {
+                key_pop_all();
+                return;
+            }
+        }
+    }
 }
 
 pub export fn getLineDelay() callconv(.c) u32 {
