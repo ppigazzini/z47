@@ -11,6 +11,8 @@ pub fn build(b: *std.Build) void {
 }
 
 fn buildImpl(b: *std.Build) !void {
+    registerCDependencyAuditStep(b);
+
     const optimize = b.standardOptimizeOption(.{});
     const ci_commit_tag = b.option([]const u8, "ci-commit-tag", "Commit tag for version information") orelse "";
     const raspberry = b.option(bool, "raspberry", "Enable Raspberry Pi layout") orelse false;
@@ -41,4 +43,18 @@ fn buildImpl(b: *std.Build) !void {
         ci_commit_tag,
         dist_version,
     );
+}
+
+fn registerCDependencyAuditStep(b: *std.Build) void {
+    const audit_cmd = b.addSystemCommand(&.{
+        "python3",
+        ".github/project/check-c-dependency-allowlist.py",
+        "--repo-root",
+        ".",
+        "--config",
+        ".github/project/c-dependency-allowlist.json",
+    });
+
+    const audit_step = b.step("check-c-deps", "Audit C dependency allowlist and first-party baseline");
+    audit_step.dependOn(&audit_cmd.step);
 }
