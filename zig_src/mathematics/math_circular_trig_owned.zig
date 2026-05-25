@@ -4,6 +4,12 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 
 const taylor_iteration_max: usize = 1000;
 
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
+
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -113,7 +119,7 @@ fn doTaylorIterations(
     var end_cos = cos_out == null;
 
     if (do_epsilon) {
-        const epsilon_text = std.fmt.bufPrintZ(&epsilon_buffer, "1E-{d}", .{epsilon_digits}) catch unreachable;
+            const epsilon_text = bufPrintZ(&epsilon_buffer, "1E-{d}", .{epsilon_digits}) catch unreachable;
         _ = runtime.decNumberFromString(epsilon_or_compare, epsilon_text, real_context);
     }
 

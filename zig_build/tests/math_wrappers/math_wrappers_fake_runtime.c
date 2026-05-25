@@ -20,10 +20,10 @@ static uint32_t current_register_z_tag = amNone;
 static uint32_t current_register_t_data_type = dtReal34;
 static uint32_t current_register_t_tag = amNone;
 
-static uint8_t register_slot[32];
-static uint8_t register_y_slot[32];
-static uint8_t register_z_slot[32];
-static uint8_t register_t_slot[32];
+static _Alignas(8) uint8_t register_slot[32];
+static _Alignas(8) uint8_t register_y_slot[32];
+static _Alignas(8) uint8_t register_z_slot[32];
+static _Alignas(8) uint8_t register_t_slot[32];
 static uint64_t shortint_y_slot;
 static uint64_t shortint_z_slot;
 static uint64_t shortint_t_slot;
@@ -1593,7 +1593,7 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
 }
 
 void convertShortIntegerRegisterToUInt64(calcRegister_t reg, int16_t *sign, uint64_t *value) {
-  const uint64_t raw = *(uint64_t *)getRegisterDataPointer(reg);
+  const uint64_t raw = *shortIntegerSlot(reg);
 
   if(sign != NULL) {
     *sign = (raw >> 63) != 0;
@@ -1645,12 +1645,34 @@ void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, cal
   longIntegerFree(value);
 }
 
-void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
-  const int64_t value = mpz_get_si(longInteger);
+static uint64_t longIntegerMagnitudeLow64(const longInteger_t longInteger) {
+  mpz_t magnitude;
+  uint64_t raw = 0;
+  const unsigned limb_bits = (unsigned)(sizeof(unsigned long) * 8);
 
-  *shortIntegerSlot(reg) = encodeShortInteger(value);
-  current_register_data_type = dtShortInteger;
-  current_register_tag = base;
+  mpz_init(magnitude);
+  mpz_set(magnitude, longInteger);
+  if(mpz_sgn(magnitude) < 0) {
+    mpz_neg(magnitude, magnitude);
+  }
+
+  raw = (uint64_t)mpz_get_ui(magnitude);
+  if(limb_bits < 64) {
+    mpz_tdiv_q_2exp(magnitude, magnitude, limb_bits);
+    raw |= (uint64_t)mpz_get_ui(magnitude) << limb_bits;
+  }
+
+  mpz_clear(magnitude);
+  return raw;
+}
+
+void convertLongIntegerToShortIntegerRegister(const longInteger_t longInteger, uint32_t base, calcRegister_t reg) {
+  const uint64_t magnitude = longIntegerMagnitudeLow64(longInteger);
+  const uint64_t sign_bit = (uint64_t)(mpz_sgn(longInteger) < 0) << 63;
+
+  *shortIntegerSlot(reg) = magnitude | sign_bit;
+  *registerDataTypeSlot(reg) = dtShortInteger;
+  *registerTagSlot(reg) = base;
 }
 
 void real34ToIntegralValue(const real34_t *source, real34_t *destination, enum rounding mode) {
@@ -1852,6 +1874,7 @@ void linkToRealMatrixRegister(calcRegister_t reg, real34Matrix_t *matrix) {
 }
 
 bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
+  memset(matrix, 0, sizeof(*matrix));
   matrix->header.matrixRows = rows;
   matrix->header.matrixColumns = columns;
   for(uint16_t i = 0; i < rows * columns && i < 4; ++i) {
@@ -1861,6 +1884,7 @@ bool_t realMatrixInit(real34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
 }
 
 bool_t complexMatrixInit(complex34Matrix_t *matrix, uint16_t rows, uint16_t columns) {
+  memset(matrix, 0, sizeof(*matrix));
   matrix->header.matrixRows = rows;
   matrix->header.matrixColumns = columns;
   for(uint16_t i = 0; i < rows * columns && i < 4; ++i) {
@@ -2685,6 +2709,11 @@ void WP34S_Mod(const real_t *x, const real_t *y, real_t *res, realContext_t *rea
   }
 
   setFakeReal(res, remainder, 0);
+}
+
+#undef WP34S_BigMod
+void WP34S_BigMod(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
+  WP34S_Mod(x, y, res, realContext);
 }
 
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination) {
@@ -3778,9 +3807,13 @@ void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t 
   uint64_t value;
 
   convertShortIntegerRegisterToUInt64(reg, &sign, &value);
+  const unsigned long high_word = (unsigned long)(value >> 32);
+  const unsigned long low_word = (unsigned long)(uint32_t)value;
   mpz_init(long_integer);
-  mpz_set_ui(long_integer, value);
-  if(sign < 0) {
+  mpz_set_ui(long_integer, high_word);
+  mpz_mul_2exp(long_integer, long_integer, 32);
+  mpz_add_ui(long_integer, long_integer, low_word);
+  if(sign != 0) {
     mpz_neg(long_integer, long_integer);
   }
 }

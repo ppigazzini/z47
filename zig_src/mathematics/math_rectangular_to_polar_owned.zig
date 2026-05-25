@@ -29,28 +29,34 @@ pub fn realRectangularToPolarZig(
     theta: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
     if (build_options.use_fake_wp34s_model) {
         runtime.realRectangularToPolar(real, imag, magnitude, theta, real_context);
         return;
     }
 
-    if (runtime.realIsNaN(real) or runtime.realIsNaN(imag)) {
+    copyReal(&real_value, real);
+    copyReal(&imag_value, imag);
+
+    if (runtime.realIsNaN(&real_value) or runtime.realIsNaN(&imag_value)) {
         runtime.realSetNaN(magnitude);
         runtime.realSetNaN(theta);
         return;
     }
 
-    if (runtime.realIsInfinite(real)) {
+    if (runtime.realIsInfinite(&real_value)) {
         setPlusInfinity(magnitude);
-        if (!runtime.realIsNegative(real)) {
-            if (runtime.realIsInfinite(imag)) {
-                setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn4(), runtime.realIsNegative(imag));
+        if (!runtime.realIsNegative(&real_value)) {
+            if (runtime.realIsInfinite(&imag_value)) {
+                setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn4(), runtime.realIsNegative(&imag_value));
             } else {
                 runtime.realSetZero(theta);
             }
         } else {
-            if (runtime.realIsInfinite(imag)) {
-                setSignedAngle(theta, runtime.z47_math_wrappers_const_3piOn4(), runtime.realIsNegative(imag));
+            if (runtime.realIsInfinite(&imag_value)) {
+                setSignedAngle(theta, runtime.z47_math_wrappers_const_3piOn4(), runtime.realIsNegative(&imag_value));
             } else {
                 copyReal(theta, runtime.z47_math_wrappers_const_pi());
             }
@@ -58,26 +64,26 @@ pub fn realRectangularToPolarZig(
         return;
     }
 
-    if (runtime.realIsInfinite(imag)) {
+    if (runtime.realIsInfinite(&imag_value)) {
         setPlusInfinity(magnitude);
-        setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn2(), runtime.realIsNegative(imag));
+        setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn2(), runtime.realIsNegative(&imag_value));
         return;
     }
 
-    if (runtime.realIsZero(real)) {
-        if (runtime.realIsZero(imag)) {
+    if (runtime.realIsZero(&real_value)) {
+        if (runtime.realIsZero(&imag_value)) {
             runtime.realSetZero(magnitude);
             runtime.realSetZero(theta);
         } else {
-            copyAbs(magnitude, imag);
-            setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn2(), runtime.realIsNegative(imag));
+            copyAbs(magnitude, &imag_value);
+            setSignedAngle(theta, runtime.z47_math_wrappers_const_piOn2(), runtime.realIsNegative(&imag_value));
         }
         return;
     }
 
-    if (runtime.realIsZero(imag)) {
-        copyAbs(magnitude, real);
-        if (runtime.realIsNegative(real)) {
+    if (runtime.realIsZero(&imag_value)) {
+        copyAbs(magnitude, &real_value);
+        if (runtime.realIsNegative(&real_value)) {
             copyReal(theta, runtime.z47_math_wrappers_const_pi());
         } else {
             runtime.realSetZero(theta);
@@ -85,8 +91,8 @@ pub fn realRectangularToPolarZig(
         return;
     }
 
-    runtime.realMultiply(real, real, magnitude, real_context);
-    runtime.realFMA(imag, imag, magnitude, magnitude, real_context);
+    runtime.realMultiply(&real_value, &real_value, magnitude, real_context);
+    runtime.realFMA(&imag_value, &imag_value, magnitude, magnitude, real_context);
     runtime.realSquareRoot(magnitude, magnitude, real_context);
-    atan2_owned.c47Wp34sAtan2Zig(imag, real, theta, real_context);
+    atan2_owned.c47Wp34sAtan2Zig(&imag_value, &real_value, theta, real_context);
 }

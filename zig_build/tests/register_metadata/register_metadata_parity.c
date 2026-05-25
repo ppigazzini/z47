@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "c47.h"
@@ -66,10 +67,6 @@ typedef calcRegister_t (*find_named_variable_fn)(const char *);
 typedef void (*allocate_named_variable_fn)(const char *, uint32_t, uint16_t);
 typedef void (*u16_void_fn)(uint16_t);
 
-enum {
-  LOCAL_PAYLOAD_BYTES = 128,
-};
-
 static const char validate_name_ascii_valid[] = "Abc1";
 static const char validate_name_empty[] = "";
 static const char validate_name_digit_first[] = "1abc";
@@ -108,6 +105,18 @@ static void fillPayload(uint8_t *buffer, uint16_t size_in_blocks, uint8_t seed) 
   }
 }
 
+static uint8_t *allocatePayload(uint16_t size_in_blocks) {
+  const size_t payload_bytes = TO_BYTES(size_in_blocks);
+  uint8_t *payload = malloc(payload_bytes);
+
+  if(payload == NULL) {
+    fprintf(stderr, "failed to allocate %zu payload bytes\n", payload_bytes);
+    exit(1);
+  }
+
+  return payload;
+}
+
 static void seedRegisterPayload(calcRegister_t reg, uint32_t data_type, uint32_t tag, uint16_t size_in_blocks, uint8_t seed) {
   uint8_t payload[STACK_PARITY_REGISTER_CAPTURE_BYTES];
 
@@ -133,59 +142,55 @@ static void seedLocalPayload(int index, uint32_t data_type, uint32_t tag, uint16
 }
 
 static void buildStringLikePayload(uint8_t *payload, uint16_t size_in_blocks, uint16_t data_max_length_in_blocks, uint8_t seed) {
-  strLgIntHeader_t *header = (strLgIntHeader_t *)payload;
-
-  memset(payload, 0, LOCAL_PAYLOAD_BYTES);
+  memset(payload, 0, TO_BYTES(size_in_blocks));
   fillPayload(payload, size_in_blocks, seed);
-  header->dataMaxLengthInBlocks = data_max_length_in_blocks;
-  header->unused = 0;
+  z47StrLgIntHeaderWrite(payload, data_max_length_in_blocks);
 }
 
 static void seedRegisterStringLike(calcRegister_t reg, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
   uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
-  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  uint8_t *payload = allocatePayload(size_in_blocks);
 
   buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
   seedRegisterBuffer(reg, data_type, tag, payload, size_in_blocks);
+  free(payload);
 }
 
 static void seedNamedStringLike(int index, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
   uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
-  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  uint8_t *payload = allocatePayload(size_in_blocks);
 
   buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
   seedNamedBuffer(index, data_type, tag, payload, size_in_blocks);
+  free(payload);
 }
 
 static void seedLocalStringLike(int index, uint32_t data_type, uint32_t tag, uint16_t data_max_length_in_blocks, uint8_t seed) {
   uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(strLgIntHeader_t)) + data_max_length_in_blocks);
-  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  uint8_t *payload = allocatePayload(size_in_blocks);
 
   buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
   seedLocalBuffer(index, data_type, tag, payload, size_in_blocks);
+  free(payload);
 }
 
 static void buildMatrixPayload(uint8_t *payload, uint16_t size_in_blocks, uint16_t rows, uint16_t columns, uint32_t tag, uint8_t seed) {
-  matrixHeader_t *header = (matrixHeader_t *)payload;
-
-  memset(payload, 0, LOCAL_PAYLOAD_BYTES);
+  memset(payload, 0, TO_BYTES(size_in_blocks));
   fillPayload(payload, size_in_blocks, seed);
-  header->matrixRows = rows;
-  header->matrixColumns = columns;
-  header->mtag = tag;
-  header->notUsed = 0;
+  z47MatrixHeaderWrite(payload, rows, columns, tag);
 }
 
 static void seedRegisterMatrix(calcRegister_t reg, uint32_t data_type, uint32_t tag, uint16_t rows, uint16_t columns, uint16_t element_size_in_blocks, uint8_t seed) {
   uint16_t size_in_blocks = (uint16_t)(TO_BLOCKS(sizeof(matrixHeader_t)) + rows * columns * element_size_in_blocks);
-  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  uint8_t *payload = allocatePayload(size_in_blocks);
 
   buildMatrixPayload(payload, size_in_blocks, rows, columns, tag, seed);
   seedRegisterBuffer(reg, data_type, tag, payload, size_in_blocks);
+  free(payload);
 }
 
 static void seedReservedStringLike(uint16_t size_in_blocks, uint16_t data_max_length_in_blocks, uint8_t seed) {
-  uint8_t payload[LOCAL_PAYLOAD_BYTES];
+  uint8_t *payload = allocatePayload(size_in_blocks);
   void *ptr;
 
   buildStringLikePayload(payload, size_in_blocks, data_max_length_in_blocks, seed);
@@ -193,6 +198,7 @@ static void seedReservedStringLike(uint16_t size_in_blocks, uint16_t data_max_le
   if(ptr != NULL) {
     memcpy(ptr, payload, TO_BYTES(size_in_blocks));
   }
+  free(payload);
 }
 
 static void seedReservedBacking(void) {
@@ -255,7 +261,10 @@ static void setupLocalLongIntegerCase(void) {
 
 static void setupReservedLongIntegerCase(void) {
   seedReservedBacking();
-  globalRegister[40].pointerToRegisterData = allReservedVariables[40].header.pointerToRegisterData;
+  globalRegister[40].descriptor = z47DescriptorSetPointer(
+    globalRegister[40].descriptor,
+    z47DescriptorPointer(allReservedVariables[40].header.descriptor)
+  );
 }
 
 static void setupGlobalReal34Case(void) {

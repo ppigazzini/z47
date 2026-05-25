@@ -1,3 +1,6 @@
+const build_options = @import("math_command_wrappers_build_options");
+const use_fake_wp34s_harness_surface = @hasDecl(build_options, "use_fake_wp34s_harness_surface") and build_options.use_fake_wp34s_harness_surface;
+
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
 pub const rounding_t = c_int;
@@ -56,12 +59,12 @@ pub const ifLongIntegerDoAngleReduction = true;
 
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
-pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 2;
-pub const ERROR_OUT_OF_RANGE: u8 = 3;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = if (use_fake_wp34s_harness_surface) 2 else 24;
+pub const ERROR_OUT_OF_RANGE: u8 = if (use_fake_wp34s_harness_surface) 3 else 8;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
-pub const ERROR_RAM_FULL: u8 = 6;
-pub const ERROR_MATRIX_MISMATCH: u8 = 7;
+pub const ERROR_RAM_FULL: u8 = if (use_fake_wp34s_harness_surface) 6 else 11;
+pub const ERROR_MATRIX_MISMATCH: u8 = if (use_fake_wp34s_harness_surface) 7 else 21;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_PROPFR: i32 = 0x8008;
@@ -102,20 +105,40 @@ pub const complex34_t = extern struct {
     imag: real34_t,
 };
 
-pub const matrixHeader_t = extern struct {
-    matrixRows: u16,
-    matrixColumns: u16,
-};
+pub const matrixHeader_t = if (use_fake_wp34s_harness_surface)
+    extern struct {
+        matrixRows: u16,
+        matrixColumns: u16,
+    }
+else
+    packed struct(u32) {
+        matrixRows: u12,
+        matrixColumns: u12,
+        mtag: u6,
+        notUsed: u2,
+    };
 
-pub const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [4]real34_t,
-};
+pub const real34Matrix_t = if (use_fake_wp34s_harness_surface)
+    extern struct {
+        header: matrixHeader_t,
+        matrixElements: [4]real34_t,
+    }
+else
+    extern struct {
+        header: matrixHeader_t,
+        matrixElements: [*c]real34_t,
+    };
 
-pub const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [4]complex34_t,
-};
+pub const complex34Matrix_t = if (use_fake_wp34s_harness_surface)
+    extern struct {
+        header: matrixHeader_t,
+        matrixElements: [4]complex34_t,
+    }
+else
+    extern struct {
+        header: matrixHeader_t,
+        matrixElements: [*c]complex34_t,
+    };
 
 pub const realContext_t = extern struct {
     digits: i32,
@@ -536,6 +559,7 @@ pub extern fn WP34S_intChs(x: u64) u64;
 pub extern fn WP34S_build_value(x: u64, sign: i32) u64;
 pub extern fn WP34S_extract_value(val: u64, sign: *i32) u64;
 pub extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_BigMod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn decimal128ToNumber(source: *const real34_t, destination: *real_t) *real_t;
 pub extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;

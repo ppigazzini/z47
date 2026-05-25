@@ -2,17 +2,17 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const host_platform = @import("platform.zig");
-const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
-const calc_state_rewrites = @import("../state/calc_state_rewrites.zig");
-const constants_rewrites = @import("../leaf/constants_rewrites.zig");
-const flags_rewrites = @import("../state/flags_rewrites.zig");
-const math_command_wrapper_rewrites = @import("../mathematics/math_command_wrapper_rewrites.zig");
-const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
-const memory_rewrites = @import("../state/memory_rewrites.zig");
-const program_serialization_rewrites = @import("../state/program_serialization_rewrites.zig");
-const register_metadata_rewrites = @import("../state/register_metadata_rewrites.zig");
-const stack_rewrites = @import("../state/stack_rewrites.zig");
-const tone_rewrites = @import("../ui/tone_rewrites.zig");
+const shortint = @import("../leaf/shortint.zig");
+const calc_state = @import("../state/calc_state.zig");
+const constants = @import("../leaf/constants.zig");
+const flags = @import("../state/flags.zig");
+const math_command_wrappers = @import("../mathematics/math_command_wrappers.zig");
+const keyboard_state = @import("../state/keyboard_state.zig");
+const memory = @import("../state/memory.zig");
+const program_serialization = @import("../state/program_serialization.zig");
+const register_metadata = @import("../state/register_metadata.zig");
+const stack = @import("../state/stack.zig");
+const tone = @import("../ui/tone.zig");
 const host_types = @import("types.zig");
 
 const z47_test_list = "zig_build/tests/testSuiteList_z47.txt";
@@ -509,7 +509,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         null,
     );
 
-    const logical_shortint_parity = shortint_rewrites.addParityExecutable(
+    const logical_shortint_parity = shortint.addParityExecutable(
         b,
         context.host_target,
         optimize,
@@ -520,7 +520,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical leaf-module parity suite");
     logical_shortint_parity_step.dependOn(&run_logical_shortint_parity.step);
 
-    const rotate_bits_parity = shortint_rewrites.addRotateBitsParityExecutable(
+    const rotate_bits_parity = shortint.addRotateBitsParityExecutable(
         b,
         context.host_target,
         optimize,
@@ -535,43 +535,43 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const logical_boolean_ops_suite_step = b.step("logical_boolean_ops_suite", "Run the logical boolean operator suite");
     logical_boolean_ops_suite_step.dependOn(&run_logical_boolean_ops_suite.step);
 
-    const stack_state_parity = stack_rewrites.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
+    const stack_state_parity = stack.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
     const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
     run_stack_state_parity.setCwd(b.path("."));
     const stack_state_parity_step = b.step("stack_state_parity", "Run the stack-state parity suite");
     stack_state_parity_step.dependOn(&run_stack_state_parity.step);
 
-    const register_metadata_parity = register_metadata_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const register_metadata_parity = register_metadata.addParityExecutable(b, context.host_target, optimize);
     const run_register_metadata_parity = b.addRunArtifact(register_metadata_parity);
     run_register_metadata_parity.setCwd(b.path("."));
     const register_metadata_parity_step = b.step("register_metadata_parity", "Run the register-metadata parity suite");
     register_metadata_parity_step.dependOn(&run_register_metadata_parity.step);
 
-    const flags_parity = flags_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const flags_parity = flags.addParityExecutable(b, context.host_target, optimize);
     const run_flags_parity = b.addRunArtifact(flags_parity);
     run_flags_parity.setCwd(b.path("."));
     const flags_parity_step = b.step("flags_parity", "Run the system-flags parity suite");
     flags_parity_step.dependOn(&run_flags_parity.step);
 
-    const memory_parity = memory_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const memory_parity = memory.addParityExecutable(b, context.host_target, optimize);
     const run_memory_parity = b.addRunArtifact(memory_parity);
     run_memory_parity.setCwd(b.path("."));
     const memory_parity_step = b.step("memory_parity", "Run the memory-state parity suite");
     memory_parity_step.dependOn(&run_memory_parity.step);
 
-    const calc_state_parity = calc_state_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const calc_state_parity = calc_state.addParityExecutable(b, context.host_target, optimize);
     const run_calc_state_parity = b.addRunArtifact(calc_state_parity);
     run_calc_state_parity.setCwd(b.path("."));
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
-    const keyboard_state_parity = keyboard_state_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));
     const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard-state parity suite");
     keyboard_state_parity_step.dependOn(&run_keyboard_state_parity.step);
 
-    const math_command_wrappers_parity = math_command_wrapper_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const math_command_wrappers_parity = math_command_wrappers.addParityExecutable(b, context.host_target, optimize);
     const run_math_command_wrappers_parity = b.addRunArtifact(math_command_wrappers_parity);
     run_math_command_wrappers_parity.setCwd(b.path("."));
     const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the math-command wrapper parity suite");
@@ -613,19 +613,19 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const math_atan2_oracle_step = b.step("math_atan2_oracle", "Run the direct C47_WP34S_Atan2 helper oracle");
     math_atan2_oracle_step.dependOn(&run_math_atan2_oracle.step);
 
-    const math_random_parity = math_command_wrapper_rewrites.addRandomParityExecutable(b, context.host_target, optimize);
+    const math_random_parity = math_command_wrappers.addRandomParityExecutable(b, context.host_target, optimize);
     const run_math_random_parity = b.addRunArtifact(math_random_parity);
     run_math_random_parity.setCwd(b.path("."));
     const math_random_parity_step = b.step("math_random_parity", "Run the math random and PCG parity suite");
     math_random_parity_step.dependOn(&run_math_random_parity.step);
 
-    const constants_parity = constants_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const constants_parity = constants.addParityExecutable(b, context.host_target, optimize);
     const run_constants_parity = b.addRunArtifact(constants_parity);
     run_constants_parity.setCwd(b.path("."));
     const constants_parity_step = b.step("constants_parity", "Run the constants-command parity suite");
     constants_parity_step.dependOn(&run_constants_parity.step);
 
-    const tone_parity = tone_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const tone_parity = tone.addParityExecutable(b, context.host_target, optimize);
     const run_tone_parity = b.addRunArtifact(tone_parity);
     run_tone_parity.setCwd(b.path("."));
     const tone_parity_step = b.step("tone_parity", "Run the tone UI parity suite");
@@ -652,7 +652,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const keyboard_statusbar_flags_regression_step = b.step("keyboard_statusbar_flags_regression", "Run the keyboard statusbar flag-clearing regression");
     keyboard_statusbar_flags_regression_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
 
-    const program_serialization_parity = program_serialization_rewrites.addParityExecutable(b, context.host_target, optimize);
+    const program_serialization_parity = program_serialization.addParityExecutable(b, context.host_target, optimize);
     const run_program_serialization_parity = b.addRunArtifact(program_serialization_parity);
     run_program_serialization_parity.setCwd(b.path("."));
     const program_serialization_parity_step = b.step("program_serialization_parity", "Run the program-serialization parity suite");

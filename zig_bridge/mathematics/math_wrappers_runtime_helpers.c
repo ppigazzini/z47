@@ -5,6 +5,16 @@
 #include <math.h>
 #include <string.h>
 
+extern decNumber *decNumberFromInt32(decNumber *result, int32_t source);
+extern decNumber *decNumberNextToward(decNumber *result, const decNumber *x, const decNumber *y, decContext *set);
+extern decNumber *decNumberPower(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *set);
+extern decQuad *decQuadToIntegralValue(decQuad *result, const decQuad *rhs, decContext *set, enum rounding mode);
+extern uint32_t decQuadIsInfinite(const decQuad *value);
+extern int32_t decQuadGetExponent(const decQuad *value);
+extern decQuad *decQuadNextPlus(decQuad *result, const decQuad *rhs, decContext *set);
+extern decQuad *decQuadNextMinus(decQuad *result, const decQuad *rhs, decContext *set);
+extern decQuad *decQuadSubtract(decQuad *result, const decQuad *lhs, const decQuad *rhs, decContext *set);
+
 double z47_math_wrappers_log(double value) {
   return value > 0.0 ? value : 0.0;
 }
@@ -918,6 +928,7 @@ const real_t *z47_math_wrappers_const_plus_infinity(void) {
   return &value;
 }
 
+#ifndef Z47_MATH_WRAPPERS_C47_H
 #undef const_NaN
 
 static real_t z47_math_wrappers_const_nan_value;
@@ -988,6 +999,7 @@ void real34NextMinus(const real34_t *source, real34_t *destination) {
 void real34Subtract(const real34_t *operand1, const real34_t *operand2, real34_t *res) {
   decQuadSubtract(res, operand1, operand2, &ctxtReal34);
 }
+#endif
 
 const real_t *z47_math_wrappers_const_minus_infinity(void) {
   static bool initialized = false;

@@ -13,16 +13,58 @@
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
 
-typedef union {
+typedef struct {
   uint32_t descriptor;
-  struct {
-    unsigned pointerToRegisterData : 16;
-    unsigned dataType : 4;
-    unsigned tag : 5;
-    unsigned readOnly : 1;
-    unsigned notUsed : 6;
-  };
 } registerHeader_t;
+
+#define Z47_DESCRIPTOR_POINTER_MASK 0x0000ffffu
+#define Z47_DESCRIPTOR_DATA_TYPE_MASK 0x000f0000u
+#define Z47_DESCRIPTOR_TAG_MASK 0x01f00000u
+#define Z47_DESCRIPTOR_READ_ONLY_MASK 0x02000000u
+
+#define Z47_DESCRIPTOR_DATA_TYPE_SHIFT 16u
+#define Z47_DESCRIPTOR_TAG_SHIFT 20u
+#define Z47_DESCRIPTOR_READ_ONLY_SHIFT 25u
+
+#define Z47_MAKE_DESCRIPTOR(pointer, data_type, tag, read_only) \
+  ((((uint32_t)(pointer)) & Z47_DESCRIPTOR_POINTER_MASK) | \
+   ((((uint32_t)(data_type)) & 0x0fu) << Z47_DESCRIPTOR_DATA_TYPE_SHIFT) | \
+   ((((uint32_t)(tag)) & 0x1fu) << Z47_DESCRIPTOR_TAG_SHIFT) | \
+   ((((uint32_t)(read_only)) & 0x01u) << Z47_DESCRIPTOR_READ_ONLY_SHIFT))
+
+static inline uint32_t z47DescriptorPointer(uint32_t descriptor) {
+  return descriptor & Z47_DESCRIPTOR_POINTER_MASK;
+}
+
+static inline uint32_t z47DescriptorDataType(uint32_t descriptor) {
+  return (descriptor & Z47_DESCRIPTOR_DATA_TYPE_MASK) >> Z47_DESCRIPTOR_DATA_TYPE_SHIFT;
+}
+
+static inline uint32_t z47DescriptorTag(uint32_t descriptor) {
+  return (descriptor & Z47_DESCRIPTOR_TAG_MASK) >> Z47_DESCRIPTOR_TAG_SHIFT;
+}
+
+static inline uint32_t z47DescriptorReadOnly(uint32_t descriptor) {
+  return (descriptor & Z47_DESCRIPTOR_READ_ONLY_MASK) >> Z47_DESCRIPTOR_READ_ONLY_SHIFT;
+}
+
+static inline uint32_t z47DescriptorSetPointer(uint32_t descriptor, uint32_t pointer) {
+  return (descriptor & ~Z47_DESCRIPTOR_POINTER_MASK) | (pointer & Z47_DESCRIPTOR_POINTER_MASK);
+}
+
+static inline uint32_t z47DescriptorSetDataType(uint32_t descriptor, uint32_t data_type) {
+  return (descriptor & ~Z47_DESCRIPTOR_DATA_TYPE_MASK) |
+         (((uint32_t)(data_type) & 0x0fu) << Z47_DESCRIPTOR_DATA_TYPE_SHIFT);
+}
+
+static inline uint32_t z47DescriptorSetTag(uint32_t descriptor, uint32_t tag) {
+  return (descriptor & ~Z47_DESCRIPTOR_TAG_MASK) |
+         (((uint32_t)(tag) & 0x1fu) << Z47_DESCRIPTOR_TAG_SHIFT);
+}
+
+static inline uint32_t z47DescriptorSetDataTypeTag(uint32_t descriptor, uint32_t data_type, uint32_t tag) {
+  return z47DescriptorSetTag(z47DescriptorSetDataType(descriptor, data_type), tag);
+}
 
 typedef struct {
   registerHeader_t header;

@@ -64,6 +64,7 @@ fn addRuntimeObject(
     });
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_wp34s_model", std.mem.endsWith(u8, name_prefix, "parity"));
+    build_options.addOption(bool, "use_fake_wp34s_harness_surface", std.mem.eql(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "random-parity"));
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{
@@ -176,6 +177,7 @@ pub fn addRandomParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/" ++ "random_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_oracle.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_dispatch_stubs.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_retained_link_stubs.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_parity.c"), .flags = &.{} });
     host_platform.linkGmp(exe.root_module, target);

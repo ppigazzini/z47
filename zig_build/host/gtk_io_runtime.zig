@@ -21,10 +21,10 @@ const IO_PATH_EXPORT_RTF_ALL_PROGRAMS: c_int = 13;
 const IO_MODE_READ: c_int = 0;
 const IO_MODE_WRITE: c_int = 1;
 const IO_MODE_UPDATE: c_int = 2;
+const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 
 var io_file_handle: ?*anyopaque = null;
 
-extern fn mkdir(pathname: [*c]const u8, mode: c_uint) c_int;
 extern fn fopen(filename: [*c]const u8, mode: [*c]const u8) ?*anyopaque;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, nitems: usize, stream: ?*anyopaque) usize;
 extern fn fread(ptr: ?*anyopaque, size: usize, nitems: usize, stream: ?*anyopaque) usize;
@@ -37,14 +37,30 @@ extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn snprintf(str: [*c]u8, size: usize, format: [*c]const u8, ...) c_int;
 
-extern var errno: c_int;
-extern var fileNameSelected: [*c]u8;
+extern var fileNameSelected: [STATE_FILE_NAME_VAR_LENGTH]u8;
+
+fn selectedFileNameSource(filename: [*c]u8) [*c]u8 {
+    const length = strlen(filename);
+    const min_start = if (length + 1 > STATE_FILE_NAME_VAR_LENGTH)
+        length - STATE_FILE_NAME_VAR_LENGTH + 1
+    else
+        0;
+
+    var start = length;
+    while (start > min_start) : (start -= 1) {
+        const ch = filename[start - 1];
+        if (ch == '/' or ch == '\\' or ch == 0) break;
+    }
+
+    return filename + start;
+}
 
 fn createDir(path: [*c]const u8) c_int {
-    if (mkdir(path, 0o775) != 0 and errno != 17) {
-        return -1;
+    const zpath: [*:0]const u8 = @ptrCast(path);
+    switch (std.posix.errno(std.posix.system.mkdir(zpath, 0o775))) {
+        .SUCCESS, .EXIST => return 0,
+        else => return -1,
     }
-    return 0;
 }
 
 pub export fn file_selection_screen(
@@ -152,8 +168,7 @@ pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
     io_file_handle = fopen(&filename, filemode);
     if (io_file_handle != null) {
         if (mode == IO_MODE_READ) {
-            // Keep selected filename behavior simple and bounded.
-            _ = strcpy(fileNameSelected, &filename);
+            _ = strcpy(&fileNameSelected[0], selectedFileNameSource(&filename));
         }
         return FILE_OK;
     }
@@ -200,7 +215,7 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 
     const result = remove(&filename);
     if (result == -1 and error_number != null) {
-        error_number.?.* = @intCast(errno);
+        error_number.?.* = @intFromEnum(std.posix.errno(result));
     }
     return if (result != -1) FILE_OK else FILE_ERROR;
 }

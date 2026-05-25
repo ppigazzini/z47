@@ -18,31 +18,19 @@ void oracle_clearRegister(calcRegister_t regist);
 const reservedVariableHeader_t allReservedVariables[NUMBER_OF_RESERVED_VARIABLES] = {
   [26] = {
     .header = {
-      .pointerToRegisterData = C47_NULL,
-      .dataType = dtLongInteger,
-      .tag = LI_POSITIVE,
-      .readOnly = 1,
-      .notUsed = 0,
+      .descriptor = Z47_MAKE_DESCRIPTOR(C47_NULL, dtLongInteger, LI_POSITIVE, 1),
     },
     .reservedVariableName = {3, 'A', 'D', 'M', 0, 0, 0, 0},
   },
   [31] = {
     .header = {
-      .pointerToRegisterData = 1,
-      .dataType = dtReal34,
-      .tag = amNone,
-      .readOnly = 0,
-      .notUsed = 0,
+      .descriptor = Z47_MAKE_DESCRIPTOR(1, dtReal34, amNone, 0),
     },
     .reservedVariableName = {3, 'A', 'C', 'C', 0, 0, 0, 0},
   },
   [40] = {
     .header = {
-      .pointerToRegisterData = 2,
-      .dataType = dtLongInteger,
-      .tag = LI_POSITIVE,
-      .readOnly = 0,
-      .notUsed = 0,
+      .descriptor = Z47_MAKE_DESCRIPTOR(2, dtLongInteger, LI_POSITIVE, 0),
     },
     .reservedVariableName = {6, 'G', 'R', 'A', 'M', 'O', 'D', 0},
   },
@@ -309,21 +297,20 @@ void oracle_clearRegister(calcRegister_t regist) {
 }
 
 static void oracle_initializeSimEqMatrix(const char *variable_name, calcRegister_t reg) {
-  matrixHeader_t *matrix_header;
+  void *matrix_data;
 
   oracle_allocateNamedVariable(variable_name, dtReal34Matrix, (uint16_t)(REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t))));
   if(lastErrorCode != ERROR_NONE) {
     return;
   }
 
-  matrix_header = (matrixHeader_t *)oracle_getRegisterDataPointer(reg);
-  if(matrix_header == NULL) {
+  matrix_data = oracle_getRegisterDataPointer(reg);
+  if(matrix_data == NULL) {
     return;
   }
 
-  matrix_header->matrixRows = 1;
-  matrix_header->matrixColumns = 1;
-  real34SetZero((real34_t *)((uint8_t *)matrix_header + sizeof(matrixHeader_t)));
+  z47MatrixHeaderSetRowsColumns(matrix_data, 1, 1);
+  real34SetZero((real34_t *)((uint8_t *)matrix_data + sizeof(matrixHeader_t)));
 }
 
 static void oracle_initSimEqMatABX(void) {
@@ -366,7 +353,7 @@ static calcRegister_t oracle_findNamedVariableDirect(const char *variable_name) 
 
 static void oracle_refreshSimEqMatrix(const char *variable_name) {
   calcRegister_t reg = oracle_findNamedVariableDirect(variable_name);
-  matrixHeader_t *matrix_header;
+  void *matrix_data;
 
   if(reg == INVALID_VARIABLE) {
     oracle_allocateNamedVariable(variable_name, dtReal34, REAL34_SIZE_IN_BLOCKS);
@@ -385,14 +372,13 @@ static void oracle_refreshSimEqMatrix(const char *variable_name) {
     return;
   }
 
-  matrix_header = (matrixHeader_t *)oracle_getRegisterDataPointer(reg);
-  if(matrix_header == NULL) {
+  matrix_data = oracle_getRegisterDataPointer(reg);
+  if(matrix_data == NULL) {
     return;
   }
 
-  matrix_header->matrixRows = 1;
-  matrix_header->matrixColumns = 1;
-  real34SetZero((real34_t *)((uint8_t *)matrix_header + sizeof(matrixHeader_t)));
+  z47MatrixHeaderSetRowsColumns(matrix_data, 1, 1);
+  real34SetZero((real34_t *)((uint8_t *)matrix_data + sizeof(matrixHeader_t)));
 }
 
 static void oracle_refreshSimEqMatABX(void) {
@@ -514,14 +500,14 @@ calcRegister_t oracle_findOrAllocateNamedVariable(const char *variableName) {
 
 uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    return globalRegister[regist].dataType;
+    return z47DescriptorDataType(globalRegister[regist].descriptor);
   }
 
   if(regist <= LAST_NAMED_VARIABLE) {
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        return allNamedVariables[regist].header.dataType;
+        return z47DescriptorDataType(allNamedVariables[regist].header.descriptor);
       }
     }
     else {
@@ -533,16 +519,16 @@ uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
   else if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
     if(regist < NUMBER_OF_LETTERED_VARIABLES) {
-      return globalRegister[regist + REGISTER_X].dataType;
+      return z47DescriptorDataType(globalRegister[regist + REGISTER_X].descriptor);
     }
-    return allReservedVariables[regist].header.dataType;
+    return z47DescriptorDataType(allReservedVariables[regist].header.descriptor);
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) {
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        return POINTER_TO_LOCAL_REGISTER(regist)->dataType;
+        return z47DescriptorDataType(POINTER_TO_LOCAL_REGISTER(regist)->descriptor);
       }
     }
   }
@@ -557,14 +543,14 @@ uint32_t oracle_getRegisterDataType(calcRegister_t regist) {
 
 void *oracle_getRegisterDataPointer(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    return TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData);
+    return TO_PCMEMPTR((uint16_t)z47DescriptorPointer(globalRegister[regist].descriptor));
   }
 
   if(regist <= LAST_NAMED_VARIABLE) {
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        return TO_PCMEMPTR(allNamedVariables[regist].header.pointerToRegisterData);
+        return TO_PCMEMPTR((uint16_t)z47DescriptorPointer(allNamedVariables[regist].header.descriptor));
       }
     }
     else {
@@ -575,14 +561,14 @@ void *oracle_getRegisterDataPointer(calcRegister_t regist) {
 
   else if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
-    return TO_PCMEMPTR(allReservedVariables[regist].header.pointerToRegisterData);
+    return TO_PCMEMPTR((uint16_t)z47DescriptorPointer(allReservedVariables[regist].header.descriptor));
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) {
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        return TO_PCMEMPTR(POINTER_TO_LOCAL_REGISTER(regist)->pointerToRegisterData);
+        return TO_PCMEMPTR((uint16_t)z47DescriptorPointer(POINTER_TO_LOCAL_REGISTER(regist)->descriptor));
       }
     }
   }
@@ -597,14 +583,14 @@ void *oracle_getRegisterDataPointer(calcRegister_t regist) {
 
 uint32_t oracle_getRegisterTag(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    return globalRegister[regist].tag;
+    return z47DescriptorTag(globalRegister[regist].descriptor);
   }
 
   if(regist <= LAST_NAMED_VARIABLE) {
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        return allNamedVariables[regist].header.tag;
+        return z47DescriptorTag(allNamedVariables[regist].header.descriptor);
       }
     }
     else {
@@ -615,14 +601,14 @@ uint32_t oracle_getRegisterTag(calcRegister_t regist) {
 
   else if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
-    return allReservedVariables[regist].header.tag;
+    return z47DescriptorTag(allReservedVariables[regist].header.descriptor);
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) {
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        return POINTER_TO_LOCAL_REGISTER(regist)->tag;
+        return z47DescriptorTag(POINTER_TO_LOCAL_REGISTER(regist)->descriptor);
       }
     }
   }
@@ -637,8 +623,7 @@ uint32_t oracle_getRegisterTag(calcRegister_t regist) {
 
 void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_t tag) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    globalRegister[regist].dataType = dataType;
-    globalRegister[regist].tag = tag;
+    globalRegister[regist].descriptor = z47DescriptorSetDataTypeTag(globalRegister[regist].descriptor, dataType, tag);
     return;
   }
 
@@ -646,8 +631,7 @@ void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const 
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        allNamedVariables[regist].header.dataType = dataType;
-        allNamedVariables[regist].header.tag = tag;
+        allNamedVariables[regist].header.descriptor = z47DescriptorSetDataTypeTag(allNamedVariables[regist].header.descriptor, dataType, tag);
       }
     }
     else {
@@ -659,9 +643,8 @@ void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const 
 
   if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
-    if(allReservedVariables[regist].header.pointerToRegisterData != C47_NULL && allReservedVariables[regist].header.readOnly == 0) {
-      allNamedVariables[regist].header.dataType = dataType;
-      allNamedVariables[regist].header.tag = tag;
+    if(z47DescriptorPointer(allReservedVariables[regist].header.descriptor) != C47_NULL && z47DescriptorReadOnly(allReservedVariables[regist].header.descriptor) == 0) {
+      allNamedVariables[regist].header.descriptor = z47DescriptorSetDataTypeTag(allNamedVariables[regist].header.descriptor, dataType, tag);
     }
     return;
   }
@@ -670,8 +653,7 @@ void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const 
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        POINTER_TO_LOCAL_REGISTER(regist)->dataType = dataType;
-        POINTER_TO_LOCAL_REGISTER(regist)->tag = tag;
+        POINTER_TO_LOCAL_REGISTER(regist)->descriptor = z47DescriptorSetDataTypeTag(POINTER_TO_LOCAL_REGISTER(regist)->descriptor, dataType, tag);
       }
     }
     return;
@@ -685,7 +667,7 @@ void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
   uint32_t dataPointer = TO_C47MEMPTR(memPtr);
 
   if(regist <= LAST_GLOBAL_REGISTER) {
-    globalRegister[regist].pointerToRegisterData = dataPointer;
+    globalRegister[regist].descriptor = z47DescriptorSetPointer(globalRegister[regist].descriptor, dataPointer);
     return;
   }
 
@@ -693,7 +675,7 @@ void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        allNamedVariables[regist].header.pointerToRegisterData = dataPointer;
+        allNamedVariables[regist].header.descriptor = z47DescriptorSetPointer(allNamedVariables[regist].header.descriptor, dataPointer);
       }
     }
     return;
@@ -707,7 +689,7 @@ void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        POINTER_TO_LOCAL_REGISTER(regist)->pointerToRegisterData = dataPointer;
+        POINTER_TO_LOCAL_REGISTER(regist)->descriptor = z47DescriptorSetPointer(POINTER_TO_LOCAL_REGISTER(regist)->descriptor, dataPointer);
       }
     }
     return;
@@ -719,7 +701,7 @@ void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
 
 void oracle_setRegisterTag(calcRegister_t regist, const uint32_t tag) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    globalRegister[regist].tag = tag;
+    globalRegister[regist].descriptor = z47DescriptorSetTag(globalRegister[regist].descriptor, tag);
     return;
   }
 
@@ -727,7 +709,7 @@ void oracle_setRegisterTag(calcRegister_t regist, const uint32_t tag) {
     if(numberOfNamedVariables > 0) {
       regist -= FIRST_NAMED_VARIABLE;
       if(regist < numberOfNamedVariables) {
-        allNamedVariables[regist].header.tag = tag;
+        allNamedVariables[regist].header.descriptor = z47DescriptorSetTag(allNamedVariables[regist].header.descriptor, tag);
       }
     }
     else {
@@ -745,7 +727,7 @@ void oracle_setRegisterTag(calcRegister_t regist, const uint32_t tag) {
     if(currentLocalRegisters != NULL) {
       regist -= FIRST_LOCAL_REGISTER;
       if(regist < currentNumberOfLocalRegisters) {
-        POINTER_TO_LOCAL_REGISTER(regist)->tag = tag;
+        POINTER_TO_LOCAL_REGISTER(regist)->descriptor = z47DescriptorSetTag(POINTER_TO_LOCAL_REGISTER(regist)->descriptor, tag);
       }
     }
     return;
@@ -757,14 +739,14 @@ void oracle_setRegisterTag(calcRegister_t regist, const uint32_t tag) {
 
 void oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen) {
   if(regist <= LAST_GLOBAL_REGISTER) {
-    ((strLgIntHeader_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData))->dataMaxLengthInBlocks = maxDataLen;
+    z47StrLgIntHeaderWriteMaxLength(TO_PCMEMPTR((uint16_t)z47DescriptorPointer(globalRegister[regist].descriptor)), maxDataLen);
     return;
   }
 
   if(regist <= LAST_NAMED_VARIABLE) {
     if(numberOfNamedVariables > 0) {
       if(regist - FIRST_NAMED_VARIABLE < numberOfNamedVariables) {
-        ((strLgIntHeader_t *)oracle_getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
+        z47StrLgIntHeaderWriteMaxLength(oracle_getRegisterDataPointer(regist), maxDataLen);
       }
     }
     else {
@@ -776,14 +758,14 @@ void oracle_setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t max
 
   if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
-    ((strLgIntHeader_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData))->dataMaxLengthInBlocks = maxDataLen;
+    z47StrLgIntHeaderWriteMaxLength(TO_PCMEMPTR((uint16_t)z47DescriptorPointer(globalRegister[regist].descriptor)), maxDataLen);
     return;
   }
 
   if(regist <= LAST_LOCAL_REGISTER) {
     if(currentLocalRegisters != NULL) {
       if(regist - FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
-        ((strLgIntHeader_t *)oracle_getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
+        z47StrLgIntHeaderWriteMaxLength(oracle_getRegisterDataPointer(regist), maxDataLen);
       }
     }
     return;
@@ -798,7 +780,7 @@ uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
   calcRegister_t dataTypeRegister = regist;
 
   if(regist <= LAST_GLOBAL_REGISTER) {
-    db = TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData);
+    db = TO_PCMEMPTR((uint16_t)z47DescriptorPointer(globalRegister[regist].descriptor));
   }
 
   else if(regist <= LAST_NAMED_VARIABLE) {
@@ -806,7 +788,7 @@ uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
       regist -= FIRST_NAMED_VARIABLE;
       dataTypeRegister = regist;
       if(regist < numberOfNamedVariables) {
-        db = TO_PCMEMPTR(allNamedVariables[regist].header.pointerToRegisterData);
+        db = TO_PCMEMPTR((uint16_t)z47DescriptorPointer(allNamedVariables[regist].header.descriptor));
       }
     }
     else {
@@ -818,13 +800,13 @@ uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
   else if(regist <= LAST_RESERVED_VARIABLE) {
     regist -= FIRST_RESERVED_VARIABLE;
     dataTypeRegister = regist;
-    db = TO_PCMEMPTR(allReservedVariables[regist].header.pointerToRegisterData);
+    db = TO_PCMEMPTR((uint16_t)z47DescriptorPointer(allReservedVariables[regist].header.descriptor));
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) {
     if(currentLocalRegisters != NULL) {
       if(regist - FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
-        db = TO_PCMEMPTR(POINTER_TO_LOCAL_REGISTER(regist - FIRST_LOCAL_REGISTER)->pointerToRegisterData);
+        db = TO_PCMEMPTR((uint16_t)z47DescriptorPointer(POINTER_TO_LOCAL_REGISTER(regist - FIRST_LOCAL_REGISTER)->descriptor));
       }
     }
   }
@@ -838,12 +820,12 @@ uint16_t oracle_getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
     uint32_t data_type = oracle_getRegisterDataType(dataTypeRegister);
 
     if(data_type == dtReal34Matrix) {
-      return (uint16_t)(((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * REAL34_SIZE_IN_BLOCKS);
+      return (uint16_t)(z47MatrixHeaderRowsFromData(db) * z47MatrixHeaderColumnsFromData(db) * REAL34_SIZE_IN_BLOCKS);
     }
     if(data_type == dtComplex34Matrix) {
-      return (uint16_t)(((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * COMPLEX34_SIZE_IN_BLOCKS);
+      return (uint16_t)(z47MatrixHeaderRowsFromData(db) * z47MatrixHeaderColumnsFromData(db) * COMPLEX34_SIZE_IN_BLOCKS);
     }
-    return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks;
+    return z47StrLgIntHeaderReadMaxLength(db);
   }
 
   return 0;
@@ -854,17 +836,17 @@ uint16_t oracle_getRegisterFullSizeInBlocks(calcRegister_t regist) {
 
   switch(oracle_getRegisterDataType(regist)) {
     case dtLongInteger:
-      return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
+      return z47StrLgIntHeaderReadMaxLength(db) + TO_BLOCKS(sizeof(strLgIntHeader_t));
     case dtTime:
       return REAL34_SIZE_IN_BLOCKS;
     case dtDate:
       return REAL34_SIZE_IN_BLOCKS;
     case dtString:
-      return ((strLgIntHeader_t *)db)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
+      return z47StrLgIntHeaderReadMaxLength(db) + TO_BLOCKS(sizeof(strLgIntHeader_t));
     case dtReal34Matrix:
-      return TO_BLOCKS((((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
+      return TO_BLOCKS((z47MatrixHeaderRowsFromData(db) * z47MatrixHeaderColumnsFromData(db)) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     case dtComplex34Matrix:
-      return TO_BLOCKS((((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
+      return TO_BLOCKS((z47MatrixHeaderRowsFromData(db) * z47MatrixHeaderColumnsFromData(db)) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t));
     case dtShortInteger:
       return SHORT_INTEGER_SIZE_IN_BLOCKS;
     case dtReal34:
@@ -931,10 +913,9 @@ void oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_
     oracle_setRegisterDataType(regist, (uint16_t)dataType, tag);
 
     if(dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {
-      matrixHeader_t *header = (matrixHeader_t *)oracle_getRegisterDataPointer(regist);
+      void *header = oracle_getRegisterDataPointer(regist);
       if(header != NULL) {
-        header->matrixRows = 1;
-        header->matrixColumns = 1;
+        z47MatrixHeaderSetRowsColumns(header, 1, 1);
       }
     }
     else {

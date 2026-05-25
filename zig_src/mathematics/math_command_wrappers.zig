@@ -8,6 +8,12 @@ const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
+
 const no_register = @as(runtime.calcRegister_t, -1);
 const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
@@ -1670,6 +1676,38 @@ fn realPartCplx() callconv(.c) void {
     runtime.convertRealToResultRegister(&real_value, runtime.REGISTER_X, runtime.amNone);
 }
 
+fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
+    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
+}
+
+fn complexMatrixElementCount(matrix: *const runtime.complex34Matrix_t) usize {
+    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
+}
+
+fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.real34_t {
+    if (build_options.use_fake_wp34s_model) {
+        return &matrix.matrixElements[index];
+    }
+
+    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[index];
+}
+
+fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.complex34_t {
+    if (build_options.use_fake_wp34s_model) {
+        return &matrix.matrixElements[index];
+    }
+
+    return &@as([*]runtime.complex34_t, @ptrCast(matrix.matrixElements))[index];
+}
+
+fn complexMatrixRealPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
+    return &complexMatrixElementPtr(matrix, index).real;
+}
+
+fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
+    return &complexMatrixElementPtr(matrix, index).imag;
+}
+
 fn realPartCxma() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
     var real_matrix: runtime.real34Matrix_t = undefined;
@@ -1681,10 +1719,7 @@ fn realPartCxma() void {
     }
     defer runtime.realMatrixFree(&real_matrix);
 
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        real_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
@@ -1726,10 +1761,7 @@ fn imagPartCxma() void {
     }
     defer runtime.realMatrixFree(&real_matrix);
 
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        real_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
@@ -1782,17 +1814,14 @@ fn magnitudeCxma() void {
     }
     defer runtime.realMatrixFree(&real_matrix);
 
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        real_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         runtime.real34RectangularToPolar(
-            &complex_matrix.matrixElements[index].real,
-            &complex_matrix.matrixElements[index].imag,
-            &real_matrix.matrixElements[index],
+            complexMatrixRealPtr(&complex_matrix, index),
+            complexMatrixImagPtr(&complex_matrix, index),
+            realMatrixElementPtr(&real_matrix, index),
             &dummy,
         );
     }
@@ -1822,14 +1851,11 @@ fn conjRema() void {
 
     runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &complex_matrix);
     if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        const count = @min(
-            @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-            complex_matrix.matrixElements.len,
-        );
+        const count = complexMatrixElementCount(&complex_matrix);
 
         var index: usize = 0;
         while (index < count) : (index += 1) {
-            changeReal34Sign(&complex_matrix.matrixElements[index].imag);
+            changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
         }
     }
 
@@ -1840,16 +1866,13 @@ fn conjCxma() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        complex_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        changeReal34Sign(&complex_matrix.matrixElements[index].imag);
-        if (runtime.real34IsZero(&complex_matrix.matrixElements[index].imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.real34SetPositiveSign(&complex_matrix.matrixElements[index].imag);
+        changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
+        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));
         }
     }
 
@@ -1891,10 +1914,7 @@ fn swapReImRema() void {
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &real_matrix);
     runtime.convertReal34MatrixToComplex34Matrix(&real_matrix, &complex_matrix);
 
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        complex_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
@@ -1910,10 +1930,7 @@ fn swapReImCxma() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        complex_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
@@ -1934,17 +1951,14 @@ fn atan2RemaReal() void {
     }
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
-    const count = @min(
-        @as(usize, y_matrix.header.matrixRows) * @as(usize, y_matrix.header.matrixColumns),
-        y_matrix.matrixElements.len,
-    );
+    const count = realMatrixElementCount(&y_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         var y_value: runtime.real_t = undefined;
         var x_value = x_scalar;
 
-        runtime.real34ToReal(&y_matrix.matrixElements[index], &y_value);
+        runtime.real34ToReal(realMatrixElementPtr(&y_matrix, index), &y_value);
         if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             runtime.moreInfoOnError("In function atan2RemaReal:", "X = 0 and Y = 0", null, null);
@@ -1954,7 +1968,7 @@ fn atan2RemaReal() void {
         atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, &y_matrix.matrixElements[index]);
+        runtime.realToReal34(&x_value, realMatrixElementPtr(&y_matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&y_matrix, runtime.REGISTER_X);
@@ -1973,18 +1987,15 @@ fn atan2RemaRema() void {
         return;
     }
 
-    const count = @min(
-        @as(usize, x_matrix.header.matrixRows) * @as(usize, x_matrix.header.matrixColumns),
-        @min(x_matrix.matrixElements.len, y_matrix.matrixElements.len),
-    );
+    const count = @min(realMatrixElementCount(&x_matrix), realMatrixElementCount(&y_matrix));
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         var y_value: runtime.real_t = undefined;
         var x_value: runtime.real_t = undefined;
 
-        runtime.real34ToReal(&y_matrix.matrixElements[index], &y_value);
-        runtime.real34ToReal(&x_matrix.matrixElements[index], &x_value);
+        runtime.real34ToReal(realMatrixElementPtr(&y_matrix, index), &y_value);
+        runtime.real34ToReal(realMatrixElementPtr(&x_matrix, index), &x_value);
         if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             runtime.moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", null, null);
@@ -1994,7 +2005,7 @@ fn atan2RemaRema() void {
         atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
+        runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
@@ -2009,17 +2020,14 @@ fn atan2RealRema() void {
     }
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
-    const count = @min(
-        @as(usize, x_matrix.header.matrixRows) * @as(usize, x_matrix.header.matrixColumns),
-        x_matrix.matrixElements.len,
-    );
+    const count = realMatrixElementCount(&x_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         var y_value = y_scalar;
         var x_value: runtime.real_t = undefined;
 
-        runtime.real34ToReal(&x_matrix.matrixElements[index], &x_value);
+        runtime.real34ToReal(realMatrixElementPtr(&x_matrix, index), &x_value);
         if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             runtime.moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", null, null);
@@ -2029,7 +2037,7 @@ fn atan2RealRema() void {
         atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, &x_matrix.matrixElements[index]);
+        runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
@@ -2280,19 +2288,16 @@ fn argRema() void {
     runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &matrix);
     defer runtime.realMatrixFree(&matrix);
 
-    const count = @min(
-        @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns),
-        matrix.matrixElements.len,
-    );
+    const count = realMatrixElementCount(&matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         var real_value: runtime.real_t = undefined;
 
-        runtime.real34ToReal(&matrix.matrixElements[index], &real_value);
+        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &real_value);
         real_value = realArgValue(&real_value).*;
         runtime.convertAngleFromTo(&real_value, runtime.amDegree, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realToReal34(&real_value, &matrix.matrixElements[index]);
+        runtime.realToReal34(&real_value, realMatrixElementPtr(&matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
@@ -2310,20 +2315,17 @@ fn argCxma() void {
     }
     defer runtime.realMatrixFree(&real_matrix);
 
-    const count = @min(
-        @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns),
-        real_matrix.matrixElements.len,
-    );
+    const count = complexMatrixElementCount(&complex_matrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         runtime.real34RectangularToPolar(
-            &complex_matrix.matrixElements[index].real,
-            &complex_matrix.matrixElements[index].imag,
+            complexMatrixRealPtr(&complex_matrix, index),
+            complexMatrixImagPtr(&complex_matrix, index),
             &dummy,
-            &real_matrix.matrixElements[index],
+            realMatrixElementPtr(&real_matrix, index),
         );
-        runtime.convertAngle34FromTo(&real_matrix.matrixElements[index], runtime.amRadian, runtime.currentAngularMode);
+        runtime.convertAngle34FromTo(realMatrixElementPtr(&real_matrix, index), runtime.amRadian, runtime.currentAngularMode);
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
@@ -2552,7 +2554,7 @@ fn modReal() callconv(.c) void {
         return;
     }
 
-    runtime.WP34S_Mod(&y_value, &x_value, &result, &runtime.ctxtReal39);
+    runtime.WP34S_BigMod(&y_value, &x_value, &result, &runtime.ctxtReal39);
     if (!runtime.realIsZero(&result) and (runtime.realIsNegative(&y_value) != runtime.realIsNegative(&x_value))) {
         runtime.realAdd(&result, &x_value, &result, &runtime.ctxtReal39);
     }
@@ -2575,7 +2577,7 @@ fn rmdReal() callconv(.c) void {
         return;
     }
 
-    runtime.WP34S_Mod(&y_value, &x_value, &result, &runtime.ctxtReal39);
+    runtime.WP34S_BigMod(&y_value, &x_value, &result, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -4647,7 +4649,10 @@ pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
 
-    _ = unused_but_mandatory_parameter;
+    if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
+        z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
+        return;
+    }
 
     if (!runtime.saveLastX()) {
         return;
@@ -4695,8 +4700,8 @@ const dyadic_integer_add: u8 = 0;
 const dyadic_integer_subtract: u8 = 1;
 const dyadic_integer_multiply: u8 = 2;
 
-fn shortIntegerData(reg: runtime.calcRegister_t) *u64 {
-    return @as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(reg).?)));
+fn shortIntegerData(reg: runtime.calcRegister_t) *align(1) u64 {
+    return @as(*align(1) u64, @ptrCast(runtime.getRegisterDataPointer(reg).?));
 }
 
 fn applyDyadicRealOperation(operation: u8, lhs: *const runtime.real_t, rhs: *const runtime.real_t, result: *runtime.real_t) void {
@@ -5372,7 +5377,8 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
 
     if (x_is_short and y_is_short and !with_remainder) {
         var divisor_magnitude: u64 = 0;
-        runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, null, &divisor_magnitude);
+        var divisor_sign: i16 = 0;
+        runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &divisor_sign, &divisor_magnitude);
 
         if (divisor_magnitude == 0) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -5547,8 +5553,12 @@ pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    dblMultiply();
+    if (build_options.use_fake_wp34s_model) {
+        dblMultiply();
+        return;
+    }
+
+    z47_math_wrappers_retained_fnDblMultiply(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5568,7 +5578,7 @@ pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
 fn decompError() void {
     var message_buffer: [96]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name}) catch "cannot calculate Decomp";
+    const message = bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name}) catch "cannot calculate Decomp";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
@@ -5837,7 +5847,7 @@ fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
 fn compareTypeError(regist: runtime.calcRegister_t) void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
+    const message = bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
 
     runtime.setTemporaryInformation(false);
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
@@ -6064,7 +6074,8 @@ fn tryCheckForZero(mode: u16) bool {
         },
         runtime.dtShortInteger => {
             var value: u64 = 0;
-            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, null, &value);
+            var sign: i16 = 0;
+            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
 
             setCheckForZeroResult(mode, value == 0, true);
             return true;
@@ -6417,13 +6428,21 @@ pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    dblDivide(false);
+    if (build_options.use_fake_wp34s_model) {
+        dblDivide(false);
+        return;
+    }
+
+    z47_math_wrappers_retained_fnDblDivide(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    dblDivide(true);
+    if (build_options.use_fake_wp34s_model) {
+        dblDivide(true);
+        return;
+    }
+
+    z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter);
 }
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
@@ -6524,19 +6543,23 @@ fn tryFnToRect2Real34Pair() bool {
     const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
     const data_atag_y = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
+    const x_is_angle = data_type_x == runtime.dtReal34 and data_atag_x != runtime.amNone;
+    const y_is_angle = data_type_y == runtime.dtReal34 and data_atag_y != runtime.amNone;
+    const x_is_radius = data_type_x == runtime.dtLongInteger or (data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone);
+    const y_is_radius = data_type_y == runtime.dtLongInteger or (data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone);
 
     var angle_in_y: i8 = 1;
     if (!runtime.getSystemFlag(runtime.FLAG_HPRP)) {
         angle_in_y = -angle_in_y;
-        if (data_type_x == runtime.dtReal34 and data_atag_x != runtime.amNone and data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone) {
+        if (x_is_angle and y_is_radius) {
             // Keep the current register order.
-        } else if (data_type_y == runtime.dtReal34 and data_atag_y != runtime.amNone and data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone) {
+        } else if (y_is_angle and x_is_radius) {
             angle_in_y = -angle_in_y;
         }
     } else {
-        if (data_type_x == runtime.dtReal34 and data_atag_x != runtime.amNone and data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone) {
+        if (x_is_angle and y_is_radius) {
             angle_in_y = -angle_in_y;
-        } else if (data_type_y == runtime.dtReal34 and data_atag_y != runtime.amNone and data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone) {
+        } else if (y_is_angle and x_is_radius) {
             // Keep the current register order.
         }
     }
@@ -6718,7 +6741,7 @@ pub export fn fnParallel(unused_but_mandatory_parameter: u16) callconv(.c) void 
 fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) void {
     var message_buffer: [96]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot {s} {s}", .{ operation_name, type_name }) catch "cannot shift digits";
+    const message = bufPrintZ(&message_buffer, "cannot {s} {s}", .{ operation_name, type_name }) catch "cannot shift digits";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError(function_name, message, null, null);
@@ -6727,7 +6750,7 @@ fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) voi
 fn unitVectorError() void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
+    const message = bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError("In function fnUnitVector:", message, null, null);
@@ -6757,10 +6780,10 @@ fn unitVectorRema() void {
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &matrix);
     runtime.realSetZero(&sum);
 
-    const count = @min(@as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns), matrix.matrixElements.len);
+    const count = realMatrixElementCount(&matrix);
 
     for (0..count) |index| {
-        runtime.real34ToReal(&matrix.matrixElements[index], &element);
+        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &element);
         runtime.realMultiply(&element, &element, &element, &runtime.ctxtReal39);
         runtime.realAdd(&sum, &element, &sum, &runtime.ctxtReal39);
     }
@@ -6768,9 +6791,9 @@ fn unitVectorRema() void {
     runtime.realSquareRoot(&sum, &sum, &runtime.ctxtReal39);
 
     for (0..count) |index| {
-        runtime.real34ToReal(&matrix.matrixElements[index], &element);
+        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &element);
         runtime.realDivide(&element, &sum, &element, &runtime.ctxtReal39);
-        runtime.realToReal34(&element, &matrix.matrixElements[index]);
+        runtime.realToReal34(&element, realMatrixElementPtr(&matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
@@ -6785,13 +6808,13 @@ fn unitVectorCxma() void {
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &matrix);
     runtime.realSetZero(&sum);
 
-    const count = @min(@as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns), matrix.matrixElements.len);
+    const count = complexMatrixElementCount(&matrix);
 
     for (0..count) |index| {
-        runtime.real34ToReal(&matrix.matrixElements[index].real, &real_value);
+        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &real_value);
         runtime.realMultiply(&real_value, &real_value, &real_value, &runtime.ctxtReal39);
         runtime.realAdd(&sum, &real_value, &sum, &runtime.ctxtReal39);
-        runtime.real34ToReal(&matrix.matrixElements[index].imag, &imag_value);
+        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &imag_value);
         runtime.realMultiply(&imag_value, &imag_value, &imag_value, &runtime.ctxtReal39);
         runtime.realAdd(&sum, &imag_value, &sum, &runtime.ctxtReal39);
     }
@@ -6799,11 +6822,11 @@ fn unitVectorCxma() void {
     runtime.realSquareRoot(&sum, &sum, &runtime.ctxtReal39);
 
     for (0..count) |index| {
-        runtime.real34ToReal(&matrix.matrixElements[index].real, &real_value);
-        runtime.real34ToReal(&matrix.matrixElements[index].imag, &imag_value);
+        runtime.real34ToReal(complexMatrixRealPtr(&matrix, index), &real_value);
+        runtime.real34ToReal(complexMatrixImagPtr(&matrix, index), &imag_value);
         runtime.divComplexComplex(&real_value, &imag_value, &sum, runtime.z47_math_wrappers_const_0(), &real_value, &imag_value, &runtime.ctxtReal39);
-        runtime.realToReal34(&real_value, &matrix.matrixElements[index].real);
-        runtime.realToReal34(&imag_value, &matrix.matrixElements[index].imag);
+        runtime.realToReal34(&real_value, complexMatrixRealPtr(&matrix, index));
+        runtime.realToReal34(&imag_value, complexMatrixImagPtr(&matrix, index));
     }
 
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, runtime.REGISTER_X);
@@ -6902,7 +6925,7 @@ pub export fn fnSdr(unused_but_mandatory_parameter: u16) callconv(.c) void {
 fn sqrtShoI() callconv(.c) void {
     var sign_value: i32 = 0;
 
-    _ = runtime.WP34S_extract_value(@as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(runtime.REGISTER_X).?))).*, &sign_value);
+    _ = runtime.WP34S_extract_value(shortIntegerData(runtime.REGISTER_X).*, &sign_value);
     if (sign_value != 0 and runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         var value: runtime.real_t = undefined;
 
@@ -6914,7 +6937,7 @@ fn sqrtShoI() callconv(.c) void {
         return;
     }
 
-    @as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(runtime.REGISTER_X).?))).* = runtime.WP34S_intSqrt(@as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(runtime.REGISTER_X).?))).*);
+    shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intSqrt(shortIntegerData(runtime.REGISTER_X).*);
 }
 
 fn sqrtReal() callconv(.c) void {
@@ -7015,9 +7038,9 @@ fn curtShoI() callconv(.c) void {
 
     cube_root = runtime.realToInt32C47(&value, null);
     if (cube_root >= 0) {
-        @as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(runtime.REGISTER_X).?))).* = runtime.WP34S_build_value(@intCast(cube_root), 0);
+        shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(cube_root), 0);
     } else {
-        @as(*u64, @ptrCast(@alignCast(runtime.getRegisterDataPointer(runtime.REGISTER_X).?))).* = runtime.WP34S_build_value(@intCast(-cube_root), 1);
+        shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(-cube_root), 1);
     }
 }
 
@@ -7298,8 +7321,8 @@ fn crossDotMatrixTypeError(function_name: [:0]const u8) void {
     var message2_buffer: [64]u8 = undefined;
     const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
     const x_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message1 = std.fmt.bufPrintZ(&message1_buffer, "cannot raise {s}", .{y_type_name}) catch "cannot raise current Y type";
-    const message2 = std.fmt.bufPrintZ(&message2_buffer, "to {s}", .{x_type_name}) catch "to current X type";
+    const message1 = bufPrintZ(&message1_buffer, "cannot raise {s}", .{y_type_name}) catch "cannot raise current Y type";
+    const message2 = bufPrintZ(&message2_buffer, "to {s}", .{x_type_name}) catch "to current X type";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError(function_name, message1, message2, null);
@@ -7308,7 +7331,7 @@ fn crossDotMatrixTypeError(function_name: [:0]const u8) void {
 fn linpolInvalidXError() void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in X", .{type_name}) catch "cannot LINPOL with current X type";
+    const message = bufPrintZ(&message_buffer, "cannot LINPOL with {s} in X", .{type_name}) catch "cannot LINPOL with current X type";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);
@@ -7318,7 +7341,7 @@ fn linpolDifferingTypeError() void {
     var message_buffer: [192]u8 = undefined;
     const type_name_y = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
     const type_name_z = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Z, true, false));
-    const message = std.fmt.bufPrintZ(
+    const message = bufPrintZ(
         &message_buffer,
         "cannot LINPOL with differing data types in Y ({s}) and Z ({s})",
         .{ type_name_y, type_name_z },
@@ -7332,7 +7355,7 @@ fn linpolCoeffTypeError(regist: runtime.calcRegister_t) void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
     const register_name = if (regist == runtime.REGISTER_Y) "Y" else "Z";
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot LINPOL with {s} in {s}", .{ type_name, register_name }) catch "cannot LINPOL with current coefficient type";
+    const message = bufPrintZ(&message_buffer, "cannot LINPOL with {s} in {s}", .{ type_name, register_name }) catch "cannot LINPOL with current coefficient type";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
     runtime.moreInfoOnError("In function fnLINPOL:", message, null, null);

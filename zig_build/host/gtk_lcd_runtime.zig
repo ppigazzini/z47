@@ -117,10 +117,10 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
     }
 
     const srcbytes = [4]u8{
-        @intCast(srcbits >> 0),
-        @intCast(srcbits >> 8),
-        @intCast(srcbits >> 16),
-        @intCast(srcbits >> 24),
+        @truncate(srcbits >> 0),
+        @truncate(srcbits >> 8),
+        @truncate(srcbits >> 16),
+        @truncate(srcbits >> 24),
     };
 
     const base = lcd_buffer + (y * (LCD_LINE_SIZE + 2)) + byte_i + 2;
