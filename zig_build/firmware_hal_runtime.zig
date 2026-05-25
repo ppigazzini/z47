@@ -156,7 +156,7 @@ fn registerToUInt32(reg: i16) ?u32 {
     const data_type = getRegisterDataType(reg);
     if (data_type == DT_REAL34) {
         const raw_ptr = getRegisterDataPointer(reg) orelse return null;
-        const real_ptr: [*c]const DecQuad = @ptrCast(raw_ptr);
+        const real_ptr: [*c]const DecQuad = @ptrCast(@alignCast(raw_ptr));
         return real34ToUInt32(real_ptr);
     }
 
@@ -432,7 +432,8 @@ pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
                 break;
             }
         }
-        stringCopy(fileNameSelected, (&filename)[@intCast(jj)..]);
+        const selected: [*c]const u8 = @ptrCast((&filename)[@intCast(jj)..].ptr);
+        stringCopy(fileNameSelected, selected);
     }
 
     return FILE_OK;
