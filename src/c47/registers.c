@@ -1420,67 +1420,6 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   if(FIRST_RESERVED_VARIABLE <= sourceRegister && sourceRegister < FIRST_NAMED_RESERVED_VARIABLE) {
     sourceRegister = sourceRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
   }
-  else if(sourceRegister == RESERVED_VARIABLE_ADM) {
-    longInteger_t longIntVar;
-    longIntegerInit(longIntVar);
-    switch(currentAngularMode) {
-      case amDMS: {
-        uInt32ToLongInteger(1u, longIntVar);
-        break;
-      }
-      case amRadian: {
-        uInt32ToLongInteger(2u, longIntVar);
-        break;
-      }
-      case amMultPi: {
-        uInt32ToLongInteger(3u, longIntVar);
-        break;
-      }
-      case amGrad: {
-        uInt32ToLongInteger(4u, longIntVar);
-        break;
-      }
-      default: {
-        uInt32ToLongInteger(0u, longIntVar);
-        break;
-      }
-    }
-    convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
-    longIntegerFree(longIntVar);
-    return;
-  }
-  else if(sourceRegister == RESERVED_VARIABLE_DENMAX) {
-    longInteger_t longIntVar;
-    longIntegerInit(longIntVar);
-    uInt32ToLongInteger(denMax, longIntVar);
-    convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
-    longIntegerFree(longIntVar);
-    return;
-  }
-  else if(sourceRegister == RESERVED_VARIABLE_ISM) {
-    longInteger_t longIntVar;
-    longIntegerInit(longIntVar);
-    int32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
-    convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
-    longIntegerFree(longIntVar);
-    return;
-  }
-  else if(sourceRegister == RESERVED_VARIABLE_REALDF) {
-    longInteger_t longIntVar;
-    longIntegerInit(longIntVar);
-    uInt32ToLongInteger(displayFormat, longIntVar);
-    convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
-    longIntegerFree(longIntVar);
-    return;
-  }
-  else if(sourceRegister == RESERVED_VARIABLE_NDEC) {
-    longInteger_t longIntVar;
-    longIntegerInit(longIntVar);
-    uInt32ToLongInteger(displayFormatDigits, longIntVar);
-    convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
-    longIntegerFree(longIntVar);
-    return;
-  }
 
   if(   getRegisterDataType(destRegister) != getRegisterDataType(sourceRegister) || getRegisterFullSizeInBlocks(destRegister) != getRegisterFullSizeInBlocks(sourceRegister)) {
     uint32_t sizeInBlocks;
