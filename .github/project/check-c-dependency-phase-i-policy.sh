@@ -6,6 +6,7 @@ set -euo pipefail
 # - External-only mode: once count reaches zero, also enforce strict zero caps.
 
 repo_root="${1:-.}"
+product_phase_target_max="256"
 
 python3 .github/project/check-c-dependency-allowlist.py \
   --repo-root "$repo_root" \
@@ -26,6 +27,11 @@ if [[ -z "$product_count" ]]; then
   echo "ERROR: could not determine product first-party dependency count" >&2
   exit 2
 fi
+
+python3 .github/project/check-c-dependency-allowlist.py \
+  --repo-root "$repo_root" \
+  --config .github/project/c-dependency-product-allowlist.json \
+  --max-first-party "$product_phase_target_max"
 
 if [[ "$product_count" == "0" ]]; then
   echo "Phase I policy: product first-party count is zero; enforcing strict zero gates."
