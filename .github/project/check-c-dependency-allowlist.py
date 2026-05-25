@@ -100,6 +100,7 @@ def main() -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root path")
     parser.add_argument("--config", required=True, help="Path to JSON allowlist config")
     parser.add_argument("--update-baseline", action="store_true", help="Rewrite baseline from current scan")
+    parser.add_argument("--max-first-party", type=int, default=None, help="Fail if detected first-party entries exceed this value")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -148,6 +149,11 @@ def main() -> int:
             print(f"  {e}")
         print("\nIf intentional, update baseline with:")
         print("  python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --update-baseline")
+        return 1
+
+    if args.max_first_party is not None and len(classified["first-party"]) > args.max_first_party:
+        print("\nERROR: first-party C dependency cap exceeded:")
+        print(f"  detected={len(classified['first-party'])} cap={args.max_first_party}")
         return 1
 
     print("\nPASS: no new first-party C dependency entries detected.")
