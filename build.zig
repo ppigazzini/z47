@@ -71,4 +71,30 @@ fn registerCDependencyAuditStep(b: *std.Build) void {
 
     const strict_zero_step = b.step("check-c-deps-zero", "Fail when any first-party C dependency remains in build wiring");
     strict_zero_step.dependOn(&strict_zero_cmd.step);
+
+    const product_audit_cmd = b.addSystemCommand(&.{
+        "python3",
+        ".github/project/check-c-dependency-allowlist.py",
+        "--repo-root",
+        ".",
+        "--config",
+        ".github/project/c-dependency-product-allowlist.json",
+    });
+
+    const product_audit_step = b.step("check-c-deps-product", "Audit product-lane C dependencies with oracle/test lanes excluded");
+    product_audit_step.dependOn(&product_audit_cmd.step);
+
+    const product_zero_cmd = b.addSystemCommand(&.{
+        "python3",
+        ".github/project/check-c-dependency-allowlist.py",
+        "--repo-root",
+        ".",
+        "--config",
+        ".github/project/c-dependency-product-allowlist.json",
+        "--max-first-party",
+        "0",
+    });
+
+    const product_zero_step = b.step("check-c-deps-product-zero", "Fail when any first-party C dependency remains in product lanes");
+    product_zero_step.dependOn(&product_zero_cmd.step);
 }

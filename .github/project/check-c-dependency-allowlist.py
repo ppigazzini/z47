@@ -50,6 +50,10 @@ def classify_entry(entry: str, cfg: dict) -> str:
     external = tuple(cfg.get("allowed_external_prefixes", []))
     first_party = tuple(cfg.get("first_party_prefixes", []))
     generated = tuple(cfg.get("generated_prefixes", []))
+    ignored = tuple(cfg.get("ignored_prefixes", []))
+
+    if entry.startswith(ignored):
+        return "ignored"
 
     if entry.startswith(external):
         return "external"
@@ -116,6 +120,7 @@ def main() -> int:
         "external": set(),
         "first-party": set(),
         "generated": set(),
+        "ignored": set(),
         "other": set(),
     }
     for e in entries:
@@ -141,6 +146,7 @@ def main() -> int:
     print(f"- external entries: {len(classified['external'])}")
     print(f"- first-party entries: {len(classified['first-party'])}")
     print(f"- generated entries: {len(classified['generated'])}")
+    print(f"- ignored entries: {len(classified['ignored'])}")
     print("- unknown-c entries: 0")
 
     if new_first_party:

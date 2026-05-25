@@ -1,0 +1,27 @@
+{
+  "description": "Phase H product-lane C dependency audit policy",
+  "scan_globs": [
+    "build.zig",
+    "zig_build/**/*.zig"
+  ],
+  "allowed_external_prefixes": [
+    "dep/decNumberICU/",
+    "decNumberICU/",
+    "dep/DMCP_SDK/",
+    "dep/DMCP5_SDK/",
+    "dep/forcecrc32.c"
+  ],
+  "first_party_prefixes": [
+    "src/",
+    "zig_bridge/"
+  ],
+  "generated_prefixes": [
+    "generated/",
+    "zig_build/generated/"
+  ],
+  "ignored_prefixes": [
+    "src/testSuite/",
+    "zig_build/tests/"
+  ],
+  "baseline_file": ".github/project/c-dependency-product-first-party-baseline.txt"
+}
