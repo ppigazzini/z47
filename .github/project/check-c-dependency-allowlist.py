@@ -105,6 +105,11 @@ def main() -> int:
     parser.add_argument("--config", required=True, help="Path to JSON allowlist config")
     parser.add_argument("--update-baseline", action="store_true", help="Rewrite baseline from current scan")
     parser.add_argument("--max-first-party", type=int, default=None, help="Fail if detected first-party entries exceed this value")
+    parser.add_argument(
+        "--print-first-party-count",
+        action="store_true",
+        help="Print detected first-party entry count and exit",
+    )
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -131,6 +136,10 @@ def main() -> int:
         print("ERROR: baseline_file is missing in config", file=sys.stderr)
         return 2
     baseline_path = (repo_root / baseline_rel).resolve()
+
+    if args.print_first_party_count:
+        print(len(classified["first-party"]))
+        return 0
 
     if args.update_baseline:
         write_baseline(baseline_path, classified["first-party"])

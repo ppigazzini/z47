@@ -46,6 +46,18 @@ fn buildImpl(b: *std.Build) !void {
 }
 
 fn registerCDependencyAuditStep(b: *std.Build) void {
+    const phase_i_policy_cmd = b.addSystemCommand(&.{
+        "bash",
+        ".github/project/check-c-dependency-phase-i-policy.sh",
+        ".",
+    });
+
+    const phase_i_policy_step = b.step(
+        "check-c-deps-policy",
+        "Run Phase I dependency policy (baseline transition to external-only zero gates)",
+    );
+    phase_i_policy_step.dependOn(&phase_i_policy_cmd.step);
+
     const audit_cmd = b.addSystemCommand(&.{
         "python3",
         ".github/project/check-c-dependency-allowlist.py",
