@@ -183,27 +183,16 @@ jobs:
           set -euo pipefail
           bash .github/project/check-zig-c-boundaries.sh
 
-  c-dependency-guard:
-    name: Verify first-party C dependency baseline
+  c-dependency-policy:
+    name: Verify Phase I C dependency policy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Enforce C dependency allowlist and baseline
+      - name: Enforce Phase I dependency policy
         shell: bash
         run: |
           set -euo pipefail
-          python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json
-
-  c-dependency-product-guard:
-    name: Verify product-lane C dependency baseline
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Enforce product-lane C dependency allowlist and baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-product-allowlist.json
+          bash .github/project/check-c-dependency-phase-i-policy.sh .
 
   workflow-imported-root-guard:
     name: Verify workflow imported-root vocabulary
@@ -234,8 +223,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
-      - c-dependency-guard
-      - c-dependency-product-guard
+      - c-dependency-policy
       - workflow-imported-root-guard
       - workflow-locality-guard
     runs-on: ubuntu-latest
