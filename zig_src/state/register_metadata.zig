@@ -448,6 +448,10 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
     }
 }
 
+pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
+    runtime.retainedAllocateLocalRegisters(number_of_registers_to_allocate);
+}
+
 pub export fn validateName(name: [*c]const u8) bool {
     if (name == null) {
         return false;
