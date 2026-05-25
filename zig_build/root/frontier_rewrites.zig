@@ -105,7 +105,6 @@ const runtime_helper_sources = [_][]const u8{
     "zig_bridge/root/graph_text_retained.c",
     "zig_bridge/root/graphs_retained.c",
     "zig_bridge/root/hyper_retained.c",
-    "zig_bridge/root/inline_test_retained.c",
     "zig_bridge/root/input_retained.c",
     "zig_bridge/root/integers_retained.c",
     "zig_bridge/root/items_retained.c",
