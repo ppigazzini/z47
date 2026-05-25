@@ -77,7 +77,7 @@ pub fn addSimulator(
         });
     }
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
+    std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     gtk_gui_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags);
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
@@ -154,7 +154,7 @@ pub fn addTestSuite(
     exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = core_sources, .flags = core_c_flags });
+    std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/testSuite"), .files = test_sources, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });
