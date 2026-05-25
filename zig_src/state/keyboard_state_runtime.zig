@@ -96,13 +96,27 @@ pub extern var programRunStop: u8;
 pub extern var screenUpdatingMode: u8;
 pub extern var keyActionProcessed: bool_t;
 pub extern var ListXYposition: i16;
+pub extern var calcModel: u8;
+
+pub extern var kbd_std_C47: [37]calcKey_t;
+pub extern var kbd_std_DM42: [37]calcKey_t;
+pub extern var kbd_std_R47f_g: [37]calcKey_t;
+pub extern var kbd_std_R47bk_fg: [37]calcKey_t;
+pub extern var kbd_std_R47fg_bk: [37]calcKey_t;
+pub extern var kbd_std_R47fg_g: [37]calcKey_t;
+
+const USER_DM42: u8 = 45;
+const USER_C47: u8 = 46;
+const USER_R47f_g: u8 = 61;
+const USER_R47bk_fg: u8 = 62;
+const USER_R47fg_bk: u8 = 63;
+const USER_R47fg_g: u8 = 64;
 
 pub extern fn getSystemFlag(flag: i32) bool_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn runFunction(item: i16) void;
 pub extern fn addItemToNimBuffer(item: i16) void;
 pub extern fn refreshScreen(reason: i16) void;
-pub extern fn z47_keyboard_state_runtime_standard_key(index: u16, key: *calcKey_t) void;
 extern fn z47_keyboard_state_retained_processKeyAction(item: i16) void;
 extern fn z47_keyboard_state_retained_fnKeyEnter(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_retained_fnKeyExit(unused_but_mandatory_parameter: u16) void;
@@ -113,9 +127,16 @@ extern fn z47_keyboard_state_retained_fnKeyDown(unused_but_mandatory_parameter: 
 extern fn z47_keyboard_state_retained_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
 
 pub inline fn kbdStdAt(index: usize) calcKey_t {
-    var key: calcKey_t = undefined;
-    z47_keyboard_state_runtime_standard_key(@intCast(index), &key);
-    return key;
+    const selected: *[37]calcKey_t = switch (calcModel) {
+        USER_C47 => &kbd_std_C47,
+        USER_DM42 => &kbd_std_DM42,
+        USER_R47f_g => &kbd_std_R47f_g,
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        else => &kbd_std_C47,
+    };
+    return selected[index];
 }
 
 pub inline fn maxAbs(item: i16) u16 {
