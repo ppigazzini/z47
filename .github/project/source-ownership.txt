@@ -23,7 +23,6 @@ BUILD.md
 COPYING
 LIBRARY
 Makefile
-PROGRAMS
 README.md
 dep
 dist

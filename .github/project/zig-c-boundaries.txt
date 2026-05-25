@@ -10,11 +10,20 @@ zig_build/tools/translate_c/ttf2_raster_fonts.h
 [cimport]
 
 [extern-symbols]
+zig_build/firmware_hal_runtime.zig
+zig_build/host/gtk_button_signal_wrappers.zig
+zig_build/host/gtk_gui_wrappers.zig
+zig_build/host/gtk_io_runtime.zig
+zig_build/host/gtk_lcd_runtime.zig
+zig_build/tests/constants/constants_parity.zig
 zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
 zig_src/leaf/shortint_runtime.zig
 zig_src/leaf/constants_runtime.zig
 zig_src/mathematics/math_command_wrappers_runtime.zig
+zig_src/root/frontier_entries.zig
+zig_src/root/frontier_runtime.zig
+zig_src/solver/solve_runtime.zig
 zig_src/ui/tone_runtime.zig
 zig_src/state/calc_state_runtime.zig
 zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
