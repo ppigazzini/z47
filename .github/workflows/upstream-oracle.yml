@@ -205,6 +205,17 @@ jobs:
           set -euo pipefail
           bash .github/project/workflow-imported-root-paths.sh check-workflow
 
+  workflow-locality-guard:
+    name: Verify workflow script locality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce no __DEV script references in CI workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-ci-no-local-dev-scripts.sh
+
   linux-host-parity:
     name: Linux host parity, wrappers, generated outputs, app smoke run
     needs:
@@ -214,6 +225,7 @@ jobs:
       - zig-c-boundary-guard
       - c-dependency-guard
       - workflow-imported-root-guard
+      - workflow-locality-guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
