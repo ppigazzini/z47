@@ -4,8 +4,8 @@ pub const RuntimeObjects = struct {
     program_serialization: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/program_serialization_runtime_helpers.c");
-        cmd.addArg("zig_bridge/state/program_serialization_retained.c");
+        cmd.addArg("zig_bridge/state/" ++ "program_serialization_runtime_helpers.c");
+        cmd.addArg("zig_bridge/state/" ++ "program_serialization_retained.c");
         cmd.addFileArg(self.program_serialization.getEmittedBin());
     }
 };
@@ -93,8 +93,8 @@ pub fn addToModule(
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/program_serialization_runtime_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/program_serialization_retained.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "program_serialization_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "program_serialization_retained.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 

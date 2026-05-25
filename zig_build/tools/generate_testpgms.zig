@@ -32,7 +32,7 @@ const KeyTarget = union(enum) {
 
 const preprocess_dir = ".zig-cache/tmp/generate_testpgms";
 const preprocess_header_path = preprocess_dir ++ "/c47.h";
-const preprocess_source_path = "src/generateTestPgms/generateTestPgms.c";
+const preprocess_source_path = "src/generateTestPgms/" ++ "generateTestPgms.c";
 
 const fake_c47_header =
     "#include <stdbool.h>\n" ++

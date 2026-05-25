@@ -15,6 +15,22 @@ const register_metadata_rewrites = @import("../state/register_metadata_rewrites.
 const tone_rewrites = @import("../ui/tone_rewrites.zig");
 const host_types = @import("types.zig");
 
+const state_bridge_sources_manifest = @embedFile("builders_state_bridge_sources.txt");
+
+fn addManifestCSources(
+    b: *std.Build,
+    module: *std.Build.Module,
+    manifest: []const u8,
+    c_flags: []const []const u8,
+) void {
+    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const source = std.mem.trim(u8, line_raw, " \t");
+        if (source.len == 0 or source[0] == '#') continue;
+        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
+    }
+}
+
 pub fn addSimulator(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
@@ -80,9 +96,7 @@ pub fn addSimulator(
     std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     gtk_gui_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags);
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/stack_runtime_helpers.c"), .flags = core_c_flags });
+    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     calc_state_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     program_serialization_rewrites.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
@@ -156,9 +170,7 @@ pub fn addTestSuite(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/testSuite"), .files = test_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_overlay.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/keyboard_state_retained.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/state/stack_runtime_helpers.c"), .flags = core_c_flags });
+    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     memory_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     calc_state_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     program_serialization_rewrites.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);

@@ -1,0 +1,11 @@
+logicalOps/and.c
+logicalOps/countBits.c
+logicalOps/mask.c
+logicalOps/nand.c
+logicalOps/nor.c
+logicalOps/not.c
+logicalOps/or.c
+logicalOps/rotateBits.c
+logicalOps/setClearFlipBits.c
+logicalOps/xnor.c
+logicalOps/xor.c

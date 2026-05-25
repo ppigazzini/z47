@@ -40,7 +40,8 @@ def candidate_literals_from_file(path: Path) -> set[str]:
         literal = normalize_path(raw)
         if "/" not in literal:
             continue
-        if ".c" not in literal and not literal.startswith(("src/", "dep/", "zig_bridge/", "generated/", "zig_build/")):
+        # Track only C source references; generic include/resource paths are out of scope.
+        if not literal.endswith(".c"):
             continue
         found.add(literal)
     return found

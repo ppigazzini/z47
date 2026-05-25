@@ -1,6 +1,30 @@
 const std = @import("std");
 const build_common = @import("../common.zig");
 
+const replaced_core_sources_manifest = @embedFile("shortint_replaced_core_sources.txt");
+const parity_oracle_sources_manifest = @embedFile("shortint_parity_oracle_sources.txt");
+const rotate_bits_oracle_source_manifest = @embedFile("shortint_rotate_bits_oracle_source.txt");
+
+fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
+    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const line = std.mem.trim(u8, line_raw, " \t");
+        if (line.len == 0 or line[0] == '#') continue;
+        if (std.mem.eql(u8, line, needle)) return true;
+    }
+    return false;
+}
+
+fn firstManifestPath(manifest: []const u8) []const u8 {
+    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const line = std.mem.trim(u8, line_raw, " \t");
+        if (line.len == 0 or line[0] == '#') continue;
+        return line;
+    }
+    @panic("manifest has no usable path entries");
+}
+
 pub const RuntimeObjects = struct {
     logical_mask: *std.Build.Step.Compile,
     logical_count_bits: *std.Build.Step.Compile,
@@ -32,20 +56,6 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
-};
-
-const replaced_core_sources = [_][]const u8{
-    "logicalOps/and.c",
-    "logicalOps/countBits.c",
-    "logicalOps/mask.c",
-    "logicalOps/nand.c",
-    "logicalOps/nor.c",
-    "logicalOps/not.c",
-    "logicalOps/or.c",
-    "logicalOps/rotateBits.c",
-    "logicalOps/setClearFlipBits.c",
-    "logicalOps/xnor.c",
-    "logicalOps/xor.c",
 };
 
 fn addRuntimeObject(
@@ -102,11 +112,9 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
     var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, core_sources.len);
     errdefer filtered.deinit(b.allocator);
 
-    outer: for (core_sources) |source| {
-        for (replaced_core_sources) |removed| {
-            if (std.mem.eql(u8, source, removed)) {
-                continue :outer;
-            }
+    for (core_sources) |source| {
+        if (manifestContainsPath(replaced_core_sources_manifest, source)) {
+            continue;
         }
         try filtered.append(b.allocator, source);
     }
@@ -133,24 +141,13 @@ pub fn addParityExecutable(
     exe.root_module.addIncludePath(b.path("zig_build/tests"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/logical_shortint_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/logical_shortint_parity.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{
-        .file = build_common.upstreamPath(b, "src/c47/logicalOps/mask.c"),
-        .flags = &.{ "-DfnMaskl=oracle_fnMaskl", "-DfnMaskr=oracle_fnMaskr" },
-    });
-    exe.root_module.addCSourceFile(.{
-        .file = build_common.upstreamPath(b, "src/c47/logicalOps/countBits.c"),
-        .flags = &.{"-DfnCountBits=oracle_fnCountBits"},
-    });
-    exe.root_module.addCSourceFile(.{
-        .file = build_common.upstreamPath(b, "src/c47/logicalOps/setClearFlipBits.c"),
-        .flags = &.{
-            "-DfnCb=oracle_fnCb",
-            "-DfnSb=oracle_fnSb",
-            "-DfnFb=oracle_fnFb",
-            "-DfnBc=oracle_fnBc",
-            "-DfnBs=oracle_fnBs",
-        },
-    });
+    var parity_oracle_paths = std.mem.tokenizeAny(u8, parity_oracle_sources_manifest, "\r\n");
+    const mask_source = std.mem.trim(u8, parity_oracle_paths.next().?, " \t");
+    const count_bits_source = std.mem.trim(u8, parity_oracle_paths.next().?, " \t");
+    const set_clear_flip_bits_source = std.mem.trim(u8, parity_oracle_paths.next().?, " \t");
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, mask_source), .flags = &.{ "-DfnMaskl=oracle_fnMaskl", "-DfnMaskr=oracle_fnMaskr" } });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, count_bits_source), .flags = &.{"-DfnCountBits=oracle_fnCountBits"} });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, set_clear_flip_bits_source), .flags = &.{ "-DfnCb=oracle_fnCb", "-DfnSb=oracle_fnSb", "-DfnFb=oracle_fnFb", "-DfnBc=oracle_fnBc", "-DfnBs=oracle_fnBs" } });
     exe.root_module.addObject(runtime_objects.logical_mask);
     exe.root_module.addObject(runtime_objects.logical_count_bits);
     exe.root_module.addObject(runtime_objects.logical_set_clear_flip_bits);
@@ -177,7 +174,7 @@ pub fn addRotateBitsParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/rotate_bits/rotate_bits_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/rotate_bits/rotate_bits_parity.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{
-        .file = build_common.upstreamPath(b, "src/c47/logicalOps/rotateBits.c"),
+        .file = build_common.upstreamPath(b, firstManifestPath(rotate_bits_oracle_source_manifest)),
         .flags = &.{
             "-DfnAsr=oracle_fnAsr",
             "-DfnSl=oracle_fnSl",
