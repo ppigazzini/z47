@@ -47,6 +47,10 @@ void oracle_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t
 void oracle_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr);
 void oracle_setRegisterTag(calcRegister_t reg, uint32_t tag);
 
+void z47_registers_retained_allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
+  (void)numberOfRegistersToAllocate;
+}
+
 typedef uint32_t (*get_u32_fn)(calcRegister_t);
 typedef uint16_t (*get_u16_fn)(calcRegister_t);
 typedef void *(*get_ptr_fn)(calcRegister_t);

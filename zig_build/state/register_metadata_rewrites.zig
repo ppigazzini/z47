@@ -6,7 +6,6 @@ pub const RuntimeObjects = struct {
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addArg("zig_bridge/state/register_metadata_runtime_helpers.c");
         cmd.addArg("zig_bridge/state/registers_retained.c");
-        cmd.addArg("zig_bridge/state/registers_retained_wrappers.c");
         cmd.addFileArg(self.register_metadata.getEmittedBin());
     }
 };
@@ -96,7 +95,6 @@ pub fn addToModule(
 
     module.addCSourceFile(.{ .file = b.path("zig_bridge/state/register_metadata_runtime_helpers.c"), .flags = c_flags });
     module.addCSourceFile(.{ .file = b.path("zig_bridge/state/registers_retained.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/registers_retained_wrappers.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 
