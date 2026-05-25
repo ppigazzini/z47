@@ -6,7 +6,7 @@ set -euo pipefail
 # - External-only mode: once count reaches zero, also enforce strict zero caps.
 
 repo_root="${1:-.}"
-product_phase_target_max="256"
+product_phase_target_max="150"
 
 python3 .github/project/check-c-dependency-allowlist.py \
   --repo-root "$repo_root" \
