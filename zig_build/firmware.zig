@@ -602,7 +602,7 @@ fn addFirmwareElfBuild(
     cmd.addArg(build_common.upstreamPathString(b, firmwareSdkSyscallsSource(config.board)));
     cmd.addArg(build_common.upstreamPathString(b, firmwareSdkStartupSource(config.board)));
     for (build_common.decnumber_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("dep/{s}", .{source})));
-    for (core_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("src/c47/{s}", .{source})));
+    std.debug.assert(core_sources.len == 0);
     flags_state_objects.addToCommand(cmd);
     math_command_wrapper_objects.addToCommand(cmd);
     constants_objects.addToCommand(cmd);

@@ -203,7 +203,6 @@ src/c47/logicalOps/countBits.c
 src/c47/logicalOps/mask.c
 src/c47/logicalOps/rotateBits.c
 src/c47/logicalOps/setClearFlipBits.c
-src/c47/{s}
 src/generateTestPgms/generateTestPgms.c
 src/generated/constantPointers.c
 src/generated/constantPointers.h
