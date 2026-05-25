@@ -1502,12 +1502,13 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
     //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
+
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
-    for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
+    for(int i=VAR_NO_ACC; i<=VAR_NO_PV; i++) {
       real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
-    // initialize 1 long integer reserved variables: GRAMOD
+    // initialize 1 long integer reserved variable: GRAMOD
     strLgIntHeader_t *ptr = TO_PCMEMPTR(allReservedVariables[VAR_NO_GRAMOD].header.pointerToRegisterData);
     #if defined(OS64BIT)
       (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(8);
@@ -1517,6 +1518,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       *(int32_t *)ptr = 0;
     #endif // OS64BIT
 
+    // initialize 7 real34 reserved variables: ↑X, ↓X, CPERONA, ↑EST, ↓EST, ↑Y, ↓Y
+    for(int i=VAR_NO_UX; i<=VAR_NO_LY; i++) {
+      real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
+    }
 
     // initialize the global registers
     #if defined(DMCP_BUILD) && defined(OLD_HW)
