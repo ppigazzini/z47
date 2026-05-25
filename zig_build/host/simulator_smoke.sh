@@ -246,6 +246,7 @@ probe_pointer_input() {
 start_xvfb
 
 export GDK_BACKEND=x11
+export NO_AT_BRIDGE=1
 unset WAYLAND_DISPLAY
 
 "$app_path" >"$work_dir/${window_title}.log" 2>&1 &

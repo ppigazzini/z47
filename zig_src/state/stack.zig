@@ -4,6 +4,13 @@ fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcReg
     return base + @as(runtime.calcRegister_t, @intCast(offset));
 }
 
+fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+    const ptr = data_ptr orelse return null;
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
+    return @ptrCast(bytes + imag_offset);
+}
+
 fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
     if (reg < 0) {
         return false;
@@ -60,16 +67,18 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
         const complex_tag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
 
         if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
-            runtime.real34SetZero(@as(?*anyopaque, @ptrCast(@alignCast(@as([*]u8, @ptrCast(runtime.getRegisterDataPointer(reg).?)) + runtime.bytesFromBlocks(runtime.real34SizeInBlocks())))));
+            const data_ptr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(data_ptr);
+            runtime.real34SetZero(complexImagPointer(data_ptr));
             runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
         } else {
             runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
-            runtime.real34SetZero(@as(?*anyopaque, @ptrCast(@alignCast(@as([*]u8, @ptrCast(runtime.getRegisterDataPointer(reg).?)) + runtime.bytesFromBlocks(runtime.real34SizeInBlocks())))));
+            const data_ptr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(data_ptr);
+            runtime.real34SetZero(complexImagPointer(data_ptr));
         }
         return;
     }

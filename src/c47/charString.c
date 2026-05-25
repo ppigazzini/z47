@@ -1125,6 +1125,10 @@ void *xcopy(void *dest, const void *source, uint32_t n) {
   char       *pDest   = (char *)dest;
   const char *pSource = (char *)source;
 
+  if(n == 0 || pDest == NULL || pSource == NULL) {
+    return dest;
+  }
+
   if(pSource > pDest) {
     while(n--) {
       *pDest++ = *pSource++;

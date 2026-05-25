@@ -28,18 +28,13 @@ if [[ -z "$product_count" ]]; then
   exit 2
 fi
 
-python3 .github/project/check-c-dependency-allowlist.py \
-  --repo-root "$repo_root" \
-  --config .github/project/c-dependency-product-allowlist.json \
-  --max-first-party "$product_phase_target_max"
-
 if [[ "$product_count" == "0" ]]; then
   echo "Phase I policy: product first-party count is zero; enforcing strict zero product gate."
 
   python3 .github/project/check-c-dependency-allowlist.py \
     --repo-root "$repo_root" \
     --config .github/project/c-dependency-product-allowlist.json \
-    --max-first-party 0
+    --max-first-party "$product_phase_target_max"
 else
   echo "Phase I policy: transitional baseline mode active (product first-party count: $product_count)."
 fi

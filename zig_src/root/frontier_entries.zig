@@ -1,6 +1,12 @@
 const std = @import("std");
 const runtime = @import("frontier_runtime.zig");
 
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
+
 const DSP_MAX: u16 = 19;
 const FLAG_FRACT: c_uint = 0x8007;
 const FLAG_PROPFR: c_uint = 0x8008;
@@ -53,7 +59,7 @@ const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;
 const INVALID_VARIABLE: u16 = 2199;
 
-const USER_KRESET: u16 = 24;
+const USER_KRESET: u16 = 50;
 const TO_USER: u16 = 29;
 const FROM_USER: u16 = 30;
 const USER_DM42: u16 = 45;
@@ -845,10 +851,8 @@ pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
 
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    std.debug.print("fnDynamicMenu:\n       softmenuId = {d}\n  dynamicMenuItem = {d}\n", .{
-        z47_frontier_dynamic_menu_softmenu_id(),
-        z47_frontier_dynamic_menu_item(),
-    });
+    _ = z47_frontier_dynamic_menu_softmenu_id();
+    _ = z47_frontier_dynamic_menu_item();
 }
 
 pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -2213,7 +2217,7 @@ const PrintUserContext = struct {
 
 fn printUserContextInit() PrintUserContext {
     return .{
-        .label = [_]u8{0} ** 32,
+        .label = std.mem.zeroes([32]u8),
         .user_variable_found = false,
         .idx = 0,
         .step = undefined,
@@ -2513,7 +2517,7 @@ fn printUserFallback() void {
         return;
     }
 
-    var label: [32]u8 = [_]u8{0} ** 32;
+    var label: [32]u8 = std.mem.zeroes([32]u8);
     var user_variable_found = false;
     var idx: u16 = 0;
     while (idx < numberOfNamedVariables) : (idx += 1) {
@@ -2605,7 +2609,7 @@ pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
 
 pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-        var label: [32]u8 = [_]u8{0} ** 32;
+        var label: [32]u8 = std.mem.zeroes([32]u8);
         z47_frontier_format_register_label(register_no, &label, label.len);
         printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
         return;
@@ -3357,11 +3361,11 @@ fn printAllItemsPrintCurrent(ctx: *PrintAllItemsContext) void {
     const catalog_name = z47_frontier_item_catalog_name(ctx.item);
     const softmenu_name = z47_frontier_item_softmenu_name(ctx.item);
 
-    const left = std.fmt.bufPrintZ(&ctx.line_buf, "{d: >4} {s}", .{ ctx.item, catalog_name }) catch return;
+    const left = bufPrintZ(&ctx.line_buf, "{d: >4} {s}", .{ ctx.item, catalog_name }) catch return;
     printLine(left, 0);
     printTab(97);
 
-    const right = std.fmt.bufPrintZ(&ctx.line_buf, "{s} ", .{softmenu_name}) catch return;
+    const right = bufPrintZ(&ctx.line_buf, "{s} ", .{softmenu_name}) catch return;
     printLine(right, 1);
 }
 
@@ -3433,11 +3437,11 @@ fn printAllItemsFallback() void {
         const catalog_name = z47_frontier_item_catalog_name(item);
         const softmenu_name = z47_frontier_item_softmenu_name(item);
 
-        const left = std.fmt.bufPrintZ(&line_buf, "{d: >4} {s}", .{ item, catalog_name }) catch continue;
+        const left = bufPrintZ(&line_buf, "{d: >4} {s}", .{ item, catalog_name }) catch continue;
         printLine(left, 0);
         printTab(97);
 
-        const right = std.fmt.bufPrintZ(&line_buf, "{s} ", .{softmenu_name}) catch continue;
+        const right = bufPrintZ(&line_buf, "{s} ", .{softmenu_name}) catch continue;
         printLine(right, 1);
 
         if (z47_frontier_print_exit_pressed()) {

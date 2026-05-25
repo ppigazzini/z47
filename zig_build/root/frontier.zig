@@ -1,10 +1,21 @@
 const std = @import("std");
 
+const replaced_core_sources_manifest = @embedFile("frontier_replaced_core_sources.txt");
+const runtime_helper_sources_manifest = @embedFile("frontier_runtime_helper_sources.txt");
+
 pub const RuntimeObjects = struct {
-    tone: *std.Build.Step.Compile,
+    frontier_root: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.tone.getEmittedBin());
+        var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
+        while (lines.next()) |line_raw| {
+            const source = std.mem.trim(u8, line_raw, " \t");
+            if (source.len == 0 or source[0] == '#') {
+                continue;
+            }
+            cmd.addArg(source);
+        }
+        cmd.addFileArg(self.frontier_root.getEmittedBin());
     }
 };
 
@@ -17,9 +28,19 @@ pub const RuntimeObjectOptions = struct {
     error_tracing: ?bool = null,
 };
 
-const replaced_core_sources = [_][]const u8{
-    "ui/" ++ "tone.c",
-};
+fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
+    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const line = std.mem.trim(u8, line_raw, " \t");
+        if (line.len == 0 or line[0] == '#') {
+            continue;
+        }
+        if (std.mem.eql(u8, line, needle)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 fn addRuntimeObject(
     b: *std.Build,
@@ -29,11 +50,12 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     return b.addObject(.{
-        .name = b.fmt("{s}-ui-tone", .{name_prefix}),
+        .name = b.fmt("{s}-frontier-root", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/ui/tone.zig"),
+            .root_source_file = b.path("zig_src/root/frontier_entries.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
             .strip = options.strip,
             .unwind_tables = options.unwind_tables,
             .stack_protector = options.stack_protector,
@@ -61,7 +83,7 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .tone = addRuntimeObject(b, target, optimize, name_prefix, options),
+        .frontier_root = addRuntimeObject(b, target, optimize, name_prefix, options),
     };
 }
 
@@ -69,11 +91,9 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
     var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, core_sources.len);
     errdefer filtered.deinit(b.allocator);
 
-    outer: for (core_sources) |source| {
-        for (replaced_core_sources) |removed| {
-            if (std.mem.eql(u8, source, removed)) {
-                continue :outer;
-            }
+    for (core_sources) |source| {
+        if (manifestContainsPath(replaced_core_sources_manifest, source)) {
+            continue;
         }
         try filtered.append(b.allocator, source);
     }
@@ -89,30 +109,14 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    _ = c_flags;
-    module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
-}
-
-pub fn addParityExecutable(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
-    const exe = b.addExecutable(.{
-        .name = "tone-parity",
-        .root_module = b.createModule(.{
-            .root_source_file = null,
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-
-    exe.root_module.addIncludePath(b.path("zig_build/tests/tone"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_fake_runtime.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_oracle.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/tone/tone_parity.c"), .flags = &.{} });
-    exe.root_module.addObject(runtime_object);
-    return exe;
+    var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const source = std.mem.trim(u8, line_raw, " \t");
+        if (source.len == 0 or source[0] == '#') {
+            continue;
+        }
+        module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
+    }
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    module.addObject(runtime_object);
 }

@@ -1,7 +1,7 @@
 const std = @import("std");
-const keyboard_state_rewrites = @import("../state/keyboard_state_rewrites.zig");
-const shortint_rewrites = @import("../leaf/shortint_rewrites.zig");
-const stack_rewrites = @import("../state/stack_rewrites.zig");
+const keyboard_state = @import("../state/keyboard_state.zig");
+const shortint = @import("../leaf/shortint.zig");
+const stack = @import("../state/stack.zig");
 
 pub const CommonConfig = struct {
     platform_define: []const u8,
@@ -23,9 +23,9 @@ pub const GeneratedOutputs = struct {
     test_pgms_bin: std.Build.LazyPath,
 };
 
-pub const ShortIntLeafObjects = shortint_rewrites.RuntimeObjects;
-pub const KeyboardStateObjects = keyboard_state_rewrites.RuntimeObjects;
-pub const StackStateObjects = stack_rewrites.RuntimeObjects;
+pub const ShortIntLeafObjects = shortint.RuntimeObjects;
+pub const KeyboardStateObjects = keyboard_state.RuntimeObjects;
+pub const StackStateObjects = stack.RuntimeObjects;
 
 pub const Context = struct {
     host_target: std.Build.ResolvedTarget,

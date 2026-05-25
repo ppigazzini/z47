@@ -82,14 +82,14 @@ retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
 
 The retained GTK boundary is still explicit: `../zig_build/host/context.zig`
 filters the imported `../src/c47-gtk/gtkGui.c` path out of the bulk GTK source
-set through `../zig_build/host/gtk_gui_rewrites.zig`, and that helper then
+set through `../zig_build/host/gtk_gui.zig`, and that helper then
 re-enters the host build through `../zig_build/host/gtk_gui_retained.c` plus
 `../zig_build/host/gtk_button_signal_wrappers.c`. The presence of a Zig-owned
 build graph still does not mean the host simulator is already a pure-Zig
 application.
 
 The host solver boundary now includes an explicit command-entry rewrite lane:
-`../zig_build/solver/solve_rewrites.zig` filters imported
+`../zig_build/solver/solve.zig` filters imported
 `../src/c47/solver/solve.c`, re-enters the retained body through
 `../zig_bridge/solver/solve_retained.c`, and compiles the Zig-owned
 `fnPgmSlv` entrypoint from `../zig_src/solver/solve.zig`.

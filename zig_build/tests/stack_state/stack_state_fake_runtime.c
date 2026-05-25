@@ -168,7 +168,7 @@ static void captureRegister(stack_parity_register_snapshot_t *snapshot, const re
   uint32_t size_bytes = 0;
 
   snapshot->header = *header;
-  slot = header->pointerToRegisterData;
+  slot = (uint16_t)z47DescriptorPointer(header->descriptor);
   snapshot->size_in_blocks = slot == 0 ? 0 : fake_memory_slots[slot].size_in_blocks;
   memset(snapshot->data, 0, sizeof(snapshot->data));
   if(slot != 0 && fake_memory_slots[slot].ptr != NULL) {
@@ -177,7 +177,7 @@ static void captureRegister(stack_parity_register_snapshot_t *snapshot, const re
       size_bytes = sizeof(snapshot->data);
     }
     memcpy(snapshot->data, fake_memory_slots[slot].ptr, size_bytes);
-    snapshot->header.pointerToRegisterData = 1;
+    snapshot->header.descriptor = z47DescriptorSetPointer(snapshot->header.descriptor, 1u);
   }
 }
 
@@ -308,10 +308,18 @@ void freeC47Blocks(void *ptr, size_t size_in_blocks) {
 
 void *getRegisterDataPointer(calcRegister_t reg) {
   const registerHeader_t *header = constRegisterHeader(reg);
-  if(header == NULL || header->pointerToRegisterData == 0) {
+  uint16_t slot;
+
+  if(header == NULL) {
     return NULL;
   }
-  return fake_memory_slots[header->pointerToRegisterData].ptr;
+
+  slot = (uint16_t)z47DescriptorPointer(header->descriptor);
+  if(slot == 0) {
+    return NULL;
+  }
+
+  return fake_memory_slots[slot].ptr;
 }
 
 void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr) {
@@ -319,17 +327,17 @@ void setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr) {
   if(header == NULL) {
     return;
   }
-  header->pointerToRegisterData = findSlot(mem_ptr);
+  header->descriptor = z47DescriptorSetPointer(header->descriptor, findSlot(mem_ptr));
 }
 
 uint32_t getRegisterDataType(calcRegister_t reg) {
   const registerHeader_t *header = constRegisterHeader(reg);
-  return header == NULL ? 0u : header->dataType;
+  return header == NULL ? 0u : z47DescriptorDataType(header->descriptor);
 }
 
 uint32_t getRegisterTag(calcRegister_t reg) {
   const registerHeader_t *header = constRegisterHeader(reg);
-  return header == NULL ? 0u : header->tag;
+  return header == NULL ? 0u : z47DescriptorTag(header->descriptor);
 }
 
 void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {
@@ -337,8 +345,7 @@ void setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {
   if(header == NULL) {
     return;
   }
-  header->dataType = data_type;
-  header->tag = tag;
+  header->descriptor = z47DescriptorSetDataTypeTag(header->descriptor, data_type, tag);
 }
 
 uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg) {
@@ -348,7 +355,7 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t reg) {
   if(header == NULL) {
     return 0;
   }
-  slot = header->pointerToRegisterData;
+  slot = (uint16_t)z47DescriptorPointer(header->descriptor);
   if(slot == 0) {
     return 0;
   }
@@ -409,9 +416,7 @@ void clearRegister(calcRegister_t reg) {
   }
 
   freeRegisterData(reg);
-  header->descriptor = 0;
-  header->dataType = dtReal34;
-  header->tag = amNone;
+  header->descriptor = Z47_MAKE_DESCRIPTOR(0u, dtReal34, amNone, 0u);
   ptr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
   if(ptr == NULL) {
     lastErrorCode = ERROR_RAM_FULL;
@@ -435,8 +440,8 @@ void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegist
   freeRegisterData(dest_register);
   *dest = *source;
 
-  if(source->pointerToRegisterData == 0 || size_in_blocks == 0) {
-    dest->pointerToRegisterData = 0;
+  if(z47DescriptorPointer(source->descriptor) == 0 || size_in_blocks == 0) {
+    dest->descriptor = z47DescriptorSetPointer(dest->descriptor, 0u);
     return;
   }
 
@@ -477,9 +482,7 @@ void reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_si
   }
 
   freeRegisterData(reg);
-  header->descriptor = 0;
-  header->dataType = data_type;
-  header->tag = tag;
+  header->descriptor = Z47_MAKE_DESCRIPTOR(0u, data_type, tag, 0u);
 
   if(data_type == dtReal34 && size_in_blocks == 0) {
     size_in_blocks = REAL34_SIZE_IN_BLOCKS;
@@ -885,7 +888,10 @@ void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end) {
         continue;
       }
 
-      if((left->dataType > right->dataType) || ((left->dataType == right->dataType) && (left->descriptor > right->descriptor))) {
+      const uint32_t left_data_type = z47DescriptorDataType(left->descriptor);
+      const uint32_t right_data_type = z47DescriptorDataType(right->descriptor);
+
+      if((left_data_type > right_data_type) || ((left_data_type == right_data_type) && (left->descriptor > right->descriptor))) {
         saved_register_header = *left;
         *left = *right;
         *right = saved_register_header;
@@ -1072,9 +1078,7 @@ void stackParitySeedRegister(calcRegister_t reg, uint32_t data_type, uint32_t ta
   }
 
   freeRegisterData(reg);
-  header->descriptor = 0;
-  header->dataType = data_type;
-  header->tag = tag;
+  header->descriptor = Z47_MAKE_DESCRIPTOR(0u, data_type, tag, 0u);
   if(size_in_blocks != 0) {
     ptr = allocC47Blocks(size_in_blocks);
     if(ptr == NULL) {

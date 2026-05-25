@@ -4,6 +4,67 @@
 
 #include "c47.h"
 
+enum {
+  Z47_LOCAL_MATRIX_ROWS_MASK = 0x00000fffu,
+  Z47_LOCAL_MATRIX_COLUMNS_MASK = 0x00fff000u,
+  Z47_LOCAL_MATRIX_ROWS_SHIFT = 0u,
+  Z47_LOCAL_MATRIX_COLUMNS_SHIFT = 12u,
+};
+
+static uint16_t registerMetadataReadStrHeaderMaxLength(const void *data_ptr) {
+  strLgIntHeader_t header = {0};
+
+  if(data_ptr != NULL) {
+    memcpy(&header, data_ptr, sizeof(header));
+  }
+
+  return header.dataMaxLengthInBlocks;
+}
+
+static void registerMetadataWriteStrHeaderMaxLength(void *data_ptr, uint16_t max_data_len) {
+  strLgIntHeader_t header = {0};
+
+  if(data_ptr == NULL) {
+    return;
+  }
+
+  memcpy(&header, data_ptr, sizeof(header));
+  header.dataMaxLengthInBlocks = max_data_len;
+  memcpy(data_ptr, &header, sizeof(header));
+}
+
+static uint32_t registerMetadataReadMatrixHeaderDescriptor(const void *data_ptr) {
+  uint32_t descriptor = 0;
+
+  if(data_ptr != NULL) {
+    memcpy(&descriptor, data_ptr, sizeof(descriptor));
+  }
+
+  return descriptor;
+}
+
+static uint16_t registerMetadataMatrixRows(const void *data_ptr) {
+  return (uint16_t)((registerMetadataReadMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_ROWS_MASK) >> Z47_LOCAL_MATRIX_ROWS_SHIFT);
+}
+
+static uint16_t registerMetadataMatrixColumns(const void *data_ptr) {
+  return (uint16_t)((registerMetadataReadMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_COLUMNS_MASK) >> Z47_LOCAL_MATRIX_COLUMNS_SHIFT);
+}
+
+static void registerMetadataSetMatrixRowsColumns(void *data_ptr, uint16_t rows, uint16_t columns) {
+  uint32_t descriptor;
+
+  if(data_ptr == NULL) {
+    return;
+  }
+
+  descriptor = registerMetadataReadMatrixHeaderDescriptor(data_ptr);
+  descriptor &= ~(Z47_LOCAL_MATRIX_ROWS_MASK | Z47_LOCAL_MATRIX_COLUMNS_MASK);
+  descriptor |= ((((uint32_t)rows) & 0x0fffu) << Z47_LOCAL_MATRIX_ROWS_SHIFT) |
+                ((((uint32_t)columns) & 0x0fffu) << Z47_LOCAL_MATRIX_COLUMNS_SHIFT);
+  memcpy(data_ptr, &descriptor, sizeof(descriptor));
+}
+
 uint32_t z47_register_metadata_get_global_descriptor(calcRegister_t reg) {
   return globalRegister[reg].descriptor;
 }
@@ -89,8 +150,10 @@ uint32_t z47_register_metadata_get_reserved_data_type_descriptor(calcRegister_t 
 }
 
 bool_t z47_register_metadata_reserved_allows_data_type_write(calcRegister_t reg) {
+  const uint32_t descriptor = allReservedVariables[reg - FIRST_RESERVED_VARIABLE].header.descriptor;
+
   reg -= FIRST_RESERVED_VARIABLE;
-  return allReservedVariables[reg].header.pointerToRegisterData != C47_NULL && allReservedVariables[reg].header.readOnly == 0;
+  return (descriptor & 0xffffu) != C47_NULL && ((descriptor >> 25) & 0x01u) == 0;
 }
 
 void *z47_register_metadata_to_pc_mem_ptr(uint16_t mem_ptr) {
@@ -102,17 +165,15 @@ uint16_t z47_register_metadata_to_c47_mem_ptr(const void *mem_ptr) {
 }
 
 uint16_t z47_register_metadata_get_data_max_length_in_blocks(const void *data_ptr) {
-  return ((const strLgIntHeader_t *)data_ptr)->dataMaxLengthInBlocks;
+  return registerMetadataReadStrHeaderMaxLength(data_ptr);
 }
 
 void z47_register_metadata_set_data_max_length_in_blocks(void *data_ptr, uint16_t max_data_len) {
-  ((strLgIntHeader_t *)data_ptr)->dataMaxLengthInBlocks = max_data_len;
+  registerMetadataWriteStrHeaderMaxLength(data_ptr, max_data_len);
 }
 
 uint16_t z47_register_metadata_get_matrix_payload_size_in_blocks(const void *data_ptr, uint16_t element_size_in_blocks) {
-  const matrixHeader_t *header = (const matrixHeader_t *)data_ptr;
-
-  return (uint16_t)(header->matrixRows * header->matrixColumns * element_size_in_blocks);
+  return (uint16_t)(registerMetadataMatrixRows(data_ptr) * registerMetadataMatrixColumns(data_ptr) * element_size_in_blocks);
 }
 
 uint16_t z47_register_metadata_str_lg_int_header_size_in_blocks(void) {
@@ -150,14 +211,7 @@ uint16_t z47_register_metadata_align_long_integer_blocks(uint16_t size_in_blocks
 }
 
 void z47_register_metadata_initialize_matrix_header_1x1(void *data_ptr) {
-  matrixHeader_t *header = (matrixHeader_t *)data_ptr;
-
-  if(header == NULL) {
-    return;
-  }
-
-  header->matrixRows = 1;
-  header->matrixColumns = 1;
+  registerMetadataSetMatrixRowsColumns(data_ptr, 1, 1);
 }
 
 void z47_register_metadata_report_ram_full(void) {

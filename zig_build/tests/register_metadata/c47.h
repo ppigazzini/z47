@@ -3,13 +3,12 @@
 #ifndef Z47_REGISTER_METADATA_FAKE_C47_H
 #define Z47_REGISTER_METADATA_FAKE_C47_H
 
+#include <string.h>
+
 #include "../stack_state/c47.h"
 
 typedef struct {
-	unsigned matrixRows : 12;
-	unsigned matrixColumns : 12;
-	unsigned mtag : 6;
-	unsigned notUsed : 2;
+	uint32_t descriptor;
 } matrixHeader_t;
 
 typedef struct {
@@ -24,6 +23,102 @@ typedef struct {
 typedef struct {
 	uint8_t bytes[840];
 } dtConfigDescriptor_t;
+
+#define Z47_MATRIX_ROWS_MASK 0x00000fffu
+#define Z47_MATRIX_COLUMNS_MASK 0x00fff000u
+#define Z47_MATRIX_TAG_MASK 0x3f000000u
+
+#define Z47_MATRIX_ROWS_SHIFT 0u
+#define Z47_MATRIX_COLUMNS_SHIFT 12u
+#define Z47_MATRIX_TAG_SHIFT 24u
+
+static inline uint32_t z47MakeMatrixHeaderDescriptor(uint16_t rows, uint16_t columns, uint32_t tag) {
+	return ((((uint32_t)rows) & 0x0fffu) << Z47_MATRIX_ROWS_SHIFT) |
+	       ((((uint32_t)columns) & 0x0fffu) << Z47_MATRIX_COLUMNS_SHIFT) |
+	       ((((uint32_t)tag) & 0x3fu) << Z47_MATRIX_TAG_SHIFT);
+}
+
+static inline uint16_t z47MatrixHeaderRows(uint32_t descriptor) {
+	return (uint16_t)((descriptor & Z47_MATRIX_ROWS_MASK) >> Z47_MATRIX_ROWS_SHIFT);
+}
+
+static inline uint16_t z47MatrixHeaderColumns(uint32_t descriptor) {
+	return (uint16_t)((descriptor & Z47_MATRIX_COLUMNS_MASK) >> Z47_MATRIX_COLUMNS_SHIFT);
+}
+
+static inline uint32_t z47MatrixHeaderTag(uint32_t descriptor) {
+	return (descriptor & Z47_MATRIX_TAG_MASK) >> Z47_MATRIX_TAG_SHIFT;
+}
+
+static inline uint32_t z47MatrixHeaderReadDescriptor(const void *data_ptr) {
+	uint32_t descriptor = 0;
+
+	if(data_ptr != NULL) {
+		memcpy(&descriptor, data_ptr, sizeof(descriptor));
+	}
+
+	return descriptor;
+}
+
+static inline void z47MatrixHeaderWriteDescriptor(void *data_ptr, uint32_t descriptor) {
+	if(data_ptr == NULL) {
+		return;
+	}
+
+	memcpy(data_ptr, &descriptor, sizeof(descriptor));
+}
+
+static inline void z47MatrixHeaderWrite(void *data_ptr, uint16_t rows, uint16_t columns, uint32_t tag) {
+	z47MatrixHeaderWriteDescriptor(data_ptr, z47MakeMatrixHeaderDescriptor(rows, columns, tag));
+}
+
+static inline uint16_t z47MatrixHeaderRowsFromData(const void *data_ptr) {
+	return z47MatrixHeaderRows(z47MatrixHeaderReadDescriptor(data_ptr));
+}
+
+static inline uint16_t z47MatrixHeaderColumnsFromData(const void *data_ptr) {
+	return z47MatrixHeaderColumns(z47MatrixHeaderReadDescriptor(data_ptr));
+}
+
+static inline void z47MatrixHeaderSetRowsColumns(void *data_ptr, uint16_t rows, uint16_t columns) {
+	uint32_t descriptor = z47MatrixHeaderReadDescriptor(data_ptr);
+
+	descriptor &= ~(Z47_MATRIX_ROWS_MASK | Z47_MATRIX_COLUMNS_MASK);
+	descriptor |= ((((uint32_t)rows) & 0x0fffu) << Z47_MATRIX_ROWS_SHIFT) |
+	             ((((uint32_t)columns) & 0x0fffu) << Z47_MATRIX_COLUMNS_SHIFT);
+	z47MatrixHeaderWriteDescriptor(data_ptr, descriptor);
+}
+
+static inline uint16_t z47StrLgIntHeaderReadMaxLength(const void *data_ptr) {
+	strLgIntHeader_t header = {0};
+
+	if(data_ptr != NULL) {
+		memcpy(&header, data_ptr, sizeof(header));
+	}
+
+	return header.dataMaxLengthInBlocks;
+}
+
+static inline void z47StrLgIntHeaderWrite(void *data_ptr, uint16_t data_max_length_in_blocks) {
+	strLgIntHeader_t header = {0};
+
+	header.dataMaxLengthInBlocks = data_max_length_in_blocks;
+	if(data_ptr != NULL) {
+		memcpy(data_ptr, &header, sizeof(header));
+	}
+}
+
+static inline void z47StrLgIntHeaderWriteMaxLength(void *data_ptr, uint16_t data_max_length_in_blocks) {
+	strLgIntHeader_t header = {0};
+
+	if(data_ptr == NULL) {
+		return;
+	}
+
+	memcpy(&header, data_ptr, sizeof(header));
+	header.dataMaxLengthInBlocks = data_max_length_in_blocks;
+	memcpy(data_ptr, &header, sizeof(header));
+}
 
 #define COMPLEX34_SIZE_IN_BYTES TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
 #define CONFIG_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(dtConfigDescriptor_t))

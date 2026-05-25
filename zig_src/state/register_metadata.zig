@@ -623,13 +623,7 @@ fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
     const data_ptr = getRegisterDataPointer(register);
 
     runtime.initializeMatrixHeader1x1(data_ptr);
-    if (data_ptr) |ptr| {
-        const matrix_element_ptr = @as(
-            ?*anyopaque,
-            @ptrCast(@alignCast(@as([*]u8, @ptrCast(ptr)) + stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()))),
-        );
-        stack_runtime.real34SetZero(matrix_element_ptr);
-    }
+    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
 }
 
 fn initSimEqMatABX() void {
@@ -659,13 +653,14 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
 
     const data_ptr = getRegisterDataPointer(register);
     runtime.initializeMatrixHeader1x1(data_ptr);
-    if (data_ptr) |ptr| {
-        const matrix_element_ptr = @as(
-            ?*anyopaque,
-            @ptrCast(@alignCast(@as([*]u8, @ptrCast(ptr)) + stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()))),
-        );
-        stack_runtime.real34SetZero(matrix_element_ptr);
-    }
+    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
+}
+
+fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+    const ptr = data_ptr orelse return null;
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const payload_offset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
+    return @ptrCast(bytes + payload_offset);
 }
 
 fn refreshSimEqMatABX() void {
