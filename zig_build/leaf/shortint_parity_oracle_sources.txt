@@ -1,0 +1,3 @@
+src/c47/logicalOps/mask.c
+src/c47/logicalOps/countBits.c
+src/c47/logicalOps/setClearFlipBits.c

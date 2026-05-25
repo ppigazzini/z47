@@ -691,14 +691,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     repeattest_step.dependOn(&run_test_suite_z47.step);
 
     const update_fonts = b.addUpdateSourceFiles();
-    update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, build_common.upstreamPathString(b, "src/generated/rasterFontsData.c"));
+    update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, build_common.upstreamPathString(b, "src/generated/" ++ "rasterFontsData.c"));
     const fonts_step = b.step("fonts", "Refresh rasterFontsData.c from the font generator");
     fonts_step.dependOn(&update_fonts.step);
 
     const update_constants = b.addUpdateSourceFiles();
-    update_constants.addCopyFileToSource(context.generated.constant_pointers_c, build_common.upstreamPathString(b, "src/generated/constantPointers.c"));
+    update_constants.addCopyFileToSource(context.generated.constant_pointers_c, build_common.upstreamPathString(b, "src/generated/" ++ "constantPointers.c"));
     update_constants.addCopyFileToSource(context.generated.constant_pointers_h, build_common.upstreamPathString(b, "src/generated/constantPointers.h"));
-    update_constants.addCopyFileToSource(context.generated.constant_pointers2_c, build_common.upstreamPathString(b, "src/generated/constantPointers2.c"));
+    update_constants.addCopyFileToSource(context.generated.constant_pointers2_c, build_common.upstreamPathString(b, "src/generated/" ++ "constantPointers2.c"));
     const constants_step = b.step("constants", "Refresh generated constant pointer sources");
     constants_step.dependOn(&update_constants.step);
 

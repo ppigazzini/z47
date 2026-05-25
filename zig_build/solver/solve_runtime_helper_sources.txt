@@ -1,0 +1,8 @@
+zig_bridge/solver/equation_retained.c
+zig_bridge/solver/graph_retained.c
+zig_bridge/solver/solve_retained.c
+zig_bridge/solver/integrate_retained.c
+zig_bridge/solver/tvm_retained.c
+zig_bridge/solver/sumprod_retained.c
+zig_bridge/solver/isumprod_retained.c
+zig_bridge/solver/differentiate_retained.c

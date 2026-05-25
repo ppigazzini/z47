@@ -9,8 +9,8 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/keyboard_state_overlay.c");
-        cmd.addArg("zig_bridge/state/keyboard_state_retained.c");
+        cmd.addArg("zig_bridge/state/" ++ "keyboard_state_overlay.c");
+        cmd.addArg("zig_bridge/state/" ++ "keyboard_state_retained.c");
         cmd.addFileArg(self.keyboard_state.getEmittedBin());
     }
 };
@@ -26,7 +26,7 @@ pub const RuntimeObjectOptions = struct {
 
 const replaced_core_sources = [_][]const u8{
     "keyboard.c",
-    "c47Extensions/keyboardTweak.c",
+    "c47Extensions/" ++ "keyboardTweak.c",
 };
 
 const GeneratedHeaderDirs = struct {

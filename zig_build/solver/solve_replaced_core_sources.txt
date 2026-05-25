@@ -1,0 +1,8 @@
+solver/equation.c
+solver/graph.c
+solver/solve.c
+solver/integrate.c
+solver/tvm.c
+solver/sumprod.c
+solver/isumprod.c
+solver/differentiate.c

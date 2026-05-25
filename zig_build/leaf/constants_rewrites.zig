@@ -4,7 +4,7 @@ pub const RuntimeObjects = struct {
     constants: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/constants_runtime_helpers.c");
+        cmd.addArg("zig_bridge/state/" ++ "constants_runtime_helpers.c");
         cmd.addFileArg(self.constants.getEmittedBin());
     }
 };
@@ -90,7 +90,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/constants_runtime_helpers.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "constants_runtime_helpers.c"), .flags = c_flags });
     module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
 }
 

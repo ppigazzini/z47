@@ -18,7 +18,7 @@ pub const RuntimeObjectOptions = struct {
 };
 
 const replaced_core_sources = [_][]const u8{
-    "ui/tone.c",
+    "ui/" ++ "tone.c",
 };
 
 fn addRuntimeObject(
