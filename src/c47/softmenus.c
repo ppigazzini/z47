@@ -1471,6 +1471,9 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
     if(softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
       for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
+        if(allReservedVariables[i].header.notUsed) {
+          continue;
+        }
         if((!applyFilter || _filterDataType(regist, typeFilter, isAngular))) {
           xcopy(tmpString + 15 * numberOfVars, allReservedVariables[i].reservedVariableName + 1, allReservedVariables[i].reservedVariableName[0]);
           numberOfVars++;

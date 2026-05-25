@@ -1218,11 +1218,11 @@
 #define VAR_REGI                    1184
 #define VAR_REGJ                    1185
 #define VAR_REGK                    1186
-#define VAR_ADM                     1187
-#define VAR_DENMAX                  1188
-#define VAR_ISM                     1189
-#define VAR_REALDF                  1190
-#define VAR_NDEC                    1191
+#define VAR_1187                    1187
+#define VAR_1188                    1188
+#define VAR_1189                    1189
+#define VAR_1190                    1190
+#define VAR_1191                    1191
 #define VAR_ACC                     1192
 #define VAR_ULIM                    1193
 #define VAR_LLIM                    1194

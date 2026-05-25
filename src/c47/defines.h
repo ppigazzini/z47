@@ -1107,11 +1107,11 @@ typedef enum  {
 #define VAR_NO_U       23
 #define VAR_NO_V       24
 #define VAR_NO_W       25
-#define VAR_NO_ADM     26
-#define VAR_NO_DENMAX  27
-#define VAR_NO_ISM     28
-#define VAR_NO_REALDF  29
-#define VAR_NO_NDEC    30
+#define VAR_NO_SPARE1  26 // removed
+#define VAR_NO_SPARE2  27 // removed
+#define VAR_NO_SPARE3  28 // removed
+#define VAR_NO_SPARE4  29 // removed
+#define VAR_NO_SPARE5  30 // removed
 #define VAR_NO_ACC     31
 #define VAR_NO_ULIM    32
 #define VAR_NO_LLIM    33

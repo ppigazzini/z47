@@ -32,11 +32,11 @@ TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 /*  VAR_NO_U       23 */ { ""},
 /*  VAR_NO_V       24 */ { ""},
 /*  VAR_NO_W       25 */ { ""},
-/*  VAR_NO_ADM     26 */ { ""},
-/*  VAR_NO_DENMAX  27 */ { ""},
-/*  VAR_NO_ISM     28 */ { ""},
-/*  VAR_NO_REALDF  29 */ { ""},
-/*  VAR_NO_NDEC    30 */ { ""},
+/*  VAR_NO_SPARE1  26 */ { ""},
+/*  VAR_NO_SPARE2  27 */ { ""},
+/*  VAR_NO_SPARE3  28 */ { ""},
+/*  VAR_NO_SPARE4  29 */ { ""},
+/*  VAR_NO_SPARE5  30 */ { ""},
 /*  VAR_NO_ACC     31 */ { ""},
 /*  VAR_NO_ULIM    32 */ { ""},
 /*  VAR_NO_LLIM    33 */ { ""},
@@ -85,11 +85,11 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_U       23 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'U',  0,   0,   0,   0,   0,   0} },
 /*  VAR_NO_V       24 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'V',  0,   0,   0,   0,   0,   0} },
 /*  VAR_NO_W       25 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'W',  0,   0,   0,   0,   0,   0} },
-/*  VAR_NO_ADM     26 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'A', 'D', 'M',  0,   0,   0,   0} },
-/*  VAR_NO_DENMAX  27 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {5, 'D', '.', 'M', 'A', 'X',  0,   0} },
-/*  VAR_NO_ISM     28 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'I', 'S', 'M',  0,   0,   0,   0} },
-/*  VAR_NO_REALDF  29 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {6, 'R', 'E', 'A', 'L', 'D', 'F',  0} },
-/*  VAR_NO_NDEC    30 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {4, '#', 'D', 'E', 'C',  0,   0,   0} },
+/*  VAR_NO_SPARE1  26 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 1}, .reservedVariableName = {0,   0,  0,   0,   0,   0,   0,   0} },   // Removed, spare
+/*  VAR_NO_SPARE2  27 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 1}, .reservedVariableName = {0,   0,  0,   0,   0,   0,   0,   0} },   // Removed, spare
+/*  VAR_NO_SPARE3  28 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 1}, .reservedVariableName = {0,   0,  0,   0,   0,   0,   0,   0} },   // Removed, spare
+/*  VAR_NO_SPARE4  29 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 1}, .reservedVariableName = {0,   0,  0,   0,   0,   0,   0,   0} },   // Removed, spare
+/*  VAR_NO_SPARE5  30 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 1}, .reservedVariableName = {0,   0,  0,   0,   0,   0,   0,   0} },   // Removed, spare
 /*  VAR_NO_ACC     31 */  { .header = {.pointerToRegisterData = 0,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'A', 'C', 'C',  0,   0,   0,   0} },
 /*  VAR_NO_ULIM    32 */  { .header = {.pointerToRegisterData = 4,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 145, 'L', 'i', 'm',  0,   0} },
 /*  VAR_NO_LLIM    33 */  { .header = {.pointerToRegisterData = 8,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 147, 'L', 'i', 'm',  0,   0} },
