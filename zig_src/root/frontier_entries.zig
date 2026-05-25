@@ -855,6 +855,36 @@ pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 }
 
+// Non-INLINE_TEST compatibility stubs.
+pub export fn fnSwStart(nr: u8) callconv(.c) void {
+    _ = nr;
+}
+
+pub export fn fnSwStop(nr: u8) callconv(.c) void {
+    _ = nr;
+}
+
+pub export fn fnSetInlineTest(drConfig: u16) callconv(.c) void {
+    _ = drConfig;
+}
+
+pub export fn fnGetInlineTestBsToX(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+}
+
+pub export fn fnSetInlineTestXToBs(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+}
+
+pub export fn fnSysFreeMem(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+}
+
+pub export fn fnTestBitIsSet(bit: u8) callconv(.c) bool {
+    _ = bit;
+    return false;
+}
+
 pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     runFunction(@as(i16, @intCast(ITM_FF)));
