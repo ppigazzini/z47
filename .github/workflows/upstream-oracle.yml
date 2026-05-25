@@ -521,7 +521,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
-      - c-dependency-guard
+      - c-dependency-policy
       - workflow-imported-root-guard
     runs-on: macos-latest
     steps:
@@ -736,7 +736,7 @@ jobs:
       - source-manifest
       - source-ownership-guard
       - zig-c-boundary-guard
-      - c-dependency-guard
+      - c-dependency-policy
       - workflow-imported-root-guard
     runs-on: windows-latest
     steps:
