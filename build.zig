@@ -57,4 +57,18 @@ fn registerCDependencyAuditStep(b: *std.Build) void {
 
     const audit_step = b.step("check-c-deps", "Audit C dependency allowlist and first-party baseline");
     audit_step.dependOn(&audit_cmd.step);
+
+    const strict_zero_cmd = b.addSystemCommand(&.{
+        "python3",
+        ".github/project/check-c-dependency-allowlist.py",
+        "--repo-root",
+        ".",
+        "--config",
+        ".github/project/c-dependency-allowlist.json",
+        "--max-first-party",
+        "0",
+    });
+
+    const strict_zero_step = b.step("check-c-deps-zero", "Fail when any first-party C dependency remains in build wiring");
+    strict_zero_step.dependOn(&strict_zero_cmd.step);
 }
