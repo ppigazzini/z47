@@ -3,6 +3,9 @@ name: c-dependency-zero
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   c-dependency-zero:
     name: Verify zero first-party C dependencies

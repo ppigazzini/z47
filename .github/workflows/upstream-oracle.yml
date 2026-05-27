@@ -18,6 +18,9 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+permissions:
+  contents: read
+
 jobs:
   validate-toolchain:
     name: Validate pinned Zig toolchain
@@ -217,7 +220,7 @@ jobs:
           bash .github/project/check-ci-no-local-dev-scripts.sh
 
   linux-host-parity:
-    name: Linux host parity, wrappers, generated outputs, app smoke run
+    name: Linux host parity, ASAN, generated outputs, and host package
     needs:
       - validate-toolchain
       - source-manifest
@@ -291,12 +294,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get install -qq -y meson ninja-build zip unzip python3-pip
+          sudo apt-get install -qq -y unzip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
-          sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev doxygen gcc-arm-none-eabi
-          requirements_file="$(bash .github/project/workflow-imported-root-paths.sh docs-requirements)"
-          python3 -m pip install --user -r "$requirements_file"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
         run: |
@@ -328,24 +328,6 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build both_asan
           xvfb-run --auto-servernum zig build test_asan
-      - name: Run Linux docs surface
-        shell: bash
-        run: |
-          set -euo pipefail
-          export PATH="$HOME/.local/bin:$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
-          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          zig build clean
-          zig build docs
-      - name: Run Linux firmware surface
-        shell: bash
-        run: |
-          set -euo pipefail
-          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
-          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          zig build dmcp
-          zig build dmcpr47
-          zig build dmcp5
-          zig build dmcp5r47
       - name: Run Linux distribution surface
         shell: bash
         run: |
@@ -354,13 +336,6 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           export XVFB="xvfb-run --auto-servernum"
           zig build -Doptimize=ReleaseFast dist_linux
-          zig build dist_dmcp
-          zig build dist_dmcp_pkg1
-          zig build dist_dmcp_pkg2
-          zig build dist_dmcp_pkg3
-          zig build dist_dmcpr47
-          zig build dist_dmcp5
-          zig build dist_dmcp5r47
       - name: Run Linux simulator smoke launch
         shell: bash
         run: |
@@ -382,14 +357,7 @@ jobs:
             cat "$RUNNER_TEMP/c47-linux-smoke.log"
             exit "$status"
           fi
-      - name: Refresh tracked generated artifacts after clean-based lanes
-        shell: bash
-        run: |
-          set -euo pipefail
-          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
-          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          zig build generated
-      - name: Compare refreshed generated artifacts
+      - name: Compare tracked generated artifacts
         shell: bash
         run: |
           set -euo pipefail
@@ -412,16 +380,14 @@ jobs:
           echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
           echo "upstream_short=$upstream_short" >> "$GITHUB_OUTPUT"
           echo "artifact_name=z47-linux-$upstream_short" >> "$GITHUB_OUTPUT"
-          echo "firmware_artifact_name=z47-firmware-$upstream_short" >> "$GITHUB_OUTPUT"
       - name: Stage Linux simulator artifact
         shell: bash
         run: |
           set -euo pipefail
           release_dir="ci-artifacts/release"
-          firmware_dir="ci-artifacts/firmware"
           package_dir="$release_dir/c47-linux"
-          rm -rf "$release_dir" "$firmware_dir"
-          mkdir -p "$release_dir" "$firmware_dir"
+          rm -rf "$release_dir"
+          mkdir -p "$release_dir"
           unzip -q zig-out/dist/c47-linux.zip -d "$release_dir"
 
           python3 .github/project/generate-simulator-notice-artifacts.py \
@@ -467,23 +433,6 @@ jobs:
           package_dir=$(basename "$package_dir")
           artifact_name=${{ steps.linux_package_meta.outputs.artifact_name }}
           EOF
-
-          cp zig-out/dist/c47-dmcp.zip "$firmware_dir/"
-          cp zig-out/dist/c47-dmcp-pkg1.zip "$firmware_dir/"
-          cp zig-out/dist/c47-dmcp-pkg2.zip "$firmware_dir/"
-          cp zig-out/dist/c47-dmcp-pkg3.zip "$firmware_dir/"
-          cp zig-out/dist/c47-dmcp5.zip "$firmware_dir/"
-          find "$firmware_dir" -maxdepth 1 -type f | sed "s#^$firmware_dir/##" | sort > "$firmware_dir/FIRMWARE-CONTENTS.txt"
-          cat > "$firmware_dir/BUILD-METADATA.txt" <<EOF
-          ref=${GITHUB_REF}
-          sha=${GITHUB_SHA}
-          run_id=${GITHUB_RUN_ID}
-          run_attempt=${GITHUB_RUN_ATTEMPT}
-          upstream_url=${{ steps.linux_package_meta.outputs.upstream_url }}
-          upstream_commit=${{ steps.linux_package_meta.outputs.upstream_commit }}
-          firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
-          artifact_name=${{ steps.linux_package_meta.outputs.firmware_artifact_name }}
-          EOF
       - name: Stage generated-artifact proof
         shell: bash
         run: |
@@ -505,14 +454,197 @@ jobs:
           retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.linux_package_meta.outputs.firmware_artifact_name }}
+          name: linux-host-parity-artifacts
+          path: ci-artifacts/generated/
+
+  linux-docs:
+    name: Linux docs surface
+    needs:
+      - validate-toolchain
+      - workflow-imported-root-guard
+      - workflow-locality-guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: docs-requirements-hash
+        name: Resolve Linux docs requirements hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          requirements_file="$(bash .github/project/workflow-imported-root-paths.sh docs-requirements)"
+          echo "sha=$(sha256sum "$requirements_file" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - id: pip-cache
+        name: Restore Linux docs Python package cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ steps.docs-requirements-hash.outputs.sha }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+      - name: Install Linux docs prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y doxygen python3-pip
+          requirements_file="$(bash .github/project/workflow-imported-root-paths.sh docs-requirements)"
+          python3 -m pip install --user -r "$requirements_file"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Run Linux docs surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$PATH"
+          zig build docs
+
+  linux-firmware-artifacts:
+    name: Linux firmware validation and publication
+    needs:
+      - validate-toolchain
+      - source-manifest
+      - source-ownership-guard
+      - zig-c-boundary-guard
+      - c-dependency-policy
+      - workflow-imported-root-guard
+      - workflow-locality-guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved Zig version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: xlsxio-ref
+        name: Resolve xlsxio upstream HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+      - id: xlsxio-cache
+        name: Restore Linux xlsxio helper cache for firmware lane
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/xlsxio-prefix
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          restore-keys: |
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
+            xlsxio-${{ runner.os }}-${{ runner.arch }}-
+      - name: Install Linux xlsxio helper prerequisites for firmware lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
+      - name: Build xlsxio helper for firmware lane
+        if: steps.xlsxio-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/brechtsanders/xlsxio.git "$RUNNER_TEMP/xlsxio"
+          cmake_version="$(cmake --version | sed -n '1s/^cmake version //p')"
+          cmake_major="${cmake_version%%.*}"
+          cmake_policy_args=()
+          if [[ "$cmake_major" =~ ^[0-9]+$ && "$cmake_major" -ge 4 ]]; then
+            cmake_policy_args+=( -DCMAKE_POLICY_VERSION_MINIMUM=3.5 )
+          fi
+          cmake -S "$RUNNER_TEMP/xlsxio" -B "$RUNNER_TEMP/xlsxio/build" \
+            "${cmake_policy_args[@]}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_DOCUMENTATION:BOOL=OFF \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
+          cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
+          cmake --install "$RUNNER_TEMP/xlsxio/build"
+      - name: Install remaining Linux firmware and packaging prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev libpulse-dev gcc-arm-none-eabi
+      - name: Run Linux firmware validation and package publication surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          zig build dmcp
+          zig build dmcpr47
+          zig build dmcp5
+          zig build dmcp5r47
+          zig build dist_dmcp
+          zig build dist_dmcp_pkg1
+          zig build dist_dmcp_pkg2
+          zig build dist_dmcp_pkg3
+          zig build dist_dmcpr47
+          zig build dist_dmcp5
+          zig build dist_dmcp5r47
+      - id: linux_firmware_meta
+        name: Set Linux firmware artifact metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          upstream_short="${UPSTREAM_COMMIT:0:12}"
+          echo "upstream_url=$UPSTREAM_REPOSITORY_URL" >> "$GITHUB_OUTPUT"
+          echo "upstream_commit=$UPSTREAM_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=z47-firmware-$upstream_short" >> "$GITHUB_OUTPUT"
+      - name: Stage Linux firmware artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          firmware_dir="ci-artifacts/firmware"
+          rm -rf "$firmware_dir"
+          mkdir -p "$firmware_dir"
+          cp zig-out/dist/c47-dmcp.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg1.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg2.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp-pkg3.zip "$firmware_dir/"
+          cp zig-out/dist/c47-dmcp5.zip "$firmware_dir/"
+          find "$firmware_dir" -maxdepth 1 -type f | sed "s#^$firmware_dir/##" | sort > "$firmware_dir/FIRMWARE-CONTENTS.txt"
+          cat > "$firmware_dir/BUILD-METADATA.txt" <<EOF
+          ref=${GITHUB_REF}
+          sha=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          upstream_url=${{ steps.linux_firmware_meta.outputs.upstream_url }}
+          upstream_commit=${{ steps.linux_firmware_meta.outputs.upstream_commit }}
+          firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
+          artifact_name=${{ steps.linux_firmware_meta.outputs.artifact_name }}
+          EOF
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
           path: ci-artifacts/firmware/
           if-no-files-found: error
           retention-days: 14
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: linux-host-parity-artifacts
-          path: ci-artifacts/generated/
 
   macos-host-build:
     name: macOS dedicated runner build, test, generated outputs, app smoke run
