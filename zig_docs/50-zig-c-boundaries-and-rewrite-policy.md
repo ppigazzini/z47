@@ -44,7 +44,6 @@ z47 uses three explicit implementation modes.
 | `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
 | `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
 | `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
-| `../zig_bridge/ui/tone_runtime_helpers.c` | existing C compiled by Zig | retained target-specific refresh helper paired with the live Zig tone owner |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
 | `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
 | `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
@@ -144,9 +143,8 @@ Verified slices:
   firmware entrypoints still reached through `../zig_src/state/calc_state_runtime.zig`
 - keyboard helper and command-state ownership under `../zig_src/state/`, with
   retained public entrypoints still used where firmware size requires them
-- tone command ownership under `../zig_src/ui/`, with target-specific display
-  refresh still routed through `../zig_src/ui/tone_runtime.zig` and the retained
-  helper `../zig_bridge/ui/tone_runtime_helpers.c`
+- tone command ownership under `../zig_src/ui/`, with host and firmware display
+  refresh routed through `../zig_src/ui/tone_runtime.zig`
 
 Not yet rewritten in broad verified form:
 

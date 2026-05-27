@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     tone: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/tone_runtime_helpers.c");
         cmd.addFileArg(self.tone.getEmittedBin());
     }
 };
@@ -22,6 +21,18 @@ const replaced_core_sources = [_][]const u8{
     "ui/" ++ "tone.c",
 };
 
+fn firmwareLibraryFnBase(target: std.Build.ResolvedTarget, name_prefix: []const u8) usize {
+    if (target.result.os.tag != .freestanding) {
+        return 0;
+    }
+
+    if (std.mem.startsWith(u8, name_prefix, "dmcp5")) {
+        return 0x08000301;
+    }
+
+    return 0x08000201;
+}
+
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
@@ -29,19 +40,24 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/ui/tone.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(target, name_prefix));
+    module.addOptions("tone_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-ui-tone", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/ui/tone.zig"),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 

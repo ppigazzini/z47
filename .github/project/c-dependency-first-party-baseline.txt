@@ -57,4 +57,3 @@ zig_build/tests/stack_state/stack_state_parity.c
 zig_build/tests/tone/tone_fake_runtime.c
 zig_build/tests/tone/tone_oracle.c
 zig_build/tests/tone/tone_parity.c
-zig_bridge/tone_runtime_helpers.c
