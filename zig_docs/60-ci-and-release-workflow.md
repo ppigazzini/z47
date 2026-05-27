@@ -13,7 +13,7 @@ Current tracked workflows:
 
 | Workflow file | Trigger | Purpose |
 | --- | --- | --- |
-| `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware, package, boundary, and monitored Zig master compatibility surface |
+| `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware publication, package, boundary, and monitored Zig master compatibility surfaces |
 | `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD |
 
 ## Workflow Graph
@@ -26,11 +26,15 @@ flowchart TD
   D[source-manifest]
   E[source-ownership-guard]
   F[zig-c-boundary-guard]
-  G[workflow-imported-root-guard]
-  H[linux-host-parity]
-  I[macos-host-build]
-  J[windows-host-build]
-  K[daily or manual upstream-drift]
+  G[c-dependency-policy]
+  H[workflow-imported-root-guard]
+  I[workflow-locality-guard]
+  J[linux-host-parity]
+  K[linux-docs]
+  L[linux-firmware-artifacts]
+  M[macos-host-build]
+  N[windows-host-build]
+  O[daily or manual upstream-drift]
 
   A --> B
   A --> C
@@ -38,21 +42,35 @@ flowchart TD
   A --> E
   A --> F
   A --> G
-  B --> H
-  D --> H
-  E --> H
-  F --> H
-  G --> H
-  B --> I
-  D --> I
-  E --> I
-  F --> I
-  G --> I
+  A --> H
+  A --> I
   B --> J
   D --> J
   E --> J
   F --> J
   G --> J
+  H --> J
+  I --> J
+  B --> K
+  H --> K
+  I --> K
+  B --> L
+  D --> L
+  E --> L
+  F --> L
+  G --> L
+  H --> L
+  I --> L
+  B --> M
+  D --> M
+  E --> M
+  F --> M
+  H --> M
+  B --> N
+  D --> N
+  E --> N
+  F --> N
+  H --> N
 ```
 
 ## Shared CI Inputs
@@ -66,8 +84,10 @@ The workflow keeps its shared checked-in control data in these files:
 - `../.github/project/zig-c-boundaries.txt`
 - `../docs/code/requirements.txt`
 
-The host platform jobs also resolve the current upstream HEAD of the xlsxio
-helper repository and use that SHA in their cache keys.
+The Linux docs lane caches the Python package download directory keyed by the
+helper-resolved docs requirements file. The host platform jobs and the Linux
+firmware lane also resolve the current upstream HEAD of the xlsxio helper
+repository and use that SHA in their cache keys.
 
 The workflow imported-root guard uses
 `../.github/project/workflow-imported-root-paths.sh` as the shared path
@@ -157,6 +177,13 @@ Current imported-root-guard note:
   `UPSTREAM_ROOT` vocabulary used by the Zig build graph and the M13 pilot
   tooling, and the guard keeps the remaining direct workflow references at zero
 
+### `workflow-locality-guard`
+
+Purpose:
+
+- run `bash .github/project/check-ci-no-local-dev-scripts.sh`
+- fail early if workflow steps reintroduce `__DEV/` script dependencies
+
 ### `linux-host-parity`
 
 Purpose:
@@ -168,21 +195,50 @@ Purpose:
   `calc_state_parity`, `math_command_wrappers_parity`,
   `math_random_parity`,
   `keyboard_state_parity`, `both`, `simulator_smoke`, `testPgms`, `test`,
-  `generated`, `both_asan`, `test_asan`, `docs`, firmware targets, and Linux
-  distribution packaging
+  `generated`, `both_asan`, `test_asan`, and Linux host distribution packaging
 - build the published Linux host archive with
   `zig build -Doptimize=ReleaseFast dist_linux` so the uploaded package matches
   the desktop release-size contract
-- build the C47 SwissMicros firmware zips through `dist_dmcp`,
-  `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`, and
-  upload those zip outputs as a second Linux artifact without changing the host
-  package publication shape
 - run the checked-in Xvfb-backed simulator smoke lane for both host
   simulators before the broader grouped host test lane
 - run a Linux simulator smoke launch from the packaged archive
-- refresh and diff tracked generated artifacts
+- diff and hash tracked generated artifacts
 - upload the Linux package artifact and a second artifact containing the golden
   generated files plus their hashes
+
+Current Linux host-lane detail:
+
+- docs and firmware publication now live in separate Linux jobs, so this lane
+  no longer installs Doxygen, Python docs packages, or Arm GCC
+- moving the docs build out also removed the extra `generated` rerun that used
+  to compensate for the docs lane calling `zig build clean`
+
+### `linux-docs`
+
+Purpose:
+
+- install Doxygen plus the Python docs packages from
+  `../docs/code/requirements.txt`
+- cache the Python package download directory through `actions/cache`
+- run `zig build docs`
+- keep docs-only dependencies out of the Linux host and firmware lanes
+
+### `linux-firmware-artifacts`
+
+Purpose:
+
+- run the Linux firmware validation surface through `zig build dmcp`,
+  `zig build dmcpr47`, `zig build dmcp5`, and `zig build dmcp5r47`
+- run the Linux firmware publication surface through `dist_dmcp`,
+  `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, `dist_dmcpr47`,
+  `dist_dmcp5`, and `dist_dmcp5r47`
+- stage and upload the published Linux firmware artifact without changing its
+  artifact name or published C47 firmware zip set
+
+Current Linux firmware-lane detail:
+
+- this lane keeps the Arm GCC dependency out of `linux-host-parity` while still
+  reusing the shared xlsxio helper cache shape
 
 ### `macos-host-build`
 
@@ -232,9 +288,10 @@ Current artifact classes include:
 - Linux generated-artifact proof from `linux-host-parity`
 - packaged simulator artifacts named `z47-linux-<upstream_short>`,
   `z47-macos-<upstream_short>`, and `z47-windows-<upstream_short>`
-- Linux SwissMicros firmware artifact named `z47-firmware-<upstream_short>`
-  containing `c47-dmcp.zip`, `c47-dmcp-pkg1.zip`, `c47-dmcp-pkg2.zip`,
-  `c47-dmcp-pkg3.zip`, and `c47-dmcp5.zip`
+- Linux SwissMicros firmware artifact from `linux-firmware-artifacts` named
+  `z47-firmware-<upstream_short>` containing `c47-dmcp.zip`,
+  `c47-dmcp-pkg1.zip`, `c47-dmcp-pkg2.zip`, `c47-dmcp-pkg3.zip`, and
+  `c47-dmcp5.zip`
 - the `upstream-drift` report artifact from the scheduled drift workflow
 
 Linux packaging also stages explicit build metadata, source provenance, and
@@ -256,11 +313,11 @@ Use the smallest local lane that matches the workflow slice you changed.
 | tracked source ownership contract | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && bash .github/project/check-source-ownership.sh` |
 | workflow imported-root contract | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
-| Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build rotate_bits_parity && zig build logical_boolean_ops_suite && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build math_command_wrappers_parity && zig build math_random_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated` |
+| Linux host parity | `bash .github/project/check-zig-c-boundaries.sh && zig build logical_shortint_parity && zig build rotate_bits_parity && zig build logical_boolean_ops_suite && zig build stack_state_parity && zig build register_metadata_parity && zig build flags_parity && zig build memory_parity && zig build program_serialization_parity && zig build calc_state_parity && zig build math_command_wrappers_parity && zig build math_random_parity && zig build keyboard_state_parity && zig build both && zig build simulator_smoke && zig build testPgms && xvfb-run --auto-servernum zig build test && zig build generated && zig build both_asan && xvfb-run --auto-servernum zig build test_asan` |
 | Linux docs | `zig build docs` |
 | Linux firmware | `zig build dmcp && zig build dmcpr47 && zig build dmcp5 && zig build dmcp5r47` |
 | host package | run the matching `dist_<host>` target on the matching host OS; use `-Doptimize=ReleaseFast` when reproducing the published desktop host artifact size contract |
-| Linux firmware artifact publication | run `zig build dist_dmcp && zig build dist_dmcp_pkg1 && zig build dist_dmcp_pkg2 && zig build dist_dmcp_pkg3 && zig build dist_dmcp5`, then copy those zips into the firmware artifact staging directory |
+| Linux firmware artifact publication | run `zig build dist_dmcp && zig build dist_dmcp_pkg1 && zig build dist_dmcp_pkg2 && zig build dist_dmcp_pkg3 && zig build dist_dmcpr47 && zig build dist_dmcp5 && zig build dist_dmcp5r47`, then copy the published C47 firmware zips into the firmware artifact staging directory |
 
 ## Upstream Drift Workflow
 
@@ -278,6 +335,8 @@ This workflow is reporting-only. It does not auto-update the pin.
 
 - Keep the lane split explicit. Do not hide docs, firmware, package, and
   boundary validation behind one generic step.
+- Keep docs-only and Arm-toolchain dependencies out of `linux-host-parity`
+  unless that lane consumes them directly again.
 - Keep the shared pins in the checked-in files listed above.
 - Keep logs and artifacts uploadable even when a later verification step fails.
 - Update this page when job names, artifact names, trigger branches, or local
