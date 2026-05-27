@@ -88,6 +88,12 @@ re-enters the host build through `../zig_build/host/gtk_gui_retained.c` plus
 build graph still does not mean the host simulator is already a pure-Zig
 application.
 
+The current host lane also replaces the imported `../src/c47-gtk/hal/io.c`
+owner with `../zig_build/host/gtk_io_runtime.zig`. That Zig-owned runtime now
+keeps the GTK file chooser, program and state-path selection, and
+`fileNameSelected` basename copy aligned with the upstream simulator contract
+while the imported `hal/io.c` file remains a read-only audit surface.
+
 The host solver boundary now includes an explicit command-entry rewrite lane:
 `../zig_build/solver/solve.zig` filters imported
 `../src/c47/solver/solve.c`, re-enters the retained body through
