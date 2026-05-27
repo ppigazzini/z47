@@ -417,14 +417,30 @@ def collect_windows_runtime_notices(
         for path in sorted(package_dir.rglob("*"))
         if path.is_file() and "repo-notices" not in path.parts
     ]
-    runtime_packages: set[str] = set()
+    packaged_source_paths: list[str] = []
+    seen_source_paths: set[str] = set()
     for packaged_path in packaged_files:
         source_path = resolve_windows_source_path(package_dir, packaged_path, mingw_prefix)
         if source_path is None:
             continue
-        owner = command_stdout(["pacman", "-Qqo", str(source_path)], check=False).splitlines()
-        if owner:
-            runtime_packages.add(owner[0].strip())
+        source_key = str(source_path)
+        if source_key in seen_source_paths:
+            continue
+        seen_source_paths.add(source_key)
+        packaged_source_paths.append(source_key)
+
+    runtime_packages: set[str] = set()
+    # Batch ownership queries so large GTK/icon/theme trees do not spawn one pacman process per file.
+    batch_size = 128
+    for start in range(0, len(packaged_source_paths), batch_size):
+        owner_lines = command_stdout(
+            ["pacman", "-Qqo", *packaged_source_paths[start : start + batch_size]],
+            check=False,
+        ).splitlines()
+        for owner in owner_lines:
+            owner_name = owner.strip()
+            if owner_name:
+                runtime_packages.add(owner_name)
 
     for package_name in sorted(runtime_packages):
         ensure_windows_package_metadata(package_name)

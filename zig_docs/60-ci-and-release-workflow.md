@@ -321,6 +321,10 @@ Current Windows host-lane detail:
   staged GTK runtime directory and tool set stays unchanged because the peer
   workflow publishes the same core GTK payload; the speed work instead targets
   setup reuse, helper-cache churn, and artifact upload
+- the Windows notice generator now batches `pacman -Qqo` ownership lookups over
+  resolved staged runtime paths, which removes the previous one-process-per-file
+  regression across large GTK icon, theme, and MIME trees during artifact
+  staging
 - the Windows package artifact now uploads with `compression-level: 0` because
   the staged payload is dominated by binaries, DLLs, and pre-generated runtime
   caches rather than compressible text
