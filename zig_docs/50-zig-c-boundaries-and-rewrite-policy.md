@@ -44,6 +44,7 @@ z47 uses three explicit implementation modes.
 | `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
 | `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
 | `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
+| `../zig_build/firmware_print_ir_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 print-IR firmware slice |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
 | `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
 | `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
@@ -72,6 +73,7 @@ Current approved checked-in `@cImport` files:
 
 Current approved direct `extern` symbol files:
 
+- `zig_build/firmware_print_ir_runtime.zig`
 - `zig_build/tools/generate_catalogs.zig`
 - `zig_build/tools/generate_testpgms.zig`
 - `zig_src/leaf/shortint_runtime.zig`
@@ -145,6 +147,9 @@ Verified slices:
   retained public entrypoints still used where firmware size requires them
 - tone command ownership under `../zig_src/ui/`, with host and firmware display
   refresh routed through `../zig_src/ui/tone_runtime.zig`
+- DMCP or DMCP5 print-IR ownership under `../zig_build/firmware_print_ir_runtime.zig`,
+  replacing the imported `hal/print_ir.c` pair while retained firmware
+  `audio.c` and `io.c` inputs stay explicit
 
 Not yet rewritten in broad verified form:
 
@@ -152,7 +157,7 @@ Not yet rewritten in broad verified form:
   system-flag accessor surface and the current helper-level owner slices
 - full keyboard public-entrypoint ownership on firmware-sized DMCP builds
 - GTK simulator implementation
-- broad firmware HAL or packaging logic
+- broad firmware HAL or packaging logic beyond the current print-IR slice
 
 ## `translate-c` Policy
 
