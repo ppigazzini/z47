@@ -643,7 +643,6 @@ fn addFirmwareElfBuild(
     cmd.addFileArg(audio_runtime_object.getEmittedBin());
     cmd.addFileArg(print_ir_runtime_object.getEmittedBin());
     cmd.addFileArg(io_runtime_object.getEmittedBin());
-    cmd.addArg("zig_bridge/state/firmware_io_runtime_helpers.c");
     keyboard_state_objects.addToCommand(cmd);
     memory_state_objects.addToCommand(cmd);
     calc_state_objects.addToCommand(cmd);
@@ -718,6 +717,13 @@ fn firmwareLibraryFnBase(board: Board) usize {
     return switch (board) {
         .dmcp => 0x08000201,
         .dmcp5 => 0x08000301,
+    };
+}
+
+fn firmwareSdbBase(board: Board) usize {
+    return switch (board) {
+        .dmcp => 0x10002000,
+        .dmcp5 => 0x20000000,
     };
 }
 
@@ -800,6 +806,7 @@ fn addFirmwareIoRuntimeObject(
     });
     const build_options = b.addOptions();
     build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
+    build_options.addOption(usize, "sdb_base", firmwareSdbBase(board));
     module.addOptions("firmware_io_build_options", build_options);
 
     return b.addObject(.{

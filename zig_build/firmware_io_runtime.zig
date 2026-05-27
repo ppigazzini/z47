@@ -100,8 +100,25 @@ const Fil = extern struct {
     buf: [512]u8,
 };
 
+const SysSdb = extern struct {
+    calc_state: u32,
+    ppgm_fp: ?*anyopaque,
+    key_to_alpha_table: [*c]const u8,
+    run_menu_item_app: ?*const anyopaque,
+    menu_line_str_app: ?*const anyopaque,
+    after_fat_format: ?*const anyopaque,
+    get_flag_dmy: ?*const anyopaque,
+    set_flag_dmy: ?*const anyopaque,
+    is_flag_clk24: ?*const anyopaque,
+    set_flag_clk24: ?*const anyopaque,
+    is_beep_mute: ?*const anyopaque,
+    set_beep_mute: ?*const anyopaque,
+    pds_t20: ?*DispStat,
+    pds_t24: ?*DispStat,
+    pds_fReg: ?*DispStat,
+};
+
 extern var fileNameSelected: [STATE_FILE_NAME_VAR_LENGTH]u8;
-extern fn z47_firmware_io_menu_display() ?*DispStat;
 extern fn strtok(str: [*c]u8, delim: [*c]const u8) [*c]u8;
 
 const LcdSetLineFn = *const fn (*DispStat, c_int) callconv(.c) void;
@@ -122,7 +139,8 @@ const FileSeekFn = *const fn (?*anyopaque, u32) callconv(.c) c_uint;
 const FileUnlinkFn = *const fn ([*c]const u8) callconv(.c) c_uint;
 
 fn menuDisplay() ?*DispStat {
-    return z47_firmware_io_menu_display();
+    const sdb: *const SysSdb = @ptrFromInt(build_options.sdb_base);
+    return sdb.pds_t24;
 }
 
 fn programFileHandle() ?*anyopaque {
