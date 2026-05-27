@@ -7,5 +7,4 @@ src/c47-dmcp/hal/print_ir.c
 src/c47-dmcp5/hal/audio.c
 src/c47-dmcp5/hal/io.c
 src/c47-dmcp5/hal/print_ir.c
-zig_bridge/tone_runtime_helpers.c
 
