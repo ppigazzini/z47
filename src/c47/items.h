@@ -1218,11 +1218,11 @@
 #define VAR_REGI                    1184
 #define VAR_REGJ                    1185
 #define VAR_REGK                    1186
-#define VAR_ADM                     1187
-#define VAR_DENMAX                  1188
-#define VAR_ISM                     1189
-#define VAR_REALDF                  1190
-#define VAR_NDEC                    1191
+#define VAR_1187                    1187
+#define VAR_1188                    1188
+#define VAR_1189                    1189
+#define VAR_1190                    1190
+#define VAR_1191                    1191
 #define VAR_ACC                     1192
 #define VAR_ULIM                    1193
 #define VAR_LLIM                    1194
@@ -1603,7 +1603,7 @@
 #define ITM_SLVC                    1555
 #define ITM_PUTK                    1556
 #define ITM_RAD                     1557
-#define ITM_GETDMX                  1558
+#define ITM_GET_DMX                 1558
 #define ITM_RAN                     1559
 #define ITM_RBR                     1560
 #define ITM_RCLCFG                  1561
@@ -1651,7 +1651,7 @@
 #define ITM_SKIP                    1603
 #define ITM_SLVQ                    1604
 #define ITM_SM                      1605
-#define ITM_ISM                     1606
+#define ITM_GET_ISM                 1606
 #define ITM_SMW                     1607
 #define ITM_SOLVE                   1608
 #define ITM_SSIZE                   1609
@@ -2864,7 +2864,19 @@
 #define ITM_2761                    2761
 #define ITM_2762                    2762
 
-#define LAST_ITEM                   2763
+#define ITM_GET_ADM                 2763 // VAR_NO_ADM
+#define ITM_SET_ADM                 2764 // VAR_NO_ADM
+//efine ITM_GET_ISM                 1606 // VAR_NO_ISM
+#define ITM_SET_ISM                 2765 // VAR_NO_ISM
+#define ITM_GET_REALDF              2766 // VAR_NO_REALDF
+#define ITM_SET_REALDF              2767 // VAR_NO_REALDF
+#define ITM_GET_NDEC                2768 // VAR_NO_NDEC
+#define ITM_SET_NDEC                2769 // VAR_NO_NDEC
+//efine ITM_GET_DMX                 1558 // VAR_NO_DENMAX
+#define ITM_SET_DMX                 2770 // VAR_NO_DENMAX
+
+
+#define LAST_ITEM                   2771
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
