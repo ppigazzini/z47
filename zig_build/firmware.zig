@@ -286,6 +286,8 @@ pub fn registerSteps(
     const dmcp5_audio_runtime_object = addFirmwareAudioRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
     const dmcp_print_ir_runtime_object = addFirmwarePrintIrRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
     const dmcp5_print_ir_runtime_object = addFirmwarePrintIrRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
+    const dmcp_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_stack_options, .dmcp);
+    const dmcp5_io_runtime_object = addFirmwareIoRuntimeObject(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_stack_options, .dmcp5);
     const dmcp = addFirmwareBuild(b, .{
         .step_name = "dmcp",
         .description = b.fmt("Build the C47 DMCP firmware (package {d}) without Make or Meson", .{dmcp_package}),
@@ -295,7 +297,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcpr47 = addFirmwareBuild(b, .{
         .step_name = "dmcpr47",
@@ -308,7 +310,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -318,7 +320,7 @@ pub fn registerSteps(
         .program_extension = ".pg5",
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5r47 = addFirmwareBuild(b, .{
         .step_name = "dmcp5r47",
@@ -329,7 +331,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_leaf_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
@@ -343,7 +345,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_leaf_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 
@@ -528,6 +530,7 @@ fn addFirmwareBuild(
     tone_objects: ToneObjects,
     audio_runtime_object: *std.Build.Step.Compile,
     print_ir_runtime_object: *std.Build.Step.Compile,
+    io_runtime_object: *std.Build.Step.Compile,
     keyboard_state_objects: KeyboardStateObjects,
     memory_state_objects: MemoryStateObjects,
     calc_state_objects: CalcStateObjects,
@@ -539,12 +542,12 @@ fn addFirmwareBuild(
     forcecrc32: *std.Build.Step.Compile,
     decnumber_fastmul: bool,
 ) Build {
-    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, math_command_wrapper_objects, constants_objects, tone_objects, audio_runtime_object, print_ir_runtime_object, keyboard_state_objects, memory_state_objects, calc_state_objects, program_serialization_objects, frontier_objects, solve_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, null);
+    const pre_build = addFirmwareElfBuild(b, config, .pre, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, math_command_wrapper_objects, constants_objects, tone_objects, audio_runtime_object, print_ir_runtime_object, io_runtime_object, keyboard_state_objects, memory_state_objects, calc_state_objects, program_serialization_objects, frontier_objects, solve_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, null);
     const pre_qspi_bad = addObjcopyBinary(b, pre_build.elf, b.fmt("{s}_pre_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
     const pre_qspi = addModifyCrcStep(b, forcecrc32, pre_qspi_bad.path, b.fmt("{s}_pre_qspi.bin", .{config.program_name}));
     const generated_qspi_header = addGenerateQspiCrcStep(b, pre_qspi.path, config.generated_qspi_header_name);
 
-    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, math_command_wrapper_objects, constants_objects, tone_objects, audio_runtime_object, print_ir_runtime_object, keyboard_state_objects, memory_state_objects, calc_state_objects, program_serialization_objects, frontier_objects, solve_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, generated_qspi_header.path);
+    const final_build = addFirmwareElfBuild(b, config, .final, core_sources, version_headers_dir, generated, arm_gmp, shortint_leaf_objects, flags_state_objects, math_command_wrapper_objects, constants_objects, tone_objects, audio_runtime_object, print_ir_runtime_object, io_runtime_object, keyboard_state_objects, memory_state_objects, calc_state_objects, program_serialization_objects, frontier_objects, solve_objects, register_metadata_objects, stack_state_objects, decnumber_fastmul, generated_qspi_header.path);
     const flash = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_flash.bin", .{config.program_name}), .{ .section_mode = .remove });
     const program = addPgmChecksumStep(b, flash.path, b.fmt("{s}{s}", .{ config.program_name, config.program_extension }));
     const qspi_bad = addObjcopyBinary(b, final_build.elf, b.fmt("{s}_qspi_incorrect_crc.bin", .{config.program_name}), .{ .section_mode = .only });
@@ -582,6 +585,7 @@ fn addFirmwareElfBuild(
     tone_objects: ToneObjects,
     audio_runtime_object: *std.Build.Step.Compile,
     print_ir_runtime_object: *std.Build.Step.Compile,
+    io_runtime_object: *std.Build.Step.Compile,
     keyboard_state_objects: KeyboardStateObjects,
     memory_state_objects: MemoryStateObjects,
     calc_state_objects: CalcStateObjects,
@@ -638,6 +642,8 @@ fn addFirmwareElfBuild(
     tone_objects.addToCommand(cmd);
     cmd.addFileArg(audio_runtime_object.getEmittedBin());
     cmd.addFileArg(print_ir_runtime_object.getEmittedBin());
+    cmd.addFileArg(io_runtime_object.getEmittedBin());
+    cmd.addArg("zig_bridge/state/firmware_io_runtime_helpers.c");
     keyboard_state_objects.addToCommand(cmd);
     memory_state_objects.addToCommand(cmd);
     calc_state_objects.addToCommand(cmd);
@@ -773,6 +779,35 @@ fn addFirmwareAudioRuntimeObject(
     });
 }
 
+fn addFirmwareIoRuntimeObject(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    name_prefix: []const u8,
+    options: stack.RuntimeObjectOptions,
+    board: Board,
+) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_build/firmware_io_runtime.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    build_options.addOption(usize, "library_fn_base", firmwareLibraryFnBase(board));
+    module.addOptions("firmware_io_build_options", build_options);
+
+    return b.addObject(.{
+        .name = b.fmt("{s}-firmware-io-runtime", .{name_prefix}),
+        .root_module = module,
+    });
+}
+
 fn addModifyCrcStep(
     b: *std.Build,
     forcecrc32: *std.Build.Step.Compile,
@@ -884,12 +919,8 @@ fn firmwareLinkFlags(board: Board) []const []const u8 {
 
 fn firmwareBoardHalSources(board: Board) []const []const u8 {
     return switch (board) {
-        .dmcp => &.{
-            "src/c47-dmcp/hal/io.c",
-        },
-        .dmcp5 => &.{
-            "src/c47-dmcp5/hal/io.c",
-        },
+        .dmcp => &[_][]const u8{},
+        .dmcp5 => &[_][]const u8{},
     };
 }
 
