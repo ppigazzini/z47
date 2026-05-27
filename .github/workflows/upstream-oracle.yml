@@ -17,6 +17,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  XLSXIO_HELPER_CACHE_VERSION: v2
 
 permissions:
   contents: read
@@ -85,7 +86,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
-          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
@@ -261,7 +262,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
-          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
@@ -555,7 +556,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
-          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
@@ -687,7 +688,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
-          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
@@ -883,13 +884,20 @@ jobs:
       - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
         with:
           msystem: UCRT64
+          cache: true
           path-type: inherit
+          release: false
           update: true
           install: >-
             git
+            python
+            unzip
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-expat
+            mingw-w64-ucrt-x86_64-freetype
             mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-gmp
+            mingw-w64-ucrt-x86_64-gtk3
             mingw-w64-ucrt-x86_64-minizip
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-pkgconf
@@ -920,7 +928,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
-          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ hashFiles('.github/workflows/upstream-oracle.yml') }}
+          key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
@@ -944,16 +952,6 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$prefix"
           cmake --build "$temp_root/xlsxio/build" --parallel
           cmake --install "$temp_root/xlsxio/build"
-      - name: Install remaining Windows host prerequisites
-        shell: msys2 {0}
-        run: |
-          set -euo pipefail
-          pacman -S --noconfirm --needed \
-            make \
-            python \
-            mingw-w64-ucrt-x86_64-freetype \
-            mingw-w64-ucrt-x86_64-gmp \
-            mingw-w64-ucrt-x86_64-gtk3
       - name: Run Windows host build and tests
         shell: msys2 {0}
         run: |
@@ -1299,6 +1297,7 @@ jobs:
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          compression-level: 0
           name: ${{ steps.windows_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
