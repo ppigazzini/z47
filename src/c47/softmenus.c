@@ -124,8 +124,12 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MENUQ,
 
                                              ITM_TYPEQ,                     ITM_M_DIMNQ,                ITM_NEIGHB,               ITM_ULP,               ITM_SSIZE,                   ITM_RMODEQ,
-                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          ITM_GETDMX,                  ITM_WSIZEQ,
-                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
+                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          /*ITM_GETDMX*/ITM_BESTFQ,    ITM_WSIZEQ,
+                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              /*ITM_BESTFQ*/ITM_NULL,      /*ITM_GET_ISM*/ITM_NULL,//                         };
+
+                                             ITM_GET_ADM,                   ITM_GET_ISM,                ITM_GET_REALDF,           ITM_GET_NDEC,          ITM_GET_DMX,                  ITM_NULL,
+                                             ITM_SET_ADM,                   ITM_SET_ISM,                ITM_SET_REALDF,           ITM_SET_NDEC,          ITM_SET_DMX,                  ITM_NULL,
+};
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_IDIV,                      ITM_RMD,                    ITM_MOD,                  ITM_XMOD,              ITM_LINT,                    ITM_LCM,
@@ -1467,6 +1471,9 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
     if(softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
       for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
+        if(allReservedVariables[i].header.notUsed) {
+          continue;
+        }
         if((!applyFilter || _filterDataType(regist, typeFilter, isAngular))) {
           xcopy(tmpString + 15 * numberOfVars, allReservedVariables[i].reservedVariableName + 1, allReservedVariables[i].reservedVariableName[0]);
           numberOfVars++;
