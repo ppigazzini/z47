@@ -240,6 +240,13 @@ Current Linux firmware-lane detail:
 - this lane keeps the Arm GCC dependency out of `linux-host-parity` while still
   reusing the shared xlsxio helper cache shape
 
+Current shared helper-cache detail:
+
+- xlsxio helper caches now key on upstream xlsxio HEAD plus the manual
+  `XLSXIO_HELPER_CACHE_VERSION` schema instead of the whole workflow file, so
+  unrelated CI YAML edits no longer force helper rebuilds across Linux, macOS,
+  and Windows lanes
+
 ### `macos-host-build`
 
 Purpose:
@@ -278,6 +285,22 @@ Purpose:
   runtime caches, and notice metadata
 - inspect packaged imports and run a relocated launcher smoke test before
   artifact upload
+
+Current Windows host-lane detail:
+
+- the lane now reuses the runner-image MSYS2 installation through
+  `release: false` while keeping `update: true`, which cuts cold-start setup
+  without changing the full package-refresh policy
+- all Windows UCRT64 packages now install in the cached `setup-msys2` step, so
+  the separate follow-on `pacman -S` step is gone and the unused `make`
+  package no longer bloats the lane
+- after comparing the lane with `r47zen/.github/workflows/windows-ci.yml`, the
+  staged GTK runtime directory and tool set stays unchanged because the peer
+  workflow publishes the same core GTK payload; the speed work instead targets
+  setup reuse, helper-cache churn, and artifact upload
+- the Windows package artifact now uploads with `compression-level: 0` because
+  the staged payload is dominated by binaries, DLLs, and pre-generated runtime
+  caches rather than compressible text
 
 ## Artifacts And Release Proof
 
