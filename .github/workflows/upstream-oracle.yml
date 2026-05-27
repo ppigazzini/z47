@@ -462,7 +462,6 @@ jobs:
           done < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          compression-level: 0
           name: ${{ steps.linux_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
@@ -678,7 +677,6 @@ jobs:
           EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          compression-level: 0
           name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
           path: ci-artifacts/firmware/
           if-no-files-found: error
@@ -905,7 +903,6 @@ jobs:
           EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          compression-level: 0
           name: ${{ steps.macos_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
@@ -1346,7 +1343,6 @@ jobs:
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          compression-level: 0
           name: ${{ steps.windows_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error

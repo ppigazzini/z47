@@ -212,10 +212,8 @@ Current Linux host-lane detail:
   no longer installs Doxygen, Python docs packages, or Arm GCC
 - moving the docs build out also removed the extra `generated` rerun that used
   to compensate for the docs lane calling `zig build clean`
-- the lane now restores Linux-local Zig build caches across workflow runs and
-  uploads the staged Linux package with `compression-level: 0`, so repeat runs
-  spend less time recompiling unchanged build graph slices or recompressing the
-  already binary-heavy desktop bundle
+- the lane now restores Linux-local Zig build caches across workflow runs, so
+  repeat runs spend less time recompiling unchanged build graph slices
 
 ### `linux-docs`
 
@@ -243,9 +241,7 @@ Current Linux firmware-lane detail:
 
 - this lane keeps the Arm GCC dependency out of `linux-host-parity` while still
   reusing the shared xlsxio helper cache shape
-- the lane now restores its own Linux Zig build caches and uploads the
-  published firmware zip bundle with `compression-level: 0`, which avoids
-  wasting artifact time recompressing already-zipped payloads
+- the lane now restores its own Linux Zig build caches on repeat runs
 
 Current shared helper-cache detail:
 
@@ -287,9 +283,7 @@ Current platform detail:
 
 - the job only installs missing Homebrew formulae so repeated runs stay
   idempotent and warning-light
-- the lane now restores the macOS Zig local/global caches and uploads the
-  staged macOS package with `compression-level: 0`, matching the binary-heavy
-  artifact policy already used for Windows
+- the lane now restores the macOS Zig local/global caches on repeat runs
 
 ### `windows-host-build`
 
@@ -325,9 +319,6 @@ Current Windows host-lane detail:
   resolved staged runtime paths, which removes the previous one-process-per-file
   regression across large GTK icon, theme, and MIME trees during artifact
   staging
-- the Windows package artifact now uploads with `compression-level: 0` because
-  the staged payload is dominated by binaries, DLLs, and pre-generated runtime
-  caches rather than compressible text
 
 ## Artifacts And Release Proof
 
@@ -349,9 +340,7 @@ runtime notice inventory. Windows packaging additionally records staged GTK
 runtime directories, runtime tools, launcher files, and DLL notice inventory.
 The published desktop host artifacts now stage `ReleaseFast` simulator
 binaries, and the Unix package helper strips the staged simulator copies before
-archiving them. Desktop host artifacts plus the Linux firmware zip bundle now
-upload with `compression-level: 0` because the staged payloads are already
-binary- or zip-heavy.
+archiving them.
 
 ## Local Reproduction Map
 
