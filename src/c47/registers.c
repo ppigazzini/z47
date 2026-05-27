@@ -697,8 +697,8 @@ bool_t validateName(const char *name) {
     return false;
   }
   if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0
-       && compareChar(name, STD_UP_ARROW            ) !=0                                              //   \xa1\x91
-       && compareChar(name, STD_DOWN_ARROW          ) !=0                                              //   \xa1\x93
+       && compareChar(name, STD_UP_ARROW            ) !=0                                             //   \xa1\x91
+       && compareChar(name, STD_DOWN_ARROW          ) !=0                                             //   \xa1\x93
                                                                                               ) {     //   \x83\xe1   \xa2\x96
     return false;
   }
