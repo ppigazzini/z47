@@ -12,6 +12,7 @@ zig_build/tools/translate_c/ttf2_raster_fonts.h
 [extern-symbols]
 zig_build/firmware_audio_runtime.zig
 zig_build/firmware_hal_runtime.zig
+zig_build/firmware_io_runtime.zig
 zig_build/firmware_print_ir_runtime.zig
 zig_build/host/gtk_button_signal_wrappers.zig
 zig_build/host/gtk_gui_wrappers.zig

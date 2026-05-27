@@ -45,6 +45,7 @@ z47 uses three explicit implementation modes.
 | `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
 | `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
 | `../zig_build/firmware_audio_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 audio firmware slice |
+| `../zig_build/firmware_io_runtime.zig` plus `../zig_bridge/state/firmware_io_runtime_helpers.c` | approved direct `extern` boundary plus retained helper shim | retained firmware file-I/O seam, with the helper kept only for the hidden `t24` display-state macro |
 | `../zig_build/firmware_print_ir_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 print-IR firmware slice |
 | `../zig_src/leaf/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
 | `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
@@ -75,6 +76,7 @@ Current approved checked-in `@cImport` files:
 Current approved direct `extern` symbol files:
 
 - `zig_build/firmware_audio_runtime.zig`
+- `zig_build/firmware_io_runtime.zig`
 - `zig_build/firmware_print_ir_runtime.zig`
 - `zig_build/tools/generate_catalogs.zig`
 - `zig_build/tools/generate_testpgms.zig`
@@ -152,9 +154,12 @@ Verified slices:
 - DMCP or DMCP5 audio ownership under `../zig_build/firmware_audio_runtime.zig`,
   replacing the imported `hal/audio.c` pair while retained firmware `io.c`
   inputs stay explicit
+- DMCP or DMCP5 file-I/O ownership under `../zig_build/firmware_io_runtime.zig`,
+  replacing the imported `hal/io.c` pair while a tiny retained helper in
+  `../zig_bridge/state/firmware_io_runtime_helpers.c` still supplies the hidden
+  `t24` display-state macro
 - DMCP or DMCP5 print-IR ownership under `../zig_build/firmware_print_ir_runtime.zig`,
-  replacing the imported `hal/print_ir.c` pair while retained firmware `io.c`
-  inputs stay explicit
+  replacing the imported `hal/print_ir.c` pair in the firmware slice
 
 Not yet rewritten in broad verified form:
 
@@ -162,7 +167,8 @@ Not yet rewritten in broad verified form:
   system-flag accessor surface and the current helper-level owner slices
 - full keyboard public-entrypoint ownership on firmware-sized DMCP builds
 - GTK simulator implementation
-- broad firmware HAL or packaging logic beyond the current audio and print-IR slices
+- broader firmware packaging or helper cleanup beyond the current audio,
+  print-IR, and file-I/O slices
 
 ## `translate-c` Policy
 
