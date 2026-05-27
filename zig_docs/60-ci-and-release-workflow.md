@@ -212,6 +212,10 @@ Current Linux host-lane detail:
   no longer installs Doxygen, Python docs packages, or Arm GCC
 - moving the docs build out also removed the extra `generated` rerun that used
   to compensate for the docs lane calling `zig build clean`
+- the lane now restores Linux-local Zig build caches across workflow runs and
+  uploads the staged Linux package with `compression-level: 0`, so repeat runs
+  spend less time recompiling unchanged build graph slices or recompressing the
+  already binary-heavy desktop bundle
 
 ### `linux-docs`
 
@@ -239,6 +243,9 @@ Current Linux firmware-lane detail:
 
 - this lane keeps the Arm GCC dependency out of `linux-host-parity` while still
   reusing the shared xlsxio helper cache shape
+- the lane now restores its own Linux Zig build caches and uploads the
+  published firmware zip bundle with `compression-level: 0`, which avoids
+  wasting artifact time recompressing already-zipped payloads
 
 Current shared helper-cache detail:
 
@@ -246,6 +253,19 @@ Current shared helper-cache detail:
   `XLSXIO_HELPER_CACHE_VERSION` schema instead of the whole workflow file, so
   unrelated CI YAML edits no longer force helper rebuilds across Linux, macOS,
   and Windows lanes
+
+Current shared Zig build-cache and optimize detail:
+
+- Linux host, Linux docs, Linux firmware, and macOS host lanes now restore
+  lane-scoped Zig local/global build caches through `actions/cache`, which is
+  the repeat-run analogue of the `ccache` pattern used by the example
+  `r47zen` workflows
+- `zig build` is still left to its default parallelism because `zig build
+  --help` reports `-j` already defaults to all CPU cores
+- published desktop host artifacts were already at the fastest safe setting:
+  `ReleaseFast` for the staged binaries, while `zig_build/common.zig` still
+  resolves x86/x86_64 host-package targets to a baseline CPU model instead of
+  runner-native features
 
 ### `macos-host-build`
 
@@ -267,6 +287,9 @@ Current platform detail:
 
 - the job only installs missing Homebrew formulae so repeated runs stay
   idempotent and warning-light
+- the lane now restores the macOS Zig local/global caches and uploads the
+  staged macOS package with `compression-level: 0`, matching the binary-heavy
+  artifact policy already used for Windows
 
 ### `windows-host-build`
 
@@ -322,7 +345,9 @@ runtime notice inventory. Windows packaging additionally records staged GTK
 runtime directories, runtime tools, launcher files, and DLL notice inventory.
 The published desktop host artifacts now stage `ReleaseFast` simulator
 binaries, and the Unix package helper strips the staged simulator copies before
-archiving them.
+archiving them. Desktop host artifacts plus the Linux firmware zip bundle now
+upload with `compression-level: 0` because the staged payloads are already
+binary- or zip-heavy.
 
 ## Local Reproduction Map
 

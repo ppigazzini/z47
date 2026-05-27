@@ -17,7 +17,9 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
   XLSXIO_HELPER_CACHE_VERSION: v2
+  ZIG_BUILD_CACHE_VERSION: v1
 
 permissions:
   contents: read
@@ -251,6 +253,17 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore Linux host Zig build caches
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .zig-cache
+            ~/.cache/zig
+          key: zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
         name: Resolve xlsxio upstream HEAD
         shell: bash
@@ -449,6 +462,7 @@ jobs:
           done < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          compression-level: 0
           name: ${{ steps.linux_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
@@ -483,6 +497,17 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore Linux docs Zig build caches
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .zig-cache
+            ~/.cache/zig
+          key: zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: docs-requirements-hash
         name: Resolve Linux docs requirements hash
         shell: bash
@@ -545,6 +570,17 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore Linux firmware Zig build caches
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .zig-cache
+            ~/.cache/zig
+          key: zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
         name: Resolve xlsxio upstream HEAD
         shell: bash
@@ -642,6 +678,7 @@ jobs:
           EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          compression-level: 0
           name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
           path: ci-artifacts/firmware/
           if-no-files-found: error
@@ -677,6 +714,17 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore macOS host Zig build caches
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .zig-cache
+            ~/Library/Caches/zig
+          key: zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
         name: Resolve xlsxio upstream HEAD
         shell: bash
@@ -857,6 +905,7 @@ jobs:
           EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          compression-level: 0
           name: ${{ steps.macos_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
