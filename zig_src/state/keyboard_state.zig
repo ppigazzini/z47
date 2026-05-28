@@ -54,8 +54,8 @@ pub export fn caseReplacements(id: u8, lowerCaseSelected: runtime.bool_t, item: 
     return shared.caseReplacements(lowerCaseSelected, item, itemOut);
 }
 
-pub export fn keyReplacements(item: i16, item1: *i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) runtime.bool_t {
-    return shared.keyReplacements(item, item1, numlockEnabled, fShift, gShift);
+pub export fn keyReplacements(item: i16, replacementItem: *i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) runtime.bool_t {
+    return shared.keyReplacements(item, replacementItem, numlockEnabled, fShift, gShift);
 }
 
 pub export fn numlockReplacements(id: u16, item: i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) u16 {
