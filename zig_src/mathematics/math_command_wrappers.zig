@@ -3519,8 +3519,8 @@ pub export fn fnSeed(unusedButMandatoryParameter: u16) callconv(.c) void {
     pcg32_srandom(stateSeed, sequenceSeed);
 }
 
-pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMin(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
@@ -3530,8 +3530,8 @@ pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnMax(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMax(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
@@ -3541,8 +3541,8 @@ pub export fn fnMax(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnCeil(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCeil(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(
         &ceilReal,
@@ -3552,8 +3552,8 @@ pub export fn fnCeil(unused_but_mandatory_parameter: u16) callconv(.c) void {
     );
 }
 
-pub export fn fnFloor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnFloor(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(
         &floorReal,
@@ -3563,8 +3563,8 @@ pub export fn fnFloor(unused_but_mandatory_parameter: u16) callconv(.c) void {
     );
 }
 
-pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnIp(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(
         &ipReal,
@@ -3574,11 +3574,11 @@ pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     );
 }
 
-pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLint(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var value: runtime.longInteger_t = undefined;
-    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const dataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (!runtime.saveLastX()) {
         return;
@@ -3588,14 +3588,14 @@ pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
         defer runtime.__gmpz_clear(&value[0]);
 
         runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
-        if (data_type == runtime.dtShortInteger) {
+        if (dataType == runtime.dtShortInteger) {
             runtime.setLastintegerBasetoZero();
         }
     }
 }
 
-pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSint(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var sign: bool = false;
     var value: u64 = 0;
@@ -3617,8 +3617,8 @@ pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.forceSystemFlag(@intCast(runtime.FLAG_OVERFLOW), @intFromBool(overflow));
 }
 
-pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnFp(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(
         &fpRealForward,
