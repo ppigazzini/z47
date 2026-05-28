@@ -52,7 +52,7 @@ fn addRuntimeObject(
     return b.addObject(.{
         .name = b.fmt("{s}-frontier-root", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/root/frontier_entries.zig"),
+            .root_source_file = b.path("zig_src/root/frontier.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
