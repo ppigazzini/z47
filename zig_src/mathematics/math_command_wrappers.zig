@@ -41,11 +41,6 @@ const doubleDivideRetained = runtime.retained.z47_math_wrappers_retained_fnDblDi
 const doubleDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
 const toPolar2Retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
 const toRect2Retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
-const z47_math_wrappers_retained_fnToRect = runtime.retained.z47_math_wrappers_retained_fnToRect;
-const z47_math_wrappers_retained_fnParallel = runtime.retained.z47_math_wrappers_retained_fnParallel;
-const z47_math_wrappers_retained_fnUnitVector = runtime.retained.z47_math_wrappers_retained_fnUnitVector;
-const z47_math_wrappers_retained_fnSdl = runtime.retained.z47_math_wrappers_retained_fnSdl;
-const z47_math_wrappers_retained_fnSdr = runtime.retained.z47_math_wrappers_retained_fnSdr;
 const squareRootRetained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
