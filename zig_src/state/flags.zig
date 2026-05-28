@@ -65,8 +65,8 @@ const flipFlags = [_]u16{
     runtime.FLAG_NORM,
 };
 
-fn needsRefreshState(system_flag: u16) bool {
-    return switch (system_flag) {
+fn needsRefreshState(systemFlag: u16) bool {
+    return switch (systemFlag) {
         0x8000,
         0xc001,
         0xc002,
@@ -113,8 +113,8 @@ fn needsRefreshState(system_flag: u16) bool {
     };
 }
 
-fn needsClearStatusBar(system_flag: u16) bool {
-    return switch (system_flag) {
+fn needsClearStatusBar(systemFlag: u16) bool {
+    return switch (systemFlag) {
         0x802c,
         0x802e,
         0x802f,
@@ -237,8 +237,8 @@ fn setTemporaryInformationTrueFalse(condition: bool) void {
     runtime.temporaryInformation = runtime.TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
-fn setSystemFlagBit(system_flag: u16) void {
-    const flag = maskedFlagFromUnsigned(system_flag);
+fn setSystemFlagBit(systemFlag: u16) void {
+    const flag = maskedFlagFromUnsigned(systemFlag);
 
     if (flag < 64) {
         const shift: u6 = @intCast(flag);
@@ -253,8 +253,8 @@ fn setSystemFlagBit(system_flag: u16) void {
     }
 }
 
-fn clearSystemFlagBit(system_flag: u16) void {
-    const flag = maskedFlagFromUnsigned(system_flag);
+fn clearSystemFlagBit(systemFlag: u16) void {
+    const flag = maskedFlagFromUnsigned(systemFlag);
 
     if (flag < 64) {
         const shift: u6 = @intCast(flag);
@@ -269,8 +269,8 @@ fn clearSystemFlagBit(system_flag: u16) void {
     }
 }
 
-fn flipSystemFlagBit(system_flag: u16) void {
-    const flag = maskedFlagFromUnsigned(system_flag);
+fn flipSystemFlagBit(systemFlag: u16) void {
+    const flag = maskedFlagFromUnsigned(systemFlag);
 
     if (flag < 64) {
         const shift: u6 = @intCast(flag);
@@ -285,12 +285,12 @@ fn flipSystemFlagBit(system_flag: u16) void {
     }
 }
 
-fn systemFlagAction(system_flag: u16, action: FlagAction) void {
-    if (needsRefreshState(system_flag)) {
+fn systemFlagAction(systemFlag: u16, action: FlagAction) void {
+    if (needsRefreshState(systemFlag)) {
         runtime.fnRefreshState();
     }
 
-    if (needsClearStatusBar(system_flag)) {
+    if (needsClearStatusBar(systemFlag)) {
         if (builtin.target.os.tag == .freestanding) {
             runtime.reallyClearStatusBar(201);
         }
@@ -298,18 +298,18 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
         runtime.screenUpdatingMode &= ~@as(u8, runtime.SCRUPD_MANUAL_STATUSBAR);
     }
 
-    if (system_flag == runtime.FLAG_BCD) {
-        if (getSystemFlag(@intCast(system_flag)) and action != .clear and runtime.lastIntegerBase == 0) {
+    if (systemFlag == runtime.FLAG_BCD) {
+        if (getSystemFlag(@intCast(systemFlag)) and action != .clear and runtime.lastIntegerBase == 0) {
             runtime.fnChangeBaseJM(10);
         }
     }
 
-    switch (system_flag) {
+    switch (systemFlag) {
         runtime.FLAG_SBfrac => runtime.lastIntegerBase = 0,
         runtime.FLAG_SBwoy, runtime.FLAG_SBtime => {
-            if (system_flag == runtime.FLAG_SBtime and getSystemFlag(@intCast(runtime.FLAG_SBtime))) {
+            if (systemFlag == runtime.FLAG_SBtime and getSystemFlag(@intCast(runtime.FLAG_SBtime))) {
                 clearSystemFlagBit(runtime.FLAG_SBwoy);
-            } else if (system_flag == runtime.FLAG_SBwoy and getSystemFlag(@intCast(runtime.FLAG_SBwoy))) {
+            } else if (systemFlag == runtime.FLAG_SBwoy and getSystemFlag(@intCast(runtime.FLAG_SBwoy))) {
                 clearSystemFlagBit(runtime.FLAG_SBtime);
             }
         },
@@ -341,9 +341,9 @@ pub export fn setSystemFlag(sf: u32) void {
         return;
     }
 
-    const system_flag: u16 = @intCast(sf & 0xffff);
-    setSystemFlagBit(system_flag);
-    systemFlagAction(system_flag, .set);
+    const systemFlag: u16 = @intCast(sf & 0xffff);
+    setSystemFlagBit(systemFlag);
+    systemFlagAction(systemFlag, .set);
 }
 
 pub export fn clearSystemFlag(sf: u32) void {
@@ -352,9 +352,9 @@ pub export fn clearSystemFlag(sf: u32) void {
         return;
     }
 
-    const system_flag: u16 = @intCast(sf & 0xffff);
-    clearSystemFlagBit(system_flag);
-    systemFlagAction(system_flag, .clear);
+    const systemFlag: u16 = @intCast(sf & 0xffff);
+    clearSystemFlagBit(systemFlag);
+    systemFlagAction(systemFlag, .clear);
 }
 
 pub export fn flipSystemFlag(sf: u32) void {
@@ -363,9 +363,9 @@ pub export fn flipSystemFlag(sf: u32) void {
         return;
     }
 
-    const system_flag: u16 = @intCast(sf & 0xffff);
-    flipSystemFlagBit(system_flag);
-    systemFlagAction(system_flag, .flip);
+    const systemFlag: u16 = @intCast(sf & 0xffff);
+    flipSystemFlagBit(systemFlag);
+    systemFlagAction(systemFlag, .flip);
 }
 
 pub export fn getSystemFlag(sf: i32) bool {
