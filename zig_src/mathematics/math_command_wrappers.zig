@@ -57,25 +57,25 @@ fn realAbsLessThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool 
 }
 
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
-    const old_state = rng.state;
-    const xorshifted: u32 = @truncate(((old_state >> 18) ^ old_state) >> 27);
-    const rot: u5 = @intCast((old_state >> 59) & 31);
-    const inv_rot: u5 = @intCast((32 - @as(u6, rot)) & 31);
+    const oldState = rng.state;
+    const xorShifted: u32 = @truncate(((oldState >> 18) ^ oldState) >> 27);
+    const rot: u5 = @intCast((oldState >> 59) & 31);
+    const inverseRot: u5 = @intCast((32 - @as(u6, rot)) & 31);
 
-    rng.state = old_state *% 6364136223846793005 +% rng.inc;
-    return (xorshifted >> rot) | (xorshifted << inv_rot);
+    rng.state = oldState *% 6364136223846793005 +% rng.inc;
+    return (xorShifted >> rot) | (xorShifted << inverseRot);
 }
 
-pub export fn pcg32_srandom_r(rng: *runtime.pcg32_random_t, initstate: u64, initseq: u64) callconv(.c) void {
+pub export fn pcg32_srandom_r(rng: *runtime.pcg32_random_t, initialState: u64, initialSequence: u64) callconv(.c) void {
     rng.state = 0;
-    rng.inc = (initseq << 1) | 1;
+    rng.inc = (initialSequence << 1) | 1;
     _ = pcg32_random_r(rng);
-    rng.state +%= initstate;
+    rng.state +%= initialState;
     _ = pcg32_random_r(rng);
 }
 
-pub export fn pcg32_srandom(seed: u64, seq: u64) callconv(.c) void {
-    pcg32_srandom_r(&runtime.pcg32_global, seed, seq);
+pub export fn pcg32_srandom(stateSeed: u64, sequenceSeed: u64) callconv(.c) void {
+    pcg32_srandom_r(&runtime.pcg32_global, stateSeed, sequenceSeed);
 }
 
 fn boundedRand(s: u32) u32 {
