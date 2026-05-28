@@ -19,8 +19,8 @@ comptime {
 }
 
 const HeaderInfo = struct {
-    saved_calc_model: u16 = 0,
-    loaded_version: u32 = 0,
+    savedCalcModel: u16 = 0,
+    loadedVersion: u32 = 0,
 };
 
 fn parseSaveFileRevision() HeaderInfo {
@@ -37,21 +37,21 @@ fn parseSaveFileRevision() HeaderInfo {
         runtime.readLine(version_line[0..]);
 
         if (runtime.lineEquals(calculator_id[0..].ptr, "C47_save_file_00")) {
-            info.saved_calc_model = runtime.USER_C47;
+            info.savedCalcModel = runtime.USER_C47;
         } else if (runtime.lineEquals(calculator_id[0..].ptr, "R47_save_file_00")) {
-            info.saved_calc_model = runtime.USER_R47;
+            info.savedCalcModel = runtime.USER_R47;
         }
 
-        if (info.saved_calc_model == runtime.USER_C47 or info.saved_calc_model == runtime.USER_R47) {
-            info.loaded_version = runtime.parseU32Line(version_line[0..].ptr);
-            if (info.loaded_version < 10_000_000 or info.loaded_version > 20_000_000) {
-                info.loaded_version = 0;
+        if (info.savedCalcModel == runtime.USER_C47 or info.savedCalcModel == runtime.USER_R47) {
+            info.loadedVersion = runtime.parseU32Line(version_line[0..].ptr);
+            if (info.loadedVersion < 10_000_000 or info.loadedVersion > 20_000_000) {
+                info.loadedVersion = 0;
             }
         }
     }
 
-    runtime.setSavedCalcModel(info.saved_calc_model);
-    runtime.setLoadedVersion(info.loaded_version);
+    runtime.setSavedCalcModel(info.savedCalcModel);
+    runtime.setLoadedVersion(info.loadedVersion);
     return info;
 }
 
@@ -151,8 +151,8 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
     }
 
     const header = parseSaveFileRevision();
-    if (canEnableLoad(load_mode, load_type, header.loaded_version)) {
-        const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
+    if (canEnableLoad(load_mode, load_type, header.loadedVersion)) {
+        const allow_user_keys = runtime.allowUserKeys(header.savedCalcModel);
         while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
         runtime.fixupR47ShiftKeys();
     }
@@ -162,7 +162,7 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
 
     runtime.closeFile();
     runtime.restartPostLoadTimers();
-    setPostLoadTemporaryInformation(load_mode, load_type, header.loaded_version);
+    setPostLoadTemporaryInformation(load_mode, load_type, header.loadedVersion);
     runtime.cachedDynamicMenu = 0;
 }
 
