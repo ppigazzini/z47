@@ -8,44 +8,44 @@ fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
-fn fnKeyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyEnter(unused_but_mandatory_parameter);
+fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyEnter(unused_but_mandatory_parameter);
 }
 
-fn fnKeyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyExit(unused_but_mandatory_parameter);
+fn keyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyExit(unused_but_mandatory_parameter);
 }
 
-fn fnKeyCCHost(complex_type: u16) callconv(.c) void {
-    shared.fnKeyCC(complex_type);
+fn keyCCHost(complex_type: u16) callconv(.c) void {
+    shared.keyCC(complex_type);
 }
 
-fn fnKeyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyBackspace(unused_but_mandatory_parameter);
+fn keyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyBackspace(unused_but_mandatory_parameter);
 }
 
-fn fnKeyUpHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyUp(unused_but_mandatory_parameter);
+fn keyUpHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyUp(unused_but_mandatory_parameter);
 }
 
-fn fnKeyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyDown(unused_but_mandatory_parameter);
+fn keyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyDown(unused_but_mandatory_parameter);
 }
 
-fn fnKeyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.fnKeyDotD(unused_but_mandatory_parameter);
+fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyDotD(unused_but_mandatory_parameter);
 }
 
 comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
-        @export(&fnKeyEnterHost, .{ .name = "fnKeyEnter" });
-        @export(&fnKeyExitHost, .{ .name = "fnKeyExit" });
-        @export(&fnKeyCCHost, .{ .name = "fnKeyCC" });
-        @export(&fnKeyBackspaceHost, .{ .name = "fnKeyBackspace" });
-        @export(&fnKeyUpHost, .{ .name = "fnKeyUp" });
-        @export(&fnKeyDownHost, .{ .name = "fnKeyDown" });
-        @export(&fnKeyDotDHost, .{ .name = "fnKeyDotD" });
+        @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
+        @export(&keyExitHost, .{ .name = "fnKeyExit" });
+        @export(&keyCCHost, .{ .name = "fnKeyCC" });
+        @export(&keyBackspaceHost, .{ .name = "fnKeyBackspace" });
+        @export(&keyUpHost, .{ .name = "fnKeyUp" });
+        @export(&keyDownHost, .{ .name = "fnKeyDown" });
+        @export(&keyDotDHost, .{ .name = "fnKeyDotD" });
     }
 }
 

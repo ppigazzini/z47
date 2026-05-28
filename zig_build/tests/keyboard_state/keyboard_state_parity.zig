@@ -6,31 +6,31 @@ pub export fn processKeyAction(item: i16) void {
 }
 
 pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyEnter(unused_but_mandatory_parameter);
+    shared.keyEnter(unused_but_mandatory_parameter);
 }
 
 pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyExit(unused_but_mandatory_parameter);
+    shared.keyExit(unused_but_mandatory_parameter);
 }
 
 pub export fn fnKeyCC(complex_type: u16) void {
-    shared.fnKeyCC(complex_type);
+    shared.keyCC(complex_type);
 }
 
 pub export fn fnKeyBackspace(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyBackspace(unused_but_mandatory_parameter);
+    shared.keyBackspace(unused_but_mandatory_parameter);
 }
 
 pub export fn fnKeyUp(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyUp(unused_but_mandatory_parameter);
+    shared.keyUp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnKeyDown(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyDown(unused_but_mandatory_parameter);
+    shared.keyDown(unused_but_mandatory_parameter);
 }
 
 pub export fn fnKeyDotD(unused_but_mandatory_parameter: u16) void {
-    shared.fnKeyDotD(unused_but_mandatory_parameter);
+    shared.keyDotD(unused_but_mandatory_parameter);
 }
 
 pub export fn caseReplacements(id: u8, lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
