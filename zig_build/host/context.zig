@@ -4,7 +4,7 @@ const calc_state = @import("../state/calc_state.zig");
 const constants = @import("../leaf/constants.zig");
 const gtk_gui = @import("gtk_gui.zig");
 const math_command_wrappers = @import("../mathematics/math_command_wrappers.zig");
-const shortint = @import("../leaf/shortint.zig");
+const shortint = @import("../shortint/shortint.zig");
 const flags = @import("../state/flags.zig");
 const keyboard_state = @import("../state/keyboard_state.zig");
 const memory = @import("../state/memory.zig");
@@ -56,7 +56,7 @@ pub fn prepareContext(
         .test_sources = try build_common.collectRelativeCFiles(b, build_common.upstreamPathString(b, "src/testSuite")),
         .version_headers_dir = version_headers_dir,
         .generated = generated,
-        .shortint_leaf_objects = shortint.addRuntimeObjects(b, host_target, optimize, "host"),
+        .shortint_objects = shortint.addRuntimeObjects(b, host_target, optimize, "host"),
         .keyboard_state_objects = keyboard_state.addHostRuntimeObjects(b, host_target, optimize, "host", .{
             .platform_define = common.platform_define,
             .word_size_define = common.word_size_define,

@@ -116,10 +116,10 @@ and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
 | `dep/decNumberICU` | retained C dependency compiled by Zig | vendored decimal arithmetic library remains explicit |
 | GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependencies remain explicit |
 | `zig_build/tools/` generator entrypoints | manual Zig executables with narrow C boundaries | deterministic generators now run from Zig-owned entrypoints |
-| `zig_src/leaf/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling logical leaf modules have focused parity validation |
+| `zig_src/shortint/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling short-integer modules have focused parity validation |
 | `zig_src/state/` stateful rewrite slices | manual Zig rewrite with parity coverage | the exported stack, register-metadata, flags, memory, serialization, calc-state, and keyboard helper owners now live in Zig for the live graphs |
 | `zig_bridge/state/` retained helper shims | existing C compiled by Zig | retained runtime helper seams stay explicit beside the live Zig owners they support |
-| `zig_src/leaf/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
+| `zig_src/shortint/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
 
 ## Runtime And Build Boundary Rules
 

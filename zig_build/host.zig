@@ -6,7 +6,7 @@ const host_types = @import("host/types.zig");
 
 pub const CommonConfig = host_types.CommonConfig;
 pub const GeneratedOutputs = host_types.GeneratedOutputs;
-pub const ShortIntLeafObjects = host_types.ShortIntLeafObjects;
+pub const ShortIntObjects = host_types.ShortIntObjects;
 pub const KeyboardStateObjects = host_types.KeyboardStateObjects;
 pub const StackStateObjects = host_types.StackStateObjects;
 pub const Context = host_types.Context;
@@ -37,7 +37,7 @@ pub fn addSimulator(
     common: CommonConfig,
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
-    shortint_leaf_objects: ShortIntLeafObjects,
+    shortint_objects: ShortIntObjects,
     keyboard_state_objects: KeyboardStateObjects,
     stack_state_objects: StackStateObjects,
     calc_model: []const u8,
@@ -54,7 +54,7 @@ pub fn addSimulator(
         common,
         version_headers_dir,
         generated,
-        shortint_leaf_objects,
+        shortint_objects,
         keyboard_state_objects,
         stack_state_objects,
         calc_model,
