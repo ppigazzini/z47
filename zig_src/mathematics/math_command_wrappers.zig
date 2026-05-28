@@ -20,7 +20,6 @@ const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, rea
 const long_integer_power_negative_exponent: i32 = -1;
 
 const atan2Retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
-const z47_math_wrappers_retained_fnPercent = runtime.retained.z47_math_wrappers_retained_fnPercent;
 const addRetained = runtime.retained.z47_math_wrappers_retained_fnAdd;
 const subtractRetained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
 const multiplyRetained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
@@ -29,8 +28,6 @@ const integerDivideRetained = runtime.retained.z47_math_wrappers_retained_fnIDiv
 const integerDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnIDivR;
 const doubleMultiplyRetained = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
 const roundRetained = runtime.retained.z47_math_wrappers_retained_fnRound;
-const z47_math_wrappers_retained_fnDecomp = runtime.retained.z47_math_wrappers_retained_fnDecomp;
-const z47_math_wrappers_retained_fnCheckInteger = runtime.retained.z47_math_wrappers_retained_fnCheckInteger;
 const decrementRetained = runtime.retained.z47_math_wrappers_retained_fnDec;
 const incrementRetained = runtime.retained.z47_math_wrappers_retained_fnInc;
 const compareLessThanRetained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
