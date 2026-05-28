@@ -25,24 +25,24 @@ pub fn implementation(comptime runtime: type) type {
             return item >= runtime.ITM_a and item <= runtime.ITM_z;
         }
 
-        pub fn caseReplacements(lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
-            item_out.* = item;
+        pub fn caseReplacements(lowerCaseSelected: runtime.bool_t, item: i16, itemOut: *i16) runtime.bool_t {
+            itemOut.* = item;
 
-            if (lower_case_selected and itemIsUppercaseLetter(item)) {
-                item_out.* = item + @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
+            if (lowerCaseSelected and itemIsUppercaseLetter(item)) {
+                itemOut.* = item + @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
                 return true;
             }
 
-            if (!lower_case_selected and itemIsUppercaseLetter(item)) {
+            if (!lowerCaseSelected and itemIsUppercaseLetter(item)) {
                 return true;
             }
 
-            if (!lower_case_selected and itemIsLowercaseLetter(item)) {
-                item_out.* = item - @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
+            if (!lowerCaseSelected and itemIsLowercaseLetter(item)) {
+                itemOut.* = item - @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
                 return true;
             }
 
-            if (lower_case_selected and itemIsLowercaseLetter(item)) {
+            if (lowerCaseSelected and itemIsLowercaseLetter(item)) {
                 return true;
             }
 
