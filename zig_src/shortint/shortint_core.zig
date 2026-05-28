@@ -1,19 +1,19 @@
 const std = @import("std");
 
-pub fn maskLeft(wordSize: u8, mask: u64, numberOfBits: u16) u64 {
-    if (numberOfBits == 0) return 0;
+pub fn maskLeft(word_size: u8, mask: u64, number_of_bits: u16) u64 {
+    if (number_of_bits == 0) return 0;
 
-    const bits: u8 = @intCast(numberOfBits);
+    const bits: u8 = @intCast(number_of_bits);
     if (bits >= 64) return mask;
 
-    const lowMask = (@as(u64, 1) << @as(u6, @intCast(bits))) - 1;
-    return (lowMask & mask) << @as(u6, @intCast(wordSize - bits));
+    const low_mask = (@as(u64, 1) << @as(u6, @intCast(bits))) - 1;
+    return (low_mask & mask) << @as(u6, @intCast(word_size - bits));
 }
 
-pub fn maskRight(numberOfBits: u16) u64 {
-    if (numberOfBits == 0) return 0;
+pub fn maskRight(number_of_bits: u16) u64 {
+    if (number_of_bits == 0) return 0;
 
-    const bits: u8 = @intCast(numberOfBits);
+    const bits: u8 = @intCast(number_of_bits);
     if (bits >= 64) return std.math.maxInt(u64);
 
     return (@as(u64, 1) << @as(u6, @intCast(bits))) - 1;

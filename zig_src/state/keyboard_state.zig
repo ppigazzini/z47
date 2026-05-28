@@ -2,42 +2,42 @@ const builtin = @import("builtin");
 const runtime = @import("keyboard_state_runtime.zig");
 const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
-const isDmcpBuild = builtin.target.os.tag == .freestanding;
+const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
-fn keyEnterHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyEnter(unusedButMandatoryParameter);
+fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyEnter(unused_but_mandatory_parameter);
 }
 
-fn keyExitHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyExit(unusedButMandatoryParameter);
+fn keyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyExit(unused_but_mandatory_parameter);
 }
 
-fn keyCCHost(complexType: u16) callconv(.c) void {
-    shared.keyCC(complexType);
+fn keyCCHost(complex_type: u16) callconv(.c) void {
+    shared.keyCC(complex_type);
 }
 
-fn keyBackspaceHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyBackspace(unusedButMandatoryParameter);
+fn keyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyBackspace(unused_but_mandatory_parameter);
 }
 
-fn keyUpHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyUp(unusedButMandatoryParameter);
+fn keyUpHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyUp(unused_but_mandatory_parameter);
 }
 
-fn keyDownHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyDown(unusedButMandatoryParameter);
+fn keyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyDown(unused_but_mandatory_parameter);
 }
 
-fn keyDotDHost(unusedButMandatoryParameter: u16) callconv(.c) void {
-    shared.keyDotD(unusedButMandatoryParameter);
+fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    shared.keyDotD(unused_but_mandatory_parameter);
 }
 
 comptime {
-    if (!isDmcpBuild) {
+    if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
@@ -49,18 +49,18 @@ comptime {
     }
 }
 
-pub export fn caseReplacements(id: u8, lowerCaseSelected: runtime.bool_t, item: i16, itemOut: *i16) runtime.bool_t {
+pub export fn caseReplacements(id: u8, lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
     _ = id;
-    return shared.caseReplacements(lowerCaseSelected, item, itemOut);
+    return shared.caseReplacements(lower_case_selected, item, item_out);
 }
 
-pub export fn keyReplacements(item: i16, replacementItem: *i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) runtime.bool_t {
-    return shared.keyReplacements(item, replacementItem, numlockEnabled, fShift, gShift);
+pub export fn keyReplacements(item: i16, item1: *i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) runtime.bool_t {
+    return shared.keyReplacements(item, item1, numlock_enabled, f_shift, g_shift);
 }
 
-pub export fn numlockReplacements(id: u16, item: i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) u16 {
+pub export fn numlockReplacements(id: u16, item: i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) u16 {
     _ = id;
-    return shared.numlockReplacements(item, numlockEnabled, fShift, gShift);
+    return shared.numlockReplacements(item, numlock_enabled, f_shift, g_shift);
 }
 
 pub export fn setLastKeyCode(key: i32) void {

@@ -31,15 +31,15 @@ fn topShift() u6 {
     return @intCast(runtime.shortIntegerWordSize - 1);
 }
 
-pub export fn fnAsr(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnAsr(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     const sign = word & runtime.shortIntegerSignBit;
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
-        if (i + 1 == numberOfShifts) {
+    while (i < number_of_shifts) : (i += 1) {
+        if (i + 1 == number_of_shifts) {
             setCarry((word & 1) != 0);
         }
         word = (word >> 1) | sign;
@@ -47,14 +47,14 @@ pub export fn fnAsr(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnSl(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnSl(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
-        if (i + 1 == numberOfShifts) {
+    while (i < number_of_shifts) : (i += 1) {
+        if (i + 1 == number_of_shifts) {
             setCarry((word & runtime.shortIntegerSignBit) != 0);
         }
         word <<= 1;
@@ -62,14 +62,14 @@ pub export fn fnSl(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnSr(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnSr(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
-        if (i + 1 == numberOfShifts) {
+    while (i < number_of_shifts) : (i += 1) {
+        if (i + 1 == number_of_shifts) {
             setCarry((word & 1) != 0);
         }
         word >>= 1;
@@ -77,15 +77,15 @@ pub export fn fnSr(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnRl(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnRl(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
+    while (i < number_of_shifts) : (i += 1) {
         const sign = (word & runtime.shortIntegerSignBit) != 0;
-        if (i + 1 == numberOfShifts) {
+        if (i + 1 == number_of_shifts) {
             setCarry(sign);
         }
         word = (word << 1) | @as(u64, @intFromBool(sign));
@@ -93,16 +93,16 @@ pub export fn fnRl(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnRr(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnRr(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     const shift = topShift();
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
+    while (i < number_of_shifts) : (i += 1) {
         const lsb = word & 1;
-        if (i + 1 == numberOfShifts) {
+        if (i + 1 == number_of_shifts) {
             setCarry(lsb != 0);
         }
         word = (word >> 1) | (lsb << shift);
@@ -110,14 +110,14 @@ pub export fn fnRr(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnRlc(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnRlc(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
     var carry: u64 = @intFromBool(runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY))));
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
+    while (i < number_of_shifts) : (i += 1) {
         const sign = @as(u64, @intFromBool((word & runtime.shortIntegerSignBit) != 0));
         word = (word << 1) | carry;
         carry = sign;
@@ -127,7 +127,7 @@ pub export fn fnRlc(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnRrc(numberOfShifts: u16) callconv(.c) void {
+pub export fn fnRrc(number_of_shifts: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
@@ -135,7 +135,7 @@ pub export fn fnRrc(numberOfShifts: u16) callconv(.c) void {
     const shift = topShift();
     var carry: u64 = @intFromBool(runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY))));
     var i: u16 = 0;
-    while (i < numberOfShifts) : (i += 1) {
+    while (i < number_of_shifts) : (i += 1) {
         const lsb = word & 1;
         word = (word >> 1) | (carry << shift);
         carry = lsb;
@@ -145,8 +145,8 @@ pub export fn fnRrc(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnLj(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -162,8 +162,8 @@ pub export fn fnLj(unusedButMandatoryParameter: u16) callconv(.c) void {
     justifyResultToRegisters(count, base, word);
 }
 
-pub export fn fnRj(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRj(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -178,8 +178,8 @@ pub export fn fnRj(unusedButMandatoryParameter: u16) callconv(.c) void {
     justifyResultToRegisters(count, base, word);
 }
 
-pub export fn fnMirror(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnMirror(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -188,10 +188,10 @@ pub export fn fnMirror(unusedButMandatoryParameter: u16) callconv(.c) void {
     var result: u64 = 0;
     var index: u8 = 0;
     while (index < runtime.shortIntegerWordSize) : (index += 1) {
-        const srcShift: u6 = @intCast(index);
-        if ((word & (@as(u64, 1) << srcShift)) != 0) {
-            const dstShift: u6 = @intCast(runtime.shortIntegerWordSize - index - 1);
-            result |= @as(u64, 1) << dstShift;
+        const src_shift: u6 = @intCast(index);
+        if ((word & (@as(u64, 1) << src_shift)) != 0) {
+            const dst_shift: u6 = @intCast(runtime.shortIntegerWordSize - index - 1);
+            result |= @as(u64, 1) << dst_shift;
         }
     }
 
@@ -202,7 +202,7 @@ fn byte(word: u64, shift: u6) u64 {
     return (word >> shift) & 0xff;
 }
 
-pub export fn fnSwapEndian(bitWidth: u16) callconv(.c) void {
+pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
@@ -216,11 +216,11 @@ pub export fn fnSwapEndian(bitWidth: u16) callconv(.c) void {
     const b1 = byte(word, 8);
     const b0 = byte(word, 0);
 
-    if (bitWidth == 8) {
+    if (bit_width == 8) {
         if (runtime.shortIntegerWordSize < 16) {
             runtime.fnSetWordSize(16);
-        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bitWidth - 1))) != 0) {
-            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bitWidth - 1))) + 1);
+        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
+            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
         }
 
         switch (runtime.shortIntegerWordSize) {
@@ -233,11 +233,11 @@ pub export fn fnSwapEndian(bitWidth: u16) callconv(.c) void {
             64 => word = (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7,
             else => {},
         }
-    } else if (bitWidth == 16) {
+    } else if (bit_width == 16) {
         if (runtime.shortIntegerWordSize < 32) {
             runtime.fnSetWordSize(32);
-        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bitWidth - 1))) != 0) {
-            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bitWidth - 1))) + 1);
+        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
+            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
         }
 
         switch (runtime.shortIntegerWordSize) {
@@ -251,8 +251,8 @@ pub export fn fnSwapEndian(bitWidth: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnZip(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
 
     var x: u64 = undefined;
     var y: u64 = undefined;
@@ -268,9 +268,9 @@ pub export fn fnZip(unusedButMandatoryParameter: u16) callconv(.c) void {
     var mask: u64 = 1;
     var shift: u8 = 0;
     var index: u8 = 0;
-    const halfWord = @divFloor(runtime.shortIntegerWordSize, 2);
+    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
 
-    while (index < halfWord) : (index += 1) {
+    while (index < half_word) : (index += 1) {
         result |= (x & mask) << @as(u6, @intCast(shift));
         shift += 1;
         result |= (y & mask) << @as(u6, @intCast(shift));
@@ -281,8 +281,8 @@ pub export fn fnZip(unusedButMandatoryParameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, @as(runtime.calcRegister_t, -1));
 }
 
-pub export fn fnUnzip(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnUnzip(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
 
     var a: u64 = undefined;
     var base: u32 = undefined;
@@ -296,9 +296,9 @@ pub export fn fnUnzip(unusedButMandatoryParameter: u16) callconv(.c) void {
     var mask: u64 = 1;
     var shift: u8 = 0;
     var index: u8 = 0;
-    const halfWord = @divFloor(runtime.shortIntegerWordSize, 2);
+    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
 
-    while (index < halfWord) : (index += 1) {
+    while (index < half_word) : (index += 1) {
         x |= (a & mask) >> @as(u6, @intCast(shift));
         shift += 1;
         mask <<= 1;

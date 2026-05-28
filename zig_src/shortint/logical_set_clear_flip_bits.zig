@@ -1,7 +1,7 @@
 const core = @import("shortint_core.zig");
 const runtime = @import("shortint_runtime.zig");
 
-fn getBitOperand(bit: u16, base: ?*u32, word: *u64, requireSaveLastX: bool) bool {
+fn getBitOperand(bit: u16, base: ?*u32, word: *u64, require_save_last_x: bool) bool {
     if (bit >= runtime.shortIntegerWordSize) {
         runtime.wordSizeError();
         return false;
@@ -10,7 +10,7 @@ fn getBitOperand(bit: u16, base: ?*u32, word: *u64, requireSaveLastX: bool) bool
     if (!runtime.getRegisterAsRawShortInt(runtime.REGISTER_X, word, base)) {
         return false;
     }
-    if (requireSaveLastX and !runtime.saveLastX()) {
+    if (require_save_last_x and !runtime.saveLastX()) {
         return false;
     }
     return true;

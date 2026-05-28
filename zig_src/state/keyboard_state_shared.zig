@@ -25,86 +25,86 @@ pub fn implementation(comptime runtime: type) type {
             return item >= runtime.ITM_a and item <= runtime.ITM_z;
         }
 
-        pub fn caseReplacements(lowerCaseSelected: runtime.bool_t, item: i16, itemOut: *i16) runtime.bool_t {
-            itemOut.* = item;
+        pub fn caseReplacements(lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
+            item_out.* = item;
 
-            if (lowerCaseSelected and itemIsUppercaseLetter(item)) {
-                itemOut.* = item + @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
+            if (lower_case_selected and itemIsUppercaseLetter(item)) {
+                item_out.* = item + @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
                 return true;
             }
 
-            if (!lowerCaseSelected and itemIsUppercaseLetter(item)) {
+            if (!lower_case_selected and itemIsUppercaseLetter(item)) {
                 return true;
             }
 
-            if (!lowerCaseSelected and itemIsLowercaseLetter(item)) {
-                itemOut.* = item - @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
+            if (!lower_case_selected and itemIsLowercaseLetter(item)) {
+                item_out.* = item - @as(i16, @intCast(runtime.ITM_a - runtime.ITM_A));
                 return true;
             }
 
-            if (lowerCaseSelected and itemIsLowercaseLetter(item)) {
+            if (lower_case_selected and itemIsLowercaseLetter(item)) {
                 return true;
             }
 
             return false;
         }
 
-        pub fn keyReplacements(item: i16, replacementItem: *i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) runtime.bool_t {
+        pub fn keyReplacements(item: i16, item1: *i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) runtime.bool_t {
             if (!(runtime.calcMode == runtime.CM_AIM or
                 runtime.calcMode == runtime.CM_EIM or
                 runtime.calcMode == runtime.CM_PEM or
                 (runtime.tam.mode != 0 and runtime.tam.alpha) or
                 (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0)))
             {
-                return replacementItem.* != 0;
+                return item1.* != 0;
             }
 
-            if (gShift) {
+            if (g_shift) {
                 switch (item) {
-                    runtime.ITM_sigma => replacementItem.* = runtime.ITM_SIGMA,
-                    runtime.ITM_delta => replacementItem.* = runtime.ITM_DELTA,
-                    runtime.ITM_NULL => replacementItem.* = runtime.ITM_SPACE,
+                    runtime.ITM_sigma => item1.* = runtime.ITM_SIGMA,
+                    runtime.ITM_delta => item1.* = runtime.ITM_DELTA,
+                    runtime.ITM_NULL => item1.* = runtime.ITM_SPACE,
                     else => {},
                 }
-            } else if (numlockEnabled) {
-                var normalizedItem = item;
+            } else if (numlock_enabled) {
+                var normalized_item = item;
                 if (item >= runtime.ITM_A + 26 and item <= runtime.ITM_Z + 26) {
-                    normalizedItem += 26;
+                    normalized_item += 26;
                 }
 
                 var index: usize = 15;
                 while (index < 37) : (index += 1) {
-                    const standardKey = runtime.kbdStdAt(index);
+                    const std_key = runtime.kbdStdAt(index);
 
-                    if (standardKey.primaryAim == runtime.ITM_EXIT1 or
-                        standardKey.primaryAim == runtime.ITM_UP1 or
-                        standardKey.primaryAim == runtime.ITM_DOWN1 or
-                        standardKey.primaryAim == runtime.ITM_BACKSPACE)
+                    if (std_key.primaryAim == runtime.ITM_EXIT1 or
+                        std_key.primaryAim == runtime.ITM_UP1 or
+                        std_key.primaryAim == runtime.ITM_DOWN1 or
+                        std_key.primaryAim == runtime.ITM_BACKSPACE)
                     {
                         continue;
                     }
 
-                    if (!fShift and normalizedItem == standardKey.primaryAim) {
-                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else standardKey;
-                        replacementItem.* = key.gShiftedAim;
+                    if (!f_shift and normalized_item == std_key.primaryAim) {
+                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else std_key;
+                        item1.* = key.gShiftedAim;
                         break;
                     }
 
-                    if (fShift and index >= 31 and normalizedItem == standardKey.gShiftedAim) {
-                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else standardKey;
-                        replacementItem.* = key.primaryAim;
+                    if (f_shift and index >= 31 and normalized_item == std_key.gShiftedAim) {
+                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else std_key;
+                        item1.* = key.primaryAim;
                         break;
                     }
                 }
             }
 
-            return replacementItem.* != 0;
+            return item1.* != 0;
         }
 
-        pub fn numlockReplacements(item: i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) u16 {
-            var replacementItem: i16 = 0;
-            if (keyReplacements(item, &replacementItem, numlockEnabled, fShift, gShift)) {
-                return runtime.maxAbs(replacementItem);
+        pub fn numlockReplacements(item: i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) u16 {
+            var item1: i16 = 0;
+            if (keyReplacements(item, &item1, numlock_enabled, f_shift, g_shift)) {
+                return runtime.maxAbs(item1);
             }
 
             return runtime.maxAbs(item);
@@ -156,16 +156,16 @@ pub fn implementation(comptime runtime: type) type {
             runtime.processKeyActionRetained(item);
         }
 
-        pub fn keyEnter(unusedButMandatoryParameter: u16) void {
-            runtime.keyEnterRetained(unusedButMandatoryParameter);
+        pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
+            runtime.keyEnterRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyExit(unusedButMandatoryParameter: u16) void {
-            runtime.keyExitRetained(unusedButMandatoryParameter);
+        pub fn keyExit(unused_but_mandatory_parameter: u16) void {
+            runtime.keyExitRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyCC(complexType: u16) void {
-            if (runtime.calcMode == runtime.CM_NIM and complexType != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
+        pub fn keyCC(complex_type: u16) void {
+            if (runtime.calcMode == runtime.CM_NIM and complex_type != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
                 runtime.addItemToNimBuffer(runtime.ITM_CC);
                 return;
             }
@@ -180,21 +180,21 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_LISTXY,
                 runtime.CM_GRAPH,
                 => return,
-                else => runtime.keyCCRetained(complexType),
+                else => runtime.keyCCRetained(complex_type),
             }
         }
 
-        pub fn keyBackspace(unusedButMandatoryParameter: u16) void {
+        pub fn keyBackspace(unused_but_mandatory_parameter: u16) void {
             if (runtime.tam.mode == 0 and runtime.calcMode == runtime.CM_NIM) {
                 runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE_ITEM);
                 runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
                 return;
             }
 
-            runtime.keyBackspaceRetained(unusedButMandatoryParameter);
+            runtime.keyBackspaceRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyUp(unusedButMandatoryParameter: u16) void {
+        pub fn keyUp(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr +%= 1;
@@ -208,10 +208,10 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.keyUpRetained(unusedButMandatoryParameter);
+            runtime.keyUpRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyDown(unusedButMandatoryParameter: u16) void {
+        pub fn keyDown(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr -%= 1;
@@ -225,10 +225,10 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.keyDownRetained(unusedButMandatoryParameter);
+            runtime.keyDownRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyDotD(unusedButMandatoryParameter: u16) void {
+        pub fn keyDotD(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_NORMAL => {
                     const flag = if (runtime.getSystemFlag(runtime.FLAG_IRFRQ)) runtime.FLAG_IRFRAC else runtime.FLAG_FRACT;
@@ -254,7 +254,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_TIMER,
                 runtime.CM_LISTXY,
                 => return,
-                else => runtime.keyDotDRetained(unusedButMandatoryParameter),
+                else => runtime.keyDotDRetained(unused_but_mandatory_parameter),
             }
         }
     };
