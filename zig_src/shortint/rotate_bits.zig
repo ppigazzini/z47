@@ -188,10 +188,10 @@ pub export fn fnMirror(unusedButMandatoryParameter: u16) callconv(.c) void {
     var result: u64 = 0;
     var index: u8 = 0;
     while (index < runtime.shortIntegerWordSize) : (index += 1) {
-        const src_shift: u6 = @intCast(index);
-        if ((word & (@as(u64, 1) << src_shift)) != 0) {
-            const dst_shift: u6 = @intCast(runtime.shortIntegerWordSize - index - 1);
-            result |= @as(u64, 1) << dst_shift;
+        const srcShift: u6 = @intCast(index);
+        if ((word & (@as(u64, 1) << srcShift)) != 0) {
+            const dstShift: u6 = @intCast(runtime.shortIntegerWordSize - index - 1);
+            result |= @as(u64, 1) << dstShift;
         }
     }
 
