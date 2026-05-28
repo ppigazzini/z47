@@ -24,8 +24,8 @@ zig_build/tools/generate_testpgms.zig
 zig_src/leaf/shortint_runtime.zig
 zig_src/leaf/constants_runtime.zig
 zig_src/mathematics/math_command_wrappers_runtime.zig
-zig_src/root/frontier.zig
-zig_src/root/frontier_runtime.zig
+zig_src/frontier/frontier.zig
+zig_src/frontier/frontier_runtime.zig
 zig_src/solver/solve_runtime.zig
 zig_src/ui/tone_runtime.zig
 zig_src/state/calc_state_runtime.zig
