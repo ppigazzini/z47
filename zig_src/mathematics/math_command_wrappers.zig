@@ -5910,80 +5910,80 @@ fn compareScalarRegister(regist: runtime.calcRegister_t, mode: u8) void {
     }
 }
 
-pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
-    var tol: runtime.real_t = undefined;
-    var is_complex = false;
+pub export fn fnIsConverged(convergenceMode: u16) callconv(.c) void {
+    var xReal: runtime.real_t = undefined;
+    var xImag: runtime.real_t = undefined;
+    var yReal: runtime.real_t = undefined;
+    var yImag: runtime.real_t = undefined;
+    var tolerance: runtime.real_t = undefined;
+    var isComplex = false;
 
-    runtime.convergenceTolerence(&tol);
-    if (!getConvergenceInput(runtime.REGISTER_X, &x_real, &x_imag, &is_complex) or !getConvergenceInput(runtime.REGISTER_Y, &y_real, &y_imag, &is_complex)) {
+    runtime.convergenceTolerence(&tolerance);
+    if (!getConvergenceInput(runtime.REGISTER_X, &xReal, &xImag, &isComplex) or !getConvergenceInput(runtime.REGISTER_Y, &yReal, &yImag, &isComplex)) {
         compareTypeErrorX();
         return;
     }
 
-    if (runtime.realIsNaN(&x_real) or runtime.realIsNaN(&y_real) or runtime.realIsNaN(&x_imag) or runtime.realIsNaN(&y_imag)) {
-        runtime.setTemporaryInformation((unused_but_mandatory_parameter & 0x4) != 0);
-    } else if (runtime.realIsInfinite(&x_real) or runtime.realIsInfinite(&y_real) or runtime.realIsInfinite(&x_imag) or runtime.realIsInfinite(&y_imag)) {
-        runtime.setTemporaryInformation((unused_but_mandatory_parameter & 0x2) != 0);
-    } else if ((unused_but_mandatory_parameter & 0x1) != 0) {
+    if (runtime.realIsNaN(&xReal) or runtime.realIsNaN(&yReal) or runtime.realIsNaN(&xImag) or runtime.realIsNaN(&yImag)) {
+        runtime.setTemporaryInformation((convergenceMode & 0x4) != 0);
+    } else if (runtime.realIsInfinite(&xReal) or runtime.realIsInfinite(&yReal) or runtime.realIsInfinite(&xImag) or runtime.realIsInfinite(&yImag)) {
+        runtime.setTemporaryInformation((convergenceMode & 0x2) != 0);
+    } else if ((convergenceMode & 0x1) != 0) {
         runtime.setTemporaryInformation(
-            if (is_complex)
-                runtime.WP34S_ComplexAbsError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
+            if (isComplex)
+                runtime.WP34S_ComplexAbsError(&xReal, &xImag, &yReal, &yImag, &tolerance, &runtime.ctxtReal39)
             else
-                runtime.WP34S_AbsoluteError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
+                runtime.WP34S_AbsoluteError(&xReal, &yReal, &tolerance, &runtime.ctxtReal39),
         );
     } else {
         runtime.setTemporaryInformation(
-            if (is_complex)
-                runtime.WP34S_ComplexRelativeError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
+            if (isComplex)
+                runtime.WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tolerance, &runtime.ctxtReal39)
             else
-                runtime.WP34S_RelativeError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
+                runtime.WP34S_RelativeError(&xReal, &yReal, &tolerance, &runtime.ctxtReal39),
         );
     }
 }
 
-pub export fn fnCheckType(type_: u16) callconv(.c) void {
-    runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == type_);
+pub export fn fnCheckType(dataType: u16) callconv(.c) void {
+    runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == dataType);
 }
 
-pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckReal(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    runtime.setTemporaryInformation(register_data_type <= runtime.dtDate or register_data_type == runtime.dtShortInteger);
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
+    runtime.setTemporaryInformation(registerDataType <= runtime.dtDate or registerDataType == runtime.dtShortInteger);
 }
 
-pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckNumber(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    const is_number = switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+    const isNumber = switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
         runtime.dtLongInteger, runtime.dtShortInteger => true,
         runtime.dtComplex34 => blk: {
-            const imag_is_number = !(runtime.real34IsNaN(runtime.registerImag34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerImag34Ptr(runtime.REGISTER_X)));
-            const real_is_number = !(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
-            break :blk imag_is_number and real_is_number;
+            const imagIsNumber = !(runtime.real34IsNaN(runtime.registerImag34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerImag34Ptr(runtime.REGISTER_X)));
+            const realIsNumber = !(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X)));
+            break :blk imagIsNumber and realIsNumber;
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => !(runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) or runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))),
         else => false,
     };
 
-    runtime.setTemporaryInformation(is_number);
+    runtime.setTemporaryInformation(isNumber);
 }
 
-pub export fn fnCheckAngle(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckAngle(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34 and runtime.getRegisterAngularMode(runtime.REGISTER_X) != runtime.amNone);
 }
 
-pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckMatrix(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    runtime.setTemporaryInformation(register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix);
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
+    runtime.setTemporaryInformation(registerDataType == runtime.dtReal34Matrix or registerDataType == runtime.dtComplex34Matrix);
 }
 
 fn compareTypeErrorX() void {
@@ -5991,12 +5991,12 @@ fn compareTypeErrorX() void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
 }
 
-pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckMatrixSquare(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+    if (registerDataType == runtime.dtReal34Matrix or registerDataType == runtime.dtComplex34Matrix) {
         const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
         runtime.setTemporaryInformation(header.matrixRows == header.matrixColumns);
         return;
@@ -6062,16 +6062,16 @@ fn tryCheckRealMatrixVector(dimension: u16) bool {
     return true;
 }
 
-pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckIsVect2d(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!tryCheckRealMatrixVector(2)) {
         compareTypeErrorX();
     }
 }
 
-pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCheckIsVect3d(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!tryCheckRealMatrixVector(3)) {
         compareTypeErrorX();
