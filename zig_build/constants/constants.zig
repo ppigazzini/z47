@@ -32,7 +32,7 @@ fn addRuntimeObject(
     return b.addObject(.{
         .name = b.fmt("{s}-constants", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/leaf/constants.zig"),
+            .root_source_file = b.path("zig_src/constants/constants.zig"),
             .target = target,
             .optimize = optimize,
             .strip = options.strip,
