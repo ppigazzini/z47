@@ -113,57 +113,57 @@ pub export fn z47_math_wrappers_bounded_rand(s: u32) callconv(.c) u32 {
 }
 
 pub export fn realRandomU01(res: *runtime.real_t) callconv(.c) void {
-    var t: runtime.real_t = undefined;
+    var temp: runtime.real_t = undefined;
 
     runtime.uInt32ToReal(boundedRand(100000000), res);
 
-    runtime.uInt32ToReal(boundedRand(100000000), &t);
+    runtime.uInt32ToReal(boundedRand(100000000), &temp);
     res.exponent += 8;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &temp, res, &runtime.ctxtReal39);
 
-    runtime.uInt32ToReal(boundedRand(1000000000), &t);
+    runtime.uInt32ToReal(boundedRand(1000000000), &temp);
     res.exponent += 9;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &temp, res, &runtime.ctxtReal39);
 
-    runtime.uInt32ToReal(boundedRand(1000000000), &t);
+    runtime.uInt32ToReal(boundedRand(1000000000), &temp);
     res.exponent += 9;
-    runtime.realAdd(res, &t, res, &runtime.ctxtReal39);
+    runtime.realAdd(res, &temp, res, &runtime.ctxtReal39);
 
     res.exponent -= 34;
 }
 
 fn doRealRandomI() callconv(.c) void {
-    var reg_x: runtime.real_t = undefined;
-    var reg_y: runtime.real_t = undefined;
+    var regX: runtime.real_t = undefined;
+    var regY: runtime.real_t = undefined;
     var difference: runtime.real_t = undefined;
     var unit: runtime.real_t = undefined;
     var lower: *runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &reg_x) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &reg_y)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &regX) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &regY)) {
         return;
     }
 
-    runtime.realSubtract(&reg_x, &reg_y, &difference, &runtime.ctxtReal39);
+    runtime.realSubtract(&regX, &regY, &difference, &runtime.ctxtReal39);
     if (runtime.realIsZero(&difference)) {
-        runtime.convertRealToResultRegister(&reg_x, runtime.REGISTER_X, runtime.amNone);
+        runtime.convertRealToResultRegister(&regX, runtime.REGISTER_X, runtime.amNone);
         return;
     }
 
     if (runtime.realIsNegative(&difference)) {
         runtime.realChangeSign(&difference);
-        lower = &reg_x;
+        lower = &regX;
     } else {
-        lower = &reg_y;
+        lower = &regY;
     }
 
     realRandomU01(&unit);
-    runtime.realFMA(&unit, &difference, lower, &reg_x, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&reg_x, runtime.REGISTER_X, runtime.amNone);
+    runtime.realFMA(&unit, &difference, lower, &regX, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&regX, runtime.REGISTER_X, runtime.amNone);
 }
 
-fn readSeedWord(lsu_bytes: *const [50]u8, offset: usize) u64 {
-    const word_bytes: *const [8]u8 = @ptrCast(&lsu_bytes[offset]);
-    return std.mem.readInt(u64, word_bytes, .native);
+fn readSeedWord(lsuBytes: *const [50]u8, offset: usize) u64 {
+    const wordBytes: *const [8]u8 = @ptrCast(&lsuBytes[offset]);
+    return std.mem.readInt(u64, wordBytes, .native);
 }
 
 pub export fn sinComplex(
