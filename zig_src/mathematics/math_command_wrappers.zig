@@ -3427,29 +3427,29 @@ pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 fn doIntRandomI() callconv(.c) void {
-    const range_limit: u32 = 0xFFFFFFFE;
+    const rangeLimit: u32 = 0xFFFFFFFE;
 
     var x: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
-    var frac_x = false;
-    var frac_y = false;
+    var fracX = false;
+    var fracY = false;
 
     runtime.saveForUndo();
     runtime.thereIsSomethingToUndo = true;
 
-    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &fracX)) {
         return;
     }
     defer runtime.__gmpz_clear(&x[0]);
-    if (frac_x) {
+    if (fracX) {
         return;
     }
 
-    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &fracY)) {
         return;
     }
     defer runtime.__gmpz_clear(&y[0]);
-    if (frac_y) {
+    if (fracY) {
         return;
     }
 
@@ -3460,28 +3460,28 @@ fn doIntRandomI() callconv(.c) void {
         return;
     }
 
-    const min_value = if (cmp < 0) &x[0] else &y[0];
-    const max_value = if (cmp < 0) &y[0] else &x[0];
+    const minValue = if (cmp < 0) &x[0] else &y[0];
+    const maxValue = if (cmp < 0) &y[0] else &x[0];
 
     var range: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&range[0]);
     defer runtime.__gmpz_clear(&range[0]);
-    runtime.__gmpz_sub(&range[0], max_value, min_value);
+    runtime.__gmpz_sub(&range[0], maxValue, minValue);
 
-    if (runtime.__gmpz_cmp_ui(&range[0], range_limit) >= 0) {
+    if (runtime.__gmpz_cmp_ui(&range[0], rangeLimit) >= 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function doIntRandomI:", "cannot RANI# with |X - Y| >= 2^32", null, null);
         runtime.fnUndo(0);
         return;
     }
 
-    var max_rand: u32 = @intCast(runtime.__gmpz_get_ui(&range[0]));
-    max_rand = boundedRand(max_rand + 1);
+    var maxRand: u32 = @intCast(runtime.__gmpz_get_ui(&range[0]));
+    maxRand = boundedRand(maxRand + 1);
 
     var result: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&result[0]);
     defer runtime.__gmpz_clear(&result[0]);
-    runtime.__gmpz_add_ui(&result[0], min_value, max_rand);
+    runtime.__gmpz_add_ui(&result[0], minValue, maxRand);
 
     runtime.convertLongIntegerToLongIntegerRegister(&result[0], runtime.REGISTER_X);
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
