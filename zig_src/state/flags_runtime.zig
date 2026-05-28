@@ -134,39 +134,35 @@ extern fn z47_flags_retained_setSystemFlagChanged(sf: i32) void;
 extern fn z47_flags_retained_setAllSystemFlagChanged() void;
 extern fn z47_flags_retained_forceSystemFlag(sf: u32, set: i32) void;
 
-pub fn retainedSetSystemFlag(sf: u32) void {
+pub fn setSystemFlagRetained(sf: u32) void {
     z47_flags_retained_setSystemFlag(sf);
 }
 
-pub fn retainedClearSystemFlag(sf: u32) void {
+pub fn clearSystemFlagRetained(sf: u32) void {
     z47_flags_retained_clearSystemFlag(sf);
 }
 
-pub fn retainedFlipSystemFlag(sf: u32) void {
+pub fn flipSystemFlagRetained(sf: u32) void {
     z47_flags_retained_flipSystemFlag(sf);
 }
 
-pub fn retainedGetSystemFlag(sf: i32) bool {
+pub fn getSystemFlagRetained(sf: i32) bool {
     return z47_flags_retained_getSystemFlag(sf);
 }
 
-pub fn retainedGetFlag(flag: u16) bool {
-    return z47_flags_retained_getFlag(flag);
-}
-
-pub fn retainedDidSystemFlagChange(sf: i32) bool {
+pub fn didSystemFlagChangeRetained(sf: i32) bool {
     return z47_flags_retained_didSystemFlagChange(sf);
 }
 
-pub fn retainedSetSystemFlagChanged(sf: i32) void {
+pub fn setSystemFlagChangedRetained(sf: i32) void {
     z47_flags_retained_setSystemFlagChanged(sf);
 }
 
-pub fn retainedSetAllSystemFlagChanged() void {
+pub fn setAllSystemFlagChangedRetained() void {
     z47_flags_retained_setAllSystemFlagChanged();
 }
 
-pub fn retainedForceSystemFlag(sf: u32, set: i32) void {
+pub fn forceSystemFlagRetained(sf: u32, set: i32) void {
     z47_flags_retained_forceSystemFlag(sf, set);
 }
 
