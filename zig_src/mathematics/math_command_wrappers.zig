@@ -53,15 +53,15 @@ const doubleMultiplyRetained = runtime.retained.z47_math_wrappers_retained_fnDbl
 const roundRetained = runtime.retained.z47_math_wrappers_retained_fnRound;
 const z47_math_wrappers_retained_fnDecomp = runtime.retained.z47_math_wrappers_retained_fnDecomp;
 const z47_math_wrappers_retained_fnCheckInteger = runtime.retained.z47_math_wrappers_retained_fnCheckInteger;
-const z47_math_wrappers_retained_fnDec = runtime.retained.z47_math_wrappers_retained_fnDec;
-const z47_math_wrappers_retained_fnInc = runtime.retained.z47_math_wrappers_retained_fnInc;
-const z47_math_wrappers_retained_fnXLessThan = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
-const z47_math_wrappers_retained_fnXLessEqual = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
-const z47_math_wrappers_retained_fnXGreaterThan = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
-const z47_math_wrappers_retained_fnXGreaterEqual = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
-const z47_math_wrappers_retained_fnXEqualsTo = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
-const z47_math_wrappers_retained_fnXNotEqual = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
-const z47_math_wrappers_retained_fnXAlmostEqual = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
+const decrementRetained = runtime.retained.z47_math_wrappers_retained_fnDec;
+const incrementRetained = runtime.retained.z47_math_wrappers_retained_fnInc;
+const compareLessThanRetained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
+const compareLessEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
+const compareGreaterThanRetained = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
+const compareGreaterEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
+const compareEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
+const compareNotEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
+const compareAlmostEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
 const z47_math_wrappers_retained_fnIsConverged = runtime.retained.z47_math_wrappers_retained_fnIsConverged;
 const z47_math_wrappers_retained_fnCheckType = runtime.retained.z47_math_wrappers_retained_fnCheckType;
 const z47_math_wrappers_retained_fnCheckReal = runtime.retained.z47_math_wrappers_retained_fnCheckReal;
@@ -5698,7 +5698,7 @@ pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter);
+        decrementRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5707,7 +5707,7 @@ pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter);
+        incrementRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5718,7 +5718,7 @@ pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXLessThan(unused_but_mandatory_parameter);
+        compareLessThanRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5729,7 +5729,7 @@ pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) voi
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXLessEqual(unused_but_mandatory_parameter);
+        compareLessEqualRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5740,7 +5740,7 @@ pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) v
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXGreaterThan(unused_but_mandatory_parameter);
+        compareGreaterThanRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5751,7 +5751,7 @@ pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) 
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXGreaterEqual(unused_but_mandatory_parameter);
+        compareGreaterEqualRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5762,7 +5762,7 @@ pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXEqualsTo(unused_but_mandatory_parameter);
+        compareEqualRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5773,7 +5773,7 @@ pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        z47_math_wrappers_retained_fnXNotEqual(unused_but_mandatory_parameter);
+        compareNotEqualRetained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5786,7 +5786,7 @@ pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) v
     const regist_type = runtime.getRegisterDataType(regist);
 
     if (!isOwnedCompareRegister(regist) or !isOwnedAlmostEqualIntegerType(x_type) or !isOwnedAlmostEqualIntegerType(regist_type)) {
-        z47_math_wrappers_retained_fnXAlmostEqual(unused_but_mandatory_parameter);
+        compareAlmostEqualRetained(unused_but_mandatory_parameter);
         return;
     }
 
