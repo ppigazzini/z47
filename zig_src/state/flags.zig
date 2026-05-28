@@ -12,21 +12,21 @@ const FlagAction = enum(u2) {
 };
 
 const ClearSetPair = struct {
-    clear_config: u16,
-    set_config: u16,
+    clearConfig: u16,
+    setConfig: u16,
     flag: u16,
 };
 
-const clear_set_pairs = [_]ClearSetPair{
-    .{ .clear_config = runtime.TF_H12, .set_config = runtime.TF_H24, .flag = runtime.FLAG_TDM24 },
-    .{ .clear_config = runtime.CU_I, .set_config = runtime.CU_J, .flag = runtime.FLAG_CPXj },
-    .{ .clear_config = runtime.PS_DOT, .set_config = runtime.PS_CROSS, .flag = runtime.FLAG_MULTx },
-    .{ .clear_config = runtime.SS_4, .set_config = runtime.SS_8, .flag = runtime.FLAG_SSIZE8 },
-    .{ .clear_config = runtime.CM_RECTANGULAR, .set_config = runtime.CM_POLAR, .flag = runtime.FLAG_POLAR },
-    .{ .clear_config = runtime.DO_SCI, .set_config = runtime.DO_ENG, .flag = runtime.FLAG_ENGOVR },
+const clearSetPairs = [_]ClearSetPair{
+    .{ .clearConfig = runtime.TF_H12, .setConfig = runtime.TF_H24, .flag = runtime.FLAG_TDM24 },
+    .{ .clearConfig = runtime.CU_I, .setConfig = runtime.CU_J, .flag = runtime.FLAG_CPXj },
+    .{ .clearConfig = runtime.PS_DOT, .setConfig = runtime.PS_CROSS, .flag = runtime.FLAG_MULTx },
+    .{ .clearConfig = runtime.SS_4, .setConfig = runtime.SS_8, .flag = runtime.FLAG_SSIZE8 },
+    .{ .clearConfig = runtime.CM_RECTANGULAR, .setConfig = runtime.CM_POLAR, .flag = runtime.FLAG_POLAR },
+    .{ .clearConfig = runtime.DO_SCI, .setConfig = runtime.DO_ENG, .flag = runtime.FLAG_ENGOVR },
 };
 
-const flip_flags = [_]u16{
+const flipFlags = [_]u16{
     runtime.FLAG_HPRP,
     runtime.FLAG_MNUp1,
     runtime.FLAG_HPBASE,
@@ -611,21 +611,21 @@ pub export fn fnIsFlagSetFlip(flag: u16) void {
 }
 
 pub export fn SetSetting(jm_config: u16) void {
-    for (clear_set_pairs) |pair| {
-        if (jm_config == pair.clear_config) {
+    for (clearSetPairs) |pair| {
+        if (jm_config == pair.clearConfig) {
             fnClearFlag(pair.flag);
             runtime.fnRefreshState();
             return;
         }
 
-        if (jm_config == pair.set_config) {
+        if (jm_config == pair.setConfig) {
             fnSetFlag(pair.flag);
             runtime.fnRefreshState();
             return;
         }
     }
 
-    for (flip_flags) |flag| {
+    for (flipFlags) |flag| {
         if (jm_config == flag) {
             fnFlipFlag(jm_config);
             runtime.fnRefreshState();
