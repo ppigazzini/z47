@@ -1,21 +1,21 @@
 const runtime = @import("shortint_runtime.zig");
 
-const long_integer_result_base: u32 = 10;
+const longIntegerResultBase: u32 = 10;
 
 fn logicalOpResult(res: bool, xtype: u32, ytype: u32) void {
     if (xtype == runtime.dtLongInteger and ytype == runtime.dtLongInteger) {
-        runtime.setRawShortIntegerRegister(runtime.REGISTER_X, long_integer_result_base, @as(u64, @intFromBool(res)));
+        runtime.setRawShortIntegerRegister(runtime.REGISTER_X, longIntegerResultBase, @as(u64, @intFromBool(res)));
         runtime.convertShortIntegerRegisterToLongIntegerRegister(runtime.REGISTER_X, runtime.REGISTER_X);
         return;
     }
 
-    var real_result = runtime.realFromBoolean(res);
-    var imag_result = runtime.zeroReal();
+    var realResult = runtime.realFromBoolean(res);
+    var imagResult = runtime.zeroReal();
 
     if (xtype == runtime.dtComplex34 or ytype == runtime.dtComplex34) {
-        runtime.convertComplexToResultRegister(&real_result, &imag_result, runtime.REGISTER_X);
+        runtime.convertComplexToResultRegister(&realResult, &imagResult, runtime.REGISTER_X);
     } else {
-        runtime.convertRealToResultRegister(&real_result, runtime.REGISTER_X, runtime.amNone);
+        runtime.convertRealToResultRegister(&realResult, runtime.REGISTER_X, runtime.amNone);
     }
 }
 
@@ -33,8 +33,8 @@ fn dyadicLogicalOp(table: [4]u8) void {
 
     const x = !runtime.isRealZero(&xr) or !runtime.isRealZero(&xc);
     const y = !runtime.isRealZero(&yr) or !runtime.isRealZero(&yc);
-    const table_index: usize = @intFromBool(x) + 2 * @as(usize, @intFromBool(y));
-    const res = table[table_index] != 0;
+    const tableIndex: usize = @intFromBool(x) + 2 * @as(usize, @intFromBool(y));
+    const res = table[tableIndex] != 0;
 
     logicalOpResult(res, runtime.getRegisterDataType(runtime.REGISTER_X), runtime.getRegisterDataType(runtime.REGISTER_Y));
 }
