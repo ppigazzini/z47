@@ -164,8 +164,8 @@ pub fn implementation(comptime runtime: type) type {
             runtime.keyExitRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn keyCC(complex_type: u16) void {
-            if (runtime.calcMode == runtime.CM_NIM and complex_type != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
+        pub fn keyCC(complexType: u16) void {
+            if (runtime.calcMode == runtime.CM_NIM and complexType != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
                 runtime.addItemToNimBuffer(runtime.ITM_CC);
                 return;
             }
@@ -180,7 +180,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_LISTXY,
                 runtime.CM_GRAPH,
                 => return,
-                else => runtime.keyCCRetained(complex_type),
+                else => runtime.keyCCRetained(complexType),
             }
         }
 
