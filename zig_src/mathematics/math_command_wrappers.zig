@@ -19,12 +19,6 @@ const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
-const z47_math_wrappers_retained_fnBn = runtime.retained.z47_math_wrappers_retained_fnBn;
-const z47_math_wrappers_retained_fnBnStar = runtime.retained.z47_math_wrappers_retained_fnBnStar;
-const z47_math_wrappers_retained_fnExpt = runtime.retained.z47_math_wrappers_retained_fnExpt;
-const z47_math_wrappers_retained_fnWpositive = runtime.retained.z47_math_wrappers_retained_fnWpositive;
-const z47_math_wrappers_retained_fnWnegative = runtime.retained.z47_math_wrappers_retained_fnWnegative;
-const z47_math_wrappers_retained_fnWinverse = runtime.retained.z47_math_wrappers_retained_fnWinverse;
 const z47_math_wrappers_retained_fnGcd = runtime.retained.z47_math_wrappers_retained_fnGcd;
 const z47_math_wrappers_retained_fnLcm = runtime.retained.z47_math_wrappers_retained_fnLcm;
 const z47_math_wrappers_retained_fnMod = runtime.retained.z47_math_wrappers_retained_fnMod;
