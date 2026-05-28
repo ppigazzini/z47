@@ -202,7 +202,7 @@ fn byte(word: u64, shift: u6) u64 {
     return (word >> shift) & 0xff;
 }
 
-pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
+pub export fn fnSwapEndian(bitWidth: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
@@ -216,11 +216,11 @@ pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
     const b1 = byte(word, 8);
     const b0 = byte(word, 0);
 
-    if (bit_width == 8) {
+    if (bitWidth == 8) {
         if (runtime.shortIntegerWordSize < 16) {
             runtime.fnSetWordSize(16);
-        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
-            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
+        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bitWidth - 1))) != 0) {
+            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bitWidth - 1))) + 1);
         }
 
         switch (runtime.shortIntegerWordSize) {
@@ -233,11 +233,11 @@ pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
             64 => word = (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7,
             else => {},
         }
-    } else if (bit_width == 16) {
+    } else if (bitWidth == 16) {
         if (runtime.shortIntegerWordSize < 32) {
             runtime.fnSetWordSize(32);
-        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
-            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
+        } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bitWidth - 1))) != 0) {
+            runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bitWidth - 1))) + 1);
         }
 
         switch (runtime.shortIntegerWordSize) {
