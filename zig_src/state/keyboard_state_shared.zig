@@ -157,11 +157,11 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
-            runtime.fnKeyEnterRetained(unused_but_mandatory_parameter);
+            runtime.keyEnterRetained(unused_but_mandatory_parameter);
         }
 
         pub fn keyExit(unused_but_mandatory_parameter: u16) void {
-            runtime.fnKeyExitRetained(unused_but_mandatory_parameter);
+            runtime.keyExitRetained(unused_but_mandatory_parameter);
         }
 
         pub fn keyCC(complex_type: u16) void {
@@ -180,7 +180,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_LISTXY,
                 runtime.CM_GRAPH,
                 => return,
-                else => runtime.fnKeyCCRetained(complex_type),
+                else => runtime.keyCCRetained(complex_type),
             }
         }
 
@@ -191,7 +191,7 @@ pub fn implementation(comptime runtime: type) type {
                 return;
             }
 
-            runtime.fnKeyBackspaceRetained(unused_but_mandatory_parameter);
+            runtime.keyBackspaceRetained(unused_but_mandatory_parameter);
         }
 
         pub fn keyUp(unused_but_mandatory_parameter: u16) void {
@@ -208,7 +208,7 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.fnKeyUpRetained(unused_but_mandatory_parameter);
+            runtime.keyUpRetained(unused_but_mandatory_parameter);
         }
 
         pub fn keyDown(unused_but_mandatory_parameter: u16) void {
@@ -225,7 +225,7 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.fnKeyDownRetained(unused_but_mandatory_parameter);
+            runtime.keyDownRetained(unused_but_mandatory_parameter);
         }
 
         pub fn keyDotD(unused_but_mandatory_parameter: u16) void {
@@ -254,7 +254,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_TIMER,
                 runtime.CM_LISTXY,
                 => return,
-                else => runtime.fnKeyDotDRetained(unused_but_mandatory_parameter),
+                else => runtime.keyDotDRetained(unused_but_mandatory_parameter),
             }
         }
     };
