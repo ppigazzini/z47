@@ -16,7 +16,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 
 const no_register = @as(runtime.calcRegister_t, -1);
 const BranchFn = *const fn () callconv(.c) void;
-const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
+const PowRealFn = *const fn (x: *const runtime.real_t, result: *runtime.real_t, realContext: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
 const atan2Retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
@@ -405,66 +405,66 @@ pub export fn realExpLimitCheck(
 pub export fn realExp(
     x: *const runtime.real_t,
     result: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
     if (realExpLimitCheck(x, result, runtime.z47_math_wrappers_const_0())) {
-        _ = runtime.decNumberExp(result, x, real_context);
+        _ = runtime.decNumberExp(result, x, realContext);
     }
 }
 
 pub export fn expComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realPart: *const runtime.real_t,
+    imagPart: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    var exp_real: runtime.real_t = undefined;
-    var sin_value: runtime.real_t = undefined;
-    var cos_value: runtime.real_t = undefined;
+    var expValue: runtime.real_t = undefined;
+    var sinValue: runtime.real_t = undefined;
+    var cosValue: runtime.real_t = undefined;
 
-    if (runtime.realIsZero(imag)) {
-        realExp(real, res_real, real_context);
-        runtime.realSetZero(res_imag);
+    if (runtime.realIsZero(imagPart)) {
+        realExp(realPart, resultReal, realContext);
+        runtime.realSetZero(resultImag);
         return;
     }
 
-    if (runtime.realIsSpecial(real) or runtime.realIsSpecial(imag)) {
-        runtime.realSetNaN(res_real);
-        runtime.realSetNaN(res_imag);
+    if (runtime.realIsSpecial(realPart) or runtime.realIsSpecial(imagPart)) {
+        runtime.realSetNaN(resultReal);
+        runtime.realSetNaN(resultImag);
         return;
     }
 
-    realExp(real, &exp_real, real_context);
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(imag, runtime.amRadian, &sin_value, &cos_value, null, real_context);
-    runtime.realMultiply(&exp_real, &cos_value, res_real, real_context);
-    runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
+    realExp(realPart, &expValue, realContext);
+    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(imagPart, runtime.amRadian, &sinValue, &cosValue, null, realContext);
+    runtime.realMultiply(&expValue, &cosValue, resultReal, realContext);
+    runtime.realMultiply(&expValue, &sinValue, resultImag, realContext);
 }
 
 pub export fn realExpM1(
     x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.WP34S_ExpM1(x, res, real_context);
+    runtime.WP34S_ExpM1(x, result, realContext);
 }
 
 pub export fn realLog10(
     x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    wp34sLn(x, res, real_context);
-    runtime.realDivide(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
+    wp34sLn(x, result, realContext);
+    runtime.realDivide(result, runtime.z47_math_wrappers_const_ln10(), result, realContext);
 }
 
 fn wp34sLn(
-    x_in: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    xValue: *const runtime.real_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
     if (build_options.use_fake_wp34s_model) {
-        runtime.WP34S_Ln(x_in, res, real_context);
+        runtime.WP34S_Ln(xValue, result, realContext);
         return;
     }
 
@@ -477,173 +477,173 @@ fn wp34sLn(
     var v: runtime.real_t = undefined;
     var w: runtime.real_t = undefined;
     var e: runtime.real_t = undefined;
-    var root2on2: runtime.real_t = undefined;
-    var exponent_adjust: i32 = 0;
+    var root2Over2: runtime.real_t = undefined;
+    var exponentAdjust: i32 = 0;
 
-    if (runtime.realIsSpecial(x_in)) {
-        if (runtime.realIsNaN(x_in) or runtime.realIsNegative(x_in)) {
-            runtime.realSetNaN(res);
+    if (runtime.realIsSpecial(xValue)) {
+        if (runtime.realIsNaN(xValue) or runtime.realIsNegative(xValue)) {
+            runtime.realSetNaN(result);
         } else {
-            copyReal(res, runtime.z47_math_wrappers_const_plus_infinity());
+            copyReal(result, runtime.z47_math_wrappers_const_plus_infinity());
         }
         return;
     }
 
-    if (realCompareLessEqual(x_in, runtime.z47_math_wrappers_const_0())) {
-        if (runtime.realIsNegative(x_in)) {
-            runtime.realSetNaN(res);
+    if (realCompareLessEqual(xValue, runtime.z47_math_wrappers_const_0())) {
+        if (runtime.realIsNegative(xValue)) {
+            runtime.realSetNaN(result);
         } else {
-            copyReal(res, runtime.z47_math_wrappers_const_minus_infinity());
+            copyReal(result, runtime.z47_math_wrappers_const_minus_infinity());
         }
         return;
     }
 
-    copyReal(&z, x_in);
+    copyReal(&z, xValue);
     copyReal(&f, runtime.z47_math_wrappers_const_2());
-    runtime.realSubtract(x_in, runtime.z47_math_wrappers_const_1(), &t, real_context);
+    runtime.realSubtract(xValue, runtime.z47_math_wrappers_const_1(), &t, realContext);
     copyReal(&v, &t);
     runtime.realSetPositiveSign(&v);
 
     if (realCompareGreaterThan(&v, runtime.z47_math_wrappers_const_1on2())) {
-        exponent_adjust = z.exponent + z.digits;
+        exponentAdjust = z.exponent + z.digits;
         z.exponent = -z.digits;
     }
 
-    copyReal(&root2on2, runtime.z47_math_wrappers_const_1on2());
-    runtime.realSquareRoot(&root2on2, &root2on2, real_context);
+    copyReal(&root2Over2, runtime.z47_math_wrappers_const_1on2());
+    runtime.realSquareRoot(&root2Over2, &root2Over2, realContext);
 
-    while (realCompareLessEqual(&z, &root2on2)) {
-        runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, real_context);
-        runtime.realSquareRoot(&z, &z, real_context);
+    while (realCompareLessEqual(&z, &root2Over2)) {
+        runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, realContext);
+        runtime.realSquareRoot(&z, &z, realContext);
     }
 
-    runtime.realAdd(&z, runtime.z47_math_wrappers_const_1(), &t, real_context);
-    runtime.realSubtract(&z, runtime.z47_math_wrappers_const_1(), &v, real_context);
-    runtime.realDivide(&v, &t, &n, real_context);
+    runtime.realAdd(&z, runtime.z47_math_wrappers_const_1(), &t, realContext);
+    runtime.realSubtract(&z, runtime.z47_math_wrappers_const_1(), &v, realContext);
+    runtime.realDivide(&v, &t, &n, realContext);
     copyReal(&v, &n);
-    runtime.realMultiply(&v, &v, &m, real_context);
+    runtime.realMultiply(&v, &v, &m, realContext);
     runtime.int32ToReal(3, &i);
 
-    runtime.int32ToReal(1 - real_context.digits, &t);
-    realPower10(&t, &z, real_context);
+    runtime.int32ToReal(1 - realContext.digits, &t);
+    realPower10(&t, &z, realContext);
 
     while (true) {
-        runtime.realMultiply(&m, &n, &n, real_context);
-        runtime.realDivide(&n, &i, &e, real_context);
-        runtime.realAdd(&v, &e, &w, real_context);
-        if (runtime.WP34S_RelativeError(&w, &v, &z, real_context)) {
+        runtime.realMultiply(&m, &n, &n, realContext);
+        runtime.realDivide(&n, &i, &e, realContext);
+        runtime.realAdd(&v, &e, &w, realContext);
+        if (runtime.WP34S_RelativeError(&w, &v, &z, realContext)) {
             break;
         }
         copyReal(&v, &w);
-        runtime.realAdd(&i, runtime.z47_math_wrappers_const_2(), &i, real_context);
+        runtime.realAdd(&i, runtime.z47_math_wrappers_const_2(), &i, realContext);
     }
 
-    runtime.realMultiply(&f, &w, res, real_context);
-    if (exponent_adjust == 0) {
+    runtime.realMultiply(&f, &w, result, realContext);
+    if (exponentAdjust == 0) {
         return;
     }
 
-    runtime.int32ToReal(exponent_adjust, &e);
-    runtime.realMultiply(&e, runtime.z47_math_wrappers_const_ln10(), &w, real_context);
-    runtime.realAdd(res, &w, res, real_context);
+    runtime.int32ToReal(exponentAdjust, &e);
+    runtime.realMultiply(&e, runtime.z47_math_wrappers_const_ln10(), &w, realContext);
+    runtime.realAdd(result, &w, result, realContext);
 }
 
 fn wp34sLog(
-    x_in: *const runtime.real_t,
-    base: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    xValue: *const runtime.real_t,
+    baseValue: *const runtime.real_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
     var y: runtime.real_t = undefined;
 
-    if (runtime.realIsSpecial(x_in)) {
-        if (runtime.realIsNaN(x_in) or runtime.realIsNegative(x_in)) {
-            runtime.realSetNaN(res);
+    if (runtime.realIsSpecial(xValue)) {
+        if (runtime.realIsNaN(xValue) or runtime.realIsNegative(xValue)) {
+            runtime.realSetNaN(result);
         } else {
-            copyReal(res, runtime.z47_math_wrappers_const_plus_infinity());
+            copyReal(result, runtime.z47_math_wrappers_const_plus_infinity());
         }
         return;
     }
 
-    wp34sLn(x_in, &y, real_context);
-    runtime.realDivide(&y, base, res, real_context);
+    wp34sLn(xValue, &y, realContext);
+    runtime.realDivide(&y, baseValue, result, realContext);
 }
 
 fn wp34sLogxy(
-    y_in: *const runtime.real_t,
-    x_in: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    yValue: *const runtime.real_t,
+    xValue: *const runtime.real_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
     if (build_options.use_fake_wp34s_model) {
-        runtime.WP34S_Logxy(y_in, x_in, res, real_context);
+        runtime.WP34S_Logxy(yValue, xValue, result, realContext);
         return;
     }
 
-    var ln_x: runtime.real_t = undefined;
+    var lnX: runtime.real_t = undefined;
 
-    wp34sLn(x_in, &ln_x, real_context);
-    wp34sLog(y_in, &ln_x, res, real_context);
+    wp34sLn(xValue, &lnX, realContext);
+    wp34sLog(yValue, &lnX, result, realContext);
 }
 
 fn expM1Complex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realPart: *const runtime.real_t,
+    imagPart: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
-    var z2_real: runtime.real_t = undefined;
-    var z2_imag: runtime.real_t = undefined;
-    var e_real: runtime.real_t = undefined;
-    var e_imag: runtime.real_t = undefined;
+    var halfReal: runtime.real_t = undefined;
+    var halfImag: runtime.real_t = undefined;
+    var expValueReal: runtime.real_t = undefined;
+    var expValueImag: runtime.real_t = undefined;
 
-    if (runtime.realIsZero(imag)) {
-        if (runtime.realIsInfinite(real) and runtime.realIsNegative(real)) {
-            copyReal(res_real, runtime.z47_math_wrappers_const_minus_1());
-            runtime.realSetZero(res_imag);
+    if (runtime.realIsZero(imagPart)) {
+        if (runtime.realIsInfinite(realPart) and runtime.realIsNegative(realPart)) {
+            copyReal(resultReal, runtime.z47_math_wrappers_const_minus_1());
+            runtime.realSetZero(resultImag);
             return;
         }
 
-        realExpM1(real, res_real, real_context);
-        runtime.realSetZero(res_imag);
+        realExpM1(realPart, resultReal, realContext);
+        runtime.realSetZero(resultImag);
         return;
     }
 
-    if (runtime.realIsSpecial(real) or runtime.realIsSpecial(imag)) {
-        runtime.realSetNaN(res_real);
-        runtime.realSetNaN(res_imag);
+    if (runtime.realIsSpecial(realPart) or runtime.realIsSpecial(imagPart)) {
+        runtime.realSetNaN(resultReal);
+        runtime.realSetNaN(resultImag);
         return;
     }
 
-    runtime.realMultiply(real, runtime.z47_math_wrappers_const_1on2(), &z2_real, real_context);
-    runtime.realMultiply(imag, runtime.z47_math_wrappers_const_1on2(), &z2_imag, real_context);
-    expComplex(&z2_real, &z2_imag, &e_real, &e_imag, real_context);
-    runtime.realChangeSign(&e_real);
-    runtime.realAdd(&e_real, &e_real, &e_real, real_context);
-    runtime.realAdd(&e_imag, &e_imag, &e_imag, real_context);
+    runtime.realMultiply(realPart, runtime.z47_math_wrappers_const_1on2(), &halfReal, realContext);
+    runtime.realMultiply(imagPart, runtime.z47_math_wrappers_const_1on2(), &halfImag, realContext);
+    expComplex(&halfReal, &halfImag, &expValueReal, &expValueImag, realContext);
+    runtime.realChangeSign(&expValueReal);
+    runtime.realAdd(&expValueReal, &expValueReal, &expValueReal, realContext);
+    runtime.realAdd(&expValueImag, &expValueImag, &expValueImag, realContext);
 
-    runtime.realChangeSign(&z2_imag);
-    sinComplex(&z2_imag, &z2_real, &z2_real, &z2_imag, real_context);
-    runtime.mulComplexComplex(&z2_real, &z2_imag, &e_imag, &e_real, res_real, res_imag, real_context);
+    runtime.realChangeSign(&halfImag);
+    sinComplex(&halfImag, &halfReal, &halfReal, &halfImag, realContext);
+    runtime.mulComplexComplex(&halfReal, &halfImag, &expValueImag, &expValueReal, resultReal, resultImag, realContext);
 }
 
 pub export fn realPower10(
     x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
-    realExp(res, res, real_context);
+    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), result, realContext);
+    realExp(result, result, realContext);
 }
 
 pub export fn realPower2(
     x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    result: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
-    realExp(res, res, real_context);
+    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), result, realContext);
+    realExp(result, result, realContext);
 }
 
 pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
@@ -662,7 +662,7 @@ pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
-pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
+pub export fn intPowCplx(lnBase: *const runtime.real_t) callconv(.c) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
     var factor: runtime.real_t = undefined;
@@ -671,8 +671,8 @@ pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
         return;
     }
 
-    runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
+    runtime.realMultiply(lnBase, &a, &a, &runtime.ctxtReal39);
+    runtime.realMultiply(lnBase, &b, &b, &runtime.ctxtReal39);
 
     realExp(&a, &factor, &runtime.ctxtReal39);
     runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
@@ -686,19 +686,19 @@ fn tenPowLonI() callconv(.c) void {
     smallBasePowerLonI(10, &tenPowReal);
 }
 
-fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn () callconv(.c) void) void {
+fn smallBasePowerLonI(baseValue: c_ulong, negativeExponentCallback: *const fn () callconv(.c) void) void {
     var exponent: runtime.longInteger_t = undefined;
     var base: runtime.longInteger_t = undefined;
     var power: runtime.longInteger_t = undefined;
-    var exponent_sign: i32 = 0;
+    var exponentSign: i32 = 0;
 
     runtime.__gmpz_init(&base[0]);
-    runtime.__gmpz_set_ui(&base[0], base_value);
+    runtime.__gmpz_set_ui(&base[0], baseValue);
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &exponent[0]);
     if (exponent[0]._mp_size < 0) {
-        exponent_sign = -1;
+        exponentSign = -1;
     } else if (exponent[0]._mp_size > 0) {
-        exponent_sign = 1;
+        exponentSign = 1;
     }
     defer runtime.__gmpz_clear(&base[0]);
     defer runtime.__gmpz_clear(&exponent[0]);
@@ -711,8 +711,8 @@ fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn
         return;
     }
 
-    if (exponent_sign < 0) {
-        negative_exponent_callback();
+    if (exponentSign < 0) {
+        negativeExponentCallback();
         return;
     }
 
