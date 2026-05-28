@@ -11,17 +11,17 @@ const invalid_data_type: u32 = 31;
 const validateNameMaxGlyphs: usize = 7;
 const glyph_A: u16 = 0x41;
 const glyph_Z: u16 = 0x5a;
-const glyph_a: u16 = 0x61;
-const glyph_z: u16 = 0x7a;
+const glyphA: u16 = 0x61;
+const glyphZ: u16 = 0x7a;
 const glyph_A_grave: u16 = 0x00c0;
-const glyph_cross: u16 = 0x00d7;
-const glyph_divide: u16 = 0x00f7;
-const glyph_z_caron: u16 = 0x017e;
-const glyph_iota_dialytika_tonos: u16 = 0x0390;
-const glyph_sampi: u16 = 0x03e1;
-const glyph_sub_alpha: u16 = 0x2296;
-const glyph_sub_mu: u16 = 0x2298;
-const glyph_sup_a: u16 = 0x2482;
+const glyphCross: u16 = 0x00d7;
+const glyphDivide: u16 = 0x00f7;
+const glyphZCaron: u16 = 0x017e;
+const glyphIotaDialytikaTonos: u16 = 0x0390;
+const glyphSampi: u16 = 0x03e1;
+const glyphSubAlpha: u16 = 0x2296;
+const glyphSubMu: u16 = 0x2298;
+const glyphSupA: u16 = 0x2482;
 const glyph_sub_Z: u16 = 0x24e9;
 
 fn descriptorDataType(descriptor: runtime.register_descriptor_t) u32 {
@@ -469,22 +469,22 @@ pub export fn validateName(name: [*c]const u8) bool {
     if (first < glyph_A) {
         return false;
     }
-    if (first > glyph_Z and first < glyph_a) {
+    if (first > glyph_Z and first < glyphA) {
         return false;
     }
-    if (first > glyph_z and first < glyph_A_grave) {
+    if (first > glyphZ and first < glyph_A_grave) {
         return false;
     }
-    if (first == glyph_cross or first == glyph_divide) {
+    if (first == glyphCross or first == glyphDivide) {
         return false;
     }
-    if (first > glyph_z_caron and first < glyph_iota_dialytika_tonos) {
+    if (first > glyphZCaron and first < glyphIotaDialytikaTonos) {
         return false;
     }
-    if (first > glyph_sampi and first < glyph_sub_alpha) {
+    if (first > glyphSampi and first < glyphSubAlpha) {
         return false;
     }
-    if (first > glyph_sub_mu and first < glyph_sup_a) {
+    if (first > glyphSubMu and first < glyphSupA) {
         return false;
     }
     if (first > glyph_sub_Z) {
@@ -498,7 +498,7 @@ pub export fn validateName(name: [*c]const u8) bool {
             else => {},
         }
 
-        if (validateNameGlyphCode(text, offset) == glyph_cross) {
+        if (validateNameGlyphCode(text, offset) == glyphCross) {
             return false;
         }
     }
