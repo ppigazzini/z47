@@ -610,15 +610,15 @@ pub export fn fnIsFlagSetFlip(flag: u16) void {
     fnFlipFlag(flag);
 }
 
-pub export fn SetSetting(jm_config: u16) void {
+pub export fn SetSetting(jmConfig: u16) void {
     for (clearSetPairs) |pair| {
-        if (jm_config == pair.clearConfig) {
+        if (jmConfig == pair.clearConfig) {
             fnClearFlag(pair.flag);
             runtime.fnRefreshState();
             return;
         }
 
-        if (jm_config == pair.setConfig) {
+        if (jmConfig == pair.setConfig) {
             fnSetFlag(pair.flag);
             runtime.fnRefreshState();
             return;
@@ -626,58 +626,58 @@ pub export fn SetSetting(jm_config: u16) void {
     }
 
     for (flipFlags) |flag| {
-        if (jm_config == flag) {
-            fnFlipFlag(jm_config);
+        if (jmConfig == flag) {
+            fnFlipFlag(jmConfig);
             runtime.fnRefreshState();
             return;
         }
     }
 
-    switch (jm_config) {
+    switch (jmConfig) {
         runtime.JC_NL => {
             fnFlipFlag(runtime.FLAG_NUMLOCK);
             runtime.showAlphaModeonGui();
         },
         runtime.FLAG_DENANY => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             clearSystemFlag(runtime.FLAG_DENFIX);
         },
         runtime.FLAG_DENFIX => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             clearSystemFlag(runtime.FLAG_DENANY);
         },
         runtime.FLAG_HOME_TRIPLE => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_HOME_TRIPLE)))) {
                 clearSystemFlag(runtime.FLAG_MYM_TRIPLE);
             }
         },
         runtime.FLAG_MYM_TRIPLE => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_MYM_TRIPLE)))) {
                 clearSystemFlag(runtime.FLAG_HOME_TRIPLE);
             }
         },
         runtime.FLAG_BASE_MYM => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_BASE_MYM)))) {
                 clearSystemFlag(runtime.FLAG_BASE_HOME);
             }
         },
         runtime.FLAG_BASE_HOME => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_BASE_HOME)))) {
                 clearSystemFlag(runtime.FLAG_BASE_MYM);
             }
         },
         runtime.FLAG_FGLNFUL => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_FGLNFUL)))) {
                 clearSystemFlag(runtime.FLAG_FGLNLIM);
             }
         },
         runtime.FLAG_FGLNLIM => {
-            fnFlipFlag(jm_config);
+            fnFlipFlag(jmConfig);
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_FGLNLIM)))) {
                 clearSystemFlag(runtime.FLAG_FGLNFUL);
             }
