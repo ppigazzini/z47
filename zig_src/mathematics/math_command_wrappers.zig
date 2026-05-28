@@ -167,104 +167,104 @@ fn readSeedWord(lsuBytes: *const [50]u8, offset: usize) u64 {
 }
 
 pub export fn sinComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realPart: *const runtime.real_t,
+    imagPart: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
     var sina: runtime.real_t = undefined;
     var cosa: runtime.real_t = undefined;
     var sinhb: runtime.real_t = undefined;
     var coshb: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(imag, &sinhb, &coshb, real_context);
-    runtime.realMultiply(&sina, &coshb, res_real, real_context);
-    runtime.realMultiply(&cosa, &sinhb, res_imag, real_context);
+    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(realPart, runtime.amRadian, &sina, &cosa, null, realContext);
+    real_trig_owned.wp34sSinhCoshZig(imagPart, &sinhb, &coshb, realContext);
+    runtime.realMultiply(&sina, &coshb, resultReal, realContext);
+    runtime.realMultiply(&cosa, &sinhb, resultImag, realContext);
 }
 
 pub export fn cosComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realPart: *const runtime.real_t,
+    imagPart: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
     var sina: runtime.real_t = undefined;
     var cosa: runtime.real_t = undefined;
     var sinhb: runtime.real_t = undefined;
     var coshb: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(imag, &sinhb, &coshb, real_context);
-    runtime.realMultiply(&cosa, &coshb, res_real, real_context);
-    runtime.realMultiply(&sina, &sinhb, res_imag, real_context);
-    runtime.realChangeSign(res_imag);
+    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(realPart, runtime.amRadian, &sina, &cosa, null, realContext);
+    real_trig_owned.wp34sSinhCoshZig(imagPart, &sinhb, &coshb, realContext);
+    runtime.realMultiply(&cosa, &coshb, resultReal, realContext);
+    runtime.realMultiply(&sina, &sinhb, resultImag, realContext);
+    runtime.realChangeSign(resultImag);
 }
 
 fn sincComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    realPart: *const runtime.real_t,
+    imagPart: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
     var rr: runtime.real_t = undefined;
     var ii: runtime.real_t = undefined;
 
-    copyReal(&rr, real);
-    copyReal(&ii, imag);
+    copyReal(&rr, realPart);
+    copyReal(&ii, imagPart);
 
     if (runtime.realIsZero(&rr) and runtime.realIsZero(&ii)) {
-        runtime.realSetOne(res_real);
-        runtime.realSetZero(res_imag);
+        runtime.realSetOne(resultReal);
+        runtime.realSetZero(resultImag);
         return;
     }
 
-    var sin_real: runtime.real_t = undefined;
-    var sin_imag: runtime.real_t = undefined;
+    var sinResultReal: runtime.real_t = undefined;
+    var sinResultImag: runtime.real_t = undefined;
 
-    sinComplex(&rr, &ii, res_real, res_imag, real_context);
-    copyReal(&sin_real, res_real);
-    copyReal(&sin_imag, res_imag);
-    runtime.divComplexComplex(&sin_real, &sin_imag, &rr, &ii, res_real, res_imag, real_context);
+    sinComplex(&rr, &ii, resultReal, resultImag, realContext);
+    copyReal(&sinResultReal, resultReal);
+    copyReal(&sinResultImag, resultImag);
+    runtime.divComplexComplex(&sinResultReal, &sinResultImag, &rr, &ii, resultReal, resultImag, realContext);
 }
 
 pub export fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void {
     var x: runtime.real_t = undefined;
-    var x_angular_mode: runtime.angularMode_t = undefined;
+    var xAngularMode: runtime.angularMode_t = undefined;
 
-    if (!runtime.getRegisterAsRealAngle(runtime.REGISTER_X, &x, &x_angular_mode, runtime.ifLongIntegerDoAngleReduction)) {
+    if (!runtime.getRegisterAsRealAngle(runtime.REGISTER_X, &x, &xAngularMode, runtime.ifLongIntegerDoAngleReduction)) {
         return;
     }
 
     if (runtime.realIsSpecial(&x)) {
         runtime.realSetNaN(&x);
     } else if (trig_type == runtime.trigSin) {
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, x_angular_mode, &x, null, null, &runtime.ctxtReal75);
+        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, xAngularMode, &x, null, null, &runtime.ctxtReal75);
     } else {
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, x_angular_mode, null, &x, null, &runtime.ctxtReal75);
+        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, xAngularMode, null, &x, null, &runtime.ctxtReal75);
     }
 
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
 pub export fn sinCosCplx(trig_type: runtime.trigType_t) callconv(.c) void {
-    var z_real: runtime.real_t = undefined;
-    var z_imag: runtime.real_t = undefined;
+    var zReal: runtime.real_t = undefined;
+    var zImag: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &z_real, &z_imag)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &zReal, &zImag)) {
         return;
     }
 
     if (trig_type == runtime.trigSin) {
-        sinComplex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+        sinComplex(&zReal, &zImag, &zReal, &zImag, &runtime.ctxtReal75);
     } else {
-        cosComplex(&z_real, &z_imag, &z_real, &z_imag, &runtime.ctxtReal75);
+        cosComplex(&zReal, &zImag, &zReal, &zImag, &runtime.ctxtReal75);
     }
 
-    runtime.convertComplexToResultRegister(&z_real, &z_imag, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&zReal, &zImag, runtime.REGISTER_X);
 }
 
 pub export fn sinhCoshReal(trig_type: runtime.trigType_t) callconv(.c) void {
@@ -315,58 +315,58 @@ pub export fn sinhCoshCplx(trig_type: runtime.trigType_t) callconv(.c) void {
 }
 
 pub export fn TanComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    xReal: *const runtime.real_t,
+    xImag: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) u8 {
     var sina: runtime.real_t = undefined;
     var cosa: runtime.real_t = undefined;
     var sinhb: runtime.real_t = undefined;
     var coshb: runtime.real_t = undefined;
-    var numer_real: runtime.real_t = undefined;
-    var numer_imag: runtime.real_t = undefined;
-    var denom_real: runtime.real_t = undefined;
-    var denom_imag: runtime.real_t = undefined;
+    var numerReal: runtime.real_t = undefined;
+    var numerImag: runtime.real_t = undefined;
+    var denomReal: runtime.real_t = undefined;
+    var denomImag: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(x_imag, &sinhb, &coshb, real_context);
+    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(xReal, runtime.amRadian, &sina, &cosa, null, realContext);
+    real_trig_owned.wp34sSinhCoshZig(xImag, &sinhb, &coshb, realContext);
 
-    runtime.realMultiply(&sina, &coshb, &numer_real, real_context);
-    runtime.realMultiply(&cosa, &sinhb, &numer_imag, real_context);
-    runtime.realMultiply(&cosa, &coshb, &denom_real, real_context);
-    runtime.realMultiply(&sina, &sinhb, &denom_imag, real_context);
-    runtime.realChangeSign(&denom_imag);
+    runtime.realMultiply(&sina, &coshb, &numerReal, realContext);
+    runtime.realMultiply(&cosa, &sinhb, &numerImag, realContext);
+    runtime.realMultiply(&cosa, &coshb, &denomReal, realContext);
+    runtime.realMultiply(&sina, &sinhb, &denomImag, realContext);
+    runtime.realChangeSign(&denomImag);
 
-    runtime.divComplexComplex(&numer_real, &numer_imag, &denom_real, &denom_imag, r_real, r_imag, real_context);
+    runtime.divComplexComplex(&numerReal, &numerImag, &denomReal, &denomImag, resultReal, resultImag, realContext);
     return runtime.ERROR_NONE;
 }
 
 pub export fn TanhComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    xReal: *const runtime.real_t,
+    xImag: *const runtime.real_t,
+    resultReal: *runtime.real_t,
+    resultImag: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    var sin_value: runtime.real_t = undefined;
-    var cos_value: runtime.real_t = undefined;
-    var denom_real: runtime.real_t = undefined;
-    var denom_imag: runtime.real_t = undefined;
+    var sinValue: runtime.real_t = undefined;
+    var cosValue: runtime.real_t = undefined;
+    var denomReal: runtime.real_t = undefined;
+    var denomImag: runtime.real_t = undefined;
 
-    _ = real_context;
+    _ = realContext;
 
-    if (runtime.realIsZero(x_imag)) {
-        real_trig_owned.wp34sTanhZig(x_real, r_real, &runtime.ctxtReal39);
-        runtime.realSetZero(r_imag);
+    if (runtime.realIsZero(xImag)) {
+        real_trig_owned.wp34sTanhZig(xReal, resultReal, &runtime.ctxtReal39);
+        runtime.realSetZero(resultImag);
     } else {
-        real_trig_owned.wp34sTanhZig(x_real, r_real, &runtime.ctxtReal39);
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_imag, runtime.amRadian, &sin_value, &cos_value, r_imag, &runtime.ctxtReal39);
+        real_trig_owned.wp34sTanhZig(xReal, resultReal, &runtime.ctxtReal39);
+        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(xImag, runtime.amRadian, &sinValue, &cosValue, resultImag, &runtime.ctxtReal39);
 
-        runtime.realSetOne(&denom_real);
-        runtime.realMultiply(r_real, r_imag, &denom_imag, &runtime.ctxtReal39);
-        runtime.divComplexComplex(r_real, r_imag, &denom_real, &denom_imag, r_real, r_imag, &runtime.ctxtReal39);
+        runtime.realSetOne(&denomReal);
+        runtime.realMultiply(resultReal, resultImag, &denomImag, &runtime.ctxtReal39);
+        runtime.divComplexComplex(resultReal, resultImag, &denomReal, &denomImag, resultReal, resultImag, &runtime.ctxtReal39);
     }
 
     return runtime.ERROR_NONE;
