@@ -268,9 +268,9 @@ pub export fn fnZip(unusedButMandatoryParameter: u16) callconv(.c) void {
     var mask: u64 = 1;
     var shift: u8 = 0;
     var index: u8 = 0;
-    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
+    const halfWord = @divFloor(runtime.shortIntegerWordSize, 2);
 
-    while (index < half_word) : (index += 1) {
+    while (index < halfWord) : (index += 1) {
         result |= (x & mask) << @as(u6, @intCast(shift));
         shift += 1;
         result |= (y & mask) << @as(u6, @intCast(shift));
@@ -296,9 +296,9 @@ pub export fn fnUnzip(unusedButMandatoryParameter: u16) callconv(.c) void {
     var mask: u64 = 1;
     var shift: u8 = 0;
     var index: u8 = 0;
-    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
+    const halfWord = @divFloor(runtime.shortIntegerWordSize, 2);
 
-    while (index < half_word) : (index += 1) {
+    while (index < halfWord) : (index += 1) {
         x |= (a & mask) >> @as(u6, @intCast(shift));
         shift += 1;
         mask <<= 1;
