@@ -1,8 +1,8 @@
 const core = @import("shortint_core.zig");
 const runtime = @import("shortint_runtime.zig");
 
-pub export fn fnCountBits(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCountBits(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;

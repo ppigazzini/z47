@@ -109,37 +109,37 @@ fn notShoI() callconv(.c) void {
     runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = ~runtime.registerShortIntegerPtr(runtime.REGISTER_X).* & runtime.shortIntegerMask;
 }
 
-pub export fn fnLogicalAnd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalAnd(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &andCplx, &andShoI, null);
 }
 
-pub export fn fnLogicalOr(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalOr(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &orCplx, &orShoI, null);
 }
 
-pub export fn fnLogicalXor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalXor(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &xorCplx, &xorShoI, null);
 }
 
-pub export fn fnLogicalNand(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalNand(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &nandCplx, &nandShoI, null);
 }
 
-pub export fn fnLogicalNor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalNor(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &norCplx, &norShoI, null);
 }
 
-pub export fn fnLogicalXnor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalXnor(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(null, &xnorCplx, &xnorShoI, null);
 }
 
-pub export fn fnLogicalNot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLogicalNot(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexMonadicFunction(null, &notCplx, &notShoI, null);
 }
