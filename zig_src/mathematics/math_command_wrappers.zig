@@ -80,32 +80,32 @@ pub export fn pcg32_srandom(stateSeed: u64, sequenceSeed: u64) callconv(.c) void
 
 fn boundedRand(s: u32) u32 {
     var rand = pcg32_random_r(&runtime.pcg32_global);
-    const initial_product = @as(u64, s) * @as(u64, rand);
-    const integer_part: u32 = @intCast(initial_product >> 32);
-    var fractional_part: u32 = @truncate(initial_product);
+    const initialProduct = @as(u64, s) * @as(u64, rand);
+    const integerPart: u32 = @intCast(initialProduct >> 32);
+    var fractionalPart: u32 = @truncate(initialProduct);
 
-    if (fractional_part <= 1 + ~s) {
-        return integer_part;
+    if (fractionalPart <= 1 + ~s) {
+        return integerPart;
     }
 
     var iterations: u4 = 0;
     while (iterations < 10) : (iterations += 1) {
         rand = pcg32_random_r(&runtime.pcg32_global);
         const product = @as(u64, s) * @as(u64, rand);
-        const extra_fraction: u32 = @intCast(product >> 32);
+        const extraFraction: u32 = @intCast(product >> 32);
 
-        fractional_part +%= extra_fraction;
-        if (fractional_part < extra_fraction) {
-            return integer_part + 1;
+        fractionalPart +%= extraFraction;
+        if (fractionalPart < extraFraction) {
+            return integerPart + 1;
         }
-        if (fractional_part != 0xffff_ffff) {
-            return integer_part;
+        if (fractionalPart != 0xffff_ffff) {
+            return integerPart;
         }
 
-        fractional_part = @truncate(product);
+        fractionalPart = @truncate(product);
     }
 
-    return integer_part;
+    return integerPart;
 }
 
 pub export fn z47_math_wrappers_bounded_rand(s: u32) callconv(.c) u32 {
