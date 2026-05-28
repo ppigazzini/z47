@@ -25,16 +25,17 @@ flowchart TD
   C[zig-master-compatibility]
   D[source-manifest]
   E[source-ownership-guard]
-  F[zig-c-boundary-guard]
-  G[c-dependency-policy]
-  H[workflow-imported-root-guard]
-  I[workflow-locality-guard]
-  J[linux-host-parity]
-  K[linux-docs]
-  L[linux-firmware-artifacts]
-  M[macos-host-build]
-  N[windows-host-build]
-  O[daily or manual upstream-drift]
+  F[upstream-port-ledger-guard]
+  G[zig-c-boundary-guard]
+  H[c-dependency-policy]
+  I[workflow-imported-root-guard]
+  J[workflow-locality-guard]
+  K[linux-host-parity]
+  L[linux-docs]
+  M[linux-firmware-artifacts]
+  N[macos-host-build]
+  O[windows-host-build]
+  P[daily or manual upstream-drift]
 
   A --> B
   A --> C
@@ -44,33 +45,40 @@ flowchart TD
   A --> G
   A --> H
   A --> I
-  B --> J
-  D --> J
-  E --> J
-  F --> J
-  G --> J
-  H --> J
-  I --> J
+  J --> K
   B --> K
+  D --> K
+  E --> K
+  F --> K
+  G --> K
   H --> K
   I --> K
   B --> L
-  D --> L
-  E --> L
   F --> L
-  G --> L
-  H --> L
   I --> L
+  J --> L
   B --> M
   D --> M
   E --> M
   F --> M
+  G --> M
   H --> M
+  I --> M
+  J --> M
   B --> N
   D --> N
   E --> N
   F --> N
+  G --> N
   H --> N
+  I --> N
+  B --> O
+  D --> O
+  E --> O
+  F --> O
+  G --> O
+  H --> O
+  I --> O
 ```
 
 ## Shared CI Inputs
@@ -79,6 +87,7 @@ The workflow keeps its shared checked-in control data in these files:
 
 - `../.github/zig-toolchain.env`
 - `../.github/project/upstream-pin.env`
+- `../.github/project/upstream-port-ledger.tsv`
 - `../.github/project/source-ownership.txt`
 - `../.github/project/workflow-imported-root-paths.sh`
 - `../.github/project/zig-c-boundaries.txt`
@@ -94,6 +103,11 @@ The workflow imported-root guard uses
 vocabulary for docs install, generated-artifact proof, and host package
 staging. That keeps the workflow text aligned with `UPSTREAM_ROOT` instead of
 repeating repo-root imported paths ad hoc.
+
+The upstream-port ledger guard uses `../.github/project/upstream-port-ledger.tsv`
+plus `../.github/project/upstream-pin.env` as the tracked maintainer vocabulary
+for upstream-refresh triage. That keeps pin movement and explicit z47 follow-up
+records in the same reviewed change instead of relying on commit history alone.
 
 ## Job Graph
 
@@ -155,6 +169,22 @@ Current ownership-guard note:
 - the job fetches the configured upstream branch first so the guard can diff
   branch-added imported-root files from the merge base between `HEAD` and the
   pinned upstream commit even when the pin is ahead of the current branch tip
+
+### `upstream-port-ledger-guard`
+
+Purpose:
+
+- run `python3 .github/project/check-upstream-port-ledger.py`
+- verify that the tracked upstream port ledger has the expected TSV shape and a
+  `pin-only` row for the current `UPSTREAM_COMMIT`
+- fail early if a branch changes `upstream-pin.env` without also updating the
+  tracked ledger
+
+Current upstream-port-ledger note:
+
+- the job resolves a branch diff base from the pull-request base branch or the
+  previous push commit, then passes that revision to the guard so upstream pin
+  moves cannot land without an explicit ledger update in the same change
 
 ### `zig-c-boundary-guard`
 
@@ -350,7 +380,8 @@ Use the smallest local lane that matches the workflow slice you changed.
 | --- | --- |
 | toolchain pin | `zig version` plus a read of `../.github/zig-toolchain.env` |
 | monitored Zig master compatibility | install the monitored `ZIG_MASTER_VERSION`, ensure `xlsxio_xlsx2csv` plus the Linux GTK, FreeType, and GMP generator prerequisites are available, then run `zig build --help --summary none && zig build logical_shortint_parity --summary none && zig build rotate_bits_parity --summary none && zig build logical_boolean_ops_suite --summary none` |
-| source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && bash .github/project/check-source-ownership.sh` |
+| source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && python3 .github/project/check-upstream-port-ledger.py --repo-root . && bash .github/project/check-source-ownership.sh` |
+| upstream pin triage ledger | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
 | tracked source ownership contract | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && bash .github/project/check-source-ownership.sh` |
 | workflow imported-root contract | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | Zig or C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |

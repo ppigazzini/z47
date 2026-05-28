@@ -35,6 +35,7 @@ flowchart TD
 | --- | --- | --- | --- |
 | toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | live `zig version` plus pinned manifest check | `zig build --help --summary none` after confirming the pinned version |
 | imported upstream pin and repo-root import contract | `../.github/project/upstream-pin.env` | upstream-branch reachability check plus source-manifest job | `git fetch <upstream-url> <upstream-branch> && git merge-base --is-ancestor <pinned-upstream> FETCH_HEAD` |
+| upstream pin triage ledger | `../.github/project/upstream-port-ledger.tsv`, `../.github/project/check-upstream-port-ledger.py` | ledger guard script plus branch-diff co-update check | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
 | tracked top-level ownership contract | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | source-ownership guard script | `git fetch <upstream-url> <upstream-branch> && bash .github/project/check-source-ownership.sh` |
 | workflow imported-root CI vocabulary | `../.github/project/workflow-imported-root-paths.sh`, `../.github/workflows/upstream-oracle.yml` | workflow imported-root guard script | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
@@ -68,8 +69,10 @@ flowchart TD
   `zig build --help --summary none` if target names or options are described;
   rerun `bash .github/project/check-source-ownership.sh` as well when the
   change touches imported-root or tracked top-level ownership claims
-- imported-root layout, source-manifest, or top-level ownership change:
+- imported-root layout, source-manifest, upstream-pin, or top-level ownership
+  change:
   `zig build --help --summary none`, then
+  `python3 .github/project/check-upstream-port-ledger.py --repo-root .`, then
   `bash .github/project/check-source-ownership.sh`, then
   `bash .github/project/workflow-imported-root-paths.sh check-workflow`, then
   the smallest affected host or firmware target
@@ -112,41 +115,42 @@ When a change touches multiple active surfaces and you want the closest local
 match to the Linux CI lane, use this order after exporting the xlsxio helper:
 
 1. `bash .github/project/check-zig-c-boundaries.sh`
-2. `bash .github/project/check-source-ownership.sh`
-3. `bash .github/project/workflow-imported-root-paths.sh check-workflow`
-4. `zig build logical_shortint_parity --summary none`
-5. `zig build rotate_bits_parity --summary none`
-6. `zig build logical_boolean_ops_suite --summary none`
-7. `zig build stack_state_parity --summary none`
-8. `zig build register_metadata_parity --summary none`
-9. `zig build flags_parity --summary none`
-10. `zig build memory_parity --summary none`
-11. `zig build program_serialization_parity --summary none`
-12. `zig build calc_state_parity --summary none`
-13. `zig build math_command_wrappers_parity --summary none`
-14. `zig build math_random_parity --summary none`
-15. `zig build tone_parity --summary none`
-16. `zig build keyboard_state_parity --summary none`
-17. `zig build both --summary none`
-18. `zig build simulator_smoke --summary none`
-19. `zig build testPgms --summary none`
-20. `xvfb-run --auto-servernum zig build test --summary none`
-20. `zig build generated --summary none`
-21. `zig build both_asan --summary none`
-22. `xvfb-run --auto-servernum zig build test_asan --summary none`
-23. `zig build docs --summary none`
-24. `zig build dmcp --summary none`
-25. `zig build dmcpr47 --summary none`
-26. `zig build dmcp5 --summary none`
-27. `zig build dmcp5r47 --summary none`
-28. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
-29. `zig build dist_dmcp --summary none`
-30. `zig build dist_dmcp_pkg1 --summary none`
-31. `zig build dist_dmcp_pkg2 --summary none`
-32. `zig build dist_dmcp_pkg3 --summary none`
-33. `zig build dist_dmcpr47 --summary none`
-34. `zig build dist_dmcp5 --summary none`
-35. `zig build dist_dmcp5r47 --summary none`
+2. `python3 .github/project/check-upstream-port-ledger.py --repo-root .`
+3. `bash .github/project/check-source-ownership.sh`
+4. `bash .github/project/workflow-imported-root-paths.sh check-workflow`
+5. `zig build logical_shortint_parity --summary none`
+6. `zig build rotate_bits_parity --summary none`
+7. `zig build logical_boolean_ops_suite --summary none`
+8. `zig build stack_state_parity --summary none`
+9. `zig build register_metadata_parity --summary none`
+10. `zig build flags_parity --summary none`
+11. `zig build memory_parity --summary none`
+12. `zig build program_serialization_parity --summary none`
+13. `zig build calc_state_parity --summary none`
+14. `zig build math_command_wrappers_parity --summary none`
+15. `zig build math_random_parity --summary none`
+16. `zig build tone_parity --summary none`
+17. `zig build keyboard_state_parity --summary none`
+18. `zig build both --summary none`
+19. `zig build simulator_smoke --summary none`
+20. `zig build testPgms --summary none`
+21. `xvfb-run --auto-servernum zig build test --summary none`
+22. `zig build generated --summary none`
+23. `zig build both_asan --summary none`
+24. `xvfb-run --auto-servernum zig build test_asan --summary none`
+25. `zig build docs --summary none`
+26. `zig build dmcp --summary none`
+27. `zig build dmcpr47 --summary none`
+28. `zig build dmcp5 --summary none`
+29. `zig build dmcp5r47 --summary none`
+30. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
+31. `zig build dist_dmcp --summary none`
+32. `zig build dist_dmcp_pkg1 --summary none`
+33. `zig build dist_dmcp_pkg2 --summary none`
+34. `zig build dist_dmcp_pkg3 --summary none`
+35. `zig build dist_dmcpr47 --summary none`
+36. `zig build dist_dmcp5 --summary none`
+37. `zig build dist_dmcp5r47 --summary none`
 
 ## Generated Artifact Diff Contract
 

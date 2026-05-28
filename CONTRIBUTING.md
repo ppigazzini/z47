@@ -22,6 +22,8 @@ repo surfaces.
 - `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=.` for the current
   repo-root imported baseline, and `.github/project/source-ownership.txt`
   records the tracked top-level ownership split used by CI.
+- `.github/project/upstream-port-ledger.tsv` records the maintainer triage
+  ledger that must move with any tracked upstream pin change.
 - `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
   imported-root vocabulary used by docs install, generated-artifact proof, and
   host package staging in GitHub Actions.
@@ -49,7 +51,10 @@ instead of repurposing the active coding tree.
 2. `git worktree add --detach ../z47-upstream-refresh upstream/master`
 3. Do the upstream audit, diff, or rebase rehearsal inside
   `../z47-upstream-refresh` while leaving the active tree on your topic branch.
-4. `git worktree remove ../z47-upstream-refresh` when the refresh rehearsal is
+4. When the maintained pin changes, update `.github/project/upstream-pin.env`
+  and add the matching row in `.github/project/upstream-port-ledger.tsv` in the
+  tracked repo tree before treating the refresh as ready.
+5. `git worktree remove ../z47-upstream-refresh` when the refresh rehearsal is
   complete.
 
 Keep tracked-doc updates focused on the main repository tree. Do not document
@@ -102,8 +107,10 @@ surfaces. They are not the maintained z47 control plane.
 - docs-only maintainer changes: verify each key claim against the live files,
   then rerun `zig build --help --summary none` when target names or options are
   described
-- imported-root layout, top-level ownership, or source-manifest changes: rerun
+- imported-root layout, upstream-pin, top-level ownership, or source-manifest
+  changes: rerun
   `zig build --help --summary none`, then
+  `python3 .github/project/check-upstream-port-ledger.py --repo-root .`, then
   `bash .github/project/check-source-ownership.sh`, then
   `bash .github/project/workflow-imported-root-paths.sh check-workflow`; use
   `bash .github/project/check-source-ownership.sh check-worktree` inside a
