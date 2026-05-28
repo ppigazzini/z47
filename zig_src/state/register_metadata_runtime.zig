@@ -325,18 +325,6 @@ pub fn retainedAllocateLocalRegisters(number_of_registers_to_allocate: u16) void
     z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
-pub fn retainedFnDeleteVariable(regist: u16) void {
-    z47_registers_retained_fnDeleteVariable(regist);
-}
-
-pub fn retainedFnDeleteAllVariables(confirmation: u16) void {
-    z47_registers_retained_fnDeleteAllVariables(confirmation);
-}
-
-pub fn retainedFnClearAllVariables(confirmation: u16) void {
-    z47_registers_retained_fnClearAllVariables(confirmation);
-}
-
 pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
     z47_registers_retained_copySourceRegisterToDestRegister(source_register, dest_register);
 }
