@@ -129,13 +129,13 @@ pub export fn fnClearRegisters(confirmation: u16) void {
 pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    var s: u16 = 0;
-    var n: u16 = 0;
+    var startReg: u16 = 0;
+    var count: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&startReg, &count);
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        var reg = s;
-        while (reg < s + n) : (reg += 1) {
+        var reg = startReg;
+        while (reg < startReg + count) : (reg += 1) {
             runtime.clearRegister(@intCast(reg));
         }
         return;
@@ -147,55 +147,55 @@ pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
 pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    var s: u16 = 0;
-    var n: u16 = 0;
-    var d: u16 = 0;
+    var sourceStart: u16 = 0;
+    var count: u16 = 0;
+    var destinationStart: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&sourceStart, &count, &destinationStart);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    if (d < s + n and s < d + n) {
+    if (destinationStart < sourceStart + count and sourceStart < destinationStart + count) {
         runtime.reportRegisterCommandError(runtime.ERROR_OUT_OF_RANGE);
         return;
     }
 
     var index: u16 = 0;
-    while (index < n) : (index += 1) {
-        const src = @as(runtime.calcRegister_t, @intCast(s + index));
-        const dst = @as(runtime.calcRegister_t, @intCast(d + index));
-        const saved_descriptor = runtime.globalDescriptor(src);
-        runtime.setGlobalDescriptor(src, runtime.globalDescriptor(dst));
-        runtime.setGlobalDescriptor(dst, saved_descriptor);
+    while (index < count) : (index += 1) {
+        const sourceReg = @as(runtime.calcRegister_t, @intCast(sourceStart + index));
+        const destinationReg = @as(runtime.calcRegister_t, @intCast(destinationStart + index));
+        const savedDescriptor = runtime.globalDescriptor(sourceReg);
+        runtime.setGlobalDescriptor(sourceReg, runtime.globalDescriptor(destinationReg));
+        runtime.setGlobalDescriptor(destinationReg, savedDescriptor);
     }
 }
 
 pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
-    var f = false;
-    var s: u16 = 0;
-    var n: u16 = 0;
-    var d: u16 = 0;
+    var partialLoad = false;
+    var sourceStart: u16 = 0;
+    var count: u16 = 0;
+    var destinationStart: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&f, &s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&partialLoad, &sourceStart, &count, &destinationStart);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    if (f) {
+    if (partialLoad) {
         _ = unused_but_mandatory_parameter;
-        runtime.doPartialRegisterLoad(s, n, d);
+        runtime.doPartialRegisterLoad(sourceStart, count, destinationStart);
         return;
     }
 
-    if (s > d) {
+    if (sourceStart > destinationStart) {
         var index: u16 = 0;
-        while (index < n) : (index += 1) {
+        while (index < count) : (index += 1) {
             runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(s + index)),
-                @as(runtime.calcRegister_t, @intCast(d + index)),
+                @as(runtime.calcRegister_t, @intCast(sourceStart + index)),
+                @as(runtime.calcRegister_t, @intCast(destinationStart + index)),
             );
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
@@ -204,13 +204,13 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    if (s < d) {
-        var index = n;
+    if (sourceStart < destinationStart) {
+        var index = count;
         while (index > 0) {
             index -= 1;
             runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(s + index)),
-                @as(runtime.calcRegister_t, @intCast(d + index)),
+                @as(runtime.calcRegister_t, @intCast(sourceStart + index)),
+                @as(runtime.calcRegister_t, @intCast(destinationStart + index)),
             );
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
@@ -222,31 +222,31 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
 pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    var s: u16 = 0;
-    var n: u16 = 0;
+    var startReg: u16 = 0;
+    var count: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&startReg, &count);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    switch (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)))) {
+    switch (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(startReg)))) {
         runtime.dtLongInteger, runtime.dtShortInteger, runtime.dtReal34 => {
-            var index: u16 = s + 1;
-            while (index < s + n) : (index += 1) {
-                const data_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index)));
-                if (data_type != runtime.dtLongInteger and data_type != runtime.dtShortInteger and data_type != runtime.dtReal34) {
+            var index: u16 = startReg + 1;
+            while (index < startReg + count) : (index += 1) {
+                const dataType = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index)));
+                if (dataType != runtime.dtLongInteger and dataType != runtime.dtShortInteger and dataType != runtime.dtReal34) {
                     runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
                     return;
                 }
             }
         },
         runtime.dtTime, runtime.dtDate, runtime.dtString => {
-            const first_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)));
-            var index: u16 = s + 1;
-            while (index < s + n) : (index += 1) {
-                if (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index))) != first_type) {
+            const firstType = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(startReg)));
+            var index: u16 = startReg + 1;
+            while (index < startReg + count) : (index += 1) {
+                if (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index))) != firstType) {
                     runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
                     return;
                 }
@@ -256,7 +256,7 @@ pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        runtime.sortRegisterRange(s, s + n - 1);
+        runtime.sortRegisterRange(startReg, startReg + count - 1);
     }
 }
 
