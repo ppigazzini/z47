@@ -4,11 +4,11 @@ fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcReg
     return base + @as(runtime.calcRegister_t, @intCast(offset));
 }
 
-fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
-    const ptr = data_ptr orelse return null;
+fn complexImagPointer(dataPtr: ?*anyopaque) ?*anyopaque {
+    const ptr = dataPtr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return @ptrCast(bytes + imag_offset);
+    const imagOffset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
+    return @ptrCast(bytes + imagOffset);
 }
 
 fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
@@ -16,21 +16,21 @@ fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
         return false;
     }
 
-    const data_type = runtime.getRegisterDataType(reg);
-    return data_type == runtime.dtComplex34 or data_type == runtime.dtComplex34Matrix;
+    const dataType = runtime.getRegisterDataType(reg);
+    return dataType == runtime.dtComplex34 or dataType == runtime.dtComplex34Matrix;
 }
 
-fn swapRegs(src_reg: runtime.calcRegister_t, target_reg: u16) void {
-    const saved_descriptor = runtime.globalDescriptor(src_reg);
-    var target_descriptor: runtime.register_descriptor_t = 0;
+fn swapRegs(sourceReg: runtime.calcRegister_t, targetReg: u16) void {
+    const savedDescriptor = runtime.globalDescriptor(sourceReg);
+    var targetDescriptor: runtime.register_descriptor_t = 0;
 
-    if (runtime.tryGetSwapTargetDescriptor(target_reg, &target_descriptor)) {
-        runtime.setGlobalDescriptor(src_reg, target_descriptor);
-        _ = runtime.trySetSwapTargetDescriptor(target_reg, saved_descriptor);
+    if (runtime.tryGetSwapTargetDescriptor(targetReg, &targetDescriptor)) {
+        runtime.setGlobalDescriptor(sourceReg, targetDescriptor);
+        _ = runtime.trySetSwapTargetDescriptor(targetReg, savedDescriptor);
         return;
     }
 
-    runtime.reportInvalidSwapTarget(target_reg);
+    runtime.reportInvalidSwapTarget(targetReg);
 }
 
 pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
