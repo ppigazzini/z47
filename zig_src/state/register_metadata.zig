@@ -270,13 +270,13 @@ fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 
     var data_ptr: ?*anyopaque = null;
 
     if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
-        return runtime.retainedGetRegisterFullSizeInBlocks(reg);
+        return runtime.getRegisterFullSizeInBlocksRetained(reg);
     }
 
     return switch (data_type) {
         runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
         runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
-        else => runtime.retainedGetRegisterFullSizeInBlocks(reg),
+        else => runtime.getRegisterFullSizeInBlocksRetained(reg),
     };
 }
 
@@ -325,7 +325,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
 
 pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
     if (builtin.target.os.tag == .freestanding) {
-        return runtime.retainedGetRegisterMaxDataLengthInBlocks(reg);
+        return runtime.getRegisterMaxDataLengthInBlocksRetained(reg);
     }
 
     var data_ptr: ?*anyopaque = null;
@@ -355,7 +355,7 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
 
 pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
     if (builtin.target.os.tag == .freestanding) {
-        return runtime.retainedGetRegisterFullSizeInBlocks(reg);
+        return runtime.getRegisterFullSizeInBlocksRetained(reg);
     }
 
     return switch (getRegisterDataType(reg)) {
@@ -811,7 +811,7 @@ pub export fn isFunctionAllowingNewVariable(op: u16) bool {
 
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     if (builtin.target.os.tag == .freestanding) {
-        return runtime.retainedGetRegisterDataType(reg);
+        return runtime.getRegisterDataTypeRetained(reg);
     }
 
     var descriptor: runtime.register_descriptor_t = 0;
@@ -849,7 +849,7 @@ pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
 
 pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
     if (builtin.target.os.tag == .freestanding) {
-        return runtime.retainedGetRegisterDataPointer(reg);
+        return runtime.getRegisterDataPointerRetained(reg);
     }
 
     var descriptor: runtime.register_descriptor_t = 0;
@@ -888,7 +888,7 @@ pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
 
 pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
     if (builtin.target.os.tag == .freestanding) {
-        return runtime.retainedGetRegisterTag(reg);
+        return runtime.getRegisterTagRetained(reg);
     }
 
     var descriptor: runtime.register_descriptor_t = 0;
