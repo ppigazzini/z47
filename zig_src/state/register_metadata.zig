@@ -8,7 +8,7 @@ const tag_mask: runtime.register_descriptor_t = 0x01f00000;
 const data_type_shift: u5 = 16;
 const tag_shift: u5 = 20;
 const invalid_data_type: u32 = 31;
-const validate_name_max_glyphs: usize = 7;
+const validateNameMaxGlyphs: usize = 7;
 const glyph_A: u16 = 0x41;
 const glyph_Z: u16 = 0x5a;
 const glyph_a: u16 = 0x61;
@@ -228,15 +228,15 @@ fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
 }
 
 fn validateNameGlyphLength(name: [*:0]const u8) usize {
-    var glyph_length: usize = 0;
+    var glyphLength: usize = 0;
     var offset: usize = 0;
 
     while (name[offset] != 0) {
         offset += if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
-        glyph_length += 1;
+        glyphLength += 1;
     }
 
-    return glyph_length;
+    return glyphLength;
 }
 
 fn validateNameNextGlyphOffset(name: [*:0]const u8, offset: usize) usize {
@@ -458,9 +458,9 @@ pub export fn validateName(name: [*c]const u8) bool {
     }
 
     const text: [*:0]const u8 = @ptrCast(name);
-    const glyph_length = validateNameGlyphLength(text);
+    const glyphLength = validateNameGlyphLength(text);
 
-    if (glyph_length > validate_name_max_glyphs or glyph_length == 0) {
+    if (glyphLength > validateNameMaxGlyphs or glyphLength == 0) {
         return false;
     }
 
@@ -538,13 +538,13 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
     }
 
     const text: [*:0]const u8 = @ptrCast(variable_name);
-    const glyph_length = validateNameGlyphLength(text);
+    const glyphLength = validateNameGlyphLength(text);
 
-    if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
+    if (glyphLength < 1 or glyphLength > validateNameMaxGlyphs) {
         return;
     }
 
-    if (runtime.findReservedVariableName(variable_name, @intCast(glyph_length)) != runtime.INVALID_VARIABLE) {
+    if (runtime.findReservedVariableName(variable_name, @intCast(glyphLength)) != runtime.INVALID_VARIABLE) {
         runtime.reportInvalidName();
         return;
     }
@@ -735,13 +735,13 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
 
 pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     const text: [*:0]const u8 = @ptrCast(variable_name);
-    const glyph_length = validateNameGlyphLength(text);
+    const glyphLength = validateNameGlyphLength(text);
 
-    if (glyph_length < 1 or glyph_length > 7) {
+    if (glyphLength < 1 or glyphLength > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const reserved = runtime.findReservedVariableName(variable_name, @intCast(glyph_length));
+    const reserved = runtime.findReservedVariableName(variable_name, @intCast(glyphLength));
     if (reserved != runtime.INVALID_VARIABLE) {
         return reserved;
     }
@@ -758,9 +758,9 @@ pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegiste
 
 pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     const text: [*:0]const u8 = @ptrCast(variable_name);
-    const glyph_length = validateNameGlyphLength(text);
+    const glyphLength = validateNameGlyphLength(text);
 
-    if (glyph_length < 1 or glyph_length > 7) {
+    if (glyphLength < 1 or glyphLength > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
