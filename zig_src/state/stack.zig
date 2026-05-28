@@ -93,7 +93,7 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
         return;
     }
 
-    runtime.retainedClearRegister(reg);
+    runtime.clearRegisterRetained(reg);
 }
 
 pub export fn fnClearRegisters(confirmation: u16) void {
@@ -132,7 +132,7 @@ pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
     var s: u16 = 0;
     var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.retainedGetRegClrRange(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
         var reg = s;
         while (reg < s + n) : (reg += 1) {
@@ -151,7 +151,7 @@ pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
     var n: u16 = 0;
     var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.retainedGetRegSwapRange(&s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
@@ -178,7 +178,7 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
     var n: u16 = 0;
     var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.retainedGetRegCopyParams(&f, &s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&f, &s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
@@ -225,7 +225,7 @@ pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     var s: u16 = 0;
     var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.retainedGetRegClrRange(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
