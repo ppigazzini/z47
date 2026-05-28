@@ -2493,62 +2493,62 @@ fn factLonI() callconv(.c) void {
 }
 
 fn modReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-    var y_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
+    var yValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &yValue)) {
         return;
     }
 
-    if (runtime.realIsZero(&x_value)) {
+    if (runtime.realIsZero(&xValue)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function modReal:", "cannot IDIVR a real34 by 0", null, null);
         return;
     }
 
-    runtime.WP34S_BigMod(&y_value, &x_value, &result, &runtime.ctxtReal39);
-    if (!runtime.realIsZero(&result) and (runtime.realIsNegative(&y_value) != runtime.realIsNegative(&x_value))) {
-        runtime.realAdd(&result, &x_value, &result, &runtime.ctxtReal39);
+    runtime.WP34S_BigMod(&yValue, &xValue, &result, &runtime.ctxtReal39);
+    if (!runtime.realIsZero(&result) and (runtime.realIsNegative(&yValue) != runtime.realIsNegative(&xValue))) {
+        runtime.realAdd(&result, &xValue, &result, &runtime.ctxtReal39);
     }
 
     runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn rmdReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-    var y_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
+    var yValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &yValue)) {
         return;
     }
 
-    if (runtime.realIsZero(&x_value)) {
+    if (runtime.realIsZero(&xValue)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", null, null);
         return;
     }
 
-    runtime.WP34S_BigMod(&y_value, &x_value, &result, &runtime.ctxtReal39);
+    runtime.WP34S_BigMod(&yValue, &xValue, &result, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn neighbReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-    var y_value: runtime.real_t = undefined;
-    var x_angular_mode = runtime.amNone;
+    var xValue: runtime.real_t = undefined;
+    var yValue: runtime.real_t = undefined;
+    var xAngularMode = runtime.amNone;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &yValue)) {
         return;
     }
 
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
-        x_angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
+        xAngularMode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
     }
 
-    runtime.realNextToward(&x_value, &y_value, &x_value, &runtime.ctxtReal34);
-    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, x_angular_mode);
+    runtime.realNextToward(&xValue, &yValue, &xValue, &runtime.ctxtReal34);
+    runtime.convertRealToResultRegister(&xValue, runtime.REGISTER_X, xAngularMode);
 }
 
 pub export fn integerPartNoOp() callconv(.c) void {}
@@ -4442,30 +4442,30 @@ pub export fn fnRoundi(unusedButMandatoryParameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnNeighb(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &neighbShoI, &neighbLonI);
 }
 
-pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnIxyz(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    var x_value: runtime.real_t = undefined;
-    var a_value: runtime.real_t = undefined;
-    var b_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
+    var aValue: runtime.real_t = undefined;
+    var bValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &a_value) and runtime.getRegisterAsReal(runtime.REGISTER_Z, &b_value)) {
-        if (realCompareGreaterEqual(&x_value, runtime.z47_math_wrappers_const_0()) and
-            realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_1()) and
-            realCompareGreaterThan(&a_value, runtime.z47_math_wrappers_const_0()) and
-            realCompareGreaterThan(&b_value, runtime.z47_math_wrappers_const_0()))
+    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &aValue) and runtime.getRegisterAsReal(runtime.REGISTER_Z, &bValue)) {
+        if (realCompareGreaterEqual(&xValue, runtime.z47_math_wrappers_const_0()) and
+            realCompareLessEqual(&xValue, runtime.z47_math_wrappers_const_1()) and
+            realCompareGreaterThan(&aValue, runtime.z47_math_wrappers_const_0()) and
+            realCompareGreaterThan(&bValue, runtime.z47_math_wrappers_const_0()))
         {
-            runtime.WP34S_betai(&b_value, &a_value, &x_value, &result, &runtime.ctxtReal39);
+            runtime.WP34S_betai(&bValue, &aValue, &xValue, &result, &runtime.ctxtReal39);
             runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
             runtime.fnDropY(0);
