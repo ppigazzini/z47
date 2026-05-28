@@ -309,15 +309,15 @@ pub fn requestClearAllVariablesConfirmation() void {
     z47_register_metadata_request_clear_all_variables_confirmation();
 }
 
-pub fn retainedGetRegisterDataType(reg: calcRegister_t) u32 {
+pub fn getRegisterDataTypeRetained(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterDataType(reg);
 }
 
-pub fn retainedGetRegisterDataPointer(reg: calcRegister_t) ?*anyopaque {
+pub fn getRegisterDataPointerRetained(reg: calcRegister_t) ?*anyopaque {
     return z47_registers_retained_getRegisterDataPointer(reg);
 }
 
-pub fn retainedGetRegisterTag(reg: calcRegister_t) u32 {
+pub fn getRegisterTagRetained(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
 }
 
@@ -337,11 +337,11 @@ pub fn retainedSetRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_le
     z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg, max_data_len);
 }
 
-pub fn retainedGetRegisterMaxDataLengthInBlocks(reg: calcRegister_t) u16 {
+pub fn getRegisterMaxDataLengthInBlocksRetained(reg: calcRegister_t) u16 {
     return z47_registers_retained_getRegisterMaxDataLengthInBlocks(reg);
 }
 
-pub fn retainedGetRegisterFullSizeInBlocks(reg: calcRegister_t) u16 {
+pub fn getRegisterFullSizeInBlocksRetained(reg: calcRegister_t) u16 {
     return z47_registers_retained_getRegisterFullSizeInBlocks(reg);
 }
 
