@@ -2190,13 +2190,13 @@ fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
 }
 
 fn argReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue)) {
         return;
     }
 
-    const result = realArgValue(&x_value);
+    const result = realArgValue(&xValue);
 
     runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
     if (!runtime.realIsNaN(result)) {
@@ -2205,12 +2205,12 @@ fn argReal() callconv(.c) void {
     }
 }
 
-fn realArgValue(x_value: *const runtime.real_t) *const runtime.real_t {
-    return if (runtime.realIsNaN(x_value))
-        x_value
-    else if (runtime.realIsZero(x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
-        x_value
-    else if (runtime.realIsNegative(x_value))
+fn realArgValue(xValue: *const runtime.real_t) *const runtime.real_t {
+    return if (runtime.realIsNaN(xValue))
+        xValue
+    else if (runtime.realIsZero(xValue) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
+        xValue
+    else if (runtime.realIsNegative(xValue))
         runtime.z47_math_wrappers_const_180()
     else
         runtime.z47_math_wrappers_const_0();
@@ -2221,18 +2221,18 @@ fn argError() void {
 }
 
 fn argCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var realValue: runtime.real_t = undefined;
+    var imagValue: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &realValue, &imagValue)) {
         return;
     }
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
-    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.realRectangularToPolarZig(&realValue, &imagValue, &realValue, &imagValue, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&imagValue, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
-    runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
+    runtime.convertRealToReal34ResultRegister(&imagValue, runtime.REGISTER_X);
 }
 
 fn argRema() void {
@@ -2245,68 +2245,68 @@ fn argRema() void {
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
-        var real_value: runtime.real_t = undefined;
+        var realValue: runtime.real_t = undefined;
 
-        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &real_value);
-        real_value = realArgValue(&real_value).*;
-        runtime.convertAngleFromTo(&real_value, runtime.amDegree, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.realToReal34(&real_value, realMatrixElementPtr(&matrix, index));
+        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &realValue);
+        realValue = realArgValue(&realValue).*;
+        runtime.convertAngleFromTo(&realValue, runtime.amDegree, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.realToReal34(&realValue, realMatrixElementPtr(&matrix, index));
     }
 
     runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
 }
 
 fn argCxma() void {
-    var complex_matrix: runtime.complex34Matrix_t = undefined;
-    var real_matrix: runtime.real34Matrix_t = undefined;
+    var complexMatrix: runtime.complex34Matrix_t = undefined;
+    var realMatrix: runtime.real34Matrix_t = undefined;
     var dummy = std.mem.zeroes(runtime.real34_t);
 
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
-    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complexMatrix);
+    if (!runtime.realMatrixInit(&realMatrix, complexMatrix.header.matrixRows, complexMatrix.header.matrixColumns)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         return;
     }
-    defer runtime.realMatrixFree(&real_matrix);
+    defer runtime.realMatrixFree(&realMatrix);
 
-    const count = complexMatrixElementCount(&complex_matrix);
+    const count = complexMatrixElementCount(&complexMatrix);
 
     var index: usize = 0;
     while (index < count) : (index += 1) {
         runtime.real34RectangularToPolar(
-            complexMatrixRealPtr(&complex_matrix, index),
-            complexMatrixImagPtr(&complex_matrix, index),
+            complexMatrixRealPtr(&complexMatrix, index),
+            complexMatrixImagPtr(&complexMatrix, index),
             &dummy,
-            realMatrixElementPtr(&real_matrix, index),
+            realMatrixElementPtr(&realMatrix, index),
         );
-        runtime.convertAngle34FromTo(realMatrixElementPtr(&real_matrix, index), runtime.amRadian, runtime.currentAngularMode);
+        runtime.convertAngle34FromTo(realMatrixElementPtr(&realMatrix, index), runtime.amRadian, runtime.currentAngularMode);
     }
 
-    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
+    runtime.convertReal34MatrixToReal34MatrixRegister(&realMatrix, runtime.REGISTER_X);
 }
 
 fn wInvReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue)) {
         return;
     }
 
-    runtime.WP34S_InverseW(&x_value, &x_value, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
+    runtime.WP34S_InverseW(&xValue, &xValue, &runtime.ctxtReal39);
+    runtime.convertRealToResultRegister(&xValue, runtime.REGISTER_X, runtime.amNone);
 }
 
 fn wInvCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var realValue: runtime.real_t = undefined;
+    var imagValue: runtime.real_t = undefined;
+    var resultReal: runtime.real_t = undefined;
+    var resultImag: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &realValue, &imagValue)) {
         return;
     }
 
-    runtime.WP34S_InverseComplexW(&real_value, &imag_value, &result_real, &result_imag, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
+    runtime.WP34S_InverseComplexW(&realValue, &imagValue, &resultReal, &resultImag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&resultReal, &resultImag, runtime.REGISTER_X);
 }
 
 fn minusOneOverE() runtime.real_t {
@@ -2316,21 +2316,21 @@ fn minusOneOverE() runtime.real_t {
 }
 
 fn wPosReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var resultImag: runtime.real_t = undefined;
     const limit = minusOneOverE();
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue)) {
         return;
     }
 
-    if (realCompareGreaterEqual(&x_value, &limit)) {
-        runtime.WP34S_LambertW(&x_value, &result, false, &runtime.ctxtReal39);
+    if (realCompareGreaterEqual(&xValue, &limit)) {
+        runtime.WP34S_LambertW(&xValue, &result, false, &runtime.ctxtReal39);
         runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     } else if (runtime.getSystemFlag(runtime.FLAG_CPXRES)) {
-        runtime.WP34S_ComplexLambertW(&x_value, runtime.z47_math_wrappers_const_0(), &result, &result_imag, &runtime.ctxtReal39);
-        runtime.convertComplexToResultRegister(&result, &result_imag, runtime.REGISTER_X);
+        runtime.WP34S_ComplexLambertW(&xValue, runtime.z47_math_wrappers_const_0(), &result, &resultImag, &runtime.ctxtReal39);
+        runtime.convertComplexToResultRegister(&result, &resultImag, runtime.REGISTER_X);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function wPosReal:", "X < -e^(-1)", "and CPXRES is not set!", null);
@@ -2338,30 +2338,30 @@ fn wPosReal() callconv(.c) void {
 }
 
 fn wPosCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
+    var realValue: runtime.real_t = undefined;
+    var imagValue: runtime.real_t = undefined;
+    var resultReal: runtime.real_t = undefined;
+    var resultImag: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &realValue, &imagValue)) {
         return;
     }
 
-    runtime.WP34S_ComplexLambertW(&real_value, &imag_value, &result_real, &result_imag, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
+    runtime.WP34S_ComplexLambertW(&realValue, &imagValue, &resultReal, &resultImag, &runtime.ctxtReal39);
+    runtime.convertComplexToResultRegister(&resultReal, &resultImag, runtime.REGISTER_X);
 }
 
 fn wNegReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
+    var xValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
     const limit = minusOneOverE();
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &xValue)) {
         return;
     }
 
-    if (realCompareGreaterEqual(&x_value, &limit) and realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_0())) {
-        runtime.WP34S_LambertW(&x_value, &result, true, &runtime.ctxtReal39);
+    if (realCompareGreaterEqual(&xValue, &limit) and realCompareLessEqual(&xValue, runtime.z47_math_wrappers_const_0())) {
+        runtime.WP34S_LambertW(&xValue, &result, true, &runtime.ctxtReal39);
         runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -2370,18 +2370,18 @@ fn wNegReal() callconv(.c) void {
 }
 
 fn wNegCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var realValue: runtime.real_t = undefined;
+    var imagValue: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
     const limit = minusOneOverE();
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &realValue, &imagValue)) {
         return;
     }
 
-    if (runtime.realIsZero(&imag_value)) {
-        if (realCompareGreaterEqual(&real_value, &limit) and realCompareLessEqual(&real_value, runtime.z47_math_wrappers_const_0())) {
-            runtime.WP34S_LambertW(&real_value, &result, true, &runtime.ctxtReal39);
+    if (runtime.realIsZero(&imagValue)) {
+        if (realCompareGreaterEqual(&realValue, &limit) and realCompareLessEqual(&realValue, runtime.z47_math_wrappers_const_0())) {
+            runtime.WP34S_LambertW(&realValue, &result, true, &runtime.ctxtReal39);
             runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X);
         } else {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
