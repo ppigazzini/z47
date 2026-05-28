@@ -109,41 +109,41 @@ pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
     }
     defer runtime.closeFile();
 
-    var key_buffer: [256]u8 = undefined;
-    var value_buffer: [256]u8 = undefined;
-    var loaded_version: u32 = 0;
+    var keyBuffer: [256]u8 = undefined;
+    var valueBuffer: [256]u8 = undefined;
+    var loadedVersion: u32 = 0;
 
-    runtime.readLine(key_buffer[0..]);
-    if (runtime.lineEquals(key_buffer[0..].ptr, "PROGRAM_FILE_FORMAT")) {
-        runtime.readLine(value_buffer[0..]);
+    runtime.readLine(keyBuffer[0..]);
+    if (runtime.lineEquals(keyBuffer[0..].ptr, "PROGRAM_FILE_FORMAT")) {
+        runtime.readLine(valueBuffer[0..]);
     } else {
         runtime.showWarning(" \nThis is not a C47 program\n\nIt will not be loaded.");
         return;
     }
 
-    runtime.readLine(key_buffer[0..]);
-    runtime.readLine(value_buffer[0..]);
-    if (runtime.lineEquals(key_buffer[0..].ptr, "C47_program_file_version")) {
-        loaded_version = runtime.parseU32Line(value_buffer[0..].ptr);
-        if (loaded_version < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
+    runtime.readLine(keyBuffer[0..]);
+    runtime.readLine(valueBuffer[0..]);
+    if (runtime.lineEquals(keyBuffer[0..].ptr, "C47_program_file_version")) {
+        loadedVersion = runtime.parseU32Line(valueBuffer[0..].ptr);
+        if (loadedVersion < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
             runtime.showWarning(" \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
             return;
         }
-    } else if (runtime.lineEquals(key_buffer[0..].ptr, "WP43_program_file_version")) {
-        loaded_version = runtime.parseU32Line(value_buffer[0..].ptr);
+    } else if (runtime.lineEquals(keyBuffer[0..].ptr, "WP43_program_file_version")) {
+        loadedVersion = runtime.parseU32Line(valueBuffer[0..].ptr);
         runtime.showWarning(" \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
     } else {
         runtime.showWarning(" \nThis is not a C47 program\n \nIt will not be loaded.");
         return;
     }
 
-    runtime.readLine(key_buffer[0..]);
-    runtime.readLine(value_buffer[0..]);
-    if (!runtime.lineEquals(key_buffer[0..].ptr, "PROGRAM")) {
+    runtime.readLine(keyBuffer[0..]);
+    runtime.readLine(valueBuffer[0..]);
+    if (!runtime.lineEquals(keyBuffer[0..].ptr, "PROGRAM")) {
         return;
     }
 
-    const program_size_in_bytes: u32 = runtime.parseU32Line(value_buffer[0..].ptr);
+    const programSizeInBytes: u32 = runtime.parseU32Line(valueBuffer[0..].ptr);
 
     if (addEndNeeded()) {
         addSpaceAfterPrograms(2);
@@ -154,12 +154,12 @@ pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
         runtime.scanLabelsAndPrograms();
     }
 
-    addSpaceAfterPrograms(@intCast(program_size_in_bytes));
-    const start_of_program = offsetPointer(runtime.firstFreeProgramByte, -@as(isize, @intCast(program_size_in_bytes)));
+    addSpaceAfterPrograms(@intCast(programSizeInBytes));
+    const startOfProgram = offsetPointer(runtime.firstFreeProgramByte, -@as(isize, @intCast(programSizeInBytes)));
     var index: u32 = 0;
-    while (index < program_size_in_bytes) : (index += 1) {
-        runtime.readLine(value_buffer[0..]);
-        start_of_program[index] = runtime.parseU8Line(value_buffer[0..].ptr);
+    while (index < programSizeInBytes) : (index += 1) {
+        runtime.readLine(valueBuffer[0..]);
+        startOfProgram[index] = runtime.parseU8Line(valueBuffer[0..].ptr);
     }
 
     runtime.firstFreeProgramByte[0] = 0xff;
@@ -167,7 +167,7 @@ pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
     runtime.scanLabelsAndPrograms();
     runtime.goToLastProgram();
 
-    if (loaded_version < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
+    if (loadedVersion < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
         runtime.showWarning(" \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
         return;
     }
