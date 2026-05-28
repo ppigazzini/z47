@@ -72,17 +72,7 @@ const z47_math_wrappers_retained_fnParallel = runtime.retained.z47_math_wrappers
 const z47_math_wrappers_retained_fnUnitVector = runtime.retained.z47_math_wrappers_retained_fnUnitVector;
 const z47_math_wrappers_retained_fnSdl = runtime.retained.z47_math_wrappers_retained_fnSdl;
 const z47_math_wrappers_retained_fnSdr = runtime.retained.z47_math_wrappers_retained_fnSdr;
-const z47_math_wrappers_retained_fnSquareRoot = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
-const z47_math_wrappers_retained_fnCubeRoot = runtime.retained.z47_math_wrappers_retained_fnCubeRoot;
-const z47_math_wrappers_retained_fnPercentMRR = runtime.retained.z47_math_wrappers_retained_fnPercentMRR;
-const z47_math_wrappers_retained_fnPercentPlusMG = runtime.retained.z47_math_wrappers_retained_fnPercentPlusMG;
-const z47_math_wrappers_retained_fnPercentT = runtime.retained.z47_math_wrappers_retained_fnPercentT;
-const z47_math_wrappers_retained_fnDeltaPercent = runtime.retained.z47_math_wrappers_retained_fnDeltaPercent;
-const z47_math_wrappers_retained_fnFib = runtime.retained.z47_math_wrappers_retained_fnFib;
-const z47_math_wrappers_retained_fnLINPOL = runtime.retained.z47_math_wrappers_retained_fnLINPOL;
-const z47_math_wrappers_retained_fnCross = runtime.retained.z47_math_wrappers_retained_fnCross;
-const z47_math_wrappers_retained_fnDot = runtime.retained.z47_math_wrappers_retained_fnDot;
-const z47_math_wrappers_retained_fnLogXY = runtime.retained.z47_math_wrappers_retained_fnLogXY;
+const squareRootRetained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -7443,7 +7433,7 @@ pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) voi
     _ = unused_but_mandatory_parameter;
 
     if (register_type == runtime.dtReal34Matrix or register_type == runtime.dtComplex34Matrix) {
-        z47_math_wrappers_retained_fnSquareRoot(0);
+        squareRootRetained(0);
         return;
     }
 
