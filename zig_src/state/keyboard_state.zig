@@ -2,7 +2,7 @@ const builtin = @import("builtin");
 const runtime = @import("keyboard_state_runtime.zig");
 const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
-const is_dmcp_build = builtin.target.os.tag == .freestanding;
+const isDmcpBuild = builtin.target.os.tag == .freestanding;
 
 fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
@@ -37,7 +37,7 @@ fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 comptime {
-    if (!is_dmcp_build) {
+    if (!isDmcpBuild) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
