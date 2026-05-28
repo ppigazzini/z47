@@ -375,38 +375,38 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
     };
 }
 
-pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
+pub export fn copySourceRegisterToDestRegister(sourceRegister: runtime.calcRegister_t, destRegister: runtime.calcRegister_t) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.copySourceRegisterToDestRegisterRetained(source_register, dest_register);
+        runtime.copySourceRegisterToDestRegisterRetained(sourceRegister, destRegister);
         return;
     }
 
-    if (isSyntheticReservedCopySource(source_register)) {
+    if (isSyntheticReservedCopySource(sourceRegister)) {
         return;
     }
 
-    const normalized_source = normalizeLetteredReservedRegister(source_register);
-    const normalized_dest = normalizeLetteredReservedRegister(dest_register);
-    const source_type = getRegisterDataType(normalized_source);
-    const source_full_size = getRegisterFullSizeInBlocks(normalized_source);
+    const normalizedSource = normalizeLetteredReservedRegister(sourceRegister);
+    const normalizedDest = normalizeLetteredReservedRegister(destRegister);
+    const sourceType = getRegisterDataType(normalizedSource);
+    const sourceFullSize = getRegisterFullSizeInBlocks(normalizedSource);
 
-    if (getRegisterDataType(normalized_dest) != source_type or getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
-        const payload_size = copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
+    if (getRegisterDataType(normalizedDest) != sourceType or getRegisterFullSizeInBlocks(normalizedDest) != sourceFullSize) {
+        const payloadSize = copyPayloadSizeWithoutHeader(normalizedSource, sourceType) orelse {
             return;
         };
 
-        reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
+        reallocateRegister(normalizedDest, sourceType, payloadSize, runtime.amNone);
         if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
             return;
         }
     }
 
     _ = stack_runtime.xcopy(
-        getRegisterDataPointer(normalized_dest),
-        getRegisterDataPointer(normalized_source),
-        stack_runtime.bytesFromBlocks(source_full_size),
+        getRegisterDataPointer(normalizedDest),
+        getRegisterDataPointer(normalizedSource),
+        stack_runtime.bytesFromBlocks(sourceFullSize),
     );
-    setRegisterTag(normalized_dest, getRegisterTag(normalized_source));
+    setRegisterTag(normalizedDest, getRegisterTag(normalizedSource));
 }
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
