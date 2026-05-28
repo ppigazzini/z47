@@ -1,6 +1,6 @@
 const std = @import("std");
 const keyboard_state = @import("../state/keyboard_state.zig");
-const shortint = @import("../leaf/shortint.zig");
+const shortint = @import("../shortint/shortint.zig");
 const stack = @import("../state/stack.zig");
 
 pub const CommonConfig = struct {
@@ -23,7 +23,7 @@ pub const GeneratedOutputs = struct {
     test_pgms_bin: std.Build.LazyPath,
 };
 
-pub const ShortIntLeafObjects = shortint.RuntimeObjects;
+pub const ShortIntObjects = shortint.RuntimeObjects;
 pub const KeyboardStateObjects = keyboard_state.RuntimeObjects;
 pub const StackStateObjects = stack.RuntimeObjects;
 
@@ -36,7 +36,7 @@ pub const Context = struct {
     test_sources: [][]const u8,
     version_headers_dir: std.Build.LazyPath,
     generated: GeneratedOutputs,
-    shortint_leaf_objects: ShortIntLeafObjects,
+    shortint_objects: ShortIntObjects,
     keyboard_state_objects: KeyboardStateObjects,
     stack_state_objects: StackStateObjects,
 };

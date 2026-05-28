@@ -42,10 +42,12 @@ repo root
 |  |- dist.zig
 |  |- tools/
 |  |- leaf/
+|  |- shortint/
 |  |- state/
 |  `- zig_dist.py
 |- zig_src/
 |  |- leaf/
+|  |- shortint/
 |  `- state/
 |- zig_bridge/
 |  `- state/

@@ -110,9 +110,9 @@ Maintainer entrypoints:
 
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build logical_shortint_parity`: focused parity lane for the live
-  short-integer leaf rewrite slice
+  short-integer rewrite slice
 - `zig build rotate_bits_parity`: focused parity lane for the live rotate,
-  justify, byte-swap, zip, and unzip leaf owner slice
+  justify, byte-swap, zip, and unzip short-integer owner slice
 - `zig build stack_state_parity`: focused parity lane for the live stack-state
   rewrite slice
 - `zig build register_metadata_parity`: focused parity lane for the live

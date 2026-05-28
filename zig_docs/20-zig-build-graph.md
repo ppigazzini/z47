@@ -37,7 +37,7 @@ or packaging logic.
 | `../zig_build/dist.zig` | host and firmware distribution step registration |
 | `../zig_build/zig_dist.py` | Python packaging helper used by the Zig distribution steps |
 | `../zig_build/tools/` | Zig-owned deterministic generator entrypoints |
-| `../zig_build/leaf/` | build registration for the short-integer rewrite slice |
+| `../zig_build/shortint/` | build registration for the short-integer rewrite slice |
 | `../zig_build/state/` | build registration for the stateful rewrite slices |
 | `../zig_src/` | live runtime Zig owner paths for the rewrite slices |
 | `../zig_bridge/` | retained runtime bridge C owner paths used by the live build graph |

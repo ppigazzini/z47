@@ -2,7 +2,7 @@ const std = @import("std");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const host_platform = @import("platform.zig");
-const shortint = @import("../leaf/shortint.zig");
+const shortint = @import("../shortint/shortint.zig");
 const calc_state = @import("../state/calc_state.zig");
 const constants = @import("../leaf/constants.zig");
 const flags = @import("../state/flags.zig");
@@ -407,7 +407,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_C47",
@@ -432,7 +432,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_R47",
@@ -466,7 +466,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_C47",
@@ -483,7 +483,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         "USER_R47",
@@ -503,7 +503,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         null,
@@ -513,18 +513,18 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         b,
         context.host_target,
         optimize,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
     );
     const run_logical_shortint_parity = b.addRunArtifact(logical_shortint_parity);
     run_logical_shortint_parity.setCwd(b.path("."));
-    const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical leaf-module parity suite");
+    const logical_shortint_parity_step = b.step("logical_shortint_parity", "Run the short-integer logical parity suite");
     logical_shortint_parity_step.dependOn(&run_logical_shortint_parity.step);
 
     const rotate_bits_parity = shortint.addRotateBitsParityExecutable(
         b,
         context.host_target,
         optimize,
-        context.shortint_leaf_objects.rotate_bits,
+        context.shortint_objects.rotate_bits,
     );
     const run_rotate_bits_parity = b.addRunArtifact(rotate_bits_parity);
     run_rotate_bits_parity.setCwd(b.path("."));
@@ -675,7 +675,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.common,
         context.version_headers_dir,
         context.generated,
-        context.shortint_leaf_objects,
+        context.shortint_objects,
         context.keyboard_state_objects,
         context.stack_state_objects,
         .full,

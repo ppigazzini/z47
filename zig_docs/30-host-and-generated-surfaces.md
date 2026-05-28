@@ -75,7 +75,7 @@ system-flag accessor and change-tracking surface from `flags.c` with
 `../zig_src/state/flags.zig` plus retained wrapper sources under
 `../zig_bridge/state/`. The current host lane also replaces the remaining
 short-integer boolean logical owners under `../src/c47/logicalOps/` with
-`../zig_src/leaf/logical_boolean_ops.zig`. The current host
+`../zig_src/shortint/logical_boolean_ops.zig`. The current host
 lane also replaces the broader public keyboard command-entry surface with
 `../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
 retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
