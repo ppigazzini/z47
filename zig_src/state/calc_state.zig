@@ -3,18 +3,18 @@ const runtime = @import("calc_state_runtime.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
-fn saveCalcHost() callconv(.c) void {
+fn saveCalcBackupHost() callconv(.c) void {
     runtime.saveCalcBackup();
 }
 
-fn restoreCalcHost() callconv(.c) void {
+fn restoreCalcBackupHost() callconv(.c) void {
     runtime.restoreCalcBackup();
 }
 
 comptime {
     if (!is_dmcp_build) {
-        @export(&saveCalcHost, .{ .name = "saveCalc" });
-        @export(&restoreCalcHost, .{ .name = "restoreCalc" });
+        @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
+        @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
     }
 }
 
