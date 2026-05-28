@@ -321,19 +321,19 @@ pub fn getRegisterTagRetained(reg: calcRegister_t) u32 {
     return z47_registers_retained_getRegisterTag(reg);
 }
 
-pub fn retainedAllocateLocalRegisters(number_of_registers_to_allocate: u16) void {
+pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
     z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
-pub fn retainedCopySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void {
+pub fn copySourceRegisterToDestRegisterRetained(source_register: calcRegister_t, dest_register: calcRegister_t) void {
     z47_registers_retained_copySourceRegisterToDestRegister(source_register, dest_register);
 }
 
-pub fn retainedReallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     z47_registers_retained_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 
-pub fn retainedSetRegisterMaxDataLengthInBlocks(reg: calcRegister_t, max_data_len: u16) void {
+pub fn setRegisterMaxDataLengthInBlocksRetained(reg: calcRegister_t, max_data_len: u16) void {
     z47_registers_retained_setRegisterMaxDataLengthInBlocks(reg, max_data_len);
 }
 
@@ -345,14 +345,14 @@ pub fn getRegisterFullSizeInBlocksRetained(reg: calcRegister_t) u16 {
     return z47_registers_retained_getRegisterFullSizeInBlocks(reg);
 }
 
-pub fn retainedSetRegisterDataType(reg: calcRegister_t, data_type: u16, tag: u32) void {
+pub fn setRegisterDataTypeRetained(reg: calcRegister_t, data_type: u16, tag: u32) void {
     z47_registers_retained_setRegisterDataType(reg, data_type, tag);
 }
 
-pub fn retainedSetRegisterDataPointer(reg: calcRegister_t, mem_ptr: ?*const anyopaque) void {
+pub fn setRegisterDataPointerRetained(reg: calcRegister_t, mem_ptr: ?*const anyopaque) void {
     z47_registers_retained_setRegisterDataPointer(reg, mem_ptr);
 }
 
-pub fn retainedSetRegisterTag(reg: calcRegister_t, tag: u32) void {
+pub fn setRegisterTagRetained(reg: calcRegister_t, tag: u32) void {
     z47_registers_retained_setRegisterTag(reg, tag);
 }
