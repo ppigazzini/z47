@@ -51,11 +51,11 @@ pub export fn fnSaveProgram(label: u16) void {
         return;
     }
 
-    const saved_current_local_step_number = runtime.currentLocalStepNumber;
-    const saved_current_program_number = runtime.currentProgramNumber;
+    const savedCurrentLocalStepNumber = runtime.currentLocalStepNumber;
+    const savedCurrentProgramNumber = runtime.currentProgramNumber;
     defer {
-        runtime.currentLocalStepNumber = saved_current_local_step_number;
-        runtime.currentProgramNumber = saved_current_program_number;
+        runtime.currentLocalStepNumber = savedCurrentLocalStepNumber;
+        runtime.currentProgramNumber = savedCurrentProgramNumber;
     }
 
     if (!runtime.selectProgram(label)) {
@@ -76,16 +76,16 @@ pub export fn fnSaveProgram(label: u16) void {
     runtime.writeLiteral("C47_program_file_version\n");
     runtime.writeU32Line(runtime.PROGRAM_VERSION);
 
-    var current_size_in_bytes = @intFromPtr(runtime.endOfCurrentProgram) - @intFromPtr(runtime.beginOfCurrentProgram);
+    var currentSizeInBytes = @intFromPtr(runtime.endOfCurrentProgram) - @intFromPtr(runtime.beginOfCurrentProgram);
     if (runtime.currentProgramNumber == runtime.numberOfPrograms) {
-        current_size_in_bytes -= 2;
+        currentSizeInBytes -= 2;
     }
 
     runtime.writeLiteral("PROGRAM\n");
-    runtime.writeU32Line(@intCast(current_size_in_bytes));
+    runtime.writeU32Line(@intCast(currentSizeInBytes));
 
     var index: usize = 0;
-    while (index < current_size_in_bytes) : (index += 1) {
+    while (index < currentSizeInBytes) : (index += 1) {
         runtime.writeU8Line(runtime.beginOfCurrentProgram[index]);
     }
 
