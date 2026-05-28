@@ -788,36 +788,36 @@ fn log2Cplx() callconv(.c) void {
 fn lnComplexZig(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    lnRealOut: *runtime.real_t,
+    lnImagOut: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
-    ln_complex_owned.lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    ln_complex_owned.lnComplexZig(real, imag, lnRealOut, lnImagOut, realContext);
 }
 
 pub export fn z47_math_wrappers_owned_lnComplex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    lnRealOut: *runtime.real_t,
+    lnImagOut: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    lnComplexZig(real, imag, lnRealOut, lnImagOut, realContext);
 }
 
 pub export fn lnComplex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    lnRealOut: *runtime.real_t,
+    lnImagOut: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) callconv(.c) void {
-    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    lnComplexZig(real, imag, lnRealOut, lnImagOut, realContext);
 }
 
 fn lnReal() callconv(.c) void {
     var x: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
+    var imagValue: runtime.real_t = undefined;
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
         return;
@@ -849,8 +849,8 @@ fn lnReal() callconv(.c) void {
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&x);
         wp34sLn(&x, &x, &runtime.ctxtReal39);
-        copyReal(&imag_value, runtime.z47_math_wrappers_const_pi());
-        runtime.convertComplexToResultRegister(&x, &imag_value, runtime.REGISTER_X);
+        copyReal(&imagValue, runtime.z47_math_wrappers_const_pi());
+        runtime.convertComplexToResultRegister(&x, &imagValue, runtime.REGISTER_X);
         return;
     } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.realSetNaN(&x);
@@ -863,96 +863,96 @@ fn lnReal() callconv(.c) void {
 }
 
 fn lnCplx() callconv(.c) void {
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
+    var xReal: runtime.real_t = undefined;
+    var xImag: runtime.real_t = undefined;
 
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &x_real, &x_imag)) {
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &xReal, &xImag)) {
         return;
     }
 
-    if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag)) {
+    if (runtime.realIsZero(&xReal) and runtime.realIsZero(&xImag)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             return;
         }
 
-        copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(&x_imag);
+        copyReal(&xReal, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(&xImag);
     } else {
-        lnComplexZig(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+        lnComplexZig(&xReal, &xImag, &xReal, &xImag, &runtime.ctxtReal39);
     }
 
-    runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
+    runtime.convertComplexToResultRegister(&xReal, &xImag, runtime.REGISTER_X);
 }
 
 fn lnP1Complex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
+    lnRealOut: *runtime.real_t,
+    lnImagOut: *runtime.real_t,
+    realContext: *runtime.realContext_t,
 ) void {
     var magnitude: runtime.real_t = undefined;
     var dummy: runtime.real_t = undefined;
-    var trailing_sum: runtime.real_t = undefined;
+    var trailingSum: runtime.real_t = undefined;
     var threshold = std.mem.zeroes(runtime.real_t);
 
-    defer runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &trailing_sum, real_context);
+    defer runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &trailingSum, realContext);
 
     threshold.digits = 1;
     threshold.exponent = -6;
     threshold.lsu[0] = 1;
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, &magnitude, &dummy, real_context);
+    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, &magnitude, &dummy, realContext);
     if (realAbsLessThan(&magnitude, &threshold)) {
-        var term_real: runtime.real_t = undefined;
-        var term_imag: runtime.real_t = undefined;
-        var sum_real: runtime.real_t = undefined;
-        var sum_imag: runtime.real_t = undefined;
+        var termReal: runtime.real_t = undefined;
+        var termImag: runtime.real_t = undefined;
+        var sumReal: runtime.real_t = undefined;
+        var sumImag: runtime.real_t = undefined;
 
-        copyReal(&term_real, real);
-        copyReal(&term_imag, imag);
-        copyReal(&sum_real, real);
-        copyReal(&sum_imag, imag);
+        copyReal(&termReal, real);
+        copyReal(&termImag, imag);
+        copyReal(&sumReal, real);
+        copyReal(&sumImag, imag);
 
-        const iterations: i32 = @divTrunc(real_context.digits, 5) | 1;
+        const iterations: i32 = @divTrunc(realContext.digits, 5) | 1;
         var index: i32 = 1;
         while (index <= iterations) : (index += 1) {
-            var product_real: runtime.real_t = undefined;
-            var product_imag: runtime.real_t = undefined;
+            var productReal: runtime.real_t = undefined;
+            var productImag: runtime.real_t = undefined;
             var divisor: runtime.real_t = undefined;
             var contribution: runtime.real_t = undefined;
 
-            runtime.mulComplexComplex(&term_real, &term_imag, real, imag, &product_real, &product_imag, real_context);
-            runtime.realChangeSign(&product_real);
-            runtime.realChangeSign(&product_imag);
-            copyReal(&term_real, &product_real);
-            copyReal(&term_imag, &product_imag);
+            runtime.mulComplexComplex(&termReal, &termImag, real, imag, &productReal, &productImag, realContext);
+            runtime.realChangeSign(&productReal);
+            runtime.realChangeSign(&productImag);
+            copyReal(&termReal, &productReal);
+            copyReal(&termImag, &productImag);
 
             runtime.uInt32ToReal(@intCast(index + 1), &divisor);
 
-            runtime.realDivide(&term_real, &divisor, &contribution, real_context);
-            runtime.realAdd(&sum_real, &contribution, &sum_real, real_context);
-            runtime.realDivide(&term_imag, &divisor, &contribution, real_context);
-            runtime.realAdd(&sum_imag, &contribution, &sum_imag, real_context);
+            runtime.realDivide(&termReal, &divisor, &contribution, realContext);
+            runtime.realAdd(&sumReal, &contribution, &sumReal, realContext);
+            runtime.realDivide(&termImag, &divisor, &contribution, realContext);
+            runtime.realAdd(&sumImag, &contribution, &sumImag, realContext);
         }
 
-        copyReal(ln_real, &sum_real);
-        copyReal(ln_imag, &sum_imag);
+        copyReal(lnRealOut, &sumReal);
+        copyReal(lnImagOut, &sumImag);
         return;
     }
 
-    var one_plus_real: runtime.real_t = undefined;
+    var onePlusReal: runtime.real_t = undefined;
 
-    runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &one_plus_real, real_context);
-    if (runtime.realIsZero(&one_plus_real) and runtime.realIsZero(imag)) {
-        copyReal(ln_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(ln_imag);
+    runtime.realAdd(real, runtime.z47_math_wrappers_const_1(), &onePlusReal, realContext);
+    if (runtime.realIsZero(&onePlusReal) and runtime.realIsZero(imag)) {
+        copyReal(lnRealOut, runtime.z47_math_wrappers_const_minus_infinity());
+        runtime.realSetZero(lnImagOut);
         return;
     }
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(&one_plus_real, imag, ln_real, ln_imag, real_context);
-    wp34sLn(ln_real, ln_real, real_context);
+    rectangular_to_polar_owned.realRectangularToPolarZig(&onePlusReal, imag, lnRealOut, lnImagOut, realContext);
+    wp34sLn(lnRealOut, lnRealOut, realContext);
 }
 
 fn sincReal() callconv(.c) void {
