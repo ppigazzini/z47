@@ -280,17 +280,17 @@ fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, dataType: u32) u16 {
     };
 }
 
-pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
+pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, maxDataLen: u16) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
+        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, maxDataLen);
         return;
     }
 
-    var data_ptr: ?*anyopaque = null;
+    var dataPtr: ?*anyopaque = null;
     var descriptor: runtime.register_descriptor_t = 0;
 
-    if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
-        runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
+    if (tryGetDataPointerForMaxLengthSet(reg, &dataPtr)) {
+        runtime.setDataMaxLengthInBlocks(dataPtr, maxDataLen);
         return;
     }
 
@@ -309,9 +309,9 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        if (data_ptr != null) {
-            runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
+        dataPtr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        if (dataPtr != null) {
+            runtime.setDataMaxLengthInBlocks(dataPtr, maxDataLen);
             return;
         }
     }
@@ -320,7 +320,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
         return;
     }
 
-    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
+    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, maxDataLen);
 }
 
 pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
@@ -328,10 +328,10 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
         return runtime.getRegisterMaxDataLengthInBlocksRetained(reg);
     }
 
-    var data_ptr: ?*anyopaque = null;
-    var type_reg = reg;
+    var dataPtr: ?*anyopaque = null;
+    var typeReg = reg;
 
-    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
+    if (!tryGetDataPointerForMaxLengthGet(reg, &dataPtr, &typeReg)) {
         if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
             stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
             return 0;
@@ -345,12 +345,12 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
         return 0;
     }
 
-    const data_type = getRegisterDataType(type_reg);
-    if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
-        return matrixMaxLengthInBlocks(data_ptr, data_type);
+    const dataType = getRegisterDataType(typeReg);
+    if (dataType == runtime.dtReal34Matrix or dataType == runtime.dtComplex34Matrix) {
+        return matrixMaxLengthInBlocks(dataPtr, dataType);
     }
 
-    return runtime.dataMaxLengthInBlocks(data_ptr);
+    return runtime.dataMaxLengthInBlocks(dataPtr);
 }
 
 pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
