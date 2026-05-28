@@ -49,62 +49,62 @@ pub fn implementation(comptime runtime: type) type {
             return false;
         }
 
-        pub fn keyReplacements(item: i16, item1: *i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) runtime.bool_t {
+        pub fn keyReplacements(item: i16, replacementItem: *i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) runtime.bool_t {
             if (!(runtime.calcMode == runtime.CM_AIM or
                 runtime.calcMode == runtime.CM_EIM or
                 runtime.calcMode == runtime.CM_PEM or
                 (runtime.tam.mode != 0 and runtime.tam.alpha) or
                 (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0)))
             {
-                return item1.* != 0;
+                return replacementItem.* != 0;
             }
 
-            if (g_shift) {
+            if (gShift) {
                 switch (item) {
-                    runtime.ITM_sigma => item1.* = runtime.ITM_SIGMA,
-                    runtime.ITM_delta => item1.* = runtime.ITM_DELTA,
-                    runtime.ITM_NULL => item1.* = runtime.ITM_SPACE,
+                    runtime.ITM_sigma => replacementItem.* = runtime.ITM_SIGMA,
+                    runtime.ITM_delta => replacementItem.* = runtime.ITM_DELTA,
+                    runtime.ITM_NULL => replacementItem.* = runtime.ITM_SPACE,
                     else => {},
                 }
-            } else if (numlock_enabled) {
-                var normalized_item = item;
+            } else if (numlockEnabled) {
+                var normalizedItem = item;
                 if (item >= runtime.ITM_A + 26 and item <= runtime.ITM_Z + 26) {
-                    normalized_item += 26;
+                    normalizedItem += 26;
                 }
 
                 var index: usize = 15;
                 while (index < 37) : (index += 1) {
-                    const std_key = runtime.kbdStdAt(index);
+                    const standardKey = runtime.kbdStdAt(index);
 
-                    if (std_key.primaryAim == runtime.ITM_EXIT1 or
-                        std_key.primaryAim == runtime.ITM_UP1 or
-                        std_key.primaryAim == runtime.ITM_DOWN1 or
-                        std_key.primaryAim == runtime.ITM_BACKSPACE)
+                    if (standardKey.primaryAim == runtime.ITM_EXIT1 or
+                        standardKey.primaryAim == runtime.ITM_UP1 or
+                        standardKey.primaryAim == runtime.ITM_DOWN1 or
+                        standardKey.primaryAim == runtime.ITM_BACKSPACE)
                     {
                         continue;
                     }
 
-                    if (!f_shift and normalized_item == std_key.primaryAim) {
-                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else std_key;
-                        item1.* = key.gShiftedAim;
+                    if (!fShift and normalizedItem == standardKey.primaryAim) {
+                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else standardKey;
+                        replacementItem.* = key.gShiftedAim;
                         break;
                     }
 
-                    if (f_shift and index >= 31 and normalized_item == std_key.gShiftedAim) {
-                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else std_key;
-                        item1.* = key.primaryAim;
+                    if (fShift and index >= 31 and normalizedItem == standardKey.gShiftedAim) {
+                        const key = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[index] else standardKey;
+                        replacementItem.* = key.primaryAim;
                         break;
                     }
                 }
             }
 
-            return item1.* != 0;
+            return replacementItem.* != 0;
         }
 
-        pub fn numlockReplacements(item: i16, numlock_enabled: runtime.bool_t, f_shift: runtime.bool_t, g_shift: runtime.bool_t) u16 {
-            var item1: i16 = 0;
-            if (keyReplacements(item, &item1, numlock_enabled, f_shift, g_shift)) {
-                return runtime.maxAbs(item1);
+        pub fn numlockReplacements(item: i16, numlockEnabled: runtime.bool_t, fShift: runtime.bool_t, gShift: runtime.bool_t) u16 {
+            var replacementItem: i16 = 0;
+            if (keyReplacements(item, &replacementItem, numlockEnabled, fShift, gShift)) {
+                return runtime.maxAbs(replacementItem);
             }
 
             return runtime.maxAbs(item);
