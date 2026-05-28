@@ -613,17 +613,17 @@ pub export fn fnDeleteVariable(regist: u16) void {
     runtime.reportCannotDeletePredefItem();
 }
 
-fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
-    allocateNamedVariable(variable_name, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
+fn initializeSimEqMatrix(variableName: [*:0]const u8) void {
+    allocateNamedVariable(variableName, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return;
     }
 
     const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    const data_ptr = getRegisterDataPointer(register);
+    const dataPtr = getRegisterDataPointer(register);
 
-    runtime.initializeMatrixHeader1x1(data_ptr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
+    runtime.initializeMatrixHeader1x1(dataPtr);
+    stack_runtime.real34SetZero(firstMatrixElementPointer(dataPtr));
 }
 
 fn initSimEqMatABX() void {
@@ -640,8 +640,8 @@ fn initSimEqMatABX() void {
     initializeSimEqMatrix("Mat_X");
 }
 
-fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
-    const register = findOrAllocateNamedVariable(variable_name);
+fn refreshSimEqMatrix(variableName: [*:0]const u8) void {
+    const register = findOrAllocateNamedVariable(variableName);
     if (register == runtime.INVALID_VARIABLE) {
         return;
     }
@@ -651,16 +651,16 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
         return;
     }
 
-    const data_ptr = getRegisterDataPointer(register);
-    runtime.initializeMatrixHeader1x1(data_ptr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
+    const dataPtr = getRegisterDataPointer(register);
+    runtime.initializeMatrixHeader1x1(dataPtr);
+    stack_runtime.real34SetZero(firstMatrixElementPointer(dataPtr));
 }
 
-fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
-    const ptr = data_ptr orelse return null;
+fn firstMatrixElementPointer(dataPtr: ?*anyopaque) ?*anyopaque {
+    const ptr = dataPtr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const payload_offset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
-    return @ptrCast(bytes + payload_offset);
+    const payloadOffset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
+    return @ptrCast(bytes + payloadOffset);
 }
 
 fn refreshSimEqMatABX() void {
