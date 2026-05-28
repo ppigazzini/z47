@@ -33,13 +33,13 @@ fn swapRegs(sourceReg: runtime.calcRegister_t, targetReg: u16) void {
     runtime.reportInvalidSwapTarget(targetReg);
 }
 
-pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnClX(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     runtime.clearRegister(runtime.REGISTER_X);
 }
 
-pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnClearStack(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     const stackTop = runtime.getStackTop();
     var reg = runtime.REGISTER_X;
@@ -126,8 +126,8 @@ pub export fn fnClearRegisters(confirmation: u16) void {
     }
 }
 
-pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRegClr(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     var startReg: u16 = 0;
     var count: u16 = 0;
@@ -144,8 +144,8 @@ pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
     runtime.reportRegisterCommandError(runtime.lastErrorCode);
 }
 
-pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRegSwap(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     var sourceStart: u16 = 0;
     var count: u16 = 0;
@@ -172,7 +172,7 @@ pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
+pub export fn fnRegCopy(unusedButMandatoryParameter: u16) void {
     var partialLoad = false;
     var sourceStart: u16 = 0;
     var count: u16 = 0;
@@ -185,7 +185,7 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
     }
 
     if (partialLoad) {
-        _ = unused_but_mandatory_parameter;
+        _ = unusedButMandatoryParameter;
         runtime.doPartialRegisterLoad(sourceStart, count, destinationStart);
         return;
     }
@@ -219,8 +219,8 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRegSort(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     var startReg: u16 = 0;
     var count: u16 = 0;
@@ -260,7 +260,7 @@ pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
+pub export fn fnToReal(unusedButMandatoryParameter: u16) void {
     if (runtime.tryFnToRealComplexZero()) {
         return;
     }
@@ -285,11 +285,11 @@ pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    runtime.toRealRetained(unused_but_mandatory_parameter);
+    runtime.toRealRetained(unusedButMandatoryParameter);
 }
 
-pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
-    const one_argument_is_complex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
+pub export fn adjustResult(res: runtime.calcRegister_t, dropY: bool, setCpxRes: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
+    const oneArgumentIsComplex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
 
     if (runtime.adjustResultScalarCore(res) or runtime.adjustResultRealMatrixCore(res) or runtime.adjustResultComplexMatrixCore(res)) {
         if (runtime.lastErrorCode != runtime.ERROR_NONE) {
@@ -300,11 +300,11 @@ pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_re
         return;
     }
 
-    if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {
+    if (setCpxRes and oneArgumentIsComplex and runtime.getRegisterDataType(res) != runtime.dtString) {
         runtime.adjustResultSetCpxRes();
     }
 
-    if (drop_y) {
+    if (dropY) {
         fnDropY(0);
     }
 }
@@ -335,8 +335,8 @@ pub export fn saveLastX() bool {
     return runtime.lastErrorCode == runtime.ERROR_NONE;
 }
 
-pub export fn fnGetLocR(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnGetLocR(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     liftStack();
     runtime.storeLocalRegisterCountInX();
@@ -369,23 +369,23 @@ pub export fn _Drop(reg: runtime.calcRegister_t) void {
     }
 }
 
-pub export fn fnDrop(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnDrop(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     _Drop(runtime.REGISTER_X);
 }
 
-pub export fn fnDropY(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnDropY(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     _Drop(runtime.REGISTER_Y);
 }
 
-pub export fn fnDropZ(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnDropZ(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     _Drop(runtime.REGISTER_Z);
 }
 
-pub export fn fnDropT(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnDropT(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     _Drop(runtime.REGISTER_T);
 }
 
@@ -397,8 +397,8 @@ pub export fn fnDropN(number: u16) void {
     }
 }
 
-pub export fn fnRollUp(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRollUp(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     const stackTop = runtime.getStackTop();
     const savedDescriptor = runtime.globalDescriptor(stackTop);
@@ -410,8 +410,8 @@ pub export fn fnRollUp(unused_but_mandatory_parameter: u16) void {
     runtime.setGlobalDescriptor(runtime.REGISTER_X, savedDescriptor);
 }
 
-pub export fn fnRollDown(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRollDown(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     const stackTop = runtime.getStackTop();
     const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
@@ -423,8 +423,8 @@ pub export fn fnRollDown(unused_but_mandatory_parameter: u16) void {
     runtime.setGlobalDescriptor(stackTop, savedDescriptor);
 }
 
-pub export fn fnDisplayStack(number_of_stack_lines: u16) void {
-    runtime.displayStack = @intCast(number_of_stack_lines);
+pub export fn fnDisplayStack(numberOfStackLines: u16) void {
+    runtime.displayStack = @intCast(numberOfStackLines);
 }
 
 pub export fn fnSwapX(reg: u16) void {
@@ -460,8 +460,8 @@ pub export fn fnDupN(number: u16) void {
     }
 }
 
-pub export fn fnSwapXY(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSwapXY(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
     runtime.setGlobalDescriptor(runtime.REGISTER_X, runtime.globalDescriptor(runtime.REGISTER_Y));
@@ -485,8 +485,8 @@ pub export fn fnShuffle(registerOrder: u16) void {
     }
 }
 
-pub export fn fnFillStack(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnFillStack(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     const stackTop = runtime.getStackTop();
     const dataTypeX = runtime.getRegisterDataType(runtime.REGISTER_X);
@@ -509,8 +509,8 @@ pub export fn fnFillStack(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub export fn fnGetStackSize(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnGetStackSize(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
 
     liftStack();
     runtime.storeStackSizeInX(if (runtime.getSystemFlag(runtime.FLAG_SSIZE8)) 8 else 4);
@@ -520,8 +520,8 @@ pub export fn saveForUndo() void {
     runtime.saveForUndoRetained();
 }
 
-pub export fn fnUndo(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnUndo(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
     if (runtime.thereIsSomethingToUndo) {
         undo();
     }
