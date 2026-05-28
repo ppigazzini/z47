@@ -267,7 +267,7 @@ pub fn restoreSavedSigmaLastXYAndAdd() void {
     z47_stack_runtime_restore_saved_sigma_last_xy_and_add();
 }
 
-pub fn retainedFnClearRegisters(confirmation: u16) void {
+pub fn clearRegistersRetained(confirmation: u16) void {
     z47_registers_retained_fnClearRegisters(confirmation);
 }
 
@@ -275,11 +275,11 @@ pub fn retainedClearRegister(reg: calcRegister_t) void {
     z47_registers_retained_clearRegister(reg);
 }
 
-pub fn retainedFnRegCopy(unused_but_mandatory_parameter: u16) void {
+pub fn regCopyRetained(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter);
 }
 
-pub fn retainedFnToReal(unused_but_mandatory_parameter: u16) void {
+pub fn toRealRetained(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
 }
 
