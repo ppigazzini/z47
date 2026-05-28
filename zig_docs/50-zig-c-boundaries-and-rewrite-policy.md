@@ -199,6 +199,27 @@ Current repo policy requires:
   [70-tests-and-verification.md](70-tests-and-verification.md) when the new
   boundary affects behavior.
 
+## Naming Rules For Rewrite Slices
+
+Keep the naming split explicit when a rewrite slice has more than one layer.
+
+- use the semantic domain name for the owner file, for example
+  `../zig_src/frontier/frontier.zig` or `../zig_src/state/calc_state.zig`
+- keep direct retained-boundary bindings in `*_runtime.zig`, for example
+  `../zig_src/frontier/frontier_runtime.zig` or
+  `../zig_src/state/calc_state_runtime.zig`
+- use `*_export.zig` only for thin ABI-facing forwarders, for example
+  `../zig_src/mathematics/math_atan_export.zig` and
+  `../zig_src/mathematics/math_atan2_export.zig`
+- use `*_owned.zig` only for the implementation that sits behind a paired
+  export shim, for example `../zig_src/mathematics/math_atan2_owned.zig`
+- keep retained C helper files explicit as `*_retained.c` or
+  `*_runtime_helpers.c`
+
+Do not reintroduce mixed owner-plus-export spellings such as
+`*_owned_export.zig`. Do not add owner-file suffixes like `*_entries.zig` when
+the file is already the semantic domain owner.
+
 ## Review Rules
 
 - Prefer shrinking or clarifying boundaries over moving them around.
