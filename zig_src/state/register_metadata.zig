@@ -176,13 +176,13 @@ fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRe
     return reg;
 }
 
-fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
-    return switch (data_type) {
+fn copyPayloadSizeWithoutHeader(sourceReg: runtime.calcRegister_t, dataType: u32) ?u16 {
+    return switch (dataType) {
         runtime.dtLongInteger,
         runtime.dtString,
         runtime.dtReal34Matrix,
         runtime.dtComplex34Matrix,
-        => getRegisterMaxDataLengthInBlocks(source_reg),
+        => getRegisterMaxDataLengthInBlocks(sourceReg),
         runtime.dtTime,
         runtime.dtDate,
         runtime.dtShortInteger,
@@ -194,15 +194,15 @@ fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u
     };
 }
 
-fn isVariableSizedDataType(data_type: u32) bool {
-    return data_type == runtime.dtLongInteger or
-        data_type == runtime.dtString or
-        data_type == runtime.dtReal34Matrix or
-        data_type == runtime.dtComplex34Matrix;
+fn isVariableSizedDataType(dataType: u32) bool {
+    return dataType == runtime.dtLongInteger or
+        dataType == runtime.dtString or
+        dataType == runtime.dtReal34Matrix or
+        dataType == runtime.dtComplex34Matrix;
 }
 
-fn normalizePayloadSizeInBlocks(data_type: u32, requested_size_in_blocks: u16) u16 {
-    return switch (data_type) {
+fn normalizePayloadSizeInBlocks(dataType: u32, requestedSizeInBlocks: u16) u16 {
+    return switch (dataType) {
         runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
         runtime.dtReal34,
         runtime.dtTime,
@@ -210,20 +210,20 @@ fn normalizePayloadSizeInBlocks(data_type: u32, requested_size_in_blocks: u16) u
         => runtime.real34SizeInBlocks(),
         runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
         runtime.dtConfig => runtime.configSizeInBlocks(),
-        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requested_size_in_blocks),
-        else => requested_size_in_blocks,
+        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requestedSizeInBlocks),
+        else => requestedSizeInBlocks,
     };
 }
 
-fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
-    return switch (data_type) {
+fn allocationSizeInBlocks(dataType: u32, payloadSizeInBlocks: u16) u16 {
+    return switch (dataType) {
         runtime.dtString,
         runtime.dtLongInteger,
-        => payload_size_in_blocks + runtime.strLgIntHeaderSizeInBlocks(),
+        => payloadSizeInBlocks + runtime.strLgIntHeaderSizeInBlocks(),
         runtime.dtReal34Matrix,
         runtime.dtComplex34Matrix,
-        => payload_size_in_blocks + runtime.matrixHeaderSizeInBlocks(),
-        else => payload_size_in_blocks,
+        => payloadSizeInBlocks + runtime.matrixHeaderSizeInBlocks(),
+        else => payloadSizeInBlocks,
     };
 }
 
@@ -253,29 +253,29 @@ fn validateNameGlyphCode(name: [*:0]const u8, offset: usize) u16 {
     return @as(u16, first);
 }
 
-fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_blocks: u16) bool {
-    const current_type = getRegisterDataType(reg);
-    if (current_type != data_type) {
+fn needsReallocate(reg: runtime.calcRegister_t, dataType: u32, payloadSizeInBlocks: u16) bool {
+    const currentType = getRegisterDataType(reg);
+    if (currentType != dataType) {
         return true;
     }
 
-    if (isVariableSizedDataType(current_type)) {
-        return getRegisterMaxDataLengthInBlocks(reg) != payload_size_in_blocks;
+    if (isVariableSizedDataType(currentType)) {
+        return getRegisterMaxDataLengthInBlocks(reg) != payloadSizeInBlocks;
     }
 
     return false;
 }
 
-fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
-    var data_ptr: ?*anyopaque = null;
+fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, dataType: u32) u16 {
+    var dataPtr: ?*anyopaque = null;
 
-    if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
+    if (!tryGetDataPointerForFullSize(reg, &dataPtr)) {
         return runtime.getRegisterFullSizeInBlocksRetained(reg);
     }
 
-    return switch (data_type) {
-        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
-        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
+    return switch (dataType) {
+        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(dataPtr) + runtime.strLgIntHeaderSizeInBlocks(),
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(dataPtr, dataType) + runtime.matrixHeaderSizeInBlocks(),
         else => runtime.getRegisterFullSizeInBlocksRetained(reg),
     };
 }
