@@ -41,7 +41,7 @@ const z47_math_wrappers_retained_fnArg = runtime.retained.z47_math_wrappers_reta
 const z47_math_wrappers_retained_fnMagnitude = runtime.retained.z47_math_wrappers_retained_fnMagnitude;
 const z47_math_wrappers_retained_fnConjugate = runtime.retained.z47_math_wrappers_retained_fnConjugate;
 const z47_math_wrappers_retained_fnSwapRealImaginary = runtime.retained.z47_math_wrappers_retained_fnSwapRealImaginary;
-const z47_math_wrappers_retained_fnAtan2 = runtime.retained.z47_math_wrappers_retained_fnAtan2;
+const atan2Retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
 const z47_math_wrappers_retained_fnPercent = runtime.retained.z47_math_wrappers_retained_fnPercent;
 const addRetained = runtime.retained.z47_math_wrappers_retained_fnAdd;
 const subtractRetained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
@@ -69,10 +69,10 @@ const z47_math_wrappers_retained_fnCheckNumber = runtime.retained.z47_math_wrapp
 const z47_math_wrappers_retained_fnCheckAngle = runtime.retained.z47_math_wrappers_retained_fnCheckAngle;
 const z47_math_wrappers_retained_fnCheckMatrix = runtime.retained.z47_math_wrappers_retained_fnCheckMatrix;
 const z47_math_wrappers_retained_fnGetType = runtime.retained.z47_math_wrappers_retained_fnGetType;
-const z47_math_wrappers_retained_fnDblDivide = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
-const z47_math_wrappers_retained_fnDblDivideRemainder = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
-const z47_math_wrappers_retained_fnToPolar2 = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
-const z47_math_wrappers_retained_fnToRect2 = runtime.retained.z47_math_wrappers_retained_fnToRect2;
+const doubleDivideRetained = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
+const doubleDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
+const toPolar2Retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
+const toRect2Retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
 const z47_math_wrappers_retained_fnToRect = runtime.retained.z47_math_wrappers_retained_fnToRect;
 const z47_math_wrappers_retained_fnParallel = runtime.retained.z47_math_wrappers_retained_fnParallel;
 const z47_math_wrappers_retained_fnUnitVector = runtime.retained.z47_math_wrappers_retained_fnUnitVector;
@@ -4650,7 +4650,7 @@ pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
 
     if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter);
+        atan2Retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -6433,7 +6433,7 @@ pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void
         return;
     }
 
-    z47_math_wrappers_retained_fnDblDivide(unused_but_mandatory_parameter);
+    doubleDivideRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -6442,7 +6442,7 @@ pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv
         return;
     }
 
-    z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter);
+    doubleDivideRemainderRetained(unused_but_mandatory_parameter);
 }
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
@@ -6673,7 +6673,7 @@ pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    z47_math_wrappers_retained_fnToPolar2(unused_but_mandatory_parameter);
+    toPolar2Retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -6681,7 +6681,7 @@ pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    z47_math_wrappers_retained_fnToRect2(unused_but_mandatory_parameter);
+    toRect2Retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
