@@ -43,14 +43,14 @@ const z47_math_wrappers_retained_fnConjugate = runtime.retained.z47_math_wrapper
 const z47_math_wrappers_retained_fnSwapRealImaginary = runtime.retained.z47_math_wrappers_retained_fnSwapRealImaginary;
 const z47_math_wrappers_retained_fnAtan2 = runtime.retained.z47_math_wrappers_retained_fnAtan2;
 const z47_math_wrappers_retained_fnPercent = runtime.retained.z47_math_wrappers_retained_fnPercent;
-const z47_math_wrappers_retained_fnAdd = runtime.retained.z47_math_wrappers_retained_fnAdd;
-const z47_math_wrappers_retained_fnSubtract = runtime.retained.z47_math_wrappers_retained_fnSubtract;
-const z47_math_wrappers_retained_fnMultiply = runtime.retained.z47_math_wrappers_retained_fnMultiply;
-const z47_math_wrappers_retained_fnDivide = runtime.retained.z47_math_wrappers_retained_fnDivide;
-const z47_math_wrappers_retained_fnIDiv = runtime.retained.z47_math_wrappers_retained_fnIDiv;
-const z47_math_wrappers_retained_fnIDivR = runtime.retained.z47_math_wrappers_retained_fnIDivR;
-const z47_math_wrappers_retained_fnDblMultiply = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
-const z47_math_wrappers_retained_fnRound = runtime.retained.z47_math_wrappers_retained_fnRound;
+const addRetained = runtime.retained.z47_math_wrappers_retained_fnAdd;
+const subtractRetained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
+const multiplyRetained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
+const divideRetained = runtime.retained.z47_math_wrappers_retained_fnDivide;
+const integerDivideRetained = runtime.retained.z47_math_wrappers_retained_fnIDiv;
+const integerDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnIDivR;
+const doubleMultiplyRetained = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
+const roundRetained = runtime.retained.z47_math_wrappers_retained_fnRound;
 const z47_math_wrappers_retained_fnDecomp = runtime.retained.z47_math_wrappers_retained_fnDecomp;
 const z47_math_wrappers_retained_fnCheckInteger = runtime.retained.z47_math_wrappers_retained_fnCheckInteger;
 const z47_math_wrappers_retained_fnDec = runtime.retained.z47_math_wrappers_retained_fnDec;
@@ -5481,7 +5481,7 @@ pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    z47_math_wrappers_retained_fnAdd(unused_but_mandatory_parameter);
+    addRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5497,7 +5497,7 @@ pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    z47_math_wrappers_retained_fnSubtract(unused_but_mandatory_parameter);
+    subtractRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5513,7 +5513,7 @@ pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    z47_math_wrappers_retained_fnMultiply(unused_but_mandatory_parameter);
+    multiplyRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5533,7 +5533,7 @@ pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    z47_math_wrappers_retained_fnDivide(unused_but_mandatory_parameter);
+    divideRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5541,7 +5541,7 @@ pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    z47_math_wrappers_retained_fnIDiv(unused_but_mandatory_parameter);
+    integerDivideRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5549,7 +5549,7 @@ pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    z47_math_wrappers_retained_fnIDivR(unused_but_mandatory_parameter);
+    integerDivideRemainderRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5558,13 +5558,13 @@ pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) vo
         return;
     }
 
-    z47_math_wrappers_retained_fnDblMultiply(unused_but_mandatory_parameter);
+    doubleMultiplyRetained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter);
+        roundRetained(unused_but_mandatory_parameter);
         return;
     }
 
