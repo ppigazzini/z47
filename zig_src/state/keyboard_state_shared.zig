@@ -140,11 +140,11 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.keyActionProcessed = true;
 
                 if (item == runtime.ITM_UP1_ITEM) {
-                    fnKeyUp(0);
+                    keyUp(0);
                     runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
                     runtime.refreshScreen(118);
                 } else {
-                    fnKeyDown(0);
+                    keyDown(0);
                     runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
                     runtime.refreshScreen(119);
                 }
@@ -156,15 +156,15 @@ pub fn implementation(comptime runtime: type) type {
             runtime.processKeyActionRetained(item);
         }
 
-        pub fn fnKeyEnter(unused_but_mandatory_parameter: u16) void {
+        pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
             runtime.fnKeyEnterRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn fnKeyExit(unused_but_mandatory_parameter: u16) void {
+        pub fn keyExit(unused_but_mandatory_parameter: u16) void {
             runtime.fnKeyExitRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn fnKeyCC(complex_type: u16) void {
+        pub fn keyCC(complex_type: u16) void {
             if (runtime.calcMode == runtime.CM_NIM and complex_type != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
                 runtime.addItemToNimBuffer(runtime.ITM_CC);
                 return;
@@ -184,7 +184,7 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
-        pub fn fnKeyBackspace(unused_but_mandatory_parameter: u16) void {
+        pub fn keyBackspace(unused_but_mandatory_parameter: u16) void {
             if (runtime.tam.mode == 0 and runtime.calcMode == runtime.CM_NIM) {
                 runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE_ITEM);
                 runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
@@ -194,7 +194,7 @@ pub fn implementation(comptime runtime: type) type {
             runtime.fnKeyBackspaceRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn fnKeyUp(unused_but_mandatory_parameter: u16) void {
+        pub fn keyUp(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr +%= 1;
@@ -211,7 +211,7 @@ pub fn implementation(comptime runtime: type) type {
             runtime.fnKeyUpRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn fnKeyDown(unused_but_mandatory_parameter: u16) void {
+        pub fn keyDown(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr -%= 1;
@@ -228,7 +228,7 @@ pub fn implementation(comptime runtime: type) type {
             runtime.fnKeyDownRetained(unused_but_mandatory_parameter);
         }
 
-        pub fn fnKeyDotD(unused_but_mandatory_parameter: u16) void {
+        pub fn keyDotD(unused_but_mandatory_parameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_NORMAL => {
                     const flag = if (runtime.getSystemFlag(runtime.FLAG_IRFRQ)) runtime.FLAG_IRFRAC else runtime.FLAG_FRACT;
