@@ -2874,8 +2874,28 @@
 //efine ITM_GET_DMX                 1558 // VAR_NO_DENMAX
 #define ITM_SET_DMX                 2770 // VAR_NO_DENMAX
 
+#define ITM_2771                    2771 // CLD
+#define ITM_2772                    2772 // CLLCD
+#define ITM_2773                    2773 // CLA
+#define ITM_2774                    2774 // AIP
+#define ITM_2775                    2775 // 42string
+#define ITM_2776                    2776 // 42append
+#define ITM_2777                    2777 // 42ARCL
+#define ITM_2778                    2778 // 42ASTO
+#define ITM_2779                    2779 // 42AROT
+#define ITM_2780                    2780 // 42ASHF
+#define ITM_2781                    2781 // 42ROTXY
+#define ITM_2782                    2782 // 42BIT?
+#define ITM_2783                    2783 // 42→DEC
+#define ITM_2784                    2784 // 42→OCT
+#define ITM_2785                    2785
+#define ITM_2786                    2786
+#define ITM_2787                    2787
+#define ITM_2788                    2788
+#define ITM_2789                    2789
+#define ITM_2790                    2790 //spares for 42s compatibility functions
 
-#define LAST_ITEM                   2771
+#define LAST_ITEM                   2791
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
