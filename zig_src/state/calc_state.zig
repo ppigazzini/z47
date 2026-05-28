@@ -55,13 +55,13 @@ fn parseSaveFileRevision() HeaderInfo {
     return info;
 }
 
-fn isAutoLoadCompatibleVersion(loaded_version: u32) bool {
-    return loaded_version >= runtime.versionAllowed() and loaded_version <= runtime.configFileVersion();
+fn isAutoLoadCompatibleVersion(loadedVersion: u32) bool {
+    return loadedVersion >= runtime.versionAllowed() and loadedVersion <= runtime.configFileVersion();
 }
 
-fn canEnableLoad(load_mode: u16, load_type: u16, loaded_version: u32) bool {
-    switch (load_type) {
-        runtime.manualLoad => switch (load_mode) {
+fn canEnableLoad(loadMode: u16, loadType: u16, loadedVersion: u32) bool {
+    switch (loadType) {
+        runtime.manualLoad => switch (loadMode) {
             runtime.LM_ALL,
             runtime.LM_PROGRAMS,
             runtime.LM_REGISTERS,
@@ -71,32 +71,32 @@ fn canEnableLoad(load_mode: u16, load_type: u16, loaded_version: u32) bool {
             => return true,
             else => return false,
         },
-        runtime.stateLoad => return load_mode == runtime.LM_ALL,
-        runtime.autoLoad => return load_mode == runtime.LM_ALL and isAutoLoadCompatibleVersion(loaded_version),
+        runtime.stateLoad => return loadMode == runtime.LM_ALL,
+        runtime.autoLoad => return loadMode == runtime.LM_ALL and isAutoLoadCompatibleVersion(loadedVersion),
         else => return false,
     }
 }
 
-fn setPostLoadTemporaryInformation(load_mode: u16, load_type: u16, loaded_version: u32) void {
-    if (load_type == runtime.manualLoad and load_mode == runtime.LM_ALL) {
+fn setPostLoadTemporaryInformation(loadMode: u16, loadType: u16, loadedVersion: u32) void {
+    if (loadType == runtime.manualLoad and loadMode == runtime.LM_ALL) {
         runtime.temporaryInformation = runtime.TI_BACKUP_RESTORED;
         runtime.stampLastStateFileOpened();
         return;
     }
 
-    if (load_type == runtime.autoLoad and load_mode == runtime.LM_ALL and isAutoLoadCompatibleVersion(loaded_version)) {
+    if (loadType == runtime.autoLoad and loadMode == runtime.LM_ALL and isAutoLoadCompatibleVersion(loadedVersion)) {
         runtime.temporaryInformation = runtime.TI_BACKUP_RESTORED;
         runtime.stampLastStateFileOpened();
         return;
     }
 
-    if (load_type == runtime.stateLoad) {
+    if (loadType == runtime.stateLoad) {
         runtime.temporaryInformation = runtime.TI_STATEFILE_RESTORED;
         runtime.stampLastStateFileOpened();
         return;
     }
 
-    switch (load_mode) {
+    switch (loadMode) {
         runtime.LM_PROGRAMS => runtime.temporaryInformation = runtime.TI_PROGRAMS_RESTORED,
         runtime.LM_REGISTERS => runtime.temporaryInformation = runtime.TI_REGISTERS_RESTORED,
         runtime.LM_SYSTEM_STATE => runtime.temporaryInformation = runtime.TI_SETTINGS_RESTORED,
@@ -106,16 +106,16 @@ fn setPostLoadTemporaryInformation(load_mode: u16, load_type: u16, loaded_versio
     }
 }
 
-fn doSave(save_type: u16) void {
+fn doSave(saveType: u16) void {
     runtime.showSavingStatus();
 
     if (runtime.checkPower()) {
         return;
     }
 
-    const ret = runtime.openSave(save_type);
-    if (ret != runtime.FILE_OK) {
-        if (ret == runtime.FILE_CANCEL) {
+    const openResult = runtime.openSave(saveType);
+    if (openResult != runtime.FILE_OK) {
+        if (openResult == runtime.FILE_CANCEL) {
             return;
         }
 
