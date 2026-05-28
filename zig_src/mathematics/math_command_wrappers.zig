@@ -3790,26 +3790,26 @@ pub export fn fnEulersFormula(unusedButMandatoryParameter: u16) callconv(.c) voi
     runtime.processRealComplexMonadicFunction(&eulersFormulaReal, &eulersFormulaCplx);
 }
 
-pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+pub export fn fnInvert(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
+    if (registerDataType == runtime.dtReal34Matrix or registerDataType == runtime.dtComplex34Matrix) {
         runtime.fnInvertMatrix(0);
         return;
     }
 
-    _ = unused_but_mandatory_parameter;
+    _ = unusedButMandatoryParameter;
     runtime.processRealComplexMonadicFunction(&invertReal, &invertCplx);
 }
 
-pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSign(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(&signReal, &signCplx, &signShoI, &signLonI);
 }
 
-pub export fn fnChangeSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnChangeSign(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
         changeSignTime();
@@ -3819,46 +3819,46 @@ pub export fn fnChangeSign(unused_but_mandatory_parameter: u16) callconv(.c) voi
     runtime.processIntRealComplexMonadicFunction(&chsReal, &chsCplx, &chsShoI, &chsLonI);
 }
 
-pub export fn fnSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSquare(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(&squareReal, &squareCplx, &squareShoI, &squareLonI);
 }
 
-pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCube(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(&cubeReal, &cubeCplx, &cubeShoI, &cubeLonI);
 }
 
-pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnBn(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     bnCommon(false);
 }
 
-pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnBnStar(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     bnCommon(true);
 }
 
-pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnExpt(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexMonadicFunction(&exptReal, null, null, &exptLonI);
 }
 
-pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnWpositive(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processRealComplexMonadicFunction(&wPosReal, &wPosCplx);
 }
 
-pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnWnegative(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processRealComplexMonadicFunction(&wNegReal, &wNegCplx);
 }
 
-pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnWinverse(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processRealComplexMonadicFunction(&wInvReal, &wInvCplx);
 }
 
@@ -4519,16 +4519,16 @@ pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) 
     runtime.processRealComplexMonadicFunction(&imagPartReal, &imagPartCplx);
 }
 
-pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+pub export fn fnArg(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    _ = unused_but_mandatory_parameter;
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    switch (register_data_type) {
+    switch (registerDataType) {
         runtime.dtLongInteger, runtime.dtReal34, runtime.dtShortInteger => argReal(),
         runtime.dtComplex34 => argCplx(),
         runtime.dtReal34Matrix => argRema(),
@@ -4539,8 +4539,8 @@ pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMagnitude(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
         if (!runtime.saveLastX()) {
@@ -4554,21 +4554,21 @@ pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void
     runtime.processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeCplx, &magnitudeShoI, &magnitudeLonI);
 }
 
-pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+pub export fn fnConjugate(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    _ = unused_but_mandatory_parameter;
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    if (register_data_type == runtime.dtComplex34Matrix) {
+    if (registerDataType == runtime.dtComplex34Matrix) {
         conjCxma();
         return;
     }
 
-    if (register_data_type == runtime.dtReal34Matrix) {
+    if (registerDataType == runtime.dtReal34Matrix) {
         conjRema();
         return;
     }
@@ -4576,21 +4576,21 @@ pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void
     conjCplx();
 }
 
-pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+pub export fn fnSwapRealImaginary(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    _ = unused_but_mandatory_parameter;
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    if (register_data_type == runtime.dtReal34Matrix) {
+    if (registerDataType == runtime.dtReal34Matrix) {
         swapReImRema();
         return;
     }
 
-    if (register_data_type == runtime.dtComplex34Matrix) {
+    if (registerDataType == runtime.dtComplex34Matrix) {
         swapReImCxma();
         return;
     }
@@ -4598,12 +4598,12 @@ pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(
     swapReImCplx();
 }
 
-pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
+pub export fn fnAtan2(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const dataTypeX = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const dataTypeY = runtime.getRegisterDataType(runtime.REGISTER_Y);
 
-    if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        atan2Retained(unused_but_mandatory_parameter);
+    if (!build_options.use_fake_wp34s_model and (dataTypeX == runtime.dtReal34Matrix or dataTypeY == runtime.dtReal34Matrix)) {
+        atan2Retained(unusedButMandatoryParameter);
         return;
     }
 
@@ -4611,13 +4611,13 @@ pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    if ((data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger) and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger)) {
+    if ((dataTypeX == runtime.dtReal34 or dataTypeX == runtime.dtLongInteger) and (dataTypeY == runtime.dtReal34 or dataTypeY == runtime.dtLongInteger)) {
         atan2RealReal();
-    } else if (data_type_x == runtime.dtReal34Matrix and data_type_y == runtime.dtReal34Matrix) {
+    } else if (dataTypeX == runtime.dtReal34Matrix and dataTypeY == runtime.dtReal34Matrix) {
         atan2RemaRema();
-    } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtShortInteger)) {
+    } else if (dataTypeX == runtime.dtReal34Matrix and (dataTypeY == runtime.dtReal34 or dataTypeY == runtime.dtLongInteger or dataTypeY == runtime.dtShortInteger)) {
         atan2RealRema();
-    } else if (data_type_y == runtime.dtReal34Matrix and (data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtShortInteger)) {
+    } else if (dataTypeY == runtime.dtReal34Matrix and (dataTypeX == runtime.dtReal34 or dataTypeX == runtime.dtLongInteger or dataTypeX == runtime.dtShortInteger)) {
         runtime.elementwiseRemaReal(&atan2RealReal);
     } else {
         atan2Error();
@@ -4626,14 +4626,14 @@ pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
 }
 
-pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnPercent(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    var register_x = std.mem.zeroes(runtime.real_t);
-    var register_y = std.mem.zeroes(runtime.real_t);
+    var registerX = std.mem.zeroes(runtime.real_t);
+    var registerY = std.mem.zeroes(runtime.real_t);
     var result = std.mem.zeroes(runtime.real_t);
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &register_x) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &register_y)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &registerX) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &registerY)) {
         return;
     }
 
@@ -4641,7 +4641,7 @@ pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.realMultiply(&register_x, &register_y, &result, &runtime.ctxtReal34);
+    runtime.realMultiply(&registerX, &registerY, &result, &runtime.ctxtReal34);
     result.exponent -= 2;
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
