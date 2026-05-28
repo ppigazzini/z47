@@ -1,0 +1,4 @@
+# Tracked upstream commit triage ledger for z47.
+# Keep one `pin-only` row for the currently pinned upstream commit.
+upstream_commit	upstream_subject	surface	kind	local_owner	parity_target	status	notes
+b9ed834b63e64bde05274e5182abf1e9180af612	Repo-root imported baseline pin	repo-root-import	pin	.github/project/upstream-pin.env	source-manifest	pin-only	Current maintained baseline at UPSTREAM_ROOT=.; add follow-up rows here when newer upstream commits are audited.

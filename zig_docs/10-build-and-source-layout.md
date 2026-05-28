@@ -54,6 +54,8 @@ repo root
 |  |- workflows/
 |  `- project/
 |     |- upstream-pin.env
+|     |- upstream-port-ledger.tsv
+|     |- check-upstream-port-ledger.py
 |     |- source-ownership.txt
 |     |- check-source-ownership.sh
 |     |- zig-c-boundaries.txt
@@ -100,6 +102,10 @@ Checked-in build defaults currently come from these files:
 - `../.github/zig-toolchain.env`: pins Zig `0.16.0`
 - `../.github/project/upstream-pin.env`: pins the imported upstream commit and
   repository URL plus the current imported upstream root
+- `../.github/project/upstream-port-ledger.tsv`: records the maintainer triage
+  ledger for the current upstream pin and later audited upstream commits
+- `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
+  pinned-commit coverage, and pin-plus-ledger co-updates
 - `../.github/project/source-ownership.txt`: records the tracked top-level
   z47-owned roots and imported-upstream roots used by CI and source manifests
 - `../.github/project/workflow-imported-root-paths.sh`: resolves the
@@ -131,7 +137,8 @@ Top-level z47-owned overlay paths:
 
 The tracked top-level ownership split used by CI lives in
 `../.github/project/source-ownership.txt`. The source-manifest job and the
-source-ownership guard both read from that manifest, and the workflow
+source-ownership guard both read from that manifest, the upstream-port ledger
+guard reads `../.github/project/upstream-port-ledger.tsv`, and the workflow
 imported-root guard reads `../.github/project/workflow-imported-root-paths.sh`,
 so docs and CI use tracked vocabulary files for the current repo-root
 baseline.

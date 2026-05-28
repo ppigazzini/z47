@@ -178,6 +178,36 @@ jobs:
           set -euo pipefail
           bash .github/project/check-source-ownership.sh
 
+  upstream-port-ledger-guard:
+    name: Verify tracked upstream port ledger
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - id: diff_base
+        name: Resolve diff base for upstream ledger checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            git fetch --no-tags origin "${GITHUB_BASE_REF}"
+            echo "value=$(git merge-base HEAD "origin/${GITHUB_BASE_REF}")" >> "$GITHUB_OUTPUT"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "value=$(git rev-parse HEAD^)" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Enforce tracked upstream port ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=( --repo-root . )
+          if [[ -n "${{ steps.diff_base.outputs.value }}" ]]; then
+            args+=( --diff-base "${{ steps.diff_base.outputs.value }}" )
+          fi
+          python3 .github/project/check-upstream-port-ledger.py "${args[@]}"
+
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
     runs-on: ubuntu-latest
@@ -228,6 +258,7 @@ jobs:
       - validate-toolchain
       - source-manifest
       - source-ownership-guard
+      - upstream-port-ledger-guard
       - zig-c-boundary-guard
       - c-dependency-policy
       - workflow-imported-root-guard
@@ -475,6 +506,7 @@ jobs:
     name: Linux docs surface
     needs:
       - validate-toolchain
+      - upstream-port-ledger-guard
       - workflow-imported-root-guard
       - workflow-locality-guard
     runs-on: ubuntu-latest
@@ -544,6 +576,7 @@ jobs:
       - validate-toolchain
       - source-manifest
       - source-ownership-guard
+      - upstream-port-ledger-guard
       - zig-c-boundary-guard
       - c-dependency-policy
       - workflow-imported-root-guard
@@ -688,6 +721,7 @@ jobs:
       - validate-toolchain
       - source-manifest
       - source-ownership-guard
+      - upstream-port-ledger-guard
       - zig-c-boundary-guard
       - c-dependency-policy
       - workflow-imported-root-guard
@@ -914,6 +948,7 @@ jobs:
       - validate-toolchain
       - source-manifest
       - source-ownership-guard
+      - upstream-port-ledger-guard
       - zig-c-boundary-guard
       - c-dependency-policy
       - workflow-imported-root-guard
