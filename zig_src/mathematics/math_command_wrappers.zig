@@ -4360,36 +4360,36 @@ fn modShoI() callconv(.c) void {
     runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterTag(runtime.REGISTER_Y), runtime.REGISTER_X);
 }
 
-pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnGcd(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(&gcdInt, null, &gcdShoI, &gcdInt);
 }
 
-pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLcm(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(&lcmInt, null, &lcmShoI, &lcmInt);
 }
 
-pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMod(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(&modReal, null, &modShoI, &modLonI);
 }
 
-pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRmd(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
     runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &rmdShoI, &rmdLonI);
 }
 
-pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+pub export fn fnUlp(unusedButMandatoryParameter: u16) callconv(.c) void {
+    const registerDataType = runtime.getRegisterDataType(runtime.REGISTER_X);
 
-    _ = unused_but_mandatory_parameter;
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    switch (register_data_type) {
+    switch (registerDataType) {
         runtime.dtLongInteger => ulpLongInteger(),
         runtime.dtShortInteger => ulpShortInteger(),
         runtime.dtReal34 => ulpReal(),
@@ -4403,8 +4403,8 @@ pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMant(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
@@ -4422,8 +4422,8 @@ pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRoundi(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     if (!runtime.saveLastX()) {
         return;
