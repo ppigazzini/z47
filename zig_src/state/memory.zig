@@ -13,47 +13,47 @@ fn toBytesU32(block_count: u16) u32 {
 }
 
 pub export fn getFreeRamMemory() u32 {
-    var free_mem: u32 = 0;
+    var freeMem: u32 = 0;
     var index: i32 = 0;
 
     while (index < runtime.numberOfFreeMemoryRegions) : (index += 1) {
-        free_mem += runtime.getFreeRegion(@intCast(index)).sizeInBlocks;
+        freeMem += runtime.getFreeRegion(@intCast(index)).sizeInBlocks;
     }
 
-    return free_mem << runtime.BPB;
+    return freeMem << runtime.BPB;
 }
 
 pub export fn isMemoryBlockAvailable(sizeInBlocks: usize, numBlocks: u16, extraFraction: f32) bool {
     var index: i32 = 0;
-    const extra_size = runtime.scaleExtraSize(sizeInBlocks, extraFraction);
-    const num_blocks: usize = numBlocks;
-    const required_for_n_blocks = sizeInBlocks * num_blocks;
-    var count_of_blocks_of_size: usize = 0;
-    var have_extra_block = false;
+    const extraSize = runtime.scaleExtraSize(sizeInBlocks, extraFraction);
+    const blockCount: usize = numBlocks;
+    const requiredSizeForBlockCount = sizeInBlocks * blockCount;
+    var availableBlockCount: usize = 0;
+    var hasExtraBlock = false;
 
     while (index < runtime.numberOfFreeMemoryRegions) : (index += 1) {
-        const this_block_size: usize = runtime.getFreeRegion(@intCast(index)).sizeInBlocks;
+        const blockSize: usize = runtime.getFreeRegion(@intCast(index)).sizeInBlocks;
 
-        if (this_block_size >= required_for_n_blocks + extra_size) {
+        if (blockSize >= requiredSizeForBlockCount + extraSize) {
             return true;
         }
 
-        if (this_block_size >= sizeInBlocks) {
-            count_of_blocks_of_size += this_block_size / sizeInBlocks;
-            const residual_size = this_block_size % sizeInBlocks;
+        if (blockSize >= sizeInBlocks) {
+            availableBlockCount += blockSize / sizeInBlocks;
+            const residualSize = blockSize % sizeInBlocks;
 
-            if (residual_size >= extra_size) {
-                have_extra_block = true;
+            if (residualSize >= extraSize) {
+                hasExtraBlock = true;
             }
-            if (count_of_blocks_of_size > num_blocks) {
+            if (availableBlockCount > blockCount) {
                 return true;
             }
-            if (count_of_blocks_of_size == num_blocks and have_extra_block) {
+            if (availableBlockCount == blockCount and hasExtraBlock) {
                 return true;
             }
-        } else if (this_block_size >= extra_size) {
-            have_extra_block = true;
-            if (count_of_blocks_of_size >= num_blocks) {
+        } else if (blockSize >= extraSize) {
+            hasExtraBlock = true;
+            if (availableBlockCount >= blockCount) {
                 return true;
             }
         }
