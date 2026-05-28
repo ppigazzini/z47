@@ -128,17 +128,17 @@ fn doSave(saveType: u16) void {
     runtime.temporaryInformation = runtime.TI_SAVED;
 }
 
-pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
+pub export fn doLoad(loadMode: u16, s: u16, n: u16, d: u16, loadType: u16) void {
     if (isDmcpBuild) {
-        runtime.doLoadRetained(load_mode, s, n, d, load_type);
+        runtime.doLoadRetained(loadMode, s, n, d, loadType);
         return;
     }
 
     runtime.resetLoadContext();
 
-    const ret = runtime.openLoad(load_type);
-    if (ret != runtime.FILE_OK) {
-        if (ret == runtime.FILE_CANCEL) {
+    const openResult = runtime.openLoad(loadType);
+    if (openResult != runtime.FILE_OK) {
+        if (openResult == runtime.FILE_CANCEL) {
             return;
         }
 
@@ -146,14 +146,14 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
         return;
     }
 
-    if (load_mode == runtime.LM_ALL) {
+    if (loadMode == runtime.LM_ALL) {
         runtime.unwindAllSubroutines();
     }
 
     const header = parseSaveFileRevision();
-    if (canEnableLoad(load_mode, load_type, header.loadedVersion)) {
-        const allow_user_keys = runtime.allowUserKeys(header.savedCalcModel);
-        while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
+    if (canEnableLoad(loadMode, loadType, header.loadedVersion)) {
+        const allowUserKeys = runtime.allowUserKeys(header.savedCalcModel);
+        while (runtime.restoreOneSection(loadMode, s, n, d, allowUserKeys)) {}
         runtime.fixupR47ShiftKeys();
     }
 
@@ -162,21 +162,21 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
 
     runtime.closeFile();
     runtime.restartPostLoadTimers();
-    setPostLoadTemporaryInformation(load_mode, load_type, header.loadedVersion);
+    setPostLoadTemporaryInformation(loadMode, loadType, header.loadedVersion);
     runtime.cachedDynamicMenu = 0;
 }
 
-pub export fn fnLoad(load_mode: u16) void {
+pub export fn fnLoad(loadMode: u16) void {
     if (isDmcpBuild) {
-        runtime.loadRetained(load_mode);
+        runtime.loadRetained(loadMode);
         return;
     }
 
     runtime.showLoadingStatus();
-    if (load_mode == runtime.LM_STATE_LOAD) {
+    if (loadMode == runtime.LM_STATE_LOAD) {
         doLoad(runtime.LM_ALL, 0, 0, 0, runtime.stateLoad);
     } else {
-        doLoad(load_mode, 0, 0, 0, runtime.manualLoad);
+        doLoad(loadMode, 0, 0, 0, runtime.manualLoad);
     }
     runtime.finishLoadUi(94);
 }
@@ -186,22 +186,22 @@ pub export fn fnLoadAuto() void {
     runtime.finishLoadUi(95);
 }
 
-pub export fn fnSaveAuto(unused_but_mandatory_parameter: u16) void {
+pub export fn fnSaveAuto(unusedButMandatoryParameter: u16) void {
     if (isDmcpBuild) {
-        runtime.saveAutoRetained(unused_but_mandatory_parameter);
+        runtime.saveAutoRetained(unusedButMandatoryParameter);
         return;
     }
 }
 
-pub export fn fnSave(save_mode: u16) void {
+pub export fn fnSave(saveMode: u16) void {
     if (isDmcpBuild) {
-        runtime.saveRetained(save_mode);
+        runtime.saveRetained(saveMode);
         return;
     }
 
-    if (save_mode == runtime.SM_MANUAL_SAVE) {
+    if (saveMode == runtime.SM_MANUAL_SAVE) {
         doSave(runtime.manualSave);
-    } else if (save_mode == runtime.SM_STATE_SAVE) {
+    } else if (saveMode == runtime.SM_STATE_SAVE) {
         doSave(runtime.stateSave);
     }
 }
