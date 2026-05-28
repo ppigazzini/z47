@@ -156,12 +156,12 @@ pub fn implementation(comptime runtime: type) type {
             runtime.processKeyActionRetained(item);
         }
 
-        pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
-            runtime.keyEnterRetained(unused_but_mandatory_parameter);
+        pub fn keyEnter(unusedButMandatoryParameter: u16) void {
+            runtime.keyEnterRetained(unusedButMandatoryParameter);
         }
 
-        pub fn keyExit(unused_but_mandatory_parameter: u16) void {
-            runtime.keyExitRetained(unused_but_mandatory_parameter);
+        pub fn keyExit(unusedButMandatoryParameter: u16) void {
+            runtime.keyExitRetained(unusedButMandatoryParameter);
         }
 
         pub fn keyCC(complexType: u16) void {
@@ -184,17 +184,17 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
-        pub fn keyBackspace(unused_but_mandatory_parameter: u16) void {
+        pub fn keyBackspace(unusedButMandatoryParameter: u16) void {
             if (runtime.tam.mode == 0 and runtime.calcMode == runtime.CM_NIM) {
                 runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE_ITEM);
                 runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
                 return;
             }
 
-            runtime.keyBackspaceRetained(unused_but_mandatory_parameter);
+            runtime.keyBackspaceRetained(unusedButMandatoryParameter);
         }
 
-        pub fn keyUp(unused_but_mandatory_parameter: u16) void {
+        pub fn keyUp(unusedButMandatoryParameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr +%= 1;
@@ -208,10 +208,10 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.keyUpRetained(unused_but_mandatory_parameter);
+            runtime.keyUpRetained(unusedButMandatoryParameter);
         }
 
-        pub fn keyDown(unused_but_mandatory_parameter: u16) void {
+        pub fn keyDown(unusedButMandatoryParameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_FLAG_BROWSER => {
                     runtime.currentFlgScr -%= 1;
@@ -225,10 +225,10 @@ pub fn implementation(comptime runtime: type) type {
                 else => {},
             }
 
-            runtime.keyDownRetained(unused_but_mandatory_parameter);
+            runtime.keyDownRetained(unusedButMandatoryParameter);
         }
 
-        pub fn keyDotD(unused_but_mandatory_parameter: u16) void {
+        pub fn keyDotD(unusedButMandatoryParameter: u16) void {
             switch (runtime.calcMode) {
                 runtime.CM_NORMAL => {
                     const flag = if (runtime.getSystemFlag(runtime.FLAG_IRFRQ)) runtime.FLAG_IRFRAC else runtime.FLAG_FRACT;
@@ -254,7 +254,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_TIMER,
                 runtime.CM_LISTXY,
                 => return,
-                else => runtime.keyDotDRetained(unused_but_mandatory_parameter),
+                else => runtime.keyDotDRetained(unusedButMandatoryParameter),
             }
         }
     };
