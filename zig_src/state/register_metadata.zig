@@ -282,7 +282,7 @@ fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 
 
 pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.retainedSetRegisterMaxDataLengthInBlocks(reg, max_data_len);
+        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
         return;
     }
 
@@ -320,7 +320,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
         return;
     }
 
-    runtime.retainedSetRegisterMaxDataLengthInBlocks(reg, max_data_len);
+    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
 }
 
 pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
@@ -377,7 +377,7 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
 
 pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.retainedCopySourceRegisterToDestRegister(source_register, dest_register);
+        runtime.copySourceRegisterToDestRegisterRetained(source_register, dest_register);
         return;
     }
 
@@ -411,7 +411,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
-        runtime.retainedReallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+        runtime.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
         return;
     }
 
@@ -449,7 +449,7 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
 }
 
 pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
-    runtime.retainedAllocateLocalRegisters(number_of_registers_to_allocate);
+    runtime.allocateLocalRegistersRetained(number_of_registers_to_allocate);
 }
 
 pub export fn validateName(name: [*c]const u8) bool {
@@ -927,7 +927,7 @@ pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
 
 pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.retainedSetRegisterDataType(reg, data_type, tag);
+        runtime.setRegisterDataTypeRetained(reg, data_type, tag);
         return;
     }
 
@@ -974,7 +974,7 @@ pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, t
 
 pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyopaque) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.retainedSetRegisterDataPointer(reg, mem_ptr);
+        runtime.setRegisterDataPointerRetained(reg, mem_ptr);
         return;
     }
 
@@ -1013,7 +1013,7 @@ pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*con
 
 pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.retainedSetRegisterTag(reg, tag);
+        runtime.setRegisterTagRetained(reg, tag);
         return;
     }
 
