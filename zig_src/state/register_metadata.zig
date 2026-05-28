@@ -409,16 +409,16 @@ pub export fn copySourceRegisterToDestRegister(sourceRegister: runtime.calcRegis
     setRegisterTag(normalizedDest, getRegisterTag(normalizedSource));
 }
 
-pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void {
+pub export fn reallocateRegister(reg: runtime.calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void {
     if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
-        runtime.reallocateRegisterRetained(reg, data_type, dataSizeWithoutDataLenBlocks, tag);
+        runtime.reallocateRegisterRetained(reg, dataType, dataSizeWithoutDataLenBlocks, tag);
         return;
     }
 
-    const normalizedPayloadSize = normalizePayloadSizeInBlocks(data_type, dataSizeWithoutDataLenBlocks);
-    const allocatedSize = allocationSizeInBlocks(data_type, normalizedPayloadSize);
+    const normalizedPayloadSize = normalizePayloadSizeInBlocks(dataType, dataSizeWithoutDataLenBlocks);
+    const allocatedSize = allocationSizeInBlocks(dataType, normalizedPayloadSize);
 
-    if (needsReallocate(reg, data_type, normalizedPayloadSize)) {
+    if (needsReallocate(reg, dataType, normalizedPayloadSize)) {
         if (!runtime.memoryBlockAvailable(allocatedSize)) {
             runtime.reportRamFull();
             return;
@@ -432,16 +432,16 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
         }
 
         setRegisterDataPointer(reg, dataPtr);
-        setRegisterDataType(reg, @intCast(data_type), tag);
+        setRegisterDataType(reg, @intCast(dataType), tag);
 
-        if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
+        if (dataType == runtime.dtReal34Matrix or dataType == runtime.dtComplex34Matrix) {
             runtime.initializeMatrixHeader1x1(dataPtr);
         } else {
             setRegisterMaxDataLengthInBlocks(reg, normalizedPayloadSize);
         }
     }
 
-    if (data_type == runtime.dtComplex34 and stack_runtime.getSystemFlag(runtime.FLAG_POLAR)) {
+    if (dataType == runtime.dtComplex34 and stack_runtime.getSystemFlag(runtime.FLAG_POLAR)) {
         setRegisterTag(reg, runtime.currentAngularMode | runtime.amPolar);
     } else {
         setRegisterTag(reg, tag);
@@ -532,7 +532,7 @@ pub export fn isUniqueMenuName(name: [*c]const u8) bool {
     return true;
 }
 
-pub export fn allocateNamedVariable(variableName: [*c]const u8, data_type: u32, fullDataSizeInBlocks: u16) void {
+pub export fn allocateNamedVariable(variableName: [*c]const u8, dataType: u32, fullDataSizeInBlocks: u16) void {
     if (variableName == null) {
         return;
     }
@@ -561,7 +561,7 @@ pub export fn allocateNamedVariable(variableName: [*c]const u8, data_type: u32, 
         }
 
         runtime.storeNamedVariableName(0, variableName);
-        setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(data_type), runtime.amNone);
+        setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(dataType), runtime.amNone);
         setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
         return;
     }
@@ -580,7 +580,7 @@ pub export fn allocateNamedVariable(variableName: [*c]const u8, data_type: u32, 
     runtime.storeNamedVariableName(newIndex, variableName);
 
     const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(newIndex));
-    setRegisterDataType(register, @intCast(data_type), runtime.amNone);
+    setRegisterDataType(register, @intCast(dataType), runtime.amNone);
     setRegisterDataPointer(register, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
 }
 
