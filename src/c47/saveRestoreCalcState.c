@@ -138,7 +138,7 @@ static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
 
 // Utility routines to skip stuff
 static char *skip_word(const char *str) {
-  while(*str != ' ') {
+  while(*str != ' ' && *str != 0) {
     str++;
   }
   return (char *)str;

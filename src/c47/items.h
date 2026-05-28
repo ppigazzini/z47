@@ -2540,7 +2540,7 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_M_CONCATR               2473
+#define ITM_M_CONCAT_OLD            2473
 
 #define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475
@@ -2838,8 +2838,7 @@
 #define MNU_BASE2                   2736
 #define ITM_M_DIMNQ                 2737
 #define MNU_42                      2738
-
-#define ITM_2739                    2739
+#define ITM_M_CONCATR               2739
 #define ITM_2740                    2740
 #define ITM_2741                    2741
 #define ITM_2742                    2742
