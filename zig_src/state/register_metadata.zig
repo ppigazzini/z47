@@ -409,35 +409,35 @@ pub export fn copySourceRegisterToDestRegister(sourceRegister: runtime.calcRegis
     setRegisterTag(normalizedDest, getRegisterTag(normalizedSource));
 }
 
-pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void {
     if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
-        runtime.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
+        runtime.reallocateRegisterRetained(reg, data_type, dataSizeWithoutDataLenBlocks, tag);
         return;
     }
 
-    const normalized_payload_size = normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
-    const allocated_size = allocationSizeInBlocks(data_type, normalized_payload_size);
+    const normalizedPayloadSize = normalizePayloadSizeInBlocks(data_type, dataSizeWithoutDataLenBlocks);
+    const allocatedSize = allocationSizeInBlocks(data_type, normalizedPayloadSize);
 
-    if (needsReallocate(reg, data_type, normalized_payload_size)) {
-        if (!runtime.memoryBlockAvailable(allocated_size)) {
+    if (needsReallocate(reg, data_type, normalizedPayloadSize)) {
+        if (!runtime.memoryBlockAvailable(allocatedSize)) {
             runtime.reportRamFull();
             return;
         }
 
         stack_runtime.freeRegisterData(reg);
-        const data_ptr = if (allocated_size == 0) null else stack_runtime.allocC47Blocks(allocated_size);
-        if (allocated_size != 0 and data_ptr == null) {
+        const dataPtr = if (allocatedSize == 0) null else stack_runtime.allocC47Blocks(allocatedSize);
+        if (allocatedSize != 0 and dataPtr == null) {
             runtime.reportRamFull();
             return;
         }
 
-        setRegisterDataPointer(reg, data_ptr);
+        setRegisterDataPointer(reg, dataPtr);
         setRegisterDataType(reg, @intCast(data_type), tag);
 
         if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
-            runtime.initializeMatrixHeader1x1(data_ptr);
+            runtime.initializeMatrixHeader1x1(dataPtr);
         } else {
-            setRegisterMaxDataLengthInBlocks(reg, normalized_payload_size);
+            setRegisterMaxDataLengthInBlocks(reg, normalizedPayloadSize);
         }
     }
 
