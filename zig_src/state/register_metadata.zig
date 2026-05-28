@@ -586,17 +586,17 @@ pub export fn allocateNamedVariable(variableName: [*c]const u8, data_type: u32, 
 
 pub export fn fnDeleteVariable(regist: u16) void {
     const register: runtime.calcRegister_t = @intCast(regist);
-    const named_variable_limit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
+    const namedVariableLimit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
 
-    if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
+    if (register >= runtime.FIRST_NAMED_VARIABLE and register < namedVariableLimit) {
         const index: u16 = @intCast(register - runtime.FIRST_NAMED_VARIABLE);
         runtime.removeNamedVariableRecallAssignment(index);
         stack_runtime.freeRegisterData(register);
 
-        var shift_index = index;
-        while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
-            runtime.setNamedDescriptorUnchecked(shift_index, runtime.namedDescriptorUnchecked(shift_index + 1));
-            runtime.storeNamedVariableName(shift_index, runtime.namedVariableName(shift_index + 1));
+        var shiftIndex = index;
+        while (shiftIndex + 1 < runtime.numberOfNamedVariables) : (shiftIndex += 1) {
+            runtime.setNamedDescriptorUnchecked(shiftIndex, runtime.namedDescriptorUnchecked(shiftIndex + 1));
+            runtime.storeNamedVariableName(shiftIndex, runtime.namedVariableName(shiftIndex + 1));
         }
 
         runtime.clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
@@ -695,9 +695,9 @@ pub export fn fnDeleteAllVariables(confirmation: u16) void {
         return;
     }
 
-    var variable_index = runtime.numberOfNamedVariables;
-    while (variable_index > 0) : (variable_index -= 1) {
-        fnDeleteVariable(@intCast(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(variable_index - 1))));
+    var variableIndex = runtime.numberOfNamedVariables;
+    while (variableIndex > 0) : (variableIndex -= 1) {
+        fnDeleteVariable(@intCast(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(variableIndex - 1))));
     }
 
     initSimEqMatABX();
@@ -713,10 +713,10 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
         return;
     }
 
-    var variable_index = runtime.numberOfNamedVariables;
-    while (variable_index > 0) {
-        const index = variable_index - 1;
-        variable_index -= 1;
+    var variableIndex = runtime.numberOfNamedVariables;
+    while (variableIndex > 0) {
+        const index = variableIndex - 1;
+        variableIndex -= 1;
 
         if (preserveNamedVariableDuringClear(index)) {
             continue;
