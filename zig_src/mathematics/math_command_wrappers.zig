@@ -3628,86 +3628,86 @@ pub export fn fnFp(unusedButMandatoryParameter: u16) callconv(.c) void {
     );
 }
 
-pub export fn fnSinc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSinc(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&sincReal, &sincCplx);
 }
 
-pub export fn fnSincpi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSincpi(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&sincpiReal, &sincpiCplx);
 }
 
-pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSin(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&sinReal, &sinCplx);
 }
 
-pub export fn fnCos(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCos(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&cosReal, &cosCplx);
 }
 
-pub export fn fnTan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnTan(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&tanReal, &tanCplx);
 }
 
-pub export fn fnArcsin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArcsin(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arcsinReal, &arcsinCplx);
 }
 
-pub export fn fnArccos(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArccos(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arccosReal, &arccosCplx);
 }
 
-pub export fn fnArctan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArctan(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arctanReal, &arctanCplx);
 }
 
-pub export fn fnArcsinh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArcsinh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arcsinhReal, &arcsinhCplx);
 }
 
-pub export fn fnArccosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArccosh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arccoshReal, &arccoshCplx);
 }
 
-pub export fn fnArctanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnArctanh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&arctanhReal, &arctanhCplx);
 }
 
-pub export fn fnSinh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSinh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&sinhReal, &sinhCplx);
 }
 
-pub export fn fnCosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnCosh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&coshReal, &coshCplx);
 }
 
-pub export fn fnTanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnTanh(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processRealComplexMonadicFunction(&tanhReal, &tanhCplx);
 }
