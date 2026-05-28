@@ -4,11 +4,11 @@ fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcReg
     return base + @as(runtime.calcRegister_t, @intCast(offset));
 }
 
-fn complexImagPointer(dataPtr: ?*anyopaque) ?*anyopaque {
-    const ptr = dataPtr orelse return null;
+fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+    const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imagOffset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return @ptrCast(bytes + imagOffset);
+    const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
+    return @ptrCast(bytes + imag_offset);
 }
 
 fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
@@ -16,34 +16,34 @@ fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
         return false;
     }
 
-    const dataType = runtime.getRegisterDataType(reg);
-    return dataType == runtime.dtComplex34 or dataType == runtime.dtComplex34Matrix;
+    const data_type = runtime.getRegisterDataType(reg);
+    return data_type == runtime.dtComplex34 or data_type == runtime.dtComplex34Matrix;
 }
 
-fn swapRegs(sourceReg: runtime.calcRegister_t, targetReg: u16) void {
-    const savedDescriptor = runtime.globalDescriptor(sourceReg);
-    var targetDescriptor: runtime.register_descriptor_t = 0;
+fn swapRegs(src_reg: runtime.calcRegister_t, target_reg: u16) void {
+    const saved_descriptor = runtime.globalDescriptor(src_reg);
+    var target_descriptor: runtime.register_descriptor_t = 0;
 
-    if (runtime.tryGetSwapTargetDescriptor(targetReg, &targetDescriptor)) {
-        runtime.setGlobalDescriptor(sourceReg, targetDescriptor);
-        _ = runtime.trySetSwapTargetDescriptor(targetReg, savedDescriptor);
+    if (runtime.tryGetSwapTargetDescriptor(target_reg, &target_descriptor)) {
+        runtime.setGlobalDescriptor(src_reg, target_descriptor);
+        _ = runtime.trySetSwapTargetDescriptor(target_reg, saved_descriptor);
         return;
     }
 
-    runtime.reportInvalidSwapTarget(targetReg);
+    runtime.reportInvalidSwapTarget(target_reg);
 }
 
-pub export fn fnClX(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     runtime.clearRegister(runtime.REGISTER_X);
 }
 
-pub export fn fnClearStack(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    const stackTop = runtime.getStackTop();
+    const stack_top = runtime.getStackTop();
     var reg = runtime.REGISTER_X;
-    while (reg <= stackTop) : (reg += 1) {
+    while (reg <= stack_top) : (reg += 1) {
         runtime.clearRegister(reg);
     }
 }
@@ -64,21 +64,21 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
     }
 
     if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_CPXDP) {
-        const complexTag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
+        const complex_tag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
 
         if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
-            const dataPtr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(dataPtr);
-            runtime.real34SetZero(complexImagPointer(dataPtr));
-            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complexTag);
+            const data_ptr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(data_ptr);
+            runtime.real34SetZero(complexImagPointer(data_ptr));
+            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
         } else {
-            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complexTag);
+            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }
-            const dataPtr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(dataPtr);
-            runtime.real34SetZero(complexImagPointer(dataPtr));
+            const data_ptr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(data_ptr);
+            runtime.real34SetZero(complexImagPointer(data_ptr));
         }
         return;
     }
@@ -107,10 +107,10 @@ pub export fn fnClearRegisters(confirmation: u16) void {
         runtime.clearRegister(reg);
     }
 
-    var localIndex: u8 = 0;
-    const localCount = runtime.currentLocalRegisterCount();
-    while (localIndex < localCount) : (localIndex += 1) {
-        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(localIndex)));
+    var local_index: u8 = 0;
+    const local_count = runtime.currentLocalRegisterCount();
+    while (local_index < local_count) : (local_index += 1) {
+        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(local_index)));
     }
 
     if (!runtime.getSystemFlag(runtime.FLAG_SSIZE8)) {
@@ -126,16 +126,16 @@ pub export fn fnClearRegisters(confirmation: u16) void {
     }
 }
 
-pub export fn fnRegClr(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    var startReg: u16 = 0;
-    var count: u16 = 0;
+    var s: u16 = 0;
+    var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&startReg, &count);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        var reg = startReg;
-        while (reg < startReg + count) : (reg += 1) {
+        var reg = s;
+        while (reg < s + n) : (reg += 1) {
             runtime.clearRegister(@intCast(reg));
         }
         return;
@@ -144,58 +144,58 @@ pub export fn fnRegClr(unusedButMandatoryParameter: u16) void {
     runtime.reportRegisterCommandError(runtime.lastErrorCode);
 }
 
-pub export fn fnRegSwap(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRegSwap(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    var sourceStart: u16 = 0;
-    var count: u16 = 0;
-    var destinationStart: u16 = 0;
+    var s: u16 = 0;
+    var n: u16 = 0;
+    var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&sourceStart, &count, &destinationStart);
+    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    if (destinationStart < sourceStart + count and sourceStart < destinationStart + count) {
+    if (d < s + n and s < d + n) {
         runtime.reportRegisterCommandError(runtime.ERROR_OUT_OF_RANGE);
         return;
     }
 
     var index: u16 = 0;
-    while (index < count) : (index += 1) {
-        const sourceReg = @as(runtime.calcRegister_t, @intCast(sourceStart + index));
-        const destinationReg = @as(runtime.calcRegister_t, @intCast(destinationStart + index));
-        const savedDescriptor = runtime.globalDescriptor(sourceReg);
-        runtime.setGlobalDescriptor(sourceReg, runtime.globalDescriptor(destinationReg));
-        runtime.setGlobalDescriptor(destinationReg, savedDescriptor);
+    while (index < n) : (index += 1) {
+        const src = @as(runtime.calcRegister_t, @intCast(s + index));
+        const dst = @as(runtime.calcRegister_t, @intCast(d + index));
+        const saved_descriptor = runtime.globalDescriptor(src);
+        runtime.setGlobalDescriptor(src, runtime.globalDescriptor(dst));
+        runtime.setGlobalDescriptor(dst, saved_descriptor);
     }
 }
 
-pub export fn fnRegCopy(unusedButMandatoryParameter: u16) void {
-    var partialLoad = false;
-    var sourceStart: u16 = 0;
-    var count: u16 = 0;
-    var destinationStart: u16 = 0;
+pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
+    var f = false;
+    var s: u16 = 0;
+    var n: u16 = 0;
+    var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&partialLoad, &sourceStart, &count, &destinationStart);
+    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&f, &s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    if (partialLoad) {
-        _ = unusedButMandatoryParameter;
-        runtime.doPartialRegisterLoad(sourceStart, count, destinationStart);
+    if (f) {
+        _ = unused_but_mandatory_parameter;
+        runtime.doPartialRegisterLoad(s, n, d);
         return;
     }
 
-    if (sourceStart > destinationStart) {
+    if (s > d) {
         var index: u16 = 0;
-        while (index < count) : (index += 1) {
+        while (index < n) : (index += 1) {
             runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(sourceStart + index)),
-                @as(runtime.calcRegister_t, @intCast(destinationStart + index)),
+                @as(runtime.calcRegister_t, @intCast(s + index)),
+                @as(runtime.calcRegister_t, @intCast(d + index)),
             );
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
@@ -204,13 +204,13 @@ pub export fn fnRegCopy(unusedButMandatoryParameter: u16) void {
         return;
     }
 
-    if (sourceStart < destinationStart) {
-        var index = count;
+    if (s < d) {
+        var index = n;
         while (index > 0) {
             index -= 1;
             runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(sourceStart + index)),
-                @as(runtime.calcRegister_t, @intCast(destinationStart + index)),
+                @as(runtime.calcRegister_t, @intCast(s + index)),
+                @as(runtime.calcRegister_t, @intCast(d + index)),
             );
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
@@ -219,34 +219,34 @@ pub export fn fnRegCopy(unusedButMandatoryParameter: u16) void {
     }
 }
 
-pub export fn fnRegSort(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    var startReg: u16 = 0;
-    var count: u16 = 0;
+    var s: u16 = 0;
+    var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&startReg, &count);
+    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
     }
 
-    switch (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(startReg)))) {
+    switch (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)))) {
         runtime.dtLongInteger, runtime.dtShortInteger, runtime.dtReal34 => {
-            var index: u16 = startReg + 1;
-            while (index < startReg + count) : (index += 1) {
-                const dataType = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index)));
-                if (dataType != runtime.dtLongInteger and dataType != runtime.dtShortInteger and dataType != runtime.dtReal34) {
+            var index: u16 = s + 1;
+            while (index < s + n) : (index += 1) {
+                const data_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index)));
+                if (data_type != runtime.dtLongInteger and data_type != runtime.dtShortInteger and data_type != runtime.dtReal34) {
                     runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
                     return;
                 }
             }
         },
         runtime.dtTime, runtime.dtDate, runtime.dtString => {
-            const firstType = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(startReg)));
-            var index: u16 = startReg + 1;
-            while (index < startReg + count) : (index += 1) {
-                if (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index))) != firstType) {
+            const first_type = runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(s)));
+            var index: u16 = s + 1;
+            while (index < s + n) : (index += 1) {
+                if (runtime.getRegisterDataType(@as(runtime.calcRegister_t, @intCast(index))) != first_type) {
                     runtime.reportRegisterCommandError(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
                     return;
                 }
@@ -256,11 +256,11 @@ pub export fn fnRegSort(unusedButMandatoryParameter: u16) void {
     }
 
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        runtime.sortRegisterRange(startReg, startReg + count - 1);
+        runtime.sortRegisterRange(s, s + n - 1);
     }
 }
 
-pub export fn fnToReal(unusedButMandatoryParameter: u16) void {
+pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
     if (runtime.tryFnToRealComplexZero()) {
         return;
     }
@@ -285,11 +285,11 @@ pub export fn fnToReal(unusedButMandatoryParameter: u16) void {
         return;
     }
 
-    runtime.toRealRetained(unusedButMandatoryParameter);
+    runtime.toRealRetained(unused_but_mandatory_parameter);
 }
 
-pub export fn adjustResult(res: runtime.calcRegister_t, dropY: bool, setCpxRes: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
-    const oneArgumentIsComplex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
+pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: runtime.calcRegister_t, op2: runtime.calcRegister_t, op3: runtime.calcRegister_t) void {
+    const one_argument_is_complex = adjustResultArgumentIsComplex(op1) or adjustResultArgumentIsComplex(op2) or adjustResultArgumentIsComplex(op3);
 
     if (runtime.adjustResultScalarCore(res) or runtime.adjustResultRealMatrixCore(res) or runtime.adjustResultComplexMatrixCore(res)) {
         if (runtime.lastErrorCode != runtime.ERROR_NONE) {
@@ -300,25 +300,25 @@ pub export fn adjustResult(res: runtime.calcRegister_t, dropY: bool, setCpxRes: 
         return;
     }
 
-    if (setCpxRes and oneArgumentIsComplex and runtime.getRegisterDataType(res) != runtime.dtString) {
+    if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {
         runtime.adjustResultSetCpxRes();
     }
 
-    if (dropY) {
+    if (drop_y) {
         fnDropY(0);
     }
 }
 
 pub export fn liftStack() void {
-    const stackTop = runtime.getStackTop();
+    const stack_top = runtime.getStackTop();
 
     if (runtime.getSystemFlag(runtime.FLAG_ASLIFT)) {
         if (runtime.currentInputVariable != runtime.INVALID_VARIABLE) {
             runtime.currentInputVariable |= @as(u16, 0x8000);
         }
-        runtime.freeRegisterData(stackTop);
+        runtime.freeRegisterData(stack_top);
 
-        var reg = stackTop;
+        var reg = stack_top;
         while (reg > runtime.REGISTER_X) : (reg -= 1) {
             runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg - 1));
         }
@@ -335,57 +335,57 @@ pub export fn saveLastX() bool {
     return runtime.lastErrorCode == runtime.ERROR_NONE;
 }
 
-pub export fn fnGetLocR(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnGetLocR(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
     liftStack();
     runtime.storeLocalRegisterCountInX();
 }
 
 pub export fn _Drop(reg: runtime.calcRegister_t) void {
-    const stackTop = runtime.getStackTop();
-    if (reg == stackTop) {
+    const stack_top = runtime.getStackTop();
+    if (reg == stack_top) {
         return;
     }
 
     runtime.freeRegisterData(reg);
 
     var current = reg;
-    while (current < stackTop) : (current += 1) {
+    while (current < stack_top) : (current += 1) {
         runtime.setGlobalDescriptor(current, runtime.globalDescriptor(current + 1));
     }
 
-    const sizeInBlocks = runtime.getRegisterFullSizeInBlocks(stackTop);
-    const dataPtr = runtime.allocC47Blocks(sizeInBlocks);
-    if (dataPtr != null) {
-        runtime.setRegisterDataPointerMutable(stackTop - 1, dataPtr);
+    const size_in_blocks = runtime.getRegisterFullSizeInBlocks(stack_top);
+    const data_ptr = runtime.allocC47Blocks(size_in_blocks);
+    if (data_ptr != null) {
+        runtime.setRegisterDataPointerMutable(stack_top - 1, data_ptr);
         runtime.xcopyBlocks(
-            runtime.getRegisterDataPointer(stackTop - 1),
-            runtime.getRegisterDataPointer(stackTop),
-            sizeInBlocks,
+            runtime.getRegisterDataPointer(stack_top - 1),
+            runtime.getRegisterDataPointer(stack_top),
+            size_in_blocks,
         );
     } else {
         runtime.lastErrorCode = runtime.ERROR_RAM_FULL;
     }
 }
 
-pub export fn fnDrop(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnDrop(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     _Drop(runtime.REGISTER_X);
 }
 
-pub export fn fnDropY(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnDropY(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     _Drop(runtime.REGISTER_Y);
 }
 
-pub export fn fnDropZ(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnDropZ(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     _Drop(runtime.REGISTER_Z);
 }
 
-pub export fn fnDropT(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnDropT(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     _Drop(runtime.REGISTER_T);
 }
 
@@ -397,34 +397,34 @@ pub export fn fnDropN(number: u16) void {
     }
 }
 
-pub export fn fnRollUp(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRollUp(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    const stackTop = runtime.getStackTop();
-    const savedDescriptor = runtime.globalDescriptor(stackTop);
+    const stack_top = runtime.getStackTop();
+    const saved_descriptor = runtime.globalDescriptor(stack_top);
 
-    var reg = stackTop;
+    var reg = stack_top;
     while (reg > runtime.REGISTER_X) : (reg -= 1) {
         runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg - 1));
     }
-    runtime.setGlobalDescriptor(runtime.REGISTER_X, savedDescriptor);
+    runtime.setGlobalDescriptor(runtime.REGISTER_X, saved_descriptor);
 }
 
-pub export fn fnRollDown(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnRollDown(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    const stackTop = runtime.getStackTop();
-    const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
+    const stack_top = runtime.getStackTop();
+    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
 
     var reg = runtime.REGISTER_X;
-    while (reg < stackTop) : (reg += 1) {
+    while (reg < stack_top) : (reg += 1) {
         runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg + 1));
     }
-    runtime.setGlobalDescriptor(stackTop, savedDescriptor);
+    runtime.setGlobalDescriptor(stack_top, saved_descriptor);
 }
 
-pub export fn fnDisplayStack(numberOfStackLines: u16) void {
-    runtime.displayStack = @intCast(numberOfStackLines);
+pub export fn fnDisplayStack(number_of_stack_lines: u16) void {
+    runtime.displayStack = @intCast(number_of_stack_lines);
 }
 
 pub export fn fnSwapX(reg: u16) void {
@@ -460,48 +460,48 @@ pub export fn fnDupN(number: u16) void {
     }
 }
 
-pub export fn fnSwapXY(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnSwapXY(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
+    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
     runtime.setGlobalDescriptor(runtime.REGISTER_X, runtime.globalDescriptor(runtime.REGISTER_Y));
-    runtime.setGlobalDescriptor(runtime.REGISTER_Y, savedDescriptor);
+    runtime.setGlobalDescriptor(runtime.REGISTER_Y, saved_descriptor);
 }
 
-pub export fn fnShuffle(registerOrder: u16) void {
+pub export fn fnShuffle(regist_order: u16) void {
     var index: u16 = 0;
     while (index < 4) : (index += 1) {
-        const currentReg = registerWithOffset(runtime.REGISTER_X, index);
-        const savedReg = registerWithOffset(runtime.SAVED_REGISTER_X, index);
-        const savedDescriptor = runtime.globalDescriptor(currentReg);
-        runtime.setGlobalDescriptor(currentReg, runtime.globalDescriptor(savedReg));
-        runtime.setGlobalDescriptor(savedReg, savedDescriptor);
+        const current_reg = registerWithOffset(runtime.REGISTER_X, index);
+        const saved_reg = registerWithOffset(runtime.SAVED_REGISTER_X, index);
+        const saved_descriptor = runtime.globalDescriptor(current_reg);
+        runtime.setGlobalDescriptor(current_reg, runtime.globalDescriptor(saved_reg));
+        runtime.setGlobalDescriptor(saved_reg, saved_descriptor);
     }
 
     index = 0;
     while (index < 4) : (index += 1) {
-        const registerOffset: u16 = (registerOrder >> @intCast(index * 2)) & 3;
-        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, registerOffset), registerWithOffset(runtime.REGISTER_X, index));
+        const regist_offset: u16 = (regist_order >> @intCast(index * 2)) & 3;
+        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, regist_offset), registerWithOffset(runtime.REGISTER_X, index));
     }
 }
 
-pub export fn fnFillStack(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnFillStack(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
-    const stackTop = runtime.getStackTop();
-    const dataTypeX = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const dataSizeXInBlocks = runtime.getRegisterFullSizeInBlocks(runtime.REGISTER_X);
+    const stack_top = runtime.getStackTop();
+    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const data_size_x_in_blocks = runtime.getRegisterFullSizeInBlocks(runtime.REGISTER_X);
     const tag = runtime.getRegisterTag(runtime.REGISTER_X);
 
     var reg = runtime.REGISTER_Y;
-    while (reg <= stackTop) : (reg += 1) {
+    while (reg <= stack_top) : (reg += 1) {
         runtime.freeRegisterData(reg);
-        runtime.setRegisterDataType(reg, @intCast(dataTypeX), tag);
+        runtime.setRegisterDataType(reg, @intCast(data_type_x), tag);
 
-        const newDataPointer = runtime.allocC47Blocks(dataSizeXInBlocks);
-        if (newDataPointer != null) {
-            runtime.setRegisterDataPointerMutable(reg, newDataPointer);
-            runtime.xcopyBlocks(newDataPointer, runtime.getRegisterDataPointer(runtime.REGISTER_X), dataSizeXInBlocks);
+        const new_data_pointer = runtime.allocC47Blocks(data_size_x_in_blocks);
+        if (new_data_pointer != null) {
+            runtime.setRegisterDataPointerMutable(reg, new_data_pointer);
+            runtime.xcopyBlocks(new_data_pointer, runtime.getRegisterDataPointer(runtime.REGISTER_X), data_size_x_in_blocks);
         } else {
             runtime.lastErrorCode = runtime.ERROR_RAM_FULL;
             return;
@@ -509,8 +509,8 @@ pub export fn fnFillStack(unusedButMandatoryParameter: u16) void {
     }
 }
 
-pub export fn fnGetStackSize(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnGetStackSize(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
 
     liftStack();
     runtime.storeStackSizeInX(if (runtime.getSystemFlag(runtime.FLAG_SSIZE8)) 8 else 4);
@@ -520,8 +520,8 @@ pub export fn saveForUndo() void {
     runtime.saveForUndoRetained();
 }
 
-pub export fn fnUndo(unusedButMandatoryParameter: u16) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnUndo(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     if (runtime.thereIsSomethingToUndo) {
         undo();
     }

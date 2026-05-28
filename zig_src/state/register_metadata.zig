@@ -8,20 +8,20 @@ const tag_mask: runtime.register_descriptor_t = 0x01f00000;
 const data_type_shift: u5 = 16;
 const tag_shift: u5 = 20;
 const invalid_data_type: u32 = 31;
-const validateNameMaxGlyphs: usize = 7;
+const validate_name_max_glyphs: usize = 7;
 const glyph_A: u16 = 0x41;
 const glyph_Z: u16 = 0x5a;
-const glyphA: u16 = 0x61;
-const glyphZ: u16 = 0x7a;
+const glyph_a: u16 = 0x61;
+const glyph_z: u16 = 0x7a;
 const glyph_A_grave: u16 = 0x00c0;
-const glyphCross: u16 = 0x00d7;
-const glyphDivide: u16 = 0x00f7;
-const glyphZCaron: u16 = 0x017e;
-const glyphIotaDialytikaTonos: u16 = 0x0390;
-const glyphSampi: u16 = 0x03e1;
-const glyphSubAlpha: u16 = 0x2296;
-const glyphSubMu: u16 = 0x2298;
-const glyphSupA: u16 = 0x2482;
+const glyph_cross: u16 = 0x00d7;
+const glyph_divide: u16 = 0x00f7;
+const glyph_z_caron: u16 = 0x017e;
+const glyph_iota_dialytika_tonos: u16 = 0x0390;
+const glyph_sampi: u16 = 0x03e1;
+const glyph_sub_alpha: u16 = 0x2296;
+const glyph_sub_mu: u16 = 0x2298;
+const glyph_sup_a: u16 = 0x2482;
 const glyph_sub_Z: u16 = 0x24e9;
 
 fn descriptorDataType(descriptor: runtime.register_descriptor_t) u32 {
@@ -176,13 +176,13 @@ fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRe
     return reg;
 }
 
-fn copyPayloadSizeWithoutHeader(sourceReg: runtime.calcRegister_t, dataType: u32) ?u16 {
-    return switch (dataType) {
+fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
+    return switch (data_type) {
         runtime.dtLongInteger,
         runtime.dtString,
         runtime.dtReal34Matrix,
         runtime.dtComplex34Matrix,
-        => getRegisterMaxDataLengthInBlocks(sourceReg),
+        => getRegisterMaxDataLengthInBlocks(source_reg),
         runtime.dtTime,
         runtime.dtDate,
         runtime.dtShortInteger,
@@ -194,15 +194,15 @@ fn copyPayloadSizeWithoutHeader(sourceReg: runtime.calcRegister_t, dataType: u32
     };
 }
 
-fn isVariableSizedDataType(dataType: u32) bool {
-    return dataType == runtime.dtLongInteger or
-        dataType == runtime.dtString or
-        dataType == runtime.dtReal34Matrix or
-        dataType == runtime.dtComplex34Matrix;
+fn isVariableSizedDataType(data_type: u32) bool {
+    return data_type == runtime.dtLongInteger or
+        data_type == runtime.dtString or
+        data_type == runtime.dtReal34Matrix or
+        data_type == runtime.dtComplex34Matrix;
 }
 
-fn normalizePayloadSizeInBlocks(dataType: u32, requestedSizeInBlocks: u16) u16 {
-    return switch (dataType) {
+fn normalizePayloadSizeInBlocks(data_type: u32, requested_size_in_blocks: u16) u16 {
+    return switch (data_type) {
         runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
         runtime.dtReal34,
         runtime.dtTime,
@@ -210,33 +210,33 @@ fn normalizePayloadSizeInBlocks(dataType: u32, requestedSizeInBlocks: u16) u16 {
         => runtime.real34SizeInBlocks(),
         runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
         runtime.dtConfig => runtime.configSizeInBlocks(),
-        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requestedSizeInBlocks),
-        else => requestedSizeInBlocks,
+        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requested_size_in_blocks),
+        else => requested_size_in_blocks,
     };
 }
 
-fn allocationSizeInBlocks(dataType: u32, payloadSizeInBlocks: u16) u16 {
-    return switch (dataType) {
+fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
+    return switch (data_type) {
         runtime.dtString,
         runtime.dtLongInteger,
-        => payloadSizeInBlocks + runtime.strLgIntHeaderSizeInBlocks(),
+        => payload_size_in_blocks + runtime.strLgIntHeaderSizeInBlocks(),
         runtime.dtReal34Matrix,
         runtime.dtComplex34Matrix,
-        => payloadSizeInBlocks + runtime.matrixHeaderSizeInBlocks(),
-        else => payloadSizeInBlocks,
+        => payload_size_in_blocks + runtime.matrixHeaderSizeInBlocks(),
+        else => payload_size_in_blocks,
     };
 }
 
 fn validateNameGlyphLength(name: [*:0]const u8) usize {
-    var glyphLength: usize = 0;
+    var glyph_length: usize = 0;
     var offset: usize = 0;
 
     while (name[offset] != 0) {
         offset += if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
-        glyphLength += 1;
+        glyph_length += 1;
     }
 
-    return glyphLength;
+    return glyph_length;
 }
 
 fn validateNameNextGlyphOffset(name: [*:0]const u8, offset: usize) usize {
@@ -253,44 +253,44 @@ fn validateNameGlyphCode(name: [*:0]const u8, offset: usize) u16 {
     return @as(u16, first);
 }
 
-fn needsReallocate(reg: runtime.calcRegister_t, dataType: u32, payloadSizeInBlocks: u16) bool {
-    const currentType = getRegisterDataType(reg);
-    if (currentType != dataType) {
+fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_blocks: u16) bool {
+    const current_type = getRegisterDataType(reg);
+    if (current_type != data_type) {
         return true;
     }
 
-    if (isVariableSizedDataType(currentType)) {
-        return getRegisterMaxDataLengthInBlocks(reg) != payloadSizeInBlocks;
+    if (isVariableSizedDataType(current_type)) {
+        return getRegisterMaxDataLengthInBlocks(reg) != payload_size_in_blocks;
     }
 
     return false;
 }
 
-fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, dataType: u32) u16 {
-    var dataPtr: ?*anyopaque = null;
+fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
+    var data_ptr: ?*anyopaque = null;
 
-    if (!tryGetDataPointerForFullSize(reg, &dataPtr)) {
+    if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
         return runtime.getRegisterFullSizeInBlocksRetained(reg);
     }
 
-    return switch (dataType) {
-        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(dataPtr) + runtime.strLgIntHeaderSizeInBlocks(),
-        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(dataPtr, dataType) + runtime.matrixHeaderSizeInBlocks(),
+    return switch (data_type) {
+        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
+        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
         else => runtime.getRegisterFullSizeInBlocksRetained(reg),
     };
 }
 
-pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, maxDataLen: u16) void {
+pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, maxDataLen);
+        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
         return;
     }
 
-    var dataPtr: ?*anyopaque = null;
+    var data_ptr: ?*anyopaque = null;
     var descriptor: runtime.register_descriptor_t = 0;
 
-    if (tryGetDataPointerForMaxLengthSet(reg, &dataPtr)) {
-        runtime.setDataMaxLengthInBlocks(dataPtr, maxDataLen);
+    if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
+        runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
         return;
     }
 
@@ -309,9 +309,9 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, maxD
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        dataPtr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        if (dataPtr != null) {
-            runtime.setDataMaxLengthInBlocks(dataPtr, maxDataLen);
+        data_ptr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        if (data_ptr != null) {
+            runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
             return;
         }
     }
@@ -320,7 +320,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, maxD
         return;
     }
 
-    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, maxDataLen);
+    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
 }
 
 pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
@@ -328,10 +328,10 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
         return runtime.getRegisterMaxDataLengthInBlocksRetained(reg);
     }
 
-    var dataPtr: ?*anyopaque = null;
-    var typeReg = reg;
+    var data_ptr: ?*anyopaque = null;
+    var type_reg = reg;
 
-    if (!tryGetDataPointerForMaxLengthGet(reg, &dataPtr, &typeReg)) {
+    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
         if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
             stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
             return 0;
@@ -345,12 +345,12 @@ pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 
         return 0;
     }
 
-    const dataType = getRegisterDataType(typeReg);
-    if (dataType == runtime.dtReal34Matrix or dataType == runtime.dtComplex34Matrix) {
-        return matrixMaxLengthInBlocks(dataPtr, dataType);
+    const data_type = getRegisterDataType(type_reg);
+    if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
+        return matrixMaxLengthInBlocks(data_ptr, data_type);
     }
 
-    return runtime.dataMaxLengthInBlocks(dataPtr);
+    return runtime.dataMaxLengthInBlocks(data_ptr);
 }
 
 pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
@@ -375,81 +375,81 @@ pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
     };
 }
 
-pub export fn copySourceRegisterToDestRegister(sourceRegister: runtime.calcRegister_t, destRegister: runtime.calcRegister_t) void {
+pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
     if (builtin.target.os.tag == .freestanding) {
-        runtime.copySourceRegisterToDestRegisterRetained(sourceRegister, destRegister);
+        runtime.copySourceRegisterToDestRegisterRetained(source_register, dest_register);
         return;
     }
 
-    if (isSyntheticReservedCopySource(sourceRegister)) {
+    if (isSyntheticReservedCopySource(source_register)) {
         return;
     }
 
-    const normalizedSource = normalizeLetteredReservedRegister(sourceRegister);
-    const normalizedDest = normalizeLetteredReservedRegister(destRegister);
-    const sourceType = getRegisterDataType(normalizedSource);
-    const sourceFullSize = getRegisterFullSizeInBlocks(normalizedSource);
+    const normalized_source = normalizeLetteredReservedRegister(source_register);
+    const normalized_dest = normalizeLetteredReservedRegister(dest_register);
+    const source_type = getRegisterDataType(normalized_source);
+    const source_full_size = getRegisterFullSizeInBlocks(normalized_source);
 
-    if (getRegisterDataType(normalizedDest) != sourceType or getRegisterFullSizeInBlocks(normalizedDest) != sourceFullSize) {
-        const payloadSize = copyPayloadSizeWithoutHeader(normalizedSource, sourceType) orelse {
+    if (getRegisterDataType(normalized_dest) != source_type or getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
+        const payload_size = copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
             return;
         };
 
-        reallocateRegister(normalizedDest, sourceType, payloadSize, runtime.amNone);
+        reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
         if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
             return;
         }
     }
 
     _ = stack_runtime.xcopy(
-        getRegisterDataPointer(normalizedDest),
-        getRegisterDataPointer(normalizedSource),
-        stack_runtime.bytesFromBlocks(sourceFullSize),
+        getRegisterDataPointer(normalized_dest),
+        getRegisterDataPointer(normalized_source),
+        stack_runtime.bytesFromBlocks(source_full_size),
     );
-    setRegisterTag(normalizedDest, getRegisterTag(normalizedSource));
+    setRegisterTag(normalized_dest, getRegisterTag(normalized_source));
 }
 
-pub export fn reallocateRegister(reg: runtime.calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void {
+pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
-        runtime.reallocateRegisterRetained(reg, dataType, dataSizeWithoutDataLenBlocks, tag);
+        runtime.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
         return;
     }
 
-    const normalizedPayloadSize = normalizePayloadSizeInBlocks(dataType, dataSizeWithoutDataLenBlocks);
-    const allocatedSize = allocationSizeInBlocks(dataType, normalizedPayloadSize);
+    const normalized_payload_size = normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
+    const allocated_size = allocationSizeInBlocks(data_type, normalized_payload_size);
 
-    if (needsReallocate(reg, dataType, normalizedPayloadSize)) {
-        if (!runtime.memoryBlockAvailable(allocatedSize)) {
+    if (needsReallocate(reg, data_type, normalized_payload_size)) {
+        if (!runtime.memoryBlockAvailable(allocated_size)) {
             runtime.reportRamFull();
             return;
         }
 
         stack_runtime.freeRegisterData(reg);
-        const dataPtr = if (allocatedSize == 0) null else stack_runtime.allocC47Blocks(allocatedSize);
-        if (allocatedSize != 0 and dataPtr == null) {
+        const data_ptr = if (allocated_size == 0) null else stack_runtime.allocC47Blocks(allocated_size);
+        if (allocated_size != 0 and data_ptr == null) {
             runtime.reportRamFull();
             return;
         }
 
-        setRegisterDataPointer(reg, dataPtr);
-        setRegisterDataType(reg, @intCast(dataType), tag);
+        setRegisterDataPointer(reg, data_ptr);
+        setRegisterDataType(reg, @intCast(data_type), tag);
 
-        if (dataType == runtime.dtReal34Matrix or dataType == runtime.dtComplex34Matrix) {
-            runtime.initializeMatrixHeader1x1(dataPtr);
+        if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
+            runtime.initializeMatrixHeader1x1(data_ptr);
         } else {
-            setRegisterMaxDataLengthInBlocks(reg, normalizedPayloadSize);
+            setRegisterMaxDataLengthInBlocks(reg, normalized_payload_size);
         }
     }
 
-    if (dataType == runtime.dtComplex34 and stack_runtime.getSystemFlag(runtime.FLAG_POLAR)) {
+    if (data_type == runtime.dtComplex34 and stack_runtime.getSystemFlag(runtime.FLAG_POLAR)) {
         setRegisterTag(reg, runtime.currentAngularMode | runtime.amPolar);
     } else {
         setRegisterTag(reg, tag);
     }
 }
 
-pub export fn allocateLocalRegisters(numberOfRegistersToAllocate: u16) void {
-    runtime.allocateLocalRegistersRetained(numberOfRegistersToAllocate);
+pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
+    runtime.allocateLocalRegistersRetained(number_of_registers_to_allocate);
 }
 
 pub export fn validateName(name: [*c]const u8) bool {
@@ -458,9 +458,9 @@ pub export fn validateName(name: [*c]const u8) bool {
     }
 
     const text: [*:0]const u8 = @ptrCast(name);
-    const glyphLength = validateNameGlyphLength(text);
+    const glyph_length = validateNameGlyphLength(text);
 
-    if (glyphLength > validateNameMaxGlyphs or glyphLength == 0) {
+    if (glyph_length > validate_name_max_glyphs or glyph_length == 0) {
         return false;
     }
 
@@ -469,22 +469,22 @@ pub export fn validateName(name: [*c]const u8) bool {
     if (first < glyph_A) {
         return false;
     }
-    if (first > glyph_Z and first < glyphA) {
+    if (first > glyph_Z and first < glyph_a) {
         return false;
     }
-    if (first > glyphZ and first < glyph_A_grave) {
+    if (first > glyph_z and first < glyph_A_grave) {
         return false;
     }
-    if (first == glyphCross or first == glyphDivide) {
+    if (first == glyph_cross or first == glyph_divide) {
         return false;
     }
-    if (first > glyphZCaron and first < glyphIotaDialytikaTonos) {
+    if (first > glyph_z_caron and first < glyph_iota_dialytika_tonos) {
         return false;
     }
-    if (first > glyphSampi and first < glyphSubAlpha) {
+    if (first > glyph_sampi and first < glyph_sub_alpha) {
         return false;
     }
-    if (first > glyphSubMu and first < glyphSupA) {
+    if (first > glyph_sub_mu and first < glyph_sup_a) {
         return false;
     }
     if (first > glyph_sub_Z) {
@@ -498,7 +498,7 @@ pub export fn validateName(name: [*c]const u8) bool {
             else => {},
         }
 
-        if (validateNameGlyphCode(text, offset) == glyphCross) {
+        if (validateNameGlyphCode(text, offset) == glyph_cross) {
             return false;
         }
     }
@@ -532,24 +532,24 @@ pub export fn isUniqueMenuName(name: [*c]const u8) bool {
     return true;
 }
 
-pub export fn allocateNamedVariable(variableName: [*c]const u8, dataType: u32, fullDataSizeInBlocks: u16) void {
-    if (variableName == null) {
+pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
+    if (variable_name == null) {
         return;
     }
 
-    const text: [*:0]const u8 = @ptrCast(variableName);
-    const glyphLength = validateNameGlyphLength(text);
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
 
-    if (glyphLength < 1 or glyphLength > validateNameMaxGlyphs) {
+    if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
         return;
     }
 
-    if (runtime.findReservedVariableName(variableName, @intCast(glyphLength)) != runtime.INVALID_VARIABLE) {
+    if (runtime.findReservedVariableName(variable_name, @intCast(glyph_length)) != runtime.INVALID_VARIABLE) {
         runtime.reportInvalidName();
         return;
     }
 
-    if (!validateName(variableName)) {
+    if (!validateName(variable_name)) {
         runtime.reportInvalidName();
         return;
     }
@@ -560,9 +560,9 @@ pub export fn allocateNamedVariable(variableName: [*c]const u8, dataType: u32, f
             return;
         }
 
-        runtime.storeNamedVariableName(0, variableName);
-        setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(dataType), runtime.amNone);
-        setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
+        runtime.storeNamedVariableName(0, variable_name);
+        setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(data_type), runtime.amNone);
+        setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
         return;
     }
 
@@ -571,32 +571,32 @@ pub export fn allocateNamedVariable(variableName: [*c]const u8, dataType: u32, f
         return;
     }
 
-    var newIndex: u16 = 0;
-    if (!runtime.appendNamedVariableHeader(&newIndex)) {
+    var new_index: u16 = 0;
+    if (!runtime.appendNamedVariableHeader(&new_index)) {
         runtime.reportRamFull();
         return;
     }
 
-    runtime.storeNamedVariableName(newIndex, variableName);
+    runtime.storeNamedVariableName(new_index, variable_name);
 
-    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(newIndex));
-    setRegisterDataType(register, @intCast(dataType), runtime.amNone);
-    setRegisterDataPointer(register, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
+    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(new_index));
+    setRegisterDataType(register, @intCast(data_type), runtime.amNone);
+    setRegisterDataPointer(register, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
 }
 
 pub export fn fnDeleteVariable(regist: u16) void {
     const register: runtime.calcRegister_t = @intCast(regist);
-    const namedVariableLimit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
+    const named_variable_limit = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables));
 
-    if (register >= runtime.FIRST_NAMED_VARIABLE and register < namedVariableLimit) {
+    if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
         const index: u16 = @intCast(register - runtime.FIRST_NAMED_VARIABLE);
         runtime.removeNamedVariableRecallAssignment(index);
         stack_runtime.freeRegisterData(register);
 
-        var shiftIndex = index;
-        while (shiftIndex + 1 < runtime.numberOfNamedVariables) : (shiftIndex += 1) {
-            runtime.setNamedDescriptorUnchecked(shiftIndex, runtime.namedDescriptorUnchecked(shiftIndex + 1));
-            runtime.storeNamedVariableName(shiftIndex, runtime.namedVariableName(shiftIndex + 1));
+        var shift_index = index;
+        while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
+            runtime.setNamedDescriptorUnchecked(shift_index, runtime.namedDescriptorUnchecked(shift_index + 1));
+            runtime.storeNamedVariableName(shift_index, runtime.namedVariableName(shift_index + 1));
         }
 
         runtime.clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
@@ -613,17 +613,17 @@ pub export fn fnDeleteVariable(regist: u16) void {
     runtime.reportCannotDeletePredefItem();
 }
 
-fn initializeSimEqMatrix(variableName: [*:0]const u8) void {
-    allocateNamedVariable(variableName, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
+fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
+    allocateNamedVariable(variable_name, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return;
     }
 
     const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    const dataPtr = getRegisterDataPointer(register);
+    const data_ptr = getRegisterDataPointer(register);
 
-    runtime.initializeMatrixHeader1x1(dataPtr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(dataPtr));
+    runtime.initializeMatrixHeader1x1(data_ptr);
+    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
 }
 
 fn initSimEqMatABX() void {
@@ -640,8 +640,8 @@ fn initSimEqMatABX() void {
     initializeSimEqMatrix("Mat_X");
 }
 
-fn refreshSimEqMatrix(variableName: [*:0]const u8) void {
-    const register = findOrAllocateNamedVariable(variableName);
+fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
+    const register = findOrAllocateNamedVariable(variable_name);
     if (register == runtime.INVALID_VARIABLE) {
         return;
     }
@@ -651,16 +651,16 @@ fn refreshSimEqMatrix(variableName: [*:0]const u8) void {
         return;
     }
 
-    const dataPtr = getRegisterDataPointer(register);
-    runtime.initializeMatrixHeader1x1(dataPtr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(dataPtr));
+    const data_ptr = getRegisterDataPointer(register);
+    runtime.initializeMatrixHeader1x1(data_ptr);
+    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
 }
 
-fn firstMatrixElementPointer(dataPtr: ?*anyopaque) ?*anyopaque {
-    const ptr = dataPtr orelse return null;
+fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+    const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const payloadOffset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
-    return @ptrCast(bytes + payloadOffset);
+    const payload_offset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
+    return @ptrCast(bytes + payload_offset);
 }
 
 fn refreshSimEqMatABX() void {
@@ -677,8 +677,8 @@ fn refreshSimEqMatABX() void {
     refreshSimEqMatrix("Mat_X");
 }
 
-fn namedVariableNameEquals(index: u16, variableName: [*:0]const u8) bool {
-    return runtime.compareMenuNames(runtime.namedVariableName(index), variableName) == 0;
+fn namedVariableNameEquals(index: u16, variable_name: [*:0]const u8) bool {
+    return runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0;
 }
 
 fn preserveNamedVariableDuringClear(index: u16) bool {
@@ -695,9 +695,9 @@ pub export fn fnDeleteAllVariables(confirmation: u16) void {
         return;
     }
 
-    var variableIndex = runtime.numberOfNamedVariables;
-    while (variableIndex > 0) : (variableIndex -= 1) {
-        fnDeleteVariable(@intCast(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(variableIndex - 1))));
+    var variable_index = runtime.numberOfNamedVariables;
+    while (variable_index > 0) : (variable_index -= 1) {
+        fnDeleteVariable(@intCast(runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(variable_index - 1))));
     }
 
     initSimEqMatABX();
@@ -713,10 +713,10 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
         return;
     }
 
-    var variableIndex = runtime.numberOfNamedVariables;
-    while (variableIndex > 0) {
-        const index = variableIndex - 1;
-        variableIndex -= 1;
+    var variable_index = runtime.numberOfNamedVariables;
+    while (variable_index > 0) {
+        const index = variable_index - 1;
+        variable_index -= 1;
 
         if (preserveNamedVariableDuringClear(index)) {
             continue;
@@ -733,22 +733,22 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
         runtime.TI_NO_INFO;
 }
 
-pub export fn findNamedVariable(variableName: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variableName);
-    const glyphLength = validateNameGlyphLength(text);
+pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
 
-    if (glyphLength < 1 or glyphLength > 7) {
+    if (glyph_length < 1 or glyph_length > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const reserved = runtime.findReservedVariableName(variableName, @intCast(glyphLength));
+    const reserved = runtime.findReservedVariableName(variable_name, @intCast(glyph_length));
     if (reserved != runtime.INVALID_VARIABLE) {
         return reserved;
     }
 
     var index: u16 = 0;
     while (index < runtime.numberOfNamedVariables) : (index += 1) {
-        if (runtime.compareMenuNames(runtime.namedVariableName(index), variableName) == 0) {
+        if (runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0) {
             return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
         }
     }
@@ -756,15 +756,15 @@ pub export fn findNamedVariable(variableName: [*c]const u8) runtime.calcRegister
     return runtime.INVALID_VARIABLE;
 }
 
-pub export fn findOrAllocateNamedVariable(variableName: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variableName);
-    const glyphLength = validateNameGlyphLength(text);
+pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const glyph_length = validateNameGlyphLength(text);
 
-    if (glyphLength < 1 or glyphLength > 7) {
+    if (glyph_length < 1 or glyph_length > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const register = findNamedVariable(variableName);
+    const register = findNamedVariable(variable_name);
     if (register != runtime.INVALID_VARIABLE) {
         return register;
     }
@@ -773,14 +773,14 @@ pub export fn findOrAllocateNamedVariable(variableName: [*c]const u8) runtime.ca
         return runtime.INVALID_VARIABLE;
     }
 
-    allocateNamedVariable(variableName, runtime.dtReal34, runtime.real34SizeInBlocks());
+    allocateNamedVariable(variable_name, runtime.dtReal34, runtime.real34SizeInBlocks());
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const newRegister = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    stack_runtime.real34SetZero(getRegisterDataPointer(newRegister));
-    return newRegister;
+    const new_register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
+    stack_runtime.real34SetZero(getRegisterDataPointer(new_register));
+    return new_register;
 }
 
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {

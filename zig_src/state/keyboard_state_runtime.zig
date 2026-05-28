@@ -118,13 +118,13 @@ pub extern fn runFunction(item: i16) void;
 pub extern fn addItemToNimBuffer(item: i16) void;
 pub extern fn refreshScreen(reason: i16) void;
 extern fn z47_keyboard_state_retained_processKeyAction(item: i16) void;
-extern fn z47_keyboard_state_retained_fnKeyEnter(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyExit(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyCC(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyBackspace(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyUp(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyDown(unusedButMandatoryParameter: u16) void;
-extern fn z47_keyboard_state_retained_fnKeyDotD(unusedButMandatoryParameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyEnter(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyExit(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyCC(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyBackspace(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyUp(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyDown(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_retained_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
 
 pub inline fn kbdStdAt(index: usize) calcKey_t {
     const selected: *[37]calcKey_t = switch (calcModel) {
@@ -150,30 +150,30 @@ pub fn processKeyActionRetained(item: i16) void {
     z47_keyboard_state_retained_processKeyAction(item);
 }
 
-pub fn keyEnterRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyEnter(unusedButMandatoryParameter);
+pub fn keyEnterRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyEnter(unused_but_mandatory_parameter);
 }
 
-pub fn keyExitRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyExit(unusedButMandatoryParameter);
+pub fn keyExitRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyExit(unused_but_mandatory_parameter);
 }
 
-pub fn keyCCRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyCC(unusedButMandatoryParameter);
+pub fn keyCCRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyCC(unused_but_mandatory_parameter);
 }
 
-pub fn keyBackspaceRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyBackspace(unusedButMandatoryParameter);
+pub fn keyBackspaceRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyBackspace(unused_but_mandatory_parameter);
 }
 
-pub fn keyUpRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyUp(unusedButMandatoryParameter);
+pub fn keyUpRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyUp(unused_but_mandatory_parameter);
 }
 
-pub fn keyDownRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyDown(unusedButMandatoryParameter);
+pub fn keyDownRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyDown(unused_but_mandatory_parameter);
 }
 
-pub fn keyDotDRetained(unusedButMandatoryParameter: u16) void {
-    z47_keyboard_state_retained_fnKeyDotD(unusedButMandatoryParameter);
+pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
+    z47_keyboard_state_retained_fnKeyDotD(unused_but_mandatory_parameter);
 }
