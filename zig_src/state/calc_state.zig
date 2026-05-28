@@ -130,7 +130,7 @@ fn doSave(save_type: u16) void {
 
 pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
     if (is_dmcp_build) {
-        runtime.retainedDoLoad(load_mode, s, n, d, load_type);
+        runtime.doLoadRetained(load_mode, s, n, d, load_type);
         return;
     }
 
@@ -168,7 +168,7 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
 
 pub export fn fnLoad(load_mode: u16) void {
     if (is_dmcp_build) {
-        runtime.retainedFnLoad(load_mode);
+        runtime.loadRetained(load_mode);
         return;
     }
 
@@ -188,14 +188,14 @@ pub export fn fnLoadAuto() void {
 
 pub export fn fnSaveAuto(unused_but_mandatory_parameter: u16) void {
     if (is_dmcp_build) {
-        runtime.retainedFnSaveAuto(unused_but_mandatory_parameter);
+        runtime.saveAutoRetained(unused_but_mandatory_parameter);
         return;
     }
 }
 
 pub export fn fnSave(save_mode: u16) void {
     if (is_dmcp_build) {
-        runtime.retainedFnSave(save_mode);
+        runtime.saveRetained(save_mode);
         return;
     }
 
