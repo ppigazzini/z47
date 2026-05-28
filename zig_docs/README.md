@@ -109,6 +109,8 @@ rewrite status, CI routing, package identity, or verification rules.
 Maintainer entrypoints:
 
 - `zig build` or `zig build sim`: canonical host build entrypoint
+- `zig build constants_parity`: focused parity lane for the live constants
+  rewrite slice
 - `zig build logical_shortint_parity`: focused parity lane for the live
   short-integer rewrite slice
 - `zig build rotate_bits_parity`: focused parity lane for the live rotate,

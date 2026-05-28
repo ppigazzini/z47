@@ -13,14 +13,14 @@ z47 uses three explicit implementation modes.
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
 | existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
-| explicit Zig or C boundary | checked-in `translate-c` root headers and direct `extern` usage are allowed only in approved boundary files; checked-in `@cImport` is currently avoided | generator boundary roots under `zig_build/tools/translate_c/`, plus runtime seams under `zig_src/leaf/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
-| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/leaf/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
+| explicit Zig or C boundary | checked-in `translate-c` root headers and direct `extern` usage are allowed only in approved boundary files; checked-in `@cImport` is currently avoided | generator boundary roots under `zig_build/tools/translate_c/`, plus runtime seams under `zig_src/constants/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
+| manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/constants/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 
 ## Current Surface Classification
 
 | Surface | Current classification | Notes |
 | --- | --- | --- |
-| `../src/c47` core | existing C compiled by Zig, with selected leaf, mathematics-wrapper, state, and UI replacements | broad stateful core still mostly remains imported C |
+| `../src/c47` core | existing C compiled by Zig, with selected constants, shortint, mathematics-wrapper, state, and UI replacements | broad stateful core still mostly remains imported C |
 | `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C, with `gtkGui.c` routed through an explicit retained host boundary |
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
 | `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
@@ -32,6 +32,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with build-managed `translate-c` boundary | raster font generator entrypoint |
 | `../zig_build/host/gtk_gui.zig` | existing C compiled by Zig plus explicit retained-boundary routing | filters the imported `gtkGui.c` out of the bulk GTK source list and re-adds it through the retained host wrapper sources |
 | `../zig_build/solver/solve.zig` | manual Zig entrypoint plus retained C boundary routing | filters imported `solver/solve.c`, re-adds retained body through `zig_bridge/solver/solve_retained.c`, and routes `fnPgmSlv` through `zig_src/solver/solve.zig` |
+| `../zig_src/constants/constants.zig` plus `../zig_build/constants/constants.zig` | manual Zig rewrite | parity-gated constants-command slice for `fnConstant` and `fnPi` |
 | `../zig_src/shortint/shortint_core.zig` and short-integer owner files | manual Zig rewrite | parity-gated short-integer rewrite slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
 | `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrappers.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx`, while the matrix fallback still routes through retained `fnInvertMatrix` |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
@@ -47,6 +48,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/firmware_audio_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 audio firmware slice |
 | `../zig_build/firmware_io_runtime.zig` | approved direct `extern` boundary | retained firmware file-I/O seam, with `t24` reached directly as `sdb.pds_t24` through the audited board-specific system-block base |
 | `../zig_build/firmware_print_ir_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 print-IR firmware slice |
+| `../zig_src/constants/constants_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the constants-command slice |
 | `../zig_src/shortint/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
 | `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
 | `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
@@ -80,6 +82,7 @@ Current approved direct `extern` symbol files:
 - `zig_build/firmware_print_ir_runtime.zig`
 - `zig_build/tools/generate_catalogs.zig`
 - `zig_build/tools/generate_testpgms.zig`
+- `zig_src/constants/constants_runtime.zig`
 - `zig_src/shortint/shortint_runtime.zig`
 - `zig_src/mathematics/math_command_wrappers_runtime.zig`
 - `zig_src/state/calc_state_runtime.zig`
@@ -129,6 +132,8 @@ The current checked-in manual Zig rewrite slices are intentionally narrow.
 Verified slices:
 
 - deterministic generators under `../zig_build/tools/`
+- constants ownership under `../zig_src/constants/`, including the live
+  `fnConstant` and `fnPi` owner replacements
 - short-integer modules under `../zig_src/shortint/`, including the live
   `logicalOps/rotateBits.c` owner replacement and the live boolean operator
   owner replacements for `and.c`, `or.c`, `not.c`, `nand.c`, `nor.c`,

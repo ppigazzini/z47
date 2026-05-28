@@ -41,12 +41,12 @@ repo root
 |  |- firmware.zig
 |  |- dist.zig
 |  |- tools/
-|  |- leaf/
+|  |- constants/
 |  |- shortint/
 |  |- state/
 |  `- zig_dist.py
 |- zig_src/
-|  |- leaf/
+|  |- constants/
 |  |- shortint/
 |  `- state/
 |- zig_bridge/
