@@ -24,26 +24,26 @@ const HeaderInfo = struct {
 };
 
 fn parseSaveFileRevision() HeaderInfo {
-    var header_key: [256]u8 = undefined;
-    var ignored_revision: [256]u8 = undefined;
-    var calculator_id: [256]u8 = undefined;
-    var version_line: [256]u8 = undefined;
+    var headerKey: [256]u8 = undefined;
+    var ignoredRevision: [256]u8 = undefined;
+    var calculatorId: [256]u8 = undefined;
+    var versionLine: [256]u8 = undefined;
     var info = HeaderInfo{};
 
-    runtime.readLine(header_key[0..]);
-    if (runtime.lineEquals(header_key[0..].ptr, "SAVE_FILE_REVISION")) {
-        runtime.readLine(ignored_revision[0..]);
-        runtime.readLine(calculator_id[0..]);
-        runtime.readLine(version_line[0..]);
+    runtime.readLine(headerKey[0..]);
+    if (runtime.lineEquals(headerKey[0..].ptr, "SAVE_FILE_REVISION")) {
+        runtime.readLine(ignoredRevision[0..]);
+        runtime.readLine(calculatorId[0..]);
+        runtime.readLine(versionLine[0..]);
 
-        if (runtime.lineEquals(calculator_id[0..].ptr, "C47_save_file_00")) {
+        if (runtime.lineEquals(calculatorId[0..].ptr, "C47_save_file_00")) {
             info.savedCalcModel = runtime.USER_C47;
-        } else if (runtime.lineEquals(calculator_id[0..].ptr, "R47_save_file_00")) {
+        } else if (runtime.lineEquals(calculatorId[0..].ptr, "R47_save_file_00")) {
             info.savedCalcModel = runtime.USER_R47;
         }
 
         if (info.savedCalcModel == runtime.USER_C47 or info.savedCalcModel == runtime.USER_R47) {
-            info.loadedVersion = runtime.parseU32Line(version_line[0..].ptr);
+            info.loadedVersion = runtime.parseU32Line(versionLine[0..].ptr);
             if (info.loadedVersion < 10_000_000 or info.loadedVersion > 20_000_000) {
                 info.loadedVersion = 0;
             }
