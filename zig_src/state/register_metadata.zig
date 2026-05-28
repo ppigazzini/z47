@@ -448,8 +448,8 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
     }
 }
 
-pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
-    runtime.allocateLocalRegistersRetained(number_of_registers_to_allocate);
+pub export fn allocateLocalRegisters(numberOfRegistersToAllocate: u16) void {
+    runtime.allocateLocalRegistersRetained(numberOfRegistersToAllocate);
 }
 
 pub export fn validateName(name: [*c]const u8) bool {
@@ -532,24 +532,24 @@ pub export fn isUniqueMenuName(name: [*c]const u8) bool {
     return true;
 }
 
-pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
-    if (variable_name == null) {
+pub export fn allocateNamedVariable(variableName: [*c]const u8, data_type: u32, fullDataSizeInBlocks: u16) void {
+    if (variableName == null) {
         return;
     }
 
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+    const text: [*:0]const u8 = @ptrCast(variableName);
     const glyphLength = validateNameGlyphLength(text);
 
     if (glyphLength < 1 or glyphLength > validateNameMaxGlyphs) {
         return;
     }
 
-    if (runtime.findReservedVariableName(variable_name, @intCast(glyphLength)) != runtime.INVALID_VARIABLE) {
+    if (runtime.findReservedVariableName(variableName, @intCast(glyphLength)) != runtime.INVALID_VARIABLE) {
         runtime.reportInvalidName();
         return;
     }
 
-    if (!validateName(variable_name)) {
+    if (!validateName(variableName)) {
         runtime.reportInvalidName();
         return;
     }
@@ -560,9 +560,9 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
             return;
         }
 
-        runtime.storeNamedVariableName(0, variable_name);
+        runtime.storeNamedVariableName(0, variableName);
         setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(data_type), runtime.amNone);
-        setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
+        setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
         return;
     }
 
@@ -571,17 +571,17 @@ pub export fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32,
         return;
     }
 
-    var new_index: u16 = 0;
-    if (!runtime.appendNamedVariableHeader(&new_index)) {
+    var newIndex: u16 = 0;
+    if (!runtime.appendNamedVariableHeader(&newIndex)) {
         runtime.reportRamFull();
         return;
     }
 
-    runtime.storeNamedVariableName(new_index, variable_name);
+    runtime.storeNamedVariableName(newIndex, variableName);
 
-    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(new_index));
+    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(newIndex));
     setRegisterDataType(register, @intCast(data_type), runtime.amNone);
-    setRegisterDataPointer(register, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
+    setRegisterDataPointer(register, stack_runtime.allocC47Blocks(fullDataSizeInBlocks));
 }
 
 pub export fn fnDeleteVariable(regist: u16) void {
