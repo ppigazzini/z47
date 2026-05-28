@@ -52,10 +52,10 @@ pub fn addToModule(
         }),
     });
 
-    const gui_wrappers = b.addObject(.{
-        .name = b.fmt("{s}-gtk-gui-wrappers", .{name_prefix}),
+    const gui_runtime = b.addObject(.{
+        .name = b.fmt("{s}-gtk-gui-runtime", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/host/gtk_gui_wrappers.zig"),
+            .root_source_file = b.path("zig_build/host/gtk_gui_runtime.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
@@ -93,7 +93,7 @@ pub fn addToModule(
     });
 
     module.addObject(signal_wrappers);
-    module.addObject(gui_wrappers);
+    module.addObject(gui_runtime);
     module.addObject(hal_runtime);
     module.addObject(io_runtime);
     module.addObject(lcd_runtime);
