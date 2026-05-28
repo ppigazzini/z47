@@ -168,6 +168,28 @@ Maintenance rule:
   a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
   tree unless that pilot is explicitly promoted
 
+## Naming Contract
+
+Use one naming stratum per file.
+
+- semantic owner files use the domain name directly, for example
+  `zig_src/frontier/frontier.zig`, `zig_src/state/calc_state.zig`, and
+  `zig_src/ui/tone.zig`
+- direct retained-boundary Zig seams use `*_runtime.zig`, for example
+  `zig_src/frontier/frontier_runtime.zig` and
+  `zig_src/state/calc_state_runtime.zig`
+- pure ABI shim forwarders use `*_export.zig`, for example
+  `zig_src/mathematics/math_atan2_export.zig` and
+  `zig_src/mathematics/math_real_trig_export.zig`
+- internal implementation helpers that exist only behind a paired export shim
+  use `*_owned.zig`, for example `zig_src/mathematics/math_atan2_owned.zig`
+- retained C owner or helper files stay explicit as `*_retained.c` or
+  `*_runtime_helpers.c`
+
+Avoid historical mixed forms such as `*_owned_export.zig` and owner-file
+`*_entries.zig` suffixes. Keep upstream-compatible spellings at the retained
+boundary or export surface, not in the semantic owner filename.
+
 ## Build Entry Points
 
 Public maintainer entrypoints currently exposed by `zig build --help` include:
