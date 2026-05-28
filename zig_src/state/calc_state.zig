@@ -1,7 +1,7 @@
 const builtin = @import("builtin");
 const runtime = @import("calc_state_runtime.zig");
 
-const is_dmcp_build = builtin.target.os.tag == .freestanding;
+const isDmcpBuild = builtin.target.os.tag == .freestanding;
 
 fn saveCalcBackupHost() callconv(.c) void {
     runtime.saveCalcBackup();
@@ -12,7 +12,7 @@ fn restoreCalcBackupHost() callconv(.c) void {
 }
 
 comptime {
-    if (!is_dmcp_build) {
+    if (!isDmcpBuild) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
     }
@@ -129,7 +129,7 @@ fn doSave(save_type: u16) void {
 }
 
 pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
-    if (is_dmcp_build) {
+    if (isDmcpBuild) {
         runtime.doLoadRetained(load_mode, s, n, d, load_type);
         return;
     }
@@ -167,7 +167,7 @@ pub export fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) voi
 }
 
 pub export fn fnLoad(load_mode: u16) void {
-    if (is_dmcp_build) {
+    if (isDmcpBuild) {
         runtime.loadRetained(load_mode);
         return;
     }
@@ -187,14 +187,14 @@ pub export fn fnLoadAuto() void {
 }
 
 pub export fn fnSaveAuto(unused_but_mandatory_parameter: u16) void {
-    if (is_dmcp_build) {
+    if (isDmcpBuild) {
         runtime.saveAutoRetained(unused_but_mandatory_parameter);
         return;
     }
 }
 
 pub export fn fnSave(save_mode: u16) void {
-    if (is_dmcp_build) {
+    if (isDmcpBuild) {
         runtime.saveRetained(save_mode);
         return;
     }
