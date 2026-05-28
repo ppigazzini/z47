@@ -8,32 +8,32 @@ fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
-fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyEnter(unused_but_mandatory_parameter);
+fn keyEnterHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyEnter(unusedButMandatoryParameter);
 }
 
-fn keyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyExit(unused_but_mandatory_parameter);
+fn keyExitHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyExit(unusedButMandatoryParameter);
 }
 
-fn keyCCHost(complex_type: u16) callconv(.c) void {
-    shared.keyCC(complex_type);
+fn keyCCHost(complexType: u16) callconv(.c) void {
+    shared.keyCC(complexType);
 }
 
-fn keyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyBackspace(unused_but_mandatory_parameter);
+fn keyBackspaceHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyBackspace(unusedButMandatoryParameter);
 }
 
-fn keyUpHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyUp(unused_but_mandatory_parameter);
+fn keyUpHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyUp(unusedButMandatoryParameter);
 }
 
-fn keyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyDown(unused_but_mandatory_parameter);
+fn keyDownHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyDown(unusedButMandatoryParameter);
 }
 
-fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shared.keyDotD(unused_but_mandatory_parameter);
+fn keyDotDHost(unusedButMandatoryParameter: u16) callconv(.c) void {
+    shared.keyDotD(unusedButMandatoryParameter);
 }
 
 comptime {
