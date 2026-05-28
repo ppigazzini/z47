@@ -19,16 +19,6 @@ const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
-const z47_math_wrappers_retained_fnGcd = runtime.retained.z47_math_wrappers_retained_fnGcd;
-const z47_math_wrappers_retained_fnLcm = runtime.retained.z47_math_wrappers_retained_fnLcm;
-const z47_math_wrappers_retained_fnMod = runtime.retained.z47_math_wrappers_retained_fnMod;
-const z47_math_wrappers_retained_fnRmd = runtime.retained.z47_math_wrappers_retained_fnRmd;
-const z47_math_wrappers_retained_fnUlp = runtime.retained.z47_math_wrappers_retained_fnUlp;
-const z47_math_wrappers_retained_fnMant = runtime.retained.z47_math_wrappers_retained_fnMant;
-const z47_math_wrappers_retained_fnRoundi = runtime.retained.z47_math_wrappers_retained_fnRoundi;
-const z47_math_wrappers_retained_fnNeighb = runtime.retained.z47_math_wrappers_retained_fnNeighb;
-const z47_math_wrappers_retained_fnIxyz = runtime.retained.z47_math_wrappers_retained_fnIxyz;
-const z47_math_wrappers_retained_fnFactorial = runtime.retained.z47_math_wrappers_retained_fnFactorial;
 const atan2Retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
 const z47_math_wrappers_retained_fnPercent = runtime.retained.z47_math_wrappers_retained_fnPercent;
 const addRetained = runtime.retained.z47_math_wrappers_retained_fnAdd;
