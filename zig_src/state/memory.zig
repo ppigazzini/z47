@@ -102,64 +102,64 @@ pub export fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
 }
 
 pub export fn allocGmp(sizeInBytes: usize) ?*anyopaque {
-    const rounded_size = toBytesSize(toBlocks(sizeInBytes));
-    runtime.gmpMemInBytes +%= rounded_size;
-    return runtime.allocGmpBytes(rounded_size);
+    const roundedSize = toBytesSize(toBlocks(sizeInBytes));
+    runtime.gmpMemInBytes +%= roundedSize;
+    return runtime.allocGmpBytes(roundedSize);
 }
 
 pub export fn reallocGmp(pcMemPtr: ?*anyopaque, oldSizeInBytes: usize, newSizeInBytes: usize) ?*anyopaque {
-    const rounded_new_size = toBytesSize(toBlocks(newSizeInBytes));
-    const rounded_old_size = toBytesSize(toBlocks(oldSizeInBytes));
+    const roundedNewSize = toBytesSize(toBlocks(newSizeInBytes));
+    const roundedOldSize = toBytesSize(toBlocks(oldSizeInBytes));
 
-    runtime.gmpMemInBytes +%= rounded_new_size -% rounded_old_size;
-    return runtime.reallocGmpBytes(pcMemPtr, rounded_new_size);
+    runtime.gmpMemInBytes +%= roundedNewSize -% roundedOldSize;
+    return runtime.reallocGmpBytes(pcMemPtr, roundedNewSize);
 }
 
 pub export fn freeGmp(pcMemPtr: ?*anyopaque, sizeInBytes: usize) void {
-    const rounded_size = toBytesSize(toBlocks(sizeInBytes));
-    runtime.gmpMemInBytes -%= rounded_size;
+    const roundedSize = toBytesSize(toBlocks(sizeInBytes));
+    runtime.gmpMemInBytes -%= roundedSize;
     runtime.freeGmpBytes(pcMemPtr);
 }
 
 pub export fn resizeProgramMemory(newSizeInBlocks: u16) void {
-    const current_size_in_blocks: u16 = runtime.getRamSizeInBlocks() - runtime.toC47MemPtr(runtime.beginOfProgramMemory);
-    var delta_blocks: u16 = 0;
-    var blocks_to_move: u16 = 0;
-    var new_program_memory_pointer: [*c]u8 = null;
+    const currentSizeInBlocks: u16 = runtime.getRamSizeInBlocks() - runtime.toC47MemPtr(runtime.beginOfProgramMemory);
+    var deltaBlocks: u16 = 0;
+    var blocksToMove: u16 = 0;
+    var newProgramMemoryPointer: [*c]u8 = null;
 
-    if (newSizeInBlocks == current_size_in_blocks) {
+    if (newSizeInBlocks == currentSizeInBlocks) {
         return;
     }
 
-    if (newSizeInBlocks > current_size_in_blocks) {
-        delta_blocks = newSizeInBlocks - current_size_in_blocks;
-        const last_region_index: u16 = @intCast(runtime.numberOfFreeMemoryRegions - 1);
-        var last_region = runtime.getFreeRegion(last_region_index);
+    if (newSizeInBlocks > currentSizeInBlocks) {
+        deltaBlocks = newSizeInBlocks - currentSizeInBlocks;
+        const lastRegionIndex: u16 = @intCast(runtime.numberOfFreeMemoryRegions - 1);
+        var lastRegion = runtime.getFreeRegion(lastRegionIndex);
 
-        if (delta_blocks > last_region.sizeInBlocks) {
-            runtime.handleResizeProgramMemoryOutOfMemory(delta_blocks);
+        if (deltaBlocks > lastRegion.sizeInBlocks) {
+            runtime.handleResizeProgramMemoryOutOfMemory(deltaBlocks);
         } else {
-            const delta_bytes = toBytesSize(delta_blocks);
+            const deltaBytes = toBytesSize(deltaBlocks);
 
-            blocks_to_move = current_size_in_blocks;
-            new_program_memory_pointer = runtime.beginOfProgramMemory - delta_bytes;
-            runtime.firstFreeProgramByte = runtime.firstFreeProgramByte - delta_bytes;
-            last_region.sizeInBlocks -%= delta_blocks;
-            runtime.setFreeRegion(last_region_index, last_region);
+            blocksToMove = currentSizeInBlocks;
+            newProgramMemoryPointer = runtime.beginOfProgramMemory - deltaBytes;
+            runtime.firstFreeProgramByte = runtime.firstFreeProgramByte - deltaBytes;
+            lastRegion.sizeInBlocks -%= deltaBlocks;
+            runtime.setFreeRegion(lastRegionIndex, lastRegion);
         }
     } else {
-        const delta_bytes = toBytesSize(current_size_in_blocks - newSizeInBlocks);
-        const last_region_index: u16 = @intCast(runtime.numberOfFreeMemoryRegions - 1);
-        var last_region = runtime.getFreeRegion(last_region_index);
+        const deltaBytes = toBytesSize(currentSizeInBlocks - newSizeInBlocks);
+        const lastRegionIndex: u16 = @intCast(runtime.numberOfFreeMemoryRegions - 1);
+        var lastRegion = runtime.getFreeRegion(lastRegionIndex);
 
-        delta_blocks = current_size_in_blocks - newSizeInBlocks;
-        blocks_to_move = newSizeInBlocks;
-        new_program_memory_pointer = runtime.beginOfProgramMemory + delta_bytes;
-        runtime.firstFreeProgramByte = runtime.firstFreeProgramByte + delta_bytes;
-        last_region.sizeInBlocks +%= delta_blocks;
-        runtime.setFreeRegion(last_region_index, last_region);
+        deltaBlocks = currentSizeInBlocks - newSizeInBlocks;
+        blocksToMove = newSizeInBlocks;
+        newProgramMemoryPointer = runtime.beginOfProgramMemory + deltaBytes;
+        runtime.firstFreeProgramByte = runtime.firstFreeProgramByte + deltaBytes;
+        lastRegion.sizeInBlocks +%= deltaBlocks;
+        runtime.setFreeRegion(lastRegionIndex, lastRegion);
     }
 
-    runtime.copyBytes(new_program_memory_pointer, runtime.beginOfProgramMemory, toBytesU32(blocks_to_move));
-    runtime.beginOfProgramMemory = new_program_memory_pointer;
+    runtime.copyBytes(newProgramMemoryPointer, runtime.beginOfProgramMemory, toBytesU32(blocksToMove));
+    runtime.beginOfProgramMemory = newProgramMemoryPointer;
 }
