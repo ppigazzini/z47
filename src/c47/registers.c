@@ -696,10 +696,7 @@ bool_t validateName(const char *name) {
   if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {     //   \x81\x7e   \x83\x90 
     return false;
   }
-  if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0
-       && compareChar(name, STD_UP_ARROW            ) !=0                                             //   \xa1\x91
-       && compareChar(name, STD_DOWN_ARROW          ) !=0                                             //   \xa1\x93
-                                                                                              ) {     //   \x83\xe1   \xa2\x96
+  if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0) {
     return false;
   }
   if(compareChar(name, STD_SUB_mu     ) > 0 && compareChar(name, STD_SUP_a               ) < 0) {     //   \xa2\x98   \xa4\x82
@@ -769,7 +766,7 @@ static calcRegister_t _findReservedVariable(const char *variableName) {
     printStatus(0, "_findReservedVariable", force);
   #endif //VERBOSE_REGISTERS
 
-  uint8_t len = stringGlyphLength(variableName);
+  uint8_t len = stringByteLength(variableName); // gperf hash keys on byte 2 (-k'1-3'); pass byte length, not glyph count.
   const struct reservedRegister *reg = lookupReservedVariableName(variableName, len);
 
   if(reg != NULL) {
