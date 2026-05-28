@@ -3414,8 +3414,8 @@ fn erfcReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
-pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRandom(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var value: runtime.real_t = undefined;
 
@@ -3487,36 +3487,36 @@ fn doIntRandomI() callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
-pub export fn fnRandomI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRandomI(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     runtime.processIntRealComplexDyadicFunction(&doRealRandomI, null, null, &doIntRandomI);
 }
 
-pub export fn fnSeed(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnSeed(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
-    var register_x = std.mem.zeroes(runtime.real_t);
+    var registerX = std.mem.zeroes(runtime.real_t);
 
     if (!runtime.saveLastX()) {
         return;
     }
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &register_x)) {
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &registerX)) {
         return;
     }
 
     runtime.fnDrop(0);
 
-    const lsu_bytes: *const [50]u8 = @ptrCast(&register_x.lsu);
-    var seed = readSeedWord(lsu_bytes, 0);
-    var sequence = readSeedWord(lsu_bytes, @sizeOf(u64));
+    const lsuBytes: *const [50]u8 = @ptrCast(&registerX.lsu);
+    var stateSeed = readSeedWord(lsuBytes, 0);
+    var sequenceSeed = readSeedWord(lsuBytes, @sizeOf(u64));
 
-    if (seed == 0 and sequence == 0) {
-        runtime.z47_math_wrappers_seed_defaults(&seed, &sequence);
+    if (stateSeed == 0 and sequenceSeed == 0) {
+        runtime.z47_math_wrappers_seed_defaults(&stateSeed, &sequenceSeed);
     }
 
-    pcg32_srandom(seed, sequence);
+    pcg32_srandom(stateSeed, sequenceSeed);
 }
 
 pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
