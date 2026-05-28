@@ -677,8 +677,8 @@ fn refreshSimEqMatABX() void {
     refreshSimEqMatrix("Mat_X");
 }
 
-fn namedVariableNameEquals(index: u16, variable_name: [*:0]const u8) bool {
-    return runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0;
+fn namedVariableNameEquals(index: u16, variableName: [*:0]const u8) bool {
+    return runtime.compareMenuNames(runtime.namedVariableName(index), variableName) == 0;
 }
 
 fn preserveNamedVariableDuringClear(index: u16) bool {
@@ -733,22 +733,22 @@ pub export fn fnClearAllVariables(confirmation: u16) void {
         runtime.TI_NO_INFO;
 }
 
-pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+pub export fn findNamedVariable(variableName: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variableName);
     const glyphLength = validateNameGlyphLength(text);
 
     if (glyphLength < 1 or glyphLength > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const reserved = runtime.findReservedVariableName(variable_name, @intCast(glyphLength));
+    const reserved = runtime.findReservedVariableName(variableName, @intCast(glyphLength));
     if (reserved != runtime.INVALID_VARIABLE) {
         return reserved;
     }
 
     var index: u16 = 0;
     while (index < runtime.numberOfNamedVariables) : (index += 1) {
-        if (runtime.compareMenuNames(runtime.namedVariableName(index), variable_name) == 0) {
+        if (runtime.compareMenuNames(runtime.namedVariableName(index), variableName) == 0) {
             return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
         }
     }
@@ -756,15 +756,15 @@ pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegiste
     return runtime.INVALID_VARIABLE;
 }
 
-pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
-    const text: [*:0]const u8 = @ptrCast(variable_name);
+pub export fn findOrAllocateNamedVariable(variableName: [*c]const u8) runtime.calcRegister_t {
+    const text: [*:0]const u8 = @ptrCast(variableName);
     const glyphLength = validateNameGlyphLength(text);
 
     if (glyphLength < 1 or glyphLength > 7) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const register = findNamedVariable(variable_name);
+    const register = findNamedVariable(variableName);
     if (register != runtime.INVALID_VARIABLE) {
         return register;
     }
@@ -773,14 +773,14 @@ pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.c
         return runtime.INVALID_VARIABLE;
     }
 
-    allocateNamedVariable(variable_name, runtime.dtReal34, runtime.real34SizeInBlocks());
+    allocateNamedVariable(variableName, runtime.dtReal34, runtime.real34SizeInBlocks());
     if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return runtime.INVALID_VARIABLE;
     }
 
-    const new_register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    stack_runtime.real34SetZero(getRegisterDataPointer(new_register));
-    return new_register;
+    const newRegister = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
+    stack_runtime.real34SetZero(getRegisterDataPointer(newRegister));
+    return newRegister;
 }
 
 pub export fn isFunctionAllowingNewVariable(op: u16) bool {
