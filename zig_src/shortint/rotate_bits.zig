@@ -145,8 +145,8 @@ pub export fn fnRrc(numberOfShifts: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnLj(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -162,8 +162,8 @@ pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {
     justifyResultToRegisters(count, base, word);
 }
 
-pub export fn fnRj(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnRj(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -178,8 +178,8 @@ pub export fn fnRj(unused_but_mandatory_parameter: u16) callconv(.c) void {
     justifyResultToRegisters(count, base, word);
 }
 
-pub export fn fnMirror(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnMirror(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var word: u64 = undefined;
     var base: u32 = undefined;
@@ -251,8 +251,8 @@ pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
     setShiftResult(word, base);
 }
 
-pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnZip(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var x: u64 = undefined;
     var y: u64 = undefined;
@@ -281,8 +281,8 @@ pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, @as(runtime.calcRegister_t, -1));
 }
 
-pub export fn fnUnzip(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
+pub export fn fnUnzip(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
 
     var a: u64 = undefined;
     var base: u32 = undefined;
