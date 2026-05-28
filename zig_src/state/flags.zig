@@ -162,9 +162,9 @@ fn setUserFlag(flag: u16) void {
 
     if (flag <= runtime.LAST_LOCAL_FLAG) {
         if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
+            const localFlag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (localFlag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(localFlag);
                 runtime.currentLocalFlags[0] |= @as(u32, 1) << shift;
             }
         }
@@ -172,9 +172,9 @@ fn setUserFlag(flag: u16) void {
     }
 
     if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
+        const extraFlag = flag - 99;
+        const index: usize = @intCast(extraFlag / 16);
+        const shift: u4 = @intCast(extraFlag % 16);
         runtime.globalFlags[index] |= @as(u16, 1) << shift;
     }
 }
@@ -189,9 +189,9 @@ fn clearUserFlag(flag: u16) void {
 
     if (flag <= runtime.LAST_LOCAL_FLAG) {
         if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
+            const localFlag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (localFlag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(localFlag);
                 runtime.currentLocalFlags[0] &= ~(@as(u32, 1) << shift);
             }
         }
@@ -199,9 +199,9 @@ fn clearUserFlag(flag: u16) void {
     }
 
     if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
+        const extraFlag = flag - 99;
+        const index: usize = @intCast(extraFlag / 16);
+        const shift: u4 = @intCast(extraFlag % 16);
         runtime.globalFlags[index] &= ~(@as(u16, 1) << shift);
     }
 }
@@ -216,9 +216,9 @@ fn flipUserFlag(flag: u16) void {
 
     if (flag <= runtime.LAST_LOCAL_FLAG) {
         if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
+            const localFlag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
+            if (localFlag < runtime.NUMBER_OF_LOCAL_FLAGS) {
+                const shift: u5 = @intCast(localFlag);
                 runtime.currentLocalFlags[0] ^= @as(u32, 1) << shift;
             }
         }
@@ -226,9 +226,9 @@ fn flipUserFlag(flag: u16) void {
     }
 
     if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
+        const extraFlag = flag - 99;
+        const index: usize = @intCast(extraFlag / 16);
+        const shift: u4 = @intCast(extraFlag % 16);
         runtime.globalFlags[index] ^= @as(u16, 1) << shift;
     }
 }
