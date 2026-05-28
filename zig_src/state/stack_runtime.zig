@@ -271,7 +271,7 @@ pub fn clearRegistersRetained(confirmation: u16) void {
     z47_registers_retained_fnClearRegisters(confirmation);
 }
 
-pub fn retainedClearRegister(reg: calcRegister_t) void {
+pub fn clearRegisterRetained(reg: calcRegister_t) void {
     z47_registers_retained_clearRegister(reg);
 }
 
@@ -283,20 +283,16 @@ pub fn toRealRetained(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
 }
 
-pub fn retainedGetRegClrRange(s: *u16, n: *u16) u8 {
+pub fn getRegClrRangeRetained(s: *u16, n: *u16) u8 {
     return z47_registers_retained_get_reg_clr_range(s, n);
 }
 
-pub fn retainedGetRegSwapRange(s: *u16, n: *u16, d: *u16) u8 {
+pub fn getRegSwapRangeRetained(s: *u16, n: *u16, d: *u16) u8 {
     return z47_registers_retained_get_reg_swap_range(s, n, d);
 }
 
-pub fn retainedGetRegCopyParams(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
+pub fn getRegCopyParamsRetained(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
     return z47_registers_retained_get_reg_copy_params(f, s, n, d);
-}
-
-pub fn retainedSortReg(range_start: u16, range_end: u16) void {
-    z47_registers_retained_sort_reg(range_start, range_end);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {
