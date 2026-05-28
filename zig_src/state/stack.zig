@@ -310,15 +310,15 @@ pub export fn adjustResult(res: runtime.calcRegister_t, drop_y: bool, set_cpx_re
 }
 
 pub export fn liftStack() void {
-    const stack_top = runtime.getStackTop();
+    const stackTop = runtime.getStackTop();
 
     if (runtime.getSystemFlag(runtime.FLAG_ASLIFT)) {
         if (runtime.currentInputVariable != runtime.INVALID_VARIABLE) {
             runtime.currentInputVariable |= @as(u16, 0x8000);
         }
-        runtime.freeRegisterData(stack_top);
+        runtime.freeRegisterData(stackTop);
 
-        var reg = stack_top;
+        var reg = stackTop;
         while (reg > runtime.REGISTER_X) : (reg -= 1) {
             runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg - 1));
         }
@@ -343,26 +343,26 @@ pub export fn fnGetLocR(unused_but_mandatory_parameter: u16) void {
 }
 
 pub export fn _Drop(reg: runtime.calcRegister_t) void {
-    const stack_top = runtime.getStackTop();
-    if (reg == stack_top) {
+    const stackTop = runtime.getStackTop();
+    if (reg == stackTop) {
         return;
     }
 
     runtime.freeRegisterData(reg);
 
     var current = reg;
-    while (current < stack_top) : (current += 1) {
+    while (current < stackTop) : (current += 1) {
         runtime.setGlobalDescriptor(current, runtime.globalDescriptor(current + 1));
     }
 
-    const size_in_blocks = runtime.getRegisterFullSizeInBlocks(stack_top);
-    const data_ptr = runtime.allocC47Blocks(size_in_blocks);
-    if (data_ptr != null) {
-        runtime.setRegisterDataPointerMutable(stack_top - 1, data_ptr);
+    const sizeInBlocks = runtime.getRegisterFullSizeInBlocks(stackTop);
+    const dataPtr = runtime.allocC47Blocks(sizeInBlocks);
+    if (dataPtr != null) {
+        runtime.setRegisterDataPointerMutable(stackTop - 1, dataPtr);
         runtime.xcopyBlocks(
-            runtime.getRegisterDataPointer(stack_top - 1),
-            runtime.getRegisterDataPointer(stack_top),
-            size_in_blocks,
+            runtime.getRegisterDataPointer(stackTop - 1),
+            runtime.getRegisterDataPointer(stackTop),
+            sizeInBlocks,
         );
     } else {
         runtime.lastErrorCode = runtime.ERROR_RAM_FULL;
@@ -400,27 +400,27 @@ pub export fn fnDropN(number: u16) void {
 pub export fn fnRollUp(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    const stack_top = runtime.getStackTop();
-    const saved_descriptor = runtime.globalDescriptor(stack_top);
+    const stackTop = runtime.getStackTop();
+    const savedDescriptor = runtime.globalDescriptor(stackTop);
 
-    var reg = stack_top;
+    var reg = stackTop;
     while (reg > runtime.REGISTER_X) : (reg -= 1) {
         runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg - 1));
     }
-    runtime.setGlobalDescriptor(runtime.REGISTER_X, saved_descriptor);
+    runtime.setGlobalDescriptor(runtime.REGISTER_X, savedDescriptor);
 }
 
 pub export fn fnRollDown(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    const stack_top = runtime.getStackTop();
-    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
+    const stackTop = runtime.getStackTop();
+    const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
 
     var reg = runtime.REGISTER_X;
-    while (reg < stack_top) : (reg += 1) {
+    while (reg < stackTop) : (reg += 1) {
         runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg + 1));
     }
-    runtime.setGlobalDescriptor(stack_top, saved_descriptor);
+    runtime.setGlobalDescriptor(stackTop, savedDescriptor);
 }
 
 pub export fn fnDisplayStack(number_of_stack_lines: u16) void {
@@ -463,45 +463,45 @@ pub export fn fnDupN(number: u16) void {
 pub export fn fnSwapXY(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
+    const savedDescriptor = runtime.globalDescriptor(runtime.REGISTER_X);
     runtime.setGlobalDescriptor(runtime.REGISTER_X, runtime.globalDescriptor(runtime.REGISTER_Y));
-    runtime.setGlobalDescriptor(runtime.REGISTER_Y, saved_descriptor);
+    runtime.setGlobalDescriptor(runtime.REGISTER_Y, savedDescriptor);
 }
 
-pub export fn fnShuffle(regist_order: u16) void {
+pub export fn fnShuffle(registerOrder: u16) void {
     var index: u16 = 0;
     while (index < 4) : (index += 1) {
-        const current_reg = registerWithOffset(runtime.REGISTER_X, index);
-        const saved_reg = registerWithOffset(runtime.SAVED_REGISTER_X, index);
-        const saved_descriptor = runtime.globalDescriptor(current_reg);
-        runtime.setGlobalDescriptor(current_reg, runtime.globalDescriptor(saved_reg));
-        runtime.setGlobalDescriptor(saved_reg, saved_descriptor);
+        const currentReg = registerWithOffset(runtime.REGISTER_X, index);
+        const savedReg = registerWithOffset(runtime.SAVED_REGISTER_X, index);
+        const savedDescriptor = runtime.globalDescriptor(currentReg);
+        runtime.setGlobalDescriptor(currentReg, runtime.globalDescriptor(savedReg));
+        runtime.setGlobalDescriptor(savedReg, savedDescriptor);
     }
 
     index = 0;
     while (index < 4) : (index += 1) {
-        const regist_offset: u16 = (regist_order >> @intCast(index * 2)) & 3;
-        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, regist_offset), registerWithOffset(runtime.REGISTER_X, index));
+        const registerOffset: u16 = (registerOrder >> @intCast(index * 2)) & 3;
+        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, registerOffset), registerWithOffset(runtime.REGISTER_X, index));
     }
 }
 
 pub export fn fnFillStack(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    const stack_top = runtime.getStackTop();
-    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const data_size_x_in_blocks = runtime.getRegisterFullSizeInBlocks(runtime.REGISTER_X);
+    const stackTop = runtime.getStackTop();
+    const dataTypeX = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const dataSizeXInBlocks = runtime.getRegisterFullSizeInBlocks(runtime.REGISTER_X);
     const tag = runtime.getRegisterTag(runtime.REGISTER_X);
 
     var reg = runtime.REGISTER_Y;
-    while (reg <= stack_top) : (reg += 1) {
+    while (reg <= stackTop) : (reg += 1) {
         runtime.freeRegisterData(reg);
-        runtime.setRegisterDataType(reg, @intCast(data_type_x), tag);
+        runtime.setRegisterDataType(reg, @intCast(dataTypeX), tag);
 
-        const new_data_pointer = runtime.allocC47Blocks(data_size_x_in_blocks);
-        if (new_data_pointer != null) {
-            runtime.setRegisterDataPointerMutable(reg, new_data_pointer);
-            runtime.xcopyBlocks(new_data_pointer, runtime.getRegisterDataPointer(runtime.REGISTER_X), data_size_x_in_blocks);
+        const newDataPointer = runtime.allocC47Blocks(dataSizeXInBlocks);
+        if (newDataPointer != null) {
+            runtime.setRegisterDataPointerMutable(reg, newDataPointer);
+            runtime.xcopyBlocks(newDataPointer, runtime.getRegisterDataPointer(runtime.REGISTER_X), dataSizeXInBlocks);
         } else {
             runtime.lastErrorCode = runtime.ERROR_RAM_FULL;
             return;
