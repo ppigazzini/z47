@@ -41,9 +41,9 @@ pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
 pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
-    const stack_top = runtime.getStackTop();
+    const stackTop = runtime.getStackTop();
     var reg = runtime.REGISTER_X;
-    while (reg <= stack_top) : (reg += 1) {
+    while (reg <= stackTop) : (reg += 1) {
         runtime.clearRegister(reg);
     }
 }
@@ -64,21 +64,21 @@ pub export fn clearRegister(reg: runtime.calcRegister_t) void {
     }
 
     if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_CPXDP) {
-        const complex_tag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
+        const complexTag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
 
         if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
-            const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
-            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
+            const dataPtr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(dataPtr);
+            runtime.real34SetZero(complexImagPointer(dataPtr));
+            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complexTag);
         } else {
-            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
+            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complexTag);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }
-            const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
+            const dataPtr = runtime.getRegisterDataPointer(reg);
+            runtime.real34SetZero(dataPtr);
+            runtime.real34SetZero(complexImagPointer(dataPtr));
         }
         return;
     }
@@ -107,10 +107,10 @@ pub export fn fnClearRegisters(confirmation: u16) void {
         runtime.clearRegister(reg);
     }
 
-    var local_index: u8 = 0;
-    const local_count = runtime.currentLocalRegisterCount();
-    while (local_index < local_count) : (local_index += 1) {
-        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(local_index)));
+    var localIndex: u8 = 0;
+    const localCount = runtime.currentLocalRegisterCount();
+    while (localIndex < localCount) : (localIndex += 1) {
+        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(localIndex)));
     }
 
     if (!runtime.getSystemFlag(runtime.FLAG_SSIZE8)) {
