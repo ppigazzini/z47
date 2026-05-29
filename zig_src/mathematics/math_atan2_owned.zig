@@ -94,7 +94,7 @@ pub fn c47Wp34sAtan2Zig(
     }
 
     runtime.realDivide(y, x, &offset, real_context);
-    atan_owned.c47Wp34sAtanZig(&offset, &reduced, real_context);
+    atan_owned.arctanReal(&offset, &reduced, real_context);
     if (x_negative) {
         setSignedAngle(&offset, runtime.z47_math_wrappers_const_pi(), y_negative);
     } else {
