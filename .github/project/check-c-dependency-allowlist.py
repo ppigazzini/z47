@@ -17,6 +17,9 @@ import sys
 from pathlib import Path
 
 STRING_RE = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"')
+STRING_CONCAT_RE = re.compile(
+    r'"(?:[^"\\]*(?:\\.[^"\\]*)*)"(?:\s*\+\+\s*"(?:[^"\\]*(?:\\.[^"\\]*)*)")+'
+)
 
 
 def load_json(path: Path) -> dict:
@@ -24,20 +27,44 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def normalize_path(value: str) -> str:
+def normalize_path(repo_root: Path, value: str) -> str:
     value = value.replace("\\\\", "/")
     value = value.strip()
     while value.startswith("./"):
         value = value[2:]
+
+    if "/" not in value or not value.endswith(".c"):
+        return value
+
+    if (repo_root / value).exists():
+        return value
+
+    src_relative = Path("src") / value
+    if (repo_root / src_relative).exists():
+        return src_relative.as_posix()
+
+    c47_relative = Path("src") / "c47" / value
+    if (repo_root / c47_relative).exists():
+        return c47_relative.as_posix()
+
     return value
 
 
-def candidate_literals_from_file(path: Path) -> set[str]:
+def candidate_literals_from_file(repo_root: Path, path: Path) -> set[str]:
     text = path.read_text(encoding="utf-8", errors="ignore")
     found: set[str] = set()
+
+    for chain in STRING_CONCAT_RE.finditer(text):
+        literal = normalize_path(repo_root, "".join(STRING_RE.findall(chain.group(0))))
+        if "/" not in literal:
+            continue
+        if not literal.endswith(".c"):
+            continue
+        found.add(literal)
+
     for m in STRING_RE.finditer(text):
         raw = m.group(1)
-        literal = normalize_path(raw)
+        literal = normalize_path(repo_root, raw)
         if "/" not in literal:
             continue
         # Track only C source references; generic include/resource paths are out of scope.
@@ -120,7 +147,7 @@ def main() -> int:
     scan_files = resolve_scan_files(repo_root, cfg)
     entries: set[str] = set()
     for f in scan_files:
-        entries.update(candidate_literals_from_file(f))
+        entries.update(candidate_literals_from_file(repo_root, f))
 
     classified: dict[str, set[str]] = {
         "external": set(),
