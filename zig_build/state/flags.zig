@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     flags_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "flags_runtime_helpers.c");
         cmd.addArg("zig_bridge/state/" ++ "flags_retained.c");
         cmd.addFileArg(self.flags_state.getEmittedBin());
     }
@@ -30,19 +29,24 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/state/flags.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "use_fake_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    module.addOptions("flags_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-flags-state", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/state/flags.zig"),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
@@ -94,7 +98,6 @@ pub fn addToModule(
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
     module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "flags_retained.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "flags_runtime_helpers.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 

@@ -1,3 +1,6 @@
+const build_options = @import("flags_build_options");
+const stack_runtime = @import("stack_runtime.zig");
+
 pub const FLAG_BCD: u16 = 0x8059;
 pub const FLAG_ALPHA: u16 = 0x800e;
 pub const FLAG_TDM24: u16 = 0x8000;
@@ -96,10 +99,45 @@ pub const DO_ENG: u16 = 241;
 
 pub const ITM_DREAL: u16 = 1899;
 
+pub const PGM_STOPPED: u8 = 0;
 pub const PGM_RUNNING: u8 = 1;
+pub const PGM_WAITING: u8 = 2;
 
 pub const SCRUPD_AUTO: u8 = 0x00;
 pub const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
+
+const use_fake_harness_surface = @hasDecl(build_options, "use_fake_harness_surface") and build_options.use_fake_harness_surface;
+
+const calcRegister_t = stack_runtime.calcRegister_t;
+
+const CM_EIM: u8 = 13;
+const NOPARAM: u16 = 9876;
+const ERROR_WRITE_PROTECTED_SYSTEM_FLAG: u8 = 32;
+const MNU_EQ_EDIT: i16 = 1399;
+const C47_NULL: u16 = 65535;
+const ERR_REGISTER_LINE: calcRegister_t = stack_runtime.REGISTER_Z;
+const REGISTER_X: calcRegister_t = stack_runtime.REGISTER_X;
+
+const formulaHeader_t = extern struct {
+    pointerToFormulaData: u16,
+    sizeInBlocks: u8,
+    unused: u8,
+};
+
+const softmenu_t = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    softkeyItem: [*c]const i16,
+};
+
+const softmenuStack_t = extern struct {
+    softmenuId: i16,
+    firstItem: i16,
+    userMenuId: i16,
+    calcMode: u8,
+};
+
+const ConfirmationHandler = *const fn (u16) callconv(.c) void;
 
 pub extern var systemFlags0: u64;
 pub extern var systemFlags1: u64;
@@ -112,17 +150,29 @@ pub extern var scrLock: u8;
 pub extern var nextChar: u8;
 pub extern var globalFlags: [8]u16;
 pub extern var currentLocalFlags: [*c]u32;
+pub extern var calcMode: u8;
+pub extern var softmenu: [*c]const softmenu_t;
+pub extern var softmenuStack: [8]softmenuStack_t;
+pub extern var allFormulae: [*c]formulaHeader_t;
+pub extern var currentFormula: u16;
 
 pub extern fn fnRefreshState() void;
 pub extern fn reallyClearStatusBar(info: u8) void;
 pub extern fn fnChangeBaseJM(base: u16) void;
 pub extern fn leaveTamModeIfEnabled() void;
 pub extern fn showAlphaModeonGui() void;
+pub extern fn calcModeNormal() void;
+pub extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
+pub extern fn deleteEquation(equation: u16) void;
+pub extern fn popSoftmenu() void;
+pub extern fn setConfirmationMode(handler: ConfirmationHandler) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 
 extern fn z47_flags_runtime_handle_write_protected_flag() void;
 extern fn z47_flags_runtime_enter_alpha_mode() void;
 extern fn z47_flags_runtime_leave_alpha_mode() void;
 extern fn z47_flags_runtime_request_clf_all_confirmation() void;
+extern fn fnClFAll(confirmation: u16) callconv(.c) void;
 
 extern fn z47_flags_retained_setSystemFlag(sf: u32) void;
 extern fn z47_flags_retained_clearSystemFlag(sf: u32) void;
@@ -167,17 +217,54 @@ pub fn forceSystemFlagRetained(sf: u32, set: i32) void {
 }
 
 pub fn handleWriteProtectedFlag() void {
-    z47_flags_runtime_handle_write_protected_flag();
+    if (use_fake_harness_surface) {
+        z47_flags_runtime_handle_write_protected_flag();
+        return;
+    }
+
+    temporaryInformation = TI_NO_INFO;
+    if (programRunStop == PGM_WAITING) {
+        programRunStop = PGM_STOPPED;
+    }
+    displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn enterAlphaMode() void {
-    z47_flags_runtime_enter_alpha_mode();
+    if (use_fake_harness_surface) {
+        z47_flags_runtime_enter_alpha_mode();
+        return;
+    }
+
+    if (calcMode != CM_EIM) {
+        calcModeAim(NOPARAM);
+    }
 }
 
 pub fn leaveAlphaMode() void {
-    z47_flags_runtime_leave_alpha_mode();
+    if (use_fake_harness_surface) {
+        z47_flags_runtime_leave_alpha_mode();
+        return;
+    }
+
+    if (calcMode == CM_EIM) {
+        const top_softmenu_id = softmenuStack[0].softmenuId;
+        if (top_softmenu_id >= 0 and softmenu[@intCast(top_softmenu_id)].menuItem == -MNU_EQ_EDIT) {
+            calcModeNormal();
+            if (allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+                deleteEquation(currentFormula);
+            }
+        }
+        popSoftmenu();
+    } else {
+        calcModeNormal();
+    }
 }
 
 pub fn requestClFAllConfirmation() void {
-    z47_flags_runtime_request_clf_all_confirmation();
+    if (use_fake_harness_surface) {
+        z47_flags_runtime_request_clf_all_confirmation();
+        return;
+    }
+
+    setConfirmationMode(&fnClFAll);
 }
