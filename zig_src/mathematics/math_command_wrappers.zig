@@ -4,6 +4,7 @@ const atan2_owned = @import("math_atan2_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const compare_owned = @import("math_compare_owned.zig");
+const convergence_owned = @import("math_convergence_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
@@ -5685,72 +5686,8 @@ pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) v
     compare_owned.compareScalarRegister(regist, .equal);
 }
 
-fn getConvergenceInput(
-    regist: runtime.calcRegister_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
-    is_complex: *bool,
-) bool {
-    switch (runtime.getRegisterDataType(regist)) {
-        runtime.dtComplex34 => {
-            is_complex.* = true;
-            return runtime.getRegisterAsComplex(regist, real, imag);
-        },
-        runtime.dtReal34 => {
-            if (!runtime.getRegisterAsReal(regist, real)) {
-                return false;
-            }
-            runtime.realSetZero(imag);
-            return true;
-        },
-        runtime.dtLongInteger => {
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
-            runtime.realSetZero(imag);
-            return true;
-        },
-        runtime.dtShortInteger => {
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
-            runtime.realSetZero(imag);
-            return true;
-        },
-        else => return false,
-    }
-}
-
-
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var y_real: runtime.real_t = undefined;
-    var y_imag: runtime.real_t = undefined;
-    var tol: runtime.real_t = undefined;
-    var is_complex = false;
-
-    runtime.convergenceTolerence(&tol);
-    if (!getConvergenceInput(runtime.REGISTER_X, &x_real, &x_imag, &is_complex) or !getConvergenceInput(runtime.REGISTER_Y, &y_real, &y_imag, &is_complex)) {
-        compareTypeErrorX();
-        return;
-    }
-
-    if (runtime.realIsNaN(&x_real) or runtime.realIsNaN(&y_real) or runtime.realIsNaN(&x_imag) or runtime.realIsNaN(&y_imag)) {
-        runtime.setTemporaryInformation((unused_but_mandatory_parameter & 0x4) != 0);
-    } else if (runtime.realIsInfinite(&x_real) or runtime.realIsInfinite(&y_real) or runtime.realIsInfinite(&x_imag) or runtime.realIsInfinite(&y_imag)) {
-        runtime.setTemporaryInformation((unused_but_mandatory_parameter & 0x2) != 0);
-    } else if ((unused_but_mandatory_parameter & 0x1) != 0) {
-        runtime.setTemporaryInformation(
-            if (is_complex)
-                runtime.WP34S_ComplexAbsError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
-            else
-                runtime.WP34S_AbsoluteError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
-        );
-    } else {
-        runtime.setTemporaryInformation(
-            if (is_complex)
-                runtime.WP34S_ComplexRelativeError(&x_real, &x_imag, &y_real, &y_imag, &tol, &runtime.ctxtReal39)
-            else
-                runtime.WP34S_RelativeError(&x_real, &y_real, &tol, &runtime.ctxtReal39),
-        );
-    }
+    convergence_owned.isConverged(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckType(type_: u16) callconv(.c) void {
