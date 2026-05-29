@@ -179,6 +179,6 @@ pub fn lnComplexZig(
         return;
     }
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, ln_real, ln_imag, real_context);
+    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, ln_real, ln_imag, real_context);
     wp34sLn(ln_real, ln_real, real_context);
 }

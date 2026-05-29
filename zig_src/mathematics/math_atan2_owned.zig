@@ -13,7 +13,7 @@ fn setSignedAngle(destination: *runtime.real_t, angle: *const runtime.real_t, ne
     }
 }
 
-pub fn c47Wp34sAtan2Zig(
+pub fn arctan2Real(
     y: *const runtime.real_t,
     x: *const runtime.real_t,
     angle: *runtime.real_t,

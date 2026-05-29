@@ -7,5 +7,5 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Atan2(
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.c47Wp34sAtan2Zig(y, x, angle, real_context);
+    owned.arctan2Real(y, x, angle, real_context);
 }

@@ -903,7 +903,7 @@ fn lnP1Complex(
     threshold.exponent = -6;
     threshold.lsu[0] = 1;
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(real, imag, &magnitude, &dummy, real_context);
+    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, &magnitude, &dummy, real_context);
     if (realAbsLessThan(&magnitude, &threshold)) {
         var term_real: runtime.real_t = undefined;
         var term_imag: runtime.real_t = undefined;
@@ -951,7 +951,7 @@ fn lnP1Complex(
         return;
     }
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(&one_plus_real, imag, ln_real, ln_imag, real_context);
+    rectangular_to_polar_owned.rectangularToPolarReal(&one_plus_real, imag, ln_real, ln_imag, real_context);
     wp34sLn(ln_real, ln_real, real_context);
 }
 
@@ -1918,7 +1918,7 @@ fn atan2RemaReal() void {
             return;
         }
 
-        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, realMatrixElementPtr(&y_matrix, index));
@@ -1955,7 +1955,7 @@ fn atan2RemaRema() void {
             return;
         }
 
-        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
@@ -1987,7 +1987,7 @@ fn atan2RealRema() void {
             return;
         }
 
-        atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
         runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
         runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
@@ -2015,7 +2015,7 @@ fn atan2RealReal() callconv(.c) void {
         return;
     }
 
-    atan2_owned.c47Wp34sAtan2Zig(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
+    atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
@@ -2228,7 +2228,7 @@ fn argCplx() callconv(.c) void {
         return;
     }
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.rectangularToPolarReal(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
@@ -6467,7 +6467,7 @@ fn tryFnToPolar2Real34Pair() bool {
     loadToPolarNumericInput(real_reg, data_type_x, &real_value);
     loadToPolarNumericInput(imag_reg, data_type_y, &imag_value);
 
-    rectangular_to_polar_owned.realRectangularToPolarZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    rectangular_to_polar_owned.rectangularToPolarReal(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
 
     runtime.reallocateRegister(real_reg, runtime.dtReal34, 0, runtime.amNone);

@@ -22,7 +22,7 @@ fn setSignedAngle(destination: *runtime.real_t, angle: *const runtime.real_t, ne
     }
 }
 
-pub fn realRectangularToPolarZig(
+pub fn rectangularToPolarReal(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
     magnitude: *runtime.real_t,
@@ -94,5 +94,5 @@ pub fn realRectangularToPolarZig(
     runtime.realMultiply(&real_value, &real_value, magnitude, real_context);
     runtime.realFMA(&imag_value, &imag_value, magnitude, magnitude, real_context);
     runtime.realSquareRoot(magnitude, magnitude, real_context);
-    atan2_owned.c47Wp34sAtan2Zig(&imag_value, &real_value, theta, real_context);
+    atan2_owned.arctan2Real(&imag_value, &real_value, theta, real_context);
 }

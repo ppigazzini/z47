@@ -8,5 +8,5 @@ pub export fn z47_math_wrappers_owned_realRectangularToPolar(
     theta: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.realRectangularToPolarZig(real, imag, magnitude, theta, real_context);
+    owned.rectangularToPolarReal(real, imag, magnitude, theta, real_context);
 }
