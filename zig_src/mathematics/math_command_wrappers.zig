@@ -7,6 +7,7 @@ const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const get_type_owned = @import("math_get_type_owned.zig");
+const integer_part_owned = @import("math_integer_part_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
@@ -1456,22 +1457,6 @@ fn eulersFormulaReal() callconv(.c) void {
     finishEulersFormula(&c, &i);
 }
 
-fn ceilReal() callconv(.c) void {
-    runtime.integerPartReal(runtime.DEC_ROUND_CEILING);
-}
-
-fn ceilCplx() callconv(.c) void {
-    runtime.integerPartCplx(runtime.DEC_ROUND_CEILING);
-}
-
-fn floorReal() callconv(.c) void {
-    runtime.integerPartReal(runtime.DEC_ROUND_FLOOR);
-}
-
-fn floorCplx() callconv(.c) void {
-    runtime.integerPartCplx(runtime.DEC_ROUND_FLOOR);
-}
-
 fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
     return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
 }
@@ -1660,16 +1645,6 @@ fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) 
 
 fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
     return runtime.realCompareLessThan(rhs, lhs);
-}
-
-fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
-    if (runtime.realIsSpecial(x)) {
-        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        }
-    } else {
-        runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal39);
-    }
 }
 
 fn wInvReal() callconv(.c) void {
@@ -1939,62 +1914,16 @@ fn neighbReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, x_angular_mode);
 }
 
-pub export fn integerPartNoOp() callconv(.c) void {}
+pub export fn integerPartNoOp() callconv(.c) void {
+    integer_part_owned.integerPartNoOp();
+}
 
 pub export fn integerPartReal(mode: runtime.rounding_t) callconv(.c) void {
-    var x: runtime.real_t = undefined;
-
-    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        doIP(&x, mode);
-        runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
-    }
+    integer_part_owned.integerPartReal(mode);
 }
 
 pub export fn integerPartCplx(mode: runtime.rounding_t) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    if (runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        doIP(&a, mode);
-        doIP(&b, mode);
-        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
-    }
-}
-
-fn integerPartNoOpForward() callconv(.c) void {
-    integerPartNoOp();
-}
-
-fn ipReal() callconv(.c) void {
-    integerPartReal(runtime.DEC_ROUND_DOWN);
-}
-
-fn ipCplx() callconv(.c) void {
-    integerPartCplx(runtime.DEC_ROUND_DOWN);
-}
-
-fn fpRealForward() callconv(.c) void {
-    var integral: runtime.real34_t = undefined;
-
-    runtime.real34ToIntegralValue(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.DEC_ROUND_DOWN);
-    runtime.real34Subtract(runtime.registerReal34Ptr(runtime.REGISTER_X), &integral, runtime.registerReal34Ptr(runtime.REGISTER_X));
-}
-
-fn fpShoIForward() callconv(.c) void {
-    var result: u64 = 0;
-
-    if (runtime.shortIntegerMode == runtime.SIM_1COMPL or runtime.shortIntegerMode == runtime.SIM_SIGNMT) {
-        const value = runtime.registerShortIntegerPtr(runtime.REGISTER_X).*;
-        if ((value & runtime.shortIntegerSignBit) != 0) {
-            result = if (runtime.shortIntegerMode == runtime.SIM_1COMPL) runtime.shortIntegerMask else runtime.shortIntegerSignBit;
-        }
-    }
-
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = result;
-}
-
-fn fpLonIForward() callconv(.c) void {
-    runtime.z47_math_wrappers_build_sign_result(0);
+    integer_part_owned.integerPartCplx(mode);
 }
 
 fn coshReal() callconv(.c) void {
@@ -2815,112 +2744,35 @@ pub export fn fnSeed(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    runtime.registerMin(runtime.REGISTER_X, runtime.REGISTER_Y, runtime.REGISTER_X);
-    runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, no_register, no_register);
+    integer_part_owned.min(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMax(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    runtime.registerMax(runtime.REGISTER_X, runtime.REGISTER_Y, runtime.REGISTER_X);
-    runtime.adjustResult(runtime.REGISTER_X, true, false, runtime.REGISTER_X, no_register, no_register);
+    integer_part_owned.max(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCeil(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(
-        &ceilReal,
-        &ceilCplx,
-        &integerPartNoOpForward,
-        &integerPartNoOpForward,
-    );
+    integer_part_owned.ceil(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFloor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(
-        &floorReal,
-        &floorCplx,
-        &integerPartNoOpForward,
-        &integerPartNoOpForward,
-    );
+    integer_part_owned.floor(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(
-        &ipReal,
-        &ipCplx,
-        &integerPartNoOpForward,
-        &integerPartNoOpForward,
-    );
+    integer_part_owned.ip(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    var value: runtime.longInteger_t = undefined;
-    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    if (runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
-        defer runtime.__gmpz_clear(&value[0]);
-
-        runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
-        if (data_type == runtime.dtShortInteger) {
-            runtime.setLastintegerBasetoZero();
-        }
-    }
+    integer_part_owned.lint(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    var sign: bool = false;
-    var value: u64 = 0;
-    var overflow: bool = false;
-    var fractional: bool = false;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    if (!runtime.getRegisterAsShortInt(runtime.REGISTER_X, &sign, &value, &overflow, &fractional)) {
-        return;
-    }
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) != runtime.dtShortInteger) {
-        runtime.convertUInt64ToShortIntegerRegister(@intFromBool(sign), value, 10, runtime.REGISTER_X);
-    }
-    runtime.forceSystemFlag(@intCast(runtime.FLAG_CARRY), @intFromBool(fractional));
-    runtime.forceSystemFlag(@intCast(runtime.FLAG_OVERFLOW), @intFromBool(overflow));
+    integer_part_owned.sint(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(
-        &fpRealForward,
-        null,
-        &fpShoIForward,
-        &fpLonIForward,
-    );
+    integer_part_owned.fp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSinc(unused_but_mandatory_parameter: u16) callconv(.c) void {
