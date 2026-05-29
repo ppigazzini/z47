@@ -6,6 +6,15 @@ const SpecialKind = enum {
     special,
 };
 
+const CHECK_INTEGER: u16 = 0;
+const CHECK_INTEGER_EVEN: u16 = 1;
+const CHECK_INTEGER_ODD: u16 = 2;
+const CHECK_INTEGER_FP: u16 = 3;
+const ITM_ISREZQ: u16 = 2527;
+const ITM_ISIMZQ: u16 = 2528;
+const ITM_ISRENZQ: u16 = 2529;
+const ITM_ISIMNZQ: u16 = 2530;
+
 fn typeErrorX() void {
     runtime.setTemporaryInformation(false);
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
@@ -52,6 +61,57 @@ fn checkMatrixElements(register_data_type: u32, comptime kind: SpecialKind) bool
     }
 
     return false;
+}
+
+fn setCheckIntegerResult(mode: u16, is_odd: bool) void {
+    switch (mode) {
+        CHECK_INTEGER => runtime.setTemporaryInformation(true),
+        CHECK_INTEGER_EVEN => runtime.setTemporaryInformation(!is_odd),
+        CHECK_INTEGER_ODD => runtime.setTemporaryInformation(is_odd),
+        CHECK_INTEGER_FP => runtime.setTemporaryInformation(false),
+        else => {},
+    }
+}
+
+fn setCheckForZeroResult(mode: u16, real_is_zero: bool, imag_is_zero: bool) void {
+    switch (mode) {
+        ITM_ISREZQ => runtime.setTemporaryInformation(real_is_zero),
+        ITM_ISIMZQ => runtime.setTemporaryInformation(imag_is_zero),
+        ITM_ISRENZQ => runtime.setTemporaryInformation(!real_is_zero),
+        ITM_ISIMNZQ => runtime.setTemporaryInformation(!imag_is_zero),
+        else => {},
+    }
+}
+
+fn tryCheckForZero(mode: u16) bool {
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtLongInteger => {
+            var value: runtime.longInteger_t = undefined;
+            runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+            defer runtime.__gmpz_clear(&value[0]);
+
+            setCheckForZeroResult(mode, value[0]._mp_size == 0, true);
+            return true;
+        },
+        runtime.dtShortInteger => {
+            var value: u64 = 0;
+            var sign: i16 = 0;
+            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
+
+            setCheckForZeroResult(mode, value == 0, true);
+            return true;
+        },
+        runtime.dtComplex34 => {
+            const value = runtime.registerComplex34Ptr(runtime.REGISTER_X);
+            setCheckForZeroResult(mode, runtime.real34IsZero(&value.real), runtime.real34IsZero(&value.imag));
+            return true;
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
+            setCheckForZeroResult(mode, runtime.real34IsZero(runtime.registerReal34Ptr(runtime.REGISTER_X)), true);
+            return true;
+        },
+        else => return false,
+    }
 }
 
 pub fn checkType(type_: u16) void {
@@ -147,5 +207,27 @@ pub fn checkSpecial() void {
             runtime.setTemporaryInformation(checkMatrixElements(register_data_type, .special));
         },
         else => typeErrorX(),
+    }
+}
+
+pub fn checkInteger(mode: u16) void {
+    var value: runtime.longInteger_t = undefined;
+    var fractional = false;
+    const err = runtime.getRegisterAsLongIntQuiet(runtime.REGISTER_X, &value[0], &fractional);
+    defer runtime.__gmpz_clear(&value[0]);
+
+    if (err != @as(c_int, runtime.ERROR_NONE)) {
+        typeErrorX();
+    } else if (fractional) {
+        runtime.setTemporaryInformation(mode == CHECK_INTEGER_FP);
+    } else {
+        runtime.fnRefreshState();
+        setCheckIntegerResult(mode, value[0]._mp_size != 0 and (value[0]._mp_d[0] & 1) != 0);
+    }
+}
+
+pub fn checkForZero(mode: u16) void {
+    if (!tryCheckForZero(mode)) {
+        typeErrorX();
     }
 }
