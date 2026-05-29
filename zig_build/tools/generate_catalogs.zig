@@ -2,7 +2,7 @@ const std = @import("std");
 
 const c = @import("c_bindings");
 
-const last_item = 2732;
+const last_item: usize = @intCast(c.LAST_ITEM);
 const max_number_of_items = 1200;
 
 const cat_status: u16 = 0x00f0;

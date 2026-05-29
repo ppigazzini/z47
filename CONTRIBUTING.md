@@ -25,8 +25,9 @@ repo surfaces.
 - `.github/project/upstream-port-ledger.tsv` records the maintainer triage
   ledger that must move with any tracked upstream pin change.
 - `.github/project/report-upstream-refresh.py` summarizes new upstream commits,
-  changed imported paths, and the z47-owned touchpoints that may need follow-up
-  before a pin change lands.
+  changed imported paths, and classifies the resulting z47 touchpoints so
+  runtime/build Zig, retained C wrappers, and manifest-only follow-up are
+  visible before a pin change lands.
 - `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
   imported-root vocabulary used by docs install, generated-artifact proof, and
   host package staging in GitHub Actions.

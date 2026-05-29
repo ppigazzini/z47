@@ -21,7 +21,8 @@ current upstream pin are already clear.
 - `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
   current imported baseline still lives at repo root.
 - `../.github/project/report-upstream-refresh.py` turns the pinned baseline
-  into a local commit, path, and touchpoint report before a refresh lands.
+  into a local commit, path, and ownership-classified touchpoint report before
+  a refresh lands.
 - M13 now keeps a tracked linked-worktree pilot helper at
   `../.github/project/nested-upstream-pilot.sh`, but the measured recommendation
   is no-go and the maintained baseline remains the repo-root import.

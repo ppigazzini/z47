@@ -411,6 +411,10 @@ const char *z47_frontier_item_softmenu_name(uint16_t item) {
 	return indexOfItems[item].itemSoftmenuName;
 }
 
+uint16_t z47_frontier_last_item(void) {
+	return LAST_ITEM;
+}
+
 void z47_frontier_print_backup_aim_message_area(void) {
 	xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);
 }
