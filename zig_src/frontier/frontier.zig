@@ -3,6 +3,7 @@ const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const plot_regression = @import("frontier_plot_regression_owned.zig");
+const print_register = @import("frontier_print_register_owned.zig");
 const program_clear = @import("frontier_program_clear_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
@@ -691,60 +692,16 @@ pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-        z47_frontier_print_alpha_register(register_no);
-        return;
-    }
-
-    if (calcMode != CM_AIM) {
-        return;
-    }
-
-    z47_frontier_print_backup_aim_message_area();
-    create_filename(".REGS.TSV");
-    tmpString_csv_out(5);
-    z47_frontier_print_restore_aim_message_area();
+    print_register.run(.alpha, register_no);
 }
 
 pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-        var label: [32]u8 = std.mem.zeroes([32]u8);
-        z47_frontier_format_register_label(register_no, &label, label.len);
-        printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
-        return;
-    }
-
-    if (calcMode != CM_NORMAL) {
-        return;
-    }
-
-    create_filename(".REGS.TSV");
-    stackregister_csv_out(@as(i16, @intCast(register_no)), @as(i16, @intCast(register_no)), false);
+    print_register.run(.regs, register_no);
 }
 
 pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    currentKeyCode = 255;
-
-    if (statisticalSumsPointer != null) {
-        if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-            if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) and (programRunStop == PGM_RUNNING or programRunStop == PGM_SINGLE_STEP)) {
-                displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                return;
-            }
-
-            var regist: u16 = 0;
-            while (regist < 28) : (regist += 1) {
-                z47_frontier_print_sigma_line(regist);
-                if (z47_frontier_print_exit_pressed()) {
-                    return;
-                }
-            }
-        }
-        return;
-    }
-
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    print_register.run(.sigma, 0);
 }
 
 pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
