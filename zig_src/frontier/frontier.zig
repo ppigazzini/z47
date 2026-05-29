@@ -1,5 +1,6 @@
 const std = @import("std");
 const display_format = @import("frontier_display_format_owned.zig");
+const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
 const print_all_regs = @import("frontier_print_all_regs_owned.zig");
@@ -529,374 +530,44 @@ pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) vo
     showSoftmenu(-MNU_SYSFL);
 }
 
-const PrinterControlCommand = enum {
-    on_off,
-    mode,
-    set_model,
-    set_delay,
-    advance,
-    list,
-    byte,
-    char,
-    tab,
-    lcd,
-};
-
-const PrinterControlStage = enum {
-    decode,
-    begin_sbi,
-    apply,
-    end_sbi,
-};
-
-const PrinterControlPhase = enum {
-    preflight,
-    execute,
-    finalize,
-};
-
-const PrinterControlPlan = struct {
-    phases: [3]PrinterControlPhase,
-};
-
-const PrinterControlTelemetry = struct {
-    preflight_started: bool,
-    preflight_completed: bool,
-    execute_started: bool,
-    execute_completed: bool,
-    finalize_started: bool,
-    finalize_completed: bool,
-    aborted: bool,
-};
-
-const PrinterControlContext = struct {
-    command: PrinterControlCommand,
-    value: u16,
-    use_sbi: bool,
-    should_apply: bool,
-};
-
-fn printerControlContextInit(command: PrinterControlCommand, value: u16) PrinterControlContext {
-    return .{
-        .command = command,
-        .value = value,
-        .use_sbi = false,
-        .should_apply = true,
-    };
-}
-
-fn printerControlPlanBuild() PrinterControlPlan {
-    return .{ .phases = .{ .preflight, .execute, .finalize } };
-}
-
-fn printerControlTelemetryInit() PrinterControlTelemetry {
-    return .{
-        .preflight_started = false,
-        .preflight_completed = false,
-        .execute_started = false,
-        .execute_completed = false,
-        .finalize_started = false,
-        .finalize_completed = false,
-        .aborted = false,
-    };
-}
-
-fn printerControlTelemetryStart(telemetry: *PrinterControlTelemetry, phase: PrinterControlPhase) void {
-    switch (phase) {
-        .preflight => telemetry.preflight_started = true,
-        .execute => telemetry.execute_started = true,
-        .finalize => telemetry.finalize_started = true,
-    }
-}
-
-fn printerControlTelemetryComplete(telemetry: *PrinterControlTelemetry, phase: PrinterControlPhase) void {
-    switch (phase) {
-        .preflight => telemetry.preflight_completed = true,
-        .execute => telemetry.execute_completed = true,
-        .finalize => telemetry.finalize_completed = true,
-    }
-}
-
-fn printerControlTelemetryAbort(telemetry: *PrinterControlTelemetry) void {
-    telemetry.aborted = true;
-}
-
-fn printerControlPhaseCanRun(telemetry: PrinterControlTelemetry, phase: PrinterControlPhase) bool {
-    return switch (phase) {
-        .preflight => true,
-        .execute => telemetry.preflight_completed and !telemetry.aborted,
-        .finalize => telemetry.execute_completed and !telemetry.aborted,
-    };
-}
-
-fn printerControlNeedsSbi(command: PrinterControlCommand) bool {
-    return switch (command) {
-        .advance, .byte, .char, .tab => true,
-        else => false,
-    };
-}
-
-fn printerControlDecode(ctx: *PrinterControlContext) void {
-    ctx.use_sbi = printerControlNeedsSbi(ctx.command);
-    ctx.should_apply = true;
-}
-
-fn printerControlBeginSbi(ctx: PrinterControlContext) void {
-    if (ctx.use_sbi) {
-        z47_frontier_print_set_printer_sbi(true);
-    }
-}
-
-fn printerControlEndSbi(ctx: PrinterControlContext) void {
-    if (ctx.use_sbi) {
-        z47_frontier_print_set_printer_sbi(false);
-    }
-}
-
-fn printerControlApplyOn() void {
-    printerState.print_on = true;
-    setSystemFlag(FLAG_PRTACT);
-    fnSetFlag(FLAG_PRTEN);
-}
-
-fn printerControlApplyOff() void {
-    printerState.print_on = false;
-    clearSystemFlag(FLAG_PRTACT);
-    fnClearFlag(FLAG_PRTEN);
-}
-
-fn printerControlApplyOnOff(op: u16) void {
-    if (op == PRON) {
-        printerControlApplyOn();
-    } else if (op == PROFF) {
-        printerControlApplyOff();
-    }
-}
-
-fn printerControlModeManual() void {
-    fnClearFlag(FLAG_NORM);
-    fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
-}
-
-fn printerControlModeNormal() void {
-    fnSetFlag(FLAG_NORM);
-    fnClearFlag(@as(u16, @intCast(FLAG_TRACE)));
-}
-
-fn printerControlModeTrace() void {
-    fnClearFlag(FLAG_NORM);
-    fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
-}
-
-fn printerControlModeStepTrace() void {
-    fnSetFlag(FLAG_NORM);
-    fnSetFlag(@as(u16, @intCast(FLAG_TRACE)));
-}
-
-fn printerControlApplyMode(mode: u16) void {
-    if (mode == MAN) {
-        printerControlModeManual();
-    } else if (mode == NORM) {
-        printerControlModeNormal();
-    } else if (mode == TRACE) {
-        printerControlModeTrace();
-    } else if (mode == STRACE) {
-        printerControlModeStepTrace();
-    }
-}
-
-fn printerControlApplyModel(model: u16) void {
-    printerState.printer_model = @as(c_int, @intCast(model));
-}
-
-fn printerControlApplyDelay(delay: u16) void {
-    printerState.delay = delay;
-    setLineDelay(delay);
-}
-
-fn printerControlApplyAdvance() void {
-    print_lf();
-}
-
-fn printerControlApplyList(lines: u16) void {
-    printProgram(true, lines);
-}
-
-fn printerControlApplyByte(byte: u16) void {
-    cmdPrint(byte, PRINT_BYTE);
-}
-
-fn printerControlApplyChar(register_no: u16) void {
-    const character = z47_frontier_print_get_unicode_value(@as(i16, @intCast(register_no)));
-    cmdPrint(character, PRINT_CHAR);
-}
-
-fn printerControlApplyTab(column: u16) void {
-    cmdPrint(column, PRINT_TAB);
-}
-
-fn printerControlApplyLcd(unused_but_mandatory_parameter: u16) void {
-    _ = unused_but_mandatory_parameter;
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-        return;
-    }
-    fnSNAP(9876);
-}
-
-fn printerControlApply(ctx: PrinterControlContext) void {
-    if (!ctx.should_apply) {
-        return;
-    }
-
-    switch (ctx.command) {
-        .on_off => printerControlApplyOnOff(ctx.value),
-        .mode => printerControlApplyMode(ctx.value),
-        .set_model => printerControlApplyModel(ctx.value),
-        .set_delay => printerControlApplyDelay(ctx.value),
-        .advance => printerControlApplyAdvance(),
-        .list => printerControlApplyList(ctx.value),
-        .byte => printerControlApplyByte(ctx.value),
-        .char => printerControlApplyChar(ctx.value),
-        .tab => printerControlApplyTab(ctx.value),
-        .lcd => printerControlApplyLcd(ctx.value),
-    }
-}
-
-fn printerControlExecuteStage(stage: PrinterControlStage, ctx: *PrinterControlContext) void {
-    switch (stage) {
-        .decode => printerControlDecode(ctx),
-        .begin_sbi => printerControlBeginSbi(ctx.*),
-        .apply => printerControlApply(ctx.*),
-        .end_sbi => printerControlEndSbi(ctx.*),
-    }
-}
-
-fn printerControlPreflightStages() [1]PrinterControlStage {
-    return .{.decode};
-}
-
-fn printerControlExecuteStages() [2]PrinterControlStage {
-    return .{ .begin_sbi, .apply };
-}
-
-fn printerControlFinalizeStages() [1]PrinterControlStage {
-    return .{.end_sbi};
-}
-
-fn printerControlRunStageList(comptime count: usize, stages: [count]PrinterControlStage, ctx: *PrinterControlContext) void {
-    for (stages) |stage| {
-        printerControlExecuteStage(stage, ctx);
-    }
-}
-
-fn printerControlRunPreflight(ctx: *PrinterControlContext) void {
-    const stages = printerControlPreflightStages();
-    printerControlRunStageList(stages.len, stages, ctx);
-}
-
-fn printerControlRunExecute(ctx: *PrinterControlContext) void {
-    const stages = printerControlExecuteStages();
-    printerControlRunStageList(stages.len, stages, ctx);
-}
-
-fn printerControlRunFinalize(ctx: *PrinterControlContext) void {
-    const stages = printerControlFinalizeStages();
-    printerControlRunStageList(stages.len, stages, ctx);
-}
-
-fn printerControlExecutePhase(phase: PrinterControlPhase, ctx: *PrinterControlContext) void {
-    switch (phase) {
-        .preflight => printerControlRunPreflight(ctx),
-        .execute => printerControlRunExecute(ctx),
-        .finalize => printerControlRunFinalize(ctx),
-    }
-}
-
-fn printerControlExecutePhaseWithTelemetry(phase: PrinterControlPhase, ctx: *PrinterControlContext, telemetry: *PrinterControlTelemetry) bool {
-    if (!printerControlPhaseCanRun(telemetry.*, phase)) {
-        return false;
-    }
-
-    printerControlTelemetryStart(telemetry, phase);
-    printerControlExecutePhase(phase, ctx);
-    printerControlTelemetryComplete(telemetry, phase);
-    return true;
-}
-
-fn printerControlTelemetryPipeline(command: PrinterControlCommand, value: u16) void {
-    var ctx = printerControlContextInit(command, value);
-    var telemetry = printerControlTelemetryInit();
-    const plan = printerControlPlanBuild();
-    for (plan.phases) |phase| {
-        if (!printerControlExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
-            printerControlTelemetryAbort(&telemetry);
-            return;
-        }
-    }
-}
-
-fn printerControlUseTelemetryPipeline() bool {
-    return true;
-}
-
-fn printerControlDispatch(command: PrinterControlCommand, value: u16) void {
-    if (printerControlUseTelemetryPipeline()) {
-        printerControlTelemetryPipeline(command, value);
-        return;
-    }
-
-    switch (command) {
-        .on_off => fnP_PrinterOnOff(value),
-        .mode => fnP_PrinterMode(value),
-        .set_model => fnSetPrinter(value),
-        .set_delay => fnP_SetDelay(value),
-        .advance => fnP_Advance(value),
-        .list => fnP_PrinterList(value),
-        .byte => fnP_Byte(value),
-        .char => fnP_Char(value),
-        .tab => fnP_Tab(value),
-        .lcd => fnP_LCD(value),
-    }
-}
-
 pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
-    printerControlDispatch(.on_off, op);
+    printer_control.run(.on_off, op);
 }
 
 pub export fn fnP_PrinterMode(mode: u16) callconv(.c) void {
-    printerControlDispatch(.mode, mode);
+    printer_control.run(.mode, mode);
 }
 
 pub export fn fnSetPrinter(model: u16) callconv(.c) void {
-    printerControlDispatch(.set_model, model);
+    printer_control.run(.set_model, model);
 }
 
 pub export fn fnP_SetDelay(delay: u16) callconv(.c) void {
-    printerControlDispatch(.set_delay, delay);
+    printer_control.run(.set_delay, delay);
 }
 
 pub export fn fnP_Advance(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    printerControlDispatch(.advance, unused_but_mandatory_parameter);
+    printer_control.run(.advance, unused_but_mandatory_parameter);
 }
 
 pub export fn fnP_PrinterList(lines: u16) callconv(.c) void {
-    printerControlDispatch(.list, lines);
+    printer_control.run(.list, lines);
 }
 
 pub export fn fnP_Byte(byte: u16) callconv(.c) void {
-    printerControlDispatch(.byte, byte);
+    printer_control.run(.byte, byte);
 }
 
 pub export fn fnP_Char(register_no: u16) callconv(.c) void {
-    printerControlDispatch(.char, register_no);
+    printer_control.run(.char, register_no);
 }
 
 pub export fn fnP_Tab(column: u16) callconv(.c) void {
-    printerControlDispatch(.tab, column);
+    printer_control.run(.tab, column);
 }
 
 pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    printerControlDispatch(.lcd, unused_but_mandatory_parameter);
+    printer_control.run(.lcd, unused_but_mandatory_parameter);
 }
 
 const FrontendSettingsCommand = enum {
