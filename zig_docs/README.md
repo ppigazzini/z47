@@ -10,6 +10,13 @@ leaf logic, including the rotate or justify helpers, plus stack,
 register-metadata, flags, memory,
 program-serialization, calc-state, and keyboard-state ownership slices.
 
+The May 2026 structural naming milestone is complete under the current
+layer-scoped naming contract. Use
+[10-build-and-source-layout.md](10-build-and-source-layout.md) and
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
+for the live naming rules and examples; any future naming reopener must start
+from a fresh owner-specific inventory rather than inherit an old queue.
+
 These pages document tracked, maintained repo surfaces only. They do not define
 ignored local worktrees, ignored build outputs, or other ignored paths.
 
@@ -84,6 +91,9 @@ flowchart TD
 - Zig rewrite, `@cImport`, or direct `extern` boundary change:
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
   and [70-tests-and-verification.md](70-tests-and-verification.md)
+- owner, helper, or boundary naming question:
+  [10-build-and-source-layout.md](10-build-and-source-layout.md) and
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
 - CI lane, package artifact, or release-proof change:
   [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) and
   [70-tests-and-verification.md](70-tests-and-verification.md)

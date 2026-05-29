@@ -25,6 +25,14 @@ Imported upstream paths now route through `UPSTREAM_ROOT` in
 `.github/project/upstream-pin.env`; the current value `.` means the imported
 baseline still lives at repo root.
 
+The May 2026 structural naming milestone is complete under the current
+layer-scoped naming contract. For live owner, runtime, export, and retained
+naming rules, use
+[zig_docs/10-build-and-source-layout.md](zig_docs/10-build-and-source-layout.md)
+and
+[zig_docs/50-zig-c-boundaries-and-rewrite-policy.md](zig_docs/50-zig-c-boundaries-and-rewrite-policy.md);
+any future naming reopener must start from a fresh owner-specific inventory.
+
 ## Start Here
 
 - [zig_docs/README.md](zig_docs/README.md): maintainer doc index and reading

@@ -135,6 +135,9 @@ workflow evidence that was checked instead.
 - update this file, `ZIG-README.md`, and the affected `zig_docs/` pages in the
   same change when a public build, CI, packaging, or verification contract
   changes
+- update `zig_docs/10-build-and-source-layout.md` and
+  `zig_docs/50-zig-c-boundaries-and-rewrite-policy.md` in the same change when
+  naming strata, naming examples, or current naming-milestone status changes
 - update `README.md` when the maintainer-doc index, page-routing contract, or
   top-level project framing changes
 - do not imply a pure-Zig result while retained C libraries or vendor code

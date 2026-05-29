@@ -235,6 +235,9 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
   remains the accepted semantic filename after the fresh review because the
   live build object and parity lane still map to a broad command-wrapper and
   shared-helper surface rather than to one narrower owner domain
+- the May 2026 structural naming milestone is complete under this layer-scoped
+  contract; any future naming reopener must start from a fresh owner-specific
+  inventory instead of inheriting the now-closed queue
 - inside `*_runtime.zig`, `*_export.zig`, retained C, `pub export`, and
   `extern` surfaces, keep upstream-compatible spellings when they model ABI,
   layout, or exact public symbol names
