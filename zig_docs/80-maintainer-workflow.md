@@ -103,6 +103,10 @@ pilot flow, not as the default maintainer layout.
 - update [10-build-and-source-layout.md](10-build-and-source-layout.md) when
   entrypoints, pins, build-layout guidance, source-ownership manifest usage,
   upstream-ledger control files, or workflow imported-root helper usage changed
+- update [10-build-and-source-layout.md](10-build-and-source-layout.md) and
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
+  together when naming strata, owner-vocabulary examples, or current
+  naming-milestone closeout state changed
 - update [20-zig-build-graph.md](20-zig-build-graph.md) when public targets,
   options, or build-domain ownership changed
 - update [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) when CI

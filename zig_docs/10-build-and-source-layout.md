@@ -203,6 +203,9 @@ Use one naming stratum per file.
   an accepted semantic filename after the fresh 2026-05 Slice F review because
   it still owns the broad math command-entry and shared-helper surface used by
   the build graph and the focused parity lane
+- the May 2026 structural naming milestone is complete under this layer-scoped
+  contract; any future naming reopener must start from a fresh owner-specific
+  inventory instead of inheriting the now-closed queue
 - `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types,
   and retained public names may keep upstream-compatible spellings where ABI
   stability or upstream tracking requires them
