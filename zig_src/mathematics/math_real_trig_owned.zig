@@ -19,7 +19,7 @@ fn realExp(rhs: *const runtime.real_t, result: *runtime.real_t, real_context: *r
     _ = runtime.decNumberExp(result, rhs, real_context);
 }
 
-pub fn c47Wp34sAsinZig(
+pub fn arcsinReal(
     x: *const runtime.real_t,
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -52,7 +52,7 @@ pub fn c47Wp34sAsinZig(
     runtime.realAdd(&abs_x, &abs_x, angle, real_context);
 }
 
-pub fn c47Wp34sAcosZig(
+pub fn arccosReal(
     x: *const runtime.real_t,
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -90,7 +90,7 @@ pub fn c47Wp34sAcosZig(
     runtime.realAdd(&abs_x, &abs_x, angle, real_context);
 }
 
-pub fn wp34sSinhCoshZig(
+pub fn sinhCoshReal(
     x: *const runtime.real_t,
     sinh_out: ?*runtime.real_t,
     cosh_out: ?*runtime.real_t,
@@ -141,7 +141,7 @@ pub fn wp34sSinhCoshZig(
     }
 }
 
-pub fn wp34sTanhZig(
+pub fn tanhReal(
     x: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -172,7 +172,7 @@ pub fn wp34sTanhZig(
     runtime.realDivide(&b, &a, res, real_context);
 }
 
-pub fn wp34sArcSinhZig(
+pub fn arcsinhReal(
     x: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -194,7 +194,7 @@ pub fn wp34sArcSinhZig(
     runtime.WP34S_Ln1P(&a, res, real_context);
 }
 
-pub fn wp34sArcTanhZig(
+pub fn arctanhReal(
     x: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,

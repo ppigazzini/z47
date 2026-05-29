@@ -179,7 +179,7 @@ pub export fn sinComplex(
     var coshb: runtime.real_t = undefined;
 
     circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(imag, &sinhb, &coshb, real_context);
+    real_trig_owned.sinhCoshReal(imag, &sinhb, &coshb, real_context);
     runtime.realMultiply(&sina, &coshb, res_real, real_context);
     runtime.realMultiply(&cosa, &sinhb, res_imag, real_context);
 }
@@ -197,7 +197,7 @@ pub export fn cosComplex(
     var coshb: runtime.real_t = undefined;
 
     circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(imag, &sinhb, &coshb, real_context);
+    real_trig_owned.sinhCoshReal(imag, &sinhb, &coshb, real_context);
     runtime.realMultiply(&cosa, &coshb, res_real, real_context);
     runtime.realMultiply(&sina, &sinhb, res_imag, real_context);
     runtime.realChangeSign(res_imag);
@@ -280,9 +280,9 @@ pub export fn sinhCoshReal(trig_type: runtime.trigType_t) callconv(.c) void {
     }
 
     if (trig_type == runtime.trigSin) {
-        real_trig_owned.wp34sSinhCoshZig(&x, &x, null, &runtime.ctxtReal39);
+        real_trig_owned.sinhCoshReal(&x, &x, null, &runtime.ctxtReal39);
     } else {
-        real_trig_owned.wp34sSinhCoshZig(&x, null, &x, &runtime.ctxtReal39);
+        real_trig_owned.sinhCoshReal(&x, null, &x, &runtime.ctxtReal39);
     }
 
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
@@ -300,7 +300,7 @@ pub export fn sinhCoshCplx(trig_type: runtime.trigType_t) callconv(.c) void {
         return;
     }
 
-    real_trig_owned.wp34sSinhCoshZig(&a, &sinha, &cosha, &runtime.ctxtReal39);
+    real_trig_owned.sinhCoshReal(&a, &sinha, &cosha, &runtime.ctxtReal39);
     circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&b, runtime.amRadian, &sinb, &cosb, null, &runtime.ctxtReal39);
 
     if (trig_type == runtime.trigSin) {
@@ -331,7 +331,7 @@ pub export fn TanComplex(
     var denom_imag: runtime.real_t = undefined;
 
     circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_real, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(x_imag, &sinhb, &coshb, real_context);
+    real_trig_owned.sinhCoshReal(x_imag, &sinhb, &coshb, real_context);
 
     runtime.realMultiply(&sina, &coshb, &numer_real, real_context);
     runtime.realMultiply(&cosa, &sinhb, &numer_imag, real_context);
@@ -358,10 +358,10 @@ pub export fn TanhComplex(
     _ = real_context;
 
     if (runtime.realIsZero(x_imag)) {
-        real_trig_owned.wp34sTanhZig(x_real, r_real, &runtime.ctxtReal39);
+        real_trig_owned.tanhReal(x_real, r_real, &runtime.ctxtReal39);
         runtime.realSetZero(r_imag);
     } else {
-        real_trig_owned.wp34sTanhZig(x_real, r_real, &runtime.ctxtReal39);
+        real_trig_owned.tanhReal(x_real, r_real, &runtime.ctxtReal39);
         circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_imag, runtime.amRadian, &sin_value, &cos_value, r_imag, &runtime.ctxtReal39);
 
         runtime.realSetOne(&denom_real);
@@ -1075,7 +1075,7 @@ fn sincpiComplex(
     runtime.realMultiply(&rr, runtime.z47_math_wrappers_const_pi(), &rr, real_context);
     runtime.realMultiply(&ii, runtime.z47_math_wrappers_const_pi(), &ii, real_context);
     circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&rr, runtime.amRadian, &sina, &cosa, null, real_context);
-    real_trig_owned.wp34sSinhCoshZig(&ii, &sinhb, &coshb, real_context);
+    real_trig_owned.sinhCoshReal(&ii, &sinhb, &coshb, real_context);
 
     runtime.realMultiply(&sina, &coshb, res_real, real_context);
     runtime.realMultiply(&cosa, &sinhb, res_imag, real_context);
@@ -2653,7 +2653,7 @@ fn tanhReal() callconv(.c) void {
         return;
     }
 
-    real_trig_owned.wp34sTanhZig(&x, &x, &runtime.ctxtReal39);
+    real_trig_owned.tanhReal(&x, &x, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -2729,7 +2729,7 @@ fn arcsinReal() callconv(.c) void {
             return;
         }
     } else {
-        real_trig_owned.c47Wp34sAsinZig(&x, &x, &runtime.ctxtReal39);
+        real_trig_owned.arcsinReal(&x, &x, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     }
 
@@ -2779,7 +2779,7 @@ fn arccosReal() callconv(.c) void {
             return;
         }
     } else {
-        real_trig_owned.c47Wp34sAcosZig(&x, &x, &runtime.ctxtReal39);
+        real_trig_owned.arccosReal(&x, &x, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     }
 
@@ -2872,7 +2872,7 @@ pub export fn ArcsinhReal(
     if (runtime.realIsInfinite(x)) {
         copyReal(res, x);
     } else {
-        real_trig_owned.wp34sArcSinhZig(x, res, real_context);
+        real_trig_owned.arcsinhReal(x, res, real_context);
     }
 
     return runtime.ERROR_NONE;
@@ -3055,7 +3055,7 @@ fn arctanhReal() callconv(.c) void {
             return;
         }
     } else {
-        real_trig_owned.wp34sArcTanhZig(&x, &x, &runtime.ctxtReal39);
+        real_trig_owned.arctanhReal(&x, &x, &runtime.ctxtReal39);
     }
 
     runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);

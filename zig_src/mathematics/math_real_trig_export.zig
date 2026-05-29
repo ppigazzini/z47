@@ -6,7 +6,7 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Asin(
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.c47Wp34sAsinZig(x, angle, real_context);
+    owned.arcsinReal(x, angle, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Acos(
@@ -14,7 +14,7 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Acos(
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.c47Wp34sAcosZig(x, angle, real_context);
+    owned.arccosReal(x, angle, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_WP34S_SinhCosh(
@@ -23,7 +23,7 @@ pub export fn z47_math_wrappers_owned_WP34S_SinhCosh(
     cosh_out: ?*runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.wp34sSinhCoshZig(x, sinh_out, cosh_out, real_context);
+    owned.sinhCoshReal(x, sinh_out, cosh_out, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_WP34S_Tanh(
@@ -31,7 +31,7 @@ pub export fn z47_math_wrappers_owned_WP34S_Tanh(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.wp34sTanhZig(x, res, real_context);
+    owned.tanhReal(x, res, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_WP34S_ArcSinh(
@@ -39,7 +39,7 @@ pub export fn z47_math_wrappers_owned_WP34S_ArcSinh(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.wp34sArcSinhZig(x, res, real_context);
+    owned.arcsinhReal(x, res, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_WP34S_ArcTanh(
@@ -47,5 +47,5 @@ pub export fn z47_math_wrappers_owned_WP34S_ArcTanh(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.wp34sArcTanhZig(x, res, real_context);
+    owned.arctanhReal(x, res, real_context);
 }
