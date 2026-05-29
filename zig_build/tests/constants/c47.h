@@ -38,7 +38,7 @@ typedef enum {
 #define EXTRA_INFO_ON_CALC_ERROR 1
 
 extern uint16_t currentSolverStatus;
-extern char errorMessage[256];
+extern char errorMessage[512];
 extern const real_t *realtConstants[NOUC];
 extern const real_t *const39_pi;
 
