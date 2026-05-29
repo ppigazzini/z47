@@ -9,6 +9,9 @@ STRING_RE = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"')
 STRING_CONCAT_RE = re.compile(
     r'"(?:[^"\\]*(?:\\.[^"\\]*)*)"(?:\s*\+\+\s*"(?:[^"\\]*(?:\\.[^"\\]*)*)")+'
 )
+REPLACED_CORE_SOURCES_RE = re.compile(
+    r"const\s+replaced_core_sources(?:_manifest)?\s*=\s*(?:\[_\]\[\]const u8\s*\{|@embedFile\()"
+)
 
 
 def load_json(path: Path) -> dict:
@@ -43,17 +46,30 @@ def candidate_literals_from_file(repo_root: Path, path: Path) -> set[str]:
     text = path.read_text(encoding="utf-8", errors="ignore")
     found: set[str] = set()
 
-    for chain in STRING_CONCAT_RE.finditer(text):
-        literal = normalize_path(repo_root, "".join(STRING_RE.findall(chain.group(0))))
-        if "/" not in literal or not literal.endswith(".c"):
-            continue
-        found.add(literal)
+    in_replaced_core_sources = False
 
-    for match in STRING_RE.finditer(text):
-        literal = normalize_path(repo_root, match.group(1))
-        if "/" not in literal or not literal.endswith(".c"):
+    for raw_line in text.splitlines():
+        if not in_replaced_core_sources and REPLACED_CORE_SOURCES_RE.search(raw_line):
+            in_replaced_core_sources = True
+        if in_replaced_core_sources:
+            if ");" in raw_line or "};" in raw_line:
+                in_replaced_core_sources = False
             continue
-        found.add(literal)
+
+        if "addCopyFileToSource(" in raw_line:
+            continue
+
+        for chain in STRING_CONCAT_RE.finditer(raw_line):
+            literal = normalize_path(repo_root, "".join(STRING_RE.findall(chain.group(0))))
+            if "/" not in literal or not literal.endswith(".c"):
+                continue
+            found.add(literal)
+
+        for match in STRING_RE.finditer(raw_line):
+            literal = normalize_path(repo_root, match.group(1))
+            if "/" not in literal or not literal.endswith(".c"):
+                continue
+            found.add(literal)
 
     return found
 
