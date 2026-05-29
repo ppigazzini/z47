@@ -4,7 +4,7 @@ const std = @import("std");
 const c = @import("c_bindings");
 
 const real34_t = c.decQuad;
-const last_item = 2732;
+const last_item: usize = @intCast(c.LAST_ITEM);
 
 const FunctionPtr = ?*const fn (u16) callconv(.c) void;
 

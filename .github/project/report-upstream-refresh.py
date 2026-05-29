@@ -39,6 +39,21 @@ INLINE_REPLACED_SOURCES_RE = re.compile(
     r"const\s+replaced_core_sources\s*=\s*\[_\]\[\]const u8\s*\{"
 )
 STRING_LITERAL_RE = re.compile(r'"([^"\\]+)"')
+RUNTIME_ZIG_CLASS = "runtime-zig"
+BUILD_TOOL_ZIG_CLASS = "build-tool-zig"
+BUILD_LOGIC_CLASS = "build-logic"
+BUILD_MANIFEST_CLASS = "build-manifest"
+RETAINED_C_CLASS = "retained-c-wrapper"
+WORKFLOW_DOC_CLASS = "workflow-or-doc"
+
+
+def add_touchpoint(
+    mapping: dict[str, dict[str, set[str]]],
+    changed_path: str,
+    touchpoint_path: str,
+    reason: str,
+) -> None:
+    mapping.setdefault(changed_path, {}).setdefault(touchpoint_path, set()).add(reason)
 
 
 def parse_args() -> argparse.Namespace:
@@ -171,8 +186,8 @@ def normalize_imported_path(raw_value: str) -> str | None:
     return f"src/c47/{value}"
 
 
-def collect_manifest_touchpoints(repo_root: Path) -> dict[str, set[str]]:
-    mapping: dict[str, set[str]] = defaultdict(set)
+def collect_manifest_touchpoints(repo_root: Path) -> dict[str, dict[str, set[str]]]:
+    mapping: dict[str, dict[str, set[str]]] = {}
     zig_build_root = repo_root / "zig_build"
 
     for manifest_path in zig_build_root.rglob("*replaced_core_sources.txt"):
@@ -180,7 +195,7 @@ def collect_manifest_touchpoints(repo_root: Path) -> dict[str, set[str]]:
         for raw_line in manifest_path.read_text(encoding="utf-8").splitlines():
             source = normalize_imported_path(raw_line)
             if source is not None:
-                mapping[source].add(rel_path)
+                add_touchpoint(mapping, source, rel_path, "manifest")
 
     for zig_path in zig_build_root.rglob("*.zig"):
         rel_path = zig_path.relative_to(repo_root).as_posix()
@@ -194,7 +209,7 @@ def collect_manifest_touchpoints(repo_root: Path) -> dict[str, set[str]]:
             for match in STRING_LITERAL_RE.finditer(raw_line):
                 source = normalize_imported_path(match.group(1))
                 if source is not None:
-                    mapping[source].add(rel_path)
+                    add_touchpoint(mapping, source, rel_path, "manifest")
 
             if "};" in raw_line:
                 in_replaced_sources = False
@@ -223,11 +238,20 @@ def iter_owned_text_paths(repo_root: Path) -> list[Path]:
     return paths
 
 
+def exact_search_terms(changed_path: str) -> list[str]:
+    terms = [changed_path]
+    if changed_path.startswith("src/c47/") and changed_path.endswith(".h"):
+        basename = changed_path.rsplit("/", 1)[1]
+        terms.append(f'"{basename}"')
+        terms.append(f'<{basename}>')
+    return terms
+
+
 def collect_exact_touchpoints(
     repo_root: Path,
     changed_paths: list[str],
-) -> dict[str, set[str]]:
-    mapping: dict[str, set[str]] = defaultdict(set)
+) -> dict[str, dict[str, set[str]]]:
+    mapping: dict[str, dict[str, set[str]]] = {}
     if not changed_paths:
         return mapping
 
@@ -236,26 +260,45 @@ def collect_exact_touchpoints(
         rel_path = path.relative_to(repo_root).as_posix()
         text = path.read_text(encoding="utf-8", errors="ignore")
         for changed_path in changed_paths:
-            if changed_path in text:
-                mapping[changed_path].add(rel_path)
+            if any(term in text for term in exact_search_terms(changed_path)):
+                add_touchpoint(mapping, changed_path, rel_path, "exact")
 
     return mapping
 
 
-def collect_touchpoints(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
+def collect_touchpoints(
+    repo_root: Path,
+    changed_paths: list[str],
+) -> dict[str, dict[str, set[str]]]:
     manifest_mapping = collect_manifest_touchpoints(repo_root)
     exact_mapping = collect_exact_touchpoints(repo_root, changed_paths)
-    combined: dict[str, set[str]] = defaultdict(set)
+    combined: dict[str, dict[str, set[str]]] = {}
 
     for changed_path in changed_paths:
-        combined[changed_path].update(manifest_mapping.get(changed_path, set()))
-        combined[changed_path].update(exact_mapping.get(changed_path, set()))
+        for source_mapping in (manifest_mapping, exact_mapping):
+            for touchpoint_path, reasons in source_mapping.get(changed_path, {}).items():
+                for reason in reasons:
+                    add_touchpoint(combined, changed_path, touchpoint_path, reason)
 
-    return {
-        changed_path: sorted(paths)
-        for changed_path, paths in combined.items()
-        if paths
-    }
+    return {changed_path: touchpoints for changed_path, touchpoints in combined.items() if touchpoints}
+
+
+def classify_touchpoint(touchpoint_path: str, reasons: set[str]) -> str:
+    if "manifest" in reasons:
+        return BUILD_MANIFEST_CLASS
+    if touchpoint_path.startswith("zig_src/"):
+        return RUNTIME_ZIG_CLASS
+    if touchpoint_path.startswith("zig_build/tools/"):
+        return BUILD_TOOL_ZIG_CLASS
+    if touchpoint_path.startswith("zig_build/"):
+        return BUILD_LOGIC_CLASS
+    if touchpoint_path.startswith("zig_bridge/"):
+        return RETAINED_C_CLASS
+    return WORKFLOW_DOC_CLASS
+
+
+def changed_path_classes(touchpoints: dict[str, set[str]]) -> set[str]:
+    return {classify_touchpoint(path, reasons) for path, reasons in touchpoints.items()}
 
 
 def print_labeled_list(title: str, items: list[str], limit: int) -> None:
@@ -318,6 +361,17 @@ def main() -> int:
         touchpoints = collect_touchpoints(repo_root, all_changed_paths)
         covered_paths = sorted(touchpoints)
         uncovered_paths = [path for path in all_changed_paths if path not in touchpoints]
+        class_counts = Counter()
+        for changed_path in covered_paths:
+            for touchpoint_class in changed_path_classes(touchpoints[changed_path]):
+                class_counts[touchpoint_class] += 1
+        retained_only_paths = [
+            changed_path
+            for changed_path in covered_paths
+            if changed_path_classes(touchpoints[changed_path]).issubset(
+                {RETAINED_C_CLASS, BUILD_MANIFEST_CLASS, WORKFLOW_DOC_CLASS}
+            )
+        ]
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
@@ -336,14 +390,26 @@ def main() -> int:
     for top_level, count in sorted(top_level_counts.items(), key=lambda item: (-item[1], item[0])):
         print(f"- {top_level}: {count}")
 
+    print("\nChanged imported path ownership summary:")
+    print(f"- {RUNTIME_ZIG_CLASS}: {class_counts[RUNTIME_ZIG_CLASS]}")
+    print(f"- {BUILD_TOOL_ZIG_CLASS}: {class_counts[BUILD_TOOL_ZIG_CLASS]}")
+    print(f"- {BUILD_LOGIC_CLASS}: {class_counts[BUILD_LOGIC_CLASS]}")
+    print(f"- {BUILD_MANIFEST_CLASS}: {class_counts[BUILD_MANIFEST_CLASS]}")
+    print(f"- {RETAINED_C_CLASS}: {class_counts[RETAINED_C_CLASS]}")
+    print(f"- {WORKFLOW_DOC_CLASS}: {class_counts[WORKFLOW_DOC_CLASS]}")
+    print(f"- retained-or-manifest-only changed paths: {len(retained_only_paths)}")
+    print(f"- no explicit z47 touchpoint: {len(uncovered_paths)}")
+
     print(f"\nChanged imported paths with explicit z47 touchpoints ({len(covered_paths)}):")
     if not covered_paths:
         print("- none")
     else:
         for changed_path in covered_paths:
             print(f"- {changed_path}")
-            for touchpoint in touchpoints[changed_path]:
-                print(f"  - {touchpoint}")
+            for touchpoint, reasons in sorted(touchpoints[changed_path].items()):
+                touchpoint_class = classify_touchpoint(touchpoint, reasons)
+                reason_text = ", ".join(sorted(reasons))
+                print(f"  - [{touchpoint_class}; {reason_text}] {touchpoint}")
 
     print_labeled_list(
         "Changed imported paths without explicit z47 touchpoints",

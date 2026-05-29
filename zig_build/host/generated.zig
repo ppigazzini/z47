@@ -199,6 +199,8 @@ pub fn addGeneratorSteps(
         optimize,
         common,
     );
+    generate_catalogs_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    generate_catalogs_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
     generate_catalogs.root_module.addImport("c_bindings", generate_catalogs_c_bindings.createModule());
     host_platform.addHostMacros(generate_catalogs.root_module, common);
     host_platform.addHostSystemPaths(generate_catalogs.root_module, common);

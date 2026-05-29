@@ -106,7 +106,6 @@ const FIRST_GLOBAL_REGISTER: u16 = 0;
 const LAST_GLOBAL_REGISTER: u16 = 125;
 const FIRST_NAMED_VARIABLE: u16 = 256;
 const FIRST_LOCAL_REGISTER: u16 = 7000;
-const LAST_ITEM: u16 = 2732;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_Y: i16 = 101;
@@ -410,6 +409,7 @@ extern fn z47_frontier_print_program_counter(program_number: u16, total_programs
 extern fn z47_frontier_format_register_label(register_no: u16, label: [*]u8, label_size: u16) void;
 extern fn z47_frontier_item_catalog_name(item: u16) [*:0]const u8;
 extern fn z47_frontier_item_softmenu_name(item: u16) [*:0]const u8;
+extern fn z47_frontier_last_item() u16;
 extern fn z47_frontier_print_backup_aim_message_area() void;
 extern fn z47_frontier_print_restore_aim_message_area() void;
 extern fn z47_frontier_snap_screenshot_with_message_backup() void;
@@ -3370,7 +3370,8 @@ fn printAllItemsPrintCurrent(ctx: *PrintAllItemsContext) void {
 }
 
 fn printAllItemsIterate(ctx: *PrintAllItemsContext) void {
-    while (ctx.item < LAST_ITEM) : (ctx.item += 1) {
+    const last_item = z47_frontier_last_item();
+    while (ctx.item < last_item) : (ctx.item += 1) {
         printAllItemsPrintCurrent(ctx);
         if (z47_frontier_print_exit_pressed()) {
             break;
@@ -3433,7 +3434,8 @@ fn printAllItemsFallback() void {
 
     var line_buf: [128]u8 = undefined;
     var item: u16 = 1;
-    while (item < LAST_ITEM) : (item += 1) {
+    const last_item = z47_frontier_last_item();
+    while (item < last_item) : (item += 1) {
         const catalog_name = z47_frontier_item_catalog_name(item);
         const softmenu_name = z47_frontier_item_softmenu_name(item);
 

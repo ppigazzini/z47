@@ -14,7 +14,7 @@ Current tracked workflows:
 | Workflow file | Trigger | Purpose |
 | --- | --- | --- |
 | `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware publication, package, boundary, and monitored Zig master compatibility surfaces |
-| `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD and summarize new upstream commits plus changed imported surfaces |
+| `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD and summarize new upstream commits plus ownership-classified imported surfaces |
 
 ## Workflow Graph
 
