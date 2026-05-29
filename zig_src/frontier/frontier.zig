@@ -3,6 +3,7 @@ const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const matrix_editor_refresh = @import("frontier_matrix_editor_refresh_owned.zig");
+const matrix_lifecycle = @import("frontier_matrix_lifecycle_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
 const matrix_mutation = @import("frontier_matrix_mutation_owned.zig");
 const matrix_nav = @import("frontier_matrix_nav_owned.zig");
@@ -321,8 +322,6 @@ extern fn z47_frontier_matrix_hide_cursor() void;
 extern fn z47_frontier_matrix_reload_open_matrix_from_register() void;
 extern fn z47_frontier_matrix_inc_dec_i(mode: u16) void;
 extern fn z47_frontier_matrix_inc_dec_j(mode: u16) void;
-extern fn z47_frontier_matrix_finalize_open_matrix_memory() void;
-extern fn z47_frontier_matrix_aim_is_empty() bool;
 extern fn z47_frontier_matrix_reset_cursor_pos() void;
 extern fn z47_frontier_matrix_init_aim_exponent() void;
 extern fn z47_frontier_matrix_init_aim_period() void;
@@ -345,15 +344,12 @@ extern fn z47_frontier_matrix_convert_register_x_long_to_real34() void;
 extern fn z47_frontier_matrix_convert_register_x_short_to_real34() void;
 extern fn z47_frontier_matrix_apply_register_x_to_selected() bool;
 extern fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void;
-extern fn z47_frontier_matrix_update_height_cache() void;
 extern fn z47_frontier_matrix_softmenu_has_m_edit() bool;
 extern fn z47_frontier_matrix_softmenu_top_is_m_edit() bool;
 extern fn z47_frontier_matrix_show_m_edit_softmenu() void;
 extern fn z47_frontier_matrix_scroll_row_get() u16;
 extern fn z47_frontier_matrix_scroll_row_set(row: u16) void;
 extern fn z47_frontier_matrix_render_editor_body(col_vector: bool, rows: i16, cols: i16, mat_sel_row: i16, mat_sel_col: i16) void;
-extern fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void;
-extern fn z47_frontier_matrix_mim_enter_commit_open_matrix() void;
 extern fn leaveTamModeIfEnabled() void;
 extern fn saveStatsMatrix() void;
 extern fn getMatrixFromRegister(regist: u16) void;
@@ -1165,82 +1161,8 @@ fn matrixGrowModeDispatchPipeline(grow_flag: u16) void {
     }
 }
 
-fn matrixMimEnterHasPendingAimInput() bool {
-    return !z47_frontier_matrix_aim_is_empty();
-}
-
-fn matrixMimEnterApplyAimInput() void {
-    if (!matrixMimEnterHasPendingAimInput()) {
-        return;
-    }
-    z47_frontier_matrix_mim_enter_apply_aim_buffer();
-}
-
-fn matrixMimEnterCommitIfRequested(commit: bool) void {
-    if (!commit) {
-        return;
-    }
-    z47_frontier_matrix_mim_enter_commit_open_matrix();
-}
-
-fn matrixMimEnterFinalize() void {
-    z47_frontier_matrix_update_height_cache();
-}
-
-fn matrixMimEnterPipeline(commit: bool) void {
-    matrixMimEnterApplyAimInput();
-    matrixMimEnterCommitIfRequested(commit);
-    matrixMimEnterFinalize();
-}
-
-const MatrixMimEnterStage = enum {
-    apply_aim,
-    commit_if_requested,
-    finalize,
-};
-
-const MatrixMimEnterContext = struct {
-    commit: bool,
-};
-
-fn matrixMimEnterContextInit(commit: bool) MatrixMimEnterContext {
-    return .{ .commit = commit };
-}
-
-fn matrixMimEnterExecuteStage(stage: MatrixMimEnterStage, ctx: MatrixMimEnterContext) void {
-    switch (stage) {
-        .apply_aim => matrixMimEnterApplyAimInput(),
-        .commit_if_requested => matrixMimEnterCommitIfRequested(ctx.commit),
-        .finalize => matrixMimEnterFinalize(),
-    }
-}
-
-fn matrixMimEnterStageSequence() [3]MatrixMimEnterStage {
-    return .{ .apply_aim, .commit_if_requested, .finalize };
-}
-
-fn matrixMimEnterPipelineExpanded(commit: bool) void {
-    const ctx = matrixMimEnterContextInit(commit);
-    const stages = matrixMimEnterStageSequence();
-    for (stages) |stage| {
-        matrixMimEnterExecuteStage(stage, ctx);
-    }
-}
-
-fn matrixMimEnterUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixMimEnterDispatchPipeline(commit: bool) void {
-    if (matrixMimEnterUseExpandedPipeline()) {
-        matrixMimEnterPipelineExpanded(commit);
-        return;
-    }
-    matrixMimEnterPipeline(commit);
-}
-
 pub export fn mimEnter(commit: bool) callconv(.c) void {
-    matrixMimEnterDispatchPipeline(commit);
+    matrix_lifecycle.enter(commit);
 }
 
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
@@ -1300,106 +1222,11 @@ pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
 }
 
 pub export fn mimFinalize() callconv(.c) void {
-    matrixFinalizeDispatchPipeline();
+    matrix_lifecycle.finalize();
 }
 
 pub export fn mimRestore() callconv(.c) void {
-    matrixRestoreDispatchPipeline();
-}
-
-const MatrixFinalizeStage = enum {
-    release_open_matrix,
-    clear_matrix_index,
-};
-
-fn matrixFinalizeExecuteStage(stage: MatrixFinalizeStage) void {
-    switch (stage) {
-        .release_open_matrix => z47_frontier_matrix_finalize_open_matrix_memory(),
-        .clear_matrix_index => matrixIndex = INVALID_VARIABLE,
-    }
-}
-
-fn matrixFinalizeStageSequence() [2]MatrixFinalizeStage {
-    return .{ .release_open_matrix, .clear_matrix_index };
-}
-
-fn matrixFinalizePipeline() void {
-    const stages = matrixFinalizeStageSequence();
-    for (stages) |stage| {
-        matrixFinalizeExecuteStage(stage);
-    }
-}
-
-fn matrixFinalizeUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixFinalizeDispatchPipeline() void {
-    if (matrixFinalizeUseExpandedPipeline()) {
-        matrixFinalizePipeline();
-        return;
-    }
-    z47_frontier_matrix_finalize_open_matrix_memory();
-    matrixIndex = INVALID_VARIABLE;
-}
-
-const MatrixRestoreStage = enum {
-    capture_index,
-    finalize,
-    reload_if_valid,
-};
-
-const MatrixRestoreContext = struct {
-    idx: u16,
-};
-
-fn matrixRestoreContextInit() MatrixRestoreContext {
-    return .{ .idx = matrixIndex };
-}
-
-fn matrixRestoreReloadIfValid(ctx: MatrixRestoreContext) void {
-    if (ctx.idx != INVALID_VARIABLE) {
-        getMatrixFromRegister(ctx.idx);
-        matrixIndex = ctx.idx;
-    }
-}
-
-fn matrixRestoreExecuteStage(stage: MatrixRestoreStage, ctx: MatrixRestoreContext) void {
-    switch (stage) {
-        .capture_index => {},
-        .finalize => matrixFinalizeDispatchPipeline(),
-        .reload_if_valid => matrixRestoreReloadIfValid(ctx),
-    }
-}
-
-fn matrixRestoreStageSequence() [3]MatrixRestoreStage {
-    return .{ .capture_index, .finalize, .reload_if_valid };
-}
-
-fn matrixRestorePipeline() void {
-    const ctx = matrixRestoreContextInit();
-    const stages = matrixRestoreStageSequence();
-    for (stages) |stage| {
-        matrixRestoreExecuteStage(stage, ctx);
-    }
-}
-
-fn matrixRestoreUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixRestoreDispatchPipeline() void {
-    if (matrixRestoreUseExpandedPipeline()) {
-        matrixRestorePipeline();
-        return;
-    }
-
-    const idx = matrixIndex;
-    matrixFinalizeDispatchPipeline();
-    if (idx != INVALID_VARIABLE) {
-        getMatrixFromRegister(idx);
-        matrixIndex = idx;
-    }
+    matrix_lifecycle.restore();
 }
 
 pub export fn mimAddNumber(item: i16) callconv(.c) void {
