@@ -1594,60 +1594,6 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
     return &complexMatrixElementPtr(matrix, index).imag;
 }
 
-fn changeReal34Sign(value: *runtime.real34_t) void {
-    value.bytes[15] ^= 0x80;
-}
-
-fn conjRema() void {
-    var complex_matrix: runtime.complex34Matrix_t = undefined;
-
-    runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &complex_matrix);
-    if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        const count = complexMatrixElementCount(&complex_matrix);
-
-        var index: usize = 0;
-        while (index < count) : (index += 1) {
-            changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
-        }
-    }
-
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
-}
-
-fn conjCxma() void {
-    var complex_matrix: runtime.complex34Matrix_t = undefined;
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
-    const count = complexMatrixElementCount(&complex_matrix);
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
-        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));
-        }
-    }
-
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
-}
-
-fn conjCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    runtime.realChangeSign(&imag_value);
-    if (runtime.realIsZero(&imag_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetPositiveSign(&imag_value);
-    }
-
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
-    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
-}
-
 fn swapReImCplx() callconv(.c) void {
     var real_value: runtime.real_t = undefined;
     var imag_value: runtime.real_t = undefined;
@@ -4214,25 +4160,8 @@ pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
     _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    if (register_data_type == runtime.dtComplex34Matrix) {
-        conjCxma();
-        return;
-    }
-
-    if (register_data_type == runtime.dtReal34Matrix) {
-        conjRema();
-        return;
-    }
-
-    conjCplx();
+    projection_owned.conjugate();
 }
 
 pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
