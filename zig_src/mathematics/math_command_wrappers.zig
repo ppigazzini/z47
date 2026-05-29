@@ -1,6 +1,6 @@
 const std = @import("std");
 const atan_owned = @import("math_atan_owned.zig");
-const atan2_owned = @import("math_atan2_owned.zig");
+const atan2_command_owned = @import("math_atan2_command_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
@@ -30,7 +30,6 @@ const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
-const atan2_retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
 const add_retained = runtime.retained.z47_math_wrappers_retained_fnAdd;
 const subtract_retained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
 const multiply_retained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
@@ -1592,132 +1591,6 @@ fn complexMatrixRealPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
 
 fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
     return &complexMatrixElementPtr(matrix, index).imag;
-}
-
-fn atan2RemaReal() void {
-    var y_matrix: runtime.real34Matrix_t = undefined;
-    var x_scalar: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_scalar)) {
-        return;
-    }
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
-    const count = realMatrixElementCount(&y_matrix);
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        var y_value: runtime.real_t = undefined;
-        var x_value = x_scalar;
-
-        runtime.real34ToReal(realMatrixElementPtr(&y_matrix, index), &y_value);
-        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function atan2RemaReal:", "X = 0 and Y = 0", null, null);
-            return;
-        }
-
-        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
-        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, realMatrixElementPtr(&y_matrix, index));
-    }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&y_matrix, runtime.REGISTER_X);
-}
-
-fn atan2RemaRema() void {
-    var y_matrix: runtime.real34Matrix_t = undefined;
-    var x_matrix: runtime.real34Matrix_t = undefined;
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
-
-    if (y_matrix.header.matrixRows != x_matrix.header.matrixRows or y_matrix.header.matrixColumns != x_matrix.header.matrixColumns) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function atan2RemaRema:", "matrix size mismatch", null, null);
-        return;
-    }
-
-    const count = @min(realMatrixElementCount(&x_matrix), realMatrixElementCount(&y_matrix));
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        var y_value: runtime.real_t = undefined;
-        var x_value: runtime.real_t = undefined;
-
-        runtime.real34ToReal(realMatrixElementPtr(&y_matrix, index), &y_value);
-        runtime.real34ToReal(realMatrixElementPtr(&x_matrix, index), &x_value);
-        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", null, null);
-            return;
-        }
-
-        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
-        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
-    }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
-}
-
-fn atan2RealRema() void {
-    var y_scalar: runtime.real_t = undefined;
-    var x_matrix: runtime.real34Matrix_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_scalar)) {
-        return;
-    }
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
-    const count = realMatrixElementCount(&x_matrix);
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        var y_value = y_scalar;
-        var x_value: runtime.real_t = undefined;
-
-        runtime.real34ToReal(realMatrixElementPtr(&x_matrix, index), &x_value);
-        if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", null, null);
-            return;
-        }
-
-        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
-        runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-        runtime.roundToSignificantDigits(&x_value, &x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-        runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
-    }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
-}
-
-fn atan2Error() void {
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError("In function fnAtan2:", "cannot calculate atan2 for current X and Y types", null, null);
-}
-
-fn atan2RealReal() callconv(.c) void {
-    var y_value: runtime.real_t = undefined;
-    var x_value: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) or !runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value)) {
-        return;
-    }
-
-    if (runtime.realIsZero(&y_value) and runtime.realIsZero(&x_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function atan2RealReal:", "X = 0 and Y = 0", null, null);
-        return;
-    }
-
-    atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
-    runtime.convertAngleFromTo(&x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
-    runtime.convertRealToReal34ResultRegister(&x_value, runtime.REGISTER_X);
 }
 
 fn getExponent(result: *i32) bool {
@@ -4124,31 +3997,7 @@ pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(
 }
 
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-
-    if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        atan2_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    if ((data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger) and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger)) {
-        atan2RealReal();
-    } else if (data_type_x == runtime.dtReal34Matrix and data_type_y == runtime.dtReal34Matrix) {
-        atan2RemaRema();
-    } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtShortInteger)) {
-        atan2RealRema();
-    } else if (data_type_y == runtime.dtReal34Matrix and (data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtShortInteger)) {
-        runtime.elementwiseRemaReal(&atan2RealReal);
-    } else {
-        atan2Error();
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
+    atan2_command_owned.atan2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
