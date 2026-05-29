@@ -2,6 +2,7 @@ const std = @import("std");
 const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
+const matrix_editor_entry = @import("frontier_matrix_editor_entry_owned.zig");
 const matrix_editor_refresh = @import("frontier_matrix_editor_refresh_owned.zig");
 const matrix_lifecycle = @import("frontier_matrix_lifecycle_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
@@ -777,173 +778,13 @@ pub export fn showMatrixEditor() callconv(.c) void {
     matrix_editor_refresh.run();
 }
 
-const MatrixEditStage = enum {
-    resolve_register,
-    validate_vector_mode,
-    leave_tam_mode,
-    save_stats_matrix,
-    validate_type,
-    configure_editor_state,
-    refresh_editor_view,
-};
-
-const MatrixEditContext = struct {
-    reg: u16,
-    dt: u32,
-    valid: bool,
-};
-
-fn matrixEditContextInit(regist: u16) MatrixEditContext {
-    const reg: u16 = if (regist == NOPARAM) @as(u16, @intCast(REGISTER_X)) else regist;
-    return .{ .reg = reg, .dt = 0, .valid = false };
-}
-
-fn matrixEditResolveRegister(ctx: *MatrixEditContext) void {
-    ctx.dt = getRegisterDataType(@as(i16, @intCast(ctx.reg)));
-}
-
-fn matrixEditValidateVectorMode(ctx: MatrixEditContext) bool {
-    if (z47_frontier_matrix_is_register_matrix_vector(ctx.reg) and z47_frontier_matrix_vector_polar_mode(ctx.reg) != 0) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return false;
-    }
-    return true;
-}
-
-fn matrixEditLeaveTamMode() void {
-    leaveTamModeIfEnabled();
-}
-
-fn matrixEditSaveStatsMatrix() void {
-    saveStatsMatrix();
-}
-
-fn matrixEditValidateType(ctx: *MatrixEditContext) bool {
-    if (ctx.dt == dtReal34Matrix or ctx.dt == dtComplex34Matrix) {
-        ctx.valid = true;
-        return true;
-    }
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-    ctx.valid = false;
-    return false;
-}
-
-fn matrixEditConfigureEditorState(ctx: MatrixEditContext) void {
-    if (!ctx.valid) return;
-    calcMode = CM_MIM;
-    matrixIndex = ctx.reg;
-    getMatrixFromRegister(ctx.reg);
-
-    setIRegisterAsInt(true, 0);
-    setJRegisterAsInt(true, 0);
-    aimBuffer[0] = 0;
-    nimBufferDisplay[0] = 0;
-}
-
-fn matrixEditRefreshEditorView(ctx: MatrixEditContext) void {
-    if (!ctx.valid) return;
-    showMatrixEditor();
-    refreshScreen(80);
-    printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
-}
-
-fn matrixEditExecuteStage(stage: MatrixEditStage, ctx: *MatrixEditContext) bool {
-    switch (stage) {
-        .resolve_register => matrixEditResolveRegister(ctx),
-        .validate_vector_mode => {
-            if (!matrixEditValidateVectorMode(ctx.*)) return false;
-        },
-        .leave_tam_mode => matrixEditLeaveTamMode(),
-        .save_stats_matrix => matrixEditSaveStatsMatrix(),
-        .validate_type => {
-            if (!matrixEditValidateType(ctx)) return false;
-        },
-        .configure_editor_state => matrixEditConfigureEditorState(ctx.*),
-        .refresh_editor_view => matrixEditRefreshEditorView(ctx.*),
-    }
-    return true;
-}
-
-fn matrixEditStageSequence() [7]MatrixEditStage {
-    return .{
-        .resolve_register,
-        .validate_vector_mode,
-        .leave_tam_mode,
-        .save_stats_matrix,
-        .validate_type,
-        .configure_editor_state,
-        .refresh_editor_view,
-    };
-}
-
-fn matrixEditPipeline(regist: u16) void {
-    var ctx = matrixEditContextInit(regist);
-    const stages = matrixEditStageSequence();
-    for (stages) |stage| {
-        if (!matrixEditExecuteStage(stage, &ctx)) {
-            return;
-        }
-    }
-}
-
 pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
-    matrixEditPipeline(regist);
+    matrix_editor_entry.edit(regist);
 }
 
 pub export fn fnOldMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    oldMatrixPipeline();
-}
-
-const OldMatrixStage = enum {
-    validate_mode,
-    clear_buffers,
-    hide_cursor,
-    reload_register,
-};
-
-fn oldMatrixStageValidateMode() bool {
-    if (calcMode == CM_MIM) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn oldMatrixStageClearBuffers() void {
-    aimBuffer[0] = 0;
-    nimBufferDisplay[0] = 0;
-}
-
-fn oldMatrixStageHideCursor() void {
-    z47_frontier_matrix_hide_cursor();
-}
-
-fn oldMatrixStageReloadRegister() void {
-    z47_frontier_matrix_reload_open_matrix_from_register();
-}
-
-fn oldMatrixStageExecute(stage: OldMatrixStage) bool {
-    switch (stage) {
-        .validate_mode => return oldMatrixStageValidateMode(),
-        .clear_buffers => oldMatrixStageClearBuffers(),
-        .hide_cursor => oldMatrixStageHideCursor(),
-        .reload_register => oldMatrixStageReloadRegister(),
-    }
-    return true;
-}
-
-fn oldMatrixStageSequence() [4]OldMatrixStage {
-    return .{ .validate_mode, .clear_buffers, .hide_cursor, .reload_register };
-}
-
-fn oldMatrixPipeline() void {
-    const stages = oldMatrixStageSequence();
-    for (stages) |stage| {
-        if (!oldMatrixStageExecute(stage)) {
-            return;
-        }
-    }
+    matrix_editor_entry.reloadOld();
 }
 
 pub export fn fnGoToElement(unused_param_but_mandatory: u16) callconv(.c) void {
