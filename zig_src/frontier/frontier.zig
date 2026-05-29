@@ -1,6 +1,7 @@
 const std = @import("std");
 const runtime = @import("frontier_runtime.zig");
 const print_all_regs = @import("frontier_print_all_regs_owned.zig");
+const print_all_items = @import("frontier_print_all_items_owned.zig");
 const print_user = @import("frontier_print_user_owned.zig");
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
@@ -2244,142 +2245,7 @@ pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
 
 pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    printAllItemsDispatchPipeline();
-}
-
-const PrintAllItemsStage = enum {
-    initialize,
-    validate_printer,
-    print_header,
-    iterate_items,
-    finalize,
-};
-
-const PrintAllItemsContext = struct {
-    line_buf: [128]u8,
-    item: u16,
-};
-
-fn printAllItemsContextInit() PrintAllItemsContext {
-    return .{ .line_buf = undefined, .item = 1 };
-}
-
-fn printAllItemsInitialize(ctx: *PrintAllItemsContext) void {
-    _ = ctx;
-    currentKeyCode = 255;
-}
-
-fn printAllItemsValidatePrinter() bool {
-    return getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)));
-}
-
-fn printAllItemsHeader() void {
-    printLine("item catname  menuname", 1);
-}
-
-fn printAllItemsPrintCurrent(ctx: *PrintAllItemsContext) void {
-    const catalog_name = z47_frontier_item_catalog_name(ctx.item);
-    const softmenu_name = z47_frontier_item_softmenu_name(ctx.item);
-
-    const left = bufPrintZ(&ctx.line_buf, "{d: >4} {s}", .{ ctx.item, catalog_name }) catch return;
-    printLine(left, 0);
-    printTab(97);
-
-    const right = bufPrintZ(&ctx.line_buf, "{s} ", .{softmenu_name}) catch return;
-    printLine(right, 1);
-}
-
-fn printAllItemsIterate(ctx: *PrintAllItemsContext) void {
-    const last_item = z47_frontier_last_item();
-    while (ctx.item < last_item) : (ctx.item += 1) {
-        printAllItemsPrintCurrent(ctx);
-        if (z47_frontier_print_exit_pressed()) {
-            break;
-        }
-    }
-}
-
-fn printAllItemsFinalize() void {
-    temporaryInformation = TI_PRINT_COMPLETE;
-}
-
-fn printAllItemsExecuteStage(stage: PrintAllItemsStage, ctx: *PrintAllItemsContext) bool {
-    switch (stage) {
-        .initialize => {
-            printAllItemsInitialize(ctx);
-            return true;
-        },
-        .validate_printer => return printAllItemsValidatePrinter(),
-        .print_header => {
-            printAllItemsHeader();
-            return true;
-        },
-        .iterate_items => {
-            printAllItemsIterate(ctx);
-            return true;
-        },
-        .finalize => {
-            printAllItemsFinalize();
-            return true;
-        },
-    }
-}
-
-fn printAllItemsStageSequence() [5]PrintAllItemsStage {
-    return .{ .initialize, .validate_printer, .print_header, .iterate_items, .finalize };
-}
-
-fn printAllItemsTelemetryPipeline() void {
-    var ctx = printAllItemsContextInit();
-    const stages = printAllItemsStageSequence();
-    for (stages) |stage| {
-        if (!printAllItemsExecuteStage(stage, &ctx)) {
-            return;
-        }
-    }
-}
-
-fn printAllItemsUseTelemetryPipeline() bool {
-    return true;
-}
-
-fn printAllItemsFallback() void {
-    currentKeyCode = 255;
-
-    if (!getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
-        return;
-    }
-
-    printLine("item catname  menuname", 1);
-
-    var line_buf: [128]u8 = undefined;
-    var item: u16 = 1;
-    const last_item = z47_frontier_last_item();
-    while (item < last_item) : (item += 1) {
-        const catalog_name = z47_frontier_item_catalog_name(item);
-        const softmenu_name = z47_frontier_item_softmenu_name(item);
-
-        const left = bufPrintZ(&line_buf, "{d: >4} {s}", .{ item, catalog_name }) catch continue;
-        printLine(left, 0);
-        printTab(97);
-
-        const right = bufPrintZ(&line_buf, "{s} ", .{softmenu_name}) catch continue;
-        printLine(right, 1);
-
-        if (z47_frontier_print_exit_pressed()) {
-            break;
-        }
-    }
-
-    temporaryInformation = TI_PRINT_COMPLETE;
-}
-
-fn printAllItemsDispatchPipeline() void {
-    if (printAllItemsUseTelemetryPipeline()) {
-        printAllItemsTelemetryPipeline();
-        return;
-    }
-    printAllItemsFallback();
+    print_all_items.run();
 }
 
 pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
