@@ -1,6 +1,12 @@
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
+
 pub const Mode = enum(u8) {
     less_than = 0x1,
     equal = 0x2,
@@ -25,7 +31,7 @@ fn isOwnedCompareType(data_type: u32) bool {
 fn compareTypeError(regist: runtime.calcRegister_t) void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
+    const message = bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
 
     runtime.setTemporaryInformation(false);
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
