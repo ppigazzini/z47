@@ -59,6 +59,9 @@ repo root
 |     |- upstream-port-ledger.tsv
 |     |- check-upstream-port-ledger.py
 |     |- c_dependency_audit.py
+|     |- retained-bridge-review.tsv
+|     |- retained_bridge_review.py
+|     |- check-retained-bridge-ledger.py
 |     |- report-c-dependency-status.py
 |     |- report-upstream-refresh.py
 |     |- source-ownership.txt
@@ -113,6 +116,13 @@ Checked-in build defaults currently come from these files:
   pinned-commit coverage, and pin-plus-ledger co-updates
 - `../.github/project/c_dependency_audit.py`: shared path extraction and
   classification logic for tracked first-party C telemetry
+- `../.github/project/retained-bridge-review.tsv`: tracked file-by-file review
+  ledger for the active product-lane `zig_bridge` C seams
+- `../.github/project/retained_bridge_review.py`: shared retained-bridge review
+  parsing logic used by the status helper and ledger guard
+- `../.github/project/check-retained-bridge-ledger.py`: validates that the
+  retained-bridge review ledger covers the current active product-lane
+  `zig_bridge` references exactly once
 - `../.github/project/report-c-dependency-status.py`: prints split live
   first-party C metrics for active product-build, retained-bridge, and
   parity-oracle or test buckets used by future codebase-status reports
@@ -184,6 +194,9 @@ Maintenance rule:
   report, roadmap update, or closure claim needs live split first-party C
   telemetry; keep active product-build, retained-bridge, and parity-oracle or
   test buckets separate instead of collapsing them into one closure sentence
+- run `../.github/project/check-retained-bridge-ledger.py` after any change to
+  the active product-lane `zig_bridge` set or its file-by-file review status so
+  the ledger stays aligned with the live product subset
 - use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
   a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
   tree unless that pilot is explicitly promoted
