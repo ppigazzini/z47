@@ -2,6 +2,7 @@ const std = @import("std");
 const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
+const matrix_editor_refresh = @import("frontier_matrix_editor_refresh_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
 const matrix_nav = @import("frontier_matrix_nav_owned.zig");
 const matrix_mim_run = @import("frontier_matrix_mim_run_owned.zig");
@@ -959,7 +960,7 @@ pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
 }
 
 pub export fn showMatrixEditor() callconv(.c) void {
-    matrixEditorRefreshDispatcher();
+    matrix_editor_refresh.run();
 }
 
 const MatrixEditStage = enum {
