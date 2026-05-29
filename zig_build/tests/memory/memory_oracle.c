@@ -14,6 +14,7 @@ void oracle_freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks);
 #define reallocGmp oracle_reallocGmp
 #define freeGmp oracle_freeGmp
 #define resizeProgramMemory oracle_resizeProgramMemory
+#define debugMemory oracle_debugMemory
 
 #define malloc z47_memory_runtime_alloc_gmp_bytes
 #define realloc z47_memory_runtime_realloc_gmp_bytes
