@@ -3,6 +3,7 @@ const atan_owned = @import("math_atan_owned.zig");
 const atan2_owned = @import("math_atan2_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
+const compare_owned = @import("math_compare_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
@@ -5608,67 +5609,67 @@ pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_less_than_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_less_than);
+    compare_owned.compareScalarRegister(regist, .less_than);
 }
 
 pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_less_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_less_equal);
+    compare_owned.compareScalarRegister(regist, .less_equal);
 }
 
 pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_greater_than_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_greater_than);
+    compare_owned.compareScalarRegister(regist, .greater_than);
 }
 
 pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_greater_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_greater_equal);
+    compare_owned.compareScalarRegister(regist, .greater_equal);
 }
 
 pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_equal);
+    compare_owned.compareScalarRegister(regist, .equal);
 }
 
 pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
-    if (!isOwnedCompareRegister(regist)) {
+    if (!compare_owned.isOwnedCompareRegister(regist)) {
         compare_not_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_not_equal);
+    compare_owned.compareScalarRegister(regist, .not_equal);
 }
 
 pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5676,12 +5677,12 @@ pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) v
     const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     const regist_type = runtime.getRegisterDataType(regist);
 
-    if (!isOwnedCompareRegister(regist) or !isOwnedAlmostEqualIntegerType(x_type) or !isOwnedAlmostEqualIntegerType(regist_type)) {
+    if (!compare_owned.isOwnedCompareRegister(regist) or !compare_owned.isOwnedAlmostEqualIntegerType(x_type) or !compare_owned.isOwnedAlmostEqualIntegerType(regist_type)) {
         compare_almost_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
-    compareScalarRegister(regist, compare_mode_equal);
+    compare_owned.compareScalarRegister(regist, .equal);
 }
 
 fn getConvergenceInput(
@@ -5716,137 +5717,6 @@ fn getConvergenceInput(
     }
 }
 
-const compare_mode_less_than: u8 = 0x1;
-const compare_mode_equal: u8 = 0x2;
-const compare_mode_less_equal: u8 = 0x3;
-const compare_mode_greater_than: u8 = 0x4;
-const compare_mode_not_equal: u8 = 0x5;
-const compare_mode_greater_equal: u8 = 0x6;
-
-fn isOwnedCompareRegister(regist: runtime.calcRegister_t) bool {
-    return regist == runtime.REGISTER_X or regist == runtime.REGISTER_Y or regist == runtime.REGISTER_Z or regist == runtime.REGISTER_T;
-}
-
-fn isOwnedCompareType(data_type: u32) bool {
-    return data_type == runtime.dtLongInteger or data_type == runtime.dtShortInteger or data_type == runtime.dtReal34 or data_type == runtime.dtComplex34;
-}
-
-fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
-    return data_type == runtime.dtLongInteger or data_type == runtime.dtShortInteger;
-}
-
-fn compareTypeError(regist: runtime.calcRegister_t) void {
-    var message_buffer: [128]u8 = undefined;
-    const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
-
-    runtime.setTemporaryInformation(false);
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
-    runtime.moreInfoOnError("In function badTypeError:", message, null, null);
-}
-
-fn compareResultToTemporaryInformation(result: i32, mode: u8) void {
-    if (result < 0) {
-        runtime.setTemporaryInformation((mode & compare_mode_less_than) != 0);
-    } else if (result > 0) {
-        runtime.setTemporaryInformation((mode & compare_mode_greater_than) != 0);
-    } else {
-        runtime.setTemporaryInformation((mode & compare_mode_equal) != 0);
-    }
-}
-
-fn compareRealsToTemporaryInformation(left: *runtime.real_t, right: *runtime.real_t, mode: u8) void {
-    if (runtime.realIsNaN(left) or runtime.realIsNaN(right)) {
-        runtime.setTemporaryInformation(false);
-        return;
-    }
-
-    const result: i32 = if (runtime.realCompareEqual(left, right))
-        0
-    else if (runtime.realCompareLessThan(left, right))
-        -1
-    else
-        1;
-
-    compareResultToTemporaryInformation(result, mode);
-}
-
-fn compareComplexToTemporaryInformation(
-    left_real: *runtime.real_t,
-    left_imag: *runtime.real_t,
-    right_real: *runtime.real_t,
-    right_imag: *runtime.real_t,
-    mode: u8,
-    regist: runtime.calcRegister_t,
-) void {
-    if (mode != compare_mode_equal and mode != compare_mode_not_equal) {
-        compareTypeError(regist);
-        return;
-    }
-
-    compareRealsToTemporaryInformation(left_real, right_real, mode);
-    if (runtime.temporaryInformation != runtime.TI_FALSE) {
-        compareRealsToTemporaryInformation(left_imag, right_imag, mode);
-    }
-}
-
-fn getCompareInput(
-    regist: runtime.calcRegister_t,
-    real: *runtime.real_t,
-    imag: *runtime.real_t,
-    is_complex: *bool,
-) bool {
-    switch (runtime.getRegisterDataType(regist)) {
-        runtime.dtComplex34 => {
-            is_complex.* = true;
-            return runtime.getRegisterAsComplex(regist, real, imag);
-        },
-        runtime.dtReal34 => {
-            if (!runtime.getRegisterAsReal(regist, real)) {
-                return false;
-            }
-            runtime.realSetZero(imag);
-            return true;
-        },
-        runtime.dtLongInteger => {
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
-            runtime.realSetZero(imag);
-            return true;
-        },
-        runtime.dtShortInteger => {
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
-            runtime.realSetZero(imag);
-            return true;
-        },
-        else => return false,
-    }
-}
-
-fn compareScalarRegister(regist: runtime.calcRegister_t, mode: u8) void {
-    const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const regist_type = runtime.getRegisterDataType(regist);
-    var x_real: runtime.real_t = undefined;
-    var x_imag: runtime.real_t = undefined;
-    var regist_real: runtime.real_t = undefined;
-    var regist_imag: runtime.real_t = undefined;
-    var is_complex = false;
-
-    if (!isOwnedCompareType(x_type) or !isOwnedCompareType(regist_type)) {
-        compareTypeError(regist);
-        return;
-    }
-
-    if (!getCompareInput(runtime.REGISTER_X, &x_real, &x_imag, &is_complex) or !getCompareInput(regist, &regist_real, &regist_imag, &is_complex)) {
-        compareTypeError(regist);
-        return;
-    }
-
-    if (is_complex) {
-        compareComplexToTemporaryInformation(&x_real, &x_imag, &regist_real, &regist_imag, mode, regist);
-    } else {
-        compareRealsToTemporaryInformation(&x_real, &regist_real, mode);
-    }
-}
 
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var x_real: runtime.real_t = undefined;
