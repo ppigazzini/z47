@@ -38,6 +38,7 @@ flowchart TD
 | upstream refresh report | `../.github/project/upstream-pin.env`, `../.github/project/report-upstream-refresh.py` | fetch-backed summary of new upstream commits, changed imported paths, and ownership-classified z47 touchpoints | `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch` |
 | upstream pin triage ledger | `../.github/project/upstream-port-ledger.tsv`, `../.github/project/check-upstream-port-ledger.py` | ledger guard script plus branch-diff co-update check | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
 | split first-party C status report | `../.github/project/c_dependency_audit.py`, `../.github/project/report-c-dependency-status.py`, `../.github/project/c-dependency-allowlist.json`, `../.github/project/c-dependency-product-allowlist.json` | live split metrics for active product-build first-party C, retained bridge first-party C, and non-product parity-oracle or test first-party C | `python3 .github/project/report-c-dependency-status.py --repo-root .` |
+| retained bridge review ledger | `../.github/project/retained-bridge-review.tsv`, `../.github/project/retained_bridge_review.py`, `../.github/project/check-retained-bridge-ledger.py`, `../.github/project/c-dependency-product-allowlist.json` | live active product-lane `zig_bridge` set matched against the tracked file-by-file review status | `python3 .github/project/check-retained-bridge-ledger.py --repo-root .` |
 | tracked top-level ownership contract | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | source-ownership guard script | `git fetch <upstream-url> <upstream-branch> && bash .github/project/check-source-ownership.sh` |
 | workflow imported-root CI vocabulary | `../.github/project/workflow-imported-root-paths.sh`, `../.github/workflows/upstream-oracle.yml` | workflow imported-root guard script | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
 | checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
@@ -82,6 +83,7 @@ flowchart TD
   the smallest affected host or firmware target
 - codebase-status telemetry or first-party C reporting change:
   `python3 .github/project/report-c-dependency-status.py --repo-root .`, then
+  `python3 .github/project/check-retained-bridge-ledger.py --repo-root .`, then
   the relevant `check-c-dependency-allowlist.py` command for the changed
   config or baseline
 - build-graph step rename, option change, or output-path change:

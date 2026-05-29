@@ -1,0 +1,17 @@
+# Active retained bridge review ledger for product-lane first-party C.
+bridge_path	local_owner	parity_target	status	notes
+zig_bridge/mathematics/math_wrappers_runtime_helpers.c	zig_src/mathematics/math_command_wrappers_runtime.zig	math_command_wrappers_parity	blocked-by-larger-parity-boundary	Shared GMP-heavy math wrapper seam; defer until a narrower helper tranche is isolated.
+zig_bridge/mathematics/random_runtime_helpers.c	zig_src/mathematics/math_command_wrappers_runtime.zig	math_random_parity	blocked-by-larger-parity-boundary	Random helper seam still hangs off the broader math wrapper boundary.
+zig_bridge/state/calc_state_retained.c	zig_src/state/calc_state.zig	calc_state_parity	keep-temporarily	Retained save and load entrypoints still own the broader cross-target state restore flow.
+zig_bridge/state/calc_state_runtime_helpers.c	zig_src/state/calc_state_runtime.zig	calc_state_parity	keep-temporarily	File I O and post-load UI helpers remain coupled to the retained calc-state entrypoints.
+zig_bridge/state/constants_runtime_helpers.c	zig_src/constants/constants_runtime.zig	constants_parity	convert-now	Three-function seam behind a focused parity lane; only the parity build needs fake-runtime export gating.
+zig_bridge/state/flags_retained.c	zig_src/state/flags.zig	flags_parity	keep-temporarily	Whole retained flags command surface still fronts the imported flags module.
+zig_bridge/state/flags_runtime_helpers.c	zig_src/state/flags_runtime.zig	flags_parity	convert-now	Small helper seam already sits behind the owned flags slice and focused parity lane.
+zig_bridge/state/keyboard_state_overlay.c	zig_src/state/keyboard_state.zig	keyboard_statusbar_flags_regression	keep-temporarily	Overlay preserves stop-statusbar mask behavior around the retained keyboard entrypoints.
+zig_bridge/state/keyboard_state_retained.c	zig_src/state/keyboard_state.zig	keyboard_state_parity	keep-temporarily	Public keyboard entrypoints and the tweak layer still route through retained keyboard sources.
+zig_bridge/state/memory_runtime_helpers.c	zig_src/state/memory_runtime.zig	memory_parity	convert-now	Small allocator and resize helper seam; parity only needs fake-runtime export gating.
+zig_bridge/state/program_serialization_retained.c	zig_src/state/program_serialization.zig	program_serialization_parity	keep-temporarily	Retained fnSaveProgram and fnLoadProgram still front the imported saveRestorePrograms surface.
+zig_bridge/state/program_serialization_runtime_helpers.c	zig_src/state/program_serialization_runtime.zig	program_serialization_parity	keep-temporarily	File I O and label-selection helpers still couple directly to the retained program serialization flow.
+zig_bridge/state/register_metadata_runtime_helpers.c	zig_src/state/register_metadata_runtime.zig	register_metadata_parity	blocked-by-larger-parity-boundary	Large ABI-sensitive descriptor and matrix-header seam; keep until a narrower helper cut is proven.
+zig_bridge/state/registers_retained.c	zig_src/state/register_metadata.zig	register_metadata_parity	keep-temporarily	Retained register command and allocation surface still fronts the imported registers module.
+zig_bridge/state/stack_runtime_helpers.c	zig_src/state/stack_runtime.zig	stack_state_parity	blocked-by-larger-parity-boundary	Large adjustResult and conversion helper surface still mixes multiple stack and register contracts.
