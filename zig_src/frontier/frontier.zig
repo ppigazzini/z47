@@ -4,6 +4,7 @@ const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const matrix_editor_refresh = @import("frontier_matrix_editor_refresh_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
+const matrix_mutation = @import("frontier_matrix_mutation_owned.zig");
 const matrix_nav = @import("frontier_matrix_nav_owned.zig");
 const matrix_mim_run = @import("frontier_matrix_mim_run_owned.zig");
 const plot_regression = @import("frontier_plot_regression_owned.zig");
@@ -320,10 +321,6 @@ extern fn z47_frontier_matrix_hide_cursor() void;
 extern fn z47_frontier_matrix_reload_open_matrix_from_register() void;
 extern fn z47_frontier_matrix_inc_dec_i(mode: u16) void;
 extern fn z47_frontier_matrix_inc_dec_j(mode: u16) void;
-extern fn z47_frontier_matrix_insert_row(add: bool) void;
-extern fn z47_frontier_matrix_insert_col(add: bool) void;
-extern fn z47_frontier_matrix_delete_row() void;
-extern fn z47_frontier_matrix_delete_col() void;
 extern fn z47_frontier_matrix_finalize_open_matrix_memory() void;
 extern fn z47_frontier_matrix_aim_is_empty() bool;
 extern fn z47_frontier_matrix_reset_cursor_pos() void;
@@ -761,17 +758,12 @@ fn matrixEnsureEditorModeOrReturn() bool {
     return matrixEnsureEditorMode();
 }
 
-fn matrixPrepareMutation() bool {
-    if (calcMode != CM_MIM) {
-        matrixModeUndefinedError();
-        return false;
+fn matrixRunMutation(kind: matrix_mutation.Kind) void {
+    if (!matrixEnsureEditorModeOrReturn()) {
+        return;
     }
-    mimEnter(false);
-    return true;
-}
 
-fn matrixFinishMutation() void {
-    mimEnter(true);
+    matrix_mutation.run(kind);
 }
 
 fn matrixCommitPositionChange(row: u16, col: u16) void {
@@ -779,180 +771,6 @@ fn matrixCommitPositionChange(row: u16, col: u16) void {
     setIRegisterAsInt(false, @as(i16, @intCast(row)));
     setJRegisterAsInt(false, @as(i16, @intCast(col)));
     z47_frontier_matrix_calc_mode_normal_gui();
-}
-
-const MatrixEditorGeometry = struct {
-    rows: i16,
-    cols: i16,
-    col_vector: bool,
-};
-
-const MatrixEditorSelection = struct {
-    row: i16,
-    col: i16,
-};
-
-fn matrixEditorLoadGeometry() MatrixEditorGeometry {
-    var rows: i16 = @as(i16, @intCast(z47_frontier_matrix_open_rows()));
-    var cols: i16 = @as(i16, @intCast(z47_frontier_matrix_open_cols()));
-    var col_vector = false;
-
-    if (cols == 1 and rows > 1) {
-        col_vector = true;
-        cols = rows;
-        rows = 1;
-    }
-
-    return .{ .rows = rows, .cols = cols, .col_vector = col_vector };
-}
-
-fn matrixEditorEnsureSoftmenu() void {
-    if (!z47_frontier_matrix_softmenu_has_m_edit()) {
-        z47_frontier_matrix_show_m_edit_softmenu();
-    }
-    if (z47_frontier_matrix_softmenu_top_is_m_edit()) {
-        z47_frontier_matrix_calc_mode_normal_gui();
-    }
-}
-
-fn matrixEditorWrapCoordinates(geometry: MatrixEditorGeometry) bool {
-    const wrap_rows: u16 = if (geometry.col_vector) @as(u16, @intCast(geometry.cols)) else @as(u16, @intCast(geometry.rows));
-    const wrap_cols: u16 = if (geometry.col_vector) 1 else @as(u16, @intCast(geometry.cols));
-    return wrapIJ(wrap_rows, wrap_cols);
-}
-
-fn matrixEditorApplyWrapGrowthIfNeeded(geometry: MatrixEditorGeometry) void {
-    if (matrixEditorWrapCoordinates(geometry)) {
-        z47_frontier_matrix_insert_row(false);
-        z47_frontier_matrix_commit_open_to_register();
-    }
-}
-
-fn matrixEditorReadSelection(geometry: MatrixEditorGeometry) MatrixEditorSelection {
-    return .{
-        .row = if (geometry.col_vector) getJRegisterAsInt(true) else getIRegisterAsInt(true),
-        .col = if (geometry.col_vector) getIRegisterAsInt(true) else getJRegisterAsInt(true),
-    };
-}
-
-fn matrixEditorComputeScrollRow(rows: i16, selected_row: i16, current_scroll_row: i16) i16 {
-    if (selected_row == 0 or rows <= 5) {
-        return 0;
-    }
-    if (selected_row == rows - 1) {
-        return selected_row - 4;
-    }
-    if (selected_row < current_scroll_row + 1) {
-        return selected_row - 1;
-    }
-    if (selected_row > current_scroll_row + 3) {
-        return selected_row - 3;
-    }
-    return current_scroll_row;
-}
-
-fn matrixEditorUpdateScrollRow(geometry: MatrixEditorGeometry, selection: MatrixEditorSelection) void {
-    const existing: i16 = @as(i16, @intCast(z47_frontier_matrix_scroll_row_get()));
-    const next = matrixEditorComputeScrollRow(geometry.rows, selection.row, existing);
-    z47_frontier_matrix_scroll_row_set(@as(u16, @intCast(next)));
-}
-
-fn matrixEditorRender(geometry: MatrixEditorGeometry, selection: MatrixEditorSelection) void {
-    z47_frontier_matrix_render_editor_body(geometry.col_vector, geometry.rows, geometry.cols, selection.row, selection.col);
-}
-
-fn matrixEditorRefreshView() void {
-    matrixEditorEnsureSoftmenu();
-
-    const geometry = matrixEditorLoadGeometry();
-    matrixEditorApplyWrapGrowthIfNeeded(geometry);
-
-    const selection = matrixEditorReadSelection(geometry);
-    matrixEditorUpdateScrollRow(geometry, selection);
-    matrixEditorRender(geometry, selection);
-}
-
-const MatrixEditorStage = enum {
-    ensure_softmenu,
-    load_geometry,
-    apply_wrap_growth,
-    read_selection,
-    update_scroll,
-    render,
-};
-
-const MatrixEditorContext = struct {
-    geometry: MatrixEditorGeometry,
-    selection: MatrixEditorSelection,
-};
-
-fn matrixEditorContextInit() MatrixEditorContext {
-    return .{
-        .geometry = .{ .rows = 0, .cols = 0, .col_vector = false },
-        .selection = .{ .row = 0, .col = 0 },
-    };
-}
-
-fn matrixEditorContextLoadGeometry(ctx: *MatrixEditorContext) void {
-    ctx.geometry = matrixEditorLoadGeometry();
-}
-
-fn matrixEditorContextApplyWrapGrowth(ctx: MatrixEditorContext) void {
-    matrixEditorApplyWrapGrowthIfNeeded(ctx.geometry);
-}
-
-fn matrixEditorContextReadSelection(ctx: *MatrixEditorContext) void {
-    ctx.selection = matrixEditorReadSelection(ctx.geometry);
-}
-
-fn matrixEditorContextUpdateScroll(ctx: MatrixEditorContext) void {
-    matrixEditorUpdateScrollRow(ctx.geometry, ctx.selection);
-}
-
-fn matrixEditorContextRender(ctx: MatrixEditorContext) void {
-    matrixEditorRender(ctx.geometry, ctx.selection);
-}
-
-fn matrixEditorStageSequence() [6]MatrixEditorStage {
-    return .{
-        .ensure_softmenu,
-        .load_geometry,
-        .apply_wrap_growth,
-        .read_selection,
-        .update_scroll,
-        .render,
-    };
-}
-
-fn matrixEditorExecuteStage(stage: MatrixEditorStage, ctx: *MatrixEditorContext) void {
-    switch (stage) {
-        .ensure_softmenu => matrixEditorEnsureSoftmenu(),
-        .load_geometry => matrixEditorContextLoadGeometry(ctx),
-        .apply_wrap_growth => matrixEditorContextApplyWrapGrowth(ctx.*),
-        .read_selection => matrixEditorContextReadSelection(ctx),
-        .update_scroll => matrixEditorContextUpdateScroll(ctx.*),
-        .render => matrixEditorContextRender(ctx.*),
-    }
-}
-
-fn matrixEditorRefreshViewExpanded() void {
-    var ctx = matrixEditorContextInit();
-    const stages = matrixEditorStageSequence();
-    for (stages) |stage| {
-        matrixEditorExecuteStage(stage, &ctx);
-    }
-}
-
-fn matrixEditorUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixEditorRefreshDispatcher() void {
-    if (matrixEditorUseExpandedPipeline()) {
-        matrixEditorRefreshViewExpanded();
-        return;
-    }
-    matrixEditorRefreshView();
 }
 
 pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
@@ -1441,121 +1259,14 @@ pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
     matrix_nav.incDec(.col, mode);
 }
 
-const MatrixMutation = enum {
-    insert_row_before,
-    insert_row_after,
-    insert_col_before,
-    insert_col_after,
-    delete_row,
-    delete_col,
-};
-
-fn matrixMutationIsAllowed() bool {
-    return matrixInEditorMode();
-}
-
-fn matrixMutationRejectIfNotAllowed() bool {
-    if (matrixMutationIsAllowed()) {
-        return false;
-    }
-    matrixModeUndefinedError();
-    return true;
-}
-
-fn matrixMutationBegin() void {
-    mimEnter(false);
-}
-
-fn matrixMutationEnd() void {
-    mimEnter(true);
-}
-
-fn matrixMutationRunWithBoundaries(kind: MatrixMutation) void {
-    matrixMutationBegin();
-    matrixMutationApply(kind);
-    matrixMutationEnd();
-}
-
-fn matrixMutationApply(kind: MatrixMutation) void {
-    switch (kind) {
-        .insert_row_before => z47_frontier_matrix_insert_row(false),
-        .insert_row_after => z47_frontier_matrix_insert_row(true),
-        .insert_col_before => z47_frontier_matrix_insert_col(false),
-        .insert_col_after => z47_frontier_matrix_insert_col(true),
-        .delete_row => z47_frontier_matrix_delete_row(),
-        .delete_col => z47_frontier_matrix_delete_col(),
-    }
-}
-
-fn matrixMutationPipeline(kind: MatrixMutation) void {
-    if (matrixMutationRejectIfNotAllowed()) {
-        return;
-    }
-
-    matrixMutationRunWithBoundaries(kind);
-}
-
-const MatrixMutationStage = enum {
-    validate_mode,
-    begin,
-    apply,
-    end,
-};
-
-const MatrixMutationContext = struct {
-    kind: MatrixMutation,
-};
-
-fn matrixMutationContextInit(kind: MatrixMutation) MatrixMutationContext {
-    return .{ .kind = kind };
-}
-
-fn matrixMutationExecuteStage(stage: MatrixMutationStage, ctx: MatrixMutationContext) bool {
-    switch (stage) {
-        .validate_mode => {
-            if (matrixMutationRejectIfNotAllowed()) return false;
-        },
-        .begin => matrixMutationBegin(),
-        .apply => matrixMutationApply(ctx.kind),
-        .end => matrixMutationEnd(),
-    }
-    return true;
-}
-
-fn matrixMutationStageSequence() [4]MatrixMutationStage {
-    return .{ .validate_mode, .begin, .apply, .end };
-}
-
-fn matrixMutationPipelineExpanded(kind: MatrixMutation) void {
-    const ctx = matrixMutationContextInit(kind);
-    const stages = matrixMutationStageSequence();
-    for (stages) |stage| {
-        if (!matrixMutationExecuteStage(stage, ctx)) {
-            return;
-        }
-    }
-}
-
-fn matrixMutationUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixMutationDispatchPipeline(kind: MatrixMutation) void {
-    if (matrixMutationUseExpandedPipeline()) {
-        matrixMutationPipelineExpanded(kind);
-        return;
-    }
-    matrixMutationPipeline(kind);
-}
-
 pub export fn _fnInsRow(add: bool) callconv(.c) void {
-    const kind: MatrixMutation = if (add) .insert_row_after else .insert_row_before;
-    matrixMutationDispatchPipeline(kind);
+    const kind: matrix_mutation.Kind = if (add) .insert_row_after else .insert_row_before;
+    matrixRunMutation(kind);
 }
 
 pub export fn _fnInsCol(add: bool) callconv(.c) void {
-    const kind: MatrixMutation = if (add) .insert_col_after else .insert_col_before;
-    matrixMutationDispatchPipeline(kind);
+    const kind: matrix_mutation.Kind = if (add) .insert_col_after else .insert_col_before;
+    matrixRunMutation(kind);
 }
 
 pub export fn fnInsRow(unused_param_but_mandatory: u16) callconv(.c) void {
@@ -1580,12 +1291,12 @@ pub export fn fnAddCol(unused_param_but_mandatory: u16) callconv(.c) void {
 
 pub export fn fnDelRow(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    matrixMutationDispatchPipeline(.delete_row);
+    matrixRunMutation(.delete_row);
 }
 
 pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    matrixMutationDispatchPipeline(.delete_col);
+    matrixRunMutation(.delete_col);
 }
 
 pub export fn mimFinalize() callconv(.c) void {
