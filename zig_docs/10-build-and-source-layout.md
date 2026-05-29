@@ -197,7 +197,12 @@ Use one naming stratum per file.
 - the current owned mathematics helper vocabulary follows that rule with names
   such as `arctanReal`, `arctan2Real`, `rectangularToPolarReal`,
   `arcsinReal`, `arccosReal`, `sinhCoshReal`, `tanhReal`, `arcsinhReal`,
-  `arctanhReal`, and `convertAngleToSinCosTan`
+  `arctanhReal`, `lnRealValue`, `lnComplex`, and
+  `convertAngleToSinCosTan`
+- the broad owner file `zig_src/mathematics/math_command_wrappers.zig` remains
+  an accepted semantic filename after the fresh 2026-05 Slice F review because
+  it still owns the broad math command-entry and shared-helper surface used by
+  the build graph and the focused parity lane
 - `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types,
   and retained public names may keep upstream-compatible spellings where ABI
   stability or upstream tracking requires them
