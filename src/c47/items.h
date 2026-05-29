@@ -1218,11 +1218,11 @@
 #define VAR_REGI                    1184
 #define VAR_REGJ                    1185
 #define VAR_REGK                    1186
-#define VAR_ADM                     1187
-#define VAR_DENMAX                  1188
-#define VAR_ISM                     1189
-#define VAR_REALDF                  1190
-#define VAR_NDEC                    1191
+#define VAR_1187                    1187
+#define VAR_1188                    1188
+#define VAR_1189                    1189
+#define VAR_1190                    1190
+#define VAR_1191                    1191
 #define VAR_ACC                     1192
 #define VAR_ULIM                    1193
 #define VAR_LLIM                    1194
@@ -1603,7 +1603,7 @@
 #define ITM_SLVC                    1555
 #define ITM_PUTK                    1556
 #define ITM_RAD                     1557
-#define ITM_GETDMX                  1558
+#define ITM_GET_DMX                 1558
 #define ITM_RAN                     1559
 #define ITM_RBR                     1560
 #define ITM_RCLCFG                  1561
@@ -1651,7 +1651,7 @@
 #define ITM_SKIP                    1603
 #define ITM_SLVQ                    1604
 #define ITM_SM                      1605
-#define ITM_ISM                     1606
+#define ITM_GET_ISM                 1606
 #define ITM_SMW                     1607
 #define ITM_SOLVE                   1608
 #define ITM_SSIZE                   1609
@@ -2540,13 +2540,13 @@
 #define ITM_V3toCYL                 2470
 #define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
-#define ITM_M_CONCAT                2473
+#define ITM_M_CONCAT_OLD            2473
 
 #define ITM_STKtoV3_M               2474
 #define ITM_STKtoV2                 2475
 #define ITM_V3toSTK_M               2476
 #define ITM_V2toSTK                 2477
-#define ITM_2478                    2478
+#define ITM_M_CONCATB               2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481
@@ -2831,8 +2831,71 @@
 #define ITM_STOVEL                  2729
 #define ITM_2730                    2730
 #define ITM_2731                    2731 //spares for Matrix/Vector
+#define ITM_PGMPLT                  2732
+#define MNU_PLTf                    2733
+#define ITM_PLTf                    2734
+#define ITM_IMPLOT                  2735
+#define MNU_BASE2                   2736
+#define ITM_M_DIMNQ                 2737
+#define MNU_42                      2738
+#define ITM_M_CONCATR               2739
+#define ITM_2740                    2740
+#define ITM_2741                    2741
+#define ITM_2742                    2742
+#define ITM_KNOTtoMPS               2743
+#define ITM_MPStoKNOT               2744
+#define ITM_DEGPStoRADPS            2745
+#define ITM_RADPStoDEGPS            2746
+#define ITM_SLUGtoKG                2747
+#define ITM_KGtoSLUG                2748
+#define ITM_SLINCHtoKG              2749
+#define ITM_KGtoSLINCH              2750
+#define ITM_BLOBtoKG                2751
+#define ITM_KGtoBLOB                2752
+#define ITM_TONNEtoKG               2753
+#define ITM_KGtoTONNE               2754
+#define ITM_2755                    2755
+#define ITM_2756                    2756
+#define ITM_2757                    2757
+#define ITM_2758                    2758
+#define ITM_2759                    2759
+#define ITM_2760                    2760
+#define ITM_2761                    2761
+#define ITM_2762                    2762
 
-#define LAST_ITEM                   2732
+#define ITM_GET_ADM                 2763 // VAR_NO_ADM
+#define ITM_SET_ADM                 2764 // VAR_NO_ADM
+//efine ITM_GET_ISM                 1606 // VAR_NO_ISM
+#define ITM_SET_ISM                 2765 // VAR_NO_ISM
+#define ITM_GET_REALDF              2766 // VAR_NO_REALDF
+#define ITM_SET_REALDF              2767 // VAR_NO_REALDF
+#define ITM_GET_NDEC                2768 // VAR_NO_NDEC
+#define ITM_SET_NDEC                2769 // VAR_NO_NDEC
+//efine ITM_GET_DMX                 1558 // VAR_NO_DENMAX
+#define ITM_SET_DMX                 2770 // VAR_NO_DENMAX
+
+#define ITM_2771                    2771 // CLD
+#define ITM_2772                    2772 // CLLCD
+#define ITM_2773                    2773 // CLA
+#define ITM_2774                    2774 // AIP
+#define ITM_2775                    2775 // 42string
+#define ITM_2776                    2776 // 42append
+#define ITM_2777                    2777 // 42ARCL
+#define ITM_2778                    2778 // 42ASTO
+#define ITM_2779                    2779 // 42AROT
+#define ITM_2780                    2780 // 42ASHF
+#define ITM_2781                    2781 // 42ROTXY
+#define ITM_2782                    2782 // 42BIT?
+#define ITM_2783                    2783 // 42→DEC
+#define ITM_2784                    2784 // 42→OCT
+#define ITM_2785                    2785
+#define ITM_2786                    2786
+#define ITM_2787                    2787
+#define ITM_2788                    2788
+#define ITM_2789                    2789
+#define ITM_2790                    2790 //spares for 42s compatibility functions
+
+#define LAST_ITEM                   2791
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

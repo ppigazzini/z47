@@ -58,6 +58,7 @@ repo root
 |     |- upstream-pin.env
 |     |- upstream-port-ledger.tsv
 |     |- check-upstream-port-ledger.py
+|     |- report-upstream-refresh.py
 |     |- source-ownership.txt
 |     |- check-source-ownership.sh
 |     |- zig-c-boundaries.txt
@@ -108,6 +109,9 @@ Checked-in build defaults currently come from these files:
   ledger for the current upstream pin and later audited upstream commits
 - `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
   pinned-commit coverage, and pin-plus-ledger co-updates
+- `../.github/project/report-upstream-refresh.py`: summarizes new upstream
+  commits, changed imported paths, and explicit z47-owned touchpoints before a
+  refresh lands
 - `../.github/project/source-ownership.txt`: records the tracked top-level
   z47-owned roots and imported-upstream roots used by CI and source manifests
 - `../.github/project/workflow-imported-root-paths.sh`: resolves the
@@ -166,6 +170,9 @@ Maintenance rule:
   unless the task is intentionally editing the canonical imported owner path
 - use a linked worktree when rehearsing an `upstream/master` refresh instead of
   repurposing the active coding tree
+- run `../.github/project/report-upstream-refresh.py` after fetching
+  `upstream/master` so the refresh review records new commits, changed imported
+  paths, and the likely z47-owned follow-up surfaces before the pin moves
 - use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
   a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
   tree unless that pilot is explicitly promoted
