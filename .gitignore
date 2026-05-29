@@ -10,7 +10,10 @@ __pycache__
 pyproject.toml
 uv.lock
 .pre-commit-config.yaml
-.tmp/
+
+# Local build scratch and staging folders.
+/.tmp/
+/tmp/
 
 # C47 project specific files
 /build
