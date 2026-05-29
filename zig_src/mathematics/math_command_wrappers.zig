@@ -6,6 +6,7 @@ const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
+const get_type_owned = @import("math_get_type_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
@@ -5734,104 +5735,9 @@ pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c)
     check_value_owned.checkMinusZero();
 }
 
-fn pushGetTypeIntegerOut(value: u32) void {
-    var long_integer: runtime.longInteger_t = undefined;
-
-    runtime.__gmpz_init(&long_integer[0]);
-    defer runtime.__gmpz_clear(&long_integer[0]);
-    runtime.__gmpz_set_ui(&long_integer[0], value);
-
-    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
-    runtime.liftStack();
-    runtime.convertLongIntegerToLongIntegerRegister(&long_integer[0], runtime.REGISTER_X);
-    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
-}
-
-fn pushGetTypeRealOut(value: u32) void {
-    var real_output = std.mem.zeroes(runtime.real_t);
-    var scale = std.mem.zeroes(runtime.real_t);
-
-    runtime.uInt32ToReal(value, &real_output);
-    runtime.uInt32ToReal(1000, &scale);
-    runtime.realDivide(&real_output, &scale, &real_output, &runtime.ctxtReal39);
-
-    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
-    runtime.liftStack();
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&real_output, runtime.REGISTER_X);
-    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
-}
-
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const angular_mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-
     _ = unused_but_mandatory_parameter;
-
-    switch (data_type) {
-        runtime.dtLongInteger, runtime.dtTime, runtime.dtDate, runtime.dtString, runtime.dtReal34Matrix, runtime.dtConfig => {
-            if (runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
-                const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
-                const angle_bits: u32 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X) & 0x07);
-                const angle: u32 = 5 - angle_bits;
-                const vector_shape: u32 = if (header.matrixRows > 1 and header.matrixColumns == 1)
-                    2
-                else if (header.matrixRows == 1 and header.matrixColumns > 1)
-                    1
-                else
-                    0;
-                const pol_rec: u32 = if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X))
-                    2
-                else if (runtime.isRegisterMatrix3dVector(runtime.REGISTER_X))
-                    if (runtime.getVectorRegisterPolarMode(runtime.REGISTER_X) == runtime.amPolarCYL) 4 else 3
-                else
-                    0;
-
-                pushGetTypeRealOut(data_type * 1000 + 100 * angle + 10 * pol_rec + vector_shape);
-            } else if (data_type == runtime.dtReal34Matrix) {
-                const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
-                const is_col = header.matrixRows > 1 and header.matrixColumns == 1;
-                const is_row = header.matrixRows == 1 and header.matrixColumns > 1;
-
-                if (is_col or is_row) {
-                    const suffix: u32 = if (is_col) 2 else 1;
-                    pushGetTypeRealOut(data_type * 1000 + suffix);
-                } else {
-                    pushGetTypeIntegerOut(data_type);
-                }
-            } else {
-                pushGetTypeIntegerOut(data_type);
-            }
-        },
-        runtime.dtComplex34Matrix => {
-            const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
-            const is_polar = runtime.getComplexRegisterPolarMode(runtime.REGISTER_X) != 0;
-            const angle_bits: u32 = @intCast(angular_mode & 0x07);
-            const angle: u32 = if (is_polar) 5 - angle_bits else 0;
-            const vector_shape: u32 = if (header.matrixRows > 1 and header.matrixColumns == 1)
-                2
-            else if (header.matrixRows == 1 and header.matrixColumns > 1)
-                1
-            else
-                0;
-            const pol_rec: u32 = if (is_polar) 1 else 0;
-
-            pushGetTypeRealOut(data_type * 1000 + 100 * angle + 10 * pol_rec + vector_shape);
-        },
-        runtime.dtShortInteger, runtime.dtReal34, runtime.dtComplex34 => {
-            const short_bits: u32 = @intCast(angular_mode & 0x1f);
-            const angle_bits: u32 = @intCast(angular_mode & 0x07);
-            const value: u32 = if (data_type == runtime.dtShortInteger)
-                10 * (data_type * 100 + short_bits)
-            else
-                100 * (data_type * 10 + 5 - angle_bits);
-
-            pushGetTypeRealOut(value);
-        },
-        else => {},
-    }
-
-    runtime.temporaryInformation = runtime.TI_REGTYPE;
+    get_type_owned.getType();
 }
 
 pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
