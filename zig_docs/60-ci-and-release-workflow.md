@@ -14,7 +14,7 @@ Current tracked workflows:
 | Workflow file | Trigger | Purpose |
 | --- | --- | --- |
 | `../.github/workflows/upstream-oracle.yml` | pushes and pull requests targeting `main` or `github_ci`, plus manual dispatch | main host, docs, firmware publication, package, boundary, and monitored Zig master compatibility surfaces |
-| `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD |
+| `../.github/workflows/upstream-drift.yml` | daily schedule at `0 5 * * *`, plus manual dispatch | report whether the pinned upstream commit still matches upstream HEAD and summarize new upstream commits plus changed imported surfaces |
 
 ## Workflow Graph
 
@@ -88,6 +88,7 @@ The workflow keeps its shared checked-in control data in these files:
 - `../.github/zig-toolchain.env`
 - `../.github/project/upstream-pin.env`
 - `../.github/project/upstream-port-ledger.tsv`
+- `../.github/project/report-upstream-refresh.py`
 - `../.github/project/source-ownership.txt`
 - `../.github/project/workflow-imported-root-paths.sh`
 - `../.github/project/zig-c-boundaries.txt`
@@ -397,9 +398,10 @@ Use the smallest local lane that matches the workflow slice you changed.
 
 Current behavior:
 
-- query the current upstream HEAD from the pinned repository URL
-- compare it with the checked-in `UPSTREAM_COMMIT`
-- write an artifact that records whether upstream moved or the query failed
+- run `../.github/project/report-upstream-refresh.py --fetch`
+- compare the fetched upstream head with the checked-in `UPSTREAM_COMMIT`
+- write an artifact that records the drift status, new upstream commits,
+  changed imported paths, and explicit z47-owned touchpoints
 
 This workflow is reporting-only. It does not auto-update the pin.
 

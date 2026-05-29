@@ -52,7 +52,7 @@ void printTraceErrorFunction  (int16_t func,  char *errorString);
 void printTraceError          (char *errorString);
 void printTraceTI             ();
 void printTraceString         (char *string, uint16_t where);
-void printPrompt              (uint16_t regist);
+void printInputPrompt         (uint16_t func, uint16_t regist);
 void printViewAview           (uint16_t func, uint16_t regist);
 void nameAlias                (uint16_t op, char *nameOp);
 

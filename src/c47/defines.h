@@ -943,7 +943,8 @@ typedef enum  {
   LINE_FULL  = 0,
   LINE_LEFT  = 1,
   LINE_RIGHT = 2,
-  LINE_NOLF  = 3
+  LINE_NOLF  = 3,
+  LINE_ASIS  = 4,
 } print_area_t;
 
 
@@ -1106,11 +1107,11 @@ typedef enum  {
 #define VAR_NO_U       23
 #define VAR_NO_V       24
 #define VAR_NO_W       25
-#define VAR_NO_ADM     26
-#define VAR_NO_DENMAX  27
-#define VAR_NO_ISM     28
-#define VAR_NO_REALDF  29
-#define VAR_NO_NDEC    30
+#define VAR_NO_SPARE1  26 // removed
+#define VAR_NO_SPARE2  27 // removed
+#define VAR_NO_SPARE3  28 // removed
+#define VAR_NO_SPARE4  29 // removed
+#define VAR_NO_SPARE5  30 // removed
 #define VAR_NO_ACC     31
 #define VAR_NO_ULIM    32
 #define VAR_NO_LLIM    33
@@ -2129,6 +2130,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
+#define shortIntegerModeValue()              (shortIntegerMode == SIM_2COMPL ? 2 : (shortIntegerMode == SIM_1COMPL ? 1 : (shortIntegerMode == SIM_UNSIGN ? 0 : -1)))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)

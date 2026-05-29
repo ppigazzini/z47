@@ -34,6 +34,7 @@ Use one promotion workflow when a non-trivial change lands.
 - Keep `../.github/project/source-ownership.txt`,
   `../.github/project/upstream-pin.env`,
   `../.github/project/upstream-port-ledger.tsv`,
+  `../.github/project/report-upstream-refresh.py`,
   `../.github/project/workflow-imported-root-paths.sh`, and the affected docs
   aligned when the imported-root or tracked top-level ownership contract
   changes.
@@ -52,11 +53,12 @@ Use one promotion workflow when a non-trivial change lands.
 Use a linked worktree when auditing or rehearsing an `upstream/master` refresh.
 
 1. `git fetch upstream master`
-2. `git worktree add --detach ../z47-upstream-refresh upstream/master`
-3. Inspect, diff, or rehearse the upstream refresh inside
+2. `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --head-rev upstream/master`
+3. `git worktree add --detach ../z47-upstream-refresh upstream/master`
+4. Inspect, diff, or rehearse the upstream refresh inside
    `../z47-upstream-refresh` while leaving the active coding tree on your topic
    branch.
-4. `git worktree remove ../z47-upstream-refresh` when the audit or rehearsal is
+5. `git worktree remove ../z47-upstream-refresh` when the audit or rehearsal is
    complete.
 
 Do not treat ignored local worktrees as tracked documentation surfaces.
@@ -65,12 +67,13 @@ Do not treat ignored local worktrees as tracked documentation surfaces.
 
 Use the tracked ledger whenever the maintained upstream pin changes.
 
-1. Update `../.github/project/upstream-pin.env` to the new upstream commit.
-2. Add or update a row in `../.github/project/upstream-port-ledger.tsv` for
+1. Run `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --fetch`.
+2. Update `../.github/project/upstream-pin.env` to the new upstream commit.
+3. Add or update a row in `../.github/project/upstream-port-ledger.tsv` for
   that pinned commit.
-3. Run `python3 ../.github/project/check-upstream-port-ledger.py --repo-root ..`
+4. Run `python3 ../.github/project/check-upstream-port-ledger.py --repo-root ..`
   from `zig_docs/` or the equivalent repo-root command.
-4. Promote any stable workflow or verification contract change into the
+5. Promote any stable workflow or verification contract change into the
   affected `zig_docs/` pages and `../CONTRIBUTING.md` in the same change.
 
 Keep one `pin-only` ledger row for the currently pinned upstream commit. Add

@@ -24,6 +24,9 @@ repo surfaces.
   records the tracked top-level ownership split used by CI.
 - `.github/project/upstream-port-ledger.tsv` records the maintainer triage
   ledger that must move with any tracked upstream pin change.
+- `.github/project/report-upstream-refresh.py` summarizes new upstream commits,
+  changed imported paths, and the z47-owned touchpoints that may need follow-up
+  before a pin change lands.
 - `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
   imported-root vocabulary used by docs install, generated-artifact proof, and
   host package staging in GitHub Actions.
@@ -48,13 +51,14 @@ When auditing or rehearsing an `upstream/master` refresh, use a linked worktree
 instead of repurposing the active coding tree.
 
 1. `git fetch upstream master`
-2. `git worktree add --detach ../z47-upstream-refresh upstream/master`
-3. Do the upstream audit, diff, or rebase rehearsal inside
+2. `python3 .github/project/report-upstream-refresh.py --repo-root . --head-rev upstream/master`
+3. `git worktree add --detach ../z47-upstream-refresh upstream/master`
+4. Do the upstream audit, diff, or rebase rehearsal inside
   `../z47-upstream-refresh` while leaving the active tree on your topic branch.
-4. When the maintained pin changes, update `.github/project/upstream-pin.env`
+5. When the maintained pin changes, update `.github/project/upstream-pin.env`
   and add the matching row in `.github/project/upstream-port-ledger.tsv` in the
   tracked repo tree before treating the refresh as ready.
-5. `git worktree remove ../z47-upstream-refresh` when the refresh rehearsal is
+6. `git worktree remove ../z47-upstream-refresh` when the refresh rehearsal is
   complete.
 
 Keep tracked-doc updates focused on the main repository tree. Do not document
@@ -110,6 +114,7 @@ surfaces. They are not the maintained z47 control plane.
 - imported-root layout, upstream-pin, top-level ownership, or source-manifest
   changes: rerun
   `zig build --help --summary none`, then
+  `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`, then
   `python3 .github/project/check-upstream-port-ledger.py --repo-root .`, then
   `bash .github/project/check-source-ownership.sh`, then
   `bash .github/project/workflow-imported-root-paths.sh check-workflow`; use

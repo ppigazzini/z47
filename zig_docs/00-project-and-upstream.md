@@ -17,9 +17,11 @@ current upstream pin are already clear.
 - The GitLab path still uses the historical `c43` repository name even though
   the project identifies itself as C47.
 - The repo root currently carries the imported upstream working tree pinned at
-  commit `b9ed834b63e64bde05274e5182abf1e9180af612`.
+  commit `bb439ccd84c5779469d62675e3b186e396780c30`.
 - `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
   current imported baseline still lives at repo root.
+- `../.github/project/report-upstream-refresh.py` turns the pinned baseline
+  into a local commit, path, and touchpoint report before a refresh lands.
 - M13 now keeps a tracked linked-worktree pilot helper at
   `../.github/project/nested-upstream-pilot.sh`, but the measured recommendation
   is no-go and the maintained baseline remains the repo-root import.
@@ -74,10 +76,10 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `b9ed834b63e64bde05274e5182abf1e9180af612` |
+| `UPSTREAM_COMMIT` | `bb439ccd84c5779469d62675e3b186e396780c30` |
 | `UPSTREAM_ROOT` | `.` |
 | `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-05-15` |
+| `UPSTREAM_PIN_UPDATED` | `2026-05-29` |
 
 The current `UPSTREAM_ROOT=.` value means the imported upstream tree is mounted
 at repo root today. That is the current baseline contract, not a promise that a
