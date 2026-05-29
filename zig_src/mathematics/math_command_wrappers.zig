@@ -5699,30 +5699,14 @@ pub export fn fnCheckForZero(mode: u16) callconv(.c) void {
     check_value_owned.checkForZero(mode);
 }
 
-fn tryCheckRealMatrixVector(dimension: u16) bool {
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) != runtime.dtReal34Matrix) {
-        return false;
-    }
-
-    const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
-    runtime.setTemporaryInformation((header.matrixRows == 1 and header.matrixColumns == dimension) or (header.matrixRows == dimension and header.matrixColumns == 1));
-    return true;
-}
-
 pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-
-    if (!tryCheckRealMatrixVector(2)) {
-        compareTypeErrorX();
-    }
+    check_value_owned.checkRealMatrixVector(2);
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-
-    if (!tryCheckRealMatrixVector(3)) {
-        compareTypeErrorX();
-    }
+    check_value_owned.checkRealMatrixVector(3);
 }
 
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {

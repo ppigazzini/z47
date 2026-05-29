@@ -197,6 +197,16 @@ pub fn checkMatrixSquare() void {
     typeErrorX();
 }
 
+pub fn checkRealMatrixVector(dimension: u16) void {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) != runtime.dtReal34Matrix) {
+        typeErrorX();
+        return;
+    }
+
+    const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
+    runtime.setTemporaryInformation((header.matrixRows == 1 and header.matrixColumns == dimension) or (header.matrixRows == dimension and header.matrixColumns == 1));
+}
+
 pub fn checkNaN() void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
