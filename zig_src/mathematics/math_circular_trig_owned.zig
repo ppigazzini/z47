@@ -236,7 +236,7 @@ fn sinCosTanTaylorTemp75(
     }
 }
 
-pub fn c47Wp34sCvt2RadSinCosTanZig(
+pub fn convertAngleToSinCosTan(
     angle_in: *const runtime.real_t,
     angular_mode_in: runtime.angularMode_t,
     sin_out: ?*runtime.real_t,

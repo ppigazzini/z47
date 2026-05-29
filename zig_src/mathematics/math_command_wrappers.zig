@@ -178,7 +178,7 @@ pub export fn sinComplex(
     var sinhb: runtime.real_t = undefined;
     var coshb: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(real, runtime.amRadian, &sina, &cosa, null, real_context);
     real_trig_owned.sinhCoshReal(imag, &sinhb, &coshb, real_context);
     runtime.realMultiply(&sina, &coshb, res_real, real_context);
     runtime.realMultiply(&cosa, &sinhb, res_imag, real_context);
@@ -196,7 +196,7 @@ pub export fn cosComplex(
     var sinhb: runtime.real_t = undefined;
     var coshb: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(real, runtime.amRadian, &sina, &cosa, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(real, runtime.amRadian, &sina, &cosa, null, real_context);
     real_trig_owned.sinhCoshReal(imag, &sinhb, &coshb, real_context);
     runtime.realMultiply(&cosa, &coshb, res_real, real_context);
     runtime.realMultiply(&sina, &sinhb, res_imag, real_context);
@@ -242,9 +242,9 @@ pub export fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void {
     if (runtime.realIsSpecial(&x)) {
         runtime.realSetNaN(&x);
     } else if (trig_type == runtime.trigSin) {
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, x_angular_mode, &x, null, null, &runtime.ctxtReal75);
+        circular_trig_owned.convertAngleToSinCosTan(&x, x_angular_mode, &x, null, null, &runtime.ctxtReal75);
     } else {
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, x_angular_mode, null, &x, null, &runtime.ctxtReal75);
+        circular_trig_owned.convertAngleToSinCosTan(&x, x_angular_mode, null, &x, null, &runtime.ctxtReal75);
     }
 
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
@@ -301,7 +301,7 @@ pub export fn sinhCoshCplx(trig_type: runtime.trigType_t) callconv(.c) void {
     }
 
     real_trig_owned.sinhCoshReal(&a, &sinha, &cosha, &runtime.ctxtReal39);
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&b, runtime.amRadian, &sinb, &cosb, null, &runtime.ctxtReal39);
+    circular_trig_owned.convertAngleToSinCosTan(&b, runtime.amRadian, &sinb, &cosb, null, &runtime.ctxtReal39);
 
     if (trig_type == runtime.trigSin) {
         runtime.realMultiply(&sinha, &cosb, &a, &runtime.ctxtReal39);
@@ -330,7 +330,7 @@ pub export fn TanComplex(
     var denom_real: runtime.real_t = undefined;
     var denom_imag: runtime.real_t = undefined;
 
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_real, runtime.amRadian, &sina, &cosa, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(x_real, runtime.amRadian, &sina, &cosa, null, real_context);
     real_trig_owned.sinhCoshReal(x_imag, &sinhb, &coshb, real_context);
 
     runtime.realMultiply(&sina, &coshb, &numer_real, real_context);
@@ -362,7 +362,7 @@ pub export fn TanhComplex(
         runtime.realSetZero(r_imag);
     } else {
         real_trig_owned.tanhReal(x_real, r_real, &runtime.ctxtReal39);
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(x_imag, runtime.amRadian, &sin_value, &cos_value, r_imag, &runtime.ctxtReal39);
+        circular_trig_owned.convertAngleToSinCosTan(x_imag, runtime.amRadian, &sin_value, &cos_value, r_imag, &runtime.ctxtReal39);
 
         runtime.realSetOne(&denom_real);
         runtime.realMultiply(r_real, r_imag, &denom_imag, &runtime.ctxtReal39);
@@ -436,7 +436,7 @@ pub export fn expComplex(
     }
 
     realExp(real, &exp_real, real_context);
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(imag, runtime.amRadian, &sin_value, &cos_value, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(imag, runtime.amRadian, &sin_value, &cos_value, null, real_context);
     runtime.realMultiply(&exp_real, &cos_value, res_real, real_context);
     runtime.realMultiply(&exp_real, &sin_value, res_imag, real_context);
 }
@@ -982,7 +982,7 @@ fn sincReal() callconv(.c) void {
                     runtime.convertAngleFromTo(&x, angular_mode, runtime.amRadian, &runtime.ctxtReal39);
                 }
             }
-            circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal39);
+            circular_trig_owned.convertAngleToSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal39);
             runtime.realDivide(&sine, &x, &x, &runtime.ctxtReal75);
         }
     }
@@ -1030,7 +1030,7 @@ fn sincpiReal() callconv(.c) void {
                 runtime.convertAngleFromTo(&x, angular_mode, runtime.amRadian, &runtime.ctxtReal75);
             }
             runtime.realMultiply(&x, runtime.z47_math_wrappers_const_pi(), &x, &runtime.ctxtReal75);
-            circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal75);
+            circular_trig_owned.convertAngleToSinCosTan(&x, runtime.amRadian, &sine, null, null, &runtime.ctxtReal75);
             runtime.realDivide(&sine, &x, &x, &runtime.ctxtReal75);
         }
     }
@@ -1074,7 +1074,7 @@ fn sincpiComplex(
 
     runtime.realMultiply(&rr, runtime.z47_math_wrappers_const_pi(), &rr, real_context);
     runtime.realMultiply(&ii, runtime.z47_math_wrappers_const_pi(), &ii, real_context);
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&rr, runtime.amRadian, &sina, &cosa, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(&rr, runtime.amRadian, &sina, &cosa, null, real_context);
     real_trig_owned.sinhCoshReal(&ii, &sinhb, &coshb, real_context);
 
     runtime.realMultiply(&sina, &coshb, res_real, real_context);
@@ -3102,7 +3102,7 @@ fn tanReal() callconv(.c) void {
     if (runtime.realIsSpecial(&tan_value)) {
         runtime.realSetNaN(&tan_value);
     } else {
-        circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(&tan_value, x_angular_mode, &sin_value, &cos_value, &tan_value, &runtime.ctxtReal75);
+        circular_trig_owned.convertAngleToSinCosTan(&tan_value, x_angular_mode, &sin_value, &cos_value, &tan_value, &runtime.ctxtReal75);
         if (runtime.realIsZero(&sin_value)) {
             runtime.realSetPositiveSign(&tan_value);
         }
@@ -7084,7 +7084,7 @@ fn fibonacciReal(n: *const runtime.real_t, res: *runtime.real_t, real_context: *
     runtime.realPower(runtime.z47_math_wrappers_const_phi(), n, &a, real_context);
     runtime.realDivide(runtime.z47_math_wrappers_const_1(), &a, &b, real_context);
     runtime.realMultiply(runtime.z47_math_wrappers_const_pi(), n, res, real_context);
-    circular_trig_owned.c47Wp34sCvt2RadSinCosTanZig(res, runtime.amRadian, null, res, null, real_context);
+    circular_trig_owned.convertAngleToSinCosTan(res, runtime.amRadian, null, res, null, real_context);
     runtime.realMultiply(&b, res, &b, real_context);
     runtime.realSquareRoot(runtime.z47_math_wrappers_const_5(), res, real_context);
     runtime.realSubtract(&a, &b, &a, real_context);
