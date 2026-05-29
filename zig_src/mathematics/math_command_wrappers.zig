@@ -1594,73 +1594,6 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
     return &complexMatrixElementPtr(matrix, index).imag;
 }
 
-fn magnitudeLonI() callconv(.c) void {
-    runtime.setRegisterLongIntegerSign(runtime.REGISTER_X, runtime.LI_POSITIVE);
-}
-
-fn magnitudeShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intAbs(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
-}
-
-fn magnitudeReal() callconv(.c) void {
-    runtime.real34SetPositiveSign(runtime.registerReal34Ptr(runtime.REGISTER_X));
-    runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
-}
-
-fn complexMagnitude2(real: *const runtime.real_t, imag: *const runtime.real_t, magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
-    var product: runtime.real_t = undefined;
-
-    runtime.realMultiply(real, real, &product, real_context);
-    runtime.realFMA(imag, imag, &product, magnitude, real_context);
-}
-
-fn complexMagnitude(real: *const runtime.real_t, imag: *const runtime.real_t, magnitude: *runtime.real_t, real_context: *runtime.realContext_t) void {
-    var squared: runtime.real_t = undefined;
-
-    complexMagnitude2(real, imag, &squared, real_context);
-    runtime.realSquareRoot(&squared, magnitude, real_context);
-}
-
-fn magnitudeCxma() void {
-    var complex_matrix: runtime.complex34Matrix_t = undefined;
-    var real_matrix: runtime.real34Matrix_t = undefined;
-    var dummy = std.mem.zeroes(runtime.real34_t);
-
-    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
-    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        return;
-    }
-    defer runtime.realMatrixFree(&real_matrix);
-
-    const count = complexMatrixElementCount(&complex_matrix);
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        runtime.real34RectangularToPolar(
-            complexMatrixRealPtr(&complex_matrix, index),
-            complexMatrixImagPtr(&complex_matrix, index),
-            realMatrixElementPtr(&real_matrix, index),
-            &dummy,
-        );
-    }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
-}
-
-fn magnitudeCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var magnitude: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    complexMagnitude(&real_value, &imag_value, &magnitude, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&magnitude, runtime.REGISTER_X, runtime.amNone);
-}
-
 fn changeReal34Sign(value: *runtime.real34_t) void {
     value.bytes[15] ^= 0x80;
 }
@@ -4277,17 +4210,7 @@ pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
-        if (!runtime.saveLastX()) {
-            return;
-        }
-
-        magnitudeCxma();
-        return;
-    }
-
-    runtime.processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeCplx, &magnitudeShoI, &magnitudeLonI);
+    projection_owned.magnitude();
 }
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
