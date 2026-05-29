@@ -405,3 +405,69 @@ pub fn conjugate() void {
 
     conjugateComplex();
 }
+
+fn swapRealImaginaryComplex() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.convertComplexToResultRegister(&imag_value, &real_value, runtime.REGISTER_X);
+}
+
+fn swapRealImaginaryRealMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &real_matrix);
+    runtime.convertReal34MatrixToComplex34Matrix(&real_matrix, &complex_matrix);
+
+    const count = complexMatrixElementCount(&complex_matrix);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        complex_matrix.matrixElements[index].imag = complex_matrix.matrixElements[index].real;
+        complex_matrix.matrixElements[index].real = std.mem.zeroes(runtime.real34_t);
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+    runtime.complexMatrixFree(&complex_matrix);
+}
+
+fn swapRealImaginaryComplexMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    const count = complexMatrixElementCount(&complex_matrix);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        const real_value = complex_matrix.matrixElements[index].real;
+        complex_matrix.matrixElements[index].real = complex_matrix.matrixElements[index].imag;
+        complex_matrix.matrixElements[index].imag = real_value;
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
+pub fn swapRealImaginary() void {
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    if (register_data_type == runtime.dtReal34Matrix) {
+        swapRealImaginaryRealMatrix();
+        return;
+    }
+
+    if (register_data_type == runtime.dtComplex34Matrix) {
+        swapRealImaginaryComplexMatrix();
+        return;
+    }
+
+    swapRealImaginaryComplex();
+}
