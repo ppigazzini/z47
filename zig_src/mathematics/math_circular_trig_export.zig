@@ -9,5 +9,5 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(
     tan: ?*runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.c47Wp34sCvt2RadSinCosTanZig(angle, mode, sin, cos, tan, real_context);
+    owned.convertAngleToSinCosTan(angle, mode, sin, cos, tan, real_context);
 }
