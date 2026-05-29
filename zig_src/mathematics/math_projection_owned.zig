@@ -331,3 +331,77 @@ pub fn magnitude() void {
 
     runtime.processIntRealComplexMonadicFunction(&magnitudeReal, &magnitudeComplex, &magnitudeShortInteger, &magnitudeLongInteger);
 }
+
+fn changeReal34Sign(value: *runtime.real34_t) void {
+    value.bytes[15] ^= 0x80;
+}
+
+fn conjugateRealMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &complex_matrix);
+    if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        const count = complexMatrixElementCount(&complex_matrix);
+
+        var index: usize = 0;
+        while (index < count) : (index += 1) {
+            changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
+        }
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
+fn conjugateComplexMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    const count = complexMatrixElementCount(&complex_matrix);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        changeReal34Sign(complexMatrixImagPtr(&complex_matrix, index));
+        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));
+        }
+    }
+
+    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+}
+
+fn conjugateComplex() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.realChangeSign(&imag_value);
+    if (runtime.realIsZero(&imag_value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.realSetPositiveSign(&imag_value);
+    }
+
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
+    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
+}
+
+pub fn conjugate() void {
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    if (register_data_type == runtime.dtComplex34Matrix) {
+        conjugateComplexMatrix();
+        return;
+    }
+
+    if (register_data_type == runtime.dtReal34Matrix) {
+        conjugateRealMatrix();
+        return;
+    }
+
+    conjugateComplex();
+}
