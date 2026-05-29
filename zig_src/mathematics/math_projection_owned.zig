@@ -1,0 +1,253 @@
+const std = @import("std");
+const build_options = @import("math_command_wrappers_build_options");
+const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
+const runtime = @import("math_command_wrappers_runtime.zig");
+
+fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
+    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
+}
+
+fn complexMatrixElementCount(matrix: *const runtime.complex34Matrix_t) usize {
+    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
+}
+
+fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.real34_t {
+    if (build_options.use_fake_wp34s_model) {
+        return &matrix.matrixElements[index];
+    }
+
+    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[index];
+}
+
+fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.complex34_t {
+    if (build_options.use_fake_wp34s_model) {
+        return &matrix.matrixElements[index];
+    }
+
+    return &@as([*]runtime.complex34_t, @ptrCast(matrix.matrixElements))[index];
+}
+
+fn complexMatrixRealPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
+    return &complexMatrixElementPtr(matrix, index).real;
+}
+
+fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
+    return &complexMatrixElementPtr(matrix, index).imag;
+}
+
+fn realPartComplex() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&real_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn realPartComplexMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    defer runtime.realMatrixFree(&real_matrix);
+
+    const count = @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        real_matrix.matrixElements[index] = complex_matrix.matrixElements[index].real;
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
+}
+
+fn realPartReal() callconv(.c) void {
+    var value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &value)) {
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn imaginaryPartComplex() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    runtime.convertRealToResultRegister(&imag_value, runtime.REGISTER_X, runtime.amNone);
+}
+
+fn imaginaryPartComplexMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    defer runtime.realMatrixFree(&real_matrix);
+
+    const count = @as(usize, complex_matrix.header.matrixRows) * @as(usize, complex_matrix.header.matrixColumns);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        real_matrix.matrixElements[index] = complex_matrix.matrixElements[index].imag;
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
+}
+
+fn imaginaryPartReal() callconv(.c) void {
+    runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
+}
+
+pub fn realPart() void {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        if (!runtime.saveLastX()) {
+            return;
+        }
+
+        realPartComplexMatrix();
+        return;
+    }
+
+    runtime.processRealComplexMonadicFunction(&realPartReal, &realPartComplex);
+}
+
+pub fn imaginaryPart() void {
+    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtComplex34Matrix) {
+        if (!runtime.saveLastX()) {
+            return;
+        }
+
+        imaginaryPartComplexMatrix();
+        return;
+    }
+
+    runtime.processRealComplexMonadicFunction(&imaginaryPartReal, &imaginaryPartComplex);
+}
+
+fn realArgValue(x_value: *const runtime.real_t) *const runtime.real_t {
+    return if (runtime.realIsNaN(x_value))
+        x_value
+    else if (runtime.realIsZero(x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
+        x_value
+    else if (runtime.realIsNegative(x_value))
+        runtime.z47_math_wrappers_const_180()
+    else
+        runtime.z47_math_wrappers_const_0();
+}
+
+fn argReal() callconv(.c) void {
+    var x_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
+        return;
+    }
+
+    const result = realArgValue(&x_value);
+
+    runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
+    if (!runtime.realIsNaN(result)) {
+        runtime.convertAngle34FromTo(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.amDegree, runtime.currentAngularMode);
+        runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+    }
+}
+
+fn argError() void {
+    _ = runtime.getRegisterAsReal(runtime.REGISTER_X, null);
+}
+
+fn argComplex() callconv(.c) void {
+    var real_value: runtime.real_t = undefined;
+    var imag_value: runtime.real_t = undefined;
+
+    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
+        return;
+    }
+
+    rectangular_to_polar_owned.rectangularToPolarReal(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    runtime.convertAngleFromTo(&imag_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
+
+    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
+    runtime.convertRealToReal34ResultRegister(&imag_value, runtime.REGISTER_X);
+}
+
+fn argRealMatrix() void {
+    var matrix: runtime.real34Matrix_t = undefined;
+
+    runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &matrix);
+    defer runtime.realMatrixFree(&matrix);
+
+    const count = realMatrixElementCount(&matrix);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        var real_value: runtime.real_t = undefined;
+
+        runtime.real34ToReal(realMatrixElementPtr(&matrix, index), &real_value);
+        real_value = realArgValue(&real_value).*;
+        runtime.convertAngleFromTo(&real_value, runtime.amDegree, runtime.currentAngularMode, &runtime.ctxtReal39);
+        runtime.realToReal34(&real_value, realMatrixElementPtr(&matrix, index));
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
+}
+
+fn argComplexMatrix() void {
+    var complex_matrix: runtime.complex34Matrix_t = undefined;
+    var real_matrix: runtime.real34Matrix_t = undefined;
+    var dummy = std.mem.zeroes(runtime.real34_t);
+
+    runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
+    if (!runtime.realMatrixInit(&real_matrix, complex_matrix.header.matrixRows, complex_matrix.header.matrixColumns)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    defer runtime.realMatrixFree(&real_matrix);
+
+    const count = complexMatrixElementCount(&complex_matrix);
+
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        runtime.real34RectangularToPolar(
+            complexMatrixRealPtr(&complex_matrix, index),
+            complexMatrixImagPtr(&complex_matrix, index),
+            &dummy,
+            realMatrixElementPtr(&real_matrix, index),
+        );
+        runtime.convertAngle34FromTo(realMatrixElementPtr(&real_matrix, index), runtime.amRadian, runtime.currentAngularMode);
+    }
+
+    runtime.convertReal34MatrixToReal34MatrixRegister(&real_matrix, runtime.REGISTER_X);
+}
+
+pub fn arg() void {
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    switch (register_data_type) {
+        runtime.dtLongInteger, runtime.dtReal34, runtime.dtShortInteger => argReal(),
+        runtime.dtComplex34 => argComplex(),
+        runtime.dtReal34Matrix => argRealMatrix(),
+        runtime.dtComplex34Matrix => argComplexMatrix(),
+        else => argError(),
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, @as(runtime.calcRegister_t, -1), @as(runtime.calcRegister_t, -1));
+}
