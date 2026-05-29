@@ -34,6 +34,7 @@ Use one promotion workflow when a non-trivial change lands.
 - Keep `../.github/project/source-ownership.txt`,
   `../.github/project/upstream-pin.env`,
   `../.github/project/upstream-port-ledger.tsv`,
+  `../.github/project/report-c-dependency-status.py`,
   `../.github/project/report-upstream-refresh.py`,
   `../.github/project/workflow-imported-root-paths.sh`, and the affected docs
   aligned when the imported-root or tracked top-level ownership contract
@@ -79,6 +80,21 @@ Use the tracked ledger whenever the maintained upstream pin changes.
 Keep one `pin-only` ledger row for the currently pinned upstream commit. Add
 further rows for the same commit only when a later slice records a more specific
 z47-owned surface, parity target, or retained-boundary decision.
+
+## Codebase Status Flow
+
+Use the tracked C-dependency status helper when a maintainer report or roadmap
+update needs current first-party C telemetry.
+
+1. Run `python3 ../.github/project/report-c-dependency-status.py --repo-root ..`.
+2. Keep these buckets separate in the maintained wording:
+  - active product-build first-party C
+  - retained bridge first-party C
+  - non-product parity, oracle, fake-runtime, or test first-party C
+3. Do not collapse those buckets into one closure sentence.
+4. Pair the split C report with
+  `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --fetch`
+  when the report also makes an upstream-sync freshness claim.
 
 ## Nested-Upstream Pilot Flow
 

@@ -58,6 +58,8 @@ repo root
 |     |- upstream-pin.env
 |     |- upstream-port-ledger.tsv
 |     |- check-upstream-port-ledger.py
+|     |- c_dependency_audit.py
+|     |- report-c-dependency-status.py
 |     |- report-upstream-refresh.py
 |     |- source-ownership.txt
 |     |- check-source-ownership.sh
@@ -109,6 +111,11 @@ Checked-in build defaults currently come from these files:
   ledger for the current upstream pin and later audited upstream commits
 - `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
   pinned-commit coverage, and pin-plus-ledger co-updates
+- `../.github/project/c_dependency_audit.py`: shared path extraction and
+  classification logic for tracked first-party C telemetry
+- `../.github/project/report-c-dependency-status.py`: prints split live
+  first-party C metrics for active product-build, retained-bridge, and
+  parity-oracle or test buckets used by future codebase-status reports
 - `../.github/project/report-upstream-refresh.py`: summarizes new upstream
   commits, changed imported paths, and explicit z47-owned touchpoints before a
   refresh lands
@@ -173,6 +180,10 @@ Maintenance rule:
 - run `../.github/project/report-upstream-refresh.py` after fetching
   `upstream/master` so the refresh review records new commits, changed imported
   paths, and the likely z47-owned follow-up surfaces before the pin moves
+- run `../.github/project/report-c-dependency-status.py` when a maintainer
+  report, roadmap update, or closure claim needs live split first-party C
+  telemetry; keep active product-build, retained-bridge, and parity-oracle or
+  test buckets separate instead of collapsing them into one closure sentence
 - use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
   a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
   tree unless that pilot is explicitly promoted
