@@ -91,6 +91,17 @@ pilot flow, not as the default maintainer layout.
 5. `bash ../.github/project/nested-upstream-pilot.sh cleanup ../z47-m13-pilot`
   when the comparison is complete.
 
+## Local Roadmap Sync Flow
+
+Use the tracked reviewer-side roadmap guard when a local roadmap file is part
+of a milestone close-out review.
+
+1. Run `python3 ../.github/project/check-local-roadmap-sync.py --roadmap <local-roadmap.md>`.
+2. Treat any reported duplicate, missing, or drifted milestone row as a real
+  validation failure, not as editorial cleanup.
+3. Keep tracked docs, tracked workflow files, and CI jobs free of hard
+  references to local-only roadmap paths.
+
 ## When To Update Which Page
 
 - update `../CONTRIBUTING.md` when branch policy, verification guidance, or

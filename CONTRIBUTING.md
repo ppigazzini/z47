@@ -117,6 +117,11 @@ surfaces. They are not the maintained z47 control plane.
   linked-worktree layout pilot before treating the candidate as valid
 - build-graph or target-surface changes: rerun `zig build --help --summary
   none`, then the smallest affected target
+- local roadmap or milestone-summary changes in reviewer-only docs: rerun
+  `python3 .github/project/check-local-roadmap-sync.py --roadmap <local-roadmap.md>`
+  against the local roadmap file and treat any drift as a real validation
+  failure; keep tracked docs, tracked workflow files, and CI jobs free of hard
+  references to local-only roadmap paths
 - rewrite or boundary changes: rerun the focused parity or regression lane for
   that slice before broader host or firmware checks
 - package, firmware, or release-proof changes: rerun the matching `dist_*` or
