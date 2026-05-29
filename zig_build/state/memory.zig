@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     memory_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "memory_runtime_helpers.c");
         cmd.addFileArg(self.memory_state.getEmittedBin());
     }
 };
@@ -29,19 +28,29 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/state/memory.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    const use_fake_harness_surface = std.mem.endsWith(u8, name_prefix, "parity");
+    const free_regions_are_inline_array = target.result.os.tag == .freestanding and std.mem.eql(u8, name_prefix, "dmcp");
+    build_options.addOption(bool, "use_fake_harness_surface", use_fake_harness_surface);
+    build_options.addOption(bool, "free_regions_are_inline_array", free_regions_are_inline_array);
+    build_options.addOption(usize, "max_free_regions", if (free_regions_are_inline_array) 50 else 200);
+    build_options.addOption(u16, "ram_size_in_blocks", if (use_fake_harness_surface) 64 else if (free_regions_are_inline_array) 16384 else 65534);
+    module.addOptions("memory_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-memory-state", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/state/memory.zig"),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
@@ -92,7 +101,7 @@ pub fn addToModule(
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "memory_runtime_helpers.c"), .flags = c_flags });
+    _ = c_flags;
     module.addObject(runtime_object);
 }
 
