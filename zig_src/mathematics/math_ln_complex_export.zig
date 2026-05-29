@@ -8,5 +8,5 @@ pub export fn z47_math_wrappers_owned_lnComplex(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    owned.lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
 }
