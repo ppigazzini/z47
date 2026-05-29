@@ -454,11 +454,11 @@ pub export fn realLog10(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    wp34sLn(x, res, real_context);
+    lnRealValue(x, res, real_context);
     runtime.realDivide(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
 }
 
-fn wp34sLn(
+fn lnRealValue(
     x_in: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -548,7 +548,7 @@ fn wp34sLn(
     runtime.realAdd(res, &w, res, real_context);
 }
 
-fn wp34sLog(
+fn logWithLnBase(
     x_in: *const runtime.real_t,
     base: *const runtime.real_t,
     res: *runtime.real_t,
@@ -565,11 +565,11 @@ fn wp34sLog(
         return;
     }
 
-    wp34sLn(x_in, &y, real_context);
+    lnRealValue(x_in, &y, real_context);
     runtime.realDivide(&y, base, res, real_context);
 }
 
-fn wp34sLogxy(
+fn logxyRealValue(
     y_in: *const runtime.real_t,
     x_in: *const runtime.real_t,
     res: *runtime.real_t,
@@ -582,8 +582,8 @@ fn wp34sLogxy(
 
     var ln_x: runtime.real_t = undefined;
 
-    wp34sLn(x_in, &ln_x, real_context);
-    wp34sLog(y_in, &ln_x, res, real_context);
+    lnRealValue(x_in, &ln_x, real_context);
+    logWithLnBase(y_in, &ln_x, res, real_context);
 }
 
 fn expM1Complex(
@@ -785,14 +785,14 @@ fn log2Cplx() callconv(.c) void {
     runtime.logxyCplx(runtime.z47_math_wrappers_const_ln2());
 }
 
-fn lnComplexZig(
+fn lnComplexOwned(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
     ln_real: *runtime.real_t,
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    ln_complex_owned.lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    ln_complex_owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_lnComplex(
@@ -802,7 +802,7 @@ pub export fn z47_math_wrappers_owned_lnComplex(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    lnComplexOwned(real, imag, ln_real, ln_imag, real_context);
 }
 
 pub export fn lnComplex(
@@ -812,7 +812,7 @@ pub export fn lnComplex(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    lnComplexZig(real, imag, ln_real, ln_imag, real_context);
+    lnComplexOwned(real, imag, ln_real, ln_imag, real_context);
 }
 
 fn lnReal() callconv(.c) void {
@@ -845,10 +845,10 @@ fn lnReal() callconv(.c) void {
             runtime.realSetNaN(&x);
         }
     } else if (!runtime.realIsNegative(&x)) {
-        wp34sLn(&x, &x, &runtime.ctxtReal39);
+        lnRealValue(&x, &x, &runtime.ctxtReal39);
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&x);
-        wp34sLn(&x, &x, &runtime.ctxtReal39);
+        lnRealValue(&x, &x, &runtime.ctxtReal39);
         copyReal(&imag_value, runtime.z47_math_wrappers_const_pi());
         runtime.convertComplexToResultRegister(&x, &imag_value, runtime.REGISTER_X);
         return;
@@ -879,7 +879,7 @@ fn lnCplx() callconv(.c) void {
         copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
         runtime.realSetZero(&x_imag);
     } else {
-        lnComplexZig(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+        lnComplexOwned(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
     }
 
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
@@ -952,7 +952,7 @@ fn lnP1Complex(
     }
 
     rectangular_to_polar_owned.rectangularToPolarReal(&one_plus_real, imag, ln_real, ln_imag, real_context);
-    wp34sLn(ln_real, ln_real, real_context);
+    lnRealValue(ln_real, ln_real, real_context);
 }
 
 fn sincReal() callconv(.c) void {
@@ -1234,11 +1234,11 @@ pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
             runtime.realSetNaN(&a);
         }
     } else if (!runtime.realIsNegative(&a)) {
-        wp34sLn(&a, &a, &runtime.ctxtReal39);
+        lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
     } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         runtime.realSetPositiveSign(&a);
-        wp34sLn(&a, &a, &runtime.ctxtReal39);
+        lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &b, &runtime.ctxtReal39);
         runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
@@ -1271,7 +1271,7 @@ pub export fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
         runtime.realSetZero(&b);
     } else {
         runtime.realRectangularToPolar(&a, &b, &a, &b, &runtime.ctxtReal39);
-        wp34sLn(&a, &a, &runtime.ctxtReal39);
+        lnRealValue(&a, &a, &runtime.ctxtReal39);
         runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
         runtime.realDivide(&b, denom, &b, &runtime.ctxtReal39);
     }
@@ -1291,7 +1291,7 @@ pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
         return;
     }
 
-    wp34sLn(&x, &x, &runtime.ctxtReal39);
+    lnRealValue(&x, &x, &runtime.ctxtReal39);
     runtime.realDivide(&x, denom, &x, &runtime.ctxtReal34);
     if (!runtime.realIsAnInteger(&x)) {
         runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
@@ -2687,7 +2687,7 @@ pub export fn ArcsinComplex(
     runtime.sqrt1Px2Complex(&b, &a, r_real, r_imag, real_context);
     runtime.realAdd(r_real, &b, r_real, real_context);
     runtime.realAdd(r_imag, &a, r_imag, real_context);
-    lnComplexZig(r_real, r_imag, &a, &b, real_context);
+    lnComplexOwned(r_real, r_imag, &a, &b, real_context);
     runtime.realChangeSign(&a);
 
     copyReal(r_real, &b);
@@ -2752,7 +2752,7 @@ fn arccosCplx() callconv(.c) void {
     runtime.realChangeSign(&real_value);
     runtime.realAdd(&a, &real_value, &real_value, &runtime.ctxtReal39);
     runtime.realAdd(&b, &imag_value, &imag_value, &runtime.ctxtReal39);
-    lnComplexZig(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
+    lnComplexOwned(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
 
     negateReal(&a, &real_value);
     copyReal(&b, &imag_value);
@@ -2811,7 +2811,7 @@ pub export fn ArctanComplex(
     runtime.realChangeSign(&b);
     runtime.realDivide(&numer, &denom, &a, real_context);
     runtime.realDivide(&b, &denom, &b, real_context);
-    lnComplexZig(&a, &b, &a, &b, real_context);
+    lnComplexOwned(&a, &b, &a, &b, real_context);
     runtime.realMultiply(&a, runtime.z47_math_wrappers_const_1on2(), &a, real_context);
     runtime.realMultiply(&b, runtime.z47_math_wrappers_const_1on2(), &b, real_context);
     runtime.realChangeSign(&b);
@@ -2903,7 +2903,7 @@ pub export fn ArcsinhComplex(
     runtime.realPolarToRectangular(r_real, r_imag, r_real, r_imag, real_context);
     runtime.realAdd(&a, r_real, r_real, real_context);
     runtime.realAdd(&b, r_imag, r_imag, real_context);
-    lnComplexZig(r_real, r_imag, r_real, r_imag, real_context);
+    lnComplexOwned(r_real, r_imag, r_real, r_imag, real_context);
     return runtime.ERROR_NONE;
 }
 
@@ -2943,7 +2943,7 @@ pub export fn realArcosh(
     runtime.realSubtract(&x_squared, runtime.z47_math_wrappers_const_1(), &x_squared, real_context);
     runtime.realSquareRoot(&x_squared, &x_squared, real_context);
     runtime.realAdd(&x_squared, x, res, real_context);
-    wp34sLn(res, res, real_context);
+    lnRealValue(res, res, real_context);
 }
 
 fn arccoshCplx() callconv(.c) void {
@@ -2968,7 +2968,7 @@ fn arccoshCplx() callconv(.c) void {
     runtime.realPolarToRectangular(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
     runtime.realAdd(&a, &real_value, &real_value, &runtime.ctxtReal39);
     runtime.realAdd(&b, &imag_value, &imag_value, &runtime.ctxtReal39);
-    lnComplexZig(&real_value, &imag_value, &a, &b, &runtime.ctxtReal39);
+    lnComplexOwned(&real_value, &imag_value, &a, &b, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
 }
 
@@ -3012,7 +3012,7 @@ fn arctanhCplx() callconv(.c) void {
     runtime.realSubtract(runtime.z47_math_wrappers_const_1(), &denom_imag, &denom_real, &runtime.ctxtReal39);
     negateReal(&denom_imag, &numer_imag);
     runtime.divComplexComplex(&numer_real, &numer_imag, &denom_real, &denom_imag, &numer_real, &numer_imag, &runtime.ctxtReal39);
-    lnComplexZig(&numer_real, &numer_imag, &numer_real, &numer_imag, &runtime.ctxtReal39);
+    lnComplexOwned(&numer_real, &numer_imag, &numer_real, &numer_imag, &runtime.ctxtReal39);
     runtime.realMultiply(&numer_real, runtime.z47_math_wrappers_const_1on2(), &numer_real, &runtime.ctxtReal39);
     runtime.realMultiply(&numer_imag, runtime.z47_math_wrappers_const_1on2(), &numer_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&numer_real, &numer_imag, runtime.REGISTER_X);
@@ -7927,8 +7927,8 @@ fn logXYComplex(
     var ln_x_real: runtime.real_t = undefined;
     var ln_x_imag: runtime.real_t = undefined;
 
-    lnComplexZig(y_real, y_imag, result_real, result_imag, &runtime.ctxtReal39);
-    lnComplexZig(x_real, x_imag, &ln_x_real, &ln_x_imag, &runtime.ctxtReal39);
+    lnComplexOwned(y_real, y_imag, result_real, result_imag, &runtime.ctxtReal39);
+    lnComplexOwned(x_real, x_imag, &ln_x_real, &ln_x_imag, &runtime.ctxtReal39);
     runtime.divComplexComplex(result_real, result_imag, &ln_x_real, &ln_x_imag, result_real, result_imag, &runtime.ctxtReal39);
 }
 
@@ -7994,7 +7994,7 @@ fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, r
             }
         }
     } else {
-        wp34sLogxy(y_real, x_real, &result_real, real_context);
+        logxyRealValue(y_real, x_real, &result_real, real_context);
     }
 
     runtime.convertRealToResultRegister(&result_real, runtime.REGISTER_X, runtime.amNone);

@@ -76,7 +76,7 @@ fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t
     return runtime.realCompareLessThan(rhs, lhs);
 }
 
-fn wp34sLn(
+fn lnRealValue(
     x_in: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
@@ -166,7 +166,7 @@ fn wp34sLn(
     runtime.realAdd(res, &w, res, real_context);
 }
 
-pub fn lnComplexZig(
+pub fn lnComplex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
     ln_real: *runtime.real_t,
@@ -180,5 +180,5 @@ pub fn lnComplexZig(
     }
 
     rectangular_to_polar_owned.rectangularToPolarReal(real, imag, ln_real, ln_imag, real_context);
-    wp34sLn(ln_real, ln_real, real_context);
+    lnRealValue(ln_real, ln_real, real_context);
 }
