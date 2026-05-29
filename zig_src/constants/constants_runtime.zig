@@ -2,6 +2,12 @@ const std = @import("std");
 const build_options = @import("constants_build_options");
 const use_fake_harness_surface = @hasDecl(build_options, "use_fake_harness_surface") and build_options.use_fake_harness_surface;
 
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
+
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
 
@@ -19,7 +25,6 @@ pub const real34_t = extern struct {
 pub extern var currentSolverStatus: u16;
 pub extern var errorMessage: [512]u8;
 pub extern var realtConstants: [NOUC]*const real_t;
-pub extern var const39_pi: *const real_t;
 
 pub extern fn liftStack() void;
 pub extern fn adjustResult(
@@ -50,7 +55,7 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
 pub inline fn validateConstant(constant: u16) bool {
     if (constant >= NOUC) {
         if (build_options.extra_info_on_calc_error) {
-            const message = std.fmt.bufPrintZ(
+            const message = bufPrintZ(
                 errorMessage[0 .. errorMessage.len - 1],
                 "parameter constant ({d}) is out of bounds, constant must be less or equal to {d}",
                 .{ constant, NOUC - 1 },
@@ -69,7 +74,7 @@ pub inline fn storeConstantInX(constant: u16) void {
 }
 
 pub inline fn storePiInX() void {
-    convertRealToResultRegister(const39_pi, REGISTER_X, amNone);
+    convertRealToResultRegister(realtConstants[NOUC - 1], REGISTER_X, amNone);
 }
 
 pub inline fn setLastIntegerBaseToZero() void {
