@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     constants: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "constants_runtime_helpers.c");
         cmd.addFileArg(self.constants.getEmittedBin());
     }
 };
@@ -29,19 +28,25 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/constants/constants.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "extra_info_on_calc_error", std.mem.eql(u8, name_prefix, "host") or std.mem.endsWith(u8, name_prefix, "parity"));
+    build_options.addOption(bool, "use_fake_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    module.addOptions("constants_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-constants", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/constants/constants.zig"),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
@@ -90,7 +95,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
 ) void {
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "constants_runtime_helpers.c"), .flags = c_flags });
+    _ = c_flags;
     module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
 }
 

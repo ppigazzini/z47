@@ -4,7 +4,6 @@ zig_bridge/mathematics/math_wrappers_runtime_helpers.c	zig_src/mathematics/math_
 zig_bridge/mathematics/random_runtime_helpers.c	zig_src/mathematics/math_command_wrappers_runtime.zig	math_random_parity	blocked-by-larger-parity-boundary	Random helper seam still hangs off the broader math wrapper boundary.
 zig_bridge/state/calc_state_retained.c	zig_src/state/calc_state.zig	calc_state_parity	keep-temporarily	Retained save and load entrypoints still own the broader cross-target state restore flow.
 zig_bridge/state/calc_state_runtime_helpers.c	zig_src/state/calc_state_runtime.zig	calc_state_parity	keep-temporarily	File I O and post-load UI helpers remain coupled to the retained calc-state entrypoints.
-zig_bridge/state/constants_runtime_helpers.c	zig_src/constants/constants_runtime.zig	constants_parity	convert-now	Three-function seam behind a focused parity lane; only the parity build needs fake-runtime export gating.
 zig_bridge/state/flags_retained.c	zig_src/state/flags.zig	flags_parity	keep-temporarily	Whole retained flags command surface still fronts the imported flags module.
 zig_bridge/state/flags_runtime_helpers.c	zig_src/state/flags_runtime.zig	flags_parity	convert-now	Small helper seam already sits behind the owned flags slice and focused parity lane.
 zig_bridge/state/keyboard_state_overlay.c	zig_src/state/keyboard_state.zig	keyboard_statusbar_flags_regression	keep-temporarily	Overlay preserves stop-statusbar mask behavior around the retained keyboard entrypoints.

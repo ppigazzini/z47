@@ -13,7 +13,7 @@ static real34_t register_x_real34;
 static const real_t pi_value = {314};
 
 uint16_t currentSolverStatus;
-char errorMessage[256];
+char errorMessage[512];
 const real_t *realtConstants[NOUC];
 const real_t *const39_pi = &pi_value;
 
@@ -114,23 +114,4 @@ void adjustResult(calcRegister_t res,
 
 void setLastintegerBasetoZero(void) {
   snapshot.set_lastinteger_base_to_zero_calls++;
-}
-
-bool_t z47_constants_runtime_validate_constant(uint16_t constant) {
-  if(constant >= NOUC) {
-    sprintf(errorMessage, "parameter constant (%" PRIu16 ") is out of bounds, constant must be less or equal to %" PRId32, constant, NOUC - 1);
-    moreInfoOnError("In function fnConstant:", errorMessage, NULL, NULL);
-    return false;
-  }
-
-  return true;
-}
-
-void z47_constants_runtime_store_constant_in_x(uint16_t constant) {
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  realToReal34(realtConstants[constant], REGISTER_REAL34_DATA(REGISTER_X));
-}
-
-void z47_constants_runtime_store_pi_in_x(void) {
-  convertRealToResultRegister(const39_pi, REGISTER_X, amNone);
 }

@@ -13,7 +13,6 @@ zig_bridge/mathematics/math_wrappers_runtime_helpers.c
 zig_bridge/mathematics/random_runtime_helpers.c
 zig_bridge/state/calc_state_retained.c
 zig_bridge/state/calc_state_runtime_helpers.c
-zig_bridge/state/constants_runtime_helpers.c
 zig_bridge/state/flags_retained.c
 zig_bridge/state/flags_runtime_helpers.c
 zig_bridge/state/keyboard_state_overlay.c
