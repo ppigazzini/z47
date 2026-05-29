@@ -220,6 +220,23 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
   export shim, for example `../zig_src/mathematics/math_atan2_owned.zig`
 - keep retained C helper files explicit as `*_retained.c` or
   `*_runtime_helpers.c`
+- inside semantic owner files and coherent local helper clusters, use Zig
+  casing only when the full internal-only family can move together in one
+  bounded slice: directories and files `snake_case`, types `TitleCase`,
+  functions `camelCase`, and other values `snake_case`
+- callable alias constants are values, not exported functions, so owner-side
+  retained-call aliases should also use semantic `snake_case`
+- the current owned mathematics helper tranche already uses that owner-layer
+  vocabulary, for example `arctanReal`, `arctan2Real`,
+  `rectangularToPolarReal`, `arcsinReal`, `arccosReal`, `sinhCoshReal`,
+  `tanhReal`, `arcsinhReal`, `arctanhReal`, and
+  `convertAngleToSinCosTan`
+- inside `*_runtime.zig`, `*_export.zig`, retained C, `pub export`, and
+  `extern` surfaces, keep upstream-compatible spellings when they model ABI,
+  layout, or exact public symbol names
+- do not run repo-wide variable, parameter, or local-const case sweeps; if a
+  casing cleanup cannot move a whole internal-only family coherently, defer it
+  instead of leaving mixed conventions in the same layer
 
 Do not reintroduce mixed owner-plus-export spellings such as
 `*_owned_export.zig`. Do not add owner-file suffixes like `*_entries.zig` when

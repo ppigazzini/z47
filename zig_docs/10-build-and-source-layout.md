@@ -187,6 +187,22 @@ Use one naming stratum per file.
   use `*_owned.zig`, for example `zig_src/mathematics/math_atan2_owned.zig`
 - retained C owner or helper files stay explicit as `*_retained.c` or
   `*_runtime_helpers.c`
+- inside semantic owner files and coherent internal-only helper clusters, use
+  Zig casing only when the whole family can move together without leaving a
+  mixed layer: directories and files `snake_case`, types `TitleCase`,
+  functions `camelCase`, and other values `snake_case`
+- callable alias constants inside owner files are still values, so keep them
+  semantic and `snake_case` rather than leaking retained boundary spellings or
+  function-style casing into the owner layer
+- the current owned mathematics helper vocabulary follows that rule with names
+  such as `arctanReal`, `arctan2Real`, `rectangularToPolarReal`,
+  `arcsinReal`, `arccosReal`, `sinhCoshReal`, `tanhReal`, `arcsinhReal`,
+  `arctanhReal`, and `convertAngleToSinCosTan`
+- `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types,
+  and retained public names may keep upstream-compatible spellings where ABI
+  stability or upstream tracking requires them
+- do not try to force one repo-wide casing rule across owner, runtime, and
+  export layers; the repo needs layer-specific rules, not global churn
 
 Avoid historical mixed forms such as `*_owned_export.zig` and owner-file
 `*_entries.zig` suffixes. Keep upstream-compatible spellings at the retained
