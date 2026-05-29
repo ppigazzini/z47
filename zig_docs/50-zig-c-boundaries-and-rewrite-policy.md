@@ -34,7 +34,7 @@ z47 uses three explicit implementation modes.
 | `../zig_build/solver/solve.zig` | manual Zig entrypoint plus retained C boundary routing | filters imported `solver/solve.c`, re-adds retained body through `zig_bridge/solver/solve_retained.c`, and routes `fnPgmSlv` through `zig_src/solver/solve.zig` |
 | `../zig_src/constants/constants.zig` plus `../zig_build/constants/constants.zig` | manual Zig rewrite | parity-gated constants-command slice for `fnConstant` and `fnPi` |
 | `../zig_src/shortint/shortint_core.zig` and short-integer owner files | manual Zig rewrite | parity-gated short-integer rewrite slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
-| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrappers.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, and `sinhCoshCplx`, while the matrix fallback still routes through retained `fnInvertMatrix` |
+| `../zig_src/mathematics/math_command_wrappers.zig` plus `../zig_build/mathematics/math_command_wrappers.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared exports such as `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, `sinhCoshCplx`, `lnComplex`, and `logxyReal`, while the matrix fallback still routes through retained `fnInvertMatrix`; the fresh Slice F filename review kept this owner filename because it still matches the broad command-entry and shared-helper role |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
@@ -229,8 +229,12 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
 - the current owned mathematics helper tranche already uses that owner-layer
   vocabulary, for example `arctanReal`, `arctan2Real`,
   `rectangularToPolarReal`, `arcsinReal`, `arccosReal`, `sinhCoshReal`,
-  `tanhReal`, `arcsinhReal`, `arctanhReal`, and
+  `tanhReal`, `arcsinhReal`, `arctanhReal`, `lnRealValue`, `lnComplex`, and
   `convertAngleToSinCosTan`
+- the broad owner file `../zig_src/mathematics/math_command_wrappers.zig`
+  remains the accepted semantic filename after the fresh review because the
+  live build object and parity lane still map to a broad command-wrapper and
+  shared-helper surface rather than to one narrower owner domain
 - inside `*_runtime.zig`, `*_export.zig`, retained C, `pub export`, and
   `extern` surfaces, keep upstream-compatible spellings when they model ABI,
   layout, or exact public symbol names
