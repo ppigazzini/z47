@@ -1,5 +1,6 @@
 const std = @import("std");
 const display_format = @import("frontier_display_format_owned.zig");
+const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -570,532 +571,111 @@ pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
     printer_control.run(.lcd, unused_but_mandatory_parameter);
 }
 
-const FrontendSettingsCommand = enum {
-    set_gap_char,
-    set_group_left,
-    set_group_1lo,
-    set_group_1l,
-    set_group_right,
-    menu_gap_l,
-    menu_gap_rx,
-    menu_gap_r,
-    integer_mode,
-    who,
-    version,
-    set_rounding_mode,
-    set_significant_digits,
-    set_base_nr,
-    set_fraction_digits,
-    angular_mode,
-    fraction_type,
-    set_range,
-    set_hide,
-    confirmation_yes,
-    confirmation_no,
-    get_range,
-    get_hide,
-    get_last_error,
-};
-
-const FrontendSettingsStage = enum {
-    decode,
-    validate,
-    apply,
-    finalize,
-};
-
-const FrontendSettingsPhase = enum {
-    preflight,
-    execution,
-    completion,
-};
-
-const FrontendSettingsPlan = struct {
-    phases: [3]FrontendSettingsPhase,
-};
-
-const FrontendSettingsTelemetry = struct {
-    preflight_started: bool,
-    preflight_completed: bool,
-    execution_started: bool,
-    execution_completed: bool,
-    completion_started: bool,
-    completion_completed: bool,
-    aborted: bool,
-};
-
-const FrontendSettingsContext = struct {
-    command: FrontendSettingsCommand,
-    value: u16,
-    valid: bool,
-};
-
-fn frontendSettingsContextInit(command: FrontendSettingsCommand, value: u16) FrontendSettingsContext {
-    return .{ .command = command, .value = value, .valid = true };
-}
-
-fn frontendSettingsPlanBuild() FrontendSettingsPlan {
-    return .{ .phases = .{ .preflight, .execution, .completion } };
-}
-
-fn frontendSettingsTelemetryInit() FrontendSettingsTelemetry {
-    return .{
-        .preflight_started = false,
-        .preflight_completed = false,
-        .execution_started = false,
-        .execution_completed = false,
-        .completion_started = false,
-        .completion_completed = false,
-        .aborted = false,
-    };
-}
-
-fn frontendSettingsTelemetryStart(telemetry: *FrontendSettingsTelemetry, phase: FrontendSettingsPhase) void {
-    switch (phase) {
-        .preflight => telemetry.preflight_started = true,
-        .execution => telemetry.execution_started = true,
-        .completion => telemetry.completion_started = true,
-    }
-}
-
-fn frontendSettingsTelemetryComplete(telemetry: *FrontendSettingsTelemetry, phase: FrontendSettingsPhase) void {
-    switch (phase) {
-        .preflight => telemetry.preflight_completed = true,
-        .execution => telemetry.execution_completed = true,
-        .completion => telemetry.completion_completed = true,
-    }
-}
-
-fn frontendSettingsTelemetryAbort(telemetry: *FrontendSettingsTelemetry) void {
-    telemetry.aborted = true;
-}
-
-fn frontendSettingsPhaseCanRun(telemetry: FrontendSettingsTelemetry, phase: FrontendSettingsPhase) bool {
-    return switch (phase) {
-        .preflight => true,
-        .execution => telemetry.preflight_completed and !telemetry.aborted,
-        .completion => telemetry.execution_completed and !telemetry.aborted,
-    };
-}
-
-fn frontendSettingsDecode(ctx: *FrontendSettingsContext) void {
-    _ = ctx;
-}
-
-fn frontendSettingsValidate(ctx: *FrontendSettingsContext) bool {
-    _ = ctx;
-    return true;
-}
-
-fn frontendSettingsApplySetGapChar(value: u16) void {
-    const group = value & 49152;
-    const payload = value & 16383;
-    if (group == 0) {
-        gapItemLeft = payload;
-    } else if (group == 32768) {
-        gapItemRight = payload;
-    } else if (group == 49152) {
-        gapItemRadix = payload;
-    }
-}
-
-fn frontendSettingsApplyGroupLeft(value: u16) void {
-    grpGroupingLeft = @as(u8, @intCast(value));
-}
-
-fn frontendSettingsApplyGroup1Lo(value: u16) void {
-    grpGroupingGr1LeftOverflow = @as(u8, @intCast(value));
-}
-
-fn frontendSettingsApplyGroup1L(value: u16) void {
-    grpGroupingGr1Left = @as(u8, @intCast(value));
-}
-
-fn frontendSettingsApplyGroupRight(value: u16) void {
-    grpGroupingRight = @as(u8, @intCast(value));
-}
-
-fn frontendSettingsApplyMenuGapL() void {
-    showSoftmenu(-MNU_GAP_L);
-}
-
-fn frontendSettingsApplyMenuGapRx() void {
-    showSoftmenu(-MNU_GAP_RX);
-}
-
-fn frontendSettingsApplyMenuGapR() void {
-    showSoftmenu(-MNU_GAP_R);
-}
-
-fn frontendSettingsApplyIntegerMode(value: u16) void {
-    if (shortIntegerMode != @as(u8, @intCast(value))) {
-        setSystemFlagChanged(SETTING_SINT_MODE);
-    }
-    shortIntegerMode = @as(u8, @intCast(value));
-    fnRefreshState();
-}
-
-fn frontendSettingsApplyWho() void {
-    temporaryInformation = TI_WHO;
-}
-
-fn frontendSettingsApplyVersion() void {
-    temporaryInformation = TI_VERSION;
-}
-
-fn frontendSettingsApplyRounding(value: u16) void {
-    roundingMode = @as(u8, @intCast(value));
-}
-
-fn frontendSettingsApplySignificantDigits(value: u16) void {
-    significantDigits = @as(u8, @intCast(value));
-    if (significantDigits == 0) {
-        significantDigits = 34;
-    }
-}
-
-fn frontendSettingsApplyBaseNr(value: u16) void {
-    dispBase = @as(u8, @intCast(value));
-    if (dispBase == 1) {
-        dispBase = 0;
-    }
-}
-
-fn frontendSettingsApplyFractionDigits(value: u16) void {
-    fractionDigits = @as(u8, @intCast(value));
-    if (fractionDigits == 0) {
-        fractionDigits = 34;
-    }
-}
-
-fn frontendSettingsApplyAngularMode(value: u16) void {
-    if (currentAngularMode != @as(c_int, @intCast(value))) {
-        setSystemFlagChanged(SETTING_AMODE);
-    }
-    currentAngularMode = @as(c_int, @intCast(value));
-    fnRefreshState();
-}
-
-fn frontendSettingsApplyFractionTypeCore() void {
-    var state: u8 = 0;
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_IRFRAC)))) state += 8;
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_IRFRQ)))) state += 4;
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_PROPFR)))) state += 2;
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_FRACT)))) state += 1;
-
-    if (getSystemFlag(@as(c_int, @intCast(FLAG_FRCYC)))) {
-        state = switch (state) {
-            0b0000 => 0b0001,
-            0b0010 => 0b0011,
-            0b0100 => 0b1100,
-            0b0110 => 0b1110,
-            0b0001 => 0b1110,
-            0b0011 => 0b0001,
-            0b1100 => 0b0011,
-            0b1110 => 0b1100,
-            else => 0b0011,
-        };
-
-        if ((state & 8) != 0) setSystemFlag(FLAG_IRFRAC) else clearSystemFlag(FLAG_IRFRAC);
-        if ((state & 4) != 0) setSystemFlag(FLAG_IRFRQ) else clearSystemFlag(FLAG_IRFRQ);
-        if ((state & 2) != 0) setSystemFlag(FLAG_PROPFR) else clearSystemFlag(FLAG_PROPFR);
-        if ((state & 1) != 0) setSystemFlag(FLAG_FRACT) else clearSystemFlag(FLAG_FRACT);
-    } else {
-        if (getSystemFlag(@as(c_int, @intCast(FLAG_IRFRQ)))) {
-            flipSystemFlag(FLAG_IRFRAC);
-        } else {
-            flipSystemFlag(FLAG_FRACT);
-        }
-    }
-}
-
-fn frontendSettingsApplyFractionType() void {
-    frontendSettingsApplyFractionTypeCore();
-}
-
-fn frontendSettingsApplyRange(value: u16) void {
-    exponentLimit = @as(i16, @intCast(value));
-    if (exponentLimit < DF_DMX_MIN) {
-        exponentLimit = DF_DMX_MIN;
-    }
-}
-
-fn frontendSettingsApplyHide(value: u16) void {
-    exponentHideLimit = @as(i16, @intCast(value));
-    if (exponentHideLimit > 0 and exponentHideLimit < DF_HIDE_MIN) {
-        exponentHideLimit = DF_HIDE_MIN;
-    }
-}
-
-fn frontendSettingsApplyConfirmationYes() void {
-    if (calcMode == CM_CONFIRMATION) {
-        calcMode = previousCalcMode;
-        popSoftmenu();
-        if (confirmedFunction) |func| {
-            func(CONFIRMED);
-        }
-    }
-}
-
-fn frontendSettingsApplyConfirmationNo() void {
-    if (calcMode == CM_CONFIRMATION) {
-        calcMode = previousCalcMode;
-        popSoftmenu();
-    }
-}
-
-fn frontendSettingsApplyGetRange() void {
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
-}
-
-fn frontendSettingsApplyGetHide() void {
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
-}
-
-fn frontendSettingsApplyGetLastError() void {
-    z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
-}
-
-fn frontendSettingsApply(ctx: FrontendSettingsContext) void {
-    switch (ctx.command) {
-        .set_gap_char => frontendSettingsApplySetGapChar(ctx.value),
-        .set_group_left => frontendSettingsApplyGroupLeft(ctx.value),
-        .set_group_1lo => frontendSettingsApplyGroup1Lo(ctx.value),
-        .set_group_1l => frontendSettingsApplyGroup1L(ctx.value),
-        .set_group_right => frontendSettingsApplyGroupRight(ctx.value),
-        .menu_gap_l => frontendSettingsApplyMenuGapL(),
-        .menu_gap_rx => frontendSettingsApplyMenuGapRx(),
-        .menu_gap_r => frontendSettingsApplyMenuGapR(),
-        .integer_mode => frontendSettingsApplyIntegerMode(ctx.value),
-        .who => frontendSettingsApplyWho(),
-        .version => frontendSettingsApplyVersion(),
-        .set_rounding_mode => frontendSettingsApplyRounding(ctx.value),
-        .set_significant_digits => frontendSettingsApplySignificantDigits(ctx.value),
-        .set_base_nr => frontendSettingsApplyBaseNr(ctx.value),
-        .set_fraction_digits => frontendSettingsApplyFractionDigits(ctx.value),
-        .angular_mode => frontendSettingsApplyAngularMode(ctx.value),
-        .fraction_type => frontendSettingsApplyFractionType(),
-        .set_range => frontendSettingsApplyRange(ctx.value),
-        .set_hide => frontendSettingsApplyHide(ctx.value),
-        .confirmation_yes => frontendSettingsApplyConfirmationYes(),
-        .confirmation_no => frontendSettingsApplyConfirmationNo(),
-        .get_range => frontendSettingsApplyGetRange(),
-        .get_hide => frontendSettingsApplyGetHide(),
-        .get_last_error => frontendSettingsApplyGetLastError(),
-    }
-}
-
-fn frontendSettingsFinalize(ctx: FrontendSettingsContext) void {
-    _ = ctx;
-}
-
-fn frontendSettingsExecuteStage(stage: FrontendSettingsStage, ctx: *FrontendSettingsContext) bool {
-    switch (stage) {
-        .decode => {
-            frontendSettingsDecode(ctx);
-            return true;
-        },
-        .validate => return frontendSettingsValidate(ctx),
-        .apply => {
-            frontendSettingsApply(ctx.*);
-            return true;
-        },
-        .finalize => {
-            frontendSettingsFinalize(ctx.*);
-            return true;
-        },
-    }
-}
-
-fn frontendSettingsPreflightStages() [2]FrontendSettingsStage {
-    return .{ .decode, .validate };
-}
-
-fn frontendSettingsExecutionStages() [1]FrontendSettingsStage {
-    return .{.apply};
-}
-
-fn frontendSettingsCompletionStages() [1]FrontendSettingsStage {
-    return .{.finalize};
-}
-
-fn frontendSettingsRunStageList(comptime count: usize, stages: [count]FrontendSettingsStage, ctx: *FrontendSettingsContext) bool {
-    for (stages) |stage| {
-        if (!frontendSettingsExecuteStage(stage, ctx)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-fn frontendSettingsRunPreflight(ctx: *FrontendSettingsContext) bool {
-    const stages = frontendSettingsPreflightStages();
-    return frontendSettingsRunStageList(stages.len, stages, ctx);
-}
-
-fn frontendSettingsRunExecution(ctx: *FrontendSettingsContext) bool {
-    const stages = frontendSettingsExecutionStages();
-    return frontendSettingsRunStageList(stages.len, stages, ctx);
-}
-
-fn frontendSettingsRunCompletion(ctx: *FrontendSettingsContext) bool {
-    const stages = frontendSettingsCompletionStages();
-    return frontendSettingsRunStageList(stages.len, stages, ctx);
-}
-
-fn frontendSettingsExecutePhase(phase: FrontendSettingsPhase, ctx: *FrontendSettingsContext) bool {
-    return switch (phase) {
-        .preflight => frontendSettingsRunPreflight(ctx),
-        .execution => frontendSettingsRunExecution(ctx),
-        .completion => frontendSettingsRunCompletion(ctx),
-    };
-}
-
-fn frontendSettingsExecutePhaseWithTelemetry(phase: FrontendSettingsPhase, ctx: *FrontendSettingsContext, telemetry: *FrontendSettingsTelemetry) bool {
-    if (!frontendSettingsPhaseCanRun(telemetry.*, phase)) {
-        return false;
-    }
-    frontendSettingsTelemetryStart(telemetry, phase);
-    if (!frontendSettingsExecutePhase(phase, ctx)) {
-        frontendSettingsTelemetryAbort(telemetry);
-        return false;
-    }
-    frontendSettingsTelemetryComplete(telemetry, phase);
-    return true;
-}
-
-fn frontendSettingsTelemetryPipeline(command: FrontendSettingsCommand, value: u16) void {
-    var ctx = frontendSettingsContextInit(command, value);
-    var telemetry = frontendSettingsTelemetryInit();
-    const plan = frontendSettingsPlanBuild();
-    for (plan.phases) |phase| {
-        if (!frontendSettingsExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
-            return;
-        }
-    }
-}
-
-fn frontendSettingsUseTelemetryPipeline() bool {
-    return true;
-}
-
-fn frontendSettingsDispatch(command: FrontendSettingsCommand, value: u16) void {
-    if (frontendSettingsUseTelemetryPipeline()) {
-        frontendSettingsTelemetryPipeline(command, value);
-        return;
-    }
-    var ctx = frontendSettingsContextInit(command, value);
-    _ = frontendSettingsExecuteStage(.decode, &ctx);
-    _ = frontendSettingsExecuteStage(.validate, &ctx);
-    _ = frontendSettingsExecuteStage(.apply, &ctx);
-    _ = frontendSettingsExecuteStage(.finalize, &ctx);
-}
-
 pub export fn fnSetGapChar(char_param: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_gap_char, char_param);
+    frontend_settings.run(.set_gap_char, char_param);
 }
 
 pub export fn fnSettingsDispFormatGrpL(param: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_group_left, param);
+    frontend_settings.run(.set_group_left, param);
 }
 
 pub export fn fnSettingsDispFormatGrp1Lo(param: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_group_1lo, param);
+    frontend_settings.run(.set_group_1lo, param);
 }
 
 pub export fn fnSettingsDispFormatGrp1L(param: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_group_1l, param);
+    frontend_settings.run(.set_group_1l, param);
 }
 
 pub export fn fnSettingsDispFormatGrpR(param: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_group_right, param);
+    frontend_settings.run(.set_group_right, param);
 }
 
 pub export fn fnMenuGapL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.menu_gap_l, 0);
+    frontend_settings.run(.menu_gap_l, 0);
 }
 
 pub export fn fnMenuGapRX(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.menu_gap_rx, 0);
+    frontend_settings.run(.menu_gap_rx, 0);
 }
 
 pub export fn fnMenuGapR(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.menu_gap_r, 0);
+    frontend_settings.run(.menu_gap_r, 0);
 }
 
 pub export fn fnIntegerMode(mode: u16) callconv(.c) void {
-    frontendSettingsDispatch(.integer_mode, mode);
+    frontend_settings.run(.integer_mode, mode);
 }
 
 pub export fn fnWho(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.who, 0);
+    frontend_settings.run(.who, 0);
 }
 
 pub export fn fnVersion(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.version, 0);
+    frontend_settings.run(.version, 0);
 }
 
 pub export fn fnSetRoundingMode(rm: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_rounding_mode, rm);
+    frontend_settings.run(.set_rounding_mode, rm);
 }
 
 pub export fn fnSetSignificantDigits(s: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_significant_digits, s);
+    frontend_settings.run(.set_significant_digits, s);
 }
 
 pub export fn fnSetBaseNr(s: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_base_nr, s);
+    frontend_settings.run(.set_base_nr, s);
 }
 
 pub export fn fnSetFractionDigits(s: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_fraction_digits, s);
+    frontend_settings.run(.set_fraction_digits, s);
 }
 
 pub export fn fnAngularMode(am: u16) callconv(.c) void {
-    frontendSettingsDispatch(.angular_mode, am);
+    frontend_settings.run(.angular_mode, am);
 }
 
 pub export fn fnFractionType(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.fraction_type, 0);
+    frontend_settings.run(.fraction_type, 0);
 }
 
 pub export fn fnRange(r: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_range, r);
+    frontend_settings.run(.set_range, r);
 }
 
 pub export fn fnHide(h: u16) callconv(.c) void {
-    frontendSettingsDispatch(.set_hide, h);
+    frontend_settings.run(.set_hide, h);
 }
 
 pub export fn fnConfirmationYes(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.confirmation_yes, 0);
+    frontend_settings.run(.confirmation_yes, 0);
 }
 
 pub export fn fnConfirmationNo(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.confirmation_no, 0);
+    frontend_settings.run(.confirmation_no, 0);
 }
 
 pub export fn fnGetRange(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.get_range, 0);
+    frontend_settings.run(.get_range, 0);
 }
 
 pub export fn fnGetHide(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.get_hide, 0);
+    frontend_settings.run(.get_hide, 0);
 }
 
 pub export fn fnGetLastErr(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    frontendSettingsDispatch(.get_last_error, 0);
+    frontend_settings.run(.get_last_error, 0);
 }
 
 const ClearAllStage = enum {
