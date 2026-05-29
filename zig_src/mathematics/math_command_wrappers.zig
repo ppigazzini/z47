@@ -5740,51 +5740,14 @@ pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) v
     check_value_owned.checkSpecial();
 }
 
-fn tryCheckZeroScalar(neg: bool) bool {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    switch (register_data_type) {
-        runtime.dtLongInteger => {
-            var value: runtime.longInteger_t = undefined;
-            runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
-            defer runtime.__gmpz_clear(&value[0]);
-            runtime.setTemporaryInformation(!neg and value[0]._mp_size == 0);
-            return true;
-        },
-        runtime.dtShortInteger => {
-            var sign: i16 = 0;
-            var value: u64 = 0;
-            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
-            runtime.setTemporaryInformation(value == 0 and sign == @intFromBool(neg));
-            return true;
-        },
-        runtime.dtComplex34 => {
-            const value = runtime.registerComplex34Ptr(runtime.REGISTER_X);
-            runtime.setTemporaryInformation(runtime.real34IsZero(&value.real) and runtime.real34IsZero(&value.imag) and (runtime.real34IsNegative(&value.real) == neg or runtime.real34IsNegative(&value.imag) == neg));
-            return true;
-        },
-        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
-            runtime.setTemporaryInformation(runtime.real34IsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X)) == neg and runtime.real34IsZero(runtime.registerReal34Ptr(runtime.REGISTER_X)));
-            return true;
-        },
-        else => return false,
-    }
-}
-
 pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-
-    if (!tryCheckZeroScalar(false)) {
-        compareTypeErrorX();
-    }
+    check_value_owned.checkPlusZero();
 }
 
 pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-
-    if (!tryCheckZeroScalar(true)) {
-        compareTypeErrorX();
-    }
+    check_value_owned.checkMinusZero();
 }
 
 fn pushGetTypeIntegerOut(value: u32) void {

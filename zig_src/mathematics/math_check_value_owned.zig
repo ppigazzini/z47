@@ -6,6 +6,11 @@ const SpecialKind = enum {
     special,
 };
 
+const ZeroSign = enum {
+    plus,
+    minus,
+};
+
 const CHECK_INTEGER: u16 = 0;
 const CHECK_INTEGER_EVEN: u16 = 1;
 const CHECK_INTEGER_ODD: u16 = 2;
@@ -108,6 +113,39 @@ fn tryCheckForZero(mode: u16) bool {
         },
         runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
             setCheckForZeroResult(mode, runtime.real34IsZero(runtime.registerReal34Ptr(runtime.REGISTER_X)), true);
+            return true;
+        },
+        else => return false,
+    }
+}
+
+fn tryCheckSignedZero(comptime sign: ZeroSign) bool {
+    const negative = sign == .minus;
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    switch (register_data_type) {
+        runtime.dtLongInteger => {
+            var value: runtime.longInteger_t = undefined;
+            runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+            defer runtime.__gmpz_clear(&value[0]);
+
+            runtime.setTemporaryInformation(!negative and value[0]._mp_size == 0);
+            return true;
+        },
+        runtime.dtShortInteger => {
+            var stored_sign: i16 = 0;
+            var value: u64 = 0;
+            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &stored_sign, &value);
+            runtime.setTemporaryInformation(value == 0 and stored_sign == @intFromBool(negative));
+            return true;
+        },
+        runtime.dtComplex34 => {
+            const value = runtime.registerComplex34Ptr(runtime.REGISTER_X);
+            runtime.setTemporaryInformation(runtime.real34IsZero(&value.real) and runtime.real34IsZero(&value.imag) and (runtime.real34IsNegative(&value.real) == negative or runtime.real34IsNegative(&value.imag) == negative));
+            return true;
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
+            runtime.setTemporaryInformation(runtime.real34IsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X)) == negative and runtime.real34IsZero(runtime.registerReal34Ptr(runtime.REGISTER_X)));
             return true;
         },
         else => return false,
@@ -228,6 +266,18 @@ pub fn checkInteger(mode: u16) void {
 
 pub fn checkForZero(mode: u16) void {
     if (!tryCheckForZero(mode)) {
+        typeErrorX();
+    }
+}
+
+pub fn checkPlusZero() void {
+    if (!tryCheckSignedZero(.plus)) {
+        typeErrorX();
+    }
+}
+
+pub fn checkMinusZero() void {
+    if (!tryCheckSignedZero(.minus)) {
         typeErrorX();
     }
 }
