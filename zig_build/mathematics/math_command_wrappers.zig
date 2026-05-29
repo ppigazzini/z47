@@ -65,6 +65,7 @@ fn addRuntimeObject(
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_wp34s_model", std.mem.endsWith(u8, name_prefix, "parity"));
     build_options.addOption(bool, "use_fake_wp34s_harness_surface", std.mem.eql(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "random-parity"));
+    build_options.addOption(bool, "export_public_ln_complex", true);
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{

@@ -76,7 +76,7 @@ fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t
     return runtime.realCompareLessThan(rhs, lhs);
 }
 
-fn lnRealValue(
+pub fn lnRealValue(
     x_in: *const runtime.real_t,
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,

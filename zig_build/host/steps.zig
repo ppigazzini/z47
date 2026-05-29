@@ -62,6 +62,7 @@ fn addMathLnComplexOracle(
     });
     const math_ln_complex_build_options = b.addOptions();
     math_ln_complex_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    math_ln_complex_build_options.addOption(bool, "export_public_ln_complex", false);
     math_ln_complex_module.addOptions("math_command_wrappers_build_options", math_ln_complex_build_options);
     const math_ln_complex_object = b.addObject(.{
         .name = "math-ln-complex-oracle-owned",
@@ -124,6 +125,7 @@ fn addMathRealRectangularToPolarOracle(
     });
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_build_options.addOption(bool, "export_public_ln_complex", false);
     helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
     const helper_object = b.addObject(.{
         .name = "math-real-rectangular-to-polar-oracle-owned",
@@ -186,6 +188,7 @@ fn addMathAtan2Oracle(
     });
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_build_options.addOption(bool, "export_public_ln_complex", false);
     helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
     const helper_object = b.addObject(.{
         .name = "math-atan2-oracle-owned",
@@ -248,6 +251,7 @@ fn addMathAtanOracle(
     });
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_build_options.addOption(bool, "export_public_ln_complex", false);
     helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
     const helper_object = b.addObject(.{
         .name = "math-atan-oracle-owned",
@@ -310,6 +314,7 @@ fn addMathRealTrigPrimitivesOracle(
     });
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_build_options.addOption(bool, "export_public_ln_complex", false);
     helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
     const helper_object = b.addObject(.{
         .name = "math-real-trig-primitives-oracle-owned",
@@ -372,6 +377,7 @@ fn addMathCircularTrigOracle(
     });
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    helper_build_options.addOption(bool, "export_public_ln_complex", false);
     helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
     const helper_object = b.addObject(.{
         .name = "math-circular-trig-oracle-owned",
