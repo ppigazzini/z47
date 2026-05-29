@@ -3,6 +3,7 @@ const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
+const matrix_nav = @import("frontier_matrix_nav_owned.zig");
 const matrix_mim_run = @import("frontier_matrix_mim_run_owned.zig");
 const plot_regression = @import("frontier_plot_regression_owned.zig");
 const print_register = @import("frontier_print_register_owned.zig");
@@ -739,102 +740,6 @@ pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(
     z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
 }
 
-fn matrixLastRow(rows: u16) i16 {
-    return @as(i16, @intCast(rows - 1));
-}
-
-fn matrixLastCol(cols: u16) i16 {
-    return @as(i16, @intCast(cols - 1));
-}
-
-fn matrixWrapEdgeFlag() void {
-    setSystemFlag(FLAG_WRAPEDG);
-}
-
-fn matrixWrapEndFlag() void {
-    setSystemFlag(FLAG_WRAPEND);
-}
-
-fn matrixAtTopLeft() bool {
-    return getIRegisterAsInt(true) == 0 and getJRegisterAsInt(true) == 0;
-}
-
-fn matrixAtBottomRight(rows: u16, cols: u16) bool {
-    return getIRegisterAsInt(true) == matrixLastRow(rows) and getJRegisterAsInt(true) == matrixLastCol(cols);
-}
-
-fn matrixAdvanceIByOneWithGrow(rows: u16) void {
-    const reached_last_row = getIRegisterAsInt(true) == matrixLastRow(rows);
-    const should_wrap_to_top = !getSystemFlag(@as(c_int, @intCast(FLAG_GROW))) and reached_last_row;
-    if (should_wrap_to_top) {
-        setIRegisterAsInt(true, 0);
-    } else {
-        setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
-    }
-}
-
-fn matrixDecIWithBottomWrap(rows: u16) void {
-    if (getIRegisterAsInt(true) == 0) {
-        setIRegisterAsInt(true, matrixLastRow(rows));
-    } else {
-        setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
-    }
-}
-
-fn matrixIncJWithLeftWrap(cols: u16) void {
-    if (getJRegisterAsInt(true) == matrixLastCol(cols)) {
-        setJRegisterAsInt(true, 0);
-    } else {
-        setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
-    }
-}
-
-fn matrixDecJWithRightWrap(cols: u16) void {
-    if (getJRegisterAsInt(true) == 0) {
-        setJRegisterAsInt(true, matrixLastCol(cols));
-    } else {
-        setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
-    }
-}
-
-fn matrixWrapNegativeI(rows: u16, cols: u16) void {
-    setIRegisterAsInt(true, matrixLastRow(rows));
-    matrixWrapEdgeFlag();
-    matrixDecJWithRightWrap(cols);
-    if (matrixAtBottomRight(rows, cols)) {
-        matrixWrapEndFlag();
-    }
-}
-
-fn matrixWrapOverflowI(rows: u16, cols: u16) void {
-    _ = rows;
-    setIRegisterAsInt(true, 0);
-    matrixWrapEdgeFlag();
-    matrixIncJWithLeftWrap(cols);
-    if (matrixAtTopLeft()) {
-        matrixWrapEndFlag();
-    }
-}
-
-fn matrixWrapNegativeJ(rows: u16, cols: u16) void {
-    setJRegisterAsInt(true, matrixLastCol(cols));
-    matrixWrapEdgeFlag();
-    matrixDecIWithBottomWrap(rows);
-    if (matrixAtBottomRight(rows, cols)) {
-        matrixWrapEndFlag();
-    }
-}
-
-fn matrixWrapOverflowJ(rows: u16, cols: u16) void {
-    _ = cols;
-    setJRegisterAsInt(true, 0);
-    matrixWrapEdgeFlag();
-    matrixAdvanceIByOneWithGrow(rows);
-    if (matrixAtTopLeft()) {
-        matrixWrapEndFlag();
-    }
-}
-
 fn matrixModeUndefinedError() void {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
@@ -1049,136 +954,8 @@ fn matrixEditorRefreshDispatcher() void {
     matrixEditorRefreshView();
 }
 
-const MatrixWrapStage = enum {
-    clear_flags,
-    handle_i,
-    handle_j,
-    complete,
-};
-
-const MatrixWrapContext = struct {
-    rows: u16,
-    cols: u16,
-    wrapped_i: bool,
-    wrapped_j: bool,
-};
-
-fn matrixWrapContextInit(rows: u16, cols: u16) MatrixWrapContext {
-    return .{
-        .rows = rows,
-        .cols = cols,
-        .wrapped_i = false,
-        .wrapped_j = false,
-    };
-}
-
-fn matrixWrapContextSetWrappedI(ctx: *MatrixWrapContext) void {
-    ctx.wrapped_i = true;
-}
-
-fn matrixWrapContextSetWrappedJ(ctx: *MatrixWrapContext) void {
-    ctx.wrapped_j = true;
-}
-
-fn matrixWrapClearFlags() void {
-    clearSystemFlag(FLAG_WRAPEDG);
-    clearSystemFlag(FLAG_WRAPEND);
-}
-
-fn matrixWrapHandleINegative(ctx: *MatrixWrapContext) void {
-    matrixWrapNegativeI(ctx.rows, ctx.cols);
-    matrixWrapContextSetWrappedI(ctx);
-}
-
-fn matrixWrapHandleIOverflow(ctx: *MatrixWrapContext) void {
-    matrixWrapOverflowI(ctx.rows, ctx.cols);
-    matrixWrapContextSetWrappedI(ctx);
-}
-
-fn matrixWrapHandleJNegative(ctx: *MatrixWrapContext) void {
-    matrixWrapNegativeJ(ctx.rows, ctx.cols);
-    matrixWrapContextSetWrappedJ(ctx);
-}
-
-fn matrixWrapHandleJOverflow(ctx: *MatrixWrapContext) void {
-    matrixWrapOverflowJ(ctx.rows, ctx.cols);
-    matrixWrapContextSetWrappedJ(ctx);
-}
-
-fn matrixWrapHandleIStage(ctx: *MatrixWrapContext) void {
-    if (getIRegisterAsInt(true) < 0) {
-        matrixWrapHandleINegative(ctx);
-        return;
-    }
-    if (getIRegisterAsInt(true) == @as(i16, @intCast(ctx.rows))) {
-        matrixWrapHandleIOverflow(ctx);
-    }
-}
-
-fn matrixWrapHandleJStage(ctx: *MatrixWrapContext) void {
-    if (getJRegisterAsInt(true) < 0) {
-        matrixWrapHandleJNegative(ctx);
-        return;
-    }
-    if (getJRegisterAsInt(true) == @as(i16, @intCast(ctx.cols))) {
-        matrixWrapHandleJOverflow(ctx);
-    }
-}
-
-fn matrixWrapStageSequence() [4]MatrixWrapStage {
-    return .{ .clear_flags, .handle_i, .handle_j, .complete };
-}
-
-fn matrixWrapExecuteStage(stage: MatrixWrapStage, ctx: *MatrixWrapContext) void {
-    switch (stage) {
-        .clear_flags => matrixWrapClearFlags(),
-        .handle_i => matrixWrapHandleIStage(ctx),
-        .handle_j => matrixWrapHandleJStage(ctx),
-        .complete => {},
-    }
-}
-
-fn matrixWrapPipelineExpanded(rows: u16, cols: u16) bool {
-    var ctx = matrixWrapContextInit(rows, cols);
-    const stages = matrixWrapStageSequence();
-    for (stages) |stage| {
-        matrixWrapExecuteStage(stage, &ctx);
-    }
-    return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
-}
-
-fn matrixWrapUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixWrapDispatch(rows: u16, cols: u16) bool {
-    if (matrixWrapUseExpandedPipeline()) {
-        return matrixWrapPipelineExpanded(rows, cols);
-    }
-
-    matrixWrapClearFlags();
-
-    if (getIRegisterAsInt(true) < 0) {
-        matrixWrapNegativeI(rows, cols);
-    } else {
-        if (getIRegisterAsInt(true) == @as(i16, @intCast(rows))) {
-            matrixWrapOverflowI(rows, cols);
-        }
-    }
-
-    if (getJRegisterAsInt(true) < 0) {
-        matrixWrapNegativeJ(rows, cols);
-    } else {
-        if (getJRegisterAsInt(true) == @as(i16, @intCast(cols))) {
-            matrixWrapOverflowJ(rows, cols);
-        }
-    }
-
-    return getIRegisterAsInt(true) == @as(i16, @intCast(rows));
-}
-
 pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
-    return matrixWrapDispatch(rows, cols);
+    return matrix_nav.wrap(rows, cols);
 }
 
 pub export fn showMatrixEditor() callconv(.c) void {
@@ -1648,87 +1425,19 @@ pub export fn mimEnter(commit: bool) callconv(.c) void {
 }
 
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
-    matrixIncDecDispatchPipeline(.row, mode);
+    if (!matrixEnsureEditorModeOrReturn()) {
+        return;
+    }
+
+    matrix_nav.incDec(.row, mode);
 }
 
 pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
-    matrixIncDecDispatchPipeline(.col, mode);
-}
-
-const MatrixIncDecAxis = enum {
-    row,
-    col,
-};
-
-const MatrixIncDecStage = enum {
-    validate_mode,
-    apply_step,
-};
-
-const MatrixIncDecContext = struct {
-    axis: MatrixIncDecAxis,
-    mode: u16,
-};
-
-fn matrixIncDecContextInit(axis: MatrixIncDecAxis, mode: u16) MatrixIncDecContext {
-    return .{ .axis = axis, .mode = mode };
-}
-
-fn matrixIncDecValidateMode() bool {
-    if (calcMode == CM_MIM) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn matrixIncDecApplyStep(ctx: MatrixIncDecContext) void {
-    switch (ctx.axis) {
-        .row => z47_frontier_matrix_inc_dec_i(ctx.mode),
-        .col => z47_frontier_matrix_inc_dec_j(ctx.mode),
-    }
-}
-
-fn matrixIncDecExecuteStage(stage: MatrixIncDecStage, ctx: MatrixIncDecContext) bool {
-    switch (stage) {
-        .validate_mode => return matrixIncDecValidateMode(),
-        .apply_step => matrixIncDecApplyStep(ctx),
-    }
-    return true;
-}
-
-fn matrixIncDecStageSequence() [2]MatrixIncDecStage {
-    return .{ .validate_mode, .apply_step };
-}
-
-fn matrixIncDecPipeline(axis: MatrixIncDecAxis, mode: u16) void {
-    const ctx = matrixIncDecContextInit(axis, mode);
-    const stages = matrixIncDecStageSequence();
-    for (stages) |stage| {
-        if (!matrixIncDecExecuteStage(stage, ctx)) {
-            return;
-        }
-    }
-}
-
-fn matrixIncDecUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixIncDecDispatchPipeline(axis: MatrixIncDecAxis, mode: u16) void {
-    if (matrixIncDecUseExpandedPipeline()) {
-        matrixIncDecPipeline(axis, mode);
+    if (!matrixEnsureEditorModeOrReturn()) {
         return;
     }
 
-    if (calcMode == CM_MIM) {
-        switch (axis) {
-            .row => z47_frontier_matrix_inc_dec_i(mode),
-            .col => z47_frontier_matrix_inc_dec_j(mode),
-        }
-        return;
-    }
-    matrixModeUndefinedError();
+    matrix_nav.incDec(.col, mode);
 }
 
 const MatrixMutation = enum {
