@@ -1,4 +1,5 @@
 const std = @import("std");
+const display_format = @import("frontier_display_format_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
 const print_all_regs = @import("frontier_print_all_regs_owned.zig");
@@ -424,17 +425,6 @@ extern var numberOfPrograms: u16;
 extern fn tmpString_csv_out(nn: u8) void;
 extern fn fnShowVersion(option: u16) void;
 
-fn clampDisplayDigits(display_format_n: u16) u8 {
-    const clamped: u16 = if (display_format_n > DSP_MAX) DSP_MAX else display_format_n;
-    return @as(u8, @intCast(clamped));
-}
-
-fn displayFormatReset(display_format_n: u16) void {
-    displayFormatDigits = clampDisplayDigits(display_format_n);
-    clearSystemFlag(FLAG_FRACT);
-    DM_Cycling = 0;
-}
-
 fn isPrintableScalarType(dt: u32) bool {
     return switch (dt) {
         dtLongInteger, dtReal34, dtShortInteger, dtString, dtDate, dtTime => true,
@@ -461,397 +451,36 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
-const DisplayFormatCommand = enum {
-    fix,
-    sci,
-    eng,
-    all,
-    sig_fig,
-    unit,
-    dsp,
-    time,
-};
-
-const DisplayFormatStage = enum {
-    clamp_digits,
-    reset_fraction_mode,
-    reset_cycle_mode,
-    apply_command,
-    refresh_state,
-};
-
-const DisplayFormatPhase = enum {
-    prepare,
-    apply,
-    finalize,
-};
-
-const DisplayFormatPlan = struct {
-    phases: [3]DisplayFormatPhase,
-};
-
-const DisplayFormatTelemetry = struct {
-    prepare_started: bool,
-    prepare_completed: bool,
-    apply_started: bool,
-    apply_completed: bool,
-    finalize_started: bool,
-    finalize_completed: bool,
-    aborted: bool,
-};
-
-const DisplayFormatContext = struct {
-    command: DisplayFormatCommand,
-    requested_digits: u16,
-    clamped_digits: u8,
-    should_reset_fraction: bool,
-    should_reset_cycle: bool,
-    should_refresh: bool,
-};
-
-fn displayFormatContextInit(command: DisplayFormatCommand, display_format_n: u16) DisplayFormatContext {
-    return .{
-        .command = command,
-        .requested_digits = display_format_n,
-        .clamped_digits = 0,
-        .should_reset_fraction = true,
-        .should_reset_cycle = false,
-        .should_refresh = true,
-    };
-}
-
-fn displayFormatPlanBuild() DisplayFormatPlan {
-    return .{ .phases = .{ .prepare, .apply, .finalize } };
-}
-
-fn displayFormatTelemetryInit() DisplayFormatTelemetry {
-    return .{
-        .prepare_started = false,
-        .prepare_completed = false,
-        .apply_started = false,
-        .apply_completed = false,
-        .finalize_started = false,
-        .finalize_completed = false,
-        .aborted = false,
-    };
-}
-
-fn displayFormatTelemetryStart(telemetry: *DisplayFormatTelemetry, phase: DisplayFormatPhase) void {
-    switch (phase) {
-        .prepare => telemetry.prepare_started = true,
-        .apply => telemetry.apply_started = true,
-        .finalize => telemetry.finalize_started = true,
-    }
-}
-
-fn displayFormatTelemetryComplete(telemetry: *DisplayFormatTelemetry, phase: DisplayFormatPhase) void {
-    switch (phase) {
-        .prepare => telemetry.prepare_completed = true,
-        .apply => telemetry.apply_completed = true,
-        .finalize => telemetry.finalize_completed = true,
-    }
-}
-
-fn displayFormatTelemetryAbort(telemetry: *DisplayFormatTelemetry) void {
-    telemetry.aborted = true;
-}
-
-fn displayFormatPhaseCanRun(telemetry: DisplayFormatTelemetry, phase: DisplayFormatPhase) bool {
-    return switch (phase) {
-        .prepare => true,
-        .apply => telemetry.prepare_completed and !telemetry.aborted,
-        .finalize => telemetry.apply_completed and !telemetry.aborted,
-    };
-}
-
-fn displayFormatCommandNeedsFractionReset(command: DisplayFormatCommand) bool {
-    return switch (command) {
-        .time => false,
-        else => true,
-    };
-}
-
-fn displayFormatCommandNeedsCycleReset(command: DisplayFormatCommand) bool {
-    return switch (command) {
-        .fix, .sci, .eng, .all, .sig_fig, .unit => true,
-        else => false,
-    };
-}
-
-fn displayFormatCommandNeedsRefresh(command: DisplayFormatCommand) bool {
-    return switch (command) {
-        .time => false,
-        else => true,
-    };
-}
-
-fn displayFormatComputeCommandPolicy(ctx: *DisplayFormatContext) void {
-    ctx.should_reset_fraction = displayFormatCommandNeedsFractionReset(ctx.command);
-    ctx.should_reset_cycle = displayFormatCommandNeedsCycleReset(ctx.command);
-    ctx.should_refresh = displayFormatCommandNeedsRefresh(ctx.command);
-}
-
-fn displayFormatClampDigits(ctx: *DisplayFormatContext) void {
-    ctx.clamped_digits = clampDisplayDigits(ctx.requested_digits);
-}
-
-fn displayFormatResetFractionModeIfNeeded(ctx: DisplayFormatContext) void {
-    if (!ctx.should_reset_fraction) {
-        return;
-    }
-    clearSystemFlag(FLAG_FRACT);
-}
-
-fn displayFormatResetCycleModeIfNeeded(ctx: DisplayFormatContext) void {
-    if (!ctx.should_reset_cycle) {
-        return;
-    }
-    DM_Cycling = 0;
-}
-
-fn displayFormatSetModeFix() void {
-    displayFormat = DF_FIX;
-}
-
-fn displayFormatSetModeSci() void {
-    displayFormat = DF_SCI;
-}
-
-fn displayFormatSetModeEng() void {
-    displayFormat = DF_ENG;
-}
-
-fn displayFormatSetModeAll() void {
-    displayFormat = DF_ALL;
-}
-
-fn displayFormatSetModeSigFig() void {
-    displayFormat = DF_SF;
-}
-
-fn displayFormatSetModeUnit() void {
-    displayFormat = DF_UN;
-}
-
-fn displayFormatApplyFix(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeFix();
-}
-
-fn displayFormatApplySci(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeSci();
-}
-
-fn displayFormatApplyEng(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeEng();
-}
-
-fn displayFormatApplyAll(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeAll();
-}
-
-fn displayFormatApplySigFig(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeSigFig();
-}
-
-fn displayFormatApplyUnit(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-    displayFormatSetModeUnit();
-}
-
-fn displayFormatApplyDsp(ctx: DisplayFormatContext) void {
-    displayFormatDigits = ctx.clamped_digits;
-}
-
-fn displayFormatApplyTime(ctx: DisplayFormatContext) void {
-    timeDisplayFormatDigits = ctx.clamped_digits;
-}
-
-fn displayFormatApplyCommand(ctx: DisplayFormatContext) void {
-    switch (ctx.command) {
-        .fix => displayFormatApplyFix(ctx),
-        .sci => displayFormatApplySci(ctx),
-        .eng => displayFormatApplyEng(ctx),
-        .all => displayFormatApplyAll(ctx),
-        .sig_fig => displayFormatApplySigFig(ctx),
-        .unit => displayFormatApplyUnit(ctx),
-        .dsp => displayFormatApplyDsp(ctx),
-        .time => displayFormatApplyTime(ctx),
-    }
-}
-
-fn displayFormatRefreshStateIfNeeded(ctx: DisplayFormatContext) void {
-    if (ctx.should_refresh) {
-        fnRefreshState();
-    }
-}
-
-fn displayFormatExecuteStage(stage: DisplayFormatStage, ctx: *DisplayFormatContext) void {
-    switch (stage) {
-        .clamp_digits => displayFormatClampDigits(ctx),
-        .reset_fraction_mode => displayFormatResetFractionModeIfNeeded(ctx.*),
-        .reset_cycle_mode => displayFormatResetCycleModeIfNeeded(ctx.*),
-        .apply_command => displayFormatApplyCommand(ctx.*),
-        .refresh_state => displayFormatRefreshStateIfNeeded(ctx.*),
-    }
-}
-
-fn displayFormatPrepareStages() [3]DisplayFormatStage {
-    return .{
-        .clamp_digits,
-        .reset_fraction_mode,
-        .reset_cycle_mode,
-    };
-}
-
-fn displayFormatApplyStages() [1]DisplayFormatStage {
-    return .{.apply_command};
-}
-
-fn displayFormatFinalizeStages() [1]DisplayFormatStage {
-    return .{.refresh_state};
-}
-
-fn displayFormatRunStageList(comptime count: usize, stages: [count]DisplayFormatStage, ctx: *DisplayFormatContext) void {
-    for (stages) |stage| {
-        displayFormatExecuteStage(stage, ctx);
-    }
-}
-
-fn displayFormatRunPrepare(ctx: *DisplayFormatContext) void {
-    const stages = displayFormatPrepareStages();
-    displayFormatRunStageList(stages.len, stages, ctx);
-}
-
-fn displayFormatRunApply(ctx: *DisplayFormatContext) void {
-    const stages = displayFormatApplyStages();
-    displayFormatRunStageList(stages.len, stages, ctx);
-}
-
-fn displayFormatRunFinalize(ctx: *DisplayFormatContext) void {
-    const stages = displayFormatFinalizeStages();
-    displayFormatRunStageList(stages.len, stages, ctx);
-}
-
-fn displayFormatExecutePhase(phase: DisplayFormatPhase, ctx: *DisplayFormatContext) void {
-    switch (phase) {
-        .prepare => displayFormatRunPrepare(ctx),
-        .apply => displayFormatRunApply(ctx),
-        .finalize => displayFormatRunFinalize(ctx),
-    }
-}
-
-fn displayFormatExecutePhaseWithTelemetry(phase: DisplayFormatPhase, ctx: *DisplayFormatContext, telemetry: *DisplayFormatTelemetry) bool {
-    if (!displayFormatPhaseCanRun(telemetry.*, phase)) {
-        return false;
-    }
-
-    displayFormatTelemetryStart(telemetry, phase);
-    displayFormatExecutePhase(phase, ctx);
-    displayFormatTelemetryComplete(telemetry, phase);
-    return true;
-}
-
-fn displayFormatTelemetryPipeline(command: DisplayFormatCommand, display_format_n: u16) void {
-    var ctx = displayFormatContextInit(command, display_format_n);
-    displayFormatComputeCommandPolicy(&ctx);
-
-    var telemetry = displayFormatTelemetryInit();
-    const plan = displayFormatPlanBuild();
-    for (plan.phases) |phase| {
-        if (!displayFormatExecutePhaseWithTelemetry(phase, &ctx, &telemetry)) {
-            displayFormatTelemetryAbort(&telemetry);
-            return;
-        }
-    }
-}
-
-fn displayFormatUseTelemetryPipeline() bool {
-    return true;
-}
-
-fn displayFormatDispatch(command: DisplayFormatCommand, display_format_n: u16) void {
-    if (displayFormatUseTelemetryPipeline()) {
-        displayFormatTelemetryPipeline(command, display_format_n);
-        return;
-    }
-
-    switch (command) {
-        .fix => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_FIX;
-            fnRefreshState();
-        },
-        .sci => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_SCI;
-            fnRefreshState();
-        },
-        .eng => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_ENG;
-            fnRefreshState();
-        },
-        .all => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_ALL;
-            fnRefreshState();
-        },
-        .sig_fig => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_SF;
-            fnRefreshState();
-        },
-        .unit => {
-            displayFormatReset(display_format_n);
-            displayFormat = DF_UN;
-            fnRefreshState();
-        },
-        .dsp => {
-            displayFormatDigits = clampDisplayDigits(display_format_n);
-            clearSystemFlag(FLAG_FRACT);
-            fnRefreshState();
-        },
-        .time => {
-            timeDisplayFormatDigits = clampDisplayDigits(display_format_n);
-        },
-    }
-}
-
 pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.fix, display_format_n);
+    display_format.run(.fix, display_format_n);
 }
 
 pub export fn fnDisplayFormatSci(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.sci, display_format_n);
+    display_format.run(.sci, display_format_n);
 }
 
 pub export fn fnDisplayFormatEng(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.eng, display_format_n);
+    display_format.run(.eng, display_format_n);
 }
 
 pub export fn fnDisplayFormatAll(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.all, display_format_n);
+    display_format.run(.all, display_format_n);
 }
 
 pub export fn fnDisplayFormatSigFig(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.sig_fig, display_format_n);
+    display_format.run(.sig_fig, display_format_n);
 }
 
 pub export fn fnDisplayFormatUnit(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.unit, display_format_n);
+    display_format.run(.unit, display_format_n);
 }
 
 pub export fn fnDisplayFormatDsp(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.dsp, display_format_n);
+    display_format.run(.dsp, display_format_n);
 }
 
 pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
-    displayFormatDispatch(.time, display_format_n);
+    display_format.run(.time, display_format_n);
 }
 
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
