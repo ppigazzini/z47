@@ -48,7 +48,7 @@ pub fn c47Wp34sAsinZig(
     runtime.realSquareRoot(&z, &z, real_context);
     runtime.realAdd(&z, runtime.z47_math_wrappers_const_1(), &z, real_context);
     runtime.realDivide(x, &z, &z, real_context);
-    atan_owned.c47Wp34sAtanZig(&z, &abs_x, real_context);
+    atan_owned.arctanReal(&z, &abs_x, real_context);
     runtime.realAdd(&abs_x, &abs_x, angle, real_context);
 }
 
@@ -86,7 +86,7 @@ pub fn c47Wp34sAcosZig(
     runtime.realSquareRoot(&z, &z, real_context);
     runtime.realSubtract(runtime.z47_math_wrappers_const_1(), x, &abs_x, real_context);
     runtime.realDivide(&abs_x, &z, &z, real_context);
-    atan_owned.c47Wp34sAtanZig(&z, &abs_x, real_context);
+    atan_owned.arctanReal(&z, &abs_x, real_context);
     runtime.realAdd(&abs_x, &abs_x, angle, real_context);
 }
 

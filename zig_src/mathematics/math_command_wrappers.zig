@@ -19,29 +19,29 @@ const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const long_integer_power_negative_exponent: i32 = -1;
 
-const atan2Retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
-const addRetained = runtime.retained.z47_math_wrappers_retained_fnAdd;
-const subtractRetained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
-const multiplyRetained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
-const divideRetained = runtime.retained.z47_math_wrappers_retained_fnDivide;
-const integerDivideRetained = runtime.retained.z47_math_wrappers_retained_fnIDiv;
-const integerDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnIDivR;
-const doubleMultiplyRetained = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
-const roundRetained = runtime.retained.z47_math_wrappers_retained_fnRound;
-const decrementRetained = runtime.retained.z47_math_wrappers_retained_fnDec;
-const incrementRetained = runtime.retained.z47_math_wrappers_retained_fnInc;
-const compareLessThanRetained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
-const compareLessEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
-const compareGreaterThanRetained = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
-const compareGreaterEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
-const compareEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
-const compareNotEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
-const compareAlmostEqualRetained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
-const doubleDivideRetained = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
-const doubleDivideRemainderRetained = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
-const toPolar2Retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
-const toRect2Retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
-const squareRootRetained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
+const atan2_retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
+const add_retained = runtime.retained.z47_math_wrappers_retained_fnAdd;
+const subtract_retained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
+const multiply_retained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
+const divide_retained = runtime.retained.z47_math_wrappers_retained_fnDivide;
+const integer_divide_retained = runtime.retained.z47_math_wrappers_retained_fnIDiv;
+const integer_divide_remainder_retained = runtime.retained.z47_math_wrappers_retained_fnIDivR;
+const double_multiply_retained = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
+const round_retained = runtime.retained.z47_math_wrappers_retained_fnRound;
+const decrement_retained = runtime.retained.z47_math_wrappers_retained_fnDec;
+const increment_retained = runtime.retained.z47_math_wrappers_retained_fnInc;
+const compare_less_than_retained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
+const compare_less_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
+const compare_greater_than_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
+const compare_greater_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
+const compare_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
+const compare_not_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
+const compare_almost_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
+const double_divide_retained = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
+const double_divide_remainder_retained = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
+const to_polar2_retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
+const to_rect2_retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
+const square_root_retained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -2843,7 +2843,7 @@ fn arctanReal() callconv(.c) void {
             return;
         }
     } else {
-        atan_owned.c47Wp34sAtanZig(&x, &x, &runtime.ctxtReal39);
+        atan_owned.arctanReal(&x, &x, &runtime.ctxtReal39);
         runtime.convertAngleFromTo(&x, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     }
 
@@ -4603,7 +4603,7 @@ pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
 
     if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        atan2Retained(unused_but_mandatory_parameter);
+        atan2_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5434,7 +5434,7 @@ pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    addRetained(unused_but_mandatory_parameter);
+    add_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5450,7 +5450,7 @@ pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    subtractRetained(unused_but_mandatory_parameter);
+    subtract_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5466,7 +5466,7 @@ pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    multiplyRetained(unused_but_mandatory_parameter);
+    multiply_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5486,7 +5486,7 @@ pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    divideRetained(unused_but_mandatory_parameter);
+    divide_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5494,7 +5494,7 @@ pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    integerDivideRetained(unused_but_mandatory_parameter);
+    integer_divide_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5502,7 +5502,7 @@ pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    integerDivideRemainderRetained(unused_but_mandatory_parameter);
+    integer_divide_remainder_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -5511,13 +5511,13 @@ pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) vo
         return;
     }
 
-    doubleMultiplyRetained(unused_but_mandatory_parameter);
+    double_multiply_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        roundRetained(unused_but_mandatory_parameter);
+        round_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5651,7 +5651,7 @@ pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        decrementRetained(unused_but_mandatory_parameter);
+        decrement_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5660,7 +5660,7 @@ pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        incrementRetained(unused_but_mandatory_parameter);
+        increment_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5671,7 +5671,7 @@ pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareLessThanRetained(unused_but_mandatory_parameter);
+        compare_less_than_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5682,7 +5682,7 @@ pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) voi
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareLessEqualRetained(unused_but_mandatory_parameter);
+        compare_less_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5693,7 +5693,7 @@ pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) v
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareGreaterThanRetained(unused_but_mandatory_parameter);
+        compare_greater_than_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5704,7 +5704,7 @@ pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) 
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareGreaterEqualRetained(unused_but_mandatory_parameter);
+        compare_greater_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5715,7 +5715,7 @@ pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareEqualRetained(unused_but_mandatory_parameter);
+        compare_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5726,7 +5726,7 @@ pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void
     const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
 
     if (!isOwnedCompareRegister(regist)) {
-        compareNotEqualRetained(unused_but_mandatory_parameter);
+        compare_not_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -5739,7 +5739,7 @@ pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) v
     const regist_type = runtime.getRegisterDataType(regist);
 
     if (!isOwnedCompareRegister(regist) or !isOwnedAlmostEqualIntegerType(x_type) or !isOwnedAlmostEqualIntegerType(regist_type)) {
-        compareAlmostEqualRetained(unused_but_mandatory_parameter);
+        compare_almost_equal_retained(unused_but_mandatory_parameter);
         return;
     }
 
@@ -6386,7 +6386,7 @@ pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void
         return;
     }
 
-    doubleDivideRetained(unused_but_mandatory_parameter);
+    double_divide_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -6395,7 +6395,7 @@ pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv
         return;
     }
 
-    doubleDivideRemainderRetained(unused_but_mandatory_parameter);
+    double_divide_remainder_retained(unused_but_mandatory_parameter);
 }
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
@@ -6626,7 +6626,7 @@ pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void 
         return;
     }
 
-    toPolar2Retained(unused_but_mandatory_parameter);
+    to_polar2_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -6634,7 +6634,7 @@ pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    toRect2Retained(unused_but_mandatory_parameter);
+    to_rect2_retained(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -7402,7 +7402,7 @@ pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) voi
     _ = unused_but_mandatory_parameter;
 
     if (register_type == runtime.dtReal34Matrix or register_type == runtime.dtComplex34Matrix) {
-        squareRootRetained(0);
+        square_root_retained(0);
         return;
     }
 

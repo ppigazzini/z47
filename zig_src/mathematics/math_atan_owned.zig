@@ -15,7 +15,7 @@ fn isGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
     return !isLessEqual(lhs, rhs);
 }
 
-pub fn c47Wp34sAtanZig(
+pub fn arctanReal(
     x: *const runtime.real_t,
     angle: *runtime.real_t,
     real_context: *runtime.realContext_t,
