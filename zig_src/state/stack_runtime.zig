@@ -111,9 +111,6 @@ pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line:
 extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
-extern fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
-extern fn fnClearRegisters(confirmation: u16) callconv(.c) void;
-extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -133,10 +130,6 @@ pub extern fn fnRecall(reg: u16) void;
 pub extern fn recallStatsMatrix() void;
 pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
-pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
-pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
-pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
-pub extern fn z47_registers_retained_sort_reg(range_start: u16, range_end: u16) void;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
