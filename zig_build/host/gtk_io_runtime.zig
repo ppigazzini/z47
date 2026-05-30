@@ -1,4 +1,5 @@
 const std = @import("std");
+const base_dir_owned = @import("gtk_io_base_dir_owned.zig");
 const path_policy_owned = @import("gtk_io_path_policy_owned.zig");
 
 const FILE_ERROR: c_int = 0;
@@ -104,29 +105,6 @@ extern var calcModel: u8;
 extern var frmCalc: ?*GtkWidget;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 
-fn createDir(path: [*c]const u8) c_int {
-    const zpath: [*:0]const u8 = @ptrCast(path);
-    switch (std.posix.errno(std.posix.system.mkdir(zpath, 0o775))) {
-        .SUCCESS, .EXIST => return 0,
-        else => return -1,
-    }
-}
-
-fn parentWindow() ?*GtkWindow {
-    return if (frmCalc) |window| @ptrCast(window) else null;
-}
-
-fn populateProgramBaseDir(base_dir: [*c]u8, dir_name: [*c]const u8) c_int {
-    const current_dir = g_get_current_dir();
-    if (current_dir == null) return FILE_ERROR;
-    defer g_free(current_dir);
-
-    _ = strcpy(base_dir, current_dir);
-    _ = strcat(base_dir, "/");
-    _ = strcat(base_dir, dir_name);
-    return FILE_OK;
-}
-
 pub export fn file_selection_screen(
     title: [*c]const u8,
     base_dir: [*c]const u8,
@@ -144,7 +122,7 @@ pub export fn file_selection_screen(
 
     const native = gtk_file_chooser_native_new(
         title,
-        parentWindow(),
+        @ptrCast(base_dir_owned.parentWindow()),
         if (disp_save != 0) GTK_FILE_CHOOSER_ACTION_SAVE else GTK_FILE_CHOOSER_ACTION_OPEN,
         if (disp_save != 0) "_Save" else "_Load",
         "_Cancel",
@@ -197,19 +175,19 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
 
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
-            if (createDir(SAVE_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(SAVE_DIR) != 0) return FILE_ERROR;
             _ = strcpy(filename, SAVE_DIR ++ "/");
             _ = strcat(filename, path_policy_owned.saveFileName());
             return FILE_OK;
         },
         IO_PATH_AUTO_SAVE => {
-            if (createDir(SAVE_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(SAVE_DIR) != 0) return FILE_ERROR;
             _ = strcpy(filename, SAVE_DIR ++ "/");
             _ = strcat(filename, path_policy_owned.autoSaveFileName());
             return FILE_OK;
         },
         IO_PATH_PGM_FILE => {
-            if (createDir(LIB_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(LIB_DIR) != 0) return FILE_ERROR;
             _ = strcpy(filename, LIB_DIR ++ "/" ++ LIB_FILE);
             return FILE_OK;
         },
@@ -225,35 +203,35 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_SAVE_STATE_FILE => {
-            if (createDir(STATE_DIR) != 0) return FILE_ERROR;
-            if (populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
+            if (base_dir_owned.createDir(STATE_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
             return file_selection_screen("Save State File", &base_dir, STATE_PATTERN, 1, 1, filename);
         },
         IO_PATH_LOAD_STATE_FILE => {
-            if (createDir(STATE_DIR) != 0) return FILE_ERROR;
-            if (populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
+            if (base_dir_owned.createDir(STATE_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
             return file_selection_screen("Load State File", &base_dir, STATE_PATTERN, 0, 0, filename);
         },
         IO_PATH_SAVE_PROGRAM => {
-            if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
             return file_selection_screen("Save Program File", &base_dir, PROGRAM_PATTERN, 1, 1, filename);
         },
         IO_PATH_EXPORT_RTF_PROGRAM => {
-            if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
             return file_selection_screen("Export Program File RTF", &base_dir, RTF_PATTERN, 1, 1, filename);
         },
         IO_PATH_LOAD_PROGRAM => {
-            if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
             return file_selection_screen("Load Program File", &base_dir, PROGRAM_PATTERN, 0, 0, filename);
         },
         IO_PATH_SAVE_ALL_PROGRAMS => {
-            if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
             var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
             _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
@@ -263,8 +241,8 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_EXPORT_RTF_ALL_PROGRAMS => {
-            if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
+            if (base_dir_owned.createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
             var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
             _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
@@ -351,7 +329,7 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 
 pub export fn show_warning(string: [*c]u8) callconv(.c) void {
     const dialog = gtk_message_dialog_new(
-        parentWindow(),
+        @ptrCast(base_dir_owned.parentWindow()),
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_WARNING,
         GTK_BUTTONS_OK,
