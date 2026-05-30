@@ -1,3 +1,5 @@
+const io_owned = @import("program_serialization_runtime_io_owned.zig");
+
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 pub const BACKUP_FORMAT: u8 = 0;
@@ -22,18 +24,6 @@ pub extern var numberOfPrograms: u16;
 pub extern var temporaryInformation: u8;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
-pub extern fn z47_program_serialization_runtime_check_power() bool;
-pub extern fn z47_program_serialization_runtime_select_program(label: u16) bool;
-pub extern fn z47_program_serialization_runtime_open_save_program() c_int;
-pub extern fn z47_program_serialization_runtime_open_load_program() c_int;
-pub extern fn z47_program_serialization_runtime_write_literal(text: [*c]const u8) void;
-pub extern fn z47_program_serialization_runtime_write_u32_line(value: u32) void;
-pub extern fn z47_program_serialization_runtime_write_u8_line(value: u8) void;
-pub extern fn z47_program_serialization_runtime_read_line(buffer: [*c]u8) void;
-pub extern fn z47_program_serialization_runtime_close_file() void;
-pub extern fn z47_program_serialization_runtime_display_write_error() void;
-pub extern fn z47_program_serialization_runtime_display_read_error() void;
-pub extern fn z47_program_serialization_runtime_show_warning(message: [*c]const u8) void;
 pub extern fn z47_program_serialization_runtime_scan_labels_and_programs() void;
 pub extern fn z47_program_serialization_runtime_go_to_last_program() void;
 pub extern fn z47_program_serialization_runtime_is_at_end_of_program(step: [*c]const u8) bool;
@@ -44,51 +34,51 @@ pub extern fn z47_program_serialization_runtime_parse_u8_line(line: [*c]const u8
 pub extern fn z47_program_serialization_runtime_line_equals(line: [*c]const u8, expected: [*c]const u8) bool;
 
 pub inline fn checkPower() bool {
-    return z47_program_serialization_runtime_check_power();
+    return io_owned.checkPower();
 }
 
 pub inline fn selectProgram(label: u16) bool {
-    return z47_program_serialization_runtime_select_program(label);
+    return io_owned.selectProgram(label);
 }
 
 pub inline fn openSaveProgram() c_int {
-    return z47_program_serialization_runtime_open_save_program();
+    return io_owned.openSaveProgram();
 }
 
 pub inline fn openLoadProgram() c_int {
-    return z47_program_serialization_runtime_open_load_program();
+    return io_owned.openLoadProgram();
 }
 
 pub inline fn writeLiteral(text: [*c]const u8) void {
-    z47_program_serialization_runtime_write_literal(text);
+    io_owned.writeLiteral(text);
 }
 
 pub inline fn writeU32Line(value: u32) void {
-    z47_program_serialization_runtime_write_u32_line(value);
+    io_owned.writeU32Line(value);
 }
 
 pub inline fn writeU8Line(value: u8) void {
-    z47_program_serialization_runtime_write_u8_line(value);
+    io_owned.writeU8Line(value);
 }
 
 pub inline fn readLine(buffer: []u8) void {
-    z47_program_serialization_runtime_read_line(buffer.ptr);
+    io_owned.readLine(buffer);
 }
 
 pub inline fn closeFile() void {
-    z47_program_serialization_runtime_close_file();
+    io_owned.closeFile();
 }
 
 pub inline fn displayWriteError() void {
-    z47_program_serialization_runtime_display_write_error();
+    io_owned.displayWriteError();
 }
 
 pub inline fn displayReadError() void {
-    z47_program_serialization_runtime_display_read_error();
+    io_owned.displayReadError();
 }
 
 pub inline fn showWarning(message: [*c]const u8) void {
-    z47_program_serialization_runtime_show_warning(message);
+    io_owned.showWarning(message);
 }
 
 pub inline fn scanLabelsAndPrograms() void {
