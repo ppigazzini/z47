@@ -1,3 +1,4 @@
+const std = @import("std");
 const stack_runtime = @import("stack_runtime.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 
@@ -19,6 +20,20 @@ pub const dtConfig: u32 = 9;
 pub const TI_NO_INFO: u8 = 0;
 pub const TI_CLEAR_ALL_VARIABLES: u8 = 98;
 pub const TI_DEL_ALL_VARIABLES: u8 = 101;
+
+const Z47_LOCAL_MATRIX_ROWS_MASK: u32 = 0x00000fff;
+const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
+const Z47_LOCAL_MATRIX_ROWS_SHIFT: u5 = 0;
+const Z47_LOCAL_MATRIX_COLUMNS_SHIFT: u5 = 12;
+
+const strLgIntHeader_t = extern struct {
+    dataMaxLengthInBlocks: u16,
+    unused: u16,
+};
+
+const matrixHeader_t = extern struct {
+    descriptor: u32,
+};
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
@@ -63,17 +78,7 @@ pub extern var temporaryInformation: u8;
 extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
-extern fn z47_register_metadata_get_data_max_length_in_blocks(data_ptr: ?*const anyopaque) u16;
-extern fn z47_register_metadata_set_data_max_length_in_blocks(data_ptr: ?*anyopaque, max_data_len: u16) void;
-extern fn z47_register_metadata_get_matrix_payload_size_in_blocks(data_ptr: ?*const anyopaque, element_size_in_blocks: u16) u16;
-extern fn z47_register_metadata_str_lg_int_header_size_in_blocks() u16;
-extern fn z47_register_metadata_matrix_header_size_in_blocks() u16;
-extern fn z47_register_metadata_complex34_size_in_blocks() u16;
-extern fn z47_register_metadata_short_integer_size_in_blocks() u16;
 extern fn z47_register_metadata_config_size_in_blocks() u16;
-extern fn z47_register_metadata_memory_block_available(size_in_blocks: u16) bool;
-extern fn z47_register_metadata_align_long_integer_blocks(size_in_blocks: u16) u16;
-extern fn z47_register_metadata_initialize_matrix_header_1x1(data_ptr: ?*anyopaque) void;
 extern fn z47_register_metadata_report_ram_full() void;
 extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
 extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
@@ -98,6 +103,7 @@ extern fn z47_register_metadata_report_too_many_variables() void;
 extern fn z47_register_metadata_clear_sigma() void;
 extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
+extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
@@ -113,6 +119,50 @@ extern fn z47_registers_retained_getRegisterFullSizeInBlocks(reg: calcRegister_t
 extern fn z47_registers_retained_setRegisterDataType(reg: calcRegister_t, data_type: u16, tag: u32) void;
 extern fn z47_registers_retained_setRegisterDataPointer(reg: calcRegister_t, mem_ptr: ?*const anyopaque) void;
 extern fn z47_registers_retained_setRegisterTag(reg: calcRegister_t, tag: u32) void;
+
+fn bytesPerBlock() comptime_int {
+    return 4;
+}
+
+fn toBlocks(bytes: usize) u16 {
+    return @intCast((bytes + (bytesPerBlock() - 1)) / bytesPerBlock());
+}
+
+fn copyBytesToValue(comptime T: type, data_ptr: ?*const anyopaque) T {
+    var value = std.mem.zeroes(T);
+    const ptr = data_ptr orelse return value;
+    const src: [*]const u8 = @ptrCast(ptr);
+    const dst: [*]u8 = @ptrCast(&value);
+    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
+    return value;
+}
+
+fn copyValueToBytes(comptime T: type, data_ptr: ?*anyopaque, value: *const T) void {
+    const ptr = data_ptr orelse return;
+    const src: [*]const u8 = @ptrCast(value);
+    const dst: [*]u8 = @ptrCast(ptr);
+    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
+}
+
+fn readMatrixHeaderDescriptor(data_ptr: ?*const anyopaque) u32 {
+    return copyBytesToValue(u32, data_ptr);
+}
+
+fn matrixRows(data_ptr: ?*const anyopaque) u16 {
+    return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_ROWS_MASK) >> Z47_LOCAL_MATRIX_ROWS_SHIFT);
+}
+
+fn matrixColumns(data_ptr: ?*const anyopaque) u16 {
+    return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_COLUMNS_MASK) >> Z47_LOCAL_MATRIX_COLUMNS_SHIFT);
+}
+
+fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void {
+    var descriptor = readMatrixHeaderDescriptor(data_ptr);
+    descriptor &= ~(Z47_LOCAL_MATRIX_ROWS_MASK | Z47_LOCAL_MATRIX_COLUMNS_MASK);
+    descriptor |= (@as(u32, rows) & 0x0fff) << Z47_LOCAL_MATRIX_ROWS_SHIFT;
+    descriptor |= (@as(u32, columns) & 0x0fff) << Z47_LOCAL_MATRIX_COLUMNS_SHIFT;
+    copyValueToBytes(u32, data_ptr, &descriptor);
+}
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
@@ -159,23 +209,25 @@ pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
-    return z47_register_metadata_get_data_max_length_in_blocks(data_ptr);
+    return copyBytesToValue(strLgIntHeader_t, data_ptr).dataMaxLengthInBlocks;
 }
 
 pub fn setDataMaxLengthInBlocks(data_ptr: ?*anyopaque, max_data_len: u16) void {
-    z47_register_metadata_set_data_max_length_in_blocks(data_ptr, max_data_len);
+    var header = copyBytesToValue(strLgIntHeader_t, data_ptr);
+    header.dataMaxLengthInBlocks = max_data_len;
+    copyValueToBytes(strLgIntHeader_t, data_ptr, &header);
 }
 
 pub fn matrixPayloadSizeInBlocks(data_ptr: ?*const anyopaque, element_size_in_blocks: u16) u16 {
-    return z47_register_metadata_get_matrix_payload_size_in_blocks(data_ptr, element_size_in_blocks);
+    return @intCast(@as(u32, matrixRows(data_ptr)) * @as(u32, matrixColumns(data_ptr)) * @as(u32, element_size_in_blocks));
 }
 
 pub fn strLgIntHeaderSizeInBlocks() u16 {
-    return z47_register_metadata_str_lg_int_header_size_in_blocks();
+    return toBlocks(@sizeOf(strLgIntHeader_t));
 }
 
 pub fn matrixHeaderSizeInBlocks() u16 {
-    return z47_register_metadata_matrix_header_size_in_blocks();
+    return toBlocks(@sizeOf(matrixHeader_t));
 }
 
 pub fn real34SizeInBlocks() u16 {
@@ -183,11 +235,11 @@ pub fn real34SizeInBlocks() u16 {
 }
 
 pub fn complex34SizeInBlocks() u16 {
-    return z47_register_metadata_complex34_size_in_blocks();
+    return real34SizeInBlocks() * 2;
 }
 
 pub fn shortIntegerSizeInBlocks() u16 {
-    return z47_register_metadata_short_integer_size_in_blocks();
+    return 2;
 }
 
 pub fn configSizeInBlocks() u16 {
@@ -195,15 +247,22 @@ pub fn configSizeInBlocks() u16 {
 }
 
 pub fn memoryBlockAvailable(size_in_blocks: u16) bool {
-    return z47_register_metadata_memory_block_available(size_in_blocks);
+    return isMemoryBlockAvailable(size_in_blocks, 2, 0.1);
 }
 
 pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
-    return z47_register_metadata_align_long_integer_blocks(size_in_blocks);
+    const limb_size_in_bytes = @sizeOf(c_ulong);
+    const limb_size_in_blocks = toBlocks(limb_size_in_bytes);
+
+    if ((@as(usize, size_in_blocks) * bytesPerBlock()) % limb_size_in_bytes != 0) {
+        return @intCast(((@as(usize, size_in_blocks) / limb_size_in_blocks) + 1) * limb_size_in_blocks);
+    }
+
+    return size_in_blocks;
 }
 
 pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
-    z47_register_metadata_initialize_matrix_header_1x1(data_ptr);
+    setMatrixRowsColumns(data_ptr, 1, 1);
 }
 
 pub fn reportRamFull() void {
