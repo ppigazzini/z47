@@ -1,6 +1,7 @@
 const block_availability_owned = @import("memory_block_availability_owned.zig");
 const c47_alloc_owned = @import("memory_c47_alloc_owned.zig");
 const debug_owned = @import("memory_debug_owned.zig");
+const gmp_alloc_owned = @import("memory_gmp_alloc_owned.zig");
 const runtime = @import("memory_runtime.zig");
 
 fn toBlocks(byte_count: usize) usize {
@@ -44,23 +45,15 @@ pub export fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
 }
 
 pub export fn allocGmp(sizeInBytes: usize) ?*anyopaque {
-    const rounded_size = toBytesSize(toBlocks(sizeInBytes));
-    runtime.gmpMemInBytes +%= rounded_size;
-    return runtime.allocGmpBytes(rounded_size);
+    return gmp_alloc_owned.allocGmp(sizeInBytes);
 }
 
 pub export fn reallocGmp(pcMemPtr: ?*anyopaque, oldSizeInBytes: usize, newSizeInBytes: usize) ?*anyopaque {
-    const rounded_new_size = toBytesSize(toBlocks(newSizeInBytes));
-    const rounded_old_size = toBytesSize(toBlocks(oldSizeInBytes));
-
-    runtime.gmpMemInBytes +%= rounded_new_size -% rounded_old_size;
-    return runtime.reallocGmpBytes(pcMemPtr, rounded_new_size);
+    return gmp_alloc_owned.reallocGmp(pcMemPtr, oldSizeInBytes, newSizeInBytes);
 }
 
 pub export fn freeGmp(pcMemPtr: ?*anyopaque, sizeInBytes: usize) void {
-    const rounded_size = toBytesSize(toBlocks(sizeInBytes));
-    runtime.gmpMemInBytes -%= rounded_size;
-    runtime.freeGmpBytes(pcMemPtr);
+    gmp_alloc_owned.freeGmp(pcMemPtr, sizeInBytes);
 }
 
 pub export fn resizeProgramMemory(newSizeInBlocks: u16) void {
