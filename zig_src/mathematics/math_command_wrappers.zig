@@ -23,6 +23,7 @@ const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const forward_command_wrappers_owned = @import("math_forward_command_wrappers_owned.zig");
 const projection_command_wrapper_owned = @import("math_projection_command_wrapper_owned.zig");
 const arithmetic_command_wrapper_owned = @import("math_arithmetic_command_wrapper_owned.zig");
+const special_algebraic_wrapper_owned = @import("math_special_algebraic_wrapper_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const transform_command_owned = @import("math_transform_command_owned.zig");
@@ -211,7 +212,7 @@ pub export fn sqrt1Px2Complex(
     res_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_command_owned.sqrt1Px2Complex(real, imag, res_real, res_imag, real_context);
+    special_algebraic_wrapper_owned.sqrt1Px2Complex(real, imag, res_real, res_imag, real_context);
 }
 
 pub export fn eulersFormula(
@@ -221,19 +222,19 @@ pub export fn eulersFormula(
     out_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_command_owned.eulersFormula(in_real, in_imag, out_real, out_imag, real_context);
+    special_algebraic_wrapper_owned.eulersFormula(in_real, in_imag, out_real, out_imag, real_context);
 }
 
 pub export fn fnSqrt1Px2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_command_owned.fnSqrt1Px2(unused_but_mandatory_parameter);
+    special_algebraic_wrapper_owned.fnSqrt1Px2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_command_owned.fnM1Pow(unused_but_mandatory_parameter);
+    special_algebraic_wrapper_owned.fnM1Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_command_owned.fnEulersFormula(unused_but_mandatory_parameter);
+    special_algebraic_wrapper_owned.fnEulersFormula(unused_but_mandatory_parameter);
 }
 
 pub export fn integerPartNoOp() callconv(.c) void {
