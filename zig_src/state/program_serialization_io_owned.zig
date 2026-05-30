@@ -1,3 +1,4 @@
+const header_owned = @import("program_serialization_header_owned.zig");
 const pointer_owned = @import("program_serialization_pointer_owned.zig");
 const save_owned = @import("program_serialization_save_owned.zig");
 const space_owned = @import("program_serialization_space_owned.zig");
@@ -37,41 +38,13 @@ pub fn loadProgram() void {
     }
     defer runtime.closeFile();
 
-    var key_buffer: [256]u8 = undefined;
     var value_buffer: [256]u8 = undefined;
-    var loaded_version: u32 = 0;
-
-    runtime.readLine(key_buffer[0..]);
-    if (runtime.lineEquals(key_buffer[0..].ptr, "PROGRAM_FILE_FORMAT")) {
-        runtime.readLine(value_buffer[0..]);
-    } else {
-        runtime.showWarning(" \nThis is not a C47 program\n\nIt will not be loaded.");
+    const header = header_owned.parseLoadHeader();
+    if (!header.valid) {
         return;
     }
-
-    runtime.readLine(key_buffer[0..]);
-    runtime.readLine(value_buffer[0..]);
-    if (runtime.lineEquals(key_buffer[0..].ptr, "C47_program_file_version")) {
-        loaded_version = runtime.parseU32Line(value_buffer[0..].ptr);
-        if (loaded_version < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
-            runtime.showWarning(" \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
-            return;
-        }
-    } else if (runtime.lineEquals(key_buffer[0..].ptr, "WP43_program_file_version")) {
-        loaded_version = runtime.parseU32Line(value_buffer[0..].ptr);
-        runtime.showWarning(" \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
-    } else {
-        runtime.showWarning(" \nThis is not a C47 program\n \nIt will not be loaded.");
-        return;
-    }
-
-    runtime.readLine(key_buffer[0..]);
-    runtime.readLine(value_buffer[0..]);
-    if (!runtime.lineEquals(key_buffer[0..].ptr, "PROGRAM")) {
-        return;
-    }
-
-    const program_size_in_bytes: u32 = runtime.parseU32Line(value_buffer[0..].ptr);
+    const loaded_version = header.loaded_version;
+    const program_size_in_bytes = header.program_size_in_bytes;
 
     if (addEndNeeded()) {
         addSpaceAfterPrograms(2);
