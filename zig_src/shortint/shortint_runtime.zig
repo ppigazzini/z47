@@ -1,4 +1,5 @@
 const std = @import("std");
+const register_storage_owned = @import("shortint_runtime_register_storage_owned.zig");
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
@@ -85,13 +86,19 @@ pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
 
 pub fn registerShortIntegerPtr(regist: calcRegister_t) *align(1) u64 {
-    const ptr = getRegisterDataPointer(regist) orelse unreachable;
-    return @ptrCast(ptr);
+    return register_storage_owned.registerShortIntegerPtr(getRegisterDataPointer, regist);
 }
 
 pub fn setRawShortIntegerRegister(regist: calcRegister_t, base: u32, value: u64) void {
-    reallocateRegister(regist, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-    registerShortIntegerPtr(regist).* = value;
+    register_storage_owned.setRawShortIntegerRegister(
+        reallocateRegister,
+        getRegisterDataPointer,
+        dtShortInteger,
+        SHORT_INTEGER_SIZE_IN_BLOCKS,
+        regist,
+        base,
+        value,
+    );
 }
 
 pub fn getRegisterShortIntegerBase(regist: calcRegister_t) u32 {
