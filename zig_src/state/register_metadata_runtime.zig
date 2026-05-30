@@ -1,10 +1,11 @@
 const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
+const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
 const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
+const size_owned = @import("register_metadata_size_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
-const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
@@ -222,46 +223,39 @@ pub fn matrixPayloadSizeInBlocks(data_ptr: ?*const anyopaque, element_size_in_bl
 }
 
 pub fn strLgIntHeaderSizeInBlocks() u16 {
-    return toBlocks(@sizeOf(strLgIntHeader_t));
+    return size_owned.strLgIntHeaderSizeInBlocks();
 }
 
 pub fn matrixHeaderSizeInBlocks() u16 {
-    return toBlocks(@sizeOf(matrixHeader_t));
+    return size_owned.matrixHeaderSizeInBlocks();
 }
 
 pub fn real34SizeInBlocks() u16 {
-    return stack_runtime.real34SizeInBlocks();
+    return size_owned.real34SizeInBlocks();
 }
 
 pub fn complex34SizeInBlocks() u16 {
-    return real34SizeInBlocks() * 2;
+    return size_owned.complex34SizeInBlocks();
 }
 
 pub fn shortIntegerSizeInBlocks() u16 {
-    return 2;
+    return size_owned.shortIntegerSizeInBlocks();
 }
 
 pub fn configSizeInBlocks() u16 {
-    return z47_register_metadata_config_size_in_blocks();
+    return size_owned.configSizeInBlocks();
 }
 
 pub fn memoryBlockAvailable(size_in_blocks: u16) bool {
-    return isMemoryBlockAvailable(size_in_blocks, 2, 0.1);
+    return size_owned.memoryBlockAvailable(size_in_blocks);
 }
 
 pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
-    const limb_size_in_bytes = @sizeOf(usize);
-    const limb_size_in_blocks = toBlocks(limb_size_in_bytes);
-
-    if ((@as(usize, size_in_blocks) * bytesPerBlock()) % limb_size_in_bytes != 0) {
-        return @intCast(((@as(usize, size_in_blocks) / limb_size_in_blocks) + 1) * limb_size_in_blocks);
-    }
-
-    return size_in_blocks;
+    return size_owned.alignLongIntegerBlocks(size_in_blocks);
 }
 
 pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
-    setMatrixRowsColumns(data_ptr, 1, 1);
+    size_owned.initializeMatrixHeader1x1(data_ptr);
 }
 
 pub fn reportRamFull() void {
