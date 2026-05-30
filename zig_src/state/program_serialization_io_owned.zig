@@ -1,4 +1,5 @@
 const pointer_owned = @import("program_serialization_pointer_owned.zig");
+const space_owned = @import("program_serialization_space_owned.zig");
 const runtime = @import("program_serialization_runtime.zig");
 
 fn toBlocks(byte_count: usize) u16 {
@@ -14,36 +15,11 @@ fn offsetPointer(ptr: [*c]u8, delta: isize) [*c]u8 {
 }
 
 fn addSpaceAfterPrograms(size: u16) void {
-    if (runtime.freeProgramBytes < size) {
-        const old_begin_of_program_memory = runtime.beginOfProgramMemory;
-        const program_size_in_blocks: usize = runtime.getRamSizeInBlocks() - runtime.toC47MemPtr(runtime.beginOfProgramMemory);
-        const new_program_size_in_blocks = toBlocks(toBytes(program_size_in_blocks) - runtime.freeProgramBytes + size);
-        const grow_bytes = toBytes(new_program_size_in_blocks - program_size_in_blocks);
-
-        runtime.freeProgramBytes +%= @intCast(grow_bytes);
-        runtime.resizeProgramMemory(new_program_size_in_blocks);
-        const delta: isize = @intCast(@as(i64, @intCast(@intFromPtr(runtime.beginOfProgramMemory))) - @as(i64, @intCast(@intFromPtr(old_begin_of_program_memory))));
-        runtime.currentStep = offsetPointer(runtime.currentStep, delta);
-        runtime.firstDisplayedStep = offsetPointer(runtime.firstDisplayedStep, delta);
-        runtime.beginOfCurrentProgram = offsetPointer(runtime.beginOfCurrentProgram, delta);
-        runtime.endOfCurrentProgram = offsetPointer(runtime.endOfCurrentProgram, delta);
-    }
-
-    runtime.firstFreeProgramByte = offsetPointer(runtime.firstFreeProgramByte, @intCast(size));
-    runtime.freeProgramBytes -%= size;
+    space_owned.addSpaceAfterPrograms(size);
 }
 
 fn addEndNeeded() bool {
-    if (runtime.firstFreeProgramByte <= runtime.beginOfProgramMemory) {
-        return false;
-    }
-    if (runtime.firstFreeProgramByte == runtime.beginOfProgramMemory + 1) {
-        return true;
-    }
-    if (runtime.isAtEndOfProgram(runtime.firstFreeProgramByte - 2)) {
-        return false;
-    }
-    return true;
+    return space_owned.addEndNeeded();
 }
 
 pub fn saveProgram(label: u16) void {
