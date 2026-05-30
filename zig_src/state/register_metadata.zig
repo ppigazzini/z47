@@ -1,13 +1,8 @@
 const builtin = @import("builtin");
+const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
 
-const pointer_mask: runtime.register_descriptor_t = 0x0000ffff;
-const data_type_mask: runtime.register_descriptor_t = 0x000f0000;
-const tag_mask: runtime.register_descriptor_t = 0x01f00000;
-const data_type_shift: u5 = 16;
-const tag_shift: u5 = 20;
-const invalid_data_type: u32 = 31;
 const validate_name_max_glyphs: usize = 7;
 const glyph_A: u16 = 0x41;
 const glyph_Z: u16 = 0x5a;
@@ -24,48 +19,18 @@ const glyph_sub_mu: u16 = 0x2298;
 const glyph_sup_a: u16 = 0x2482;
 const glyph_sub_Z: u16 = 0x24e9;
 
-fn descriptorDataType(descriptor: runtime.register_descriptor_t) u32 {
-    return (descriptor & data_type_mask) >> data_type_shift;
-}
-
-fn descriptorTag(descriptor: runtime.register_descriptor_t) u32 {
-    return (descriptor & tag_mask) >> tag_shift;
-}
-
-fn descriptorPointer(descriptor: runtime.register_descriptor_t) u16 {
-    return @intCast(descriptor & pointer_mask);
-}
-
-fn withDataTypeTag(descriptor: runtime.register_descriptor_t, data_type: u16, tag: u32) runtime.register_descriptor_t {
-    return (descriptor & ~(data_type_mask | tag_mask)) |
-        ((@as(runtime.register_descriptor_t, data_type) & 0xf) << data_type_shift) |
-        ((tag & 0x1f) << tag_shift);
-}
-
-fn withTag(descriptor: runtime.register_descriptor_t, tag: u32) runtime.register_descriptor_t {
-    return (descriptor & ~tag_mask) | ((tag & 0x1f) << tag_shift);
-}
-
-fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.register_descriptor_t {
-    return (descriptor & ~pointer_mask) | @as(runtime.register_descriptor_t, mem_ptr);
-}
-
-fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*anyopaque {
-    return runtime.toPcMemPtr(descriptorPointer(descriptor));
-}
-
 fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque, type_reg: *runtime.calcRegister_t) bool {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
         type_reg.* = reg;
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE) {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             type_reg.* = @intCast(reg - runtime.FIRST_NAMED_VARIABLE);
             return data_ptr.* != null;
         }
@@ -73,14 +38,14 @@ fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*an
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr.* = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
         type_reg.* = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             type_reg.* = reg;
             return data_ptr.* != null;
         }
@@ -93,26 +58,26 @@ fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?*anyopa
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE) {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             return data_ptr.* != null;
         }
         return false;
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr.* = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             return data_ptr.* != null;
         }
     }
@@ -124,13 +89,13 @@ fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?*an
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = dataPointerFromDescriptor(runtime.globalDescriptor(reg));
+        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE) {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             return data_ptr.* != null;
         }
         return false;
@@ -142,7 +107,7 @@ fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?*an
 
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = dataPointerFromDescriptor(descriptor);
+            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
             return data_ptr.* != null;
         }
     }
@@ -309,7 +274,7 @@ pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr = dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        data_ptr = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
         if (data_ptr != null) {
             runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
             return;
@@ -810,245 +775,25 @@ pub export fn isFunctionAllowingNewVariable(op: u16) bool {
 }
 
 pub export fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterDataTypeRetained(reg);
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        return descriptorDataType(runtime.globalDescriptor(reg));
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            return descriptorDataType(descriptor);
-        }
-
-        if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        }
-
-        return invalid_data_type;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return descriptorDataType(runtime.reservedDataTypeDescriptor(reg));
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            return descriptorDataType(descriptor);
-        }
-        return invalid_data_type;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-    return invalid_data_type;
+    return descriptor_owned.getRegisterDataType(reg);
 }
 
 pub export fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterDataPointerRetained(reg);
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        return runtime.toPcMemPtr(descriptorPointer(runtime.globalDescriptor(reg)));
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            return runtime.toPcMemPtr(descriptorPointer(descriptor));
-        }
-
-        if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        }
-
-        return null;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return runtime.toPcMemPtr(descriptorPointer(runtime.reservedDescriptor(reg)));
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            return runtime.toPcMemPtr(descriptorPointer(descriptor));
-        }
-
-        return null;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-    return null;
+    return descriptor_owned.getRegisterDataPointer(reg);
 }
 
 pub export fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterTagRetained(reg);
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        return descriptorTag(runtime.globalDescriptor(reg));
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            return descriptorTag(descriptor);
-        }
-
-        if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        }
-
-        return 0;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return descriptorTag(runtime.reservedDescriptor(reg));
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            return descriptorTag(descriptor);
-        }
-
-        return 0;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-    return 0;
+    return descriptor_owned.getRegisterTag(reg);
 }
 
 pub export fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterDataTypeRetained(reg, data_type, tag);
-        return;
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        runtime.setGlobalDescriptor(reg, withDataTypeTag(runtime.globalDescriptor(reg), data_type, tag));
-        return;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetNamedDescriptor(reg, withDataTypeTag(descriptor, data_type, tag));
-            return;
-        }
-
-        if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        }
-
-        return;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        if (runtime.reservedAllowsDataTypeWrite(reg)) {
-            const index: u16 = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
-            descriptor = runtime.namedDescriptorUnchecked(index);
-            runtime.setNamedDescriptorUnchecked(index, withDataTypeTag(descriptor, data_type, tag));
-        }
-        return;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetLocalDescriptor(reg, withDataTypeTag(descriptor, data_type, tag));
-            return;
-        }
-
-        return;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    descriptor_owned.setRegisterDataType(reg, data_type, tag);
 }
 
 pub export fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyopaque) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterDataPointerRetained(reg, mem_ptr);
-        return;
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-    const encoded = runtime.toC47MemPtr(mem_ptr);
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        runtime.setGlobalDescriptor(reg, withPointer(runtime.globalDescriptor(reg), encoded));
-        return;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetNamedDescriptor(reg, withPointer(descriptor, encoded));
-            return;
-        }
-
-        return;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetLocalDescriptor(reg, withPointer(descriptor, encoded));
-            return;
-        }
-
-        return;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    descriptor_owned.setRegisterDataPointer(reg, mem_ptr);
 }
 
 pub export fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterTagRetained(reg, tag);
-        return;
-    }
-
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        runtime.setGlobalDescriptor(reg, withTag(runtime.globalDescriptor(reg), tag));
-        return;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetNamedDescriptor(reg, withTag(descriptor, tag));
-            return;
-        }
-
-        if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        }
-
-        return;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            _ = runtime.trySetLocalDescriptor(reg, withTag(descriptor, tag));
-            return;
-        }
-
-        return;
-    }
-
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    descriptor_owned.setRegisterTag(reg, tag);
 }
