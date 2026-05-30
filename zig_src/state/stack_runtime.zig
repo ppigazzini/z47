@@ -155,9 +155,6 @@ extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
-extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
-extern fn z47_stack_runtime_save_for_undo() void;
-extern fn z47_stack_runtime_undo() void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
@@ -584,32 +581,4 @@ pub fn getRegCopyParams(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
     }
 
     return getRegParamProduct(f, s, n, d);
-}
-
-pub fn real34SetZero(dest: ?*anyopaque) void {
-    z47_stack_runtime_real34_set_zero(dest);
-}
-
-pub fn saveForUndoRetained() void {
-    z47_stack_runtime_save_for_undo();
-}
-
-pub fn undoRetained() void {
-    z47_stack_runtime_undo();
-}
-
-pub fn freeRegisterData(reg: calcRegister_t) void {
-    freeC47Blocks(getRegisterDataPointer(reg), getRegisterFullSizeInBlocks(reg));
-}
-
-pub fn bytesFromBlocks(size_in_blocks: usize) u32 {
-    return @intCast(size_in_blocks << 2);
-}
-
-pub fn xcopyBlocks(dest: ?*anyopaque, source: ?*anyopaque, size_in_blocks: usize) void {
-    _ = xcopy(dest, source, bytesFromBlocks(size_in_blocks));
-}
-
-pub fn setRegisterDataPointerMutable(reg: calcRegister_t, mem_ptr: ?*anyopaque) void {
-    setRegisterDataPointer(reg, mem_ptr);
 }

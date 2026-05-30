@@ -1,6 +1,7 @@
 const builtin = @import("builtin");
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
 const payload_owned = @import("register_metadata_payload_owned.zig");
+const memory_owned = @import("register_memory_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
 
@@ -65,7 +66,7 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
     _ = stack_runtime.xcopy(
         descriptor_owned.getRegisterDataPointer(normalized_dest),
         descriptor_owned.getRegisterDataPointer(normalized_source),
-        stack_runtime.bytesFromBlocks(source_full_size),
+        memory_owned.bytesFromBlocks(source_full_size),
     );
     descriptor_owned.setRegisterTag(normalized_dest, descriptor_owned.getRegisterTag(normalized_source));
 }
@@ -85,7 +86,7 @@ pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size
             return;
         }
 
-        stack_runtime.freeRegisterData(reg);
+        memory_owned.freeRegisterData(reg);
         const data_ptr = if (allocated_size == 0) null else stack_runtime.allocC47Blocks(allocated_size);
         if (allocated_size != 0 and data_ptr == null) {
             runtime.reportRamFull();

@@ -1,9 +1,10 @@
 const runtime = @import("stack_runtime.zig");
+const memory_owned = @import("register_memory_owned.zig");
 
 fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
+    const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
     return @ptrCast(bytes + imag_offset);
 }
 
@@ -25,14 +26,14 @@ pub fn clearStack() void {
 pub fn clearRegister(reg: runtime.calcRegister_t) void {
     if (runtime.lastIntegerBase == 0 and (runtime.inputDefault() == runtime.ID_43S or runtime.inputDefault() == runtime.ID_DP)) {
         if (runtime.getRegisterDataType(reg) == runtime.dtReal34) {
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+            memory_owned.zeroReal34(runtime.getRegisterDataPointer(reg));
             runtime.setRegisterDataType(reg, @intCast(runtime.dtReal34), runtime.amNone);
         } else {
             runtime.reallocateRegister(reg, runtime.dtReal34, 0, runtime.amNone);
             if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
                 return;
             }
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
+            memory_owned.zeroReal34(runtime.getRegisterDataPointer(reg));
         }
         return;
     }
@@ -42,8 +43,8 @@ pub fn clearRegister(reg: runtime.calcRegister_t) void {
 
         if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
             const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
+            memory_owned.zeroReal34(data_ptr);
+            memory_owned.zeroReal34(complexImagPointer(data_ptr));
             runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
         } else {
             runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
@@ -51,8 +52,8 @@ pub fn clearRegister(reg: runtime.calcRegister_t) void {
                 return;
             }
             const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
+            memory_owned.zeroReal34(data_ptr);
+            memory_owned.zeroReal34(complexImagPointer(data_ptr));
         }
         return;
     }
