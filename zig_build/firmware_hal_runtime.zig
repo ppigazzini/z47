@@ -1,6 +1,7 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
 const buzz_owned = @import("firmware_hal_buzz_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
+const printer_owned = @import("firmware_hal_printer_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -193,17 +194,15 @@ pub export fn fnPlay(regist: u16) callconv(.c) void {
 }
 
 pub export fn getLineDelay() callconv(.c) u32 {
-    return @divTrunc(printer_get_delay(), 100);
+    return printer_owned.getLineDelay();
 }
 
 pub export fn setLineDelay(delay: u16) callconv(.c) void {
-    _ = printer_set_delay(delay * 100);
+    printer_owned.setLineDelay(delay);
 }
 
 pub export fn sendByteIR(byte: u8) callconv(.c) void {
-    if (getSystemFlag(FLAG_PRTACT) != 0) {
-        print_byte(byte);
-    }
+    printer_owned.sendByteIR(byte);
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
