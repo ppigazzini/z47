@@ -1,4 +1,5 @@
 const profile_owned = @import("gtk_gui_profile_owned.zig");
+const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -392,30 +393,11 @@ fn alphaArrowsOffAndUpDn() bool {
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    const numLockMem = getSystemFlag(FLAG_NUMLOCK);
-
-    clearSystemFlag(FLAG_NUMLOCK);
-    shiftF = false;
-    shiftG = true;
-    if (data) |raw_data| {
-        btnClicked(widget, @as([*:0]const u8, @ptrCast(raw_data)));
-    }
-
-    if (numLockMem) {
-        setSystemFlag(FLAG_NUMLOCK);
-    } else {
-        clearSystemFlag(FLAG_NUMLOCK);
-    }
-    refreshStatusBar();
+    shortcut_owned.btnClickedNU(widget, data);
 }
 
 pub export fn sendKey(sent: i16) callconv(.c) void {
-    showHideAlphaMode();
-    if (calcMode == CM_PEM and tam.mode == 0 and getSystemFlag(FLAG_ALPHA) and catalog == 0) {
-        pemAlpha(sent);
-    } else {
-        processAimInput(sent);
-    }
+    shortcut_owned.sendKey(sent);
 }
 
 pub export fn checkNormal(keyNr: i16, item: i16) callconv(.c) bool {
@@ -435,60 +417,7 @@ pub export fn shortCutCommand(
     requiredCalcMode2: i16,
     itemForRunFunction: i16,
 ) callconv(.c) bool {
-    _ = currentMenu;
-    _ = shortcutProfileValue;
-    if (disable) return false;
-
-    if (isLabelText() and key != '\'' and key != @as(c_int, @intCast(GDK_KEY_Up)) and key != @as(c_int, @intCast(GDK_KEY_Down))) {
-        return false;
-    }
-
-    if ((shiftF or shiftG) and
-        !(shift[0] == 0 and keyForBtnClicked[0] != '-') and
-        !(shiftF and shift[0] == 'f' and keyForBtnClicked[0] != '-') and
-        !(shiftG and shift[0] == 'g' and keyForBtnClicked[0] != '-')) {
-        return false;
-    }
-
-    if (key == keyCode and condition1) {
-        temporaryInformation = TI_NO_INFO;
-
-        if (exitIfInNIM and calcMode == CM_NIM and calcMode != requiredCalcMode2) {
-            closeNim();
-        }
-
-        if (itemForRunFunction < 0) {
-            showSoftmenu(itemForRunFunction);
-            screenUpdatingMode = SCRUPD_AUTO;
-            refreshScreen(1);
-            return true;
-        }
-
-        if (((@as(u32, 1) << @as(u5, @intCast(calcMode))) & @as(u32, modes)) != 0 or calcMode == @as(u8, @intCast(requiredCalcMode2))) {
-            if (keyForBtnClicked[0] != '-') {
-                if (shift[0] == 'f') {
-                    shiftF = true;
-                    shiftG = false;
-                } else if (shift[0] == 'g') {
-                    shiftF = false;
-                    shiftG = true;
-                }
-                btnClicked(widget, keyForBtnClicked);
-                screenUpdatingMode = SCRUPD_AUTO;
-                refreshScreen(2);
-                return true;
-            }
-
-            if (itemForRunFunction >= 0) {
-                runFunction(itemForRunFunction);
-                screenUpdatingMode = SCRUPD_AUTO;
-                refreshScreen(3);
-                return true;
-            }
-        }
-    }
-
-    return false;
+    return shortcut_owned.shortCutCommand(widget, key, keyCode, condition1, exitIfInNIM, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
 }
 
 pub export fn shortCutFNCommand(
@@ -503,37 +432,7 @@ pub export fn shortCutFNCommand(
     requiredCalcMode2: i16,
     itemForRunFunction: i16,
 ) callconv(.c) bool {
-    if (disable) return false;
-    if (isLabelText()) return false;
-
-    if (key == keyCode and condition1) {
-        temporaryInformation = TI_NO_INFO;
-
-        if (((@as(u32, 1) << @as(u5, @intCast(calcMode))) & @as(u32, modes)) != 0 or calcMode == @as(u8, @intCast(requiredCalcMode2))) {
-            if (keyForBtnClicked[0] != '-') {
-                if (shift[0] == 'f') {
-                    shiftF = true;
-                    shiftG = false;
-                } else if (shift[0] == 'g') {
-                    shiftF = false;
-                    shiftG = true;
-                }
-                btnFnClicked(widget, keyForBtnClicked);
-                screenUpdatingMode = SCRUPD_AUTO;
-                refreshScreen(5);
-                return true;
-            }
-
-            if (itemForRunFunction >= 0) {
-                runFunction(itemForRunFunction);
-                screenUpdatingMode = SCRUPD_AUTO;
-                refreshScreen(6);
-                return true;
-            }
-        }
-    }
-
-    return false;
+    return shortcut_owned.shortCutFNCommand(widget, key, keyCode, condition1, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
