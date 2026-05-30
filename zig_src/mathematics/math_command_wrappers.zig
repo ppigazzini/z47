@@ -875,96 +875,6 @@ fn expCplx() callconv(.c) void {
     transcendental_command_owned.expCplx();
 }
 
-fn invertReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-    var result: *const runtime.real_t = &x;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.realIsZero(&x)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            result = if (runtime.realIsNegative(&x))
-                runtime.z47_math_wrappers_const_minus_infinity()
-            else
-                runtime.z47_math_wrappers_const_plus_infinity();
-        } else {
-            runtime.z47_math_wrappers_report_invert_real_divide_by_zero_error();
-            return;
-        }
-    } else if (runtime.realIsInfinite(&x)) {
-        const set_negative_zero = runtime.realIsNegative(&x) and runtime.getSystemFlag(runtime.FLAG_SPCRES);
-
-        runtime.realSetZero(&x);
-        if (set_negative_zero) {
-            runtime.realChangeSign(&x);
-        }
-    } else if (runtime.realCompareAbsEqual(&x, runtime.z47_math_wrappers_const_1())) {
-        return;
-    } else {
-        runtime.realDivide(runtime.z47_math_wrappers_const_1(), &x, &x, &runtime.ctxtReal39);
-    }
-
-    runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
-}
-
-fn invertCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
-    }
-
-    runtime.divRealComplex(runtime.z47_math_wrappers_const_1(), &a, &b, &a, &b, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
-}
-
-fn signReal() callconv(.c) void {
-    const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
-
-    if (runtime.real34IsNaN(x)) {
-        runtime.z47_math_wrappers_report_sign_real_nan_error();
-        return;
-    }
-
-    runtime.z47_math_wrappers_build_sign_result(
-        if (runtime.real34IsZero(x))
-            0
-        else if (runtime.real34IsNegative(x))
-            -1
-        else
-            1,
-    );
-}
-
-fn signCplx() callconv(.c) void {
-    runtime.unitVectorCplx();
-}
-
-fn signShoI() callconv(.c) void {
-    var sign_value: i32 = 0;
-    const value = runtime.WP34S_extract_value(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*, &sign_value);
-
-    runtime.z47_math_wrappers_build_sign_result(
-        if (value == 0)
-            0
-        else
-            2 * -sign_value + 1,
-    );
-}
-
-fn signLonI() callconv(.c) void {
-    const sign_result: i32 = switch (runtime.getRegisterLongIntegerSign(runtime.REGISTER_X)) {
-        runtime.LI_ZERO => 0,
-        runtime.LI_NEGATIVE => -1,
-        runtime.LI_POSITIVE => 1,
-        else => unreachable,
-    };
-
-    runtime.z47_math_wrappers_build_sign_result(sign_result);
-}
 
 fn chsZeroCheck(value: *runtime.real_t) void {
     runtime.realChangeSign(value);
@@ -1016,15 +926,6 @@ fn chsLonI() callconv(.c) void {
 
     x[0]._mp_size = -x[0]._mp_size;
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-}
-
-fn changeSignTime() void {
-    const x = runtime.registerReal34Ptr(runtime.REGISTER_X);
-    x.bytes[15] ^= runtime.DECNEG;
-
-    if (runtime.real34IsZero(x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        x.bytes[15] &= 0x7f;
-    }
 }
 
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
