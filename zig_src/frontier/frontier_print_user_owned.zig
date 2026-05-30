@@ -65,7 +65,7 @@ const PrintUserTelemetry = struct {
 };
 
 const PrintUserContext = struct {
-    label: [32]u8 = [_]u8{0} ** 32,
+    label: [32]u8 = std.mem.zeroes([32]u8),
     user_variable_found: bool = false,
     step: [*]u8 = undefined,
     program_number: u16 = 1,
