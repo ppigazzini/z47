@@ -1,10 +1,5 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
-
-extern fn realExp(
-    x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void;
+const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 
 fn realPower10(
     x: *const runtime.real_t,
@@ -12,7 +7,7 @@ fn realPower10(
     real_context: *runtime.realContext_t,
 ) void {
     runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
-    realExp(res, res, real_context);
+    transcendental_wrapper_owned.realExp(res, res, real_context);
 }
 
 fn realPower2(
@@ -21,7 +16,7 @@ fn realPower2(
     real_context: *runtime.realContext_t,
 ) void {
     runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
-    realExp(res, res, real_context);
+    transcendental_wrapper_owned.realExp(res, res, real_context);
 }
 
 fn intPowReal(powf: *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void) void {
@@ -52,7 +47,7 @@ fn intPowCplx(ln_base: *const runtime.real_t) void {
     runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
     runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
 
-    realExp(&a, &factor, &runtime.ctxtReal39);
+    transcendental_wrapper_owned.realExp(&a, &factor, &runtime.ctxtReal39);
     runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
     runtime.realMultiply(&factor, &a, &a, &runtime.ctxtReal39);
     runtime.realMultiply(&factor, &b, &b, &runtime.ctxtReal39);
