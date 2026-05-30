@@ -1,19 +1,7 @@
-const std = @import("std");
+const diagnostics_owned = @import("math_matrix_vector_diagnostics_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
-
-fn crossDotMatrixTypeError(function_name: [:0]const u8) void {
-    var message1_buffer: [96]u8 = undefined;
-    var message2_buffer: [64]u8 = undefined;
-    const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
-    const x_type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message1 = std.fmt.bufPrintZ(&message1_buffer, "cannot raise {s}", .{y_type_name}) catch "cannot raise current Y type";
-    const message2 = std.fmt.bufPrintZ(&message2_buffer, "to {s}", .{x_type_name}) catch "to current X type";
-
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError(function_name, message1, message2, null);
-}
 
 fn dotCplx(
     x_real: *const runtime.real_t,
@@ -133,7 +121,7 @@ pub fn dot(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
     if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        crossDotMatrixTypeError("In function fnDot:");
+        diagnostics_owned.crossDotMatrixTypeError("In function fnDot:");
         return;
     }
 
