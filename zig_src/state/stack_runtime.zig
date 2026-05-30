@@ -1,3 +1,5 @@
+const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
 
@@ -73,11 +75,6 @@ extern fn z47_stack_runtime_adjust_result_scalar_core(res: calcRegister_t) bool;
 extern fn z47_stack_runtime_adjust_result_real_matrix_core(res: calcRegister_t) bool;
 extern fn z47_stack_runtime_adjust_result_complex_matrix_core(res: calcRegister_t) bool;
 extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
-extern fn z47_stack_runtime_get_global_register_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_stack_runtime_set_global_register_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
-extern fn z47_stack_runtime_get_swap_target_descriptor(reg: u16, descriptor: *register_descriptor_t) bool;
-extern fn z47_stack_runtime_set_swap_target_descriptor(reg: u16, descriptor: register_descriptor_t) bool;
-extern fn z47_stack_runtime_report_invalid_swap_target(reg: u16) void;
 extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
@@ -94,6 +91,7 @@ extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
 extern fn z47_stack_runtime_undo() void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -196,23 +194,46 @@ pub fn adjustResultComplexMatrixCore(res: calcRegister_t) bool {
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_stack_runtime_get_global_register_descriptor(reg);
+    return descriptor_storage.globalDescriptor(reg);
 }
 
 pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void {
-    z47_stack_runtime_set_global_register_descriptor(reg, descriptor);
+    descriptor_storage.setGlobalDescriptor(reg, descriptor);
 }
 
 pub fn tryGetSwapTargetDescriptor(reg: u16, descriptor: *register_descriptor_t) bool {
-    return z47_stack_runtime_get_swap_target_descriptor(reg, descriptor);
+    const target_reg: calcRegister_t = @intCast(reg);
+
+    if (target_reg <= LAST_GLOBAL_REGISTER) {
+        descriptor.* = descriptor_storage.globalDescriptor(target_reg);
+        return true;
+    }
+
+    if (descriptor_storage.tryGetNamedDescriptor(target_reg, descriptor)) {
+        return true;
+    }
+
+    return descriptor_storage.tryGetLocalDescriptor(target_reg, descriptor);
 }
 
 pub fn trySetSwapTargetDescriptor(reg: u16, descriptor: register_descriptor_t) bool {
-    return z47_stack_runtime_set_swap_target_descriptor(reg, descriptor);
+    const target_reg: calcRegister_t = @intCast(reg);
+
+    if (target_reg <= LAST_GLOBAL_REGISTER) {
+        descriptor_storage.setGlobalDescriptor(target_reg, descriptor);
+        return true;
+    }
+
+    if (descriptor_storage.trySetNamedDescriptor(target_reg, descriptor)) {
+        return true;
+    }
+
+    return descriptor_storage.trySetLocalDescriptor(target_reg, descriptor);
 }
 
 pub fn reportInvalidSwapTarget(reg: u16) void {
-    z47_stack_runtime_report_invalid_swap_target(reg);
+    _ = reg;
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z, REGISTER_X);
 }
 
 pub fn statisticalSumsBlocks() u16 {
