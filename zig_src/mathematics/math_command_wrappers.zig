@@ -1,21 +1,15 @@
-const atan_owned = @import("math_atan_owned.zig");
 const atan2_export = @import("math_atan2_export.zig");
 const check_wrapper_owned = @import("math_check_wrapper_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
 const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
-const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
-const logxy_command_owned = @import("math_logxy_command_owned.zig");
-const percent_command_owned = @import("math_percent_command_owned.zig");
 const random_command_owned = @import("math_random_command_owned.zig");
 const real_trig_export = @import("math_real_trig_export.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
-const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
-const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
@@ -26,9 +20,6 @@ const arithmetic_command_wrapper_owned = @import("math_arithmetic_command_wrappe
 const special_algebraic_wrapper_owned = @import("math_special_algebraic_wrapper_owned.zig");
 const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
 const tail_command_wrappers_owned = @import("math_tail_command_wrappers_owned.zig");
-const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
-const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
-const transform_command_owned = @import("math_transform_command_owned.zig");
 
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
