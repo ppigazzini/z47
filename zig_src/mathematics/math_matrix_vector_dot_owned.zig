@@ -1,5 +1,6 @@
 const diagnostics_owned = @import("math_matrix_vector_diagnostics_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const validation_owned = @import("math_matrix_vector_validation_owned.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
@@ -45,18 +46,13 @@ fn doDotCplx() callconv(.c) void {
 }
 
 fn tryDotMatrices() bool {
-    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-    const x_is_real_matrix = type_x == runtime.dtReal34Matrix;
-    const x_is_complex_matrix = type_x == runtime.dtComplex34Matrix;
-    const y_is_real_matrix = type_y == runtime.dtReal34Matrix;
-    const y_is_complex_matrix = type_y == runtime.dtComplex34Matrix;
+    const matrix_kinds = validation_owned.classifyCurrentOperands();
 
-    if (!(x_is_real_matrix or x_is_complex_matrix or y_is_real_matrix or y_is_complex_matrix)) {
+    if (!matrix_kinds.hasAnyMatrix()) {
         return false;
     }
 
-    if (!((x_is_real_matrix or x_is_complex_matrix) and (y_is_real_matrix or y_is_complex_matrix))) {
+    if (!matrix_kinds.areBothMatrices()) {
         return false;
     }
 
@@ -64,7 +60,7 @@ fn tryDotMatrices() bool {
         return true;
     }
 
-    if (x_is_real_matrix and y_is_real_matrix) {
+    if (matrix_kinds.x_is_real_matrix and matrix_kinds.y_is_real_matrix) {
         var x_matrix: runtime.real34Matrix_t = undefined;
         var y_matrix: runtime.real34Matrix_t = undefined;
         var result: runtime.real34_t = undefined;
@@ -72,7 +68,7 @@ fn tryDotMatrices() bool {
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
         runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
-        if (runtime.realVectorSize(&x_matrix) == 0 or runtime.realVectorSize(&y_matrix) == 0 or runtime.realVectorSize(&x_matrix) != runtime.realVectorSize(&y_matrix)) {
+        if (!validation_owned.isValidDotRealVectors(&x_matrix, &y_matrix)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         } else {
             runtime.dotRealVectors(&y_matrix, &x_matrix, &result);
@@ -84,9 +80,9 @@ fn tryDotMatrices() bool {
         return true;
     }
 
-    if (x_is_real_matrix) {
+    if (matrix_kinds.x_is_real_matrix) {
         runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-    } else if (y_is_real_matrix) {
+    } else if (matrix_kinds.y_is_real_matrix) {
         runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
     }
 
@@ -98,7 +94,7 @@ fn tryDotMatrices() bool {
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x_matrix);
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
-    if (runtime.complexVectorSize(&x_matrix) == 0 or runtime.complexVectorSize(&y_matrix) == 0 or runtime.complexVectorSize(&x_matrix) != runtime.complexVectorSize(&y_matrix)) {
+    if (!validation_owned.isValidDotComplexVectors(&x_matrix, &y_matrix)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     } else {
         runtime.dotComplexVectors(&y_matrix, &x_matrix, &result_real, &result_imag);
@@ -118,9 +114,7 @@ pub fn dot(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
+    if (validation_owned.classifyCurrentOperands().hasAnyMatrix()) {
         diagnostics_owned.crossDotMatrixTypeError("In function fnDot:");
         return;
     }
