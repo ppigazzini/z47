@@ -1,5 +1,6 @@
 const std = @import("std");
 const atan_owned = @import("math_atan_owned.zig");
+const atan2_export = @import("math_atan2_export.zig");
 const atan2_command_owned = @import("math_atan2_command_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const check_value_owned = @import("math_check_value_owned.zig");
@@ -20,6 +21,7 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 const transform_command_owned = @import("math_transform_command_owned.zig");
 
 comptime {
+    _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
     _ = ln_complex_export.z47_math_wrappers_owned_lnComplex;
 }
 
