@@ -2,6 +2,7 @@ const std = @import("std");
 const register_storage_owned = @import("shortint_runtime_register_storage_owned.zig");
 const real_owned = @import("shortint_runtime_real_owned.zig");
 const tag_owned = @import("shortint_runtime_tag_owned.zig");
+const error_info_owned = @import("shortint_runtime_error_info_owned.zig");
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
@@ -124,13 +125,23 @@ pub fn isRealZero(value: *const real_t) bool {
 }
 
 pub fn setTemporaryInformation(condition: bool) void {
-    temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
+    error_info_owned.setTemporaryInformation(&temporaryInformation, TI_FALSE, condition);
 }
 
 pub fn invalidShortIntegerError(regist: calcRegister_t) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+    error_info_owned.invalidShortIntegerError(
+        displayCalcErrorMessage,
+        ERROR_INVALID_DATA_TYPE_FOR_OP,
+        ERR_REGISTER_LINE,
+        regist,
+    );
 }
 
 pub fn wordSizeError() void {
-    displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
+    error_info_owned.wordSizeError(
+        displayCalcErrorMessage,
+        ERROR_WORD_SIZE_TOO_SMALL,
+        ERR_REGISTER_LINE,
+        REGISTER_X,
+    );
 }
