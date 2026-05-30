@@ -108,6 +108,16 @@ pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descripto
     return true;
 }
 
+pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
+    const headers = allNamedVariables orelse return 0;
+    return headers[index].header.descriptor;
+}
+
+pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
+    const headers = allNamedVariables orelse return;
+    headers[index].header.descriptor = descriptor;
+}
+
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
     if (reg < FIRST_LOCAL_REGISTER) {
         return false;

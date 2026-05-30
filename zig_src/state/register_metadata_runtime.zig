@@ -1,4 +1,5 @@
 const stack_runtime = @import("stack_runtime.zig");
+const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 
 pub const calcRegister_t = stack_runtime.calcRegister_t;
 pub const register_descriptor_t = stack_runtime.register_descriptor_t;
@@ -59,14 +60,6 @@ pub extern var currentAngularMode: u32;
 pub extern var numberOfNamedVariables: u16;
 pub extern var temporaryInformation: u8;
 
-extern fn z47_register_metadata_get_global_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_register_metadata_set_global_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void;
-extern fn z47_register_metadata_try_get_named_descriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool;
-extern fn z47_register_metadata_try_set_named_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool;
-extern fn z47_register_metadata_get_named_descriptor_unchecked(index: u16) register_descriptor_t;
-extern fn z47_register_metadata_set_named_descriptor_unchecked(index: u16, descriptor: register_descriptor_t) void;
-extern fn z47_register_metadata_try_get_local_descriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool;
-extern fn z47_register_metadata_try_set_local_descriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool;
 extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
@@ -122,35 +115,35 @@ extern fn z47_registers_retained_setRegisterDataPointer(reg: calcRegister_t, mem
 extern fn z47_registers_retained_setRegisterTag(reg: calcRegister_t, tag: u32) void;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_register_metadata_get_global_descriptor(reg);
+    return descriptor_storage.globalDescriptor(reg);
 }
 
 pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void {
-    z47_register_metadata_set_global_descriptor(reg, descriptor);
+    descriptor_storage.setGlobalDescriptor(reg, descriptor);
 }
 
 pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return z47_register_metadata_try_get_named_descriptor(reg, descriptor);
+    return descriptor_storage.tryGetNamedDescriptor(reg, descriptor);
 }
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return z47_register_metadata_try_set_named_descriptor(reg, descriptor);
+    return descriptor_storage.trySetNamedDescriptor(reg, descriptor);
 }
 
 pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
-    return z47_register_metadata_get_named_descriptor_unchecked(index);
+    return descriptor_storage.namedDescriptorUnchecked(index);
 }
 
 pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
-    z47_register_metadata_set_named_descriptor_unchecked(index, descriptor);
+    descriptor_storage.setNamedDescriptorUnchecked(index, descriptor);
 }
 
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return z47_register_metadata_try_get_local_descriptor(reg, descriptor);
+    return descriptor_storage.tryGetLocalDescriptor(reg, descriptor);
 }
 
 pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return z47_register_metadata_try_set_local_descriptor(reg, descriptor);
+    return descriptor_storage.trySetLocalDescriptor(reg, descriptor);
 }
 
 pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
