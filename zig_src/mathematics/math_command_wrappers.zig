@@ -33,6 +33,7 @@ const sign_command_owned = @import("math_sign_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
+const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
@@ -281,102 +282,15 @@ fn lnP1Cplx() callconv(.c) void {
 }
 
 pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &a)) {
-        return;
-    }
-
-    if (runtime.realIsZero(&a)) {
-        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            return;
-        }
-
-        copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
-    } else if (runtime.realIsInfinite(&a)) {
-        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            return;
-        }
-
-        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
-            if (!runtime.realIsNegative(&a)) {
-                copyReal(&a, runtime.z47_math_wrappers_const_plus_infinity());
-            } else {
-                runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &a, &runtime.ctxtReal39);
-                runtime.convertComplexToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), &a, runtime.REGISTER_X);
-                return;
-            }
-        } else {
-            runtime.realSetNaN(&a);
-        }
-    } else if (!runtime.realIsNegative(&a)) {
-        lnRealValue(&a, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
-    } else if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
-        runtime.realSetPositiveSign(&a);
-        lnRealValue(&a, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
-        runtime.realDivide(runtime.z47_math_wrappers_const_pi(), denom, &b, &runtime.ctxtReal39);
-        runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
-        return;
-    } else if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetNaN(&a);
-    } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        return;
-    }
-
-    runtime.convertRealToResultRegister(&a, runtime.REGISTER_X, runtime.amNone);
+    logxy_wrapper_owned.logxyReal(denom);
 }
 
 pub export fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
-    }
-
-    if (runtime.realIsZero(&a) and runtime.realIsZero(&b)) {
-        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            return;
-        }
-
-        copyReal(&a, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(&b);
-    } else {
-        runtime.realRectangularToPolar(&a, &b, &a, &b, &runtime.ctxtReal39);
-        lnRealValue(&a, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&a, denom, &a, &runtime.ctxtReal39);
-        runtime.realDivide(&b, denom, &b, &runtime.ctxtReal39);
-    }
-
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    logxy_wrapper_owned.logxyCplx(denom);
 }
 
 pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
-    var x: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.realIsNegative(&x) or runtime.realIsZero(&x)) {
-        logxyReal(denom);
-        return;
-    }
-
-    lnRealValue(&x, &x, &runtime.ctxtReal39);
-    runtime.realDivide(&x, denom, &x, &runtime.ctxtReal34);
-    if (!runtime.realIsAnInteger(&x)) {
-        runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
-    } else {
-        runtime.convertRealToLongIntegerRegister(&x, runtime.REGISTER_X, runtime.DEC_ROUND_HALF_EVEN);
-    }
+    logxy_wrapper_owned.logxyLonI(denom);
 }
 
 pub export fn sqrt1Px2Complex(
