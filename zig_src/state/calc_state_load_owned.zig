@@ -1,4 +1,5 @@
 const builtin = @import("builtin");
+const entrypoints_owned = @import("calc_state_entrypoints_owned.zig");
 const io_flow_owned = @import("calc_state_io_flow_owned.zig");
 const runtime = @import("calc_state_runtime.zig");
 
@@ -14,41 +15,17 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 }
 
 pub fn load(load_mode: u16) void {
-    if (is_dmcp_build) {
-        runtime.loadRetained(load_mode);
-        return;
-    }
-
-    runtime.showLoadingStatus();
-    if (load_mode == runtime.LM_STATE_LOAD) {
-        doLoad(runtime.LM_ALL, 0, 0, 0, runtime.stateLoad);
-    } else {
-        doLoad(load_mode, 0, 0, 0, runtime.manualLoad);
-    }
-    runtime.finishLoadUi(94);
+    entrypoints_owned.load(load_mode, doLoad);
 }
 
 pub fn loadAuto() void {
-    doLoad(runtime.LM_ALL, 0, 0, 0, runtime.autoLoad);
-    runtime.finishLoadUi(95);
+    entrypoints_owned.loadAuto(doLoad);
 }
 
 pub fn saveAuto(unused_but_mandatory_parameter: u16) void {
-    if (is_dmcp_build) {
-        runtime.saveAutoRetained(unused_but_mandatory_parameter);
-        return;
-    }
+    entrypoints_owned.saveAuto(unused_but_mandatory_parameter);
 }
 
 pub fn save(save_mode: u16) void {
-    if (is_dmcp_build) {
-        runtime.saveRetained(save_mode);
-        return;
-    }
-
-    if (save_mode == runtime.SM_MANUAL_SAVE) {
-        io_flow_owned.doSave(runtime.manualSave);
-    } else if (save_mode == runtime.SM_STATE_SAVE) {
-        io_flow_owned.doSave(runtime.stateSave);
-    }
+    entrypoints_owned.save(save_mode);
 }
