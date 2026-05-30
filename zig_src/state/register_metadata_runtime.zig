@@ -1,6 +1,11 @@
 const std = @import("std");
+const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("stack_runtime.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+
+const use_fake_register_metadata_harness_surface =
+    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
+    build_options.use_fake_register_metadata_harness_surface;
 
 pub const calcRegister_t = stack_runtime.calcRegister_t;
 pub const register_descriptor_t = stack_runtime.register_descriptor_t;
@@ -35,6 +40,24 @@ const matrixHeader_t = extern struct {
     descriptor: u32,
 };
 
+const item_t = extern struct {
+    status: u32,
+    itemCatalogName: [16]u8,
+};
+
+const userMenu_t = extern struct {
+    menuName: [16]u8,
+};
+
+const named_variable_header_t = extern struct {
+    header: extern struct {
+        descriptor: register_descriptor_t,
+    },
+    variableName: [16]u8,
+};
+
+const max_fake_named_variables: u16 = 64;
+
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
 pub const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
@@ -52,6 +75,7 @@ pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE
 pub const INVALID_VARIABLE: calcRegister_t = @intCast(stack_runtime.INVALID_VARIABLE);
 
 pub const ITM_INPUT: u16 = 43;
+pub const ITM_RCL: u16 = 51;
 pub const ITM_STO: u16 = 44;
 pub const ITM_STOADD: u16 = 45;
 pub const ITM_STOSUB: u16 = 46;
@@ -74,6 +98,10 @@ pub const ITM_INTEGRAL: u16 = 1700;
 pub extern var currentAngularMode: u32;
 pub extern var numberOfNamedVariables: u16;
 pub extern var temporaryInformation: u8;
+pub extern var userMenus: [*c]userMenu_t;
+pub extern var numberOfUserMenus: u16;
+
+extern var allNamedVariables: ?[*]named_variable_header_t;
 
 extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
@@ -85,13 +113,9 @@ extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
 extern fn z47_register_metadata_builtin_menu_item_count() u32;
 extern fn z47_register_metadata_builtin_menu_item_is_menu(index: u32) bool;
 extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
-extern fn z47_register_metadata_user_menu_count() u32;
-extern fn z47_register_metadata_user_menu_name(index: u32) [*c]const u8;
-extern fn z47_register_metadata_named_variable_name(index: u16) [*c]const u8;
 extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
 extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
 extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
-extern fn z47_register_metadata_remove_named_variable_recall_assignment(index: u16) void;
 extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
 extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
 extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
@@ -104,6 +128,7 @@ extern fn z47_register_metadata_clear_sigma() void;
 extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
+extern fn removeUserItemAssignments(item: i16, user_item_name: [*c]u8) void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
@@ -290,15 +315,24 @@ pub fn builtinMenuItemName(index: u32) [*c]const u8 {
 }
 
 pub fn userMenuCount() u32 {
-    return z47_register_metadata_user_menu_count();
+    return numberOfUserMenus;
 }
 
 pub fn userMenuName(index: u32) [*c]const u8 {
-    return z47_register_metadata_user_menu_name(index);
+    if (index >= numberOfUserMenus) {
+        return "";
+    }
+
+    return @ptrCast(&userMenus[index].menuName[0]);
 }
 
 pub fn namedVariableName(index: u16) [*c]const u8 {
-    return z47_register_metadata_named_variable_name(index);
+    if (index >= numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
+        return "";
+    }
+
+    const headers = allNamedVariables orelse return "";
+    return @ptrCast(&headers[index].variableName[1]);
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
@@ -314,7 +348,12 @@ pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
-    z47_register_metadata_remove_named_variable_recall_assignment(index);
+    if (use_fake_register_metadata_harness_surface or index >= numberOfNamedVariables) {
+        return;
+    }
+
+    const headers = allNamedVariables orelse return;
+    removeUserItemAssignments(@intCast(ITM_RCL), @ptrCast(&headers[index].variableName[1]));
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {

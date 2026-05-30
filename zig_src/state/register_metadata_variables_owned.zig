@@ -190,15 +190,6 @@ fn appendNamedVariableHeader(index: *u16) bool {
     return true;
 }
 
-fn namedVariableName(index: u16) [*:0]const u8 {
-    if (index >= runtime.numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
-        return "";
-    }
-
-    const headers = allNamedVariables orelse return "";
-    return @ptrCast(&headers[index].variableName[1]);
-}
-
 fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
     if (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables) {
         return;
@@ -258,7 +249,7 @@ fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runti
 }
 
 fn namedVariableNameEquals(index: u16, variable_name: [*:0]const u8) bool {
-    return compareMenuNames(@ptrCast(namedVariableName(index)), @ptrCast(variable_name)) == 0;
+    return compareMenuNames(runtime.namedVariableName(index), @ptrCast(variable_name)) == 0;
 }
 
 fn preserveNamedVariableDuringClear(index: u16) bool {
@@ -413,7 +404,7 @@ pub fn deleteVariable(regist: u16) void {
         var shift_index = index;
         while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
             runtime.setNamedDescriptorUnchecked(shift_index, runtime.namedDescriptorUnchecked(shift_index + 1));
-            storeNamedVariableName(shift_index, @ptrCast(namedVariableName(shift_index + 1)));
+            storeNamedVariableName(shift_index, runtime.namedVariableName(shift_index + 1));
         }
 
         clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
@@ -489,7 +480,7 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
 
     var index: u16 = 0;
     while (index < runtime.numberOfNamedVariables) : (index += 1) {
-        if (compareMenuNames(@ptrCast(namedVariableName(index)), variable_name) == 0) {
+        if (compareMenuNames(runtime.namedVariableName(index), variable_name) == 0) {
             return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
         }
     }
