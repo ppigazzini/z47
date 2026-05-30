@@ -15,6 +15,7 @@ const logxy_owned = @import("math_logxy_owned.zig");
 const percent_command_owned = @import("math_percent_command_owned.zig");
 const projection_owned = @import("math_projection_owned.zig");
 const random_command_owned = @import("math_random_command_owned.zig");
+const real_trig_export = @import("math_real_trig_export.zig");
 const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
@@ -23,6 +24,12 @@ const transform_command_owned = @import("math_transform_command_owned.zig");
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
     _ = ln_complex_export.z47_math_wrappers_owned_lnComplex;
+    _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Asin;
+    _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Acos;
+    _ = real_trig_export.z47_math_wrappers_owned_WP34S_SinhCosh;
+    _ = real_trig_export.z47_math_wrappers_owned_WP34S_Tanh;
+    _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcSinh;
+    _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcTanh;
 }
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
