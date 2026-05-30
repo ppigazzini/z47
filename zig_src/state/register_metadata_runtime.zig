@@ -25,6 +25,12 @@ pub const dtConfig: u32 = 9;
 pub const TI_NO_INFO: u8 = 0;
 pub const TI_CLEAR_ALL_VARIABLES: u8 = 98;
 pub const TI_DEL_ALL_VARIABLES: u8 = 101;
+pub const CONFIRMED: u16 = 9877;
+
+pub const ERROR_CANNOT_DELETE_PREDEF_ITEM: u8 = 27;
+pub const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
+pub const ERROR_INVALID_NAME: u8 = 48;
+pub const ERROR_TOO_MANY_VARIABLES: u8 = 49;
 
 const Z47_LOCAL_MATRIX_ROWS_MASK: u32 = 0x00000fff;
 const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
@@ -59,6 +65,7 @@ const named_variable_header_t = extern struct {
 const max_fake_named_variables: u16 = 64;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
+pub const REGISTER_Y = stack_runtime.REGISTER_Y;
 pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
 pub const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
 pub const LAST_NAMED_VARIABLE: calcRegister_t = 1999;
@@ -107,7 +114,6 @@ extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) reg
 extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
 extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
 extern fn z47_register_metadata_config_size_in_blocks() u16;
-extern fn z47_register_metadata_report_ram_full() void;
 extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
 extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
 extern fn z47_register_metadata_builtin_menu_item_count() u32;
@@ -120,15 +126,17 @@ extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
 extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
 extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
 extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
-extern fn z47_register_metadata_report_invalid_name() void;
-extern fn z47_register_metadata_report_undef_source_var() void;
-extern fn z47_register_metadata_report_cannot_delete_predef_item() void;
-extern fn z47_register_metadata_report_too_many_variables() void;
-extern fn z47_register_metadata_clear_sigma() void;
 extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
 extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
 extern fn removeUserItemAssignments(item: i16, user_item_name: [*c]u8) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn fnDeleteAllVariables(confirmation: u16) callconv(.c) void;
+extern fn fnClearAllVariables(confirmation: u16) callconv(.c) void;
+extern fn fnClSigma(confirmation: u16) callconv(.c) void;
+extern fn fnDeleteVariable(regist: u16) callconv(.c) void;
+extern fn findNamedVariable(variable_name: [*c]const u8) calcRegister_t;
+extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 extern fn z47_registers_retained_getRegisterDataType(reg: calcRegister_t) u32;
 extern fn z47_registers_retained_getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 extern fn z47_registers_retained_getRegisterTag(reg: calcRegister_t) u32;
@@ -291,7 +299,7 @@ pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
 }
 
 pub fn reportRamFull() void {
-    z47_register_metadata_report_ram_full();
+    displayCalcErrorMessage(stack_runtime.ERROR_RAM_FULL, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
@@ -373,31 +381,58 @@ pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) c
 }
 
 pub fn reportInvalidName() void {
-    z47_register_metadata_report_invalid_name();
+    displayCalcErrorMessage(ERROR_INVALID_NAME, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
 }
 
 pub fn reportUndefSourceVar() void {
-    z47_register_metadata_report_undef_source_var();
+    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
 }
 
 pub fn reportCannotDeletePredefItem() void {
-    z47_register_metadata_report_cannot_delete_predef_item();
+    displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
 }
 
 pub fn reportTooManyVariables() void {
-    z47_register_metadata_report_too_many_variables();
+    displayCalcErrorMessage(ERROR_TOO_MANY_VARIABLES, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
 }
 
 pub fn clearSigma() void {
-    z47_register_metadata_clear_sigma();
+    if (!use_fake_register_metadata_harness_surface) {
+        fnClSigma(CONFIRMED);
+        return;
+    }
+
+    var register = findNamedVariable("HISTO");
+    if (register != INVALID_VARIABLE) {
+        fnDeleteVariable(@intCast(register));
+    }
+
+    register = findNamedVariable("STATS");
+    if (register != INVALID_VARIABLE) {
+        fnDeleteVariable(@intCast(register));
+    }
+
+    stack_runtime.lrChosen = 0;
+    stack_runtime.freeC47Blocks(stack_runtime.statisticalSumsPointer, stack_runtime.statisticalSumsBlocks());
+    stack_runtime.statisticalSumsPointer = null;
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
-    z47_register_metadata_request_delete_all_variables_confirmation();
+    if (use_fake_register_metadata_harness_surface) {
+        z47_register_metadata_request_delete_all_variables_confirmation();
+        return;
+    }
+
+    setConfirmationMode(&fnDeleteAllVariables);
 }
 
 pub fn requestClearAllVariablesConfirmation() void {
-    z47_register_metadata_request_clear_all_variables_confirmation();
+    if (use_fake_register_metadata_harness_surface) {
+        z47_register_metadata_request_clear_all_variables_confirmation();
+        return;
+    }
+
+    setConfirmationMode(&fnClearAllVariables);
 }
 
 pub fn getRegisterDataTypeRetained(reg: calcRegister_t) u32 {
