@@ -155,7 +155,7 @@ extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
@@ -181,7 +181,6 @@ pub extern fn fnRecall(reg: u16) void;
 pub extern fn recallStatsMatrix() void;
 pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
-pub extern fn z47_registers_retained_fnToReal(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_copy_params(f: *bool, s: *u16, n: *u16, d: *u16) u8;
@@ -553,10 +552,6 @@ pub fn restoreSavedSigmaLastXYAndAdd() void {
     convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
     convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
     fnSigmaAddRem(SIGMA_PLUS);
-}
-
-pub fn toRealRetained(unused_but_mandatory_parameter: u16) void {
-    z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
 }
 
 pub fn getRegClrRange(s: *u16, n: *u16) u8 {

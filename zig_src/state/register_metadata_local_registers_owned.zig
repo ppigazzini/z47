@@ -1,5 +1,4 @@
 const build_options = @import("register_metadata_build_options");
-const clear_owned = @import("stack_clear_owned.zig");
 const memory_owned = @import("register_memory_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
@@ -44,12 +43,14 @@ fn toBlocks(bytes: usize) u16 {
 
 fn localFlagsAfterHeader(level_data: *subroutine_level_header_t) *localFlags_t {
     const bytes: [*]align(1) u8 = @ptrCast(level_data);
-    return @ptrCast(bytes + @sizeOf(subroutine_level_header_t));
+    const aligned_bytes: [*]align(@alignOf(localFlags_t)) u8 = @alignCast(bytes + @sizeOf(subroutine_level_header_t));
+    return @ptrCast(aligned_bytes);
 }
 
 fn localRegistersAfterFlags(flags: *localFlags_t) [*]register_header_t {
     const bytes: [*]align(1) u8 = @ptrCast(flags);
-    return @ptrCast(bytes + @sizeOf(localFlags_t));
+    const aligned_bytes: [*]align(@alignOf(register_header_t)) u8 = @alignCast(bytes + @sizeOf(localFlags_t));
+    return @ptrCast(aligned_bytes);
 }
 
 fn levelBlocks(register_count: u16) usize {
@@ -58,6 +59,13 @@ fn levelBlocks(register_count: u16) usize {
 
 fn headerOnlyBlocks() usize {
     return toBlocks(@sizeOf(subroutine_level_header_t));
+}
+
+fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
+    const ptr = data_ptr orelse return null;
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    const imag_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.real34SizeInBlocks()));
+    return @ptrCast(bytes + imag_offset);
 }
 
 fn reportLocalRegisterRangeError(number_of_registers_to_allocate: u16) void {
@@ -83,8 +91,44 @@ fn clearLocalStorage() void {
 
 fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
     stack_runtime.lastErrorCode = stack_runtime.ERROR_NONE;
-    clear_owned.clearRegister(reg);
-    return stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL;
+
+    if (stack_runtime.lastIntegerBase == 0 and (stack_runtime.inputDefault() == stack_runtime.ID_43S or stack_runtime.inputDefault() == stack_runtime.ID_DP)) {
+        const new_mem = stack_runtime.allocC47Blocks(runtime.real34SizeInBlocks()) orelse {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_RAM_FULL;
+            return true;
+        };
+
+        stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtReal34), stack_runtime.amNone);
+        memory_owned.setRegisterDataPointer(reg, new_mem);
+        memory_owned.zeroReal34(new_mem);
+        return false;
+    }
+
+    if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_CPXDP) {
+        const complex_tag = if (stack_runtime.getSystemFlag(stack_runtime.FLAG_POLAR)) stack_runtime.currentAngularMode | stack_runtime.amPolar else stack_runtime.amNone;
+        const new_mem = stack_runtime.allocC47Blocks(runtime.complex34SizeInBlocks()) orelse {
+            stack_runtime.lastErrorCode = stack_runtime.ERROR_RAM_FULL;
+            return true;
+        };
+
+        stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtComplex34), complex_tag);
+        memory_owned.setRegisterDataPointer(reg, new_mem);
+        memory_owned.zeroReal34(new_mem);
+        memory_owned.zeroReal34(complexImagPointer(new_mem));
+        return false;
+    }
+
+    if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_LI) {
+        stack_runtime.storeZeroLongInteger(reg);
+        return stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL;
+    }
+
+    if (stack_runtime.lastIntegerBase != 0) {
+        stack_runtime.storeZeroShortInteger(reg, stack_runtime.lastIntegerBase);
+        return stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL;
+    }
+
+    return false;
 }
 
 fn freeLocalRegisterRange(start_index: u16, end_index: u16) void {
@@ -121,7 +165,7 @@ fn allocateFirstLocalRegisters(number_of_registers_to_allocate: u16) void {
 
     const level: *subroutine_level_header_t = @ptrCast(@alignCast(grown_ptr));
     refreshLocalStorage(level, number_of_registers_to_allocate);
-    currentLocalFlags.?[0] = 0;
+    currentLocalFlags.?.* = 0;
 
     var index: u16 = 0;
     while (index < number_of_registers_to_allocate) : (index += 1) {
