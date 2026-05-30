@@ -1,5 +1,6 @@
 const build_options = @import("stack_state_build_options");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
@@ -109,25 +110,7 @@ pub const CM_NIM: u8 = 2;
 pub const CM_MIM: u8 = 12;
 pub const CM_NO_UNDO: u8 = 16;
 
-pub const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]c_ulong,
-};
-
-const longIntegerValue_t = if (use_fake_stack_state_harness_surface) u32 else mpz_struct;
-
-const FakeLongIntegerAbi = struct {
-    extern fn longIntegerInit(value: *u32) void;
-    extern fn uInt32ToLongInteger(source: u32, dest: *u32) void;
-    extern fn longIntegerFree(value: *u32) void;
-};
-
-const ProdLongIntegerAbi = struct {
-    extern fn __gmpz_clear(op: *mpz_struct) void;
-    extern fn __gmpz_init(op: *mpz_struct) void;
-    extern fn __gmpz_set_ui(op: *mpz_struct, value: c_ulong) void;
-};
+const longIntegerValue_t = long_integer_owned.longIntegerValueType(use_fake_stack_state_harness_surface);
 
 extern var ctxtReal39: ProductRealContext;
 extern fn decimal128ToNumber(source: *const ProductReal34, destination: *ProductReal) *ProductReal;
@@ -215,23 +198,11 @@ pub extern var SAVED_SIGMA_LASTX: real_t;
 pub extern var SAVED_SIGMA_LASTY: real_t;
 
 fn initUnsignedLongInteger(long_integer: *longInteger_t, value: u32) void {
-    if (use_fake_stack_state_harness_surface) {
-        FakeLongIntegerAbi.longIntegerInit(&long_integer[0]);
-        FakeLongIntegerAbi.uInt32ToLongInteger(value, &long_integer[0]);
-        return;
-    }
-
-    ProdLongIntegerAbi.__gmpz_init(&long_integer[0]);
-    ProdLongIntegerAbi.__gmpz_set_ui(&long_integer[0], @intCast(value));
+    long_integer_owned.initUnsignedLongInteger(use_fake_stack_state_harness_surface, long_integer, value);
 }
 
 fn freeLongInteger(long_integer: *longInteger_t) void {
-    if (use_fake_stack_state_harness_surface) {
-        FakeLongIntegerAbi.longIntegerFree(&long_integer[0]);
-        return;
-    }
-
-    ProdLongIntegerAbi.__gmpz_clear(&long_integer[0]);
+    long_integer_owned.freeLongInteger(use_fake_stack_state_harness_surface, long_integer);
 }
 
 fn registerReal34Ptr(reg: calcRegister_t) *align(1) ProductReal34 {
