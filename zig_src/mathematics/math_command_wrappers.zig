@@ -182,24 +182,6 @@ pub export fn realLog10(
     transcendental_wrapper_owned.realLog10(x, res, real_context);
 }
 
-fn lnRealValue(
-    x_in: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    transcendental_wrapper_owned.lnRealValue(x_in, res, real_context);
-}
-
-fn expM1Complex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    transcendental_wrapper_owned.expM1Complex(real, imag, res_real, res_imag, real_context);
-}
-
 pub export fn realPower10(
     x: *const runtime.real_t,
     res: *runtime.real_t,
@@ -222,40 +204,6 @@ pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
 
 pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
     transcendental_wrapper_owned.intPowCplx(ln_base);
-}
-
-fn lnReal() callconv(.c) void {
-    transcendental_wrapper_owned.lnReal();
-}
-
-fn lnCplx() callconv(.c) void {
-    transcendental_wrapper_owned.lnCplx();
-}
-
-fn lnP1Complex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    ln_real: *runtime.real_t,
-    ln_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    transcendental_wrapper_owned.lnP1Complex(real, imag, ln_real, ln_imag, real_context);
-}
-
-fn expM1Real() callconv(.c) void {
-    transcendental_wrapper_owned.expM1Real();
-}
-
-fn expM1Cplx() callconv(.c) void {
-    transcendental_wrapper_owned.expM1Cplx();
-}
-
-fn lnP1Real() callconv(.c) void {
-    transcendental_wrapper_owned.lnP1Real();
-}
-
-fn lnP1Cplx() callconv(.c) void {
-    transcendental_wrapper_owned.lnP1Cplx();
 }
 
 pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
@@ -359,15 +307,6 @@ pub export fn realArcosh(
 ) callconv(.c) void {
     inverse_trig_command_owned.realArcosh(x, res, real_context);
 }
-
-fn expReal() callconv(.c) void {
-    transcendental_wrapper_owned.expReal();
-}
-
-fn expCplx() callconv(.c) void {
-    transcendental_wrapper_owned.expCplx();
-}
-
 
 pub export fn chsReal() callconv(.c) void {
     change_sign_wrapper_owned.chsReal();
