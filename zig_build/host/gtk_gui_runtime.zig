@@ -1,3 +1,5 @@
+const profile_owned = @import("gtk_gui_profile_owned.zig");
+
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
 const GtkStyleProvider = opaque {};
@@ -370,41 +372,23 @@ pub export fn z47_startup_enter_mainloop() callconv(.c) void {
 }
 
 fn normKey00ItemInLayout() i16 {
-    return switch (calcModel) {
-        USER_C47, USER_DM42 => ITM_SIGMAPLUS,
-        USER_R47f_g => -1,
-        USER_R47bk_fg, USER_R47fg_bk => ITM_NULL,
-        USER_R47fg_g => ITM_NULL,
-        else => -1,
-    };
+    return profile_owned.normKey00ItemInLayout();
 }
 
 fn shortcutProfileValue() u8 {
-    if (calcModel == USER_C47) return USER_C47;
-    if (calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g) {
-        return USER_R47;
-    }
-    return 0;
+    return profile_owned.shortcutProfileValue();
 }
 
 fn currentStdKeyboard() *const [37]calcKey_t {
-    return switch (calcModel) {
-        USER_C47 => &kbd_std_C47,
-        USER_DM42 => &kbd_std_DM42,
-        USER_R47f_g => &kbd_std_R47f_g,
-        USER_R47bk_fg => &kbd_std_R47bk_fg,
-        USER_R47fg_bk => &kbd_std_R47fg_bk,
-        USER_R47fg_g => &kbd_std_R47fg_g,
-        else => &kbd_std_C47,
-    };
+    return @ptrCast(profile_owned.currentStdKeyboard());
 }
 
 fn isLabelText() bool {
-    return (tam.mode == TM_MENU or tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or tam.mode == TM_STORCL or tam.alpha) and getSystemFlag(FLAG_ALPHA);
+    return profile_owned.isLabelText();
 }
 
 fn alphaArrowsOffAndUpDn() bool {
-    return tam.mode == TM_FLAGR or tam.mode == TM_FLAGW or tam.mode == TM_STORCL or tam.mode == TM_MENU;
+    return profile_owned.alphaArrowsOffAndUpDn();
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -435,9 +419,7 @@ pub export fn sendKey(sent: i16) callconv(.c) void {
 }
 
 pub export fn checkNormal(keyNr: i16, item: i16) callconv(.c) bool {
-    var result: i16 = normKey00ItemInLayout();
-    const ss = Check_Norm_Key_00_Assigned(&result, keyNr);
-    return ss == item;
+    return profile_owned.checkNormal(keyNr, item);
 }
 
 pub export fn shortCutCommand(
