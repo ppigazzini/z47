@@ -1,7 +1,7 @@
 const atan_owned = @import("math_atan_owned.zig");
 const atan2_export = @import("math_atan2_export.zig");
 const atan2_command_owned = @import("math_atan2_command_owned.zig");
-const check_value_owned = @import("math_check_value_owned.zig");
+const check_wrapper_owned = @import("math_check_wrapper_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
@@ -9,7 +9,6 @@ const convergence_owned = @import("math_convergence_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const double_width_command_owned = @import("math_double_width_command_owned.zig");
 const exponent_bernoulli_command_owned = @import("math_exponent_bernoulli_command_owned.zig");
-const get_type_owned = @import("math_get_type_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const lambertw_command_owned = @import("math_lambertw_command_owned.zig");
@@ -696,7 +695,7 @@ pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
-    check_value_owned.checkInteger(mode);
+    check_wrapper_owned.fnCheckInteger(mode);
 }
 
 pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -744,81 +743,63 @@ pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnCheckType(type_: u16) callconv(.c) void {
-    check_value_owned.checkType(type_);
+    check_wrapper_owned.fnCheckType(type_);
 }
 
 pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkReal();
+    check_wrapper_owned.fnCheckReal(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkNumber();
+    check_wrapper_owned.fnCheckNumber(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckAngle(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkAngle();
+    check_wrapper_owned.fnCheckAngle(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkMatrix();
-}
-
-fn compareTypeErrorX() void {
-    runtime.setTemporaryInformation(false);
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    check_wrapper_owned.fnCheckMatrix(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkMatrixSquare();
+    check_wrapper_owned.fnCheckMatrixSquare(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckForZero(mode: u16) callconv(.c) void {
-    check_value_owned.checkForZero(mode);
+    check_wrapper_owned.fnCheckForZero(mode);
 }
 
 pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkRealMatrixVector(2);
+    check_wrapper_owned.fnCheckIsVect2d(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkRealMatrixVector(3);
+    check_wrapper_owned.fnCheckIsVect3d(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkNaN();
+    check_wrapper_owned.fnCheckNaN(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkInfinite();
+    check_wrapper_owned.fnCheckInfinite(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkSpecial();
+    check_wrapper_owned.fnCheckSpecial(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkPlusZero();
+    check_wrapper_owned.fnCheckPlusZero(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    check_value_owned.checkMinusZero();
+    check_wrapper_owned.fnCheckMinusZero(unused_but_mandatory_parameter);
 }
 
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    get_type_owned.getType();
+    check_wrapper_owned.fnGetType(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
