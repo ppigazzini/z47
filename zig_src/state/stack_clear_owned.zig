@@ -66,8 +66,6 @@ pub fn clearRegister(reg: runtime.calcRegister_t) void {
         runtime.storeZeroShortInteger(reg, runtime.lastIntegerBase);
         return;
     }
-
-    runtime.clearRegisterRetained(reg);
 }
 
 pub fn clearRegisters(confirmation: u16) void {
