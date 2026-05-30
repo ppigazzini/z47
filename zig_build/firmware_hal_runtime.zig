@@ -1,5 +1,6 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
 const buzz_owned = @import("firmware_hal_buzz_owned.zig");
+const play_owned = @import("firmware_hal_play_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -151,22 +152,6 @@ extern fn linkToRealMatrixRegister(regist: i16, linked_matrix: [*c]Real34Matrix)
 extern fn decQuadToUInt32(source: [*c]const DecQuad, context: *DecContext, round: c_int) u32;
 extern var ctxtReal34: DecContext;
 
-fn isExitKey(key: c_int) bool {
-    return key == KEY_EXIT or key == KEY_BSP;
-}
-
-fn matrixRows(header_raw: u32) u16 {
-    return @truncate(header_raw & 0x0fff);
-}
-
-fn matrixCols(header_raw: u32) u16 {
-    return @truncate((header_raw >> 12) & 0x0fff);
-}
-
-fn real34ToUInt32(value: [*c]const DecQuad) u32 {
-    return decQuadToUInt32(value, &ctxtReal34, DEC_ROUND_DOWN);
-}
-
 pub export fn audioTone(frequency: u32) callconv(.c) void {
     audio_volume_owned.audioTone(frequency);
 }
@@ -204,53 +189,7 @@ pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
-    const reg: i16 = @intCast(regist);
-
-    if (getRegisterDataType(reg) != DT_REAL34_MATRIX) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-    }
-
-    if (getSystemFlag(FLAG_QUIET) != 0) {
-        return;
-    }
-
-    var matrix: Real34Matrix = undefined;
-    linkToRealMatrixRegister(reg, &matrix);
-
-    const cols = matrixCols(matrix.header_raw);
-    if (cols != 2 and cols != 3) {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-        return;
-    }
-
-    screenUpdatingMode = SCRUPD_AUTO;
-    screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
-
-    const rows = matrixRows(matrix.header_raw);
-    var i: u16 = 0;
-    while (i < rows) : (i += 1) {
-        const base: usize = @as(usize, i) * cols;
-        const frequency = real34ToUInt32(&matrix.matrixElements[base]);
-        const ms_delay = real34ToUInt32(&matrix.matrixElements[base + 1]);
-
-        if (cols == 3) {
-            const volume: u16 = @truncate(real34ToUInt32(&matrix.matrixElements[base + 2]));
-            fnSetVolume(volume);
-        }
-
-        _Buzz(frequency, ms_delay);
-        if (ms_delay > 0) {
-            sys_delay(@divTrunc(ms_delay, 8));
-        }
-
-        while (key_empty() == 0) {
-            if (key_pop() == KEY_EXIT) {
-                key_pop_all();
-                return;
-            }
-        }
-    }
+    play_owned.fnPlay(regist);
 }
 
 pub export fn getLineDelay() callconv(.c) u32 {
