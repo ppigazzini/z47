@@ -1,4 +1,5 @@
 const std = @import("std");
+const precision_owned = @import("math_scalar_integer_precision_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -150,65 +151,15 @@ fn decompReal() void {
 }
 
 pub fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (register_data_type) {
-        runtime.dtLongInteger => ulpLongInteger(),
-        runtime.dtShortInteger => ulpShortInteger(),
-        runtime.dtReal34 => ulpReal(),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function fnUlp:", "cannot calculate ULP for current X type", null, null);
-            return;
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    precision_owned.fnUlp(unused_but_mandatory_parameter);
 }
 
 pub fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger => mantLonI(),
-        runtime.dtReal34 => mantReal(),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function mantError:", "cannot calculate MANT for current X type", null, null);
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    precision_owned.fnMant(unused_but_mandatory_parameter);
 }
 
 pub fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger, runtime.dtShortInteger => {},
-        runtime.dtReal34 => roundiReal(),
-        runtime.dtReal34Matrix => runtime.elementwiseRema(&roundiReal),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function roundiError:", "cannot calculate ROUNDI for current X type", null, null);
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    precision_owned.fnRoundi(unused_but_mandatory_parameter);
 }
 
 pub fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
