@@ -13,6 +13,7 @@ const double_width_command_owned = @import("math_double_width_command_owned.zig"
 const get_type_owned = @import("math_get_type_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
+const lambertw_command_owned = @import("math_lambertw_command_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
@@ -1130,115 +1131,6 @@ fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t
     return runtime.realCompareLessThan(rhs, lhs);
 }
 
-fn wInvReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
-        return;
-    }
-
-    runtime.WP34S_InverseW(&x_value, &x_value, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
-}
-
-fn wInvCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    runtime.WP34S_InverseComplexW(&real_value, &imag_value, &result_real, &result_imag, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
-}
-
-fn minusOneOverE() runtime.real_t {
-    var value = runtime.z47_math_wrappers_const_1oneE().*;
-    runtime.realChangeSign(&value);
-    return value;
-}
-
-fn wPosReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-    var result: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
-    const limit = minusOneOverE();
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
-        return;
-    }
-
-    if (realCompareGreaterEqual(&x_value, &limit)) {
-        runtime.WP34S_LambertW(&x_value, &result, false, &runtime.ctxtReal39);
-        runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
-    } else if (runtime.getSystemFlag(runtime.FLAG_CPXRES)) {
-        runtime.WP34S_ComplexLambertW(&x_value, runtime.z47_math_wrappers_const_0(), &result, &result_imag, &runtime.ctxtReal39);
-        runtime.convertComplexToResultRegister(&result, &result_imag, runtime.REGISTER_X);
-    } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function wPosReal:", "X < -e^(-1)", "and CPXRES is not set!", null);
-    }
-}
-
-fn wPosCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var result_real: runtime.real_t = undefined;
-    var result_imag: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    runtime.WP34S_ComplexLambertW(&real_value, &imag_value, &result_real, &result_imag, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
-}
-
-fn wNegReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
-    var result: runtime.real_t = undefined;
-    const limit = minusOneOverE();
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
-        return;
-    }
-
-    if (realCompareGreaterEqual(&x_value, &limit) and realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_0())) {
-        runtime.WP34S_LambertW(&x_value, &result, true, &runtime.ctxtReal39);
-        runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
-    } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function wNegReal:", "X < -e^(-1) || 0 < X", null, null);
-    }
-}
-
-fn wNegCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-    var result: runtime.real_t = undefined;
-    const limit = minusOneOverE();
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    if (runtime.realIsZero(&imag_value)) {
-        if (realCompareGreaterEqual(&real_value, &limit) and realCompareLessEqual(&real_value, runtime.z47_math_wrappers_const_0())) {
-            runtime.WP34S_LambertW(&real_value, &result, true, &runtime.ctxtReal39);
-            runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X);
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function wNegCplx:", "X < -e^(-1) || 0 < X", null, null);
-        }
-    } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function wNegCplx:", "Cannot calculate Wm for complex number with non-zero imaginary part", null, null);
-    }
-}
-
 fn factReal() callconv(.c) void {
     var x_value: runtime.real_t = undefined;
 
@@ -1861,18 +1753,15 @@ pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processRealComplexMonadicFunction(&wPosReal, &wPosCplx);
+    lambertw_command_owned.fnWpositive(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processRealComplexMonadicFunction(&wNegReal, &wNegCplx);
+    lambertw_command_owned.fnWnegative(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processRealComplexMonadicFunction(&wInvReal, &wInvCplx);
+    lambertw_command_owned.fnWinverse(unused_but_mandatory_parameter);
 }
 
 fn gcdShoI() callconv(.c) void {
