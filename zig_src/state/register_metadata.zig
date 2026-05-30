@@ -1,4 +1,5 @@
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
+const local_registers_owned = @import("register_metadata_local_registers_owned.zig");
 const payload_owned = @import("register_metadata_payload_owned.zig");
 const reallocate_owned = @import("register_metadata_reallocate_owned.zig");
 const variables_owned = @import("register_metadata_variables_owned.zig");
@@ -25,7 +26,7 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
 }
 
 pub export fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
-    runtime.allocateLocalRegistersRetained(number_of_registers_to_allocate);
+    local_registers_owned.allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
 pub export fn validateName(name: [*c]const u8) bool {
