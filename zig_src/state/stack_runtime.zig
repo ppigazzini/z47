@@ -1,6 +1,7 @@
 const build_options = @import("stack_state_build_options");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
+const product_real_owned = @import("stack_runtime_product_real_owned.zig");
 const register_range_owned = @import("stack_runtime_register_range_owned.zig");
 
 const use_fake_stack_state_harness_surface =
@@ -69,30 +70,11 @@ pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
 pub const LM_REGISTERS_PARTIAL: u16 = 6;
 pub const manualLoad: u16 = 1;
-const product_rounding_t = c_int;
-const PRODUCT_DEC_ROUND_DOWN: product_rounding_t = 5;
-const product_real_negative_bit: u8 = 0x80;
-
-const ProductReal = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [25]u16,
-};
-
-const ProductReal34 = extern struct {
-    bytes: [16]u8,
-};
-
-const ProductRealContext = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: product_rounding_t,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const PRODUCT_DEC_ROUND_DOWN = product_real_owned.PRODUCT_DEC_ROUND_DOWN;
+const product_rounding_t = product_real_owned.product_rounding_t;
+const ProductReal = product_real_owned.ProductReal;
+const ProductReal34 = product_real_owned.ProductReal34;
+const ProductRealContext = product_real_owned.ProductRealContext;
 
 pub const real_t = if (use_fake_stack_state_harness_surface)
     extern struct {
@@ -113,10 +95,6 @@ pub const CM_NO_UNDO: u8 = 16;
 
 const longIntegerValue_t = long_integer_owned.longIntegerValueType(use_fake_stack_state_harness_surface);
 
-extern var ctxtReal39: ProductRealContext;
-extern fn decimal128ToNumber(source: *const ProductReal34, destination: *ProductReal) *ProductReal;
-extern fn decNumberFromUInt32(result: *ProductReal, rhs: u32) *ProductReal;
-extern fn decNumberSubtract(result: *ProductReal, lhs: *const ProductReal, rhs: *const ProductReal, real_context: *ProductRealContext) *ProductReal;
 extern fn realToIntegralValue(source: *const ProductReal, destination: *ProductReal, mode: product_rounding_t, real_context: *ProductRealContext) void;
 extern fn realCompareAbsLessThan(number1: *const ProductReal, number2: *const ProductReal) bool;
 extern fn realToInt32C47(source: *const ProductReal, err: ?*bool) i32;
@@ -212,23 +190,23 @@ fn registerReal34Ptr(reg: calcRegister_t) *align(1) ProductReal34 {
 }
 
 fn productReal34ToReal(source: *const ProductReal34, destination: *ProductReal) void {
-    _ = decimal128ToNumber(source, destination);
+    product_real_owned.productReal34ToReal(source, destination);
 }
 
 fn productUInt32ToReal(source: u32, destination: *ProductReal) void {
-    _ = decNumberFromUInt32(destination, source);
+    product_real_owned.productUInt32ToReal(source, destination);
 }
 
 fn productRealIsNegative(value: *const ProductReal) bool {
-    return (value.bits & product_real_negative_bit) != 0;
+    return product_real_owned.productRealIsNegative(value);
 }
 
 fn productRealSetPositiveSign(value: *ProductReal) void {
-    value.bits &= 0x7f;
+    product_real_owned.productRealSetPositiveSign(value);
 }
 
 fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result: *ProductReal, real_context: *ProductRealContext) void {
-    _ = decNumberSubtract(result, lhs, rhs, real_context);
+    product_real_owned.productRealSubtract(lhs, rhs, result, real_context);
 }
 
 fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16) u8 {
@@ -288,18 +266,18 @@ fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destin
     }
     productRealSetPositiveSign(&x);
 
-    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
     start.* = @intCast(realToInt32C47(&integer_part, null));
 
-    productRealSubtract(&x, &integer_part, &x, &ctxtReal39);
+    productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
     x.exponent += 2;
-    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
     count.* = @intCast(realToInt32C47(&integer_part, null));
 
     if (destination) |dest| {
-        productRealSubtract(&x, &integer_part, &x, &ctxtReal39);
+        productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
         x.exponent += 3;
-        realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+        realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
         dest.* = @intCast(realToInt32C47(&integer_part, null));
     }
 
