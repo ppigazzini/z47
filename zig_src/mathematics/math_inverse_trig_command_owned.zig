@@ -1,4 +1,3 @@
-const atan_owned = @import("math_atan_owned.zig");
 const inverse_trig_complex_command_owned = @import("math_inverse_trig_complex_command_owned.zig");
 const inverse_trig_real_command_owned = @import("math_inverse_trig_real_command_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
