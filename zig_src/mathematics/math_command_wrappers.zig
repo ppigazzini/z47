@@ -1,7 +1,6 @@
 const atan_owned = @import("math_atan_owned.zig");
 const atan2_export = @import("math_atan2_export.zig");
 const atan2_command_owned = @import("math_atan2_command_owned.zig");
-const build_options = @import("math_command_wrappers_build_options");
 const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
@@ -324,38 +323,6 @@ pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {
     special_algebraic_command_owned.fnEulersFormula(unused_but_mandatory_parameter);
-}
-
-fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
-    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
-}
-
-fn complexMatrixElementCount(matrix: *const runtime.complex34Matrix_t) usize {
-    return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
-}
-
-fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.real34_t {
-    if (build_options.use_fake_wp34s_model) {
-        return &matrix.matrixElements[index];
-    }
-
-    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[index];
-}
-
-fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.complex34_t {
-    if (build_options.use_fake_wp34s_model) {
-        return &matrix.matrixElements[index];
-    }
-
-    return &@as([*]runtime.complex34_t, @ptrCast(matrix.matrixElements))[index];
-}
-
-fn complexMatrixRealPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
-    return &complexMatrixElementPtr(matrix, index).real;
-}
-
-fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {
-    return &complexMatrixElementPtr(matrix, index).imag;
 }
 
 pub export fn integerPartNoOp() callconv(.c) void {
