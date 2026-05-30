@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
+const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
@@ -287,24 +288,15 @@ pub fn builtinMenuItemName(index: u32) [*c]const u8 {
 }
 
 pub fn userMenuCount() u32 {
-    return numberOfUserMenus;
+    return named_menu_owned.userMenuCount();
 }
 
 pub fn userMenuName(index: u32) [*c]const u8 {
-    if (index >= numberOfUserMenus) {
-        return "";
-    }
-
-    return @ptrCast(&userMenus[index].menuName[0]);
+    return named_menu_owned.userMenuName(index);
 }
 
 pub fn namedVariableName(index: u16) [*c]const u8 {
-    if (index >= numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
-        return "";
-    }
-
-    const headers = allNamedVariables orelse return "";
-    return @ptrCast(&headers[index].variableName[1]);
+    return named_menu_owned.namedVariableName(index);
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
@@ -320,12 +312,7 @@ pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
-    if (use_fake_register_metadata_harness_surface or index >= numberOfNamedVariables) {
-        return;
-    }
-
-    const headers = allNamedVariables orelse return;
-    removeUserItemAssignments(@intCast(ITM_RCL), @ptrCast(&headers[index].variableName[1]));
+    named_menu_owned.removeNamedVariableRecallAssignment(index);
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {
