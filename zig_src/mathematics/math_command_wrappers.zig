@@ -25,6 +25,7 @@ const projection_command_wrapper_owned = @import("math_projection_command_wrappe
 const arithmetic_command_wrapper_owned = @import("math_arithmetic_command_wrapper_owned.zig");
 const special_algebraic_wrapper_owned = @import("math_special_algebraic_wrapper_owned.zig");
 const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
+const tail_command_wrappers_owned = @import("math_tail_command_wrappers_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const transform_command_owned = @import("math_transform_command_owned.zig");
@@ -717,72 +718,72 @@ pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv
 }
 
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.toPolar2(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnToPolar2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.toRect2(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnToRect2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToRect(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.toRect(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnToRect(unused_but_mandatory_parameter);
 }
 
 pub export fn fnParallel(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.parallel(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnParallel(unused_but_mandatory_parameter);
 }
 
 pub export fn fnUnitVector(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.unitVector(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnUnitVector(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSdl(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shift_digits_command_owned.sdl(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnSdl(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSdr(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    shift_digits_command_owned.sdr(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnSdr(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSquareRoot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.squareRoot(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnSquareRoot(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCubeRoot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.cubeRoot(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnCubeRoot(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPercentMRR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    percent_command_owned.percentMRR(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnPercentMRR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPercentPlusMG(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    percent_command_owned.percentPlusMG(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnPercentPlusMG(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPercentT(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    percent_command_owned.percentT(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnPercentT(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDeltaPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    percent_command_owned.deltaPercent(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnDeltaPercent(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_function_sequence_command_owned.fnFib(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnFib(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    matrix_vector_command_owned.fnLINPOL(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnLINPOL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    matrix_vector_command_owned.fnCross(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnCross(unused_but_mandatory_parameter);
 }
 pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    matrix_vector_command_owned.fnDot(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnDot(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogXY(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    logxy_command_owned.fnLogXY(unused_but_mandatory_parameter);
+    tail_command_wrappers_owned.fnLogXY(unused_but_mandatory_parameter);
 }
