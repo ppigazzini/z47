@@ -67,6 +67,30 @@ pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
 pub const LM_REGISTERS_PARTIAL: u16 = 6;
 pub const manualLoad: u16 = 1;
+const product_rounding_t = c_int;
+const PRODUCT_DEC_ROUND_DOWN: product_rounding_t = 5;
+const product_real_negative_bit: u8 = 0x80;
+
+const ProductReal = extern struct {
+    digits: i32,
+    exponent: i32,
+    bits: u8,
+    lsu: [25]u16,
+};
+
+const ProductReal34 = extern struct {
+    bytes: [16]u8,
+};
+
+const ProductRealContext = extern struct {
+    digits: i32,
+    emax: i32,
+    emin: i32,
+    round: product_rounding_t,
+    traps: u32,
+    status: u32,
+    clamp: u8,
+};
 
 pub const real_t = if (use_fake_stack_state_harness_surface)
     extern struct {
@@ -104,6 +128,14 @@ const ProdLongIntegerAbi = struct {
     extern fn __gmpz_init(op: *mpz_struct) void;
     extern fn __gmpz_set_ui(op: *mpz_struct, value: c_ulong) void;
 };
+
+extern var ctxtReal39: ProductRealContext;
+extern fn decimal128ToNumber(source: *const ProductReal34, destination: *ProductReal) *ProductReal;
+extern fn decNumberFromUInt32(result: *ProductReal, rhs: u32) *ProductReal;
+extern fn decNumberSubtract(result: *ProductReal, lhs: *const ProductReal, rhs: *const ProductReal, real_context: *ProductRealContext) *ProductReal;
+extern fn realToIntegralValue(source: *const ProductReal, destination: *ProductReal, mode: product_rounding_t, real_context: *ProductRealContext) void;
+extern fn realCompareAbsLessThan(number1: *const ProductReal, number2: *const ProductReal) bool;
+extern fn realToInt32C47(source: *const ProductReal, err: ?*bool) i32;
 
 pub const longInteger_t = [1]longIntegerValue_t;
 
@@ -152,9 +184,6 @@ pub extern fn fnRecall(reg: u16) void;
 pub extern fn recallStatsMatrix() void;
 pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
-pub extern fn z47_registers_retained_fnClearRegisters(confirmation: u16) void;
-pub extern fn z47_registers_retained_clearRegister(reg: calcRegister_t) void;
-pub extern fn z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_fnToReal(unused_but_mandatory_parameter: u16) void;
 pub extern fn z47_registers_retained_get_reg_clr_range(s: *u16, n: *u16) u8;
 pub extern fn z47_registers_retained_get_reg_swap_range(s: *u16, n: *u16, d: *u16) u8;
@@ -207,6 +236,150 @@ fn freeLongInteger(long_integer: *longInteger_t) void {
     }
 
     ProdLongIntegerAbi.__gmpz_clear(&long_integer[0]);
+}
+
+fn registerReal34Ptr(reg: calcRegister_t) *align(1) ProductReal34 {
+    const ptr = getRegisterDataPointer(reg) orelse unreachable;
+    return @ptrCast(ptr);
+}
+
+fn productReal34ToReal(source: *const ProductReal34, destination: *ProductReal) void {
+    _ = decimal128ToNumber(source, destination);
+}
+
+fn productUInt32ToReal(source: u32, destination: *ProductReal) void {
+    _ = decNumberFromUInt32(destination, source);
+}
+
+fn productRealIsNegative(value: *const ProductReal) bool {
+    return (value.bits & product_real_negative_bit) != 0;
+}
+
+fn productRealSetPositiveSign(value: *ProductReal) void {
+    value.bits &= 0x7f;
+}
+
+fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result: *ProductReal, real_context: *ProductRealContext) void {
+    _ = decNumberSubtract(result, lhs, rhs, real_context);
+}
+
+fn rangeExceedsLimit(start: u16, count: u16, exclusive_upper_bound: u16) bool {
+    return @as(u32, start) + @as(u32, count) >= @as(u32, exclusive_upper_bound);
+}
+
+fn resolveRegisterRange(start: u16, count: *u16, exclusive_upper_bound: u16) u8 {
+    if (rangeExceedsLimit(start, count.*, exclusive_upper_bound)) {
+        return ERROR_OUT_OF_RANGE;
+    }
+
+    if (count.* == 0) {
+        count.* = exclusive_upper_bound - start;
+    }
+
+    return ERROR_NONE;
+}
+
+fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16) u8 {
+    const register_x: u16 = @intCast(REGISTER_X);
+    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
+    const local_limit = first_local_register + @as(u16, currentLocalRegisterCount());
+
+    if (start < register_x) {
+        return resolveRegisterRange(start, count, register_x);
+    }
+
+    if (start < first_local_register) {
+        return resolveRegisterRange(start, count, first_local_register);
+    }
+
+    if (start < local_limit) {
+        if (load_into_memory != null and load_into_memory.?) {
+            return ERROR_OUT_OF_RANGE;
+        }
+
+        return resolveRegisterRange(start, count, local_limit);
+    }
+
+    return ERROR_OUT_OF_RANGE;
+}
+
+fn validateRegisterDestinationRange(start: u16, count: u16) u8 {
+    const register_x: u16 = @intCast(REGISTER_X);
+    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
+    const local_limit = first_local_register + @as(u16, currentLocalRegisterCount());
+
+    if (start < register_x) {
+        return if (rangeExceedsLimit(start, count, register_x)) ERROR_OUT_OF_RANGE else ERROR_NONE;
+    }
+
+    if (start < first_local_register) {
+        return if (rangeExceedsLimit(start, count, first_local_register)) ERROR_OUT_OF_RANGE else ERROR_NONE;
+    }
+
+    if (start < local_limit) {
+        return if (rangeExceedsLimit(start, count, local_limit)) ERROR_OUT_OF_RANGE else ERROR_NONE;
+    }
+
+    return ERROR_OUT_OF_RANGE;
+}
+
+fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destination: ?*u16) u8 {
+    var x: ProductReal = undefined;
+    var integer_part: ProductReal = undefined;
+    var thousand: ProductReal = undefined;
+
+    if (getRegisterDataType(REGISTER_X) != dtReal34) {
+        return ERROR_INVALID_DATA_TYPE_FOR_OP;
+    }
+
+    start.* = 0;
+    count.* = 0;
+    if (destination) |dest| {
+        dest.* = 0;
+    }
+
+    productReal34ToReal(registerReal34Ptr(REGISTER_X), &x);
+    productUInt32ToReal(1000, &thousand);
+    if (!realCompareAbsLessThan(&x, &thousand)) {
+        return ERROR_OUT_OF_RANGE;
+    }
+
+    if (load_into_memory) |load| {
+        load.* = productRealIsNegative(&x);
+    } else if (productRealIsNegative(&x)) {
+        return ERROR_OUT_OF_RANGE;
+    }
+    productRealSetPositiveSign(&x);
+
+    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+    start.* = @intCast(realToInt32C47(&integer_part, null));
+
+    productRealSubtract(&x, &integer_part, &x, &ctxtReal39);
+    x.exponent += 2;
+    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+    count.* = @intCast(realToInt32C47(&integer_part, null));
+
+    if (destination) |dest| {
+        productRealSubtract(&x, &integer_part, &x, &ctxtReal39);
+        x.exponent += 3;
+        realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, &ctxtReal39);
+        dest.* = @intCast(realToInt32C47(&integer_part, null));
+    }
+
+    const source_error = validateRegisterSourceRange(
+        if (load_into_memory) |load| load.* else null,
+        start.*,
+        count,
+    );
+    if (source_error != ERROR_NONE) {
+        return source_error;
+    }
+
+    if (destination) |dest| {
+        return validateRegisterDestinationRange(dest.*, count.*);
+    }
+
+    return ERROR_NONE;
 }
 
 pub fn getStackTop() calcRegister_t {
@@ -385,32 +558,32 @@ pub fn restoreSavedSigmaLastXYAndAdd() void {
     fnSigmaAddRem(SIGMA_PLUS);
 }
 
-pub fn clearRegistersRetained(confirmation: u16) void {
-    z47_registers_retained_fnClearRegisters(confirmation);
-}
-
-pub fn clearRegisterRetained(reg: calcRegister_t) void {
-    z47_registers_retained_clearRegister(reg);
-}
-
-pub fn regCopyRetained(unused_but_mandatory_parameter: u16) void {
-    z47_registers_retained_fnRegCopy(unused_but_mandatory_parameter);
-}
-
 pub fn toRealRetained(unused_but_mandatory_parameter: u16) void {
     z47_registers_retained_fnToReal(unused_but_mandatory_parameter);
 }
 
-pub fn getRegClrRangeRetained(s: *u16, n: *u16) u8 {
-    return z47_registers_retained_get_reg_clr_range(s, n);
+pub fn getRegClrRange(s: *u16, n: *u16) u8 {
+    if (use_fake_stack_state_harness_surface) {
+        return z47_registers_retained_get_reg_clr_range(s, n);
+    }
+
+    return getRegParamProduct(null, s, n, null);
 }
 
-pub fn getRegSwapRangeRetained(s: *u16, n: *u16, d: *u16) u8 {
-    return z47_registers_retained_get_reg_swap_range(s, n, d);
+pub fn getRegSwapRange(s: *u16, n: *u16, d: *u16) u8 {
+    if (use_fake_stack_state_harness_surface) {
+        return z47_registers_retained_get_reg_swap_range(s, n, d);
+    }
+
+    return getRegParamProduct(null, s, n, d);
 }
 
-pub fn getRegCopyParamsRetained(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
-    return z47_registers_retained_get_reg_copy_params(f, s, n, d);
+pub fn getRegCopyParams(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
+    if (use_fake_stack_state_harness_surface) {
+        return z47_registers_retained_get_reg_copy_params(f, s, n, d);
+    }
+
+    return getRegParamProduct(f, s, n, d);
 }
 
 pub fn real34SetZero(dest: ?*anyopaque) void {

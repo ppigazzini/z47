@@ -4,7 +4,7 @@ pub fn regClr() void {
     var s: u16 = 0;
     var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRange(&s, &n);
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
         var reg = s;
         while (reg < s + n) : (reg += 1) {
@@ -21,7 +21,7 @@ pub fn regSwap() void {
     var n: u16 = 0;
     var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegSwapRangeRetained(&s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegSwapRange(&s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
@@ -48,7 +48,7 @@ pub fn regCopy(unused_but_mandatory_parameter: u16) void {
     var n: u16 = 0;
     var d: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegCopyParamsRetained(&f, &s, &n, &d);
+    runtime.lastErrorCode = runtime.getRegCopyParams(&f, &s, &n, &d);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
@@ -93,7 +93,7 @@ pub fn regSort() void {
     var s: u16 = 0;
     var n: u16 = 0;
 
-    runtime.lastErrorCode = runtime.getRegClrRangeRetained(&s, &n);
+    runtime.lastErrorCode = runtime.getRegClrRange(&s, &n);
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         runtime.reportRegisterCommandError(runtime.lastErrorCode);
         return;
