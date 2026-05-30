@@ -1,5 +1,6 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
 const buzz_owned = @import("firmware_hal_buzz_owned.zig");
+const file_io_owned = @import("firmware_hal_file_io_owned.zig");
 const io_path_owned = @import("firmware_hal_io_path_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
 const printer_owned = @import("firmware_hal_printer_owned.zig");
@@ -211,107 +212,31 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
-    var filemode: u8 = 0;
-
-    fileNameSelected[0] = 0;
-
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) return ret;
-
-    switch (mode) {
-        IO_MODE_READ => {
-            filemode = FA_READ;
-            io_read_enabled = 1;
-        },
-        IO_MODE_WRITE => {
-            filemode = FA_CREATE_ALWAYS | FA_WRITE;
-            io_write_enabled = 1;
-        },
-        IO_MODE_UPDATE => {
-            filemode = FA_READ | FA_WRITE | FA_OPEN_EXISTING;
-            io_write_enabled = 1;
-            io_read_enabled = 1;
-        },
-        else => return FILE_ERROR,
-    }
-
-    if (mode != IO_MODE_READ) {
-        sys_disk_write_enable(1);
-    }
-
-    const result = f_open(ppgm_fp, &filename, filemode);
-    if (result != 0) {
-        if (mode != IO_MODE_READ) {
-            sys_disk_write_enable(0);
-        }
-        io_write_enabled = 0;
-        io_read_enabled = 0;
-        return FILE_ERROR;
-    }
-
-    if (mode == IO_MODE_READ) {
-        var jj: c_int = stringByteLength(&filename);
-        const kk: c_int = max(0, jj - stateFileNameVarLength + 1);
-        while (jj > kk) {
-            const c = filename[@intCast(jj - 1)];
-            if (c != '\\' and c != '/' and c != 0) {
-                jj -= 1;
-            } else {
-                break;
-            }
-        }
-        const selected: [*c]const u8 = @ptrCast((&filename)[@intCast(jj)..].ptr);
-        stringCopy(fileNameSelected, selected);
-    }
-
-    return FILE_OK;
+    return file_io_owned.ioFileOpen(path, mode, &io_write_enabled, &io_read_enabled);
 }
 
 pub export fn ioFileWrite(buffer: ?*const anyopaque, size: u32) callconv(.c) void {
-    var bytes_written: u32 = 0;
-    _ = f_write(ppgm_fp, buffer, size, &bytes_written);
+    file_io_owned.ioFileWrite(buffer, size);
 }
 
 pub export fn ioFileRead(buffer: ?*anyopaque, size: u32) callconv(.c) u32 {
-    var bytes_read: u32 = 0;
-    _ = f_read(ppgm_fp, buffer, size, &bytes_read);
-    return bytes_read;
+    return file_io_owned.ioFileRead(buffer, size);
 }
 
 pub export fn ioFileSeek(position: u32) callconv(.c) void {
-    _ = f_lseek(ppgm_fp, position);
+    file_io_owned.ioFileSeek(position);
 }
 
 pub export fn ioFileClose() callconv(.c) void {
-    _ = f_close(ppgm_fp);
-    if (io_write_enabled != 0) {
-        sys_disk_write_enable(0);
-    }
-    io_write_enabled = 0;
-    io_read_enabled = 0;
+    file_io_owned.ioFileClose(&io_write_enabled, &io_read_enabled);
 }
 
 pub export fn ioEof() callconv(.c) c_int {
-    return f_eof(ppgm_fp);
+    return file_io_owned.ioEof();
 }
 
 pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
-
-    sys_disk_write_enable(1);
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) {
-        sys_disk_write_enable(0);
-        return ret;
-    }
-
-    const result = f_unlink(&filename);
-    if (result != 0 and error_number != null) {
-        error_number.?.* = result;
-    }
-    sys_disk_write_enable(0);
-    return if (result == 0) FILE_OK else FILE_ERROR;
+    return file_io_owned.ioFileRemove(path, error_number);
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
