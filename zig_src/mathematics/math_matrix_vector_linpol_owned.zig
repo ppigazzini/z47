@@ -1,36 +1,7 @@
 const diagnostics_owned = @import("math_matrix_vector_linpol_diagnostics_owned.zig");
+const compute_owned = @import("math_matrix_vector_linpol_compute_owned.zig");
 const io_owned = @import("math_matrix_vector_linpol_io_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
-
-fn linpolScalar(a: *const runtime.real_t, b: *const runtime.real_t, p: *const runtime.real_t, res: *runtime.real_t) void {
-    var x: runtime.real_t = undefined;
-
-    if (runtime.realIsNaN(a) or runtime.realIsNaN(b) or runtime.realIsNaN(p) or runtime.realIsInfinite(p)) {
-        runtime.realSetNaN(res);
-    } else if (runtime.realIsInfinite(a)) {
-        if (runtime.realIsInfinite(b)) {
-            if (runtime.realIsNegative(a) == runtime.realIsNegative(b)) {
-                res.* = a.*;
-            } else {
-                runtime.realSetNaN(res);
-            }
-        } else {
-            res.* = a.*;
-        }
-    } else if (runtime.realIsInfinite(b)) {
-        res.* = b.*;
-    } else if (runtime.realCompareEqual(a, b)) {
-        res.* = a.*;
-    } else if (runtime.realIsNegative(a) != runtime.realIsNegative(b)) {
-        x = p.*;
-        runtime.realChangeSign(&x);
-        runtime.realFMA(&x, a, a, &x, &runtime.ctxtReal75);
-        runtime.realFMA(p, b, &x, res, &runtime.ctxtReal75);
-    } else {
-        runtime.realSubtract(b, a, &x, &runtime.ctxtReal75);
-        runtime.realFMA(&x, p, a, res, &runtime.ctxtReal75);
-    }
-}
 
 
 pub fn linpol() callconv(.c) void {
@@ -83,7 +54,7 @@ pub fn linpol() callconv(.c) void {
     runtime.fnDrop(0);
     runtime.fnDrop(0);
 
-    linpolScalar(&a_real, &b_real, &p, &result_real);
+    compute_owned.linpolScalar(&a_real, &b_real, &p, &result_real);
     if (real_coefs) {
         if (type_y == runtime.dtTime) {
             runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
@@ -110,7 +81,7 @@ pub fn linpol() callconv(.c) void {
         return;
     }
 
-    linpolScalar(&a_imag, &b_imag, &p, &result_imag);
+    compute_owned.linpolScalar(&a_imag, &b_imag, &p, &result_imag);
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
     runtime.convertComplexToResultRegister(&result_real, &result_imag, runtime.REGISTER_X);
 }
