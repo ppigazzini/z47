@@ -1,4 +1,5 @@
 const descriptor_owned = @import("stack_descriptor_owned.zig");
+const clear_owned = @import("stack_clear_owned.zig");
 const result_owned = @import("stack_result_owned.zig");
 const runtime = @import("stack_runtime.zig");
 
@@ -6,104 +7,22 @@ fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcReg
     return base + @as(runtime.calcRegister_t, @intCast(offset));
 }
 
-fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
-    const ptr = data_ptr orelse return null;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
-    return @ptrCast(bytes + imag_offset);
-}
-
 pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
-    runtime.clearRegister(runtime.REGISTER_X);
+    clear_owned.clearX();
 }
 
 pub export fn fnClearStack(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
-
-    const stack_top = runtime.getStackTop();
-    var reg = runtime.REGISTER_X;
-    while (reg <= stack_top) : (reg += 1) {
-        runtime.clearRegister(reg);
-    }
+    clear_owned.clearStack();
 }
 
 pub export fn clearRegister(reg: runtime.calcRegister_t) void {
-    if (runtime.lastIntegerBase == 0 and (runtime.inputDefault() == runtime.ID_43S or runtime.inputDefault() == runtime.ID_DP)) {
-        if (runtime.getRegisterDataType(reg) == runtime.dtReal34) {
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
-            runtime.setRegisterDataType(reg, @intCast(runtime.dtReal34), runtime.amNone);
-        } else {
-            runtime.reallocateRegister(reg, runtime.dtReal34, 0, runtime.amNone);
-            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-                return;
-            }
-            runtime.real34SetZero(runtime.getRegisterDataPointer(reg));
-        }
-        return;
-    }
-
-    if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_CPXDP) {
-        const complex_tag = if (runtime.getSystemFlag(runtime.FLAG_POLAR)) runtime.currentAngularMode | runtime.amPolar else runtime.amNone;
-
-        if (runtime.getRegisterDataType(reg) == runtime.dtComplex34) {
-            const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
-            runtime.setRegisterDataType(reg, @intCast(runtime.dtComplex34), complex_tag);
-        } else {
-            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.real34SizeInBlocks() * 2, complex_tag);
-            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-                return;
-            }
-            const data_ptr = runtime.getRegisterDataPointer(reg);
-            runtime.real34SetZero(data_ptr);
-            runtime.real34SetZero(complexImagPointer(data_ptr));
-        }
-        return;
-    }
-
-    if (runtime.lastIntegerBase == 0 and runtime.inputDefault() == runtime.ID_LI) {
-        runtime.storeZeroLongInteger(reg);
-        return;
-    }
-
-    if (runtime.lastIntegerBase != 0) {
-        runtime.storeZeroShortInteger(reg, runtime.lastIntegerBase);
-        return;
-    }
-
-    runtime.clearRegisterRetained(reg);
+    clear_owned.clearRegister(reg);
 }
 
 pub export fn fnClearRegisters(confirmation: u16) void {
-    if (confirmation == runtime.NOT_CONFIRMED and runtime.programRunStop != runtime.PGM_RUNNING) {
-        runtime.requestClearRegistersConfirmation();
-        return;
-    }
-
-    var reg: runtime.calcRegister_t = 0;
-    while (reg < runtime.REGISTER_X) : (reg += 1) {
-        runtime.clearRegister(reg);
-    }
-
-    var local_index: u8 = 0;
-    const local_count = runtime.currentLocalRegisterCount();
-    while (local_index < local_count) : (local_index += 1) {
-        runtime.clearRegister(runtime.FIRST_LOCAL_REGISTER + @as(runtime.calcRegister_t, @intCast(local_index)));
-    }
-
-    if (!runtime.getSystemFlag(runtime.FLAG_SSIZE8)) {
-        reg = runtime.REGISTER_A;
-        while (reg <= runtime.REGISTER_D) : (reg += 1) {
-            runtime.clearRegister(reg);
-        }
-    }
-
-    reg = runtime.REGISTER_I;
-    while (reg <= runtime.REGISTER_W) : (reg += 1) {
-        runtime.clearRegister(reg);
-    }
+    clear_owned.clearRegisters(confirmation);
 }
 
 pub export fn fnRegClr(unused_but_mandatory_parameter: u16) void {
