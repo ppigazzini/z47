@@ -4,6 +4,41 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
+fn loadIntegerRangeBounds(
+    x: *runtime.longInteger_t,
+    y: *runtime.longInteger_t,
+    min_value: **runtime.mpz_struct,
+    max_value: **runtime.mpz_struct,
+) bool {
+    var frac_x = false;
+    var frac_y = false;
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
+        return false;
+    }
+    if (frac_x) {
+        return false;
+    }
+
+    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
+        return false;
+    }
+    if (frac_y) {
+        return false;
+    }
+
+    const cmp = runtime.__gmpz_cmp(&x[0], &y[0]);
+    if (cmp == 0) {
+        runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+        return false;
+    }
+
+    min_value.* = if (cmp < 0) &x[0] else &y[0];
+    max_value.* = if (cmp < 0) &y[0] else &x[0];
+    return true;
+}
+
 fn doRealRandomI() callconv(.c) void {
     var reg_x: runtime.real_t = undefined;
     var reg_y: runtime.real_t = undefined;
@@ -38,37 +73,18 @@ fn doIntRandomI() callconv(.c) void {
 
     var x: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
-    var frac_x = false;
-    var frac_y = false;
+    var min_value: *runtime.mpz_struct = undefined;
+    var max_value: *runtime.mpz_struct = undefined;
 
     runtime.saveForUndo();
     runtime.thereIsSomethingToUndo = true;
 
-    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
-        return;
-    }
     defer runtime.__gmpz_clear(&x[0]);
-    if (frac_x) {
-        return;
-    }
-
-    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
-        return;
-    }
     defer runtime.__gmpz_clear(&y[0]);
-    if (frac_y) {
+
+    if (!loadIntegerRangeBounds(&x, &y, &min_value, &max_value)) {
         return;
     }
-
-    const cmp = runtime.__gmpz_cmp(&x[0], &y[0]);
-    if (cmp == 0) {
-        runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
-        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
-        return;
-    }
-
-    const min_value = if (cmp < 0) &x[0] else &y[0];
-    const max_value = if (cmp < 0) &y[0] else &x[0];
 
     var range: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&range[0]);
