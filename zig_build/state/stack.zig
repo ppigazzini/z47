@@ -49,6 +49,7 @@ fn addRuntimeObject(
 
     const descriptor_storage_options = b.addOptions();
     descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));
+    descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 
     return b.addObject(.{

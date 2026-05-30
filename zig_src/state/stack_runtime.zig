@@ -34,6 +34,9 @@ pub const FLAG_INTING: i32 = 0xc025;
 pub const FLAG_SOLVING: i32 = 0xc026;
 pub const FLAG_SPCRES: i32 = 0x8017;
 
+pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+pub const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
+
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
 pub const ERROR_RAM_FULL: u8 = 11;
@@ -62,6 +65,20 @@ pub const dtShortInteger: u32 = 8;
 pub const amNone: u32 = 5;
 pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
+pub const LM_REGISTERS_PARTIAL: u16 = 6;
+pub const manualLoad: u16 = 1;
+
+pub const real_t = if (use_fake_stack_state_harness_surface)
+    extern struct {
+        bytes: [8]u8,
+    }
+else
+    extern struct {
+        digits: i32,
+        exponent: i32,
+        bits: u8,
+        lsu: [25]u16,
+    };
 
 pub const CM_AIM: u8 = 1;
 pub const CM_NIM: u8 = 2;
@@ -75,6 +92,18 @@ pub const mpz_struct = extern struct {
 };
 
 const longIntegerValue_t = if (use_fake_stack_state_harness_surface) u32 else mpz_struct;
+
+const FakeLongIntegerAbi = struct {
+    extern fn longIntegerInit(value: *u32) void;
+    extern fn uInt32ToLongInteger(source: u32, dest: *u32) void;
+    extern fn longIntegerFree(value: *u32) void;
+};
+
+const ProdLongIntegerAbi = struct {
+    extern fn __gmpz_clear(op: *mpz_struct) void;
+    extern fn __gmpz_init(op: *mpz_struct) void;
+    extern fn __gmpz_set_ui(op: *mpz_struct, value: c_ulong) void;
+};
 
 pub const longInteger_t = [1]longIntegerValue_t;
 
@@ -94,18 +123,16 @@ extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
-extern fn z47_stack_runtime_sort_register_range(range_start: u16, range_end: u16) void;
-extern fn z47_stack_runtime_report_register_command_error(error_code: u8) void;
-extern fn z47_stack_runtime_restore_saved_sigma_last_xy_and_add() void;
 extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
 extern fn z47_stack_runtime_undo() void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn longIntegerInit(value: *longIntegerValue_t) void;
-extern fn uInt32ToLongInteger(source: u32, dest: *longIntegerValue_t) void;
+extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
-extern fn longIntegerFree(value: *longIntegerValue_t) void;
+extern fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
+extern fn fnClearRegisters(confirmation: u16) callconv(.c) void;
+extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -159,10 +186,27 @@ pub extern var SAVED_SIGMA_lastAddRem: i8;
 
 pub extern var statisticalSumsPointer: ?*anyopaque;
 pub extern var savedStatisticalSumsPointer: ?*anyopaque;
+pub extern var SAVED_SIGMA_LASTX: real_t;
+pub extern var SAVED_SIGMA_LASTY: real_t;
 
 fn initUnsignedLongInteger(long_integer: *longInteger_t, value: u32) void {
-    longIntegerInit(&long_integer[0]);
-    uInt32ToLongInteger(value, &long_integer[0]);
+    if (use_fake_stack_state_harness_surface) {
+        FakeLongIntegerAbi.longIntegerInit(&long_integer[0]);
+        FakeLongIntegerAbi.uInt32ToLongInteger(value, &long_integer[0]);
+        return;
+    }
+
+    ProdLongIntegerAbi.__gmpz_init(&long_integer[0]);
+    ProdLongIntegerAbi.__gmpz_set_ui(&long_integer[0], @intCast(value));
+}
+
+fn freeLongInteger(long_integer: *longInteger_t) void {
+    if (use_fake_stack_state_harness_surface) {
+        FakeLongIntegerAbi.longIntegerFree(&long_integer[0]);
+        return;
+    }
+
+    ProdLongIntegerAbi.__gmpz_clear(&long_integer[0]);
 }
 
 pub fn getStackTop() calcRegister_t {
@@ -267,7 +311,7 @@ pub fn statisticalSumsBytes() u32 {
 pub fn storeStackSizeInX(size: u32) void {
     var stack: longInteger_t = undefined;
     initUnsignedLongInteger(&stack, size);
-    defer longIntegerFree(&stack[0]);
+    defer freeLongInteger(&stack);
 
     convertLongIntegerToLongIntegerRegister(&stack[0], REGISTER_X);
 }
@@ -275,7 +319,7 @@ pub fn storeStackSizeInX(size: u32) void {
 pub fn storeLocalRegisterCountInX() void {
     var count: longInteger_t = undefined;
     initUnsignedLongInteger(&count, descriptor_storage.currentLocalRegisterCount());
-    defer longIntegerFree(&count[0]);
+    defer freeLongInteger(&count);
 
     convertLongIntegerToLongIntegerRegister(&count[0], REGISTER_X);
 }
@@ -291,7 +335,7 @@ pub fn inputDefault() u8 {
 pub fn storeZeroLongInteger(reg: calcRegister_t) void {
     var long_integer: longInteger_t = undefined;
     initUnsignedLongInteger(&long_integer, 0);
-    defer longIntegerFree(&long_integer[0]);
+    defer freeLongInteger(&long_integer);
 
     convertLongIntegerToLongIntegerRegister(&long_integer[0], reg);
 }
@@ -299,29 +343,46 @@ pub fn storeZeroLongInteger(reg: calcRegister_t) void {
 pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
     var long_integer: longInteger_t = undefined;
     initUnsignedLongInteger(&long_integer, 0);
-    defer longIntegerFree(&long_integer[0]);
+    defer freeLongInteger(&long_integer);
 
     convertLongIntegerToShortIntegerRegister(&long_integer[0], base, reg);
 }
 
 pub fn requestClearRegistersConfirmation() void {
-    z47_stack_runtime_request_clear_registers_confirmation();
+    if (use_fake_stack_state_harness_surface) {
+        z47_stack_runtime_request_clear_registers_confirmation();
+        return;
+    }
+
+    setConfirmationMode(&fnClearRegisters);
 }
 
 pub fn doPartialRegisterLoad(s: u16, n: u16, d: u16) void {
-    z47_stack_runtime_do_partial_register_load(s, n, d);
+    if (use_fake_stack_state_harness_surface) {
+        z47_stack_runtime_do_partial_register_load(s, n, d);
+        return;
+    }
+
+    doLoad(LM_REGISTERS_PARTIAL, s, n, d, manualLoad);
 }
 
 pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
-    z47_stack_runtime_sort_register_range(range_start, range_end);
+    z47_registers_retained_sort_reg(range_start, range_end);
 }
 
 pub fn reportRegisterCommandError(error_code: u8) void {
-    z47_stack_runtime_report_register_command_error(error_code);
+    if (use_fake_stack_state_harness_surface) {
+        displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
+        return;
+    }
+
+    displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {
-    z47_stack_runtime_restore_saved_sigma_last_xy_and_add();
+    convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
+    convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
+    fnSigmaAddRem(SIGMA_PLUS);
 }
 
 pub fn clearRegistersRetained(confirmation: u16) void {

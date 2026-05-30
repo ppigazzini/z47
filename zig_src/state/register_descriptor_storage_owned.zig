@@ -11,6 +11,9 @@ const number_of_global_registers: usize = @intCast(LAST_GLOBAL_REGISTER + 1);
 const use_array_backed_global_registers =
     @hasDecl(build_options, "use_array_backed_global_registers") and
     build_options.use_array_backed_global_registers;
+const use_fake_state_harness_surface =
+    @hasDecl(build_options, "use_fake_state_harness_surface") and
+    build_options.use_fake_state_harness_surface;
 
 const register_header_t = extern union {
     descriptor: register_descriptor_t,
@@ -19,6 +22,16 @@ const register_header_t = extern union {
 const named_variable_header_t = extern struct {
     header: register_header_t,
     variableName: [16]u8,
+};
+
+const subroutineLevelHeader_t = extern struct {
+    returnProgramNumber: i16,
+    returnLocalStep: u16,
+    numberOfLocalFlags: u8,
+    numberOfLocalRegisters: u8,
+    subroutineLevel: u16,
+    ptrToNextLevel: u16,
+    ptrToPreviousLevel: u16,
 };
 
 const GlobalRegisterBacking = if (use_array_backed_global_registers)
@@ -30,7 +43,27 @@ extern var globalRegister: GlobalRegisterBacking;
 extern var allNamedVariables: ?[*]named_variable_header_t;
 extern var currentLocalRegisters: ?[*]register_header_t;
 extern var numberOfNamedVariables: u16;
-extern var currentNumberOfLocalRegisters: u8;
+extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
+
+comptime {
+    if (use_fake_state_harness_surface) {
+        _ = struct {
+            extern var currentNumberOfLocalRegisters: u8;
+        };
+    }
+}
+
+fn localRegisterCount() u8 {
+    if (use_fake_state_harness_surface) {
+        const fake = struct {
+            extern var currentNumberOfLocalRegisters: u8;
+        };
+        return fake.currentNumberOfLocalRegisters;
+    }
+
+    const current_level = currentSubroutineLevelData orelse return 0;
+    return current_level.numberOfLocalRegisters;
+}
 
 fn globalRegisterHeader(reg: calcRegister_t) *register_header_t {
     const index: usize = @intCast(reg);
@@ -81,7 +114,7 @@ pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descript
     }
 
     const index: u16 = @intCast(reg - FIRST_LOCAL_REGISTER);
-    if (index >= currentNumberOfLocalRegisters) {
+    if (index >= localRegisterCount()) {
         return false;
     }
 
@@ -96,7 +129,7 @@ pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descripto
     }
 
     const index: u16 = @intCast(reg - FIRST_LOCAL_REGISTER);
-    if (index >= currentNumberOfLocalRegisters) {
+    if (index >= localRegisterCount()) {
         return false;
     }
 
@@ -106,5 +139,5 @@ pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descripto
 }
 
 pub fn currentLocalRegisterCount() u8 {
-    return currentNumberOfLocalRegisters;
+    return localRegisterCount();
 }
