@@ -5,6 +5,7 @@ const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const product_real_owned = @import("stack_runtime_product_real_owned.zig");
 const register_range_owned = @import("stack_runtime_register_range_owned.zig");
+const store_owned = @import("stack_runtime_store_owned.zig");
 const swap_descriptor_owned = @import("stack_runtime_swap_descriptor_owned.zig");
 
 const use_fake_stack_state_harness_surface =
@@ -362,19 +363,11 @@ pub fn statisticalSumsBytes() u32 {
 }
 
 pub fn storeStackSizeInX(size: u32) void {
-    var stack: longInteger_t = undefined;
-    initUnsignedLongInteger(&stack, size);
-    defer freeLongInteger(&stack);
-
-    convertLongIntegerToLongIntegerRegister(&stack[0], REGISTER_X);
+    store_owned.storeStackSizeInX(size);
 }
 
 pub fn storeLocalRegisterCountInX() void {
-    var count: longInteger_t = undefined;
-    initUnsignedLongInteger(&count, descriptor_storage.currentLocalRegisterCount());
-    defer freeLongInteger(&count);
-
-    convertLongIntegerToLongIntegerRegister(&count[0], REGISTER_X);
+    store_owned.storeLocalRegisterCountInX();
 }
 
 pub fn currentLocalRegisterCount() u8 {
@@ -386,19 +379,11 @@ pub fn inputDefault() u8 {
 }
 
 pub fn storeZeroLongInteger(reg: calcRegister_t) void {
-    var long_integer: longInteger_t = undefined;
-    initUnsignedLongInteger(&long_integer, 0);
-    defer freeLongInteger(&long_integer);
-
-    convertLongIntegerToLongIntegerRegister(&long_integer[0], reg);
+    store_owned.storeZeroLongInteger(reg);
 }
 
 pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
-    var long_integer: longInteger_t = undefined;
-    initUnsignedLongInteger(&long_integer, 0);
-    defer freeLongInteger(&long_integer);
-
-    convertLongIntegerToShortIntegerRegister(&long_integer[0], base, reg);
+    store_owned.storeZeroShortInteger(reg, base);
 }
 
 pub fn requestClearRegistersConfirmation() void {
