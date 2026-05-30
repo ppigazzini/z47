@@ -24,6 +24,7 @@ const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
+const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
@@ -1616,21 +1617,11 @@ pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        decrement_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    incDecRegister(@intCast(unused_but_mandatory_parameter), dec_flag);
+    increment_decrement_command_owned.dec(unused_but_mandatory_parameter);
 }
 
 pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (unused_but_mandatory_parameter != runtime.REGISTER_X and unused_but_mandatory_parameter != runtime.REGISTER_Y and unused_but_mandatory_parameter != runtime.REGISTER_Z and unused_but_mandatory_parameter != runtime.REGISTER_T) {
-        increment_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    incDecRegister(@intCast(unused_but_mandatory_parameter), inc_flag);
+    increment_decrement_command_owned.inc(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
