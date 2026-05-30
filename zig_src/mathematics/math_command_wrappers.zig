@@ -34,6 +34,7 @@ const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
 const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const forward_command_wrappers_owned = @import("math_forward_command_wrappers_owned.zig");
+const projection_command_wrapper_owned = @import("math_projection_command_wrapper_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
@@ -549,33 +550,27 @@ pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.realPart();
+    projection_command_wrapper_owned.fnRealPart(unused_but_mandatory_parameter);
 }
 
 pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.imaginaryPart();
+    projection_command_wrapper_owned.fnImaginaryPart(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.arg();
+    projection_command_wrapper_owned.fnArg(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.magnitude();
+    projection_command_wrapper_owned.fnMagnitude(unused_but_mandatory_parameter);
 }
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.conjugate();
+    projection_command_wrapper_owned.fnConjugate(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    projection_owned.swapRealImaginary();
+    projection_command_wrapper_owned.fnSwapRealImaginary(unused_but_mandatory_parameter);
 }
 
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
