@@ -113,11 +113,11 @@ pub fn setRegisterShortIntegerBase(regist: calcRegister_t, base: u32) void {
 }
 
 pub fn zeroReal() real_t {
-    return real_owned.zeroReal();
+    return real_owned.zeroReal(real_t, DECNUMUNITS);
 }
 
 pub fn realFromBoolean(value: bool) real_t {
-    return real_owned.realFromBoolean(value);
+    return real_owned.realFromBoolean(real_t, DECNUMUNITS, value);
 }
 
 pub fn isRealZero(value: *const real_t) bool {

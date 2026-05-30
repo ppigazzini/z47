@@ -5,7 +5,7 @@ pub fn setTemporaryInformation(temporary_information: *u8, ti_false: u8, conditi
 }
 
 pub fn invalidShortIntegerError(
-    display_error: *const fn (u8, calcRegister_t, calcRegister_t) void,
+    display_error: anytype,
     error_invalid_data_type_for_op: u8,
     err_register_line: calcRegister_t,
     regist: calcRegister_t,
@@ -14,7 +14,7 @@ pub fn invalidShortIntegerError(
 }
 
 pub fn wordSizeError(
-    display_error: *const fn (u8, calcRegister_t, calcRegister_t) void,
+    display_error: anytype,
     error_word_size_too_small: u8,
     err_register_line: calcRegister_t,
     register_x: calcRegister_t,

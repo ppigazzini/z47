@@ -1,29 +1,20 @@
 const std = @import("std");
 
-const DECNUMUNITS = 25;
-
-pub const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
-
-pub fn zeroReal() real_t {
+pub fn zeroReal(comptime RealType: type, comptime dec_num_units: comptime_int) RealType {
     return .{
         .digits = 1,
         .exponent = 0,
         .bits = 0,
-        .lsu = std.mem.zeroes([DECNUMUNITS]u16),
+        .lsu = std.mem.zeroes([dec_num_units]u16),
     };
 }
 
-pub fn realFromBoolean(value: bool) real_t {
-    var result = zeroReal();
+pub fn realFromBoolean(comptime RealType: type, comptime dec_num_units: comptime_int, value: bool) RealType {
+    var result = zeroReal(RealType, dec_num_units);
     result.lsu[0] = @intFromBool(value);
     return result;
 }
 
-pub fn isRealZero(value: *const real_t, dec_special: u8) bool {
+pub fn isRealZero(value: anytype, dec_special: u8) bool {
     return value.digits == 1 and value.lsu[0] == 0 and (value.bits & dec_special) == 0;
 }
