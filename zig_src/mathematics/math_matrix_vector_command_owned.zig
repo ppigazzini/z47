@@ -1,4 +1,5 @@
 const std = @import("std");
+const linpol_owned = @import("math_matrix_vector_linpol_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -459,5 +460,5 @@ pub fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    linpol();
+    linpol_owned.linpol();
 }
