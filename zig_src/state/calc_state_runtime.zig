@@ -1,4 +1,5 @@
 const io_owned = @import("calc_state_runtime_io_owned.zig");
+const ui_owned = @import("calc_state_runtime_ui_owned.zig");
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -49,16 +50,6 @@ pub extern fn z47_calc_state_get_version_allowed() u32;
 pub extern fn z47_calc_state_get_config_file_version() u32;
 pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool;
 
-pub extern fn z47_calc_state_runtime_allow_user_keys(saved_calc_model: u16) bool;
-pub extern fn z47_calc_state_runtime_fixup_r47_shift_keys() void;
-pub extern fn z47_calc_state_runtime_restart_post_load_timers() void;
-pub extern fn z47_calc_state_runtime_stamp_last_state_file_opened() void;
-pub extern fn z47_calc_state_runtime_show_saving_status() void;
-pub extern fn z47_calc_state_runtime_show_loading_status() void;
-pub extern fn z47_calc_state_runtime_write_save_sections() void;
-pub extern fn z47_calc_state_runtime_finish_load_ui(refresh_code: u16) void;
-pub extern fn z47_calc_state_runtime_save_calc() void;
-pub extern fn z47_calc_state_runtime_restore_calc() void;
 pub extern fn z47_calc_state_retained_doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
 pub extern fn z47_calc_state_retained_fnSave(save_mode: u16) void;
 pub extern fn z47_calc_state_retained_fnLoad(load_mode: u16) void;
@@ -137,43 +128,43 @@ pub inline fn parseU32Line(line: [*c]const u8) u32 {
 }
 
 pub inline fn allowUserKeys(saved_calc_model: u16) bool {
-    return z47_calc_state_runtime_allow_user_keys(saved_calc_model);
+    return ui_owned.allowUserKeys(saved_calc_model);
 }
 
 pub inline fn fixupR47ShiftKeys() void {
-    z47_calc_state_runtime_fixup_r47_shift_keys();
+    ui_owned.fixupR47ShiftKeys();
 }
 
 pub inline fn restartPostLoadTimers() void {
-    z47_calc_state_runtime_restart_post_load_timers();
+    ui_owned.restartPostLoadTimers();
 }
 
 pub inline fn stampLastStateFileOpened() void {
-    z47_calc_state_runtime_stamp_last_state_file_opened();
+    ui_owned.stampLastStateFileOpened();
 }
 
 pub inline fn showSavingStatus() void {
-    z47_calc_state_runtime_show_saving_status();
+    ui_owned.showSavingStatus();
 }
 
 pub inline fn showLoadingStatus() void {
-    z47_calc_state_runtime_show_loading_status();
+    ui_owned.showLoadingStatus();
 }
 
 pub inline fn writeSaveSections() void {
-    z47_calc_state_runtime_write_save_sections();
+    ui_owned.writeSaveSections();
 }
 
 pub inline fn finishLoadUi(refresh_code: u16) void {
-    z47_calc_state_runtime_finish_load_ui(refresh_code);
+    ui_owned.finishLoadUi(refresh_code);
 }
 
 pub inline fn saveCalcBackup() void {
-    z47_calc_state_runtime_save_calc();
+    ui_owned.saveCalcBackup();
 }
 
 pub inline fn restoreCalcBackup() void {
-    z47_calc_state_runtime_restore_calc();
+    ui_owned.restoreCalcBackup();
 }
 
 pub inline fn doLoadRetained(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
