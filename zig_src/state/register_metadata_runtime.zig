@@ -1,4 +1,3 @@
-const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
 const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
@@ -7,7 +6,6 @@ const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const size_owned = @import("register_metadata_size_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
-const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
 const variable_storage_owned = @import("register_metadata_variable_storage_owned.zig");
@@ -44,11 +42,6 @@ pub const ERROR_TOO_MANY_VARIABLES: u8 = 49;
 const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
 const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
-const item_t = extern struct {
-    status: u32,
-    itemCatalogName: [16]u8,
-};
-
 const userMenu_t = extern struct {
     menuName: [16]u8,
 };
@@ -59,8 +52,6 @@ const named_variable_header_t = extern struct {
     },
     variableName: [16]u8,
 };
-
-const max_fake_named_variables: u16 = 64;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const REGISTER_Y = stack_runtime.REGISTER_Y;
@@ -105,38 +96,6 @@ pub extern var numberOfNamedVariables: u16;
 pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
-
-extern var allNamedVariables: ?[*]named_variable_header_t;
-
-extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
-extern fn z47_register_metadata_config_size_in_blocks() u16;
-extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
-extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
-extern fn z47_register_metadata_builtin_menu_item_count() u32;
-extern fn z47_register_metadata_builtin_menu_item_is_menu(index: u32) bool;
-extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
-extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
-extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
-extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
-extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
-extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
-extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
-extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
-extern fn z47_register_metadata_request_delete_all_variables_confirmation() void;
-extern fn z47_register_metadata_request_clear_all_variables_confirmation() void;
-extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
-extern fn removeUserItemAssignments(item: i16, user_item_name: [*c]u8) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn fnDeleteAllVariables(confirmation: u16) callconv(.c) void;
-extern fn fnClearAllVariables(confirmation: u16) callconv(.c) void;
-extern fn fnClSigma(confirmation: u16) callconv(.c) void;
-extern fn fnDeleteVariable(regist: u16) callconv(.c) void;
-extern fn findNamedVariable(variable_name: [*c]const u8) calcRegister_t;
-extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
-extern fn z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
-extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
 fn bytesPerBlock() comptime_int {
     return payload_bytes_owned.bytesPerBlock();
