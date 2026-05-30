@@ -47,6 +47,10 @@ fn addRuntimeObject(
     build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("stack_state_build_options", build_options);
 
+    const descriptor_storage_options = b.addOptions();
+    descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));
+    module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-stack-state", .{name_prefix}),
         .root_module = module,
