@@ -1,5 +1,6 @@
 const builtin = @import("builtin");
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
+const payload_owned = @import("register_metadata_payload_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
 
@@ -19,109 +20,6 @@ const glyph_sub_mu: u16 = 0x2298;
 const glyph_sup_a: u16 = 0x2482;
 const glyph_sub_Z: u16 = 0x24e9;
 
-fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque, type_reg: *runtime.calcRegister_t) bool {
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
-        type_reg.* = reg;
-        return data_ptr.* != null;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            type_reg.* = @intCast(reg - runtime.FIRST_NAMED_VARIABLE);
-            return data_ptr.* != null;
-        }
-        return false;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        type_reg.* = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
-        return data_ptr.* != null;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            type_reg.* = reg;
-            return data_ptr.* != null;
-        }
-    }
-
-    return false;
-}
-
-fn tryGetDataPointerForFullSize(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
-        return data_ptr.* != null;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            return data_ptr.* != null;
-        }
-        return false;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        return data_ptr.* != null;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            return data_ptr.* != null;
-        }
-    }
-
-    return false;
-}
-
-fn tryGetDataPointerForMaxLengthSet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (reg <= runtime.LAST_GLOBAL_REGISTER) {
-        data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
-        return data_ptr.* != null;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE) {
-        if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            return data_ptr.* != null;
-        }
-        return false;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        return false;
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER) {
-        if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-            data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            return data_ptr.* != null;
-        }
-    }
-
-    return false;
-}
-
-fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
-    return runtime.matrixPayloadSizeInBlocks(
-        data_ptr,
-        if (data_type == runtime.dtReal34Matrix) runtime.real34SizeInBlocks() else runtime.complex34SizeInBlocks(),
-    );
-}
-
 fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
     return reg == runtime.RESERVED_VARIABLE_ADM or
         reg == runtime.RESERVED_VARIABLE_DENMAX or
@@ -139,57 +37,6 @@ fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRe
         return reg - runtime.FIRST_RESERVED_VARIABLE + runtime.REGISTER_X;
     }
     return reg;
-}
-
-fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
-    return switch (data_type) {
-        runtime.dtLongInteger,
-        runtime.dtString,
-        runtime.dtReal34Matrix,
-        runtime.dtComplex34Matrix,
-        => getRegisterMaxDataLengthInBlocks(source_reg),
-        runtime.dtTime,
-        runtime.dtDate,
-        runtime.dtShortInteger,
-        runtime.dtReal34,
-        runtime.dtComplex34,
-        runtime.dtConfig,
-        => 0,
-        else => null,
-    };
-}
-
-fn isVariableSizedDataType(data_type: u32) bool {
-    return data_type == runtime.dtLongInteger or
-        data_type == runtime.dtString or
-        data_type == runtime.dtReal34Matrix or
-        data_type == runtime.dtComplex34Matrix;
-}
-
-fn normalizePayloadSizeInBlocks(data_type: u32, requested_size_in_blocks: u16) u16 {
-    return switch (data_type) {
-        runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
-        runtime.dtReal34,
-        runtime.dtTime,
-        runtime.dtDate,
-        => runtime.real34SizeInBlocks(),
-        runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
-        runtime.dtConfig => runtime.configSizeInBlocks(),
-        runtime.dtLongInteger => runtime.alignLongIntegerBlocks(requested_size_in_blocks),
-        else => requested_size_in_blocks,
-    };
-}
-
-fn allocationSizeInBlocks(data_type: u32, payload_size_in_blocks: u16) u16 {
-    return switch (data_type) {
-        runtime.dtString,
-        runtime.dtLongInteger,
-        => payload_size_in_blocks + runtime.strLgIntHeaderSizeInBlocks(),
-        runtime.dtReal34Matrix,
-        runtime.dtComplex34Matrix,
-        => payload_size_in_blocks + runtime.matrixHeaderSizeInBlocks(),
-        else => payload_size_in_blocks,
-    };
 }
 
 fn validateNameGlyphLength(name: [*:0]const u8) usize {
@@ -224,120 +71,23 @@ fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_
         return true;
     }
 
-    if (isVariableSizedDataType(current_type)) {
+    if (payload_owned.isVariableSizedDataType(current_type)) {
         return getRegisterMaxDataLengthInBlocks(reg) != payload_size_in_blocks;
     }
 
     return false;
 }
 
-fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 {
-    var data_ptr: ?*anyopaque = null;
-
-    if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
-        return runtime.getRegisterFullSizeInBlocksRetained(reg);
-    }
-
-    return switch (data_type) {
-        runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
-        runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
-        else => runtime.getRegisterFullSizeInBlocksRetained(reg),
-    };
-}
-
 pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
-        return;
-    }
-
-    var data_ptr: ?*anyopaque = null;
-    var descriptor: runtime.register_descriptor_t = 0;
-
-    if (tryGetDataPointerForMaxLengthSet(reg, &data_ptr)) {
-        runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
-        return;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
-        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        return;
-    }
-
-    if (reg > runtime.LAST_LOCAL_REGISTER) {
-        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-        return;
-    }
-
-    if (reg <= runtime.LAST_NAMED_VARIABLE and !runtime.tryGetNamedDescriptor(reg, &descriptor)) {
-        return;
-    }
-
-    if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        if (data_ptr != null) {
-            runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
-            return;
-        }
-    }
-
-    if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
-        return;
-    }
-
-    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
+    payload_owned.setRegisterMaxDataLengthInBlocks(reg, max_data_len);
 }
 
 pub export fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterMaxDataLengthInBlocksRetained(reg);
-    }
-
-    var data_ptr: ?*anyopaque = null;
-    var type_reg = reg;
-
-    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
-        if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-            return 0;
-        }
-
-        if (reg > runtime.LAST_LOCAL_REGISTER) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-            return 0;
-        }
-
-        return 0;
-    }
-
-    const data_type = getRegisterDataType(type_reg);
-    if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
-        return matrixMaxLengthInBlocks(data_ptr, data_type);
-    }
-
-    return runtime.dataMaxLengthInBlocks(data_ptr);
+    return payload_owned.getRegisterMaxDataLengthInBlocks(reg);
 }
 
 pub export fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterFullSizeInBlocksRetained(reg);
-    }
-
-    return switch (getRegisterDataType(reg)) {
-        runtime.dtLongInteger,
-        runtime.dtString,
-        runtime.dtReal34Matrix,
-        runtime.dtComplex34Matrix,
-        => getVariableFullSizeInBlocks(reg, getRegisterDataType(reg)),
-        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => runtime.real34SizeInBlocks(),
-        runtime.dtShortInteger => runtime.shortIntegerSizeInBlocks(),
-        runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
-        runtime.dtConfig => runtime.configSizeInBlocks(),
-        else => blk: {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
-            break :blk 0;
-        },
-    };
+    return payload_owned.getRegisterFullSizeInBlocks(reg);
 }
 
 pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
@@ -356,7 +106,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
     const source_full_size = getRegisterFullSizeInBlocks(normalized_source);
 
     if (getRegisterDataType(normalized_dest) != source_type or getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
-        const payload_size = copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
+        const payload_size = payload_owned.copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
             return;
         };
 
@@ -380,8 +130,8 @@ pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, da
         return;
     }
 
-    const normalized_payload_size = normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
-    const allocated_size = allocationSizeInBlocks(data_type, normalized_payload_size);
+    const normalized_payload_size = payload_owned.normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
+    const allocated_size = payload_owned.allocationSizeInBlocks(data_type, normalized_payload_size);
 
     if (needsReallocate(reg, data_type, normalized_payload_size)) {
         if (!runtime.memoryBlockAvailable(allocated_size)) {
