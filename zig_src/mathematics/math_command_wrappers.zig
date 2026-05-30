@@ -9,6 +9,7 @@ const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const double_width_command_owned = @import("math_double_width_command_owned.zig");
+const exponent_bernoulli_command_owned = @import("math_exponent_bernoulli_command_owned.zig");
 const get_type_owned = @import("math_get_type_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
@@ -1187,19 +1188,15 @@ pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    bnCommon(false);
+    exponent_bernoulli_command_owned.bn(unused_but_mandatory_parameter);
 }
 
 pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    bnCommon(true);
+    exponent_bernoulli_command_owned.bnStar(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&exptReal, null, null, &exptLonI);
+    exponent_bernoulli_command_owned.expt(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
