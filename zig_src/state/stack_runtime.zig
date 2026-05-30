@@ -1,6 +1,7 @@
 const build_options = @import("stack_state_build_options");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
+const register_range_owned = @import("stack_runtime_register_range_owned.zig");
 
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
@@ -230,64 +231,33 @@ fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result:
     _ = decNumberSubtract(result, lhs, rhs, real_context);
 }
 
-fn rangeExceedsLimit(start: u16, count: u16, exclusive_upper_bound: u16) bool {
-    return @as(u32, start) + @as(u32, count) >= @as(u32, exclusive_upper_bound);
-}
-
-fn resolveRegisterRange(start: u16, count: *u16, exclusive_upper_bound: u16) u8 {
-    if (rangeExceedsLimit(start, count.*, exclusive_upper_bound)) {
-        return ERROR_OUT_OF_RANGE;
-    }
-
-    if (count.* == 0) {
-        count.* = exclusive_upper_bound - start;
-    }
-
-    return ERROR_NONE;
-}
-
 fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16) u8 {
     const register_x: u16 = @intCast(REGISTER_X);
     const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    const local_limit = first_local_register + @as(u16, currentLocalRegisterCount());
-
-    if (start < register_x) {
-        return resolveRegisterRange(start, count, register_x);
-    }
-
-    if (start < first_local_register) {
-        return resolveRegisterRange(start, count, first_local_register);
-    }
-
-    if (start < local_limit) {
-        if (load_into_memory != null and load_into_memory.?) {
-            return ERROR_OUT_OF_RANGE;
-        }
-
-        return resolveRegisterRange(start, count, local_limit);
-    }
-
-    return ERROR_OUT_OF_RANGE;
+    return register_range_owned.validateRegisterSourceRange(
+        load_into_memory,
+        start,
+        count,
+        register_x,
+        first_local_register,
+        currentLocalRegisterCount(),
+        ERROR_OUT_OF_RANGE,
+        ERROR_NONE,
+    );
 }
 
 fn validateRegisterDestinationRange(start: u16, count: u16) u8 {
     const register_x: u16 = @intCast(REGISTER_X);
     const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    const local_limit = first_local_register + @as(u16, currentLocalRegisterCount());
-
-    if (start < register_x) {
-        return if (rangeExceedsLimit(start, count, register_x)) ERROR_OUT_OF_RANGE else ERROR_NONE;
-    }
-
-    if (start < first_local_register) {
-        return if (rangeExceedsLimit(start, count, first_local_register)) ERROR_OUT_OF_RANGE else ERROR_NONE;
-    }
-
-    if (start < local_limit) {
-        return if (rangeExceedsLimit(start, count, local_limit)) ERROR_OUT_OF_RANGE else ERROR_NONE;
-    }
-
-    return ERROR_OUT_OF_RANGE;
+    return register_range_owned.validateRegisterDestinationRange(
+        start,
+        count,
+        register_x,
+        first_local_register,
+        currentLocalRegisterCount(),
+        ERROR_OUT_OF_RANGE,
+        ERROR_NONE,
+    );
 }
 
 fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destination: ?*u16) u8 {
