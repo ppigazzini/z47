@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("stack_runtime.zig");
+const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
@@ -380,21 +381,11 @@ pub fn clearSigma() void {
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
-    if (use_fake_register_metadata_harness_surface) {
-        z47_register_metadata_request_delete_all_variables_confirmation();
-        return;
-    }
-
-    setConfirmationMode(&fnDeleteAllVariables);
+    confirmation_owned.requestDeleteAllVariablesConfirmation();
 }
 
 pub fn requestClearAllVariablesConfirmation() void {
-    if (use_fake_register_metadata_harness_surface) {
-        z47_register_metadata_request_clear_all_variables_confirmation();
-        return;
-    }
-
-    setConfirmationMode(&fnClearAllVariables);
+    confirmation_owned.requestClearAllVariablesConfirmation();
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
