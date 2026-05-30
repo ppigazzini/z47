@@ -1,5 +1,6 @@
 const std = @import("std");
 const register_storage_owned = @import("shortint_runtime_register_storage_owned.zig");
+const real_owned = @import("shortint_runtime_real_owned.zig");
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
@@ -110,22 +111,15 @@ pub fn setRegisterShortIntegerBase(regist: calcRegister_t, base: u32) void {
 }
 
 pub fn zeroReal() real_t {
-    return .{
-        .digits = 1,
-        .exponent = 0,
-        .bits = 0,
-        .lsu = std.mem.zeroes([DECNUMUNITS]u16),
-    };
+    return real_owned.zeroReal();
 }
 
 pub fn realFromBoolean(value: bool) real_t {
-    var result = zeroReal();
-    result.lsu[0] = @intFromBool(value);
-    return result;
+    return real_owned.realFromBoolean(value);
 }
 
 pub fn isRealZero(value: *const real_t) bool {
-    return value.digits == 1 and value.lsu[0] == 0 and (value.bits & DECSPECIAL) == 0;
+    return real_owned.isRealZero(value, DECSPECIAL);
 }
 
 pub fn setTemporaryInformation(condition: bool) void {
