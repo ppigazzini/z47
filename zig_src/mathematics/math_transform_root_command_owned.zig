@@ -1,15 +1,12 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
+const shortint_owned = @import("math_transform_shortint_owned.zig");
 
 const square_root_retained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
-
-fn shortIntegerData(reg: runtime.calcRegister_t) *align(1) u64 {
-    return @as(*align(1) u64, @ptrCast(runtime.getRegisterDataPointer(reg).?));
-}
 
 fn sqrtShoI() callconv(.c) void {
     var sign_value: i32 = 0;
 
-    _ = runtime.WP34S_extract_value(shortIntegerData(runtime.REGISTER_X).*, &sign_value);
+    _ = runtime.WP34S_extract_value(shortint_owned.shortIntegerData(runtime.REGISTER_X).*, &sign_value);
     if (sign_value != 0 and runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {
         var value: runtime.real_t = undefined;
 
@@ -21,7 +18,7 @@ fn sqrtShoI() callconv(.c) void {
         return;
     }
 
-    shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intSqrt(shortIntegerData(runtime.REGISTER_X).*);
+    shortint_owned.shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intSqrt(shortint_owned.shortIntegerData(runtime.REGISTER_X).*);
 }
 
 fn sqrtReal() callconv(.c) void {
@@ -122,9 +119,9 @@ fn curtShoI() callconv(.c) void {
 
     cube_root = runtime.realToInt32C47(&value, null);
     if (cube_root >= 0) {
-        shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(cube_root), 0);
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(cube_root), 0);
     } else {
-        shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(-cube_root), 1);
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_build_value(@intCast(-cube_root), 1);
     }
 }
 
