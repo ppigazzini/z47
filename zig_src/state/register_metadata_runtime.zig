@@ -9,6 +9,7 @@ const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
+const variable_storage_owned = @import("register_metadata_variable_storage_owned.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
@@ -295,15 +296,15 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
-    return z47_register_metadata_allocate_first_named_variable_header();
+    return variable_storage_owned.allocateFirstNamedVariableHeader();
 }
 
 pub fn appendNamedVariableHeader(index: *u16) bool {
-    return z47_register_metadata_append_named_variable_header(index);
+    return variable_storage_owned.appendNamedVariableHeader(index);
 }
 
 pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    z47_register_metadata_store_named_variable_name(index, variable_name);
+    variable_storage_owned.storeNamedVariableName(index, variable_name);
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
@@ -311,19 +312,19 @@ pub fn removeNamedVariableRecallAssignment(index: u16) void {
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {
-    z47_register_metadata_clear_named_variable_slot(index);
+    variable_storage_owned.clearNamedVariableSlot(index);
 }
 
 pub fn shrinkNamedVariableHeaderStorage() void {
-    z47_register_metadata_shrink_named_variable_header_storage();
+    variable_storage_owned.shrinkNamedVariableHeaderStorage();
 }
 
 pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
-    return z47_register_metadata_compare_menu_names(left, right);
+    return variable_storage_owned.compareMenuNames(left, right);
 }
 
 pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
-    return z47_register_metadata_find_reserved_variable_name(variable_name, glyph_length);
+    return variable_storage_owned.findReservedVariableName(variable_name, glyph_length);
 }
 
 pub fn reportInvalidName() void {
