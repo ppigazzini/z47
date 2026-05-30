@@ -32,6 +32,7 @@ const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig"
 const sign_command_owned = @import("math_sign_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
+const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
@@ -166,7 +167,7 @@ pub export fn realExpLimitCheck(
     result: *runtime.real_t,
     zero: *const runtime.real_t,
 ) callconv(.c) bool {
-    return transcendental_command_owned.realExpLimitCheck(x, result, zero);
+    return transcendental_wrapper_owned.realExpLimitCheck(x, result, zero);
 }
 
 pub export fn realExp(
@@ -174,7 +175,7 @@ pub export fn realExp(
     result: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_command_owned.realExp(x, result, real_context);
+    transcendental_wrapper_owned.realExp(x, result, real_context);
 }
 
 pub export fn expComplex(
@@ -184,7 +185,7 @@ pub export fn expComplex(
     res_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_command_owned.expComplex(real, imag, res_real, res_imag, real_context);
+    transcendental_wrapper_owned.expComplex(real, imag, res_real, res_imag, real_context);
 }
 
 pub export fn realExpM1(
@@ -192,7 +193,7 @@ pub export fn realExpM1(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_command_owned.realExpM1(x, res, real_context);
+    transcendental_wrapper_owned.realExpM1(x, res, real_context);
 }
 
 pub export fn realLog10(
@@ -200,8 +201,7 @@ pub export fn realLog10(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    lnRealValue(x, res, real_context);
-    runtime.realDivide(res, runtime.z47_math_wrappers_const_ln10(), res, real_context);
+    transcendental_wrapper_owned.realLog10(x, res, real_context);
 }
 
 fn lnRealValue(
@@ -209,7 +209,7 @@ fn lnRealValue(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    transcendental_command_owned.lnRealValue(x_in, res, real_context);
+    transcendental_wrapper_owned.lnRealValue(x_in, res, real_context);
 }
 
 fn expM1Complex(
@@ -219,7 +219,7 @@ fn expM1Complex(
     res_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    transcendental_command_owned.expM1Complex(real, imag, res_real, res_imag, real_context);
+    transcendental_wrapper_owned.expM1Complex(real, imag, res_real, res_imag, real_context);
 }
 
 pub export fn realPower10(
@@ -227,8 +227,7 @@ pub export fn realPower10(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln10(), res, real_context);
-    realExp(res, res, real_context);
+    transcendental_wrapper_owned.realPower10(x, res, real_context);
 }
 
 pub export fn realPower2(
@@ -236,52 +235,23 @@ pub export fn realPower2(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    runtime.realMultiply(x, runtime.z47_math_wrappers_const_ln2(), res, real_context);
-    realExp(res, res, real_context);
+    transcendental_wrapper_owned.realPower2(x, res, real_context);
 }
 
 pub export fn intPowReal(powf: PowRealFn) callconv(.c) void {
-    var x: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.realIsSpecial(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.z47_math_wrappers_report_int_pow_real_domain_error();
-        return;
-    }
-
-    powf(&x, &x, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
+    transcendental_wrapper_owned.intPowReal(powf);
 }
 
 pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-    var factor: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
-    }
-
-    runtime.realMultiply(ln_base, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(ln_base, &b, &b, &runtime.ctxtReal39);
-
-    realExp(&a, &factor, &runtime.ctxtReal39);
-    runtime.realPolarToRectangular(runtime.z47_math_wrappers_const_1(), &b, &a, &b, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &a, &a, &runtime.ctxtReal39);
-    runtime.realMultiply(&factor, &b, &b, &runtime.ctxtReal39);
-
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    transcendental_wrapper_owned.intPowCplx(ln_base);
 }
 
 fn lnReal() callconv(.c) void {
-    transcendental_command_owned.lnReal();
+    transcendental_wrapper_owned.lnReal();
 }
 
 fn lnCplx() callconv(.c) void {
-    transcendental_command_owned.lnCplx();
+    transcendental_wrapper_owned.lnCplx();
 }
 
 fn lnP1Complex(
@@ -291,23 +261,23 @@ fn lnP1Complex(
     ln_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) void {
-    transcendental_command_owned.lnP1Complex(real, imag, ln_real, ln_imag, real_context);
+    transcendental_wrapper_owned.lnP1Complex(real, imag, ln_real, ln_imag, real_context);
 }
 
 fn expM1Real() callconv(.c) void {
-    transcendental_command_owned.expM1Real();
+    transcendental_wrapper_owned.expM1Real();
 }
 
 fn expM1Cplx() callconv(.c) void {
-    transcendental_command_owned.expM1Cplx();
+    transcendental_wrapper_owned.expM1Cplx();
 }
 
 fn lnP1Real() callconv(.c) void {
-    transcendental_command_owned.lnP1Real();
+    transcendental_wrapper_owned.lnP1Real();
 }
 
 fn lnP1Cplx() callconv(.c) void {
-    transcendental_command_owned.lnP1Cplx();
+    transcendental_wrapper_owned.lnP1Cplx();
 }
 
 pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
@@ -532,11 +502,11 @@ pub export fn realArcosh(
 }
 
 fn expReal() callconv(.c) void {
-    transcendental_command_owned.expReal();
+    transcendental_wrapper_owned.expReal();
 }
 
 fn expCplx() callconv(.c) void {
-    transcendental_command_owned.expCplx();
+    transcendental_wrapper_owned.expCplx();
 }
 
 
