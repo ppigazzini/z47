@@ -4,6 +4,7 @@ const conversion_owned = @import("stack_runtime_conversion_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const product_real_owned = @import("stack_runtime_product_real_owned.zig");
+const reg_params_owned = @import("stack_runtime_reg_params_owned.zig");
 const register_range_owned = @import("stack_runtime_register_range_owned.zig");
 const store_owned = @import("stack_runtime_store_owned.zig");
 const swap_descriptor_owned = @import("stack_runtime_swap_descriptor_owned.zig");
@@ -227,6 +228,10 @@ fn validateRegisterDestinationRange(start: u16, count: u16) u8 {
 }
 
 fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destination: ?*u16) u8 {
+    if (use_fake_stack_state_harness_surface) {
+        return ERROR_OUT_OF_RANGE;
+    }
+
     var x: ProductReal = undefined;
     var integer_part: ProductReal = undefined;
     var thousand: ProductReal = undefined;
@@ -409,25 +414,13 @@ pub fn restoreSavedSigmaLastXYAndAdd() void {
 }
 
 pub fn getRegClrRange(s: *u16, n: *u16) u8 {
-    if (use_fake_stack_state_harness_surface) {
-        return z47_registers_retained_get_reg_clr_range(s, n);
-    }
-
-    return getRegParamProduct(null, s, n, null);
+    return reg_params_owned.getRegClrRange(use_fake_stack_state_harness_surface, s, n, getRegParamProduct);
 }
 
 pub fn getRegSwapRange(s: *u16, n: *u16, d: *u16) u8 {
-    if (use_fake_stack_state_harness_surface) {
-        return z47_registers_retained_get_reg_swap_range(s, n, d);
-    }
-
-    return getRegParamProduct(null, s, n, d);
+    return reg_params_owned.getRegSwapRange(use_fake_stack_state_harness_surface, s, n, d, getRegParamProduct);
 }
 
 pub fn getRegCopyParams(f: *bool, s: *u16, n: *u16, d: *u16) u8 {
-    if (use_fake_stack_state_harness_surface) {
-        return z47_registers_retained_get_reg_copy_params(f, s, n, d);
-    }
-
-    return getRegParamProduct(f, s, n, d);
+    return reg_params_owned.getRegCopyParams(use_fake_stack_state_harness_surface, f, s, n, d, getRegParamProduct);
 }
