@@ -1,5 +1,6 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
 const buzz_owned = @import("firmware_hal_buzz_owned.zig");
+const callbacks_owned = @import("firmware_hal_callbacks_owned.zig");
 const file_io_owned = @import("firmware_hal_file_io_owned.zig");
 const io_path_owned = @import("firmware_hal_io_path_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
@@ -240,74 +241,19 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    lcd_puts(t24, "Saving state ...");
-    lcd_puts(t24, fname);
-    lcd_refresh();
-
-    if (data != null) {
-        _ = strcpy(@ptrCast(data.?), fpath);
-    }
-    set_reset_state_file(fpath);
-    return MRET_SAVESTATE;
+    return callbacks_owned.saveStatefile(fpath, fname, data);
 }
 
 pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    _ = fname;
-
-    lcd_puts(t24, "");
-    lcd_puts(t24, "WARNING: Current calculator state");
-    lcd_puts(t24, "will be lost.");
-    lcd_puts(t24, "");
-    lcd_puts(t24, "");
-    lcd_puts(t24, "Press [ENTER] to confirm.");
-    lcd_refresh();
-
-    wait_for_key_release(-1);
-
-    while (true) {
-        const key = runner_get_key(null);
-        if (isExitKey(key)) {
-            return 0;
-        }
-        if (is_menu_auto_off() != 0) {
-            return MRET_EXIT;
-        }
-        if (key == KEY_ENTER) {
-            break;
-        }
-    }
-
-    lcd_putsRAt(t24, 6, "  Loading ...");
-    lcd_refresh_wait();
-
-    if (data != null) {
-        _ = strcpy(@ptrCast(data.?), fpath);
-    }
-    set_reset_state_file(fpath);
-    return MRET_LOADSTATE;
+    return callbacks_owned.loadStatefile(fpath, fname, data);
 }
 
 pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    lcd_puts(t24, "Saving program ...");
-    lcd_puts(t24, fname);
-    lcd_refresh();
-
-    if (data != null) {
-        _ = strcpy(@ptrCast(data.?), fpath);
-    }
-    return MRET_SAVESTATE;
+    return callbacks_owned.saveProgramfile(fpath, fname, data);
 }
 
 pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    _ = fname;
-
-    lcd_putsRAt(t24, 6, "  Loading ...");
-    lcd_refresh_wait();
-
-    if (data != null) {
-        _ = strcpy(@ptrCast(data.?), fpath);
-    }
-    return MRET_LOADSTATE;
+    return callbacks_owned.loadProgramfile(fpath, fname, data);
 }
 
 pub export fn show_warning(str: [*c]u8) callconv(.c) void {
