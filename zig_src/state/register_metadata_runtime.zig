@@ -2,6 +2,7 @@ const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
 const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
+const bridge_owned = @import("register_metadata_bridge_owned.zig");
 const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const size_owned = @import("register_metadata_size_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
@@ -264,23 +265,23 @@ pub fn reportRamFull() void {
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
-    return z47_register_metadata_to_pc_mem_ptr(mem_ptr);
+    return bridge_owned.toPcMemPtr(mem_ptr);
 }
 
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {
-    return z47_register_metadata_to_c47_mem_ptr(mem_ptr);
+    return bridge_owned.toC47MemPtr(mem_ptr);
 }
 
 pub fn builtinMenuItemCount() u32 {
-    return z47_register_metadata_builtin_menu_item_count();
+    return bridge_owned.builtinMenuItemCount();
 }
 
 pub fn builtinMenuItemIsMenu(index: u32) bool {
-    return z47_register_metadata_builtin_menu_item_is_menu(index);
+    return bridge_owned.builtinMenuItemIsMenu(index);
 }
 
 pub fn builtinMenuItemName(index: u32) [*c]const u8 {
-    return z47_register_metadata_builtin_menu_item_name(index);
+    return bridge_owned.builtinMenuItemName(index);
 }
 
 pub fn userMenuCount() u32 {
@@ -356,9 +357,9 @@ pub fn requestClearAllVariablesConfirmation() void {
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
-    z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate);
+    bridge_owned.allocateLocalRegistersRetained(number_of_registers_to_allocate);
 }
 
 pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    z47_registers_retained_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+    bridge_owned.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
 }
