@@ -1,4 +1,3 @@
-const std = @import("std");
 const atan_owned = @import("math_atan_owned.zig");
 const atan2_export = @import("math_atan2_export.zig");
 const atan2_command_owned = @import("math_atan2_command_owned.zig");
@@ -26,6 +25,7 @@ const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig"
 const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
+const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
@@ -44,12 +44,6 @@ comptime {
     _ = real_trig_export.z47_math_wrappers_owned_WP34S_Tanh;
     _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcSinh;
     _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcTanh;
-}
-
-fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
 }
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -1824,90 +1818,16 @@ pub export fn fnParallel(unused_but_mandatory_parameter: u16) callconv(.c) void 
     transform_command_owned.parallel(unused_but_mandatory_parameter);
 }
 
-fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) void {
-    var message_buffer: [96]u8 = undefined;
-    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot {s} {s}", .{ operation_name, type_name }) catch "cannot shift digits";
-
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError(function_name, message, null, null);
-}
-
 pub export fn fnUnitVector(unused_but_mandatory_parameter: u16) callconv(.c) void {
     transform_command_owned.unitVector(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSdl(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
-        var real_value: runtime.real_t = undefined;
-
-        if (!runtime.saveLastX()) {
-            return;
-        }
-
-        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &real_value);
-        real_value.exponent += @as(i32, @intCast(unused_but_mandatory_parameter));
-        runtime.convertRealToReal34ResultRegister(&real_value, runtime.REGISTER_X);
-        return;
-    }
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtLongInteger) {
-        var x_value: runtime.longInteger_t = undefined;
-
-        if (!runtime.saveLastX()) {
-            return;
-        }
-
-        runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
-        defer runtime.__gmpz_clear(&x_value[0]);
-
-        for (0..unused_but_mandatory_parameter) |_| {
-            runtime.__gmpz_mul_ui(&x_value[0], &x_value[0], 10);
-        }
-
-        runtime.convertLongIntegerToLongIntegerRegister(&x_value[0], runtime.REGISTER_X);
-        return;
-    }
-
-    shiftDigitsError("In function fnSdl:", "SDL");
+    shift_digits_command_owned.sdl(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSdr(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
-        var real_value: runtime.real_t = undefined;
-
-        if (!runtime.saveLastX()) {
-            return;
-        }
-
-        runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_X), &real_value);
-        real_value.exponent -= @as(i32, @intCast(unused_but_mandatory_parameter));
-        runtime.convertRealToReal34ResultRegister(&real_value, runtime.REGISTER_X);
-        return;
-    }
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtLongInteger) {
-        var x_value: runtime.longInteger_t = undefined;
-
-        if (!runtime.saveLastX()) {
-            return;
-        }
-
-        runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
-        defer runtime.__gmpz_clear(&x_value[0]);
-
-        for (0..unused_but_mandatory_parameter) |_| {
-            _ = runtime.__gmpz_tdiv_q_ui(&x_value[0], &x_value[0], 10);
-            if (runtime.__gmpz_cmp_ui(&x_value[0], 0) == 0) {
-                break;
-            }
-        }
-
-        runtime.convertLongIntegerToLongIntegerRegister(&x_value[0], runtime.REGISTER_X);
-        return;
-    }
-
-    shiftDigitsError("In function fnSdr:", "SDR");
+    shift_digits_command_owned.sdr(unused_but_mandatory_parameter);
 }
 
 const inc_flag: u8 = 0;
