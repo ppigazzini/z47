@@ -3,6 +3,7 @@ const base_dir_owned = @import("gtk_io_base_dir_owned.zig");
 const file_handle_owned = @import("gtk_io_file_handle_owned.zig");
 const file_chooser_owned = @import("gtk_io_file_chooser_owned.zig");
 const filename_dispatch_owned = @import("gtk_io_filename_dispatch_owned.zig");
+const warning_owned = @import("gtk_io_warning_owned.zig");
 const path_policy_owned = @import("gtk_io_path_policy_owned.zig");
 
 const FILE_ERROR: c_int = 0;
@@ -151,17 +152,7 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 }
 
 pub export fn show_warning(string: [*c]u8) callconv(.c) void {
-    const dialog = gtk_message_dialog_new(
-        @ptrCast(base_dir_owned.parentWindow()),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_OK,
-        "%s",
-        string,
-    ) orelse return;
-    gtk_window_set_title(@ptrCast(dialog), "Warning");
-    _ = gtk_dialog_run(@ptrCast(dialog));
-    gtk_widget_destroy(dialog);
+    warning_owned.showWarning(string);
 }
 
 pub export fn fnDiskInfo(unused_but_mandatory_parameter: u16) callconv(.c) void {
