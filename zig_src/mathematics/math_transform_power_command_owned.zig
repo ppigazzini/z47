@@ -1,8 +1,5 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
-
-fn shortIntegerData(reg: runtime.calcRegister_t) *align(1) u64 {
-    return @as(*align(1) u64, @ptrCast(runtime.getRegisterDataPointer(reg).?));
-}
+const shortint_owned = @import("math_transform_shortint_owned.zig");
 
 fn squareLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
@@ -17,9 +14,9 @@ fn squareLonI() callconv(.c) void {
 }
 
 fn squareShoI() callconv(.c) void {
-    shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
-        shortIntegerData(runtime.REGISTER_X).*,
-        shortIntegerData(runtime.REGISTER_X).*,
+    shortint_owned.shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).*,
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).*,
     );
 }
 
@@ -70,12 +67,12 @@ fn cubeLonI() callconv(.c) void {
 
 fn cubeShoI() callconv(.c) void {
     const square_value = runtime.WP34S_intMultiply(
-        shortIntegerData(runtime.REGISTER_X).*,
-        shortIntegerData(runtime.REGISTER_X).*,
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).*,
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).*,
     );
-    shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
+    shortint_owned.shortIntegerData(runtime.REGISTER_X).* = runtime.WP34S_intMultiply(
         square_value,
-        shortIntegerData(runtime.REGISTER_X).*,
+        shortint_owned.shortIntegerData(runtime.REGISTER_X).*,
     );
 }
 
