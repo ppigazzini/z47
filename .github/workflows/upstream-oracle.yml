@@ -55,28 +55,28 @@ jobs:
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
 
-  zig-master-compatibility:
-    name: Zig master compatibility monitor
+  zig-pinned-compatibility-smoke:
+    name: Pinned Zig compatibility smoke
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: master_toolchain
-        name: Load monitored Zig master metadata
+      - id: toolchain
+        name: Load pinned Zig metadata
         shell: bash
         run: |
           set -euo pipefail
           . ./.github/zig-toolchain.env
-          echo "version=$ZIG_MASTER_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Install monitored Zig master snapshot
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig toolchain
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
-          version: ${{ steps.master_toolchain.outputs.version }}
-      - name: Verify resolved monitored Zig version
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Verify resolved pinned Zig version
         shell: bash
         run: |
           set -euo pipefail
-          test "$(zig version)" = "${{ steps.master_toolchain.outputs.version }}"
+          test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: xlsxio-ref
         name: Resolve xlsxio upstream HEAD
         shell: bash
@@ -84,7 +84,7 @@ jobs:
           set -euo pipefail
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
-        name: Restore Linux xlsxio helper cache for monitored Zig master
+        name: Restore Linux xlsxio helper cache for pinned Zig smoke lane
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
@@ -92,13 +92,13 @@ jobs:
           restore-keys: |
             xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-
             xlsxio-${{ runner.os }}-${{ runner.arch }}-
-      - name: Install Linux xlsxio helper prerequisites for monitored Zig master
+      - name: Install Linux xlsxio helper prerequisites for pinned Zig smoke lane
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
-      - name: Build xlsxio helper for monitored Zig master
+      - name: Build xlsxio helper for pinned Zig smoke lane
         if: steps.xlsxio-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -117,12 +117,12 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/xlsxio-prefix"
           cmake --build "$RUNNER_TEMP/xlsxio/build" --parallel
           cmake --install "$RUNNER_TEMP/xlsxio/build"
-      - name: Install monitored Zig master host prerequisites
+      - name: Install pinned Zig smoke-lane host prerequisites
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev libpulse-dev
-      - name: Probe build graph and generator-backed host lane under monitored Zig master
+      - name: Probe build graph and generator-backed host lane under pinned Zig
         shell: bash
         run: |
           set -euo pipefail
