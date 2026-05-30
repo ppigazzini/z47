@@ -1,44 +1,8 @@
 const builtin = @import("builtin");
+const header_owned = @import("calc_state_header_owned.zig");
 const runtime = @import("calc_state_runtime.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
-
-const HeaderInfo = struct {
-    saved_calc_model: u16 = 0,
-    loaded_version: u32 = 0,
-};
-
-fn parseSaveFileRevision() HeaderInfo {
-    var header_key: [256]u8 = undefined;
-    var ignored_revision: [256]u8 = undefined;
-    var calculator_id: [256]u8 = undefined;
-    var version_line: [256]u8 = undefined;
-    var info = HeaderInfo{};
-
-    runtime.readLine(header_key[0..]);
-    if (runtime.lineEquals(header_key[0..].ptr, "SAVE_FILE_REVISION")) {
-        runtime.readLine(ignored_revision[0..]);
-        runtime.readLine(calculator_id[0..]);
-        runtime.readLine(version_line[0..]);
-
-        if (runtime.lineEquals(calculator_id[0..].ptr, "C47_save_file_00")) {
-            info.saved_calc_model = runtime.USER_C47;
-        } else if (runtime.lineEquals(calculator_id[0..].ptr, "R47_save_file_00")) {
-            info.saved_calc_model = runtime.USER_R47;
-        }
-
-        if (info.saved_calc_model == runtime.USER_C47 or info.saved_calc_model == runtime.USER_R47) {
-            info.loaded_version = runtime.parseU32Line(version_line[0..].ptr);
-            if (info.loaded_version < 10_000_000 or info.loaded_version > 20_000_000) {
-                info.loaded_version = 0;
-            }
-        }
-    }
-
-    runtime.setSavedCalcModel(info.saved_calc_model);
-    runtime.setLoadedVersion(info.loaded_version);
-    return info;
-}
 
 fn isAutoLoadCompatibleVersion(loaded_version: u32) bool {
     return loaded_version >= runtime.versionAllowed() and loaded_version <= runtime.configFileVersion();
@@ -135,7 +99,7 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         runtime.unwindAllSubroutines();
     }
 
-    const header = parseSaveFileRevision();
+    const header = header_owned.parseSaveFileRevision();
     if (canEnableLoad(load_mode, load_type, header.loaded_version)) {
         const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
         while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
