@@ -33,6 +33,7 @@ const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owne
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
 const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
+const forward_command_wrappers_owned = @import("math_forward_command_wrappers_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
@@ -401,67 +402,67 @@ fn chsLonI() callconv(.c) void {
 }
 
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    random_command_owned.random(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnRandom(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRandomI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    random_command_owned.randomI(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnRandomI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSeed(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    random_command_owned.seed(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSeed(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.min(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnMin(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMax(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.max(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnMax(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCeil(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.ceil(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnCeil(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFloor(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.floor(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnFloor(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.ip(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnIp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.lint(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLint(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSint(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.sint(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSint(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_part_owned.fp(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnFp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSinc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    sinc_command_owned.fnSinc(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSinc(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSincpi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    sinc_command_owned.fnSincpi(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSincpi(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnSin(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSin(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCos(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnCos(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnCos(unused_but_mandatory_parameter);
 }
 
 pub export fn fnTan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnTan(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnTan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArcsin(unused_but_mandatory_parameter: u16) callconv(.c) void {
