@@ -3,6 +3,7 @@ const command_control_owned = @import("stack_runtime_command_control_owned.zig")
 const conversion_owned = @import("stack_runtime_conversion_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
+const reg_param_product_owned = @import("stack_runtime_reg_param_product_owned.zig");
 const product_real_owned = @import("stack_runtime_product_real_owned.zig");
 const reg_params_owned = @import("stack_runtime_reg_params_owned.zig");
 const register_range_owned = @import("stack_runtime_register_range_owned.zig");
@@ -167,121 +168,8 @@ fn freeLongInteger(long_integer: *longInteger_t) void {
     long_integer_owned.freeLongInteger(use_fake_stack_state_harness_surface, long_integer);
 }
 
-fn registerReal34Ptr(reg: calcRegister_t) *align(1) ProductReal34 {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
-}
-
-fn productReal34ToReal(source: *const ProductReal34, destination: *ProductReal) void {
-    product_real_owned.productReal34ToReal(source, destination);
-}
-
-fn productUInt32ToReal(source: u32, destination: *ProductReal) void {
-    product_real_owned.productUInt32ToReal(source, destination);
-}
-
-fn productRealIsNegative(value: *const ProductReal) bool {
-    return product_real_owned.productRealIsNegative(value);
-}
-
-fn productRealSetPositiveSign(value: *ProductReal) void {
-    product_real_owned.productRealSetPositiveSign(value);
-}
-
-fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result: *ProductReal, real_context: *ProductRealContext) void {
-    product_real_owned.productRealSubtract(lhs, rhs, result, real_context);
-}
-
-fn validateRegisterSourceRange(load_into_memory: ?bool, start: u16, count: *u16) u8 {
-    const register_x: u16 = @intCast(REGISTER_X);
-    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    return register_range_owned.validateRegisterSourceRange(
-        load_into_memory,
-        start,
-        count,
-        register_x,
-        first_local_register,
-        currentLocalRegisterCount(),
-        ERROR_OUT_OF_RANGE,
-        ERROR_NONE,
-    );
-}
-
-fn validateRegisterDestinationRange(start: u16, count: u16) u8 {
-    const register_x: u16 = @intCast(REGISTER_X);
-    const first_local_register: u16 = @intCast(FIRST_LOCAL_REGISTER);
-    return register_range_owned.validateRegisterDestinationRange(
-        start,
-        count,
-        register_x,
-        first_local_register,
-        currentLocalRegisterCount(),
-        ERROR_OUT_OF_RANGE,
-        ERROR_NONE,
-    );
-}
-
 fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destination: ?*u16) u8 {
-    if (use_fake_stack_state_harness_surface) {
-        return ERROR_OUT_OF_RANGE;
-    }
-
-    var x: ProductReal = undefined;
-    var integer_part: ProductReal = undefined;
-    var thousand: ProductReal = undefined;
-
-    if (getRegisterDataType(REGISTER_X) != dtReal34) {
-        return ERROR_INVALID_DATA_TYPE_FOR_OP;
-    }
-
-    start.* = 0;
-    count.* = 0;
-    if (destination) |dest| {
-        dest.* = 0;
-    }
-
-    productReal34ToReal(registerReal34Ptr(REGISTER_X), &x);
-    productUInt32ToReal(1000, &thousand);
-    if (!realCompareAbsLessThan(&x, &thousand)) {
-        return ERROR_OUT_OF_RANGE;
-    }
-
-    if (load_into_memory) |load| {
-        load.* = productRealIsNegative(&x);
-    } else if (productRealIsNegative(&x)) {
-        return ERROR_OUT_OF_RANGE;
-    }
-    productRealSetPositiveSign(&x);
-
-    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-    start.* = @intCast(realToInt32C47(&integer_part, null));
-
-    productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
-    x.exponent += 2;
-    realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-    count.* = @intCast(realToInt32C47(&integer_part, null));
-
-    if (destination) |dest| {
-        productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
-        x.exponent += 3;
-        realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-        dest.* = @intCast(realToInt32C47(&integer_part, null));
-    }
-
-    const source_error = validateRegisterSourceRange(
-        if (load_into_memory) |load| load.* else null,
-        start.*,
-        count,
-    );
-    if (source_error != ERROR_NONE) {
-        return source_error;
-    }
-
-    if (destination) |dest| {
-        return validateRegisterDestinationRange(dest.*, count.*);
-    }
-
-    return ERROR_NONE;
+    return reg_param_product_owned.getRegParamProduct(load_into_memory, start, count, destination, currentLocalRegisterCount());
 }
 
 pub fn getStackTop() calcRegister_t {
