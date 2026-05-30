@@ -4,6 +4,7 @@ const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
 const matrix_editor_entry = @import("frontier_matrix_editor_entry_owned.zig");
 const matrix_editor_refresh = @import("frontier_matrix_editor_refresh_owned.zig");
+const matrix_goto_grow = @import("frontier_matrix_goto_grow_owned.zig");
 const matrix_lifecycle = @import("frontier_matrix_lifecycle_owned.zig");
 const matrix_mim_add = @import("frontier_matrix_mim_add_owned.zig");
 const matrix_mutation = @import("frontier_matrix_mutation_owned.zig");
@@ -267,7 +268,6 @@ extern var currentLocalStepNumber: u16;
 extern var beginOfCurrentProgram: [*]u8;
 extern var endOfCurrentProgram: [*]u8;
 extern var matrixIndex: u16;
-extern var tmpRow: u16;
 extern var aimBuffer: [*]u8;
 extern var nimBufferDisplay: [*]u8;
 
@@ -763,13 +763,6 @@ fn matrixRunMutation(kind: matrix_mutation.Kind) void {
     matrix_mutation.run(kind);
 }
 
-fn matrixCommitPositionChange(row: u16, col: u16) void {
-    z47_frontier_matrix_commit_open_to_register();
-    setIRegisterAsInt(false, @as(i16, @intCast(row)));
-    setJRegisterAsInt(false, @as(i16, @intCast(col)));
-    z47_frontier_matrix_calc_mode_normal_gui();
-}
-
 pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
     return matrix_nav.wrap(rows, cols);
 }
@@ -789,217 +782,19 @@ pub export fn fnOldMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
 
 pub export fn fnGoToElement(unused_param_but_mandatory: u16) callconv(.c) void {
     _ = unused_param_but_mandatory;
-    goToElementPipeline();
-}
-
-const GoToElementStage = enum {
-    validate_mode,
-    commit_partial,
-    run_row_prompt,
-};
-
-fn goToElementValidateMode() bool {
-    if (calcMode == CM_MIM) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn goToElementCommitPartial() void {
-    mimEnter(false);
-}
-
-fn goToElementRunRowPrompt() void {
-    runFunction(ITM_M_GOTO_ROW);
-}
-
-fn goToElementExecuteStage(stage: GoToElementStage) bool {
-    switch (stage) {
-        .validate_mode => return goToElementValidateMode(),
-        .commit_partial => goToElementCommitPartial(),
-        .run_row_prompt => goToElementRunRowPrompt(),
-    }
-    return true;
-}
-
-fn goToElementStageSequence() [3]GoToElementStage {
-    return .{ .validate_mode, .commit_partial, .run_row_prompt };
-}
-
-fn goToElementPipeline() void {
-    const stages = goToElementStageSequence();
-    for (stages) |stage| {
-        if (!goToElementExecuteStage(stage)) {
-            return;
-        }
-    }
-}
-
-const MatrixGotoStage = enum {
-    validate_mode,
-    validate_bounds,
-    commit_position,
-    finalize,
-};
-
-const MatrixGotoContext = struct {
-    row: u16,
-    col: u16,
-    valid: bool,
-};
-
-fn matrixGotoContextInit(row: u16, col: u16) MatrixGotoContext {
-    return .{ .row = row, .col = col, .valid = false };
-}
-
-fn matrixGotoValidateMode() bool {
-    if (calcMode == CM_MIM) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn matrixGotoValidateBounds(ctx: *MatrixGotoContext) bool {
-    const rows = z47_frontier_matrix_open_rows();
-    const cols = z47_frontier_matrix_open_cols();
-    const in_bounds = !(ctx.row == 0 or ctx.row > rows or ctx.col == 0 or ctx.col > cols);
-    if (!in_bounds) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, @as(i16, @intCast(REGISTER_X)));
-        ctx.valid = false;
-        return false;
-    }
-    ctx.valid = true;
-    return true;
-}
-
-fn matrixGotoCommitPosition(ctx: MatrixGotoContext) void {
-    if (!ctx.valid) return;
-    z47_frontier_matrix_commit_open_to_register();
-    setIRegisterAsInt(false, @as(i16, @intCast(ctx.row)));
-    setJRegisterAsInt(false, @as(i16, @intCast(ctx.col)));
-}
-
-fn matrixGotoFinalize() void {
-    z47_frontier_matrix_calc_mode_normal_gui();
-}
-
-fn matrixGotoExecuteStage(stage: MatrixGotoStage, ctx: *MatrixGotoContext) bool {
-    switch (stage) {
-        .validate_mode => return matrixGotoValidateMode(),
-        .validate_bounds => return matrixGotoValidateBounds(ctx),
-        .commit_position => {
-            matrixGotoCommitPosition(ctx.*);
-            return true;
-        },
-        .finalize => {
-            matrixGotoFinalize();
-            return true;
-        },
-    }
-}
-
-fn matrixGotoStageSequence() [4]MatrixGotoStage {
-    return .{ .validate_mode, .validate_bounds, .commit_position, .finalize };
-}
-
-fn matrixGotoPipeline(row: u16, col: u16) void {
-    var ctx = matrixGotoContextInit(row, col);
-    const stages = matrixGotoStageSequence();
-    for (stages) |stage| {
-        if (!matrixGotoExecuteStage(stage, &ctx)) {
-            return;
-        }
-    }
-}
-
-fn matrixGotoRowModeValidation() bool {
-    if (calcMode == CM_MIM) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn matrixGotoRowSetTarget(row: u16) void {
-    tmpRow = row;
-}
-
-fn matrixGotoRowPipeline(row: u16) void {
-    if (!matrixGotoRowModeValidation()) {
-        return;
-    }
-    matrixGotoRowSetTarget(row);
+    matrix_goto_grow.goToElement();
 }
 
 pub export fn fnGoToRow(row: u16) callconv(.c) void {
-    matrixGotoRowPipeline(row);
+    matrix_goto_grow.goToRow(row);
 }
 
 pub export fn fnGoToColumn(col: u16) callconv(.c) void {
-    matrixGotoPipeline(tmpRow, col);
+    matrix_goto_grow.goToColumn(col);
 }
 
 pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
-    matrixGrowModeDispatchPipeline(grow_flag);
-}
-
-const MatrixGrowModeStage = enum {
-    decode_flag,
-    apply_flag,
-};
-
-const MatrixGrowModeContext = struct {
-    grow_enabled: bool,
-};
-
-fn matrixGrowModeContextInit(grow_flag: u16) MatrixGrowModeContext {
-    return .{ .grow_enabled = grow_flag != 0 };
-}
-
-fn matrixGrowModeApplyFlag(ctx: MatrixGrowModeContext) void {
-    if (ctx.grow_enabled) {
-        setSystemFlag(FLAG_GROW);
-    } else {
-        clearSystemFlag(FLAG_GROW);
-    }
-}
-
-fn matrixGrowModeExecuteStage(stage: MatrixGrowModeStage, ctx: MatrixGrowModeContext) void {
-    switch (stage) {
-        .decode_flag => {},
-        .apply_flag => matrixGrowModeApplyFlag(ctx),
-    }
-}
-
-fn matrixGrowModeStageSequence() [2]MatrixGrowModeStage {
-    return .{ .decode_flag, .apply_flag };
-}
-
-fn matrixGrowModePipeline(grow_flag: u16) void {
-    const ctx = matrixGrowModeContextInit(grow_flag);
-    const stages = matrixGrowModeStageSequence();
-    for (stages) |stage| {
-        matrixGrowModeExecuteStage(stage, ctx);
-    }
-}
-
-fn matrixGrowModeUseExpandedPipeline() bool {
-    return true;
-}
-
-fn matrixGrowModeDispatchPipeline(grow_flag: u16) void {
-    if (matrixGrowModeUseExpandedPipeline()) {
-        matrixGrowModePipeline(grow_flag);
-        return;
-    }
-
-    if (grow_flag != 0) {
-        setSystemFlag(FLAG_GROW);
-    } else {
-        clearSystemFlag(FLAG_GROW);
-    }
+    matrix_goto_grow.setGrowMode(grow_flag);
 }
 
 pub export fn mimEnter(commit: bool) callconv(.c) void {
