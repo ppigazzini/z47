@@ -34,6 +34,7 @@ const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zi
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
+const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
@@ -424,56 +425,20 @@ fn expCplx() callconv(.c) void {
 }
 
 
-fn chsZeroCheck(value: *runtime.real_t) void {
-    runtime.realChangeSign(value);
-    if (runtime.realIsZero(value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-        runtime.realSetPositiveSign(value);
-    }
-}
-
 pub export fn chsReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-    var mode = runtime.amNone;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
-        mode = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-    }
-
-    chsZeroCheck(&x);
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, mode);
+    change_sign_wrapper_owned.chsReal();
 }
 
 pub export fn chsCplx() callconv(.c) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &a, &b)) {
-        return;
-    }
-
-    chsZeroCheck(&a);
-    chsZeroCheck(&b);
-    runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
+    change_sign_wrapper_owned.chsCplx();
 }
 
 pub export fn chsShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intChs(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
+    change_sign_wrapper_owned.chsShoI();
 }
 
 fn chsLonI() callconv(.c) void {
-    var x: runtime.longInteger_t = undefined;
-
-    if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
-        return;
-    }
-    defer runtime.__gmpz_clear(&x[0]);
-
-    x[0]._mp_size = -x[0]._mp_size;
-    runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
+    change_sign_wrapper_owned.chsLonI();
 }
 
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
