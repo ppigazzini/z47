@@ -5,6 +5,7 @@ const file_io_owned = @import("firmware_hal_file_io_owned.zig");
 const io_path_owned = @import("firmware_hal_io_path_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
 const printer_owned = @import("firmware_hal_printer_owned.zig");
+const warning_owned = @import("firmware_hal_warning_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -257,32 +258,9 @@ pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?
 }
 
 pub export fn show_warning(str: [*c]u8) callconv(.c) void {
-    const delim = "\n";
-    var ptr = strtok(str, "\n");
-
-    lcd_clear_buf();
-    lcd_putsRAt(t24, 0, "                   WARNING");
-    lcd_setLine(t24, 1);
-
-    while (ptr != null) {
-        lcd_puts(t24, ptr);
-        ptr = strtok(null, delim);
-    }
-
-    lcd_putsRAt(t24, 8, "Press [ENTER] to continue.");
-    lcd_refresh();
-    wait_for_key_release(-1);
-
-    while (true) {
-        const key = runner_get_key(null);
-        if (key == KEY_ENTER or isExitKey(key) or is_menu_auto_off() != 0) {
-            break;
-        }
-    }
+    warning_owned.showWarning(str);
 }
 
 pub export fn fnDiskInfo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    disp_disk_info("Disk Info");
-    wait_for_key_press();
+    warning_owned.fnDiskInfo(unused_but_mandatory_parameter);
 }
