@@ -26,6 +26,7 @@ const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig"
 const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
+const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const sinc_command_owned = @import("math_sinc_command_owned.zig");
@@ -3256,21 +3257,7 @@ fn tryCrossMatrices() bool {
 }
 
 pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-
-    _ = unused_but_mandatory_parameter;
-
-    if (tryCrossMatrices()) {
-        return;
-    }
-
-    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        crossDotMatrixTypeError("In function fnCross:");
-        return;
-    }
-
-    runtime.processRealComplexDyadicFunction(&crossReal, &crossCplx);
+    matrix_vector_command_owned.fnCross(unused_but_mandatory_parameter);
 }
 
 fn dotCplx(
@@ -3382,21 +3369,7 @@ fn tryDotMatrices() bool {
 }
 
 pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-
-    _ = unused_but_mandatory_parameter;
-
-    if (tryDotMatrices()) {
-        return;
-    }
-
-    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        crossDotMatrixTypeError("In function fnDot:");
-        return;
-    }
-
-    runtime.processRealComplexDyadicFunction(&doDotReal, &doDotCplx);
+    matrix_vector_command_owned.fnDot(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogXY(unused_but_mandatory_parameter: u16) callconv(.c) void {
