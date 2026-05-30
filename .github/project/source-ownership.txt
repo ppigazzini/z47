@@ -6,7 +6,6 @@
 [z47-owned]
 .github
 .gitignore
-__DEV
 CONTRIBUTING.md
 ZIG-README.md
 build.zig
