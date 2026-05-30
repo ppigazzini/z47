@@ -25,6 +25,7 @@ const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig"
 const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
+const invert_command_owned = @import("math_invert_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const sign_command_owned = @import("math_sign_command_owned.zig");
@@ -1166,15 +1167,7 @@ pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
-        runtime.fnInvertMatrix(0);
-        return;
-    }
-
-    _ = unused_but_mandatory_parameter;
-    runtime.processRealComplexMonadicFunction(&invertReal, &invertCplx);
+    invert_command_owned.invert(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
