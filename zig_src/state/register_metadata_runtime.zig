@@ -271,7 +271,7 @@ pub fn memoryBlockAvailable(size_in_blocks: u16) bool {
 }
 
 pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
-    const limb_size_in_bytes = @sizeOf(c_ulong);
+    const limb_size_in_bytes = @sizeOf(usize);
     const limb_size_in_blocks = toBlocks(limb_size_in_bytes);
 
     if ((@as(usize, size_in_blocks) * bytesPerBlock()) % limb_size_in_bytes != 0) {

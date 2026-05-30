@@ -347,8 +347,7 @@ jobs:
         run: |
           set -euo pipefail
           retry_once() {
-            local cmd="$1"
-            "$cmd" || "$cmd"
+            "$@" || "$@"
           }
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -356,7 +355,7 @@ jobs:
           zig build rotate_bits_parity
           zig build logical_boolean_ops_suite
           zig build stack_state_parity
-          retry_once "zig build register_metadata_parity"
+          retry_once zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
           zig build program_serialization_parity
@@ -830,8 +829,7 @@ jobs:
         run: |
           set -euo pipefail
           retry_once() {
-            local cmd="$1"
-            "$cmd" || "$cmd"
+            "$@" || "$@"
           }
           eval "$(brew shellenv)"
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
@@ -840,7 +838,7 @@ jobs:
           zig build rotate_bits_parity
           zig build logical_boolean_ops_suite
           zig build stack_state_parity
-          retry_once "zig build register_metadata_parity"
+          retry_once zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
           zig build program_serialization_parity
@@ -1046,8 +1044,7 @@ jobs:
         run: |
           set -euo pipefail
           retry_once() {
-            local cmd="$1"
-            "$cmd" || "$cmd"
+            "$@" || "$@"
           }
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
@@ -1055,7 +1052,7 @@ jobs:
           zig build rotate_bits_parity
           zig build logical_boolean_ops_suite
           zig build stack_state_parity
-          retry_once "zig build register_metadata_parity"
+          retry_once zig build register_metadata_parity
           zig build flags_parity
           zig build memory_parity
           zig build program_serialization_parity
