@@ -4,6 +4,7 @@ const atan2_export = @import("math_atan2_export.zig");
 const atan2_command_owned = @import("math_atan2_command_owned.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const check_value_owned = @import("math_check_value_owned.zig");
+const circular_trig_export = @import("math_circular_trig_export.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
@@ -23,6 +24,7 @@ const transform_command_owned = @import("math_transform_command_owned.zig");
 
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
+    _ = circular_trig_export.z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan;
     _ = ln_complex_export.z47_math_wrappers_owned_lnComplex;
     _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Asin;
     _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Acos;
