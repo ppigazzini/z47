@@ -1,3 +1,5 @@
+const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
+
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
 const FILE_CANCEL: c_int = 2;
@@ -190,50 +192,31 @@ fn real34ToUInt32(value: [*c]const DecQuad) u32 {
 }
 
 pub export fn audioTone(frequency: u32) callconv(.c) void {
-    start_buzzer_freq(frequency);
-    sys_delay(250);
-    stop_buzzer();
+    audio_volume_owned.audioTone(frequency);
 }
 
 pub export fn dm42_squeak() callconv(.c) void {
-    if (getSystemFlag(FLAG_QUIET) == 0) {
-        start_buzzer_freq(1835000);
-        sys_delay(125);
-        stop_buzzer();
-    }
+    audio_volume_owned.dm42Squeak();
 }
 
 pub export fn fnSetVolume(volume: u16) callconv(.c) void {
-    var current = get_beep_volume();
-    while (current < volume) : (current += 1) {
-        beep_volume_up();
-    }
-    while (current > volume) : (current -= 1) {
-        beep_volume_down();
-    }
+    audio_volume_owned.fnSetVolume(volume);
 }
 
 pub export fn getBeepVolume() callconv(.c) u16 {
-    return get_beep_volume();
+    return audio_volume_owned.getBeepVolume();
 }
 
 pub export fn fnGetVolume(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    liftStack();
-    convertUInt64ToShortIntegerRegister(0, get_beep_volume(), 10, REGISTER_X);
-    convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
+    audio_volume_owned.fnGetVolume(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeUp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    beep_volume_up();
-    audioTone(440000);
+    audio_volume_owned.fnVolumeUp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeDown(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    beep_volume_down();
-    audioTone(440000);
+    audio_volume_owned.fnVolumeDown(unused_but_mandatory_parameter);
 }
 
 pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
