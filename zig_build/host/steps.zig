@@ -541,7 +541,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const logical_boolean_ops_suite_step = b.step("logical_boolean_ops_suite", "Run the logical boolean operator suite");
     logical_boolean_ops_suite_step.dependOn(&run_logical_boolean_ops_suite.step);
 
-    const stack_state_parity = stack.addParityExecutable(b, context.host_target, optimize, context.stack_state_objects);
+    const stack_state_parity_objects = stack.addRuntimeObjects(b, context.host_target, optimize, "stack-parity");
+    const stack_state_parity = stack.addParityExecutable(b, context.host_target, optimize, stack_state_parity_objects);
     const run_stack_state_parity = b.addRunArtifact(stack_state_parity);
     run_stack_state_parity.setCwd(b.path("."));
     const stack_state_parity_step = b.step("stack_state_parity", "Run the stack-state parity suite");
