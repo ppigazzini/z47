@@ -27,6 +27,7 @@ const integer_residue_command_owned = @import("math_integer_residue_command_owne
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
+const sign_command_owned = @import("math_sign_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
 const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
@@ -1177,20 +1178,11 @@ pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&signReal, &signCplx, &signShoI, &signLonI);
+    sign_command_owned.sign(unused_but_mandatory_parameter);
 }
 
 pub export fn fnChangeSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
-        changeSignTime();
-        return;
-    }
-
-    runtime.processIntRealComplexMonadicFunction(&chsReal, &chsCplx, &chsShoI, &chsLonI);
+    sign_command_owned.changeSign(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
