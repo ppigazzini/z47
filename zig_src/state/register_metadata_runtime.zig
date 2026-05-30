@@ -138,9 +138,6 @@ extern fn fnDeleteVariable(regist: u16) callconv(.c) void;
 extern fn findNamedVariable(variable_name: [*c]const u8) calcRegister_t;
 extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 extern fn z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
-extern fn z47_registers_retained_fnDeleteVariable(regist: u16) void;
-extern fn z47_registers_retained_fnDeleteAllVariables(confirmation: u16) void;
-extern fn z47_registers_retained_fnClearAllVariables(confirmation: u16) void;
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
 fn bytesPerBlock() comptime_int {
