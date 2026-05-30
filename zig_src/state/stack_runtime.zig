@@ -1,4 +1,5 @@
 const build_options = @import("stack_state_build_options");
+const command_control_owned = @import("stack_runtime_command_control_owned.zig");
 const conversion_owned = @import("stack_runtime_conversion_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
@@ -401,34 +402,19 @@ pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
 }
 
 pub fn requestClearRegistersConfirmation() void {
-    if (use_fake_stack_state_harness_surface) {
-        conversion_owned.requestClearRegistersConfirmationRetained();
-        return;
-    }
-
-    setConfirmationMode(&fnClearRegisters);
+    command_control_owned.requestClearRegistersConfirmation();
 }
 
 pub fn doPartialRegisterLoad(s: u16, n: u16, d: u16) void {
-    if (use_fake_stack_state_harness_surface) {
-        conversion_owned.doPartialRegisterLoadRetained(s, n, d);
-        return;
-    }
-
-    doLoad(LM_REGISTERS_PARTIAL, s, n, d, manualLoad);
+    command_control_owned.doPartialRegisterLoad(s, n, d);
 }
 
 pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
-    z47_registers_retained_sort_reg(range_start, range_end);
+    command_control_owned.sortRegisterRange(range_start, range_end);
 }
 
 pub fn reportRegisterCommandError(error_code: u8) void {
-    if (use_fake_stack_state_harness_surface) {
-        displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
-        return;
-    }
-
-    displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    command_control_owned.reportRegisterCommandError(error_code);
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {
