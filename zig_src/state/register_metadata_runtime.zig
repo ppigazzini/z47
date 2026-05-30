@@ -4,6 +4,7 @@ const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
 const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
+const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
@@ -163,47 +164,47 @@ fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void {
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return descriptor_storage.globalDescriptor(reg);
+    return descriptor_access_owned.globalDescriptor(reg);
 }
 
 pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void {
-    descriptor_storage.setGlobalDescriptor(reg, descriptor);
+    descriptor_access_owned.setGlobalDescriptor(reg, descriptor);
 }
 
 pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return descriptor_storage.tryGetNamedDescriptor(reg, descriptor);
+    return descriptor_access_owned.tryGetNamedDescriptor(reg, descriptor);
 }
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return descriptor_storage.trySetNamedDescriptor(reg, descriptor);
+    return descriptor_access_owned.trySetNamedDescriptor(reg, descriptor);
 }
 
 pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
-    return descriptor_storage.namedDescriptorUnchecked(index);
+    return descriptor_access_owned.namedDescriptorUnchecked(index);
 }
 
 pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
-    descriptor_storage.setNamedDescriptorUnchecked(index, descriptor);
+    descriptor_access_owned.setNamedDescriptorUnchecked(index, descriptor);
 }
 
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return descriptor_storage.tryGetLocalDescriptor(reg, descriptor);
+    return descriptor_access_owned.tryGetLocalDescriptor(reg, descriptor);
 }
 
 pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return descriptor_storage.trySetLocalDescriptor(reg, descriptor);
+    return descriptor_access_owned.trySetLocalDescriptor(reg, descriptor);
 }
 
 pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_register_metadata_get_reserved_descriptor(reg);
+    return descriptor_access_owned.reservedDescriptor(reg);
 }
 
 pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_register_metadata_get_reserved_data_type_descriptor(reg);
+    return descriptor_access_owned.reservedDataTypeDescriptor(reg);
 }
 
 pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
-    return z47_register_metadata_reserved_allows_data_type_write(reg);
+    return descriptor_access_owned.reservedAllowsDataTypeWrite(reg);
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
