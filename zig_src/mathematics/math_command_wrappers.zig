@@ -34,16 +34,6 @@ comptime {
 }
 
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
-
-const add_retained = runtime.retained.z47_math_wrappers_retained_fnAdd;
-const subtract_retained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
-const multiply_retained = runtime.retained.z47_math_wrappers_retained_fnMultiply;
-const divide_retained = runtime.retained.z47_math_wrappers_retained_fnDivide;
-const integer_divide_retained = runtime.retained.z47_math_wrappers_retained_fnIDiv;
-const integer_divide_remainder_retained = runtime.retained.z47_math_wrappers_retained_fnIDivR;
-const round_retained = runtime.retained.z47_math_wrappers_retained_fnRound;
-const decrement_retained = runtime.retained.z47_math_wrappers_retained_fnDec;
-const increment_retained = runtime.retained.z47_math_wrappers_retained_fnInc;
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
     return random_primitive_wrapper_owned.pcg32RandomR(rng);
 }
