@@ -1,4 +1,5 @@
 const io_owned = @import("program_serialization_runtime_io_owned.zig");
+const state_owned = @import("program_serialization_runtime_state_owned.zig");
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -24,15 +25,6 @@ pub extern var numberOfPrograms: u16;
 pub extern var temporaryInformation: u8;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
-pub extern fn z47_program_serialization_runtime_scan_labels_and_programs() void;
-pub extern fn z47_program_serialization_runtime_go_to_last_program() void;
-pub extern fn z47_program_serialization_runtime_is_at_end_of_program(step: [*c]const u8) bool;
-pub extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
-pub extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
-pub extern fn z47_program_serialization_runtime_parse_u32_line(line: [*c]const u8) u32;
-pub extern fn z47_program_serialization_runtime_parse_u8_line(line: [*c]const u8) u8;
-pub extern fn z47_program_serialization_runtime_line_equals(line: [*c]const u8, expected: [*c]const u8) bool;
-
 pub inline fn checkPower() bool {
     return io_owned.checkPower();
 }
@@ -82,33 +74,33 @@ pub inline fn showWarning(message: [*c]const u8) void {
 }
 
 pub inline fn scanLabelsAndPrograms() void {
-    z47_program_serialization_runtime_scan_labels_and_programs();
+    state_owned.scanLabelsAndPrograms();
 }
 
 pub inline fn goToLastProgram() void {
-    z47_program_serialization_runtime_go_to_last_program();
+    state_owned.goToLastProgram();
 }
 
 pub inline fn isAtEndOfProgram(step: [*c]const u8) bool {
-    return z47_program_serialization_runtime_is_at_end_of_program(step);
+    return state_owned.isAtEndOfProgram(step);
 }
 
 pub inline fn getRamSizeInBlocks() u16 {
-    return z47_program_serialization_runtime_get_ram_size_in_blocks();
+    return state_owned.getRamSizeInBlocks();
 }
 
 pub inline fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
-    return z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr);
+    return state_owned.toC47MemPtr(mem_ptr);
 }
 
 pub inline fn parseU32Line(line: [*c]const u8) u32 {
-    return z47_program_serialization_runtime_parse_u32_line(line);
+    return state_owned.parseU32Line(line);
 }
 
 pub inline fn parseU8Line(line: [*c]const u8) u8 {
-    return z47_program_serialization_runtime_parse_u8_line(line);
+    return state_owned.parseU8Line(line);
 }
 
 pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {
-    return z47_program_serialization_runtime_line_equals(line, expected);
+    return state_owned.lineEquals(line, expected);
 }

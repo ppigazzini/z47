@@ -1,29 +1,7 @@
 const header_owned = @import("program_serialization_header_owned.zig");
 const load_apply_owned = @import("program_serialization_load_apply_owned.zig");
-const pointer_owned = @import("program_serialization_pointer_owned.zig");
 const save_owned = @import("program_serialization_save_owned.zig");
-const space_owned = @import("program_serialization_space_owned.zig");
 const runtime = @import("program_serialization_runtime.zig");
-
-fn toBlocks(byte_count: usize) u16 {
-    return pointer_owned.toBlocks(byte_count);
-}
-
-fn toBytes(block_count: usize) usize {
-    return pointer_owned.toBytes(block_count);
-}
-
-fn offsetPointer(ptr: [*c]u8, delta: isize) [*c]u8 {
-    return pointer_owned.offsetPointer(ptr, delta);
-}
-
-fn addSpaceAfterPrograms(size: u16) void {
-    space_owned.addSpaceAfterPrograms(size);
-}
-
-fn addEndNeeded() bool {
-    return space_owned.addEndNeeded();
-}
 
 pub fn saveProgram(label: u16) void {
     save_owned.saveProgram(label);
