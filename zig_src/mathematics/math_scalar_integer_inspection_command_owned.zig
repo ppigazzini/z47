@@ -1,7 +1,6 @@
 const decomp_owned = @import("math_scalar_integer_decomp_command_owned.zig");
 const precision_owned = @import("math_scalar_integer_precision_owned.zig");
 const round_owned = @import("math_scalar_integer_round_command_owned.zig");
-const runtime = @import("math_command_wrappers_runtime.zig");
 
 pub fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     precision_owned.fnUlp(unused_but_mandatory_parameter);
