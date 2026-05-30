@@ -24,6 +24,7 @@ const real_trig_export = @import("math_real_trig_export.zig");
 const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const sinc_command_owned = @import("math_sinc_command_owned.zig");
@@ -748,12 +749,8 @@ fn ulpReal() void {
     runtime.setRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
 }
 
-fn realCompareGreaterEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-
-fn factReal() callconv(.c) void {
+fn modReal() callconv(.c) void {
     var x_value: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
     var y_value: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
 
@@ -1504,23 +1501,19 @@ fn modShoI() callconv(.c) void {
 }
 
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&gcdInt, null, &gcdShoI, &gcdInt);
+    integer_residue_command_owned.fnGcd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&lcmInt, null, &lcmShoI, &lcmInt);
+    integer_residue_command_owned.fnLcm(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&modReal, null, &modShoI, &modLonI);
+    integer_residue_command_owned.fnMod(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &rmdShoI, &rmdLonI);
+    integer_residue_command_owned.fnRmd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -1586,8 +1579,7 @@ pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&neighbReal, null, &neighbShoI, &neighbLonI);
+    integer_residue_command_owned.fnNeighb(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
