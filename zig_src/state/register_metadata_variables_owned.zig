@@ -2,6 +2,7 @@ const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
+const memory_owned = @import("register_memory_owned.zig");
 const reallocate_owned = @import("register_metadata_reallocate_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
@@ -83,7 +84,7 @@ fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
     const data_ptr = descriptor_owned.getRegisterDataPointer(register);
 
     runtime.initializeMatrixHeader1x1(data_ptr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
+    memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
 }
 
 fn initSimEqMatABX() void {
@@ -113,13 +114,13 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
 
     const data_ptr = descriptor_owned.getRegisterDataPointer(register);
     runtime.initializeMatrixHeader1x1(data_ptr);
-    stack_runtime.real34SetZero(firstMatrixElementPointer(data_ptr));
+    memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
 }
 
 fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    const payload_offset: usize = @intCast(stack_runtime.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
+    const payload_offset: usize = @intCast(memory_owned.bytesFromBlocks(runtime.matrixHeaderSizeInBlocks()));
     return @ptrCast(bytes + payload_offset);
 }
 
@@ -399,7 +400,7 @@ pub fn deleteVariable(regist: u16) void {
     if (register >= runtime.FIRST_NAMED_VARIABLE and register < named_variable_limit) {
         const index: u16 = @intCast(register - runtime.FIRST_NAMED_VARIABLE);
         runtime.removeNamedVariableRecallAssignment(index);
-        stack_runtime.freeRegisterData(register);
+        memory_owned.freeRegisterData(register);
 
         var shift_index = index;
         while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
@@ -511,7 +512,7 @@ pub fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegi
     }
 
     const new_register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    stack_runtime.real34SetZero(descriptor_owned.getRegisterDataPointer(new_register));
+    memory_owned.zeroReal34(descriptor_owned.getRegisterDataPointer(new_register));
     return new_register;
 }
 

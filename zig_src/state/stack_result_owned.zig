@@ -2,6 +2,8 @@ const std = @import("std");
 
 const build_options = @import("stack_state_build_options");
 const mutation_owned = @import("stack_mutation_owned.zig");
+const memory_owned = @import("register_memory_owned.zig");
+const undo_owned = @import("stack_undo_owned.zig");
 
 const runtime = @import("stack_runtime.zig");
 const use_fake_stack_state_harness_surface = @hasDecl(build_options, "use_fake_stack_state_harness_surface") and build_options.use_fake_stack_state_harness_surface;
@@ -117,7 +119,7 @@ fn withRegisterMappedToX(res: runtime.calcRegister_t, rounder: *const fn (u16) c
 }
 
 fn matrixPayloadOffsetBytes() usize {
-    return @intCast(runtime.bytesFromBlocks(matrix_header_size_in_blocks));
+    return @intCast(memory_owned.bytesFromBlocks(matrix_header_size_in_blocks));
 }
 
 fn complex34SizeInBlocks() u16 {
@@ -267,7 +269,7 @@ fn adjustResultScalarCore(res: runtime.calcRegister_t) bool {
     }
 
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        runtime.undoRetained();
+        undo_owned.undo();
         return true;
     }
 
@@ -295,7 +297,7 @@ fn adjustResultRealMatrixCore(res: runtime.calcRegister_t) bool {
     }
 
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        runtime.undoRetained();
+        undo_owned.undo();
         return true;
     }
 
@@ -320,7 +322,7 @@ fn adjustResultComplexMatrixCore(res: runtime.calcRegister_t) bool {
     }
 
     if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        runtime.undoRetained();
+        undo_owned.undo();
         return true;
     }
 
@@ -420,7 +422,7 @@ pub fn adjustResult(
                 return;
             }
         } else if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-            runtime.undoRetained();
+            undo_owned.undo();
             return;
         }
 
@@ -439,7 +441,7 @@ pub fn adjustResult(
             return;
         }
     } else if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        runtime.undoRetained();
+        undo_owned.undo();
         return;
     }
 
