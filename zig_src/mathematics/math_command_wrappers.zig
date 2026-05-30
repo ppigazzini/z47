@@ -27,6 +27,7 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const matrix_vector_command_owned = @import("math_matrix_vector_command_owned.zig");
+const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const sinc_command_owned = @import("math_sinc_command_owned.zig");
@@ -2353,87 +2354,27 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
 }
 
 pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryDyadicLongIntegerArithmetic(dyadic_integer_add)) {
-        return;
-    }
-
-    if (tryScalarIntRealArithmetic(dyadic_integer_add) or tryScalarRealArithmetic(dyadic_integer_add)) {
-        return;
-    }
-
-    if (tryRemainingArithmetic(&selectRemainingAddBranch)) {
-        return;
-    }
-
-    add_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnAdd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryDyadicLongIntegerArithmetic(dyadic_integer_subtract)) {
-        return;
-    }
-
-    if (tryScalarIntRealArithmetic(dyadic_integer_subtract) or tryScalarRealArithmetic(dyadic_integer_subtract)) {
-        return;
-    }
-
-    if (tryRemainingArithmetic(&selectRemainingSubtractBranch)) {
-        return;
-    }
-
-    subtract_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnSubtract(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryDyadicLongIntegerArithmetic(dyadic_integer_multiply)) {
-        return;
-    }
-
-    if (tryScalarIntRealArithmetic(dyadic_integer_multiply) or tryScalarRealArithmetic(dyadic_integer_multiply)) {
-        return;
-    }
-
-    if (tryRemainingArithmetic(&selectRemainingMultiplyBranch)) {
-        return;
-    }
-
-    multiply_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnMultiply(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryScalarIntegerOverRealDivide()) {
-        return;
-    }
-
-    if (tryScalarRealOverIntegerDivide()) {
-        return;
-    }
-
-    if (tryScalarRealOverRealDivide()) {
-        return;
-    }
-
-    if (tryRemainingDivide()) {
-        return;
-    }
-
-    divide_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnDivide(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryDyadicLongIntegerDivide(false)) {
-        return;
-    }
-
-    integer_divide_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnIDiv(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    if (tryDyadicLongIntegerDivide(true)) {
-        return;
-    }
-
-    integer_divide_remainder_retained(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnIDivR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
