@@ -466,55 +466,55 @@ pub export fn fnTan(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnArcsin(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArcsin(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArcsin(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArccos(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArccos(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArccos(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArctan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArctan(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArctan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArcsinh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArcsinh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArcsinh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArccosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArccosh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArccosh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnArctanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    inverse_trig_command_owned.fnArctanh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnArctanh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSinh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnSinh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSinh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCosh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnCosh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnCosh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnTanh(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    circular_trig_command_owned.fnTanh(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnTanh(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transcendental_command_owned.exp(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnExp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExpM1(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transcendental_command_owned.expM1(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnExpM1(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLn(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transcendental_command_owned.ln(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLn(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLnP1(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transcendental_command_owned.lnP1(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLnP1(unused_but_mandatory_parameter);
 }
 
 pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
