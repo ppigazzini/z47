@@ -1,4 +1,5 @@
 const block_availability_owned = @import("memory_block_availability_owned.zig");
+const c47_alloc_owned = @import("memory_c47_alloc_owned.zig");
 const debug_owned = @import("memory_debug_owned.zig");
 const runtime = @import("memory_runtime.zig");
 
@@ -27,42 +28,19 @@ pub export fn isMemoryBlockAvailable(sizeInBlocks: usize, numBlocks: u16, extraF
 }
 
 pub export fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque {
-    const allocated = runtime.freeListAlloc(sizeInBlocks);
-    if (allocated != null) {
-        runtime.c47MemInBlocks +%= sizeInBlocks;
-        return allocated;
-    }
-
-    return null;
+    return c47_alloc_owned.allocC47Blocks(sizeInBlocks);
 }
 
 pub export fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?*anyopaque {
-    const allocated = runtime.freeListRealloc(pcMemPtr, oldSizeInBlocks, newSizeInBlocks);
-    if (allocated != null) {
-        runtime.c47MemInBlocks +%= newSizeInBlocks -% oldSizeInBlocks;
-        return allocated;
-    }
-
-    return null;
+    return c47_alloc_owned.reallocC47Blocks(pcMemPtr, oldSizeInBlocks, newSizeInBlocks);
 }
 
 pub export fn reduceC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) void {
-    if (newSizeInBlocks == 0) {
-        freeC47Blocks(pcMemPtr, oldSizeInBlocks);
-        return;
-    }
-
-    runtime.freeListReduce(pcMemPtr, oldSizeInBlocks, newSizeInBlocks);
-    runtime.c47MemInBlocks +%= newSizeInBlocks -% oldSizeInBlocks;
+    c47_alloc_owned.reduceC47Blocks(pcMemPtr, oldSizeInBlocks, newSizeInBlocks, freeC47Blocks);
 }
 
 pub export fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
-    if (pcMemPtr == null) {
-        return;
-    }
-
-    runtime.c47MemInBlocks -%= sizeInBlocks;
-    runtime.freeListFree(pcMemPtr, sizeInBlocks);
+    c47_alloc_owned.freeC47Blocks(pcMemPtr, sizeInBlocks);
 }
 
 pub export fn allocGmp(sizeInBytes: usize) ?*anyopaque {
