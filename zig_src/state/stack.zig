@@ -1,3 +1,4 @@
+const descriptor_owned = @import("stack_descriptor_owned.zig");
 const result_owned = @import("stack_result_owned.zig");
 const runtime = @import("stack_runtime.zig");
 
@@ -10,19 +11,6 @@ fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const bytes: [*]align(1) u8 = @ptrCast(ptr);
     const imag_offset: usize = @intCast(runtime.bytesFromBlocks(runtime.real34SizeInBlocks()));
     return @ptrCast(bytes + imag_offset);
-}
-
-fn swapRegs(src_reg: runtime.calcRegister_t, target_reg: u16) void {
-    const saved_descriptor = runtime.globalDescriptor(src_reg);
-    var target_descriptor: runtime.register_descriptor_t = 0;
-
-    if (runtime.tryGetSwapTargetDescriptor(target_reg, &target_descriptor)) {
-        runtime.setGlobalDescriptor(src_reg, target_descriptor);
-        _ = runtime.trySetSwapTargetDescriptor(target_reg, saved_descriptor);
-        return;
-    }
-
-    runtime.reportInvalidSwapTarget(target_reg);
 }
 
 pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
@@ -350,28 +338,12 @@ pub export fn fnDropN(number: u16) void {
 
 pub export fn fnRollUp(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
-
-    const stack_top = runtime.getStackTop();
-    const saved_descriptor = runtime.globalDescriptor(stack_top);
-
-    var reg = stack_top;
-    while (reg > runtime.REGISTER_X) : (reg -= 1) {
-        runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg - 1));
-    }
-    runtime.setGlobalDescriptor(runtime.REGISTER_X, saved_descriptor);
+    descriptor_owned.rollUp();
 }
 
 pub export fn fnRollDown(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
-
-    const stack_top = runtime.getStackTop();
-    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
-
-    var reg = runtime.REGISTER_X;
-    while (reg < stack_top) : (reg += 1) {
-        runtime.setGlobalDescriptor(reg, runtime.globalDescriptor(reg + 1));
-    }
-    runtime.setGlobalDescriptor(stack_top, saved_descriptor);
+    descriptor_owned.rollDown();
 }
 
 pub export fn fnDisplayStack(number_of_stack_lines: u16) void {
@@ -379,27 +351,23 @@ pub export fn fnDisplayStack(number_of_stack_lines: u16) void {
 }
 
 pub export fn fnSwapX(reg: u16) void {
-    swapRegs(runtime.REGISTER_X, reg);
+    descriptor_owned.swapX(reg);
 }
 
 pub export fn fnSwapY(reg: u16) void {
-    swapRegs(runtime.REGISTER_Y, reg);
+    descriptor_owned.swapY(reg);
 }
 
 pub export fn fnSwapZ(reg: u16) void {
-    swapRegs(runtime.REGISTER_Z, reg);
+    descriptor_owned.swapZ(reg);
 }
 
 pub export fn fnSwapT(reg: u16) void {
-    swapRegs(runtime.REGISTER_T, reg);
+    descriptor_owned.swapT(reg);
 }
 
 pub export fn fnSwapN(number: u16) void {
-    const count: u16 = @min(number, @as(u16, 4));
-    var index: u16 = 0;
-    while (index < count) : (index += 1) {
-        swapRegs(registerWithOffset(runtime.REGISTER_X, index), @intCast(registerWithOffset(runtime.REGISTER_X, number + index)));
-    }
+    descriptor_owned.swapN(number);
 }
 
 pub export fn fnDupN(number: u16) void {
@@ -413,27 +381,11 @@ pub export fn fnDupN(number: u16) void {
 
 pub export fn fnSwapXY(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
-
-    const saved_descriptor = runtime.globalDescriptor(runtime.REGISTER_X);
-    runtime.setGlobalDescriptor(runtime.REGISTER_X, runtime.globalDescriptor(runtime.REGISTER_Y));
-    runtime.setGlobalDescriptor(runtime.REGISTER_Y, saved_descriptor);
+    descriptor_owned.swapXY();
 }
 
 pub export fn fnShuffle(regist_order: u16) void {
-    var index: u16 = 0;
-    while (index < 4) : (index += 1) {
-        const current_reg = registerWithOffset(runtime.REGISTER_X, index);
-        const saved_reg = registerWithOffset(runtime.SAVED_REGISTER_X, index);
-        const saved_descriptor = runtime.globalDescriptor(current_reg);
-        runtime.setGlobalDescriptor(current_reg, runtime.globalDescriptor(saved_reg));
-        runtime.setGlobalDescriptor(saved_reg, saved_descriptor);
-    }
-
-    index = 0;
-    while (index < 4) : (index += 1) {
-        const regist_offset: u16 = (regist_order >> @intCast(index * 2)) & 3;
-        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, regist_offset), registerWithOffset(runtime.REGISTER_X, index));
-    }
+    descriptor_owned.shuffle(regist_order);
 }
 
 pub export fn fnFillStack(unused_but_mandatory_parameter: u16) void {
