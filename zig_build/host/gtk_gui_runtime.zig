@@ -1,5 +1,6 @@
 const profile_owned = @import("gtk_gui_profile_owned.zig");
 const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
+const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -659,26 +660,13 @@ pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data:
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    _ = widget;
-    _ = event;
-    _ = data;
-
-    fnStopTimerApp();
-    saveCalc();
-    gtk_main_quit();
-    return 0;
+    return lifecycle_owned.destroyCalc(widget, event, data);
 }
 
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    _ = event;
-    _ = data;
-
-    gtk_widget_queue_draw(widget);
-    return 0;
+    return lifecycle_owned.onConfigureEvent(widget, event, data);
 }
 
-var ui_settle_timer: c_uint = 0;
-var first_call_time_us: i64 = 0;
 var CTRL_State: u32 = 0;
 var SHIFT_State: u32 = 0;
 var event_keyval: u32 = 99999999;
@@ -688,32 +676,8 @@ var previousEventKeyR: u32 = 0;
 var previousEventStateP: u32 = 0;
 var previousEventKeyP: u32 = 0;
 
-fn z47_clear_ui_active_flag(data: ?*anyopaque) callconv(.c) c_int {
-    _ = data;
-    ui_is_active = 0;
-    ui_settle_timer = 0;
-    return 0;
-}
-
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    _ = widget;
-    _ = event;
-    _ = data;
-
-    if (first_call_time_us == 0) {
-        first_call_time_us = g_get_monotonic_time();
-    }
-
-    if ((g_get_monotonic_time() - first_call_time_us) < 500000) {
-        return 0;
-    }
-
-    ui_is_active = 1;
-    if (ui_settle_timer != 0) {
-        _ = g_source_remove(ui_settle_timer);
-    }
-    ui_settle_timer = g_timeout_add(100, z47_clear_ui_active_flag, null);
-    return 0;
+    return lifecycle_owned.onUiActivity(widget, event, data);
 }
 
 extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
