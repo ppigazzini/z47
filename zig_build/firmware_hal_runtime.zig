@@ -1,5 +1,6 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
 const buzz_owned = @import("firmware_hal_buzz_owned.zig");
+const io_path_owned = @import("firmware_hal_io_path_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
 const printer_owned = @import("firmware_hal_printer_owned.zig");
 
@@ -206,55 +207,7 @@ pub export fn sendByteIR(byte: u8) callconv(.c) void {
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
-    var ret: c_int = 0;
-    switch (path) {
-        IO_PATH_MANUAL_SAVE => {
-            check_create_dir("SAVFILES");
-            _ = strcpy(filename, "SAVFILES\\C47.sav");
-            return FILE_OK;
-        },
-        IO_PATH_AUTO_SAVE => {
-            check_create_dir("SAVFILES");
-            _ = strcpy(filename, "SAVFILES\\C47auto.sav");
-            return FILE_OK;
-        },
-        IO_PATH_PGM_FILE => {
-            check_create_dir("LIBRARY");
-            _ = strcpy(filename, "LIBRARY\\C47.dat");
-            return FILE_OK;
-        },
-        IO_PATH_TEST_PGMS => {
-            _ = strcpy(filename, "testPgms.bin");
-            return FILE_OK;
-        },
-        IO_PATH_REG_DUMP => return FILE_OK,
-        IO_PATH_SAVE_STATE_FILE => {
-            check_create_dir("STATE");
-            ret = file_selection_screen("Save Calculator State", "STATE", ".s47", @ptrCast(&save_statefile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_STATE_FILE => {
-            check_create_dir("STATE");
-            ret = file_selection_screen("Load Calculator State", "STATE", ".s47", @ptrCast(&load_statefile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_SAVE_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Save Program", "PROGRAMS", ".p47", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_EXPORT_RTF_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Export Program RTF", "PROGRAMS", ".rtf", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Load Program", "PROGRAMS", ".p47", @ptrCast(&load_programfile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        else => return FILE_ERROR,
-    }
+    return io_path_owned.ioFileNameFromFilePath(path, filename);
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
