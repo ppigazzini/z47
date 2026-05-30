@@ -1,5 +1,6 @@
 const std = @import("std");
 const base_dir_owned = @import("gtk_io_base_dir_owned.zig");
+const file_handle_owned = @import("gtk_io_file_handle_owned.zig");
 const file_chooser_owned = @import("gtk_io_file_chooser_owned.zig");
 const filename_dispatch_owned = @import("gtk_io_filename_dispatch_owned.zig");
 const path_policy_owned = @import("gtk_io_path_policy_owned.zig");
@@ -122,75 +123,31 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
-    if (io_file_handle != null) return FILE_ERROR;
-
-    var filename: [400]u8 = [_]u8{0} ** 400;
-    _ = strcpy(&filename, "untitled");
-    fileNameSelected[0] = 0;
-
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) return ret;
-
-    const filemode: [*c]const u8 = switch (mode) {
-        IO_MODE_READ => "rb",
-        IO_MODE_WRITE => "wb",
-        IO_MODE_UPDATE => "r+b",
-        else => return FILE_ERROR,
-    };
-
-    io_file_handle = fopen(&filename, filemode);
-    if (io_file_handle != null) {
-        if (mode == IO_MODE_READ) {
-            _ = strcpy(&fileNameSelected[0], path_policy_owned.selectedFileNameSource(&filename));
-        }
-        return FILE_OK;
-    }
-    return FILE_ERROR;
+    return file_handle_owned.ioFileOpen(&io_file_handle, path, mode, &fileNameSelected[0]);
 }
 
 pub export fn ioFileWrite(buffer: ?*const anyopaque, size: u32) callconv(.c) void {
-    if (io_file_handle) |f| {
-        _ = fwrite(buffer, 1, size, f);
-    }
+    file_handle_owned.ioFileWrite(io_file_handle, buffer, size);
 }
 
 pub export fn ioFileRead(buffer: ?*anyopaque, size: u32) callconv(.c) u32 {
-    if (io_file_handle) |f| {
-        return @intCast(fread(buffer, 1, size, f));
-    }
-    return 0;
+    return file_handle_owned.ioFileRead(io_file_handle, buffer, size);
 }
 
 pub export fn ioFileSeek(position: u32) callconv(.c) void {
-    if (io_file_handle) |f| {
-        _ = fseek(f, @intCast(position), 0);
-    }
+    file_handle_owned.ioFileSeek(io_file_handle, position);
 }
 
 pub export fn ioFileClose() callconv(.c) void {
-    if (io_file_handle) |f| {
-        _ = fclose(f);
-        io_file_handle = null;
-    }
+    file_handle_owned.ioFileClose(&io_file_handle);
 }
 
 pub export fn ioEof() callconv(.c) c_int {
-    if (io_file_handle) |f| {
-        return feof(f);
-    }
-    return 1;
+    return file_handle_owned.ioEof(io_file_handle);
 }
 
 pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    var filename: [400]u8 = [_]u8{0} ** 400;
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) return ret;
-
-    const result = remove(&filename);
-    if (result == -1 and error_number != null) {
-        error_number.?.* = @intCast(std.c._errno().*);
-    }
-    return if (result != -1) FILE_OK else FILE_ERROR;
+    return file_handle_owned.ioFileRemove(path, error_number);
 }
 
 pub export fn show_warning(string: [*c]u8) callconv(.c) void {
