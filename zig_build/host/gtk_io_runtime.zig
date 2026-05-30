@@ -1,6 +1,7 @@
 const std = @import("std");
 const base_dir_owned = @import("gtk_io_base_dir_owned.zig");
 const file_chooser_owned = @import("gtk_io_file_chooser_owned.zig");
+const filename_dispatch_owned = @import("gtk_io_filename_dispatch_owned.zig");
 const path_policy_owned = @import("gtk_io_path_policy_owned.zig");
 
 const FILE_ERROR: c_int = 0;
@@ -117,88 +118,7 @@ pub export fn file_selection_screen(
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
-    var base_dir: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
-
-    switch (path) {
-        IO_PATH_MANUAL_SAVE => {
-            if (base_dir_owned.createDir(SAVE_DIR) != 0) return FILE_ERROR;
-            _ = strcpy(filename, SAVE_DIR ++ "/");
-            _ = strcat(filename, path_policy_owned.saveFileName());
-            return FILE_OK;
-        },
-        IO_PATH_AUTO_SAVE => {
-            if (base_dir_owned.createDir(SAVE_DIR) != 0) return FILE_ERROR;
-            _ = strcpy(filename, SAVE_DIR ++ "/");
-            _ = strcat(filename, path_policy_owned.autoSaveFileName());
-            return FILE_OK;
-        },
-        IO_PATH_PGM_FILE => {
-            if (base_dir_owned.createDir(LIB_DIR) != 0) return FILE_ERROR;
-            _ = strcpy(filename, LIB_DIR ++ "/" ++ LIB_FILE);
-            return FILE_OK;
-        },
-        IO_PATH_TEST_PGMS => {
-            _ = strcpy(filename, "res/testPgms/testPgms.bin");
-            return FILE_OK;
-        },
-        IO_PATH_BACKUP => {
-            _ = strcpy(filename, path_policy_owned.backupFileName());
-            return FILE_OK;
-        },
-        IO_PATH_REG_DUMP => {
-            return FILE_OK;
-        },
-        IO_PATH_SAVE_STATE_FILE => {
-            if (base_dir_owned.createDir(STATE_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
-            return file_selection_screen("Save State File", &base_dir, STATE_PATTERN, 1, 1, filename);
-        },
-        IO_PATH_LOAD_STATE_FILE => {
-            if (base_dir_owned.createDir(STATE_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.populateProgramBaseDir(&base_dir, STATE_DIR) != FILE_OK) return FILE_ERROR;
-            return file_selection_screen("Load State File", &base_dir, STATE_PATTERN, 0, 0, filename);
-        },
-        IO_PATH_SAVE_PROGRAM => {
-            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
-            stringToASCII(tmpStringLabelOrVariableName, filename);
-            return file_selection_screen("Save Program File", &base_dir, PROGRAM_PATTERN, 1, 1, filename);
-        },
-        IO_PATH_EXPORT_RTF_PROGRAM => {
-            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
-            stringToASCII(tmpStringLabelOrVariableName, filename);
-            return file_selection_screen("Export Program File RTF", &base_dir, RTF_PATTERN, 1, 1, filename);
-        },
-        IO_PATH_LOAD_PROGRAM => {
-            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.populateProgramBaseDir(&base_dir, PROGRAMS_DIR) != FILE_OK) return FILE_ERROR;
-            return file_selection_screen("Load Program File", &base_dir, PROGRAM_PATTERN, 0, 0, filename);
-        },
-        IO_PATH_SAVE_ALL_PROGRAMS => {
-            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
-            stringToASCII(tmpStringLabelOrVariableName, filename);
-            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
-            _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
-            _ = strcat(&filename_all, filename);
-            _ = strcpy(filename, &filename_all);
-            _ = strcat(filename, PROGRAM_EXT);
-            return FILE_OK;
-        },
-        IO_PATH_EXPORT_RTF_ALL_PROGRAMS => {
-            if (base_dir_owned.createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
-            if (base_dir_owned.createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
-            stringToASCII(tmpStringLabelOrVariableName, filename);
-            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
-            _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
-            _ = strcat(&filename_all, filename);
-            _ = strcpy(filename, &filename_all);
-            _ = strcat(filename, RTF_EXT);
-            return FILE_OK;
-        },
-        else => return FILE_ERROR,
-    }
+    return filename_dispatch_owned.ioFileNameFromFilePath(path, filename);
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
