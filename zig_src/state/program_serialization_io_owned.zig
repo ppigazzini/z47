@@ -1,16 +1,16 @@
+const pointer_owned = @import("program_serialization_pointer_owned.zig");
 const runtime = @import("program_serialization_runtime.zig");
 
 fn toBlocks(byte_count: usize) u16 {
-    return @intCast((byte_count + (runtime.BYTES_PER_BLOCK - 1)) >> runtime.BPB);
+    return pointer_owned.toBlocks(byte_count);
 }
 
 fn toBytes(block_count: usize) usize {
-    return block_count << runtime.BPB;
+    return pointer_owned.toBytes(block_count);
 }
 
 fn offsetPointer(ptr: [*c]u8, delta: isize) [*c]u8 {
-    const base: isize = @intCast(@intFromPtr(ptr));
-    return @ptrFromInt(@as(usize, @intCast(base + delta)));
+    return pointer_owned.offsetPointer(ptr, delta);
 }
 
 fn addSpaceAfterPrograms(size: u16) void {
