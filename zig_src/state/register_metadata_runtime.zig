@@ -1,5 +1,6 @@
 const std = @import("std");
 const build_options = @import("register_metadata_build_options");
+const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
@@ -360,24 +361,7 @@ pub fn reportTooManyVariables() void {
 }
 
 pub fn clearSigma() void {
-    if (!use_fake_register_metadata_harness_surface) {
-        fnClSigma(CONFIRMED);
-        return;
-    }
-
-    var register = findNamedVariable("HISTO");
-    if (register != INVALID_VARIABLE) {
-        fnDeleteVariable(@intCast(register));
-    }
-
-    register = findNamedVariable("STATS");
-    if (register != INVALID_VARIABLE) {
-        fnDeleteVariable(@intCast(register));
-    }
-
-    stack_runtime.lrChosen = 0;
-    stack_runtime.freeC47Blocks(stack_runtime.statisticalSumsPointer, stack_runtime.statisticalSumsBlocks());
-    stack_runtime.statisticalSumsPointer = null;
+    clear_sigma_owned.clearSigma();
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
