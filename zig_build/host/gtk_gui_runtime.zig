@@ -1,4 +1,5 @@
 const profile_owned = @import("gtk_gui_profile_owned.zig");
+const key_event_owned = @import("gtk_gui_key_event_owned.zig");
 const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
 
@@ -455,204 +456,11 @@ pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, d
 }
 
 pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    if (event == null) return z47_keyPressed_c_impl(widget, event, data);
-
-    const key_event: *GdkEventKey = @ptrCast(@alignCast(event.?));
-    event_keyval = key_event.keyval + CTRL_State;
-
-    const altgr_pressed = key_event.keyval == GDK_KEY_Alt_R and (key_event.state & 0b10100) != 0;
-    const ctrl_pressed = if (swapCtrlCode)
-        (key_event.keyval == GDK_KEY_Control_L and (key_event.state & 0b00100) == 0)
-    else
-        (key_event.keyval == GDK_KEY_Control_L and (key_event.state & 0b00100) != 0);
-
-    if (ctrl_pressed) {
-        previousEventStateP = key_event.state;
-        previousEventKeyP = key_event.keyval;
-        return z47_keyPressed_c_impl(widget, event, data);
-    }
-
-    if (altgr_pressed) {
-        SHIFT_State = 0;
-        event_command_shift = 0;
-        CTRL_State = 0;
-        shiftF = false;
-        shiftG = false;
-        refreshStatusBar();
-        showShiftState();
-        previousEventStateP = key_event.state;
-        previousEventKeyP = key_event.keyval;
-        return 0;
-    }
-
-    SHIFT_State = 0;
-    switch (event_keyval) {
-        GDK_KEY_Shift_L, GDK_KEY_Shift_R => {
-            SHIFT_State = 65536;
-            event_command_shift = 65536;
-            previousEventStateP = key_event.state;
-            previousEventKeyP = key_event.keyval;
-            return 0;
-        },
-        GDK_KEY_Control_L, GDK_KEY_Control_R => {
-            CTRL_State = 65536;
-            previousEventStateP = key_event.state;
-            previousEventKeyP = key_event.keyval;
-            return 0;
-        },
-        else => {},
-    }
-
-    if (CTRL_State == 65536 and !ctrl_pressed) {
-        previousEventStateP = key_event.state;
-        previousEventKeyP = key_event.keyval;
-        return z47_keyPressed_c_impl(widget, event, data);
-    }
-
-    const in_text_modes = calcMode == CM_AIM or calcMode == CM_EIM or tam.mode != 0 or (calcMode == CM_PEM and getSystemFlag(FLAG_ALPHA)) or tam.alpha;
-    if (!in_text_modes) {
-        const key_strip = stripCapsLockForCommand(key_event.keyval);
-        const standard_keys = currentStdKeyboard();
-
-        switch (key_strip) {
-            GDK_KEY_f => {
-                if (checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTf) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27");
-
-                previousEventStateP = key_event.state;
-                previousEventKeyP = key_event.keyval;
-                return 0;
-            },
-            GDK_KEY_g => {
-                if (checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTg) btnClicked(widget, "10") else {
-                    shiftF = false;
-                    shiftG = !shiftG;
-                    refreshStatusBar();
-                    showShiftState();
-                }
-
-                previousEventStateP = key_event.state;
-                previousEventKeyP = key_event.keyval;
-                return 0;
-            },
-            else => {},
-        }
-    }
-
-    previousEventStateP = key_event.state;
-    previousEventKeyP = key_event.keyval;
-    return z47_keyPressed_c_impl(widget, event, data);
-}
-
-fn stripCapsLockForCommand(keyval: u32) u32 {
-    const is_alpha = (keyval >= 'A' and keyval <= 'Z') or (keyval >= 'a' and keyval <= 'z');
-    if (!is_alpha) return keyval;
-
-    return (keyval & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)));
+    return key_event_owned.keyPressedImpl(widget, event, data);
 }
 
 pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    _ = data;
-
-    const key_event: *GdkEventKey = @ptrCast(@alignCast(event.?));
-
-    if (event_keyval == key_event.keyval + CTRL_State) {
-        event_keyval = 99999999;
-    }
-
-    const ctrl_released = (key_event.keyval == GDK_KEY_Control_L and (key_event.state & 0b00000) != 0) and
-        (previousEventKeyP == GDK_KEY_Control_L and previousEventStateP == 0b00100);
-    if (ctrl_released) {
-        previousEventStateR = key_event.state;
-        previousEventKeyR = key_event.keyval;
-        return 0;
-    }
-
-    const altgr_released = (key_event.keyval == GDK_KEY_Alt_R and (key_event.state & 0b00000) != 0) and
-        (previousEventKeyR == GDK_KEY_Control_L and previousEventStateR == 0b1000);
-    if (altgr_released) {
-        SHIFT_State = 0;
-        event_command_shift = 0;
-        CTRL_State = 0;
-        shiftF = false;
-        shiftG = false;
-        refreshStatusBar();
-        showShiftState();
-        previousEventStateR = key_event.state;
-        previousEventKeyR = key_event.keyval;
-        return 0;
-    }
-
-    const standard_keys = currentStdKeyboard();
-
-    switch (key_event.keyval) {
-        GDK_KEY_Shift_L, GDK_KEY_Shift_R => {
-            event_command_shift = 0;
-            if (SHIFT_State != 0) {
-                if (checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[0].primary else standard_keys[0].primary) == KEY_fg) btnClicked(widget, "00") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27") else {
-                    shiftF = !shiftF;
-                    shiftG = false;
-                    refreshStatusBar();
-                    showShiftState();
-                }
-            }
-            SHIFT_State = 0;
-        },
-
-        GDK_KEY_Control_L, GDK_KEY_Control_R => {
-            if (CTRL_State != 0) {
-                if (checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else {
-                    shiftF = false;
-                    shiftG = !shiftG;
-                    refreshStatusBar();
-                    showShiftState();
-                }
-            }
-            CTRL_State = 0;
-        },
-
-        GDK_KEY_F1 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "1"),
-        GDK_KEY_F2 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "2"),
-        GDK_KEY_F3 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "3"),
-        GDK_KEY_F4 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "4"),
-        GDK_KEY_F5 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "5"),
-        GDK_KEY_F6 => if (isLabelText() or tam.mode == 0 or alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "6"),
-        else => {},
-    }
-
-    if (key_event.keyval != GDK_KEY_Shift_L and key_event.keyval != GDK_KEY_Shift_R) {
-        SHIFT_State = 0;
-    }
-
-    previousEventStateR = key_event.state;
-    previousEventKeyR = key_event.keyval;
-    return 0;
+    return key_event_owned.keyReleasedImpl(widget, event, data);
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
@@ -666,15 +474,6 @@ pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*a
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     return lifecycle_owned.onConfigureEvent(widget, event, data);
 }
-
-var CTRL_State: u32 = 0;
-var SHIFT_State: u32 = 0;
-var event_keyval: u32 = 99999999;
-var event_command_shift: u32 = 0;
-var previousEventStateR: u32 = 0;
-var previousEventKeyR: u32 = 0;
-var previousEventStateP: u32 = 0;
-var previousEventKeyP: u32 = 0;
 
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     return lifecycle_owned.onUiActivity(widget, event, data);
