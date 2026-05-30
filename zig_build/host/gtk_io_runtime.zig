@@ -1,4 +1,5 @@
 const std = @import("std");
+const path_policy_owned = @import("gtk_io_path_policy_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -10,10 +11,6 @@ const PROGRAMS_DIR = "PROGRAMS";
 const ALL_PROGRAMS_SUBDIR = "ALLPGMS";
 const LIB_DIR = "LIBRARY";
 const LIB_FILE = "C47.dat";
-const SAVE_FILE_C47 = "C47.sav";
-const SAVE_FILE_R47 = "R47.sav";
-const AUTO_SAVE_FILE_C47 = "C47auto.sav";
-const AUTO_SAVE_FILE_R47 = "R47auto.sav";
 const STATE_PATTERN = "*.s47";
 const PROGRAM_PATTERN = "*.p47";
 const RTF_PATTERN = "*.rtf";
@@ -21,14 +18,6 @@ const PROGRAM_EXT = ".p47";
 const RTF_EXT = ".rtf";
 const DEFAULT_SAVE_NAME_BUFFER_LENGTH: usize = 7 * 11 + 1;
 const FILENAME_BUFFER_LENGTH: usize = 400;
-
-const USER_DM42: u8 = 45;
-const USER_C47: u8 = 46;
-const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
-const USER_R47: u8 = 66;
 
 const GTK_FILE_CHOOSER_ACTION_OPEN: c_int = 0;
 const GTK_FILE_CHOOSER_ACTION_SAVE: c_int = 1;
@@ -115,50 +104,12 @@ extern var calcModel: u8;
 extern var frmCalc: ?*GtkWidget;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 
-fn selectedFileNameSource(filename: [*c]u8) [*c]u8 {
-    const length = strlen(filename);
-    const min_start = if (length + 1 > STATE_FILE_NAME_VAR_LENGTH)
-        length - STATE_FILE_NAME_VAR_LENGTH + 1
-    else
-        0;
-
-    var start = length;
-    while (start > min_start) : (start -= 1) {
-        const ch = filename[start - 1];
-        if (ch == '/' or ch == '\\' or ch == 0) break;
-    }
-
-    return filename + start;
-}
-
 fn createDir(path: [*c]const u8) c_int {
     const zpath: [*:0]const u8 = @ptrCast(path);
     switch (std.posix.errno(std.posix.system.mkdir(zpath, 0o775))) {
         .SUCCESS, .EXIST => return 0,
         else => return -1,
     }
-}
-
-fn isR47Family(model: u8) bool {
-    return switch (model) {
-        USER_R47, USER_R47f_g, USER_R47bk_fg, USER_R47fg_bk, USER_R47fg_g => true,
-        else => false,
-    };
-}
-
-fn saveFileName() [*c]const u8 {
-    return if (isR47Family(calcModel)) SAVE_FILE_R47 else SAVE_FILE_C47;
-}
-
-fn autoSaveFileName() [*c]const u8 {
-    return if (isR47Family(calcModel)) AUTO_SAVE_FILE_R47 else AUTO_SAVE_FILE_C47;
-}
-
-fn backupFileName() [*c]const u8 {
-    return switch (calcModel) {
-        USER_C47, USER_DM42 => "backup.cfg",
-        else => "backupR47.cfg",
-    };
 }
 
 fn parentWindow() ?*GtkWindow {
@@ -248,13 +199,13 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
         IO_PATH_MANUAL_SAVE => {
             if (createDir(SAVE_DIR) != 0) return FILE_ERROR;
             _ = strcpy(filename, SAVE_DIR ++ "/");
-            _ = strcat(filename, saveFileName());
+            _ = strcat(filename, path_policy_owned.saveFileName());
             return FILE_OK;
         },
         IO_PATH_AUTO_SAVE => {
             if (createDir(SAVE_DIR) != 0) return FILE_ERROR;
             _ = strcpy(filename, SAVE_DIR ++ "/");
-            _ = strcat(filename, autoSaveFileName());
+            _ = strcat(filename, path_policy_owned.autoSaveFileName());
             return FILE_OK;
         },
         IO_PATH_PGM_FILE => {
@@ -267,7 +218,7 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
             return FILE_OK;
         },
         IO_PATH_BACKUP => {
-            _ = strcpy(filename, backupFileName());
+            _ = strcpy(filename, path_policy_owned.backupFileName());
             return FILE_OK;
         },
         IO_PATH_REG_DUMP => {
@@ -346,7 +297,7 @@ pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
     io_file_handle = fopen(&filename, filemode);
     if (io_file_handle != null) {
         if (mode == IO_MODE_READ) {
-            _ = strcpy(&fileNameSelected[0], selectedFileNameSource(&filename));
+            _ = strcpy(&fileNameSelected[0], path_policy_owned.selectedFileNameSource(&filename));
         }
         return FILE_OK;
     }
