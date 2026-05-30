@@ -191,6 +191,7 @@ void stackParityReset(void) {
   memset(globalRegister, 0, sizeof(globalRegister));
   memset(fake_named_variables, 0, sizeof(fake_named_variables));
   memset(fake_local_registers, 0, sizeof(fake_local_registers));
+  currentAngularMode = amNone;
 #ifdef Z47_REGISTER_METADATA_RUNTIME
   memset(indexOfItems, 0, sizeof(indexOfItems));
   memset(fake_user_menus, 0, sizeof(fake_user_menus));
