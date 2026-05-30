@@ -5,7 +5,6 @@ const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
-const random_command_owned = @import("math_random_command_owned.zig");
 const real_trig_export = @import("math_real_trig_export.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
@@ -20,6 +19,7 @@ const arithmetic_command_wrapper_owned = @import("math_arithmetic_command_wrappe
 const special_algebraic_wrapper_owned = @import("math_special_algebraic_wrapper_owned.zig");
 const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
 const tail_command_wrappers_owned = @import("math_tail_command_wrappers_owned.zig");
+const random_primitive_wrapper_owned = @import("math_random_primitive_wrapper_owned.zig");
 
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
@@ -45,23 +45,23 @@ const round_retained = runtime.retained.z47_math_wrappers_retained_fnRound;
 const decrement_retained = runtime.retained.z47_math_wrappers_retained_fnDec;
 const increment_retained = runtime.retained.z47_math_wrappers_retained_fnInc;
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
-    return random_command_owned.pcg32RandomR(rng);
+    return random_primitive_wrapper_owned.pcg32RandomR(rng);
 }
 
 pub export fn pcg32_srandom_r(rng: *runtime.pcg32_random_t, initstate: u64, initseq: u64) callconv(.c) void {
-    random_command_owned.pcg32SrandomR(rng, initstate, initseq);
+    random_primitive_wrapper_owned.pcg32SrandomR(rng, initstate, initseq);
 }
 
 pub export fn pcg32_srandom(seed: u64, seq: u64) callconv(.c) void {
-    random_command_owned.pcg32Srandom(seed, seq);
+    random_primitive_wrapper_owned.pcg32Srandom(seed, seq);
 }
 
 pub export fn z47_math_wrappers_bounded_rand(s: u32) callconv(.c) u32 {
-    return random_command_owned.boundedRandExport(s);
+    return random_primitive_wrapper_owned.boundedRandExport(s);
 }
 
 pub export fn realRandomU01(res: *runtime.real_t) callconv(.c) void {
-    random_command_owned.realRandomU01(res);
+    random_primitive_wrapper_owned.realRandomU01(res);
 }
 
 pub export fn sinComplex(
