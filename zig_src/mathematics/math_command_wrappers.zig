@@ -53,10 +53,7 @@ comptime {
     _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcTanh;
 }
 
-const no_register = @as(runtime.calcRegister_t, -1);
-const BranchFn = *const fn () callconv(.c) void;
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
-const long_integer_power_negative_exponent: i32 = -1;
 
 const add_retained = runtime.retained.z47_math_wrappers_retained_fnAdd;
 const subtract_retained = runtime.retained.z47_math_wrappers_retained_fnSubtract;
@@ -67,19 +64,6 @@ const integer_divide_remainder_retained = runtime.retained.z47_math_wrappers_ret
 const round_retained = runtime.retained.z47_math_wrappers_retained_fnRound;
 const decrement_retained = runtime.retained.z47_math_wrappers_retained_fnDec;
 const increment_retained = runtime.retained.z47_math_wrappers_retained_fnInc;
-fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
-    destination.* = source.*;
-}
-
-fn negateReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
-    copyReal(destination, source);
-    runtime.realChangeSign(destination);
-}
-
-fn realAbsLessThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareAbsEqual(lhs, rhs) and !runtime.realCompareAbsGreaterThan(lhs, rhs);
-}
-
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
     return random_command_owned.pcg32RandomR(rng);
 }
