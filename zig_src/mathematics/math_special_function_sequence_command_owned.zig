@@ -135,7 +135,9 @@ fn factLonI() callconv(.c) void {
     runtime.__gmpz_init(&result[0]);
     defer runtime.__gmpz_clear(&result[0]);
     runtime.__gmpz_set_ui(&result[0], 1);
-    for (1..n + 1) |i| {
+    const n_c_ulong: c_ulong = @intCast(n);
+    var i: c_ulong = 1;
+    while (i <= n_c_ulong) : (i += 1) {
         runtime.__gmpz_mul_ui(&result[0], &result[0], i);
     }
 
