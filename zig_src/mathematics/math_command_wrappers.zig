@@ -71,8 +71,6 @@ const compare_greater_equal_retained = runtime.retained.z47_math_wrappers_retain
 const compare_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
 const compare_not_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
 const compare_almost_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
-const to_polar2_retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
-const to_rect2_retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -282,14 +280,6 @@ pub export fn TanhComplex(
     }
 
     return runtime.ERROR_NONE;
-}
-
-fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *const runtime.real_t) void {
-    if (runtime.realIsNegative(x)) {
-        copyReal(result, zero);
-    } else {
-        copyReal(result, runtime.z47_math_wrappers_const_plus_infinity());
-    }
 }
 
 pub export fn realExpLimitCheck(
