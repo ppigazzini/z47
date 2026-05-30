@@ -1,4 +1,3 @@
-const builtin = @import("builtin");
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
@@ -161,22 +160,17 @@ fn getVariableFullSizeInBlocks(reg: runtime.calcRegister_t, data_type: u32) u16 
     var data_ptr: ?*anyopaque = null;
 
     if (!tryGetDataPointerForFullSize(reg, &data_ptr)) {
-        return runtime.getRegisterFullSizeInBlocksRetained(reg);
+        return 0;
     }
 
     return switch (data_type) {
         runtime.dtLongInteger, runtime.dtString => runtime.dataMaxLengthInBlocks(data_ptr) + runtime.strLgIntHeaderSizeInBlocks(),
         runtime.dtReal34Matrix, runtime.dtComplex34Matrix => matrixMaxLengthInBlocks(data_ptr, data_type) + runtime.matrixHeaderSizeInBlocks(),
-        else => runtime.getRegisterFullSizeInBlocksRetained(reg),
+        else => 0,
     };
 }
 
 pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
-        return;
-    }
-
     var data_ptr: ?*anyopaque = null;
     var descriptor: runtime.register_descriptor_t = 0;
 
@@ -210,15 +204,9 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
     if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
         return;
     }
-
-    runtime.setRegisterMaxDataLengthInBlocksRetained(reg, max_data_len);
 }
 
 pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterMaxDataLengthInBlocksRetained(reg);
-    }
-
     var data_ptr: ?*anyopaque = null;
     var type_reg = reg;
 
@@ -245,10 +233,6 @@ pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
 }
 
 pub fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getRegisterFullSizeInBlocksRetained(reg);
-    }
-
     return switch (descriptor_owned.getRegisterDataType(reg)) {
         runtime.dtLongInteger,
         runtime.dtString,

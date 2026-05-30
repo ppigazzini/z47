@@ -1,4 +1,3 @@
-const builtin = @import("builtin");
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
 const payload_owned = @import("register_metadata_payload_owned.zig");
 const memory_owned = @import("register_memory_owned.zig");
@@ -38,11 +37,6 @@ fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_
 }
 
 pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.copySourceRegisterToDestRegisterRetained(source_register, dest_register);
-        return;
-    }
-
     if (isSyntheticReservedCopySource(source_register)) {
         return;
     }
@@ -72,7 +66,7 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
 }
 
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    if (builtin.target.os.tag == .freestanding or isReservedRegister(reg)) {
+    if (isReservedRegister(reg)) {
         runtime.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
         return;
     }
