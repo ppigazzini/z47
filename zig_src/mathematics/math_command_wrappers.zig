@@ -518,111 +518,111 @@ pub export fn fnLnP1(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_function_sequence_command_owned.fnErf(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnErf(unused_but_mandatory_parameter);
 }
 
 pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_function_sequence_command_owned.fnErfc(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnErfc(unused_but_mandatory_parameter);
 }
 
 pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fn2Pow(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fn2Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fn10Pow(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fn10Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog10(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fnLog10(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLog10(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fnLog2(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLog2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    invert_command_owned.invert(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnInvert(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    sign_command_owned.sign(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSign(unused_but_mandatory_parameter);
 }
 
 pub export fn fnChangeSign(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    sign_command_owned.changeSign(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnChangeSign(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.square(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnSquare(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCube(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    transform_command_owned.cube(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnCube(unused_but_mandatory_parameter);
 }
 
 pub export fn fnBn(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponent_bernoulli_command_owned.bn(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnBn(unused_but_mandatory_parameter);
 }
 
 pub export fn fnBnStar(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponent_bernoulli_command_owned.bnStar(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnBnStar(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExpt(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponent_bernoulli_command_owned.expt(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnExpt(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWpositive(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    lambertw_command_owned.fnWpositive(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnWpositive(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWnegative(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    lambertw_command_owned.fnWnegative(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnWnegative(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWinverse(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    lambertw_command_owned.fnWinverse(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnWinverse(unused_but_mandatory_parameter);
 }
 
 pub export fn fnGcd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_residue_command_owned.fnGcd(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnGcd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLcm(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_residue_command_owned.fnLcm(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnLcm(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_residue_command_owned.fnMod(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnMod(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_residue_command_owned.fnRmd(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnRmd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    scalar_integer_inspection_command_owned.fnUlp(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnUlp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    scalar_integer_inspection_command_owned.fnMant(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnMant(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    scalar_integer_inspection_command_owned.fnRoundi(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnRoundi(unused_but_mandatory_parameter);
 }
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    integer_residue_command_owned.fnNeighb(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnNeighb(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_function_sequence_command_owned.fnIxyz(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnIxyz(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_function_sequence_command_owned.fnFactorial(unused_but_mandatory_parameter);
+    forward_command_wrappers_owned.fnFactorial(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
