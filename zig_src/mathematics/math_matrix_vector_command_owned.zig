@@ -1,4 +1,5 @@
 const std = @import("std");
+const cross_owned = @import("math_matrix_vector_cross_owned.zig");
 const linpol_owned = @import("math_matrix_vector_linpol_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -210,20 +211,7 @@ fn tryDotMatrices() bool {
 }
 
 pub fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (tryCrossMatrices()) {
-        return;
-    }
-
-    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-    if (type_x == runtime.dtReal34Matrix or type_x == runtime.dtComplex34Matrix or type_y == runtime.dtReal34Matrix or type_y == runtime.dtComplex34Matrix) {
-        crossDotMatrixTypeError("In function fnCross:");
-        return;
-    }
-
-    runtime.processRealComplexDyadicFunction(&crossReal, &crossCplx);
+    cross_owned.cross(unused_but_mandatory_parameter);
 }
 
 pub fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
