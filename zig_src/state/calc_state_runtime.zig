@@ -1,3 +1,5 @@
+const io_owned = @import("calc_state_runtime_io_owned.zig");
+
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 
@@ -47,16 +49,6 @@ pub extern fn z47_calc_state_get_version_allowed() u32;
 pub extern fn z47_calc_state_get_config_file_version() u32;
 pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool;
 
-pub extern fn z47_calc_state_runtime_check_power() bool;
-pub extern fn z47_calc_state_runtime_open_save(save_type: u16) c_int;
-pub extern fn z47_calc_state_runtime_open_load(load_type: u16) c_int;
-pub extern fn z47_calc_state_runtime_close_file() void;
-pub extern fn z47_calc_state_runtime_display_write_error() void;
-pub extern fn z47_calc_state_runtime_display_read_error() void;
-pub extern fn z47_calc_state_runtime_unwind_all_subroutines() void;
-pub extern fn z47_calc_state_runtime_read_line(buffer: [*c]u8) void;
-pub extern fn z47_calc_state_runtime_line_equals(line: [*c]const u8, expected: [*c]const u8) bool;
-pub extern fn z47_calc_state_runtime_parse_u32_line(line: [*c]const u8) u32;
 pub extern fn z47_calc_state_runtime_allow_user_keys(saved_calc_model: u16) bool;
 pub extern fn z47_calc_state_runtime_fixup_r47_shift_keys() void;
 pub extern fn z47_calc_state_runtime_restart_post_load_timers() void;
@@ -105,43 +97,43 @@ pub inline fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_us
 }
 
 pub inline fn checkPower() bool {
-    return z47_calc_state_runtime_check_power();
+    return io_owned.checkPower();
 }
 
 pub inline fn openSave(save_type: u16) c_int {
-    return z47_calc_state_runtime_open_save(save_type);
+    return io_owned.openSave(save_type);
 }
 
 pub inline fn openLoad(load_type: u16) c_int {
-    return z47_calc_state_runtime_open_load(load_type);
+    return io_owned.openLoad(load_type);
 }
 
 pub inline fn closeFile() void {
-    z47_calc_state_runtime_close_file();
+    io_owned.closeFile();
 }
 
 pub inline fn displayWriteError() void {
-    z47_calc_state_runtime_display_write_error();
+    io_owned.displayWriteError();
 }
 
 pub inline fn displayReadError() void {
-    z47_calc_state_runtime_display_read_error();
+    io_owned.displayReadError();
 }
 
 pub inline fn unwindAllSubroutines() void {
-    z47_calc_state_runtime_unwind_all_subroutines();
+    io_owned.unwindAllSubroutines();
 }
 
 pub inline fn readLine(buffer: []u8) void {
-    z47_calc_state_runtime_read_line(buffer.ptr);
+    io_owned.readLine(buffer);
 }
 
 pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {
-    return z47_calc_state_runtime_line_equals(line, expected);
+    return io_owned.lineEquals(line, expected);
 }
 
 pub inline fn parseU32Line(line: [*c]const u8) u32 {
-    return z47_calc_state_runtime_parse_u32_line(line);
+    return io_owned.parseU32Line(line);
 }
 
 pub inline fn allowUserKeys(saved_calc_model: u16) bool {
