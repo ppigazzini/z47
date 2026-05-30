@@ -4,7 +4,7 @@ const atan2_command_owned = @import("math_atan2_command_owned.zig");
 const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
-const compare_owned = @import("math_compare_owned.zig");
+const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const double_width_command_owned = @import("math_double_width_command_owned.zig");
@@ -67,13 +67,6 @@ const integer_divide_remainder_retained = runtime.retained.z47_math_wrappers_ret
 const round_retained = runtime.retained.z47_math_wrappers_retained_fnRound;
 const decrement_retained = runtime.retained.z47_math_wrappers_retained_fnDec;
 const increment_retained = runtime.retained.z47_math_wrappers_retained_fnInc;
-const compare_less_than_retained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
-const compare_less_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
-const compare_greater_than_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
-const compare_greater_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
-const compare_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
-const compare_not_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
-const compare_almost_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -719,82 +712,31 @@ pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_less_than_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .less_than);
+    compare_wrapper_owned.fnXLessThan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_less_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .less_equal);
+    compare_wrapper_owned.fnXLessEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_greater_than_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .greater_than);
+    compare_wrapper_owned.fnXGreaterThan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_greater_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .greater_equal);
+    compare_wrapper_owned.fnXGreaterEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .equal);
+    compare_wrapper_owned.fnXEqualsTo(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!compare_owned.isOwnedCompareRegister(regist)) {
-        compare_not_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .not_equal);
+    compare_wrapper_owned.fnXNotEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-    const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const regist_type = runtime.getRegisterDataType(regist);
-
-    if (!compare_owned.isOwnedCompareRegister(regist) or !compare_owned.isOwnedAlmostEqualIntegerType(x_type) or !compare_owned.isOwnedAlmostEqualIntegerType(regist_type)) {
-        compare_almost_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compare_owned.compareScalarRegister(regist, .equal);
+    compare_wrapper_owned.fnXAlmostEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
