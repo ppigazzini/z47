@@ -3,6 +3,29 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
+fn setNaNOrDomainError(result: *runtime.real_t) bool {
+    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return false;
+    }
+
+    runtime.realSetNaN(result);
+    return true;
+}
+
+fn setSignedInfinity(result: *runtime.real_t, is_negative: bool) bool {
+    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return false;
+    }
+
+    result.* = runtime.z47_math_wrappers_const_plus_infinity().*;
+    if (is_negative) {
+        result.bits |= 0x80;
+    }
+    return true;
+}
+
 pub fn percentMRR(unused_but_mandatory_parameter: u16) void {
     var x_value: runtime.real_t = undefined;
     var y_value: runtime.real_t = undefined;
@@ -17,20 +40,9 @@ pub fn percentMRR(unused_but_mandatory_parameter: u16) void {
 
     if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value) and runtime.getRegisterAsReal(runtime.REGISTER_Z, &z_value)) {
         if (runtime.realIsZero(&x_value) and runtime.realIsZero(&y_value)) {
-            if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-                runtime.realSetNaN(&result);
-            } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            }
+            _ = setNaNOrDomainError(&result);
         } else if (runtime.realIsZero(&y_value)) {
-            if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-                result = runtime.z47_math_wrappers_const_plus_infinity().*;
-                if (runtime.realIsNegative(&x_value)) {
-                    result.bits |= 0x80;
-                }
-            } else {
-                runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            }
+            _ = setSignedInfinity(&result, runtime.realIsNegative(&x_value));
         } else {
             runtime.realDivide(&x_value, &y_value, &result, &runtime.ctxtReal75);
             runtime.realDivide(runtime.z47_math_wrappers_const_1(), &z_value, &z_value, &runtime.ctxtReal75);
@@ -67,20 +79,11 @@ pub fn percentPlusMG(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realCompareEqual(&x_value, runtime.z47_math_wrappers_const_100()) and runtime.realIsZero(&y_value)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.realSetNaN(&result);
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (!setNaNOrDomainError(&result)) {
             return;
         }
     } else if (runtime.realCompareEqual(&x_value, runtime.z47_math_wrappers_const_100())) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            result = runtime.z47_math_wrappers_const_plus_infinity().*;
-            if (runtime.realIsNegative(&y_value)) {
-                result.bits |= 0x80;
-            }
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (!setSignedInfinity(&result, runtime.realIsNegative(&y_value))) {
             return;
         }
     } else {
@@ -112,21 +115,12 @@ pub fn percentT(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realIsZero(&x_value) and runtime.realIsZero(&y_value)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.realSetNaN(&result);
+        if (setNaNOrDomainError(&result)) {
             write_result = true;
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         }
     } else if (runtime.realIsZero(&y_value)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            result = runtime.z47_math_wrappers_const_plus_infinity().*;
-            if (runtime.realIsNegative(&x_value)) {
-                result.bits |= 0x80;
-            }
+        if (setSignedInfinity(&result, runtime.realIsNegative(&x_value))) {
             write_result = true;
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         }
     } else {
         x_value.exponent += 2;
@@ -159,20 +153,9 @@ pub fn deltaPercent(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realIsZero(&x_value) and runtime.realCompareEqual(&x_value, &y_value)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.realSetNaN(&result);
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        }
+        _ = setNaNOrDomainError(&result);
     } else if (runtime.realIsZero(&y_value)) {
-        if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            result = runtime.z47_math_wrappers_const_plus_infinity().*;
-            if (runtime.realIsZero(&x_value)) {
-                result.bits |= 0x80;
-            }
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        }
+        _ = setSignedInfinity(&result, runtime.realIsZero(&x_value));
     } else {
         runtime.realSubtract(&x_value, &y_value, &result, &runtime.ctxtReal39);
         runtime.realDivide(&result, &y_value, &result, &runtime.ctxtReal39);
