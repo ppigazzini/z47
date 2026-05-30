@@ -1,43 +1,17 @@
-const runtime = @import("math_command_wrappers_runtime.zig");
-const selectors_add_sub = @import("math_arithmetic_dispatch_selectors_add_sub_owned.zig");
-const selectors_mul_div = @import("math_arithmetic_dispatch_selectors_mul_div_owned.zig");
-
-const BranchFn = selectors_add_sub.BranchFn;
-const no_register = @as(runtime.calcRegister_t, -1);
-
-fn tryRemainingArithmetic(select_branch: *const fn (u32, u32) ?BranchFn) bool {
-    const branch = select_branch(runtime.getRegisterDataType(runtime.REGISTER_Y), runtime.getRegisterDataType(runtime.REGISTER_X)) orelse return false;
-
-    if (!runtime.saveLastX()) {
-        return true;
-    }
-
-    branch();
-    runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
-    return true;
-}
-
-fn tryRemainingDivide() bool {
-    const branch = selectors_mul_div.selectDivideBranch(runtime.getRegisterDataType(runtime.REGISTER_Y), runtime.getRegisterDataType(runtime.REGISTER_X)) orelse return false;
-
-    runtime.copySourceRegisterToDestRegister(runtime.REGISTER_X, runtime.REGISTER_L);
-    branch();
-    runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, no_register);
-    return true;
-}
+const selectors_coordinator = @import("math_arithmetic_dispatch_selectors_coordinator_owned.zig");
 
 pub fn tryRemainingAdd() bool {
-    return tryRemainingArithmetic(&selectors_add_sub.selectAddBranch);
+    return selectors_coordinator.tryRemainingAdd();
 }
 
 pub fn tryRemainingSubtract() bool {
-    return tryRemainingArithmetic(&selectors_add_sub.selectSubtractBranch);
+    return selectors_coordinator.tryRemainingSubtract();
 }
 
 pub fn tryRemainingMultiply() bool {
-    return tryRemainingArithmetic(&selectors_mul_div.selectMultiplyBranch);
+    return selectors_coordinator.tryRemainingMultiply();
 }
 
 pub fn tryRemainingDivideDispatch() bool {
-    return tryRemainingDivide();
+    return selectors_coordinator.tryRemainingDivideDispatch();
 }
