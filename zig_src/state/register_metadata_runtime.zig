@@ -2,6 +2,7 @@ const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("stack_runtime.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
 
 const use_fake_register_metadata_harness_surface =
@@ -260,7 +261,7 @@ pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
 }
 
 pub fn reportRamFull() void {
-    displayCalcErrorMessage(stack_runtime.ERROR_RAM_FULL, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
+    error_owned.reportRamFull();
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
@@ -342,19 +343,19 @@ pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) c
 }
 
 pub fn reportInvalidName() void {
-    displayCalcErrorMessage(ERROR_INVALID_NAME, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
+    error_owned.reportInvalidName(ERROR_INVALID_NAME);
 }
 
 pub fn reportUndefSourceVar() void {
-    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
+    error_owned.reportUndefSourceVar(ERROR_UNDEF_SOURCE_VAR);
 }
 
 pub fn reportCannotDeletePredefItem() void {
-    displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
+    error_owned.reportCannotDeletePredefItem(ERROR_CANNOT_DELETE_PREDEF_ITEM);
 }
 
 pub fn reportTooManyVariables() void {
-    displayCalcErrorMessage(ERROR_TOO_MANY_VARIABLES, if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z, if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X);
+    error_owned.reportTooManyVariables(ERROR_TOO_MANY_VARIABLES);
 }
 
 pub fn clearSigma() void {
