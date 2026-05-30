@@ -4,6 +4,7 @@ const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const product_real_owned = @import("stack_runtime_product_real_owned.zig");
 const register_range_owned = @import("stack_runtime_register_range_owned.zig");
+const swap_descriptor_owned = @import("stack_runtime_swap_descriptor_owned.zig");
 
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
@@ -339,33 +340,11 @@ pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_
 }
 
 pub fn tryGetSwapTargetDescriptor(reg: u16, descriptor: *register_descriptor_t) bool {
-    const target_reg: calcRegister_t = @intCast(reg);
-
-    if (target_reg <= LAST_GLOBAL_REGISTER) {
-        descriptor.* = descriptor_storage.globalDescriptor(target_reg);
-        return true;
-    }
-
-    if (descriptor_storage.tryGetNamedDescriptor(target_reg, descriptor)) {
-        return true;
-    }
-
-    return descriptor_storage.tryGetLocalDescriptor(target_reg, descriptor);
+    return swap_descriptor_owned.tryGetSwapTargetDescriptor(reg, descriptor);
 }
 
 pub fn trySetSwapTargetDescriptor(reg: u16, descriptor: register_descriptor_t) bool {
-    const target_reg: calcRegister_t = @intCast(reg);
-
-    if (target_reg <= LAST_GLOBAL_REGISTER) {
-        descriptor_storage.setGlobalDescriptor(target_reg, descriptor);
-        return true;
-    }
-
-    if (descriptor_storage.trySetNamedDescriptor(target_reg, descriptor)) {
-        return true;
-    }
-
-    return descriptor_storage.trySetLocalDescriptor(target_reg, descriptor);
+    return swap_descriptor_owned.trySetSwapTargetDescriptor(reg, descriptor);
 }
 
 pub fn reportInvalidSwapTarget(reg: u16) void {
