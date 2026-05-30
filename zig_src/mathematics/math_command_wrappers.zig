@@ -18,6 +18,7 @@ const ln_complex_owned = @import("math_ln_complex_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const logxy_owned = @import("math_logxy_owned.zig");
 const percent_command_owned = @import("math_percent_command_owned.zig");
+const powlog_command_owned = @import("math_powlog_command_owned.zig");
 const projection_owned = @import("math_projection_owned.zig");
 const random_command_owned = @import("math_random_command_owned.zig");
 const real_trig_export = @import("math_real_trig_export.zig");
@@ -403,109 +404,6 @@ pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
     runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
 }
 
-fn tenPowLonI() callconv(.c) void {
-    smallBasePowerLonI(10, &tenPowReal);
-}
-
-fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn () callconv(.c) void) void {
-    var exponent: runtime.longInteger_t = undefined;
-    var base: runtime.longInteger_t = undefined;
-    var power: runtime.longInteger_t = undefined;
-    var exponent_sign: i32 = 0;
-
-    runtime.__gmpz_init(&base[0]);
-    runtime.__gmpz_set_ui(&base[0], base_value);
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &exponent[0]);
-    if (exponent[0]._mp_size < 0) {
-        exponent_sign = -1;
-    } else if (exponent[0]._mp_size > 0) {
-        exponent_sign = 1;
-    }
-    defer runtime.__gmpz_clear(&base[0]);
-    defer runtime.__gmpz_clear(&exponent[0]);
-
-    longIntegerSetPositiveSign(&exponent[0]);
-
-    if (exponent[0]._mp_size == 0) {
-        runtime.__gmpz_set_ui(&base[0], 1);
-        runtime.convertLongIntegerToLongIntegerRegister(&base[0], runtime.REGISTER_X);
-        return;
-    }
-
-    if (exponent_sign < 0) {
-        negative_exponent_callback();
-        return;
-    }
-
-    runtime.__gmpz_init(&power[0]);
-    defer runtime.__gmpz_clear(&power[0]);
-    runtime.__gmpz_set_ui(&power[0], 1);
-
-    while (exponent[0]._mp_size != 0 and runtime.lastErrorCode == 0) {
-        if ((exponent[0]._mp_d[0] & 1) != 0) {
-            runtime.__gmpz_mul(&power[0], &power[0], &base[0]);
-        }
-
-        _ = runtime.__gmpz_fdiv_q_ui(&exponent[0], &exponent[0], 2);
-
-        if (exponent[0]._mp_size != 0) {
-            runtime.__gmpz_mul(&base[0], &base[0], &base[0]);
-        }
-    }
-
-    runtime.convertLongIntegerToLongIntegerRegister(&power[0], runtime.REGISTER_X);
-}
-
-fn twoPowLonI() callconv(.c) void {
-    smallBasePowerLonI(2, &twoPowReal);
-}
-
-fn twoPowShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_int2pow(
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
-    );
-}
-
-fn twoPowReal() callconv(.c) void {
-    intPowReal(realPower2);
-}
-
-fn twoPowCplx() callconv(.c) void {
-    intPowCplx(runtime.z47_math_wrappers_const_ln2());
-}
-
-fn tenPowShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_int10pow(
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
-    );
-}
-
-fn tenPowReal() callconv(.c) void {
-    intPowReal(realPower10);
-}
-
-fn tenPowCplx() callconv(.c) void {
-    intPowCplx(runtime.z47_math_wrappers_const_ln10());
-}
-
-fn log2LonI() callconv(.c) void {
-    runtime.logxyLonI(runtime.z47_math_wrappers_const_ln2());
-}
-
-fn log2ShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intLog2(
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
-    );
-}
-
-fn log2Real() callconv(.c) void {
-    runtime.logxyReal(runtime.z47_math_wrappers_const_ln2());
-}
-
-fn log2Cplx() callconv(.c) void {
-    runtime.logxyCplx(runtime.z47_math_wrappers_const_ln2());
-}
-
 fn lnReal() callconv(.c) void {
     transcendental_command_owned.lnReal();
 }
@@ -637,24 +535,6 @@ pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
     } else {
         runtime.convertRealToLongIntegerRegister(&x, runtime.REGISTER_X, runtime.DEC_ROUND_HALF_EVEN);
     }
-}
-
-fn log10LonI() callconv(.c) void {
-    logxyLonI(runtime.z47_math_wrappers_const_ln10());
-}
-
-fn log10ShoI() callconv(.c) void {
-    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intLog10(
-        runtime.registerShortIntegerPtr(runtime.REGISTER_X).*,
-    );
-}
-
-fn log10Real() callconv(.c) void {
-    logxyReal(runtime.z47_math_wrappers_const_ln10());
-}
-
-fn log10Cplx() callconv(.c) void {
-    logxyCplx(runtime.z47_math_wrappers_const_ln10());
 }
 
 fn sqrtComplexLocal(
@@ -1664,27 +1544,19 @@ pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&twoPowReal, &twoPowCplx, &twoPowShoI, &twoPowLonI);
+    powlog_command_owned.fn2Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&tenPowReal, &tenPowCplx, &tenPowShoI, &tenPowLonI);
+    powlog_command_owned.fn10Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog10(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&log10Real, &log10Cplx, &log10ShoI, &log10LonI);
+    powlog_command_owned.fnLog10(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&log2Real, &log2Cplx, &log2ShoI, &log2LonI);
+    powlog_command_owned.fnLog2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
