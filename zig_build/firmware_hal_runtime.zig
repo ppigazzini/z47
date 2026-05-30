@@ -1,4 +1,5 @@
 const audio_volume_owned = @import("firmware_hal_audio_volume_owned.zig");
+const buzz_owned = @import("firmware_hal_buzz_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -154,31 +155,6 @@ fn isExitKey(key: c_int) bool {
     return key == KEY_EXIT or key == KEY_BSP;
 }
 
-fn registerToUInt32(reg: i16) ?u32 {
-    const data_type = getRegisterDataType(reg);
-    if (data_type == DT_REAL34) {
-        const raw_ptr = getRegisterDataPointer(reg) orelse return null;
-        const real_ptr: [*c]const DecQuad = @ptrCast(@alignCast(raw_ptr));
-        return real34ToUInt32(real_ptr);
-    }
-
-    if (data_type != DT_LONG_INTEGER) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        return null;
-    }
-
-    var li: [1]GmpInt = undefined;
-    __gmpz_init(&li[0]);
-    defer __gmpz_clear(&li[0]);
-
-    var fractional: c_int = 0;
-    if (getRegisterAsLongIntQuiet(reg, &li[0], &fractional) != ERROR_NONE) {
-        return null;
-    }
-
-    return @truncate(@as(u64, @intCast(__gmpz_get_ui(&li[0]))));
-}
-
 fn matrixRows(header_raw: u32) u16 {
     return @truncate(header_raw & 0x0fff);
 }
@@ -220,32 +196,11 @@ pub export fn fnVolumeDown(unused_but_mandatory_parameter: u16) callconv(.c) voi
 }
 
 pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
-    if (ms_delay == 0) return;
-
-    var safe_delay = ms_delay;
-    if (safe_delay > 2000) safe_delay = 2000;
-
-    if (frequency != 0) {
-        var safe_frequency = frequency;
-        if (safe_frequency > 20000) safe_frequency = 20000;
-        start_buzzer_freq(safe_frequency * 1000);
-        sys_delay(safe_delay);
-        stop_buzzer();
-    } else {
-        sys_delay(safe_delay);
-    }
+    buzz_owned.buzz(frequency, ms_delay);
 }
 
 pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (getSystemFlag(FLAG_QUIET) != 0) {
-        return;
-    }
-
-    const frequency = registerToUInt32(REGISTER_Y) orelse return;
-    const ms_delay = registerToUInt32(REGISTER_X) orelse return;
-    _Buzz(frequency, ms_delay);
+    buzz_owned.fnBuzz(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
