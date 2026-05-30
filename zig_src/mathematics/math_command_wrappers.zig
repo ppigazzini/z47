@@ -25,6 +25,7 @@ const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
+const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const sinc_command_owned = @import("math_sinc_command_owned.zig");
@@ -1517,65 +1518,15 @@ pub export fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (register_data_type) {
-        runtime.dtLongInteger => ulpLongInteger(),
-        runtime.dtShortInteger => ulpShortInteger(),
-        runtime.dtReal34 => ulpReal(),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function fnUlp:", "cannot calculate ULP for current X type", null, null);
-            return;
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    scalar_integer_inspection_command_owned.fnUlp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger => mantLonI(),
-        runtime.dtReal34 => mantReal(),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function mantError:", "cannot calculate MANT for current X type", null, null);
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    scalar_integer_inspection_command_owned.fnMant(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger, runtime.dtShortInteger => {},
-        runtime.dtReal34 => roundiReal(),
-        runtime.dtReal34Matrix => runtime.elementwiseRema(&roundiReal),
-        else => {
-            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function roundiError:", "cannot calculate ROUNDI for current X type", null, null);
-        },
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    scalar_integer_inspection_command_owned.fnRoundi(unused_but_mandatory_parameter);
 }
 
 pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -2489,108 +2440,15 @@ pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        round_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    scalar_integer_inspection_command_owned.fnRound(unused_but_mandatory_parameter);
 }
-
-fn decompError() void {
-    var message_buffer: [96]u8 = undefined;
-    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name}) catch "cannot calculate Decomp";
-
-    runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
-}
-
-fn decompLongInteger() void {
-    var value: runtime.longInteger_t = undefined;
-
-    runtime.liftStack();
-    runtime.__gmpz_init(&value[0]);
-    defer runtime.__gmpz_clear(&value[0]);
-
-    runtime.__gmpz_set_ui(&value[0], 1);
-    runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
-}
-
-fn decompReal() void {
-    const x_value = runtime.registerReal34Ptr(runtime.REGISTER_X).*;
-
-    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
-    runtime.liftStack();
-
-    if (runtime.real34IsNaN(&x_value)) {
-        runtime.convertRealToLongIntegerRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.DEC_ROUND_HALF_DOWN);
-        runtime.convertRealToLongIntegerRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_Y, runtime.DEC_ROUND_HALF_DOWN);
-        return;
-    }
-
-    if (runtime.real34IsInfinite(&x_value)) {
-        runtime.convertRealToLongIntegerRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.DEC_ROUND_HALF_DOWN);
-        runtime.convertRealToLongIntegerRegister(
-            if (runtime.real34IsNegative(&x_value)) runtime.z47_math_wrappers_const_minus_1() else runtime.z47_math_wrappers_const_1(),
-            runtime.REGISTER_Y,
-            runtime.DEC_ROUND_HALF_DOWN,
-        );
-        return;
-    }
-
-    const saved_system_flags0 = runtime.systemFlags0;
-    const saved_system_flags1 = runtime.systemFlags1;
-    var sign: i16 = 0;
-    var int_part: u64 = 0;
-    var numer: u64 = 0;
-    var denom: u64 = 0;
-    var less_equal_greater: i16 = 0;
-    var value: runtime.longInteger_t = undefined;
-
-    runtime.clearSystemFlag(runtime.FLAG_PROPFR);
-    _ = runtime.fraction(runtime.REGISTER_Y, &sign, &int_part, &numer, &denom, &less_equal_greater);
-    runtime.systemFlags0 = saved_system_flags0;
-    runtime.systemFlags1 = saved_system_flags1;
-
-    runtime.__gmpz_init(&value[0]);
-    defer runtime.__gmpz_clear(&value[0]);
-
-    runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(numer)));
-    if (sign == -1) {
-        longIntegerSetNegativeSign(&value[0]);
-    }
-    runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_Y);
-
-    runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(denom)));
-    runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
-}
-
-pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
-        runtime.dtLongInteger => decompLongInteger(),
-        runtime.dtReal34 => decompReal(),
-        else => decompError(),
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
-    runtime.adjustResult(runtime.REGISTER_Y, false, false, runtime.REGISTER_Y, no_register, no_register);
-}
-
 
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
     check_value_owned.checkInteger(mode);
+}
+
+pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    scalar_integer_inspection_command_owned.fnDecomp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDec(unused_but_mandatory_parameter: u16) callconv(.c) void {
