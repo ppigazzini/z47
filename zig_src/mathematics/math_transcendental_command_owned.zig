@@ -22,8 +22,12 @@ fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
 
+fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
+    return runtime.realCompareLessThan(rhs, lhs);
+}
+
 fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareGreaterThan(lhs, rhs);
+    return !runtime.realCompareLessThan(rhs, lhs);
 }
 
 fn realAbsLessThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
@@ -153,7 +157,7 @@ pub fn lnRealValue(
     copyReal(&v, &t);
     runtime.realSetPositiveSign(&v);
 
-    if (runtime.realCompareGreaterThan(&v, runtime.z47_math_wrappers_const_1on2())) {
+    if (realCompareGreaterThan(&v, runtime.z47_math_wrappers_const_1on2())) {
         exponent_adjust = z.exponent + z.digits;
         z.exponent = -z.digits;
     }

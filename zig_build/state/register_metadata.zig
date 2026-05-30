@@ -45,6 +45,10 @@ fn addRuntimeObject(
     build_options.addOption(bool, "use_fake_register_metadata_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("register_metadata_build_options", build_options);
 
+    const stack_build_options = b.addOptions();
+    stack_build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    module.addOptions("stack_state_build_options", stack_build_options);
+
     const descriptor_storage_options = b.addOptions();
     descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));
     descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));

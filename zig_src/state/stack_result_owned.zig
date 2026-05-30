@@ -241,6 +241,10 @@ fn tryToRealDate() bool {
     return true;
 }
 
+fn reportToRealInvalidType() void {
+    displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+}
+
 fn adjustResultScalarCore(res: runtime.calcRegister_t) bool {
     const result_data_type = runtime.getRegisterDataType(res);
 
@@ -348,6 +352,8 @@ fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
 }
 
 pub fn toReal(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
+
     if (use_fake_stack_state_harness_surface) {
         if (runtime.tryFnToRealComplexZero()) {
             return;
@@ -373,7 +379,7 @@ pub fn toReal(unused_but_mandatory_parameter: u16) void {
             return;
         }
 
-        runtime.toRealRetained(unused_but_mandatory_parameter);
+        reportToRealInvalidType();
         return;
     }
 
@@ -401,7 +407,7 @@ pub fn toReal(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    runtime.toRealRetained(unused_but_mandatory_parameter);
+    reportToRealInvalidType();
 }
 
 pub fn adjustResult(
