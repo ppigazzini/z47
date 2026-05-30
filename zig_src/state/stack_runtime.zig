@@ -1,4 +1,9 @@
+const build_options = @import("stack_state_build_options");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+
+const use_fake_stack_state_harness_surface =
+    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
+    build_options.use_fake_stack_state_harness_surface;
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -63,6 +68,16 @@ pub const CM_NIM: u8 = 2;
 pub const CM_MIM: u8 = 12;
 pub const CM_NO_UNDO: u8 = 16;
 
+pub const mpz_struct = extern struct {
+    _mp_alloc: c_int,
+    _mp_size: c_int,
+    _mp_d: [*c]c_ulong,
+};
+
+const longIntegerValue_t = if (use_fake_stack_state_harness_surface) u32 else mpz_struct;
+
+pub const longInteger_t = [1]longIntegerValue_t;
+
 extern fn z47_stack_runtime_get_stack_top() calcRegister_t;
 extern fn z47_stack_runtime_real34_size_in_blocks() u16;
 extern fn z47_stack_runtime_try_fn_to_real_complex_zero() bool;
@@ -77,12 +92,6 @@ extern fn z47_stack_runtime_adjust_result_complex_matrix_core(res: calcRegister_
 extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
-extern fn z47_stack_runtime_store_stack_size_in_x(size: u32) void;
-extern fn z47_stack_runtime_store_local_register_count_in_x() void;
-extern fn z47_stack_runtime_current_local_register_count() u8;
-extern fn z47_stack_runtime_get_input_default() u8;
-extern fn z47_stack_runtime_store_zero_long_integer(reg: calcRegister_t) void;
-extern fn z47_stack_runtime_store_zero_short_integer(reg: calcRegister_t, base: u32) void;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
 extern fn z47_stack_runtime_sort_register_range(range_start: u16, range_end: u16) void;
@@ -92,6 +101,11 @@ extern fn z47_stack_runtime_real34_set_zero(dest: ?*anyopaque) void;
 extern fn z47_stack_runtime_save_for_undo() void;
 extern fn z47_stack_runtime_undo() void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn longIntegerInit(value: *longIntegerValue_t) void;
+extern fn uInt32ToLongInteger(source: u32, dest: *longIntegerValue_t) void;
+extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
+extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
+extern fn longIntegerFree(value: *longIntegerValue_t) void;
 
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
@@ -129,6 +143,7 @@ pub extern var entryStatus: u8;
 pub extern var programRunStop: u8;
 pub extern var currentAngularMode: u32;
 pub extern var lastIntegerBase: u32;
+pub extern var Input_Default: u8;
 
 pub extern var lrSelection: u16;
 pub extern var lrSelectionUndo: u16;
@@ -144,6 +159,11 @@ pub extern var SAVED_SIGMA_lastAddRem: i8;
 
 pub extern var statisticalSumsPointer: ?*anyopaque;
 pub extern var savedStatisticalSumsPointer: ?*anyopaque;
+
+fn initUnsignedLongInteger(long_integer: *longInteger_t, value: u32) void {
+    longIntegerInit(&long_integer[0]);
+    uInt32ToLongInteger(value, &long_integer[0]);
+}
 
 pub fn getStackTop() calcRegister_t {
     return z47_stack_runtime_get_stack_top();
@@ -245,27 +265,43 @@ pub fn statisticalSumsBytes() u32 {
 }
 
 pub fn storeStackSizeInX(size: u32) void {
-    z47_stack_runtime_store_stack_size_in_x(size);
+    var stack: longInteger_t = undefined;
+    initUnsignedLongInteger(&stack, size);
+    defer longIntegerFree(&stack[0]);
+
+    convertLongIntegerToLongIntegerRegister(&stack[0], REGISTER_X);
 }
 
 pub fn storeLocalRegisterCountInX() void {
-    z47_stack_runtime_store_local_register_count_in_x();
+    var count: longInteger_t = undefined;
+    initUnsignedLongInteger(&count, descriptor_storage.currentLocalRegisterCount());
+    defer longIntegerFree(&count[0]);
+
+    convertLongIntegerToLongIntegerRegister(&count[0], REGISTER_X);
 }
 
 pub fn currentLocalRegisterCount() u8 {
-    return z47_stack_runtime_current_local_register_count();
+    return descriptor_storage.currentLocalRegisterCount();
 }
 
 pub fn inputDefault() u8 {
-    return z47_stack_runtime_get_input_default();
+    return Input_Default;
 }
 
 pub fn storeZeroLongInteger(reg: calcRegister_t) void {
-    z47_stack_runtime_store_zero_long_integer(reg);
+    var long_integer: longInteger_t = undefined;
+    initUnsignedLongInteger(&long_integer, 0);
+    defer longIntegerFree(&long_integer[0]);
+
+    convertLongIntegerToLongIntegerRegister(&long_integer[0], reg);
 }
 
 pub fn storeZeroShortInteger(reg: calcRegister_t, base: u32) void {
-    z47_stack_runtime_store_zero_short_integer(reg, base);
+    var long_integer: longInteger_t = undefined;
+    initUnsignedLongInteger(&long_integer, 0);
+    defer longIntegerFree(&long_integer[0]);
+
+    convertLongIntegerToShortIntegerRegister(&long_integer[0], base, reg);
 }
 
 pub fn requestClearRegistersConfirmation() void {

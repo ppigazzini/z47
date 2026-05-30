@@ -104,3 +104,7 @@ pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descripto
     headers[index].descriptor = descriptor;
     return true;
 }
+
+pub fn currentLocalRegisterCount() u8 {
+    return currentNumberOfLocalRegisters;
+}
