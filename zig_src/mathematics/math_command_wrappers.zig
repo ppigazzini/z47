@@ -25,6 +25,7 @@ const real_trig_owned = @import("math_real_trig_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
+const special_function_sequence_command_owned = @import("math_special_function_sequence_command_owned.zig");
 const sinc_command_owned = @import("math_sinc_command_owned.zig");
 const transcendental_command_owned = @import("math_transcendental_command_owned.zig");
 const transform_command_owned = @import("math_transform_command_owned.zig");
@@ -748,118 +749,11 @@ fn ulpReal() void {
 }
 
 fn realCompareGreaterEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareLessThan(lhs, rhs);
-}
-
-fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareLessThan(rhs, lhs);
-}
-
-fn realCompareGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return runtime.realCompareLessThan(rhs, lhs);
-}
 
 fn factReal() callconv(.c) void {
     var x_value: runtime.real_t = undefined;
 
     if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value)) {
-        return;
-    }
-
-    runtime.WP34S_Factorial(&x_value, &x_value, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x_value, runtime.REGISTER_X, runtime.amNone);
-}
-
-fn factCplx() callconv(.c) void {
-    var real_value: runtime.real_t = undefined;
-    var imag_value: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsComplex(runtime.REGISTER_X, &real_value, &imag_value)) {
-        return;
-    }
-
-    runtime.realAdd(&real_value, runtime.z47_math_wrappers_const_1(), &real_value, &runtime.ctxtReal39);
-    runtime.WP34S_ComplexGamma(&real_value, &imag_value, &real_value, &imag_value, &runtime.ctxtReal39);
-    runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
-}
-
-fn factShoI() callconv(.c) void {
-    var sign: i16 = 0;
-    var value: u64 = 0;
-
-    runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &sign, &value);
-
-    if (sign == 1) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function factShoI:", "cannot calculate factorial(short integer)", null, null);
-        return;
-    }
-
-    if (value > 20) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function factShoI:", "cannot calculate factorial(short integer)", null, null);
-        return;
-    }
-
-    var result: u64 = 1;
-    var remaining = value;
-
-    if (remaining > 1) {
-        var multiplier = remaining;
-        if ((remaining & 1) != 0) {
-            multiplier += remaining;
-            remaining -= 1;
-        }
-        result = multiplier;
-        remaining -= 2;
-        while (remaining > 0) : (remaining -= 2) {
-            multiplier += remaining;
-            result *= multiplier;
-        }
-    }
-
-    if (result > runtime.shortIntegerMask) {
-        runtime.setSystemFlag(runtime.FLAG_OVERFLOW);
-    }
-
-    runtime.convertUInt64ToShortIntegerRegister(0, result, runtime.getRegisterTag(runtime.REGISTER_X), runtime.REGISTER_X);
-}
-
-fn factLonI() callconv(.c) void {
-    const max_factorial: u32 = 450;
-
-    var value: runtime.longInteger_t = undefined;
-    runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
-    defer runtime.__gmpz_clear(&value[0]);
-
-    if (value[0]._mp_size < 0) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function factLonI:", "cannot calculate factorial(long integer)", null, null);
-        return;
-    }
-
-    if (runtime.__gmpz_cmp_ui(&value[0], max_factorial) > 0) {
-        runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-        factReal();
-        return;
-    }
-
-    const n: u32 = @intCast(runtime.__gmpz_get_ui(&value[0]));
-    var result: runtime.longInteger_t = undefined;
-    runtime.__gmpz_init(&result[0]);
-    defer runtime.__gmpz_clear(&result[0]);
-    runtime.__gmpz_set_ui(&result[0], 1);
-
-    var multiplier: u32 = 2;
-    while (multiplier <= n) : (multiplier += 1) {
-        runtime.__gmpz_mul_ui(&result[0], &result[0], multiplier);
-    }
-
-    runtime.convertLongIntegerToLongIntegerRegister(&result[0], runtime.REGISTER_X);
-}
-
-fn modReal() callconv(.c) void {
-    var x_value: runtime.real_t = undefined;
     var y_value: runtime.real_t = undefined;
     var result: runtime.real_t = undefined;
 
@@ -1135,28 +1029,6 @@ fn changeSignTime() void {
     }
 }
 
-fn erfReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    runtime.WP34S_Erf(&x, &x, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
-}
-
-fn erfcReal() callconv(.c) void {
-    var x: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x)) {
-        return;
-    }
-
-    runtime.WP34S_Erfc(&x, &x, &runtime.ctxtReal39);
-    runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
-}
-
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
     random_command_owned.random(unused_but_mandatory_parameter);
 }
@@ -1274,15 +1146,11 @@ pub export fn fnLnP1(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processRealComplexMonadicFunction(&erfReal, null);
+    special_function_sequence_command_owned.fnErf(unused_but_mandatory_parameter);
 }
 
 pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processRealComplexMonadicFunction(&erfcReal, null);
+    special_function_sequence_command_owned.fnErfc(unused_but_mandatory_parameter);
 }
 
 pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -1723,45 +1591,11 @@ pub export fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnIxyz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    var x_value: runtime.real_t = undefined;
-    var a_value: runtime.real_t = undefined;
-    var b_value: runtime.real_t = undefined;
-    var result: runtime.real_t = undefined;
-
-    if (!runtime.saveLastX()) {
-        return;
-    }
-
-    if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &a_value) and runtime.getRegisterAsReal(runtime.REGISTER_Z, &b_value)) {
-        if (realCompareGreaterEqual(&x_value, runtime.z47_math_wrappers_const_0()) and
-            realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_1()) and
-            realCompareGreaterThan(&a_value, runtime.z47_math_wrappers_const_0()) and
-            realCompareGreaterThan(&b_value, runtime.z47_math_wrappers_const_0()))
-        {
-            runtime.WP34S_betai(&b_value, &a_value, &x_value, &result, &runtime.ctxtReal39);
-            runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-            runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
-            runtime.fnDropY(0);
-            if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-                runtime.fnDropY(0);
-            }
-        } else {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function fnIxyz:", "not in 0<=x<=1, a>0, b>0", null, null);
-        }
-    } else {
-        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function fnIxyz:", "cannot calculate Ixyz for current X, Y, Z types", null, null);
-    }
-
-    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
+    special_function_sequence_command_owned.fnIxyz(unused_but_mandatory_parameter);
 }
 
 pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexMonadicFunction(&factReal, &factCplx, &factShoI, &factLonI);
+    special_function_sequence_command_owned.fnFactorial(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -3400,9 +3234,7 @@ pub export fn fnDeltaPercent(unused_but_mandatory_parameter: u16) callconv(.c) v
 }
 
 pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    runtime.processIntRealComplexMonadicFunction(&fibReal, &fibCplx, null, &fibLonI);
+    special_function_sequence_command_owned.fnFib(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
