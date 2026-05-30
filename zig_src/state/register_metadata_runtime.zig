@@ -2,6 +2,7 @@ const std = @import("std");
 const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("stack_runtime.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
+const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
@@ -32,19 +33,8 @@ pub const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 pub const ERROR_INVALID_NAME: u8 = 48;
 pub const ERROR_TOO_MANY_VARIABLES: u8 = 49;
 
-const Z47_LOCAL_MATRIX_ROWS_MASK: u32 = 0x00000fff;
-const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
-const Z47_LOCAL_MATRIX_ROWS_SHIFT: u5 = 0;
-const Z47_LOCAL_MATRIX_COLUMNS_SHIFT: u5 = 12;
-
-const strLgIntHeader_t = extern struct {
-    dataMaxLengthInBlocks: u16,
-    unused: u16,
-};
-
-const matrixHeader_t = extern struct {
-    descriptor: u32,
-};
+const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
+const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
 const item_t = extern struct {
     status: u32,
@@ -141,47 +131,31 @@ extern fn z47_registers_retained_allocateLocalRegisters(number_of_registers_to_a
 extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
 fn bytesPerBlock() comptime_int {
-    return 4;
+    return payload_bytes_owned.bytesPerBlock();
 }
 
 fn toBlocks(bytes: usize) u16 {
-    return @intCast((bytes + (bytesPerBlock() - 1)) / bytesPerBlock());
+    return payload_bytes_owned.toBlocks(bytes);
 }
 
 fn copyBytesToValue(comptime T: type, data_ptr: ?*const anyopaque) T {
-    var value = std.mem.zeroes(T);
-    const ptr = data_ptr orelse return value;
-    const src: [*]const u8 = @ptrCast(ptr);
-    const dst: [*]u8 = @ptrCast(&value);
-    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
-    return value;
+    return payload_bytes_owned.copyBytesToValue(T, data_ptr);
 }
 
 fn copyValueToBytes(comptime T: type, data_ptr: ?*anyopaque, value: *const T) void {
-    const ptr = data_ptr orelse return;
-    const src: [*]const u8 = @ptrCast(value);
-    const dst: [*]u8 = @ptrCast(ptr);
-    @memcpy(dst[0..@sizeOf(T)], src[0..@sizeOf(T)]);
-}
-
-fn readMatrixHeaderDescriptor(data_ptr: ?*const anyopaque) u32 {
-    return copyBytesToValue(u32, data_ptr);
+    payload_bytes_owned.copyValueToBytes(T, data_ptr, value);
 }
 
 fn matrixRows(data_ptr: ?*const anyopaque) u16 {
-    return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_ROWS_MASK) >> Z47_LOCAL_MATRIX_ROWS_SHIFT);
+    return payload_bytes_owned.matrixRows(data_ptr);
 }
 
 fn matrixColumns(data_ptr: ?*const anyopaque) u16 {
-    return @intCast((readMatrixHeaderDescriptor(data_ptr) & Z47_LOCAL_MATRIX_COLUMNS_MASK) >> Z47_LOCAL_MATRIX_COLUMNS_SHIFT);
+    return payload_bytes_owned.matrixColumns(data_ptr);
 }
 
 fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void {
-    var descriptor = readMatrixHeaderDescriptor(data_ptr);
-    descriptor &= ~(Z47_LOCAL_MATRIX_ROWS_MASK | Z47_LOCAL_MATRIX_COLUMNS_MASK);
-    descriptor |= (@as(u32, rows) & 0x0fff) << Z47_LOCAL_MATRIX_ROWS_SHIFT;
-    descriptor |= (@as(u32, columns) & 0x0fff) << Z47_LOCAL_MATRIX_COLUMNS_SHIFT;
-    copyValueToBytes(u32, data_ptr, &descriptor);
+    payload_bytes_owned.setMatrixRowsColumns(data_ptr, rows, columns);
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
