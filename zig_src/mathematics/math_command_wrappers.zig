@@ -1,7 +1,7 @@
 const atan2_export = @import("math_atan2_export.zig");
 const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
-const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
+const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
@@ -651,31 +651,31 @@ pub export fn fnInc(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXLessThan(unused_but_mandatory_parameter);
+    compare_owned.fnXLessThan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXLessEqual(unused_but_mandatory_parameter);
+    compare_owned.fnXLessEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXGreaterThan(unused_but_mandatory_parameter);
+    compare_owned.fnXGreaterThan(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXGreaterEqual(unused_but_mandatory_parameter);
+    compare_owned.fnXGreaterEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXEqualsTo(unused_but_mandatory_parameter);
+    compare_owned.fnXEqualsTo(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXNotEqual(unused_but_mandatory_parameter);
+    compare_owned.fnXNotEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    compare_wrapper_owned.fnXAlmostEqual(unused_but_mandatory_parameter);
+    compare_owned.fnXAlmostEqual(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) void {
