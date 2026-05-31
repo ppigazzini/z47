@@ -336,43 +336,24 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
 }
 
 pub export fn setSystemFlag(sf: u32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setSystemFlagRetained(sf);
-        return;
-    }
-
     const system_flag: u16 = @intCast(sf & 0xffff);
     setSystemFlagBit(system_flag);
     systemFlagAction(system_flag, .set);
 }
 
 pub export fn clearSystemFlag(sf: u32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.clearSystemFlagRetained(sf);
-        return;
-    }
-
     const system_flag: u16 = @intCast(sf & 0xffff);
     clearSystemFlagBit(system_flag);
     systemFlagAction(system_flag, .clear);
 }
 
 pub export fn flipSystemFlag(sf: u32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.flipSystemFlagRetained(sf);
-        return;
-    }
-
     const system_flag: u16 = @intCast(sf & 0xffff);
     flipSystemFlagBit(system_flag);
     systemFlagAction(system_flag, .flip);
 }
 
 pub export fn getSystemFlag(sf: i32) bool {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.getSystemFlagRetained(sf);
-    }
-
     const flag = maskedFlagFromSigned(sf);
 
     if (flag < 64) {
@@ -385,10 +366,6 @@ pub export fn getSystemFlag(sf: i32) bool {
 }
 
 pub export fn didSystemFlagChange(sf: i32) bool {
-    if (builtin.target.os.tag == .freestanding) {
-        return runtime.didSystemFlagChangeRetained(sf);
-    }
-
     const flag = maskedFlagFromSigned(sf);
 
     if (flag < 64) {
@@ -415,11 +392,6 @@ pub export fn didSystemFlagChange(sf: i32) bool {
 }
 
 pub export fn setSystemFlagChanged(sf: i32) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setSystemFlagChangedRetained(sf);
-        return;
-    }
-
     const flag = maskedFlagFromSigned(sf);
 
     if (flag < 64) {
@@ -432,22 +404,12 @@ pub export fn setSystemFlagChanged(sf: i32) void {
 }
 
 pub export fn setAllSystemFlagChanged() void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.setAllSystemFlagChangedRetained();
-        return;
-    }
-
     systemFlags0Changed = ~@as(u64, 0);
     systemFlags1Changed = ~@as(u64, 0);
     systemFlags2Changed = ~@as(u64, 0);
 }
 
 pub export fn forceSystemFlag(sf: u32, set: c_int) void {
-    if (builtin.target.os.tag == .freestanding) {
-        runtime.forceSystemFlagRetained(sf, set);
-        return;
-    }
-
     if (set != 0) {
         setSystemFlag(sf);
     } else {
