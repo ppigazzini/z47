@@ -63,8 +63,8 @@ pub extern fn z47_calc_state_runtime_show_saving_status() void;
 pub extern fn z47_calc_state_runtime_show_loading_status() void;
 pub extern fn z47_calc_state_runtime_write_save_sections() void;
 pub extern fn z47_calc_state_runtime_finish_load_ui(refresh_code: u16) void;
-pub extern fn z47_calc_state_retained_saveCalc() void;
-pub extern fn z47_calc_state_retained_restoreCalc() void;
+pub extern fn z47_calc_state_runtime_save_calc() void;
+pub extern fn z47_calc_state_runtime_restore_calc() void;
 pub extern fn z47_calc_state_retained_doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
 pub extern fn z47_calc_state_retained_fnSave(save_mode: u16) void;
 pub extern fn z47_calc_state_retained_fnLoad(load_mode: u16) void;
@@ -196,11 +196,11 @@ pub inline fn finishLoadUi(refresh_code: u16) void {
 }
 
 pub inline fn saveCalcBackup() void {
-    z47_calc_state_retained_saveCalc();
+    z47_calc_state_runtime_save_calc();
 }
 
 pub inline fn restoreCalcBackup() void {
-    z47_calc_state_retained_restoreCalc();
+    z47_calc_state_runtime_restore_calc();
 }
 
 pub inline fn doLoadRetained(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
