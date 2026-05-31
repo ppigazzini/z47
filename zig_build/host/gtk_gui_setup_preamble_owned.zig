@@ -4,6 +4,7 @@ const GtkStyleProvider = opaque {};
 const GtkDisplay = opaque {};
 const GdkScreen = opaque {};
 const GdkMonitor = opaque {};
+const setup_background_owned = @import("gtk_gui_setup_background_owned.zig");
 
 const GdkRectangle = extern struct {
     x: c_int,
@@ -128,59 +129,8 @@ fn configureWindowLayout() void {
     gtk_container_add(@ptrCast(frmCalc), grid);
 }
 
-fn ensureModelString() void {
-    if (modelString[0] == 0) {
-        const base = if (isR47FAM()) "R47" else "C47";
-        var idx: usize = 0;
-        modelString[0] = 'r';
-        modelString[1] = 'e';
-        modelString[2] = 's';
-        modelString[3] = '/';
-        idx = 4;
-        for (base) |ch| {
-            modelString[idx] = ch;
-            idx += 1;
-        }
-        if (calcLandscape) {
-            const suffix = "short.png";
-            for (suffix) |ch| {
-                modelString[idx] = ch;
-                idx += 1;
-            }
-        } else {
-            const suffix = ".png";
-            for (suffix) |ch| {
-                modelString[idx] = ch;
-                idx += 1;
-            }
-        }
-        modelString[idx] = 0;
-    } else {
-        const prefix = "res/";
-        var idx: usize = 0;
-        for (prefix) |ch| {
-            modelString[idx] = ch;
-            idx += 1;
-        }
-        for (modelString[0..]) |ch| {
-            if (ch == 0) break;
-            modelString[idx] = ch;
-            idx += 1;
-        }
-        modelString[idx] = 0;
-    }
-}
-
 fn setupBackgroundImage() void {
-    ensureModelString();
-
-    if (!NARROW_SCREEN) {
-        backgroundImage = gtk_image_new_from_file(@as([*:0]const u8, @ptrCast(&modelString[0])));
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 0);
-    } else {
-        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 240);
-    }
+    setup_background_owned.setupBackgroundImage();
 }
 
 fn setupSoftkeyLabels() void {
