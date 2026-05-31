@@ -25,7 +25,6 @@ const precision_owned = @import("math_scalar_integer_precision_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_command_owned = @import("math_logxy_command_owned.zig");
-const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const transcendental_command_owned = @import("math_transcendental_command_owned.zig");
@@ -211,15 +210,15 @@ pub export fn intPowCplx(ln_base: *const runtime.real_t) callconv(.c) void {
 }
 
 pub export fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
-    logxy_wrapper_owned.logxyReal(denom);
+    logxy_command_owned.logxyReal(denom);
 }
 
 pub export fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
-    logxy_wrapper_owned.logxyCplx(denom);
+    logxy_command_owned.logxyCplx(denom);
 }
 
 pub export fn logxyLonI(denom: *const runtime.real_t) callconv(.c) void {
-    logxy_wrapper_owned.logxyLonI(denom);
+    logxy_command_owned.logxyLonI(denom);
 }
 
 pub export fn sqrt1Px2Complex(
