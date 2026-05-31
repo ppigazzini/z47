@@ -37,4 +37,36 @@ tag2ver.py
 tools
 
 [approved-z47-additions-under-imported]
-# Keep this section empty unless a reviewed exception is required.
+# Reviewed exceptions required by imported-root ownership check.
+BUILD.md
+dist
+distS
+docs/appnotes
+res/PACKAGES.md
+res/PROGRAMS
+res/combo
+res/dmcp5/update_R47.txt
+res/fonts/FontCreator15 Home details
+res/offimg/General
+res/r47.cmd
+res/r47.ico
+res/r47.reg
+src/c47-dmcp/hal/print_ir.c
+src/c47-dmcp5/hal/print_ir.c
+src/c47-gtk/hal/print_ir.c
+src/c47/distributions/uniform.c
+src/c47/distributions/uniform.h
+src/c47/hal/print_ir.h
+src/c47/printing
+src/c47/reservedRegisterLookup.h
+src/c47/reservedRegisterLookupGenerator.c
+src/testSuite/hal/print_ir.c
+src/testSuite/tests/constants.txt
+src/testSuite/tests/jacobi_audit.txt
+src/testSuite/tests/prime.txt
+src/testSuite/tests/tempConv.txt
+src/testSuite/tests/tvm.txt
+src/testSuite/tests/unitConversion.txt
+src/testSuite/tests/validate_tvm.py
+src/testSuite/tests/validate_tvm.txt
+tools/create items spreadsheet.py
