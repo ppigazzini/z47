@@ -52,7 +52,7 @@ fn chsZeroCheck(value: *runtime.real_t) void {
     }
 }
 
-fn chsReal() callconv(.c) void {
+pub fn chsReal() callconv(.c) void {
     var x: runtime.real_t = undefined;
     var mode = runtime.amNone;
 
@@ -68,7 +68,7 @@ fn chsReal() callconv(.c) void {
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, mode);
 }
 
-fn chsCplx() callconv(.c) void {
+pub fn chsCplx() callconv(.c) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
 
@@ -81,11 +81,11 @@ fn chsCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&a, &b, runtime.REGISTER_X);
 }
 
-fn chsShoI() callconv(.c) void {
+pub fn chsShoI() callconv(.c) void {
     runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = runtime.WP34S_intChs(runtime.registerShortIntegerPtr(runtime.REGISTER_X).*);
 }
 
-fn chsLonI() callconv(.c) void {
+pub fn chsLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
