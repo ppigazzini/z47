@@ -42,8 +42,11 @@ const erf_owned = @import("math_special_function_erf_owned.zig");
 const factorial_owned = @import("math_special_function_factorial_owned.zig");
 const fibonacci_owned = @import("math_special_function_fibonacci_owned.zig");
 const ixyz_owned = @import("math_special_function_ixyz_owned.zig");
-const cross_owned = @import("math_matrix_vector_cross_owned.zig");
 const dot_owned = @import("math_matrix_vector_dot_owned.zig");
+const matrix_vector_diagnostics_owned = @import("math_matrix_vector_diagnostics_owned.zig");
+const matrix_vector_cross_matrix_owned = @import("math_matrix_vector_cross_matrix_owned.zig");
+const matrix_vector_cross_scalar_owned = @import("math_matrix_vector_cross_scalar_owned.zig");
+const matrix_vector_validation_owned = @import("math_matrix_vector_validation_owned.zig");
 const linpol_pipeline_owned = @import("math_matrix_vector_linpol_pipeline_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const parallel_command_owned = @import("math_transform_parallel_command_owned.zig");
@@ -811,7 +814,18 @@ pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    cross_owned.cross(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+
+    if (matrix_vector_cross_matrix_owned.tryCrossMatrices()) {
+        return;
+    }
+
+    if (matrix_vector_validation_owned.classifyCurrentOperands().hasAnyMatrix()) {
+        matrix_vector_diagnostics_owned.crossDotMatrixTypeError("In function fnCross:");
+        return;
+    }
+
+    matrix_vector_cross_scalar_owned.runScalarCross();
 }
 pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
     dot_owned.dot(unused_but_mandatory_parameter);
