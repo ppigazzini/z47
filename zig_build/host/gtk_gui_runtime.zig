@@ -2,7 +2,6 @@ const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const events_owned = @import("gtk_gui_events_owned.zig");
 const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
-const startup_settle_owned = @import("gtk_gui_startup_settle_owned.zig");
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn setupUI() void;
@@ -10,6 +9,21 @@ extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+extern fn calcModeAimGui() void;
+extern fn calcModeNormalGui() void;
+extern fn gtk_events_pending() c_int;
+extern fn gtk_main_iteration() c_int;
+
+fn settleUiModePass() void {
+    calcModeAimGui();
+    while (gtk_events_pending() != 0) {
+        _ = gtk_main_iteration();
+    }
+    calcModeNormalGui();
+    while (gtk_events_pending() != 0) {
+        _ = gtk_main_iteration();
+    }
+}
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
     setup_owned.configureWindowLayout();
@@ -27,7 +41,7 @@ pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
 pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
     gtk_init(argc, argv);
     setupUI();
-    startup_settle_owned.settleUiModePass();
+    settleUiModePass();
 }
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
