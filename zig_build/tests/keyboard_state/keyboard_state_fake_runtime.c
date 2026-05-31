@@ -119,42 +119,42 @@ void z47_keyboard_state_runtime_standard_key(uint16_t index, calcKey_t *key) {
   *key = kbd_std[index];
 }
 
-void z47_keyboard_state_legacy_processKeyAction(int16_t item) {
+void z47_keyboard_state_processKeyAction(int16_t item) {
   legacyProcessKeyActionCalls++;
   (void)item;
 }
 
-void z47_keyboard_state_legacy_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyEnterCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyExit(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyExit(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyExitCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyCC(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyCC(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyCCCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyBackspaceCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyUp(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyUp(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyUpCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyDown(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyDown(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyDownCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_legacy_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
+void z47_keyboard_state_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
   legacyFnKeyDotDCalls++;
   (void)unusedButMandatoryParameter;
 }

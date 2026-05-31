@@ -5,8 +5,8 @@
 #include "keyboard_statusbar_mask.h"
 
 #if defined(PC_BUILD)
-extern void z47_keyboard_state_legacy_btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data);
-extern void z47_keyboard_state_legacy_btnClicked(GtkWidget *notUsed, gpointer data);
+extern void z47_keyboard_state_btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data);
+extern void z47_keyboard_state_btnClicked(GtkWidget *notUsed, gpointer data);
 
 static void repairStopStatusbarMask(uint8_t previousProgramRunStop, uint8_t previousScreenUpdatingMode) {
 	if((previousProgramRunStop == PGM_RUNNING || previousProgramRunStop == PGM_PAUSED) &&
@@ -22,7 +22,7 @@ void btnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
 	const uint8_t previousProgramRunStop = programRunStop;
 	const uint8_t previousScreenUpdatingMode = screenUpdatingMode;
 
-	z47_keyboard_state_legacy_btnPressed(notUsed, event, data);
+	z47_keyboard_state_btnPressed(notUsed, event, data);
 	repairStopStatusbarMask(previousProgramRunStop, previousScreenUpdatingMode);
 }
 
@@ -36,11 +36,11 @@ void btnClicked(GtkWidget *notUsed, gpointer data) {
 #endif
 
 #if defined(DMCP_BUILD)
-extern void z47_keyboard_state_legacy_btnPressed(void *data);
-extern void z47_keyboard_state_legacy_btnClicked(void *unused, void *data);
+extern void z47_keyboard_state_btnPressed(void *data);
+extern void z47_keyboard_state_btnClicked(void *unused, void *data);
 
 void btnPressed(void *data) {
-	z47_keyboard_state_legacy_btnPressed(data);
+	z47_keyboard_state_btnPressed(data);
 }
 
 void btnClicked(void *unused, void *data) {

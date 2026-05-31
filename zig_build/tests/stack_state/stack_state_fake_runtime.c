@@ -608,7 +608,7 @@ int32_t compareString(const char *left, const char *right, int32_t comparisonTyp
   return strcmp(left, right);
 }
 
-void z47_registers_legacy_fnDeleteVariable(uint16_t regist) {
+void z47_registers_fnDeleteVariable(uint16_t regist) {
   (void)regist;
   displayBugScreen("unexpected legacy fnDeleteVariable parity fallback");
 }
@@ -621,12 +621,12 @@ void z47_register_metadata_request_clear_all_variables_confirmation(void) {
   confirmation_request = 12;
 }
 
-void z47_registers_legacy_fnDeleteAllVariables(uint16_t confirmation) {
+void z47_registers_fnDeleteAllVariables(uint16_t confirmation) {
   (void)confirmation;
   displayBugScreen("unexpected legacy fnDeleteAllVariables parity fallback");
 }
 
-void z47_registers_legacy_fnClearAllVariables(uint16_t confirmation) {
+void z47_registers_fnClearAllVariables(uint16_t confirmation) {
   (void)confirmation;
   displayBugScreen("unexpected legacy fnClearAllVariables parity fallback");
 }
@@ -822,27 +822,27 @@ void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t
 }
 
 void z47_stack_runtime_sort_register_range(uint16_t range_start, uint16_t range_end) {
-  z47_registers_legacy_sort_reg(range_start, range_end);
+  z47_registers_sort_reg(range_start, range_end);
 }
 
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
   displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
 }
 
-uint8_t z47_registers_legacy_get_reg_clr_range(uint16_t *s, uint16_t *n) {
+uint8_t z47_registers_get_reg_clr_range(uint16_t *s, uint16_t *n) {
   *s = fake_regclr_start;
   *n = fake_regclr_count;
   return fake_regclr_error_code;
 }
 
-uint8_t z47_registers_legacy_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d) {
+uint8_t z47_registers_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d) {
   *s = fake_regswap_start;
   *n = fake_regswap_count;
   *d = fake_regswap_dest;
   return fake_regswap_error_code;
 }
 
-uint8_t z47_registers_legacy_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
+uint8_t z47_registers_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
   *f = fake_regcopy_f;
   *s = fake_regcopy_start;
   *n = fake_regcopy_count;
@@ -850,7 +850,7 @@ uint8_t z47_registers_legacy_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_
   return fake_regcopy_error_code;
 }
 
-void z47_registers_legacy_fnRegCopy(uint16_t unusedButMandatoryParameter) {
+void z47_registers_fnRegCopy(uint16_t unusedButMandatoryParameter) {
   (void)unusedButMandatoryParameter;
 
   confirmation_request = 2;
@@ -869,14 +869,14 @@ void z47_registers_legacy_fnRegCopy(uint16_t unusedButMandatoryParameter) {
   }
 }
 
-void z47_registers_legacy_fnToReal(uint16_t unusedButMandatoryParameter) {
+void z47_registers_fnToReal(uint16_t unusedButMandatoryParameter) {
   (void)unusedButMandatoryParameter;
 
   confirmation_request = 5;
   copySourceRegisterToDestRegister(REGISTER_X, REGISTER_L);
 }
 
-void z47_registers_legacy_sort_reg(uint16_t range_start, uint16_t range_end) {
+void z47_registers_sort_reg(uint16_t range_start, uint16_t range_end) {
   confirmation_request = 3;
 
   for(uint16_t i = range_start; i < range_end; ++i) {

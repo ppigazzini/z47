@@ -2,14 +2,14 @@
 
 #include "c47.h"
 
-void z47_keyboard_state_legacy_processKeyAction(int16_t item);
-void z47_keyboard_state_legacy_fnKeyEnter(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyExit(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyCC(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyBackspace(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyUp(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyDown(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_legacy_fnKeyDotD(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_processKeyAction(int16_t item);
+void z47_keyboard_state_fnKeyEnter(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyExit(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyCC(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyBackspace(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyUp(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyDown(uint16_t unusedButMandatoryParameter);
+void z47_keyboard_state_fnKeyDotD(uint16_t unusedButMandatoryParameter);
 
 bool_t oracle_caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
   (void)id;
@@ -130,15 +130,15 @@ void oracle_processKeyAction(int16_t item) {
     return;
   }
 
-  z47_keyboard_state_legacy_processKeyAction(item);
+  z47_keyboard_state_processKeyAction(item);
 }
 
 void oracle_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
-  z47_keyboard_state_legacy_fnKeyEnter(unusedButMandatoryParameter);
+  z47_keyboard_state_fnKeyEnter(unusedButMandatoryParameter);
 }
 
 void oracle_fnKeyExit(uint16_t unusedButMandatoryParameter) {
-  z47_keyboard_state_legacy_fnKeyExit(unusedButMandatoryParameter);
+  z47_keyboard_state_fnKeyExit(unusedButMandatoryParameter);
 }
 
 void oracle_fnKeyCC(uint16_t complexType) {
@@ -158,7 +158,7 @@ void oracle_fnKeyCC(uint16_t complexType) {
     case CM_GRAPH:
       return;
     default:
-      z47_keyboard_state_legacy_fnKeyCC(complexType);
+      z47_keyboard_state_fnKeyCC(complexType);
       return;
   }
 }
@@ -170,7 +170,7 @@ void oracle_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  z47_keyboard_state_legacy_fnKeyBackspace(unusedButMandatoryParameter);
+  z47_keyboard_state_fnKeyBackspace(unusedButMandatoryParameter);
 }
 
 void oracle_fnKeyUp(uint16_t unusedButMandatoryParameter) {
@@ -183,7 +183,7 @@ void oracle_fnKeyUp(uint16_t unusedButMandatoryParameter) {
       keyActionProcessed = true;
       return;
     default:
-      z47_keyboard_state_legacy_fnKeyUp(unusedButMandatoryParameter);
+      z47_keyboard_state_fnKeyUp(unusedButMandatoryParameter);
       return;
   }
 }
@@ -198,7 +198,7 @@ void oracle_fnKeyDown(uint16_t unusedButMandatoryParameter) {
       keyActionProcessed = true;
       return;
     default:
-      z47_keyboard_state_legacy_fnKeyDown(unusedButMandatoryParameter);
+      z47_keyboard_state_fnKeyDown(unusedButMandatoryParameter);
       return;
   }
 }
@@ -232,7 +232,7 @@ void oracle_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
     case CM_LISTXY:
       return;
     default:
-      z47_keyboard_state_legacy_fnKeyDotD(0);
+      z47_keyboard_state_fnKeyDotD(0);
       return;
   }
 }

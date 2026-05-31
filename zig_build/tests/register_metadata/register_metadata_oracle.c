@@ -6,7 +6,7 @@
 
 #include "c47.h"
 
-void z47_registers_legacy_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
+void z47_registers_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister);
 void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_t tag);
 void oracle_setRegisterDataPointer(calcRegister_t regist, const void *memPtr);
 void *oracle_getRegisterDataPointer(calcRegister_t regist);
@@ -931,35 +931,35 @@ void oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_
   }
 }
 
-uint32_t z47_registers_legacy_getRegisterDataType(calcRegister_t reg) {
+uint32_t z47_registers_getRegisterDataType(calcRegister_t reg) {
   return oracle_getRegisterDataType(reg);
 }
 
-void *z47_registers_legacy_getRegisterDataPointer(calcRegister_t reg) {
+void *z47_registers_getRegisterDataPointer(calcRegister_t reg) {
   return oracle_getRegisterDataPointer(reg);
 }
 
-uint32_t z47_registers_legacy_getRegisterTag(calcRegister_t reg) {
+uint32_t z47_registers_getRegisterTag(calcRegister_t reg) {
   return oracle_getRegisterTag(reg);
 }
 
-void z47_registers_legacy_setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len) {
+void z47_registers_setRegisterMaxDataLengthInBlocks(calcRegister_t reg, uint16_t max_data_len) {
   oracle_setRegisterMaxDataLengthInBlocks(reg, max_data_len);
 }
 
-uint16_t z47_registers_legacy_getRegisterMaxDataLengthInBlocks(calcRegister_t reg) {
+uint16_t z47_registers_getRegisterMaxDataLengthInBlocks(calcRegister_t reg) {
   return oracle_getRegisterMaxDataLengthInBlocks(reg);
 }
 
-uint16_t z47_registers_legacy_getRegisterFullSizeInBlocks(calcRegister_t reg) {
+uint16_t z47_registers_getRegisterFullSizeInBlocks(calcRegister_t reg) {
   return oracle_getRegisterFullSizeInBlocks(reg);
 }
 
-void z47_registers_legacy_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
+void z47_registers_reallocateRegister(calcRegister_t reg, uint32_t data_type, uint16_t data_size_without_data_len_blocks, uint32_t tag) {
   oracle_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 
-void z47_registers_legacy_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
+void z47_registers_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
   uint32_t dataType;
   uint16_t sizeInBlocks;
 
@@ -1010,7 +1010,7 @@ void z47_registers_legacy_copySourceRegisterToDestRegister(calcRegister_t source
 }
 
 void oracle_copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
-  z47_registers_legacy_copySourceRegisterToDestRegister(sourceRegister, destRegister);
+  z47_registers_copySourceRegisterToDestRegister(sourceRegister, destRegister);
 }
 
 bool_t oracle_isFunctionAllowingNewVariable(uint16_t op) {
@@ -1041,14 +1041,14 @@ bool_t oracle_isFunctionAllowingNewVariable(uint16_t op) {
   }
 }
 
-void z47_registers_legacy_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {
+void z47_registers_setRegisterDataType(calcRegister_t reg, uint16_t data_type, uint32_t tag) {
   oracle_setRegisterDataType(reg, data_type, tag);
 }
 
-void z47_registers_legacy_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr) {
+void z47_registers_setRegisterDataPointer(calcRegister_t reg, const void *mem_ptr) {
   oracle_setRegisterDataPointer(reg, mem_ptr);
 }
 
-void z47_registers_legacy_setRegisterTag(calcRegister_t reg, uint32_t tag) {
+void z47_registers_setRegisterTag(calcRegister_t reg, uint32_t tag) {
   oracle_setRegisterTag(reg, tag);
 }
