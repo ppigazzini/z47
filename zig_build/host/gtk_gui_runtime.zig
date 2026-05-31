@@ -8,6 +8,7 @@ const shell_owned = @import("gtk_gui_shell_owned.zig");
 const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
 const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
 const key_wrapper_owned = @import("gtk_gui_key_wrapper_owned.zig");
+const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -327,15 +328,15 @@ pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data:
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.destroyCalc(widget, event, data);
+    return lifecycle_bridge_owned.destroyCalc(widget, event, data);
 }
 
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.onConfigureEvent(widget, event, data);
+    return lifecycle_bridge_owned.onConfigureEvent(widget, event, data);
 }
 
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.onUiActivity(widget, event, data);
+    return lifecycle_bridge_owned.onUiActivity(widget, event, data);
 }
 
 extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
