@@ -1,4 +1,7 @@
-const GtkWidget = opaque {};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const gtk_image_new_from_file = gtk_decls.gtk_image_new_from_file;
+const gtk_fixed_put = gtk_decls.gtk_fixed_put;
 
 const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
@@ -11,9 +14,6 @@ extern var calcLandscape: bool;
 extern var modelString: [50]u8;
 extern var grid: ?*GtkWidget;
 extern var backgroundImage: ?*GtkWidget;
-
-extern fn gtk_image_new_from_file(filename: [*:0]const u8) ?*GtkWidget;
-extern fn gtk_fixed_put(fixed: ?*GtkWidget, widget: ?*GtkWidget, x: c_int, y: c_int) void;
 
 fn isR47FAM() bool {
     return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;

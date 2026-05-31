@@ -1,4 +1,9 @@
-const GtkWidget = opaque {};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const gtk_label_new = gtk_decls.gtk_label_new;
+const gtk_widget_set_name = gtk_decls.gtk_widget_set_name;
+const gtk_widget_set_size_request = gtk_decls.gtk_widget_set_size_request;
+const gtk_fixed_put = gtk_decls.gtk_fixed_put;
 
 const calcKey_t = extern struct {
     keyId: i16,
@@ -20,11 +25,6 @@ extern var grid: ?*GtkWidget;
 extern var lblFKey2: ?*GtkWidget;
 extern var lblGKey2: ?*GtkWidget;
 extern var kbd_usr: [37]calcKey_t;
-
-extern fn gtk_label_new(str: [*:0]const u8) ?*GtkWidget;
-extern fn gtk_widget_set_name(widget: ?*GtkWidget, name: [*:0]const u8) void;
-extern fn gtk_widget_set_size_request(widget: ?*GtkWidget, width: c_int, height: c_int) void;
-extern fn gtk_fixed_put(fixed: ?*GtkWidget, widget: ?*GtkWidget, x: c_int, y: c_int) void;
 
 pub fn setupSoftkeyLabels() void {
     lblFKey2 = gtk_label_new("");
