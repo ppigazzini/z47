@@ -1,8 +1,10 @@
 pub extern fn z47_program_serialization_runtime_scan_labels_and_programs() void;
 pub extern fn z47_program_serialization_runtime_go_to_last_program() void;
-pub extern fn z47_program_serialization_runtime_is_at_end_of_program(step: [*c]const u8) bool;
 pub extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
 pub extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
+
+const END_OPCODE_HIGH: u8 = 0x85;
+const END_OPCODE_LOW: u8 = 0xB2;
 
 fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
     var idx: usize = 0;
@@ -29,6 +31,10 @@ fn parseU8LineZ(line: [*c]const u8) u8 {
     return @intCast(parseU32LineZ(line));
 }
 
+fn isAtEndOfProgramZ(step: [*c]const u8) bool {
+    return step[0] == END_OPCODE_HIGH and step[1] == END_OPCODE_LOW;
+}
+
 pub inline fn scanLabelsAndPrograms() void {
     z47_program_serialization_runtime_scan_labels_and_programs();
 }
@@ -38,7 +44,7 @@ pub inline fn goToLastProgram() void {
 }
 
 pub inline fn isAtEndOfProgram(step: [*c]const u8) bool {
-    return z47_program_serialization_runtime_is_at_end_of_program(step);
+    return isAtEndOfProgramZ(step);
 }
 
 pub inline fn getRamSizeInBlocks() u16 {
