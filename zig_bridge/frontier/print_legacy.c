@@ -2,25 +2,25 @@
 
 #include "c47.h"
 
-#define fnP_PrinterOnOff z47_frontier_retained_fnP_PrinterOnOff
-#define fnP_PrinterMode z47_frontier_retained_fnP_PrinterMode
-#define fnSetPrinter z47_frontier_retained_fnSetPrinter
-#define fnP_SetDelay z47_frontier_retained_fnP_SetDelay
-#define fnP_Advance z47_frontier_retained_fnP_Advance
-#define fnP_PrinterList z47_frontier_retained_fnP_PrinterList
-#define fnP_Byte z47_frontier_retained_fnP_Byte
-#define fnP_Char z47_frontier_retained_fnP_Char
-#define fnP_Tab z47_frontier_retained_fnP_Tab
-#define fnP_User z47_frontier_retained_fnP_User
-#define fnP_LCD z47_frontier_retained_fnP_LCD
-#define fnP_Alpha z47_frontier_retained_fnP_Alpha
-#define fnP_Sigma z47_frontier_retained_fnP_Sigma
-#define fnP_All_Regs z47_frontier_retained_fnP_All_Regs
-#define fnP_Regs z47_frontier_retained_fnP_Regs
-#define fnP_PrintAllItems z47_frontier_retained_fnP_PrintAllItems
+#define fnP_PrinterOnOff z47_frontier_legacy_fnP_PrinterOnOff
+#define fnP_PrinterMode z47_frontier_legacy_fnP_PrinterMode
+#define fnSetPrinter z47_frontier_legacy_fnSetPrinter
+#define fnP_SetDelay z47_frontier_legacy_fnP_SetDelay
+#define fnP_Advance z47_frontier_legacy_fnP_Advance
+#define fnP_PrinterList z47_frontier_legacy_fnP_PrinterList
+#define fnP_Byte z47_frontier_legacy_fnP_Byte
+#define fnP_Char z47_frontier_legacy_fnP_Char
+#define fnP_Tab z47_frontier_legacy_fnP_Tab
+#define fnP_User z47_frontier_legacy_fnP_User
+#define fnP_LCD z47_frontier_legacy_fnP_LCD
+#define fnP_Alpha z47_frontier_legacy_fnP_Alpha
+#define fnP_Sigma z47_frontier_legacy_fnP_Sigma
+#define fnP_All_Regs z47_frontier_legacy_fnP_All_Regs
+#define fnP_Regs z47_frontier_legacy_fnP_Regs
+#define fnP_PrintAllItems z47_frontier_legacy_fnP_PrintAllItems
 
-void z47_frontier_retained_fnP_Regs(uint16_t registerNo);
-void z47_frontier_retained_fnP_PrintAllItems(uint16_t unusedButMandatoryParameter);
+void z47_frontier_legacy_fnP_Regs(uint16_t registerNo);
+void z47_frontier_legacy_fnP_PrintAllItems(uint16_t unusedButMandatoryParameter);
 
 #include "../../src/c47/printing/print.c"
 

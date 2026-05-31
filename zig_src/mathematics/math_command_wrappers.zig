@@ -788,7 +788,7 @@ pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
-        runtime.retained.z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter);
+        runtime.legacy.fnRound(unused_but_mandatory_parameter);
         return;
     }
 

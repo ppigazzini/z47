@@ -633,86 +633,181 @@ pub extern fn z47_math_wrappers_const_100() *const real_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
 pub extern fn z47_math_wrappers_const_1on3() *const real_t;
 pub extern fn z47_math_wrappers_const_phi() *const real_t;
-pub const retained = struct {
-    pub extern fn z47_math_wrappers_retained_fnBn(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnBnStar(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnExpt(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnWpositive(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnWnegative(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnWinverse(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnGcd(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnLcm(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnMod(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnRmd(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnUlp(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnMant(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnRoundi(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnNeighb(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnIxyz(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnFactorial(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnRealPart(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnImaginaryPart(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnArg(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnMagnitude(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnConjugate(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnSwapRealImaginary(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnAtan2(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnPercent(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnAdd(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnSubtract(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnMultiply(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDivide(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnIDiv(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnIDivR(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDblMultiply(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDecomp(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckInteger(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDec(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnInc(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXLessThan(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXLessEqual(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXGreaterThan(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXGreaterEqual(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXEqualsTo(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXNotEqual(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnXAlmostEqual(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnIsConverged(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckType(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckReal(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckNumber(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckAngle(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckMatrix(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckForZero(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckIsVect2d(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckIsVect3d(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckNaN(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckInfinite(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckSpecial(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckPlusZero(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCheckMinusZero(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnGetType(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDblDivide(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDblDivideRemainder(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnToPolar2(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnToRect2(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnToRect(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnParallel(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnUnitVector(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnSdl(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnSdr(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnSquareRoot(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCubeRoot(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnPercentMRR(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnPercentPlusMG(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnPercentT(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDeltaPercent(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnFib(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnLINPOL(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnCross(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnDot(unused_but_mandatory_parameter: u16) void;
-    pub extern fn z47_math_wrappers_retained_fnLogXY(unused_but_mandatory_parameter: u16) void;
+pub const legacy = struct {
+    const legacy_prefix = "z47_math_" ++ "wrappers_" ++ "legacy_";
+    const RetainedU16Fn = *const fn (u16) callconv(.c) void;
+
+    const raw_fnBn: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnBn" });
+    const raw_fnBnStar: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnBnStar" });
+    const raw_fnExpt: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnExpt" });
+    const raw_fnWpositive: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnWpositive" });
+    const raw_fnWnegative: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnWnegative" });
+    const raw_fnWinverse: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnWinverse" });
+    const raw_fnGcd: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnGcd" });
+    const raw_fnLcm: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnLcm" });
+    const raw_fnMod: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnMod" });
+    const raw_fnRmd: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnRmd" });
+    const raw_fnUlp: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnUlp" });
+    const raw_fnMant: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnMant" });
+    const raw_fnRoundi: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnRoundi" });
+    const raw_fnNeighb: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnNeighb" });
+    const raw_fnIxyz: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnIxyz" });
+    const raw_fnFactorial: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnFactorial" });
+    const raw_fnRealPart: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnRealPart" });
+    const raw_fnImaginaryPart: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnImaginaryPart" });
+    const raw_fnArg: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnArg" });
+    const raw_fnMagnitude: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnMagnitude" });
+    const raw_fnConjugate: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnConjugate" });
+    const raw_fnSwapRealImaginary: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSwapRealImaginary" });
+    const raw_fnAtan2: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnAtan2" });
+    const raw_fnPercent: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercent" });
+    const raw_fnAdd: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnAdd" });
+    const raw_fnSubtract: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSubtract" });
+    const raw_fnMultiply: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnMultiply" });
+    const raw_fnDivide: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDivide" });
+    const raw_fnIDiv: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnIDiv" });
+    const raw_fnIDivR: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnIDivR" });
+    const raw_fnDblMultiply: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDblMultiply" });
+    const raw_fnRound: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnRound" });
+    const raw_fnDecomp: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDecomp" });
+    const raw_fnCheckInteger: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckInteger" });
+    const raw_fnDec: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDec" });
+    const raw_fnInc: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnInc" });
+    const legacy_fnXLessThan: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXLessThan" });
+    const legacy_fnXLessEqual: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXLessEqual" });
+    const legacy_fnXGreaterThan: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXGreaterThan" });
+    const legacy_fnXGreaterEqual: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXGreaterEqual" });
+    const legacy_fnXEqualsTo: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXEqualsTo" });
+    const legacy_fnXNotEqual: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXNotEqual" });
+    const legacy_fnXAlmostEqual: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnXAlmostEqual" });
+
+    pub inline fn fnXLessThan(parameter: u16) void {
+        legacy_fnXLessThan(parameter);
+    }
+
+    pub inline fn fnXLessEqual(parameter: u16) void {
+        legacy_fnXLessEqual(parameter);
+    }
+
+    pub inline fn fnXGreaterThan(parameter: u16) void {
+        legacy_fnXGreaterThan(parameter);
+    }
+
+    pub inline fn fnXGreaterEqual(parameter: u16) void {
+        legacy_fnXGreaterEqual(parameter);
+    }
+
+    pub inline fn fnXEqualsTo(parameter: u16) void {
+        legacy_fnXEqualsTo(parameter);
+    }
+
+    pub inline fn fnXNotEqual(parameter: u16) void {
+        legacy_fnXNotEqual(parameter);
+    }
+
+    pub inline fn fnXAlmostEqual(parameter: u16) void {
+        legacy_fnXAlmostEqual(parameter);
+    }
+
+    pub inline fn fnRound(parameter: u16) void {
+        raw_fnRound(parameter);
+    }
+
+    pub inline fn fnAdd(parameter: u16) void {
+        raw_fnAdd(parameter);
+    }
+
+    pub inline fn fnSubtract(parameter: u16) void {
+        raw_fnSubtract(parameter);
+    }
+
+    pub inline fn fnMultiply(parameter: u16) void {
+        raw_fnMultiply(parameter);
+    }
+
+    pub inline fn fnDivide(parameter: u16) void {
+        raw_fnDivide(parameter);
+    }
+
+    pub inline fn fnIDiv(parameter: u16) void {
+        raw_fnIDiv(parameter);
+    }
+
+    pub inline fn fnIDivR(parameter: u16) void {
+        raw_fnIDivR(parameter);
+    }
+
+    pub inline fn fnDec(parameter: u16) void {
+        raw_fnDec(parameter);
+    }
+
+    pub inline fn fnInc(parameter: u16) void {
+        raw_fnInc(parameter);
+    }
+
+    pub inline fn fnToPolar2(parameter: u16) void {
+        raw_fnToPolar2(parameter);
+    }
+
+    pub inline fn fnToRect2(parameter: u16) void {
+        raw_fnToRect2(parameter);
+    }
+
+    pub inline fn fnSquareRoot(parameter: u16) void {
+        raw_fnSquareRoot(parameter);
+    }
+
+    pub inline fn fnDblMultiply(parameter: u16) void {
+        raw_fnDblMultiply(parameter);
+    }
+
+    pub inline fn fnDblDivide(parameter: u16) void {
+        raw_fnDblDivide(parameter);
+    }
+
+    pub inline fn fnDblDivideRemainder(parameter: u16) void {
+        raw_fnDblDivideRemainder(parameter);
+    }
+
+    pub inline fn fnAtan2(parameter: u16) void {
+        raw_fnAtan2(parameter);
+    }
+    const raw_fnIsConverged: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnIsConverged" });
+    const raw_fnCheckType: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckType" });
+    const raw_fnCheckReal: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckReal" });
+    const raw_fnCheckNumber: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckNumber" });
+    const raw_fnCheckAngle: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckAngle" });
+    const raw_fnCheckMatrix: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckMatrix" });
+    const raw_fnCheckMatrixSquare: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckMatrixSquare" });
+    const raw_fnCheckForZero: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckForZero" });
+    const raw_fnCheckIsVect2d: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckIsVect2d" });
+    const raw_fnCheckIsVect3d: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckIsVect3d" });
+    const raw_fnCheckNaN: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckNaN" });
+    const raw_fnCheckInfinite: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckInfinite" });
+    const raw_fnCheckSpecial: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckSpecial" });
+    const raw_fnCheckPlusZero: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckPlusZero" });
+    const raw_fnCheckMinusZero: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCheckMinusZero" });
+    const raw_fnGetType: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnGetType" });
+    const raw_fnDblDivide: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDblDivide" });
+    const raw_fnDblDivideRemainder: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDblDivideRemainder" });
+    const raw_fnToPolar2: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToPolar2" });
+    const raw_fnToRect2: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToRect2" });
+    const raw_fnToRect: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToRect" });
+    const raw_fnParallel: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnParallel" });
+    const raw_fnUnitVector: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnUnitVector" });
+    const raw_fnSdl: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSdl" });
+    const raw_fnSdr: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSdr" });
+    const raw_fnSquareRoot: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSquareRoot" });
+    const raw_fnCubeRoot: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCubeRoot" });
+    const raw_fnPercentMRR: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentMRR" });
+    const raw_fnPercentPlusMG: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentPlusMG" });
+    const raw_fnPercentT: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentT" });
+    const raw_fnDeltaPercent: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDeltaPercent" });
+    const raw_fnFib: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnFib" });
+    const raw_fnLINPOL: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnLINPOL" });
+    const raw_fnCross: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCross" });
+    const raw_fnDot: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDot" });
+    const raw_fnLogXY: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnLogXY" });
 };
 pub extern fn z47_math_wrappers_const_2e6() *const real_t;
 pub extern fn z47_math_wrappers_const_90() *const real_t;

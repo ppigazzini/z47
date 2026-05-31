@@ -2,14 +2,14 @@
 
 #include "c47.h"
 
-void z47_math_wrappers_retained_fnXAlmostEqual(uint16_t regist);
-void z47_math_wrappers_retained_fnRound(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnDivide(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnAdd(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnSubtract(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnMultiply(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnIDiv(uint16_t unusedButMandatoryParameter);
-void z47_math_wrappers_retained_fnIDivR(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnXAlmostEqual(uint16_t regist);
+void z47_math_wrappers_legacy_fnRound(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnDivide(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnAdd(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnSubtract(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnMultiply(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnIDiv(uint16_t unusedButMandatoryParameter);
+void z47_math_wrappers_legacy_fnIDivR(uint16_t unusedButMandatoryParameter);
 
 #define fnMin oracle_fnMin
 #include "../../../src/c47/mathematics/min.c"
@@ -688,7 +688,7 @@ void oracle_fnXAlmostEqual(uint16_t regist) {
 	const uint32_t regType = getRegisterDataType((calcRegister_t)regist);
 
 	if((xType != dtShortInteger && xType != dtLongInteger) || (regType != dtShortInteger && regType != dtLongInteger)) {
-		z47_math_wrappers_retained_fnXAlmostEqual(regist);
+		z47_math_wrappers_legacy_fnXAlmostEqual(regist);
 		return;
 	}
 
@@ -699,7 +699,7 @@ void oracle_fnRound(uint16_t unusedButMandatoryParameter) {
 	const uint32_t xType = getRegisterDataType(REGISTER_X);
 
 	if(xType != dtShortInteger && xType != dtLongInteger) {
-		z47_math_wrappers_retained_fnRound(unusedButMandatoryParameter);
+		z47_math_wrappers_legacy_fnRound(unusedButMandatoryParameter);
 		return;
 	}
 
@@ -1287,13 +1287,13 @@ static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {
 
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter) {
 	if(!oracle_tryIntegerLongDivide(false)) {
-		z47_math_wrappers_retained_fnIDiv(unusedButMandatoryParameter);
+		z47_math_wrappers_legacy_fnIDiv(unusedButMandatoryParameter);
 	}
 }
 
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter) {
 	if(!oracle_tryIntegerLongDivide(true)) {
-		z47_math_wrappers_retained_fnIDivR(unusedButMandatoryParameter);
+		z47_math_wrappers_legacy_fnIDivR(unusedButMandatoryParameter);
 	}
 }
 
@@ -1714,7 +1714,7 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef complexMagnitude2
 
 #define conjCplx oracle_conjCplx
-#define fnConjugate oracle_fnConjugate_retained
+#define fnConjugate oracle_fnConjugate_legacy
 #include "../../../src/c47/mathematics/conjugate.c"
 #undef fnConjugate
 #undef conjCplx
@@ -1764,7 +1764,7 @@ void oracle_fnConjugate(uint16_t unusedButMandatoryParameter) {
 	}
 }
 
-#define fnSwapRealImaginary oracle_fnSwapRealImaginary_retained
+#define fnSwapRealImaginary oracle_fnSwapRealImaginary_legacy
 #include "../../../src/c47/mathematics/swapRealImaginary.c"
 #undef fnSwapRealImaginary
 
@@ -1828,7 +1828,7 @@ void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
 #define atan2RemaReal oracle_atan2RemaReal
 #define atan2RealRema oracle_atan2RealRema
 #define atan2LonIRema oracle_atan2LonIRema
-#define fnAtan2 oracle_fnAtan2_retained
+#define fnAtan2 oracle_fnAtan2_legacy
 void atan2Error(void);
 void atan2RealReal(void);
 void atan2RemaRema(void);

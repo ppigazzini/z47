@@ -12,7 +12,7 @@ z47 uses three explicit implementation modes.
 
 | Mode | Meaning | Current examples |
 | --- | --- | --- |
-| existing C compiled by Zig | imported or retained C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
+| existing C compiled by Zig | imported or legacy C sources are still the executable implementation even though Zig drives the build | `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5`, `dep/decNumberICU` |
 | explicit Zig or C boundary | checked-in `translate-c` root headers and direct `extern` usage are allowed only in approved boundary files; checked-in `@cImport` is currently avoided | generator boundary roots under `zig_build/tools/translate_c/`, plus runtime seams under `zig_src/constants/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 | manual Zig rewrite | the implementation itself now lives in Zig and is parity-gated | `zig_build/tools/` generators plus the live runtime slices under `zig_src/constants/`, `zig_src/shortint/`, `zig_src/mathematics/`, `zig_src/state/`, and `zig_src/ui/` |
 
@@ -21,44 +21,44 @@ z47 uses three explicit implementation modes.
 | Surface | Current classification | Notes |
 | --- | --- | --- |
 | `../src/c47` core | existing C compiled by Zig, with selected constants, shortint, mathematics-wrapper, state, and UI replacements | broad stateful core still mostly remains imported C |
-| `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C, with `gtkGui.c` routed through an explicit retained host boundary |
+| `../src/c47-gtk` | existing C compiled by Zig | desktop simulator and host HAL remain imported C, with `gtkGui.c` routed through an explicit legacy host boundary |
 | `../src/c47-dmcp` and `../src/c47-dmcp5` | existing C compiled by Zig | hardware HAL and packaging inputs remain imported C |
-| `../dep/decNumberICU` | retained vendored C dependency | still compiled as C |
-| GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | retained host dependency stack |
+| `../dep/decNumberICU` | legacy vendored C dependency | still compiled as C |
+| GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | legacy host dependency stack |
 | `../zig_build/tools/translate_c/` | approved build-managed `translate-c` boundary roots | checked-in generator header roots consumed by `../zig_build/host/generated.zig` |
 | `../zig_build/tools/generate_constants.zig` | manual Zig executable with build-managed `translate-c` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/generate_catalogs.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/generate_testpgms.zig` | manual Zig executable with build-managed `translate-c` and `extern` boundary | deterministic generator entrypoint |
 | `../zig_build/tools/ttf2_raster_fonts.zig` | manual Zig executable with build-managed `translate-c` boundary | raster font generator entrypoint |
-| `../zig_build/host/gtk_gui.zig` | existing C compiled by Zig plus explicit retained-boundary routing | filters the imported `gtkGui.c` out of the bulk GTK source list and re-adds it through the retained host wrapper sources |
-| `../zig_build/solver/solve.zig` | manual Zig entrypoint plus retained C boundary routing | filters imported `solver/solve.c`, re-adds retained body through `zig_bridge/solver/solve_retained.c`, and routes `fnPgmSlv` through `zig_src/solver/solve.zig` |
+| `../zig_build/host/gtk_gui.zig` | existing C compiled by Zig plus explicit legacy-boundary routing | filters the imported `gtkGui.c` out of the bulk GTK source list and re-adds it through the legacy host wrapper sources |
+| `../zig_build/solver/solve.zig` | manual Zig entrypoint plus legacy C boundary routing | filters imported `solver/solve.c`, re-adds legacy body through `zig_bridge/solver/solve_legacy.c`, and routes `fnPgmSlv` through `zig_src/solver/solve.zig` |
 | `../zig_src/constants/constants.zig` plus `../zig_build/constants/constants.zig` | manual Zig rewrite | parity-gated constants-command slice for `fnConstant` and `fnPi` |
 | `../zig_src/shortint/shortint_core.zig` and short-integer owner files | manual Zig rewrite | parity-gated short-integer rewrite slice, including mask, count, boolean operators, bit toggles, rotate or justify, mirror, byte swap, zip, and unzip helpers |
-| `../zig_src/mathematics/math_command_wrappers.zig`, `../zig_src/mathematics/math_check_value_owned.zig`, `../zig_src/mathematics/math_compare_owned.zig`, `../zig_src/mathematics/math_convergence_owned.zig`, `../zig_src/mathematics/math_get_type_owned.zig`, `../zig_src/mathematics/math_ln_complex_export.zig`, `../zig_src/mathematics/math_logxy_owned.zig`, `../zig_src/mathematics/math_projection_owned.zig`, and `../zig_build/mathematics/math_command_wrappers.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared helper ownership for the scalar compare family, convergence checks, the owned check-value family (`fnCheckType`, `fnCheckReal`, `fnCheckNumber`, `fnCheckAngle`, `fnCheckMatrix`, `fnCheckMatrixSquare`, `fnCheckNaN`, `fnCheckInfinite`, `fnCheckSpecial`, `fnCheckInteger`, `fnCheckForZero`, `fnCheckPlusZero`, `fnCheckMinusZero`, `fnCheckIsVect2d`, `fnCheckIsVect3d`), owned `fnGetType`, the owned projection tranche (`fnRealPart`, `fnImaginaryPart`, `fnArg`, `fnMagnitude`, `fnConjugate`, `fnSwapRealImaginary`), `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, `sinhCoshCplx`, `logxyReal`, and the dedicated `lnComplex` export shim, while the matrix fallback still routes through retained `fnInvertMatrix`; the broad command-wrapper filename remains valid because the live parity lane still centers on the wrapper object even as narrow helper and export files peel away |
+| `../zig_src/mathematics/math_command_wrappers.zig`, `../zig_src/mathematics/math_check_value_owned.zig`, `../zig_src/mathematics/math_compare_owned.zig`, `../zig_src/mathematics/math_convergence_owned.zig`, `../zig_src/mathematics/math_get_type_owned.zig`, `../zig_src/mathematics/math_ln_complex_export.zig`, `../zig_src/mathematics/math_logxy_owned.zig`, `../zig_src/mathematics/math_projection_owned.zig`, and `../zig_build/mathematics/math_command_wrappers.zig` | manual Zig rewrite | parity-gated mathematics command and shared-helper slice for `min`, `max`, `ceil`, `floor`, `exp`, `invert`, `sign`, `changeSign`, `sin`, `cos`, `tan`, `sinh`, `cosh`, `tanh`, `square`, and `cube`, plus shared helper ownership for the scalar compare family, convergence checks, the owned check-value family (`fnCheckType`, `fnCheckReal`, `fnCheckNumber`, `fnCheckAngle`, `fnCheckMatrix`, `fnCheckMatrixSquare`, `fnCheckNaN`, `fnCheckInfinite`, `fnCheckSpecial`, `fnCheckInteger`, `fnCheckForZero`, `fnCheckPlusZero`, `fnCheckMinusZero`, `fnCheckIsVect2d`, `fnCheckIsVect3d`), owned `fnGetType`, the owned projection tranche (`fnRealPart`, `fnImaginaryPart`, `fnArg`, `fnMagnitude`, `fnConjugate`, `fnSwapRealImaginary`), `realExpLimitCheck`, `realExp`, `expComplex`, `chsReal`, `chsCplx`, `chsShoI`, `sinComplex`, `cosComplex`, `TanComplex`, `TanhComplex`, `sinCosReal`, `sinCosCplx`, `sinhCoshReal`, `sinhCoshCplx`, `logxyReal`, and the dedicated `lnComplex` export shim, while the matrix fallback still routes through legacy `fnInvertMatrix`; the broad command-wrapper filename remains valid because the live parity lane still centers on the wrapper object even as narrow helper and export files peel away |
 | `../zig_src/state/stack.zig` plus `../zig_build/state/stack.zig` | manual Zig rewrite | parity-gated live stack and undo owner slice |
 | `../zig_src/state/register_metadata.zig` plus `../zig_build/state/register_metadata.zig` | manual Zig rewrite | parity-gated live register-metadata accessor slice |
 | `../zig_src/state/flags.zig` plus `../zig_build/state/flags.zig` | manual Zig rewrite | parity-gated live system-flag accessor and change-tracking slice |
 | `../zig_src/state/memory.zig` plus `../zig_build/state/memory.zig` | manual Zig rewrite | parity-gated live memory-helper slice |
 | `../zig_src/state/program_serialization.zig` plus `../zig_build/state/program_serialization.zig` | manual Zig rewrite | parity-gated live program-serialization slice |
-| `../zig_src/state/calc_state.zig` plus `../zig_build/state/calc_state.zig` | manual Zig rewrite | parity-gated save or restore owner slice with retained firmware entrypoints routed through a runtime seam |
-| `../zig_src/state/keyboard_state.zig` plus `../zig_build/state/keyboard_state.zig` | manual Zig rewrite | parity-gated keyboard helper and command-state slice while some firmware-sized public entrypoints still stay retained C |
-| `../zig_bridge/state/` retained helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
+| `../zig_src/state/calc_state.zig` plus `../zig_build/state/calc_state.zig` | manual Zig rewrite | parity-gated save or restore owner slice with legacy firmware entrypoints routed through a runtime seam |
+| `../zig_src/state/keyboard_state.zig` plus `../zig_build/state/keyboard_state.zig` | manual Zig rewrite | parity-gated keyboard helper and command-state slice while some firmware-sized public entrypoints still stay legacy C |
+| `../zig_bridge/state/` legacy helper shims | existing C compiled by Zig | explicit runtime bridge helpers paired with the live Zig owners |
 | `../zig_src/ui/tone.zig` plus `../zig_build/ui/tone.zig` | manual Zig rewrite | parity-gated UI tone command slice for `fnTone` and `fnBeep` |
-| `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | retained long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
-| `../zig_build/firmware_audio_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 audio firmware slice |
-| `../zig_build/firmware_io_runtime.zig` | approved direct `extern` boundary | retained firmware file-I/O seam, with `t24` reached directly as `sdb.pds_t24` through the audited board-specific system-block base |
-| `../zig_build/firmware_print_ir_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the DMCP or DMCP5 print-IR firmware slice |
-| `../zig_src/constants/constants_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the constants-command slice |
-| `../zig_src/shortint/shortint_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the rewrite slice |
-| `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the mathematics command and shared-helper slice |
-| `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the calc-state slice |
-| `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the stack-state slice |
-| `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the register-metadata slice |
-| `../zig_src/state/flags_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the system-flag slice |
-| `../zig_src/state/keyboard_state_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the keyboard-state slice |
-| `../zig_src/state/memory_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the memory slice |
-| `../zig_src/state/program_serialization_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the program-serialization slice |
-| `../zig_src/ui/tone_runtime.zig` | approved direct `extern` boundary | retained runtime seam for the UI tone slice |
+| `../zig_bridge/mathematics/math_wrappers_runtime_helpers.c` | existing C compiled by Zig | legacy long-integer, extra-info, and error-message shim paired with the mathematics command and shared-helper slice |
+| `../zig_build/firmware_audio_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the DMCP or DMCP5 audio firmware slice |
+| `../zig_build/firmware_io_runtime.zig` | approved direct `extern` boundary | legacy firmware file-I/O seam, with `t24` reached directly as `sdb.pds_t24` through the audited board-specific system-block base |
+| `../zig_build/firmware_print_ir_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the DMCP or DMCP5 print-IR firmware slice |
+| `../zig_src/constants/constants_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the constants-command slice |
+| `../zig_src/shortint/shortint_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the rewrite slice |
+| `../zig_src/mathematics/math_command_wrappers_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the mathematics command and shared-helper slice |
+| `../zig_src/state/calc_state_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the calc-state slice |
+| `../zig_src/state/stack_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the stack-state slice |
+| `../zig_src/state/register_metadata_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the register-metadata slice |
+| `../zig_src/state/flags_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the system-flag slice |
+| `../zig_src/state/keyboard_state_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the keyboard-state slice |
+| `../zig_src/state/memory_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the memory slice |
+| `../zig_src/state/program_serialization_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the program-serialization slice |
+| `../zig_src/ui/tone_runtime.zig` | approved direct `extern` boundary | legacy runtime seam for the UI tone slice |
 
 ## Approved Checked-In Boundary Files
 
@@ -121,7 +121,7 @@ The guard runs in CI through the `zig-c-boundary-guard` job in
 Current maintainer finding:
 
 - when a rewrite slice already has a `*_runtime.zig` seam, keep any new direct
-  retained-C `extern` bindings there and call them through seam helpers from the
+  legacy-C `extern` bindings there and call them through seam helpers from the
   owner file; moving those bindings into the owner file itself is treated as
   boundary drift and will fail the guard
 
@@ -141,7 +141,7 @@ Verified slices:
 - mathematics command-wrapper ownership under `../zig_src/mathematics/`,
   including the live `exp.c`, `invert.c`, `sign.c`, `changeSign.c`, `tanh.c`,
   `square.c`, and `cube.c` owner replacements plus the earlier rounding and
-  trig owners, with retained helper entrypoints reached through
+  trig owners, with legacy helper entrypoints reached through
   `../zig_src/mathematics/math_command_wrappers_runtime.zig`
 - stack mutation plus undo snapshot or restore ownership under
   `../zig_src/state/`
@@ -150,14 +150,14 @@ Verified slices:
   `../zig_src/state/`
 - memory helper ownership under `../zig_src/state/`
 - program-serialization ownership under `../zig_src/state/`
-- calc-state save or restore ownership under `../zig_src/state/`, with retained
+- calc-state save or restore ownership under `../zig_src/state/`, with legacy
   firmware entrypoints still reached through `../zig_src/state/calc_state_runtime.zig`
 - keyboard helper and command-state ownership under `../zig_src/state/`, with
-  retained public entrypoints still used where firmware size requires them
+  legacy public entrypoints still used where firmware size requires them
 - tone command ownership under `../zig_src/ui/`, with host and firmware display
   refresh routed through `../zig_src/ui/tone_runtime.zig`
 - DMCP or DMCP5 audio ownership under `../zig_build/firmware_audio_runtime.zig`,
-  replacing the imported `hal/audio.c` pair while retained firmware `io.c`
+  replacing the imported `hal/audio.c` pair while legacy firmware `io.c`
   inputs stay explicit
 - DMCP or DMCP5 file-I/O ownership under `../zig_build/firmware_io_runtime.zig`,
   replacing the imported `hal/io.c` pair with direct `sdb.pds_t24` access from
@@ -198,8 +198,8 @@ Current repo policy requires:
 - Update `../.github/project/zig-c-boundaries.txt`, the guard expectations, and
   this page in the same change.
 - When a slice already has an approved `*_runtime.zig` seam, add new direct
-  retained-C bindings there instead of in the Zig owner file.
-- Keep the boundary file narrow and name the retained C surface it exposes.
+  legacy-C bindings there instead of in the Zig owner file.
+- Keep the boundary file narrow and name the legacy C surface it exposes.
 - Add or update the focused validation lane in
   [70-tests-and-verification.md](70-tests-and-verification.md) when the new
   boundary affects behavior.
@@ -210,7 +210,7 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
 
 - use the semantic domain name for the owner file, for example
   `../zig_src/frontier/frontier.zig` or `../zig_src/state/calc_state.zig`
-- keep direct retained-boundary bindings in `*_runtime.zig`, for example
+- keep direct legacy-boundary bindings in `*_runtime.zig`, for example
   `../zig_src/frontier/frontier_runtime.zig` or
   `../zig_src/state/calc_state_runtime.zig`
 - use `*_export.zig` only for thin ABI-facing forwarders, for example
@@ -218,14 +218,14 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
   `../zig_src/mathematics/math_atan2_export.zig`
 - use `*_owned.zig` only for the implementation that sits behind a paired
   export shim, for example `../zig_src/mathematics/math_atan2_owned.zig`
-- keep retained C helper files explicit as `*_retained.c` or
+- keep legacy C helper files explicit as `*_legacy.c` or
   `*_runtime_helpers.c`
 - inside semantic owner files and coherent local helper clusters, use Zig
   casing only when the full internal-only family can move together in one
   bounded slice: directories and files `snake_case`, types `TitleCase`,
   functions `camelCase`, and other values `snake_case`
 - callable alias constants are values, not exported functions, so owner-side
-  retained-call aliases should also use semantic `snake_case`
+  legacy-call aliases should also use semantic `snake_case`
 - the current owned mathematics helper tranche already uses that owner-layer
   vocabulary, for example `arctanReal`, `arctan2Real`,
   `rectangularToPolarReal`, `arcsinReal`, `arccosReal`, `sinhCoshReal`,
@@ -238,7 +238,7 @@ Keep the naming split explicit when a rewrite slice has more than one layer.
 - the May 2026 structural naming milestone is complete under this layer-scoped
   contract; any future naming reopener must start from a fresh owner-specific
   inventory instead of inheriting the now-closed queue
-- inside `*_runtime.zig`, `*_export.zig`, retained C, `pub export`, and
+- inside `*_runtime.zig`, `*_export.zig`, legacy C, `pub export`, and
   `extern` surfaces, keep upstream-compatible spellings when they model ABI,
   layout, or exact public symbol names
 - do not run repo-wide variable, parameter, or local-const case sweeps; if a

@@ -2,8 +2,8 @@
 
 #include "c47.h"
 
-#define fnPlotStat z47_frontier_retained_fnPlotStat
-#define fnPlotRegressionLine z47_frontier_retained_fnPlotRegressionLine
+#define fnPlotStat z47_frontier_legacy_fnPlotStat
+#define fnPlotRegressionLine z47_frontier_legacy_fnPlotRegressionLine
 #include "../../src/c47/plotstat.c"
 
 void z47_frontier_plot_set_plotstatmx_stats(void) {

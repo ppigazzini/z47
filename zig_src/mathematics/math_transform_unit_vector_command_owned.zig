@@ -4,12 +4,6 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
-fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
-}
-
 fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
     return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
 }
@@ -45,7 +39,7 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
 fn unitVectorError() void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError("In function fnUnitVector:", message, null, null);

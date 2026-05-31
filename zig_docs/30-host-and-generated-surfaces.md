@@ -72,18 +72,18 @@ with `../zig_src/state/stack.zig` plus the explicit helper seam in
 metadata accessors from `registers.c` with
 `../zig_src/state/register_metadata.zig`, and replaces the exported
 system-flag accessor and change-tracking surface from `flags.c` with
-`../zig_src/state/flags.zig` plus retained wrapper sources under
+`../zig_src/state/flags.zig` plus legacy wrapper sources under
 `../zig_bridge/state/`. The current host lane also replaces the remaining
 short-integer boolean logical owners under `../src/c47/logicalOps/` with
 `../zig_src/shortint/logical_boolean_ops.zig`. The current host
 lane also replaces the broader public keyboard command-entry surface with
 `../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
-retained owner through `../zig_bridge/state/keyboard_state_retained.c`.
+legacy owner through `../zig_bridge/state/keyboard_state_legacy.c`.
 
-The retained GTK boundary is still explicit: `../zig_build/host/context.zig`
+The legacy GTK boundary is still explicit: `../zig_build/host/context.zig`
 filters the imported `../src/c47-gtk/gtkGui.c` path out of the bulk GTK source
 set through `../zig_build/host/gtk_gui.zig`, and that helper then
-re-enters the host build through `../zig_build/host/gtk_gui_retained.c` plus
+re-enters the host build through `../zig_build/host/gtk_gui_legacy.c` plus
 `../zig_build/host/gtk_button_signal_wrappers.c`. The presence of a Zig-owned
 build graph still does not mean the host simulator is already a pure-Zig
 application.
@@ -96,8 +96,8 @@ while the imported `hal/io.c` file remains a read-only audit surface.
 
 The host solver boundary now includes an explicit command-entry rewrite lane:
 `../zig_build/solver/solve.zig` filters imported
-`../src/c47/solver/solve.c`, re-enters the retained body through
-`../zig_bridge/solver/solve_retained.c`, and compiles the Zig-owned
+`../src/c47/solver/solve.c`, re-enters the legacy body through
+`../zig_bridge/solver/solve_legacy.c`, and compiles the Zig-owned
 `fnPgmSlv` entrypoint from `../zig_src/solver/solve.zig`.
 
 ## Host Test Steps
@@ -139,7 +139,7 @@ across the live stateful and math command-owner Zig slices, including the
 simulator-only backup path, the shared exp, integer-power, Euler, random, and
 PCG helper surface, and the broader public keyboard command entrypoints.
 `zig build test`, `zig build test_asan`, and `zig build repeattest` cover the
-broader retained host regression surface after those focused slices pass.
+broader legacy host regression surface after those focused slices pass.
 
 `zig build test`, `zig build test_asan`, and `zig build repeattest` run both:
 
@@ -167,7 +167,7 @@ interop now enters through the checked-in `translate-c` root headers under
 `../zig_build/tools/translate_c/` and the build-managed translation steps in
 `../zig_build/host/generated.zig` rather than checked-in `@cImport` blocks in
 the generator Zig sources. The generator executables remain manual Zig owners
-even though retained decNumber, FreeType, and host-header surfaces still cross
+even though legacy decNumber, FreeType, and host-header surfaces still cross
 that explicit build-managed boundary.
 
 ## Docs Surface
@@ -200,7 +200,7 @@ replace the maintainer-facing `zig_docs/` set.
 - Keep generated output ownership explicit through the public `zig build`
   update steps instead of standalone scripts.
 - Do not treat a Zig-owned host build layer as a success by itself. If a new
-  Zig host surface does not replace retained C owners, fix a real host defect,
+  Zig host surface does not replace legacy C owners, fix a real host defect,
   or delete more legacy workflow debt than it adds, it is overhead.
 - Keep host dependency docs honest. Do not imply the host simulator is pure Zig
   while GTK, GMP, FreeType, and imported upstream C still participate in the

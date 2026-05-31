@@ -1,9 +1,6 @@
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
-
-const double_multiply_retained = runtime.retained.z47_math_wrappers_retained_fnDblMultiply;
-const double_divide_retained = runtime.retained.z47_math_wrappers_retained_fnDblDivide;
-const double_divide_remainder_retained = runtime.retained.z47_math_wrappers_retained_fnDblDivideRemainder;
+const legacy = runtime.legacy;
 
 fn setPositiveSign(value: *runtime.mpz_struct) void {
     if (value._mp_size < 0) {
@@ -252,7 +249,7 @@ pub fn dblMultiply(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    double_multiply_retained(unused_but_mandatory_parameter);
+    legacy.fnDblMultiply(unused_but_mandatory_parameter);
 }
 
 pub fn dblDivide(unused_but_mandatory_parameter: u16) void {
@@ -261,7 +258,7 @@ pub fn dblDivide(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    double_divide_retained(unused_but_mandatory_parameter);
+    legacy.fnDblDivide(unused_but_mandatory_parameter);
 }
 
 pub fn dblDivideRemainder(unused_but_mandatory_parameter: u16) void {
@@ -270,5 +267,5 @@ pub fn dblDivideRemainder(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    double_divide_remainder_retained(unused_but_mandatory_parameter);
+    legacy.fnDblDivideRemainder(unused_but_mandatory_parameter);
 }

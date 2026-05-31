@@ -26,7 +26,7 @@ repo surfaces.
   ledger that must move with any tracked upstream pin change.
 - `.github/project/report-upstream-refresh.py` summarizes new upstream commits,
   changed imported paths, and classifies the resulting z47 touchpoints so
-  runtime/build Zig, retained C wrappers, and manifest-only follow-up are
+  runtime/build Zig, legacy C wrappers, and manifest-only follow-up are
   visible before a pin change lands.
 - `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
   imported-root vocabulary used by docs install, generated-artifact proof, and
@@ -151,12 +151,12 @@ workflow evidence that was checked instead.
   naming strata, naming examples, or current naming-milestone status changes
 - update `README.md` when the maintainer-doc index, page-routing contract, or
   top-level project framing changes
-- do not imply a pure-Zig result while retained C libraries or vendor code
+- do not imply a pure-Zig result while legacy C libraries or vendor code
   remain explicit dependencies
 
 ## Retained Dependency Reminder
 
-The current maintained build still keeps these retained C or vendor surfaces
+The current maintained build still keeps these legacy C or vendor surfaces
 explicit:
 
 - imported upstream calculator sources under `src/`

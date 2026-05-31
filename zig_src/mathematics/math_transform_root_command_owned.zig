@@ -1,7 +1,7 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
 const shortint_owned = @import("math_transform_shortint_owned.zig");
 
-const square_root_retained = runtime.retained.z47_math_wrappers_retained_fnSquareRoot;
+const square_root_legacy = runtime.legacy.fnSquareRoot;
 
 fn sqrtShoI() callconv(.c) void {
     var sign_value: i32 = 0;
@@ -211,7 +211,7 @@ pub fn squareRoot(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
 
     if (register_type == runtime.dtReal34Matrix or register_type == runtime.dtComplex34Matrix) {
-        square_root_retained(0);
+        square_root_legacy(0);
         return;
     }
 

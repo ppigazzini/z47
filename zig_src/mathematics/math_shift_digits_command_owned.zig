@@ -1,16 +1,10 @@
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
-fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
-}
-
 fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) void {
     var message_buffer: [96]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot {s} {s}", .{ operation_name, type_name }) catch "cannot shift digits";
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot {s} {s}", .{ operation_name, type_name }) catch "cannot shift digits";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError(function_name, message, null, null);

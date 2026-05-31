@@ -1188,56 +1188,56 @@ void z47_math_wrappers_report_cube_real_domain_error(void) {
 #endif
 }
 
-#define fnBn z47_math_wrappers_retained_fnBn
-#define fnBnStar z47_math_wrappers_retained_fnBnStar
+#define fnBn z47_math_wrappers_legacy_fnBn
+#define fnBnStar z47_math_wrappers_legacy_fnBnStar
 #include "../../src/c47/mathematics/bn.c"
 #undef fnBnStar
 #undef fnBn
 
-#define fnExpt z47_math_wrappers_retained_fnExpt
+#define fnExpt z47_math_wrappers_legacy_fnExpt
 #include "../../src/c47/mathematics/expt.c"
 #undef fnExpt
 
-#define fnWpositive z47_math_wrappers_retained_fnWpositive
+#define fnWpositive z47_math_wrappers_legacy_fnWpositive
 #include "../../src/c47/mathematics/w_positive.c"
 #undef fnWpositive
 
-#define fnWnegative z47_math_wrappers_retained_fnWnegative
+#define fnWnegative z47_math_wrappers_legacy_fnWnegative
 #include "../../src/c47/mathematics/w_negative.c"
 #undef fnWnegative
 
-#define fnWinverse z47_math_wrappers_retained_fnWinverse
+#define fnWinverse z47_math_wrappers_legacy_fnWinverse
 #include "../../src/c47/mathematics/w_inverse.c"
 #undef fnWinverse
 
-#define fnGcd z47_math_wrappers_retained_fnGcd
+#define fnGcd z47_math_wrappers_legacy_fnGcd
 #include "../../src/c47/mathematics/gcd.c"
 #undef fnGcd
 
-#define fnLcm z47_math_wrappers_retained_fnLcm
+#define fnLcm z47_math_wrappers_legacy_fnLcm
 #include "../../src/c47/mathematics/lcm.c"
 #undef fnLcm
 
-#define modReal z47_math_wrappers_retained_modReal
-#define fnMod z47_math_wrappers_retained_fnMod
+#define modReal z47_math_wrappers_legacy_modReal
+#define fnMod z47_math_wrappers_legacy_fnMod
 #include "../../src/c47/mathematics/modulo.c"
 #undef fnMod
 #undef modReal
 
-#define fnRmd z47_math_wrappers_retained_fnRmd
+#define fnRmd z47_math_wrappers_legacy_fnRmd
 #include "../../src/c47/mathematics/remainder.c"
 #undef fnRmd
 
-#define fnUlp z47_math_wrappers_retained_fnUlp
+#define fnUlp z47_math_wrappers_legacy_fnUlp
 #include "../../src/c47/mathematics/ulp.c"
 #undef fnUlp
 
-#define mant z47_math_wrappers_retained_mant
-#define mantLonI z47_math_wrappers_retained_mantLonI
-#define mantReal z47_math_wrappers_retained_mantReal
-#define fnMant z47_math_wrappers_retained_fnMant
+#define mant z47_math_wrappers_legacy_mant
+#define mantLonI z47_math_wrappers_legacy_mantLonI
+#define mantReal z47_math_wrappers_legacy_mantReal
+#define fnMant z47_math_wrappers_legacy_fnMant
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  #define mantError z47_math_wrappers_retained_mantError
+  #define mantError z47_math_wrappers_legacy_mantError
   void mantError(void);
 #else
   #define mantError typeError
@@ -1251,12 +1251,12 @@ void mantReal(void);
 #undef mantError
 #undef mant
 
-#define Roundi z47_math_wrappers_retained_Roundi
-#define roundiRema z47_math_wrappers_retained_roundiRema
-#define roundiReal z47_math_wrappers_retained_roundiReal
-#define fnRoundi z47_math_wrappers_retained_fnRoundi
+#define Roundi z47_math_wrappers_legacy_Roundi
+#define roundiRema z47_math_wrappers_legacy_roundiRema
+#define roundiReal z47_math_wrappers_legacy_roundiReal
+#define fnRoundi z47_math_wrappers_legacy_fnRoundi
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  #define roundiError z47_math_wrappers_retained_roundiError
+  #define roundiError z47_math_wrappers_legacy_roundiError
   void roundiError(void);
 #else
   #define roundiError typeError
@@ -1270,37 +1270,37 @@ void roundiReal(void);
 #undef roundiError
 #undef Roundi
 
-#define fnNeighb z47_math_wrappers_retained_fnNeighb
+#define fnNeighb z47_math_wrappers_legacy_fnNeighb
 #include "../../src/c47/mathematics/neighb.c"
 #undef fnNeighb
 
-#define fnIxyz z47_math_wrappers_retained_fnIxyz
+#define fnIxyz z47_math_wrappers_legacy_fnIxyz
 #include "../../src/c47/mathematics/ixyz.c"
 #undef fnIxyz
 
 #define log z47_math_wrappers_log
-#define fnFactorial z47_math_wrappers_retained_fnFactorial
+#define fnFactorial z47_math_wrappers_legacy_fnFactorial
 #include "../../src/c47/mathematics/factorial.c"
 #undef fnFactorial
 #undef log
 
-#define fnRealPart z47_math_wrappers_retained_fnRealPart
+#define fnRealPart z47_math_wrappers_legacy_fnRealPart
 #include "../../src/c47/mathematics/realPart.c"
 #undef fnRealPart
 
-#define fnImaginaryPart z47_math_wrappers_retained_fnImaginaryPart
+#define fnImaginaryPart z47_math_wrappers_legacy_fnImaginaryPart
 #include "../../src/c47/mathematics/imaginaryPart.c"
 #undef fnImaginaryPart
 
-#define arg z47_math_wrappers_retained_arg
-#define fnArg z47_math_wrappers_retained_fnArg
+#define arg z47_math_wrappers_legacy_arg
+#define fnArg z47_math_wrappers_legacy_fnArg
 #include "../../src/c47/mathematics/arg.c"
 #undef fnArg
 #undef arg
 
-#define complexMagnitude2 z47_math_wrappers_retained_complexMagnitude2
-#define complexMagnitude z47_math_wrappers_retained_complexMagnitude
-#define fnMagnitude z47_math_wrappers_retained_fnMagnitude
+#define complexMagnitude2 z47_math_wrappers_legacy_complexMagnitude2
+#define complexMagnitude z47_math_wrappers_legacy_complexMagnitude
+#define fnMagnitude z47_math_wrappers_legacy_fnMagnitude
 void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
 #include "../../src/c47/mathematics/magnitude.c"
 #undef fnMagnitude
@@ -1309,37 +1309,37 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 
 #ifndef Z47_MATH_WRAPPERS_C47_H
 void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
-  z47_math_wrappers_retained_complexMagnitude2(a, b, c, realContext);
+  z47_math_wrappers_legacy_complexMagnitude2(a, b, c, realContext);
 }
 
 void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {
-  z47_math_wrappers_retained_complexMagnitude(a, b, c, realContext);
+  z47_math_wrappers_legacy_complexMagnitude(a, b, c, realContext);
 }
 #endif
 
-#define conjCplx z47_math_wrappers_retained_conjCplx
-#define fnConjugate z47_math_wrappers_retained_fnConjugate
+#define conjCplx z47_math_wrappers_legacy_conjCplx
+#define fnConjugate z47_math_wrappers_legacy_fnConjugate
 #include "../../src/c47/mathematics/conjugate.c"
 #undef fnConjugate
 #undef conjCplx
 
 void conjCplx(void) {
-  z47_math_wrappers_retained_conjCplx();
+  z47_math_wrappers_legacy_conjCplx();
 }
 
-#define fnSwapRealImaginary z47_math_wrappers_retained_fnSwapRealImaginary
+#define fnSwapRealImaginary z47_math_wrappers_legacy_fnSwapRealImaginary
 #include "../../src/c47/mathematics/swapRealImaginary.c"
 #undef fnSwapRealImaginary
 
-#define arctan2 z47_math_wrappers_retained_arctan2
-#define atan2RealReal z47_math_wrappers_retained_atan2RealReal
-#define atan2RemaRema z47_math_wrappers_retained_atan2RemaRema
-#define atan2RemaReal z47_math_wrappers_retained_atan2RemaReal
-#define atan2RealRema z47_math_wrappers_retained_atan2RealRema
-#define atan2LonIRema z47_math_wrappers_retained_atan2LonIRema
-#define fnAtan2 z47_math_wrappers_retained_fnAtan2
+#define arctan2 z47_math_wrappers_legacy_arctan2
+#define atan2RealReal z47_math_wrappers_legacy_atan2RealReal
+#define atan2RemaRema z47_math_wrappers_legacy_atan2RemaRema
+#define atan2RemaReal z47_math_wrappers_legacy_atan2RemaReal
+#define atan2RealRema z47_math_wrappers_legacy_atan2RealRema
+#define atan2LonIRema z47_math_wrappers_legacy_atan2LonIRema
+#define fnAtan2 z47_math_wrappers_legacy_fnAtan2
 #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  #define atan2Error z47_math_wrappers_retained_atan2Error
+  #define atan2Error z47_math_wrappers_legacy_atan2Error
   void atan2Error(void);
 #else
   #define atan2Error typeError
@@ -1359,8 +1359,8 @@ void atan2LonIRema(void);
 #undef atan2Error
 #undef arctan2
 
-#define percentReal z47_math_wrappers_retained_percentReal
-#define fnPercent z47_math_wrappers_retained_fnPercent
+#define percentReal z47_math_wrappers_legacy_percentReal
+#define fnPercent z47_math_wrappers_legacy_fnPercent
 #include "../../src/c47/mathematics/percent.c"
 #undef fnPercent
 #undef percentReal

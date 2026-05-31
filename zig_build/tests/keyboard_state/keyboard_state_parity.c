@@ -22,14 +22,14 @@ typedef struct {
   int16_t lastNimBufferItem;
   int refreshScreenCalls;
   int16_t lastRefreshScreenId;
-  int retainedProcessKeyActionCalls;
-  int retainedFnKeyEnterCalls;
-  int retainedFnKeyExitCalls;
-  int retainedFnKeyCCCalls;
-  int retainedFnKeyBackspaceCalls;
-  int retainedFnKeyUpCalls;
-  int retainedFnKeyDownCalls;
-  int retainedFnKeyDotDCalls;
+  int legacyProcessKeyActionCalls;
+  int legacyFnKeyEnterCalls;
+  int legacyFnKeyExitCalls;
+  int legacyFnKeyCCCalls;
+  int legacyFnKeyBackspaceCalls;
+  int legacyFnKeyUpCalls;
+  int legacyFnKeyDownCalls;
+  int legacyFnKeyDotDCalls;
 } keyboard_state_snapshot_t;
 
 static void captureSnapshot(keyboard_state_snapshot_t *snapshot) {
@@ -49,14 +49,14 @@ static void captureSnapshot(keyboard_state_snapshot_t *snapshot) {
   snapshot->lastNimBufferItem = lastNimBufferItem;
   snapshot->refreshScreenCalls = refreshScreenCalls;
   snapshot->lastRefreshScreenId = lastRefreshScreenId;
-  snapshot->retainedProcessKeyActionCalls = retainedProcessKeyActionCalls;
-  snapshot->retainedFnKeyEnterCalls = retainedFnKeyEnterCalls;
-  snapshot->retainedFnKeyExitCalls = retainedFnKeyExitCalls;
-  snapshot->retainedFnKeyCCCalls = retainedFnKeyCCCalls;
-  snapshot->retainedFnKeyBackspaceCalls = retainedFnKeyBackspaceCalls;
-  snapshot->retainedFnKeyUpCalls = retainedFnKeyUpCalls;
-  snapshot->retainedFnKeyDownCalls = retainedFnKeyDownCalls;
-  snapshot->retainedFnKeyDotDCalls = retainedFnKeyDotDCalls;
+  snapshot->legacyProcessKeyActionCalls = legacyProcessKeyActionCalls;
+  snapshot->legacyFnKeyEnterCalls = legacyFnKeyEnterCalls;
+  snapshot->legacyFnKeyExitCalls = legacyFnKeyExitCalls;
+  snapshot->legacyFnKeyCCCalls = legacyFnKeyCCCalls;
+  snapshot->legacyFnKeyBackspaceCalls = legacyFnKeyBackspaceCalls;
+  snapshot->legacyFnKeyUpCalls = legacyFnKeyUpCalls;
+  snapshot->legacyFnKeyDownCalls = legacyFnKeyDownCalls;
+  snapshot->legacyFnKeyDotDCalls = legacyFnKeyDotDCalls;
 }
 
 static int reportSnapshotMismatch(const char *label, const keyboard_state_snapshot_t *expected, const keyboard_state_snapshot_t *actual) {
@@ -120,36 +120,36 @@ static int reportSnapshotMismatch(const char *label, const keyboard_state_snapsh
     fprintf(stderr, "%s lastRefreshScreenId mismatch: expected %d actual %d\n", label, expected->lastRefreshScreenId, actual->lastRefreshScreenId);
     return 1;
   }
-  if(expected->retainedProcessKeyActionCalls != actual->retainedProcessKeyActionCalls) {
-    fprintf(stderr, "%s retainedProcessKeyActionCalls mismatch: expected %d actual %d\n", label, expected->retainedProcessKeyActionCalls, actual->retainedProcessKeyActionCalls);
+  if(expected->legacyProcessKeyActionCalls != actual->legacyProcessKeyActionCalls) {
+    fprintf(stderr, "%s legacyProcessKeyActionCalls mismatch: expected %d actual %d\n", label, expected->legacyProcessKeyActionCalls, actual->legacyProcessKeyActionCalls);
     return 1;
   }
-  if(expected->retainedFnKeyEnterCalls != actual->retainedFnKeyEnterCalls) {
-    fprintf(stderr, "%s retainedFnKeyEnterCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyEnterCalls, actual->retainedFnKeyEnterCalls);
+  if(expected->legacyFnKeyEnterCalls != actual->legacyFnKeyEnterCalls) {
+    fprintf(stderr, "%s legacyFnKeyEnterCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyEnterCalls, actual->legacyFnKeyEnterCalls);
     return 1;
   }
-  if(expected->retainedFnKeyExitCalls != actual->retainedFnKeyExitCalls) {
-    fprintf(stderr, "%s retainedFnKeyExitCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyExitCalls, actual->retainedFnKeyExitCalls);
+  if(expected->legacyFnKeyExitCalls != actual->legacyFnKeyExitCalls) {
+    fprintf(stderr, "%s legacyFnKeyExitCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyExitCalls, actual->legacyFnKeyExitCalls);
     return 1;
   }
-  if(expected->retainedFnKeyCCCalls != actual->retainedFnKeyCCCalls) {
-    fprintf(stderr, "%s retainedFnKeyCCCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyCCCalls, actual->retainedFnKeyCCCalls);
+  if(expected->legacyFnKeyCCCalls != actual->legacyFnKeyCCCalls) {
+    fprintf(stderr, "%s legacyFnKeyCCCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyCCCalls, actual->legacyFnKeyCCCalls);
     return 1;
   }
-  if(expected->retainedFnKeyBackspaceCalls != actual->retainedFnKeyBackspaceCalls) {
-    fprintf(stderr, "%s retainedFnKeyBackspaceCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyBackspaceCalls, actual->retainedFnKeyBackspaceCalls);
+  if(expected->legacyFnKeyBackspaceCalls != actual->legacyFnKeyBackspaceCalls) {
+    fprintf(stderr, "%s legacyFnKeyBackspaceCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyBackspaceCalls, actual->legacyFnKeyBackspaceCalls);
     return 1;
   }
-  if(expected->retainedFnKeyUpCalls != actual->retainedFnKeyUpCalls) {
-    fprintf(stderr, "%s retainedFnKeyUpCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyUpCalls, actual->retainedFnKeyUpCalls);
+  if(expected->legacyFnKeyUpCalls != actual->legacyFnKeyUpCalls) {
+    fprintf(stderr, "%s legacyFnKeyUpCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyUpCalls, actual->legacyFnKeyUpCalls);
     return 1;
   }
-  if(expected->retainedFnKeyDownCalls != actual->retainedFnKeyDownCalls) {
-    fprintf(stderr, "%s retainedFnKeyDownCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyDownCalls, actual->retainedFnKeyDownCalls);
+  if(expected->legacyFnKeyDownCalls != actual->legacyFnKeyDownCalls) {
+    fprintf(stderr, "%s legacyFnKeyDownCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyDownCalls, actual->legacyFnKeyDownCalls);
     return 1;
   }
-  if(expected->retainedFnKeyDotDCalls != actual->retainedFnKeyDotDCalls) {
-    fprintf(stderr, "%s retainedFnKeyDotDCalls mismatch: expected %d actual %d\n", label, expected->retainedFnKeyDotDCalls, actual->retainedFnKeyDotDCalls);
+  if(expected->legacyFnKeyDotDCalls != actual->legacyFnKeyDotDCalls) {
+    fprintf(stderr, "%s legacyFnKeyDotDCalls mismatch: expected %d actual %d\n", label, expected->legacyFnKeyDotDCalls, actual->legacyFnKeyDotDCalls);
     return 1;
   }
 
@@ -255,7 +255,7 @@ static int runProcessKeyActionRetainedCase(void) {
   processKeyAction(ITM_ENTER);
   captureSnapshot(&actual);
 
-  return reportSnapshotMismatch("processKeyAction retained fallback", &expected, &actual);
+  return reportSnapshotMismatch("processKeyAction legacy fallback", &expected, &actual);
 }
 
 static int runFnKeyEnterRetainedCase(void) {
@@ -270,7 +270,7 @@ static int runFnKeyEnterRetainedCase(void) {
   fnKeyEnter(0);
   captureSnapshot(&actual);
 
-  return reportSnapshotMismatch("fnKeyEnter retained fallback", &expected, &actual);
+  return reportSnapshotMismatch("fnKeyEnter legacy fallback", &expected, &actual);
 }
 
 static int runFnKeyExitRetainedCase(void) {
@@ -285,7 +285,7 @@ static int runFnKeyExitRetainedCase(void) {
   fnKeyExit(0);
   captureSnapshot(&actual);
 
-  return reportSnapshotMismatch("fnKeyExit retained fallback", &expected, &actual);
+  return reportSnapshotMismatch("fnKeyExit legacy fallback", &expected, &actual);
 }
 
 static int runFnKeyCCNimCase(void) {
@@ -319,7 +319,7 @@ static int runFnKeyCCRetainedCase(void) {
   fnKeyCC(KEY_COMPLEX);
   captureSnapshot(&actual);
 
-  return reportSnapshotMismatch("fnKeyCC retained fallback", &expected, &actual);
+  return reportSnapshotMismatch("fnKeyCC legacy fallback", &expected, &actual);
 }
 
 static int runFnKeyBackspaceNimCase(void) {

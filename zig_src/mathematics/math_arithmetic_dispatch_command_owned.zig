@@ -16,7 +16,7 @@ pub fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnAdd(unused_but_mandatory_parameter);
+    runtime.legacy.fnAdd(unused_but_mandatory_parameter);
 }
 
 pub fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -32,7 +32,7 @@ pub fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnSubtract(unused_but_mandatory_parameter);
+    runtime.legacy.fnSubtract(unused_but_mandatory_parameter);
 }
 
 pub fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -48,7 +48,7 @@ pub fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnMultiply(unused_but_mandatory_parameter);
+    runtime.legacy.fnMultiply(unused_but_mandatory_parameter);
 }
 
 pub fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -60,7 +60,7 @@ pub fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnDivide(unused_but_mandatory_parameter);
+    runtime.legacy.fnDivide(unused_but_mandatory_parameter);
 }
 
 pub fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -68,7 +68,7 @@ pub fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnIDiv(unused_but_mandatory_parameter);
+    runtime.legacy.fnIDiv(unused_but_mandatory_parameter);
 }
 
 pub fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -76,5 +76,5 @@ pub fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
         return;
     }
 
-    runtime.retained.z47_math_wrappers_retained_fnIDivR(unused_but_mandatory_parameter);
+    runtime.legacy.fnIDivR(unused_but_mandatory_parameter);
 }

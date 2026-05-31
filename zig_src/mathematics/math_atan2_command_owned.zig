@@ -3,7 +3,7 @@ const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
-const atan2_retained = runtime.retained.z47_math_wrappers_retained_fnAtan2;
+const atan2_legacy = runtime.legacy.fnAtan2;
 
 fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
     return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
@@ -156,7 +156,7 @@ pub fn atan2(unused_but_mandatory_parameter: u16) void {
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
 
     if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        atan2_retained(unused_but_mandatory_parameter);
+        atan2_legacy(unused_but_mandatory_parameter);
         return;
     }
 

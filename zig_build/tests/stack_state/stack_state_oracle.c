@@ -86,7 +86,7 @@ void oracle_clearRegister(calcRegister_t regist) {
 		return;
 	}
 
-	z47_registers_retained_clearRegister(regist);
+	z47_registers_legacy_clearRegister(regist);
 }
 
 bool_t oracle_saveLastX(void) {
@@ -133,29 +133,29 @@ void oracle_fnClearRegisters(uint16_t confirmation) {
 	}
 }
 
-void z47_registers_retained_fnClearRegisters(uint16_t confirmation) {
+void z47_registers_legacy_fnClearRegisters(uint16_t confirmation) {
 	oracle_fnClearRegisters(confirmation);
 }
 
-void z47_registers_retained_clearRegister(calcRegister_t reg) {
+void z47_registers_legacy_clearRegister(calcRegister_t reg) {
 	z47_stack_parity_raw_clearRegister(reg);
 }
 
-uint8_t z47_registers_retained_get_reg_clr_range(uint16_t *s, uint16_t *n);
-uint8_t z47_registers_retained_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);
-uint8_t z47_registers_retained_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
-void z47_registers_retained_fnRegCopy(uint16_t unusedButMandatoryParameter);
-void z47_registers_retained_fnToReal(uint16_t unusedButMandatoryParameter);
-bool_t z47_registers_retained_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-bool_t z47_registers_retained_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-void z47_registers_retained_sort_reg(uint16_t range_start, uint16_t range_end);
+uint8_t z47_registers_legacy_get_reg_clr_range(uint16_t *s, uint16_t *n);
+uint8_t z47_registers_legacy_get_reg_swap_range(uint16_t *s, uint16_t *n, uint16_t *d);
+uint8_t z47_registers_legacy_get_reg_copy_params(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d);
+void z47_registers_legacy_fnRegCopy(uint16_t unusedButMandatoryParameter);
+void z47_registers_legacy_fnToReal(uint16_t unusedButMandatoryParameter);
+bool_t z47_registers_legacy_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
+bool_t z47_registers_legacy_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
+void z47_registers_legacy_sort_reg(uint16_t range_start, uint16_t range_end);
 
 void oracle_fnRegClr(uint16_t unusedButMandatoryParameter) {
 	uint16_t s, n;
 
 	(void)unusedButMandatoryParameter;
 
-	if((lastErrorCode = z47_registers_retained_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
+	if((lastErrorCode = z47_registers_legacy_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
 		for(uint16_t i = s; i < (uint16_t)(s + n); ++i) {
 			oracle_clearRegister((calcRegister_t)i);
 		}
@@ -170,7 +170,7 @@ void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter) {
 
 	(void)unusedButMandatoryParameter;
 
-	if((lastErrorCode = z47_registers_retained_get_reg_swap_range(&s, &n, &d)) == ERROR_NONE) {
+	if((lastErrorCode = z47_registers_legacy_get_reg_swap_range(&s, &n, &d)) == ERROR_NONE) {
 		if((d < s + n) && (s < d + n)) {
 			z47_stack_runtime_report_register_command_error(ERROR_OUT_OF_RANGE);
 		}
@@ -191,9 +191,9 @@ void oracle_fnRegCopy(uint16_t unusedButMandatoryParameter) {
 	bool_t f;
 	uint16_t s, n, d;
 
-	if((lastErrorCode = z47_registers_retained_get_reg_copy_params(&f, &s, &n, &d)) == ERROR_NONE) {
+	if((lastErrorCode = z47_registers_legacy_get_reg_copy_params(&f, &s, &n, &d)) == ERROR_NONE) {
 		if(f) {
-			z47_registers_retained_fnRegCopy(unusedButMandatoryParameter);
+			z47_registers_legacy_fnRegCopy(unusedButMandatoryParameter);
 		}
 		else if(s > d) {
 			for(uint16_t i = 0; i < n; ++i) {
@@ -222,7 +222,7 @@ void oracle_fnRegSort(uint16_t unusedButMandatoryParameter) {
 
 	(void)unusedButMandatoryParameter;
 
-	if((lastErrorCode = z47_registers_retained_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
+	if((lastErrorCode = z47_registers_legacy_get_reg_clr_range(&s, &n)) == ERROR_NONE) {
 		switch(getRegisterDataType((calcRegister_t)s)) {
 			case dtLongInteger:
 			case dtShortInteger:
@@ -247,7 +247,7 @@ void oracle_fnRegSort(uint16_t unusedButMandatoryParameter) {
 		}
 
 		if(lastErrorCode == ERROR_NONE) {
-			z47_registers_retained_sort_reg(s, (uint16_t)(s + n - 1));
+			z47_registers_legacy_sort_reg(s, (uint16_t)(s + n - 1));
 		}
 	}
 	else {
@@ -280,7 +280,7 @@ void oracle_fnToReal(uint16_t unusedButMandatoryParameter) {
 		return;
 	}
 
-	z47_registers_retained_fnToReal(unusedButMandatoryParameter);
+	z47_registers_legacy_fnToReal(unusedButMandatoryParameter);
 }
 
 void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3) {

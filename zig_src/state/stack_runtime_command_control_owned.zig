@@ -16,7 +16,7 @@ pub const manualLoad: u16 = 1;
 extern fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
 extern fn fnClearRegisters(confirmation: u16) callconv(.c) void;
 extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
-extern fn z47_registers_retained_sort_reg(range_start: u16, range_end: u16) void;
+extern fn z47_registers_legacy_sort_reg(range_start: u16, range_end: u16) void;
 extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
 extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
@@ -40,7 +40,7 @@ pub fn doPartialRegisterLoad(s: u16, n: u16, d: u16) void {
 }
 
 pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
-    z47_registers_retained_sort_reg(range_start, range_end);
+    z47_registers_legacy_sort_reg(range_start, range_end);
 }
 
 pub fn reportRegisterCommandError(error_code: u8) void {

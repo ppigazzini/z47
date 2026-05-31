@@ -2,7 +2,7 @@
 
 #include "c47.h"
 
-#define fnSNAP z47_frontier_retained_fnSNAP
+#define fnSNAP z47_frontier_legacy_fnSNAP
 #include "../../src/c47/screen.c"
 
 void z47_frontier_snap_screenshot_with_message_backup(void) {

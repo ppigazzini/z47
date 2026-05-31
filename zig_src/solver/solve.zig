@@ -49,11 +49,11 @@ pub export fn fnPgmInt(label: u16) callconv(.c) void {
 }
 
 pub export fn fnIntegrate(label_or_variable: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnIntegrate(label_or_variable);
+    runtime.z47_solver_fnIntegrate(label_or_variable);
 }
 
 pub export fn fnIntegrateYX(label_or_variable: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnIntegrateYX(label_or_variable);
+    runtime.z47_solver_fnIntegrateYX(label_or_variable);
 }
 
 pub export fn fnTvmBeginMode(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -67,21 +67,21 @@ pub export fn fnTvmEndMode(unused_but_mandatory_parameter: u16) callconv(.c) voi
 }
 
 pub export fn fnProgrammableSum(label: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnProgrammableSum(label);
+    runtime.z47_solver_fnProgrammableSum(label);
 }
 
 pub export fn fnProgrammableProduct(label: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnProgrammableProduct(label);
+    runtime.z47_solver_fnProgrammableProduct(label);
 }
 
 pub export fn fnProgrammableiSum(label: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnProgrammableiSum(label);
+    runtime.z47_solver_fnProgrammableiSum(label);
 }
 
 pub export fn fnProgrammableiProduct(label: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fnProgrammableiProduct(label);
+    runtime.z47_solver_fnProgrammableiProduct(label);
 }
 
 pub export fn fn1stDeriv(label: u16) callconv(.c) void {
-    runtime.z47_solver_retained_fn1stDeriv(label);
+    runtime.z47_solver_fn1stDeriv(label);
 }

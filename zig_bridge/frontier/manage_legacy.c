@@ -2,7 +2,7 @@
 
 #include "c47.h"
 
-#define fnClPAll z47_frontier_retained_fnClPAll
+#define fnClPAll z47_frontier_legacy_fnClPAll
 #include "../../src/c47/programming/manage.c"
 
 bool_t z47_frontier_program_current_program_in_ram(void) {
