@@ -14,11 +14,7 @@ zig_build/firmware_audio_runtime.zig
 zig_build/firmware_hal_audio_volume_owned.zig
 zig_build/firmware_hal_buzz_owned.zig
 zig_build/firmware_hal_callbacks_owned.zig
-zig_build/firmware_hal_file_io_owned.zig
-zig_build/firmware_hal_file_io_open_owned.zig
-zig_build/firmware_hal_file_io_close_owned.zig
-zig_build/firmware_hal_file_io_stream_owned.zig
-zig_build/firmware_hal_file_io_seekremove_owned.zig
+zig_build/firmware_hal_file_io_core_owned.zig
 zig_build/firmware_hal_io_path_owned.zig
 zig_build/firmware_hal_play_owned.zig
 zig_build/firmware_hal_printer_owned.zig

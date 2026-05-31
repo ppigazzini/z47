@@ -3,34 +3,6 @@ const file_io_close_owned = @import("firmware_hal_file_io_close_owned.zig");
 const file_io_stream_owned = @import("firmware_hal_file_io_stream_owned.zig");
 const file_io_seekremove_owned = @import("firmware_hal_file_io_seekremove_owned.zig");
 
-const FILE_ERROR: c_int = 0;
-const FILE_OK: c_int = 1;
-
-const FA_READ: u8 = 0x01;
-const FA_WRITE: u8 = 0x02;
-const FA_OPEN_EXISTING: u8 = 0x00;
-const FA_CREATE_ALWAYS: u8 = 0x08;
-
-const IO_MODE_READ: c_int = 0;
-const IO_MODE_WRITE: c_int = 1;
-const IO_MODE_UPDATE: c_int = 2;
-
-extern fn f_open(fp: ?*anyopaque, path: [*c]const u8, mode: u8) c_uint;
-extern fn f_write(fp: ?*anyopaque, buffer: ?*const anyopaque, size: u32, written: [*c]u32) c_uint;
-extern fn f_read(fp: ?*anyopaque, buffer: ?*anyopaque, size: u32, read: [*c]u32) c_uint;
-extern fn f_lseek(fp: ?*anyopaque, pos: u32) c_uint;
-extern fn f_close(fp: ?*anyopaque) c_uint;
-extern fn f_eof(fp: ?*anyopaque) c_int;
-extern fn f_unlink(path: [*c]const u8) c_uint;
-extern fn sys_disk_write_enable(enabled: c_int) void;
-extern fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int;
-extern fn stringByteLength(s: [*c]const u8) c_int;
-extern fn stringCopy(dst: [*c]u8, src: [*c]const u8) void;
-extern fn max(a: c_int, b: c_int) c_int;
-extern var stateFileNameVarLength: c_int;
-extern var ppgm_fp: ?*anyopaque;
-extern var fileNameSelected: [*c]u8;
-
 pub fn ioFileOpen(path: c_int, mode: c_int, io_write_enabled: *c_int, io_read_enabled: *c_int) c_int {
     return file_io_open_owned.ioFileOpen(path, mode, io_write_enabled, io_read_enabled);
 }
