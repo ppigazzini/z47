@@ -6,7 +6,6 @@ const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const reg_param_product_owned = @import("stack_runtime_reg_param_product_owned.zig");
 const product_real_owned = @import("stack_runtime_product_real_owned.zig");
 const reg_params_owned = @import("stack_runtime_reg_params_owned.zig");
-const register_range_owned = @import("stack_runtime_register_range_owned.zig");
 const sigma_owned = @import("stack_runtime_sigma_owned.zig");
 const store_owned = @import("stack_runtime_store_owned.zig");
 const swap_descriptor_owned = @import("stack_runtime_swap_descriptor_owned.zig");
@@ -77,10 +76,8 @@ pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
 pub const LM_REGISTERS_PARTIAL: u16 = 6;
 pub const manualLoad: u16 = 1;
-const PRODUCT_DEC_ROUND_DOWN = product_real_owned.PRODUCT_DEC_ROUND_DOWN;
 const product_rounding_t = product_real_owned.product_rounding_t;
 const ProductReal = product_real_owned.ProductReal;
-const ProductReal34 = product_real_owned.ProductReal34;
 const ProductRealContext = product_real_owned.ProductRealContext;
 
 pub const real_t = if (use_fake_stack_state_harness_surface)
@@ -159,14 +156,6 @@ pub extern var statisticalSumsPointer: ?*anyopaque;
 pub extern var savedStatisticalSumsPointer: ?*anyopaque;
 pub extern var SAVED_SIGMA_LASTX: real_t;
 pub extern var SAVED_SIGMA_LASTY: real_t;
-
-fn initUnsignedLongInteger(long_integer: *longInteger_t, value: u32) void {
-    long_integer_owned.initUnsignedLongInteger(use_fake_stack_state_harness_surface, long_integer, value);
-}
-
-fn freeLongInteger(long_integer: *longInteger_t) void {
-    long_integer_owned.freeLongInteger(use_fake_stack_state_harness_surface, long_integer);
-}
 
 fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destination: ?*u16) u8 {
     return reg_param_product_owned.getRegParamProduct(load_into_memory, start, count, destination, currentLocalRegisterCount());
