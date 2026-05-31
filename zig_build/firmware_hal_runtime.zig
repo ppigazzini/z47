@@ -12,6 +12,7 @@ const play_bridge_owned = @import("firmware_hal_play_bridge_owned.zig");
 const printer_bridge_owned = @import("firmware_hal_printer_bridge_owned.zig");
 const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
 const file_io_bridge_owned = @import("firmware_hal_file_io_bridge_owned.zig");
+const callbacks_bridge_owned = @import("firmware_hal_callbacks_bridge_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -248,19 +249,19 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return callbacks_owned.saveStatefile(fpath, fname, data);
+    return callbacks_bridge_owned.saveStatefile(fpath, fname, data);
 }
 
 pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return callbacks_owned.loadStatefile(fpath, fname, data);
+    return callbacks_bridge_owned.loadStatefile(fpath, fname, data);
 }
 
 pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return callbacks_owned.saveProgramfile(fpath, fname, data);
+    return callbacks_bridge_owned.saveProgramfile(fpath, fname, data);
 }
 
 pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return callbacks_owned.loadProgramfile(fpath, fname, data);
+    return callbacks_bridge_owned.loadProgramfile(fpath, fname, data);
 }
 
 pub export fn show_warning(str: [*c]u8) callconv(.c) void {
