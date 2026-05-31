@@ -1,5 +1,5 @@
 const atan2_export = @import("math_atan2_export.zig");
-const check_wrapper_owned = @import("math_check_wrapper_owned.zig");
+const check_value_owned = @import("math_check_value_owned.zig");
 const circular_trig_export = @import("math_circular_trig_export.zig");
 const compare_wrapper_owned = @import("math_compare_wrapper_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
@@ -7,6 +7,14 @@ const integer_part_owned = @import("math_integer_part_owned.zig");
 const ln_complex_export = @import("math_ln_complex_export.zig");
 const real_trig_export = @import("math_real_trig_export.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const get_type_owned = @import("math_get_type_owned.zig");
+const projection_owned = @import("math_projection_owned.zig");
+const arithmetic_dispatch_command_owned = @import("math_arithmetic_dispatch_command_owned.zig");
+const atan2_command_owned = @import("math_atan2_command_owned.zig");
+const double_width_command_owned = @import("math_double_width_command_owned.zig");
+const percent_command_owned = @import("math_percent_command_owned.zig");
+const random_command_owned = @import("math_random_command_owned.zig");
+const special_algebraic_command_owned = @import("math_special_algebraic_command_owned.zig");
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
 const scalar_integer_inspection_command_owned = @import("math_scalar_integer_inspection_command_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
@@ -14,12 +22,8 @@ const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
 const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const forward_command_wrappers_owned = @import("math_forward_command_wrappers_owned.zig");
-const projection_command_wrapper_owned = @import("math_projection_command_wrapper_owned.zig");
-const arithmetic_command_wrapper_owned = @import("math_arithmetic_command_wrapper_owned.zig");
-const special_algebraic_wrapper_owned = @import("math_special_algebraic_wrapper_owned.zig");
 const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
 const tail_command_wrappers_owned = @import("math_tail_command_wrappers_owned.zig");
-const random_primitive_wrapper_owned = @import("math_random_primitive_wrapper_owned.zig");
 
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
@@ -35,23 +39,23 @@ comptime {
 
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
-    return random_primitive_wrapper_owned.pcg32RandomR(rng);
+    return random_command_owned.pcg32RandomR(rng);
 }
 
 pub export fn pcg32_srandom_r(rng: *runtime.pcg32_random_t, initstate: u64, initseq: u64) callconv(.c) void {
-    random_primitive_wrapper_owned.pcg32SrandomR(rng, initstate, initseq);
+    random_command_owned.pcg32SrandomR(rng, initstate, initseq);
 }
 
 pub export fn pcg32_srandom(seed: u64, seq: u64) callconv(.c) void {
-    random_primitive_wrapper_owned.pcg32Srandom(seed, seq);
+    random_command_owned.pcg32Srandom(seed, seq);
 }
 
 pub export fn z47_math_wrappers_bounded_rand(s: u32) callconv(.c) u32 {
-    return random_primitive_wrapper_owned.boundedRandExport(s);
+    return random_command_owned.boundedRandExport(s);
 }
 
 pub export fn realRandomU01(res: *runtime.real_t) callconv(.c) void {
-    random_primitive_wrapper_owned.realRandomU01(res);
+    random_command_owned.realRandomU01(res);
 }
 
 pub export fn sinComplex(
@@ -195,7 +199,7 @@ pub export fn sqrt1Px2Complex(
     res_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_wrapper_owned.sqrt1Px2Complex(real, imag, res_real, res_imag, real_context);
+    special_algebraic_command_owned.sqrt1Px2Complex(real, imag, res_real, res_imag, real_context);
 }
 
 pub export fn eulersFormula(
@@ -205,19 +209,19 @@ pub export fn eulersFormula(
     out_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    special_algebraic_wrapper_owned.eulersFormula(in_real, in_imag, out_real, out_imag, real_context);
+    special_algebraic_command_owned.eulersFormula(in_real, in_imag, out_real, out_imag, real_context);
 }
 
 pub export fn fnSqrt1Px2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_wrapper_owned.fnSqrt1Px2(unused_but_mandatory_parameter);
+    special_algebraic_command_owned.fnSqrt1Px2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnM1Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_wrapper_owned.fnM1Pow(unused_but_mandatory_parameter);
+    special_algebraic_command_owned.fnM1Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fnEulersFormula(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    special_algebraic_wrapper_owned.fnEulersFormula(unused_but_mandatory_parameter);
+    special_algebraic_command_owned.fnEulersFormula(unused_but_mandatory_parameter);
 }
 
 pub export fn integerPartNoOp() callconv(.c) void {
@@ -519,63 +523,69 @@ pub export fn fnFactorial(unused_but_mandatory_parameter: u16) callconv(.c) void
 }
 
 pub export fn fnRealPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnRealPart(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.realPart();
 }
 
 pub export fn fnImaginaryPart(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnImaginaryPart(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.imaginaryPart();
 }
 
 pub export fn fnArg(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnArg(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.arg();
 }
 
 pub export fn fnMagnitude(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnMagnitude(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.magnitude();
 }
 
 pub export fn fnConjugate(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnConjugate(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.conjugate();
 }
 
 pub export fn fnSwapRealImaginary(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    projection_command_wrapper_owned.fnSwapRealImaginary(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    projection_owned.swapRealImaginary();
 }
 
 pub export fn fnAtan2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnAtan2(unused_but_mandatory_parameter);
+    atan2_command_owned.atan2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPercent(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnPercent(unused_but_mandatory_parameter);
+    percent_command_owned.percent(unused_but_mandatory_parameter);
 }
 
 pub export fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnAdd(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnAdd(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnSubtract(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnSubtract(unused_but_mandatory_parameter);
 }
 
 pub export fn fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnMultiply(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnMultiply(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnDivide(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnDivide(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnIDiv(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnIDiv(unused_but_mandatory_parameter);
 }
 
 pub export fn fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnIDivR(unused_but_mandatory_parameter);
+    arithmetic_dispatch_command_owned.fnIDivR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnDblMultiply(unused_but_mandatory_parameter);
+    double_width_command_owned.dblMultiply(unused_but_mandatory_parameter);
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -583,7 +593,7 @@ pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckInteger(mode);
+    check_value_owned.checkInteger(mode);
 }
 
 pub export fn fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -631,71 +641,84 @@ pub export fn fnIsConverged(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnCheckType(type_: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckType(type_);
+    check_value_owned.checkType(type_);
 }
 
 pub export fn fnCheckReal(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckReal(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkReal();
 }
 
 pub export fn fnCheckNumber(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckNumber(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkNumber();
 }
 
 pub export fn fnCheckAngle(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckAngle(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkAngle();
 }
 
 pub export fn fnCheckMatrix(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckMatrix(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkMatrix();
 }
 
 pub export fn fnCheckMatrixSquare(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckMatrixSquare(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkMatrixSquare();
 }
 
 pub export fn fnCheckForZero(mode: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckForZero(mode);
+    check_value_owned.checkForZero(mode);
 }
 
 pub export fn fnCheckIsVect2d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckIsVect2d(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkRealMatrixVector(2);
 }
 
 pub export fn fnCheckIsVect3d(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckIsVect3d(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkRealMatrixVector(3);
 }
 
 pub export fn fnCheckNaN(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckNaN(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkNaN();
 }
 
 pub export fn fnCheckInfinite(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckInfinite(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkInfinite();
 }
 
 pub export fn fnCheckSpecial(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckSpecial(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkSpecial();
 }
 
 pub export fn fnCheckPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckPlusZero(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkPlusZero();
 }
 
 pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnCheckMinusZero(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkMinusZero();
 }
 
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    check_wrapper_owned.fnGetType(unused_but_mandatory_parameter);
+    _ = unused_but_mandatory_parameter;
+    get_type_owned.getType();
 }
 
 pub export fn fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnDblDivide(unused_but_mandatory_parameter);
+    double_width_command_owned.dblDivide(unused_but_mandatory_parameter);
 }
 
 pub export fn fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    arithmetic_command_wrapper_owned.fnDblDivideRemainder(unused_but_mandatory_parameter);
+    double_width_command_owned.dblDivideRemainder(unused_but_mandatory_parameter);
 }
 
 pub export fn fnToPolar2(unused_but_mandatory_parameter: u16) callconv(.c) void {

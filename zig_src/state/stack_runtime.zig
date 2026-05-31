@@ -1,6 +1,5 @@
 const build_options = @import("stack_state_build_options");
 const command_control_owned = @import("stack_runtime_command_control_owned.zig");
-const conversion_owned = @import("stack_runtime_conversion_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const reg_param_product_owned = @import("stack_runtime_reg_param_product_owned.zig");
@@ -102,6 +101,20 @@ const longIntegerValue_t = long_integer_owned.longIntegerValueType(use_fake_stac
 extern fn realToIntegralValue(source: *const ProductReal, destination: *ProductReal, mode: product_rounding_t, real_context: *ProductRealContext) void;
 extern fn realCompareAbsLessThan(number1: *const ProductReal, number2: *const ProductReal) bool;
 extern fn realToInt32C47(source: *const ProductReal, err: ?*bool) i32;
+extern fn z47_stack_runtime_get_stack_top() calcRegister_t;
+extern fn z47_stack_runtime_real34_size_in_blocks() u16;
+extern fn z47_stack_runtime_try_fn_to_real_complex_zero() bool;
+extern fn z47_stack_runtime_try_fn_to_real_real34() bool;
+extern fn z47_stack_runtime_try_fn_to_real_long_integer() bool;
+extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
+extern fn z47_stack_runtime_try_fn_to_real_time() bool;
+extern fn z47_stack_runtime_try_fn_to_real_date() bool;
+extern fn z47_stack_runtime_adjust_result_scalar_core(res: calcRegister_t) bool;
+extern fn z47_stack_runtime_adjust_result_real_matrix_core(res: calcRegister_t) bool;
+extern fn z47_stack_runtime_adjust_result_complex_matrix_core(res: calcRegister_t) bool;
+extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
+extern fn z47_stack_runtime_statistical_sums_blocks() u16;
+extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 
 pub const longInteger_t = [1]longIntegerValue_t;
 
@@ -162,51 +175,51 @@ fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destin
 }
 
 pub fn getStackTop() calcRegister_t {
-    return conversion_owned.getStackTop();
+    return z47_stack_runtime_get_stack_top();
 }
 
 pub fn real34SizeInBlocks() u16 {
-    return conversion_owned.real34SizeInBlocks();
+    return z47_stack_runtime_real34_size_in_blocks();
 }
 
 pub fn tryFnToRealComplexZero() bool {
-    return conversion_owned.tryFnToRealComplexZero();
+    return z47_stack_runtime_try_fn_to_real_complex_zero();
 }
 
 pub fn tryFnToRealReal34() bool {
-    return conversion_owned.tryFnToRealReal34();
+    return z47_stack_runtime_try_fn_to_real_real34();
 }
 
 pub fn tryFnToRealLongInteger() bool {
-    return conversion_owned.tryFnToRealLongInteger();
+    return z47_stack_runtime_try_fn_to_real_long_integer();
 }
 
 pub fn tryFnToRealShortInteger() bool {
-    return conversion_owned.tryFnToRealShortInteger();
+    return z47_stack_runtime_try_fn_to_real_short_integer();
 }
 
 pub fn tryFnToRealTime() bool {
-    return conversion_owned.tryFnToRealTime();
+    return z47_stack_runtime_try_fn_to_real_time();
 }
 
 pub fn tryFnToRealDate() bool {
-    return conversion_owned.tryFnToRealDate();
+    return z47_stack_runtime_try_fn_to_real_date();
 }
 
 pub fn adjustResultSetCpxRes() void {
-    conversion_owned.adjustResultSetCpxRes();
+    z47_stack_runtime_adjust_result_set_cpxres();
 }
 
 pub fn adjustResultScalarCore(res: calcRegister_t) bool {
-    return conversion_owned.adjustResultScalarCore(res);
+    return z47_stack_runtime_adjust_result_scalar_core(res);
 }
 
 pub fn adjustResultRealMatrixCore(res: calcRegister_t) bool {
-    return conversion_owned.adjustResultRealMatrixCore(res);
+    return z47_stack_runtime_adjust_result_real_matrix_core(res);
 }
 
 pub fn adjustResultComplexMatrixCore(res: calcRegister_t) bool {
-    return conversion_owned.adjustResultComplexMatrixCore(res);
+    return z47_stack_runtime_adjust_result_complex_matrix_core(res);
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
@@ -231,11 +244,11 @@ pub fn reportInvalidSwapTarget(reg: u16) void {
 }
 
 pub fn statisticalSumsBlocks() u16 {
-    return conversion_owned.statisticalSumsBlocks();
+    return z47_stack_runtime_statistical_sums_blocks();
 }
 
 pub fn statisticalSumsBytes() u32 {
-    return conversion_owned.statisticalSumsBytes();
+    return z47_stack_runtime_statistical_sums_bytes();
 }
 
 pub fn storeStackSizeInX(size: u32) void {

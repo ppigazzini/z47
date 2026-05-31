@@ -1,5 +1,4 @@
 const build_options = @import("stack_state_build_options");
-const conversion_owned = @import("stack_runtime_conversion_owned.zig");
 
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
@@ -18,11 +17,13 @@ extern fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
 extern fn fnClearRegisters(confirmation: u16) callconv(.c) void;
 extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
 extern fn z47_registers_retained_sort_reg(range_start: u16, range_end: u16) void;
+extern fn z47_stack_runtime_request_clear_registers_confirmation() void;
+extern fn z47_stack_runtime_do_partial_register_load(s: u16, n: u16, d: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 
 pub fn requestClearRegistersConfirmation() void {
     if (use_fake_stack_state_harness_surface) {
-        conversion_owned.requestClearRegistersConfirmationRetained();
+        z47_stack_runtime_request_clear_registers_confirmation();
         return;
     }
 
@@ -31,7 +32,7 @@ pub fn requestClearRegistersConfirmation() void {
 
 pub fn doPartialRegisterLoad(s: u16, n: u16, d: u16) void {
     if (use_fake_stack_state_harness_surface) {
-        conversion_owned.doPartialRegisterLoadRetained(s, n, d);
+        z47_stack_runtime_do_partial_register_load(s, n, d);
         return;
     }
 
