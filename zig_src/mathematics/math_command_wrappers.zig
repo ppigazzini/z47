@@ -148,7 +148,7 @@ pub export fn realExpLimitCheck(
     result: *runtime.real_t,
     zero: *const runtime.real_t,
 ) callconv(.c) bool {
-    return transcendental_wrapper_owned.realExpLimitCheck(x, result, zero);
+    return transcendental_command_owned.realExpLimitCheck(x, result, zero);
 }
 
 pub export fn realExp(
@@ -156,7 +156,7 @@ pub export fn realExp(
     result: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_wrapper_owned.realExp(x, result, real_context);
+    transcendental_command_owned.realExp(x, result, real_context);
 }
 
 pub export fn expComplex(
@@ -166,7 +166,7 @@ pub export fn expComplex(
     res_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_wrapper_owned.expComplex(real, imag, res_real, res_imag, real_context);
+    transcendental_command_owned.expComplex(real, imag, res_real, res_imag, real_context);
 }
 
 pub export fn realExpM1(
@@ -174,7 +174,7 @@ pub export fn realExpM1(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    transcendental_wrapper_owned.realExpM1(x, res, real_context);
+    transcendental_command_owned.realExpM1(x, res, real_context);
 }
 
 pub export fn realLog10(
