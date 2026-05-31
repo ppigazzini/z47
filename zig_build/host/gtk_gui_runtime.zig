@@ -1,5 +1,4 @@
-const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
-const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
+const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
 const key_wrapper_owned = @import("gtk_gui_key_wrapper_owned.zig");
 const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
 const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
@@ -22,15 +21,15 @@ pub export fn z47_startup_enter_mainloop() callconv(.c) void {
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    shortcut_bridge_owned.btnClickedNU(widget, data);
+    export_shortcut_owned.btnClickedNU(widget, data);
 }
 
 pub export fn sendKey(sent: i16) callconv(.c) void {
-    shortcut_bridge_owned.sendKey(sent);
+    export_shortcut_owned.sendKey(sent);
 }
 
 pub export fn checkNormal(key_nr: i16, item: i16) callconv(.c) bool {
-    return profile_bridge_owned.checkNormal(key_nr, item);
+    return export_shortcut_owned.checkNormal(key_nr, item);
 }
 
 pub export fn shortCutCommand(
@@ -46,7 +45,7 @@ pub export fn shortCutCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) callconv(.c) bool {
-    return shortcut_bridge_owned.shortCutCommand(
+    return export_shortcut_owned.shortCutCommand(
         widget,
         key,
         key_code,
@@ -73,7 +72,7 @@ pub export fn shortCutFNCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) callconv(.c) bool {
-    return shortcut_bridge_owned.shortCutFnCommand(
+    return export_shortcut_owned.shortCutFnCommand(
         widget,
         key,
         key_code,
