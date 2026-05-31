@@ -1,7 +1,6 @@
-const buzz_bridge_owned = @import("firmware_hal_buzz_bridge_owned.zig");
-const play_bridge_owned = @import("firmware_hal_play_bridge_owned.zig");
 const export_volume_owned = @import("firmware_hal_export_volume_owned.zig");
 const export_tone_owned = @import("firmware_hal_export_tone_owned.zig");
+const export_buzzplay_owned = @import("firmware_hal_export_buzzplay_owned.zig");
 
 pub fn audioTone(frequency: u32) void {
     export_tone_owned.audioTone(frequency);
@@ -32,13 +31,13 @@ pub fn fnVolumeDown(unused_but_mandatory_parameter: u16) void {
 }
 
 pub fn buzz(frequency: u32, ms_delay: u32) void {
-    buzz_bridge_owned.buzz(frequency, ms_delay);
+    export_buzzplay_owned.buzz(frequency, ms_delay);
 }
 
 pub fn fnBuzz(unused_but_mandatory_parameter: u16) void {
-    buzz_bridge_owned.fnBuzz(unused_but_mandatory_parameter);
+    export_buzzplay_owned.fnBuzz(unused_but_mandatory_parameter);
 }
 
 pub fn fnPlay(regist: u16) void {
-    play_bridge_owned.fnPlay(regist);
+    export_buzzplay_owned.fnPlay(regist);
 }
