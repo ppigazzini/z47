@@ -1,6 +1,4 @@
-const audio_bridge_owned = @import("firmware_hal_audio_bridge_owned.zig");
-const buzz_bridge_owned = @import("firmware_hal_buzz_bridge_owned.zig");
-const play_bridge_owned = @import("firmware_hal_play_bridge_owned.zig");
+const export_audio_owned = @import("firmware_hal_export_audio_owned.zig");
 const printer_bridge_owned = @import("firmware_hal_printer_bridge_owned.zig");
 const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
 const file_io_bridge_owned = @import("firmware_hal_file_io_bridge_owned.zig");
@@ -12,43 +10,43 @@ var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
 
 pub export fn audioTone(frequency: u32) callconv(.c) void {
-    audio_bridge_owned.audioTone(frequency);
+    export_audio_owned.audioTone(frequency);
 }
 
 pub export fn dm42_squeak() callconv(.c) void {
-    audio_bridge_owned.dm42Squeak();
+    export_audio_owned.dm42Squeak();
 }
 
 pub export fn fnSetVolume(volume: u16) callconv(.c) void {
-    audio_bridge_owned.fnSetVolume(volume);
+    export_audio_owned.fnSetVolume(volume);
 }
 
 pub export fn getBeepVolume() callconv(.c) u16 {
-    return audio_bridge_owned.getBeepVolume();
+    return export_audio_owned.getBeepVolume();
 }
 
 pub export fn fnGetVolume(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_bridge_owned.fnGetVolume(unused_but_mandatory_parameter);
+    export_audio_owned.fnGetVolume(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeUp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_bridge_owned.fnVolumeUp(unused_but_mandatory_parameter);
+    export_audio_owned.fnVolumeUp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeDown(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_bridge_owned.fnVolumeDown(unused_but_mandatory_parameter);
+    export_audio_owned.fnVolumeDown(unused_but_mandatory_parameter);
 }
 
 pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
-    buzz_bridge_owned.buzz(frequency, ms_delay);
+    export_audio_owned.buzz(frequency, ms_delay);
 }
 
 pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    buzz_bridge_owned.fnBuzz(unused_but_mandatory_parameter);
+    export_audio_owned.fnBuzz(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
-    play_bridge_owned.fnPlay(regist);
+    export_audio_owned.fnPlay(regist);
 }
 
 pub export fn getLineDelay() callconv(.c) u32 {
