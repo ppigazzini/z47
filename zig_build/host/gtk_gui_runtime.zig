@@ -3,24 +3,22 @@ const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
 const key_wrapper_owned = @import("gtk_gui_key_wrapper_owned.zig");
 const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
 const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
-const setup_preamble_owned = @import("gtk_gui_setup_preamble_owned.zig");
-const startup_owned = @import("gtk_gui_startup_owned.zig");
-const shell_owned = @import("gtk_gui_shell_owned.zig");
+const export_setup_owned = @import("gtk_gui_export_setup_owned.zig");
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
-    setup_preamble_owned.setupUiPreamble();
+    export_setup_owned.setupUiPreamble();
 }
 
 pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
-    shell_owned.setupUiNoKeyboardShell();
+    export_setup_owned.setupUiNoKeyboardShell();
 }
 
 pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
-    startup_owned.startupInitUi(argc, argv);
+    export_setup_owned.startupInitUi(argc, argv);
 }
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
-    startup_owned.startupEnterMainloop();
+    export_setup_owned.startupEnterMainloop();
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
