@@ -1,5 +1,3 @@
-const retained_owned = @import("calc_state_runtime_retained_owned.zig");
-
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 
@@ -67,6 +65,10 @@ pub extern fn z47_calc_state_runtime_write_save_sections() void;
 pub extern fn z47_calc_state_runtime_finish_load_ui(refresh_code: u16) void;
 pub extern fn z47_calc_state_retained_saveCalc() void;
 pub extern fn z47_calc_state_retained_restoreCalc() void;
+pub extern fn z47_calc_state_retained_doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
+pub extern fn z47_calc_state_retained_fnSave(save_mode: u16) void;
+pub extern fn z47_calc_state_retained_fnLoad(load_mode: u16) void;
+pub extern fn z47_calc_state_retained_fnSaveAuto(unused_but_mandatory_parameter: u16) void;
 
 fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
     var idx: usize = 0;
@@ -202,17 +204,17 @@ pub inline fn restoreCalcBackup() void {
 }
 
 pub inline fn doLoadRetained(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
-    retained_owned.doLoadRetained(load_mode, s, n, d, load_type);
+    z47_calc_state_retained_doLoad(load_mode, s, n, d, load_type);
 }
 
 pub inline fn saveRetained(save_mode: u16) void {
-    retained_owned.saveRetained(save_mode);
+    z47_calc_state_retained_fnSave(save_mode);
 }
 
 pub inline fn loadRetained(load_mode: u16) void {
-    retained_owned.loadRetained(load_mode);
+    z47_calc_state_retained_fnLoad(load_mode);
 }
 
 pub inline fn saveAutoRetained(unused_but_mandatory_parameter: u16) void {
-    retained_owned.saveAutoRetained(unused_but_mandatory_parameter);
+    z47_calc_state_retained_fnSaveAuto(unused_but_mandatory_parameter);
 }

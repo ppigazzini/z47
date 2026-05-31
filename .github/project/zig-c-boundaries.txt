@@ -85,7 +85,6 @@ zig_src/frontier/frontier_program_clear_owned.zig
 zig_src/solver/solve_runtime.zig
 zig_src/ui/tone_runtime.zig
 zig_src/state/calc_state_runtime.zig
-zig_src/state/calc_state_runtime_retained_owned.zig
 zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
 zig_src/state/flags_runtime.zig
 zig_src/state/keyboard_state_runtime.zig
