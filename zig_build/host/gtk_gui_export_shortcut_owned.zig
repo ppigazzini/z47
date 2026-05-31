@@ -1,16 +1,16 @@
-const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
-const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
+const profile_owned = @import("gtk_gui_profile_owned.zig");
+const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 
 pub fn btnClickedNU(widget: ?*anyopaque, data: ?*anyopaque) void {
-    shortcut_bridge_owned.btnClickedNU(widget, data);
+    shortcut_owned.btnClickedNU(widget, data);
 }
 
 pub fn sendKey(sent: i16) void {
-    shortcut_bridge_owned.sendKey(sent);
+    shortcut_owned.sendKey(sent);
 }
 
 pub fn checkNormal(key_nr: i16, item: i16) bool {
-    return profile_bridge_owned.checkNormal(key_nr, item);
+    return profile_owned.checkNormal(key_nr, item);
 }
 
 pub fn shortCutCommand(
@@ -26,7 +26,7 @@ pub fn shortCutCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) bool {
-    return shortcut_bridge_owned.shortCutCommand(
+    return shortcut_owned.shortCutCommand(
         widget,
         key,
         key_code,
@@ -53,7 +53,7 @@ pub fn shortCutFnCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) bool {
-    return shortcut_bridge_owned.shortCutFnCommand(
+    return shortcut_owned.shortCutFNCommand(
         widget,
         key,
         key_code,

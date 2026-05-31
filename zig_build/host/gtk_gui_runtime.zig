@@ -1,7 +1,7 @@
 const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
 const key_event_owned = @import("gtk_gui_key_event_owned.zig");
-const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
-const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
+const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
+const callback_button_owned = @import("gtk_gui_callback_button_owned.zig");
 const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
 const startup_settle_owned = @import("gtk_gui_startup_settle_owned.zig");
@@ -9,6 +9,7 @@ const startup_settle_owned = @import("gtk_gui_startup_settle_owned.zig");
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn setupUI() void;
 extern fn gtk_main() void;
+extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
     setup_owned.configureWindowLayout();
@@ -100,11 +101,11 @@ pub export fn shortCutFNCommand(
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.btnFnPressedWrapper(widget, event, data);
+    return callback_button_owned.btnFnPressedWrapper(widget, event, data);
 }
 
 pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.btnFnReleasedWrapper(widget, event, data);
+    return callback_button_owned.btnFnReleasedWrapper(widget, event, data);
 }
 
 pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
@@ -124,17 +125,17 @@ pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.drawScreenWrapper(widget, cr, data);
+    return drawScreen(widget, cr, data);
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.destroyCalc(widget, event, data);
+    return lifecycle_owned.destroyCalc(widget, event, data);
 }
 
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.onConfigureEvent(widget, event, data);
+    return lifecycle_owned.onConfigureEvent(widget, event, data);
 }
 
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.onUiActivity(widget, event, data);
+    return lifecycle_owned.onUiActivity(widget, event, data);
 }
