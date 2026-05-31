@@ -235,26 +235,6 @@ pub export fn z47_startup_enter_mainloop() callconv(.c) void {
     startup_owned.startupEnterMainloop();
 }
 
-fn normKey00ItemInLayout() i16 {
-    return profile_bridge_owned.normKey00ItemInLayout();
-}
-
-fn shortcutProfileValue() u8 {
-    return profile_bridge_owned.shortcutProfileValue();
-}
-
-fn currentStdKeyboard() *const [37]calcKey_t {
-    return @ptrCast(profile_bridge_owned.currentStdKeyboard());
-}
-
-fn isLabelText() bool {
-    return profile_bridge_owned.isLabelText();
-}
-
-fn alphaArrowsOffAndUpDn() bool {
-    return profile_bridge_owned.alphaArrowsOffAndUpDn();
-}
-
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     shortcut_bridge_owned.btnClickedNU(widget, data);
 }
