@@ -11,7 +11,6 @@ zig_build/tools/translate_c/ttf2_raster_fonts.h
 
 [extern-symbols]
 zig_build/firmware_audio_runtime.zig
-zig_build/firmware_hal_runtime.zig
 zig_build/firmware_hal_audio_volume_owned.zig
 zig_build/firmware_hal_buzz_owned.zig
 zig_build/firmware_hal_callbacks_owned.zig
