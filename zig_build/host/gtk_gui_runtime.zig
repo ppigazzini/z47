@@ -2,13 +2,8 @@ const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
 const key_event_owned = @import("gtk_gui_key_event_owned.zig");
 const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
 const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
-const setup_background_owned = @import("gtk_gui_setup_background_owned.zig");
-const setup_window_owned = @import("gtk_gui_setup_window_owned.zig");
-const setup_softkey_owned = @import("gtk_gui_setup_softkey_owned.zig");
-const setup_screen_owned = @import("gtk_gui_setup_screen_owned.zig");
-const shell_window_owned = @import("gtk_gui_shell_window_owned.zig");
-const shell_event_owned = @import("gtk_gui_shell_event_owned.zig");
-const shell_screen_owned = @import("gtk_gui_shell_screen_owned.zig");
+const setup_owned = @import("gtk_gui_setup_owned.zig");
+const shell_owned = @import("gtk_gui_shell_owned.zig");
 const startup_settle_owned = @import("gtk_gui_startup_settle_owned.zig");
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
@@ -16,16 +11,16 @@ extern fn setupUI() void;
 extern fn gtk_main() void;
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
-    setup_window_owned.configureWindowLayout();
-    setup_background_owned.setupBackgroundImage();
-    setup_softkey_owned.setupSoftkeyLabels();
-    setup_screen_owned.setupScreenBuffer();
+    setup_owned.configureWindowLayout();
+    setup_owned.setupBackgroundImage();
+    setup_owned.setupSoftkeyLabels();
+    setup_owned.setupScreenBuffer();
 }
 
 pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
-    shell_window_owned.setupShellWindow();
-    shell_event_owned.wireShellEvents();
-    shell_screen_owned.setupShellScreen();
+    shell_owned.setupShellWindow();
+    shell_owned.wireShellEvents();
+    shell_owned.setupShellScreen();
 }
 
 pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
