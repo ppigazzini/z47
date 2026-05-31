@@ -6,6 +6,7 @@ const GdkScreen = opaque {};
 const GdkMonitor = opaque {};
 const setup_background_owned = @import("gtk_gui_setup_background_owned.zig");
 const setup_window_owned = @import("gtk_gui_setup_window_owned.zig");
+const setup_softkey_owned = @import("gtk_gui_setup_softkey_owned.zig");
 
 const GdkRectangle = extern struct {
     x: c_int,
@@ -101,19 +102,7 @@ fn setupBackgroundImage() void {
 }
 
 fn setupSoftkeyLabels() void {
-    lblFKey2 = gtk_label_new("");
-    gtk_widget_set_name(lblFKey2, "fSoftkeyArea");
-    if (kbd_usr[10].primary == ITM_SHIFTf) {
-        gtk_widget_set_size_request(lblFKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblFKey2, 350 + 4 + 2, 563 - 1);
-    }
-
-    lblGKey2 = gtk_label_new("");
-    gtk_widget_set_name(lblGKey2, "gSoftkeyArea");
-    if (kbd_usr[11].primary == ITM_SHIFTg) {
-        gtk_widget_set_size_request(lblGKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblGKey2, 350 + 4 + 2 + DELTA_KEYS_X, 563 - 1);
-    }
+    setup_softkey_owned.setupSoftkeyLabels();
 }
 
 fn setupScreenBuffer() void {
