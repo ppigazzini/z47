@@ -6,6 +6,7 @@ const setup_preamble_owned = @import("gtk_gui_setup_preamble_owned.zig");
 const startup_owned = @import("gtk_gui_startup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
 const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
+const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -252,11 +253,11 @@ fn alphaArrowsOffAndUpDn() bool {
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    shortcut_owned.btnClickedNU(widget, data);
+    shortcut_bridge_owned.btnClickedNU(widget, data);
 }
 
 pub export fn sendKey(sent: i16) callconv(.c) void {
-    shortcut_owned.sendKey(sent);
+    shortcut_bridge_owned.sendKey(sent);
 }
 
 pub export fn checkNormal(keyNr: i16, item: i16) callconv(.c) bool {
@@ -276,7 +277,7 @@ pub export fn shortCutCommand(
     requiredCalcMode2: i16,
     itemForRunFunction: i16,
 ) callconv(.c) bool {
-    return shortcut_owned.shortCutCommand(widget, key, keyCode, condition1, exitIfInNIM, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
+    return shortcut_bridge_owned.shortCutCommand(widget, key, keyCode, condition1, exitIfInNIM, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
 }
 
 pub export fn shortCutFNCommand(
@@ -291,7 +292,7 @@ pub export fn shortCutFNCommand(
     requiredCalcMode2: i16,
     itemForRunFunction: i16,
 ) callconv(.c) bool {
-    return shortcut_owned.shortCutFNCommand(widget, key, keyCode, condition1, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
+    return shortcut_bridge_owned.shortCutFnCommand(widget, key, keyCode, condition1, disable, shift, keyForBtnClicked, modes, requiredCalcMode2, itemForRunFunction);
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
