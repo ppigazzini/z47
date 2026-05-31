@@ -5,7 +5,16 @@ pub extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
 pub extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
 pub extern fn z47_program_serialization_runtime_parse_u32_line(line: [*c]const u8) u32;
 pub extern fn z47_program_serialization_runtime_parse_u8_line(line: [*c]const u8) u8;
-pub extern fn z47_program_serialization_runtime_line_equals(line: [*c]const u8, expected: [*c]const u8) bool;
+
+fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
+    var idx: usize = 0;
+    while (true) : (idx += 1) {
+        const a = line[idx];
+        const b = expected[idx];
+        if (a != b) return false;
+        if (a == 0) return true;
+    }
+}
 
 pub inline fn scanLabelsAndPrograms() void {
     z47_program_serialization_runtime_scan_labels_and_programs();
@@ -36,5 +45,5 @@ pub inline fn parseU8Line(line: [*c]const u8) u8 {
 }
 
 pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {
-    return z47_program_serialization_runtime_line_equals(line, expected);
+    return lineEqualsZ(line, expected);
 }
