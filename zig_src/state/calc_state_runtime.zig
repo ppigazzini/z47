@@ -5,6 +5,9 @@ const ui_owned = @import("calc_state_runtime_ui_owned.zig");
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 
+pub const VERSION_ALLOWED: u32 = 10000005;
+pub const CONFIG_FILE_VERSION: u32 = 10000023;
+
 pub const autoLoad: u16 = 0;
 pub const manualLoad: u16 = 1;
 pub const stateLoad: u16 = 2;
@@ -47,8 +50,6 @@ pub extern fn z47_calc_state_set_saved_calc_model(saved_calc_model: u16) void;
 pub extern fn z47_calc_state_get_saved_calc_model() u16;
 pub extern fn z47_calc_state_set_loaded_version(version: u32) void;
 pub extern fn z47_calc_state_get_loaded_version() u32;
-pub extern fn z47_calc_state_get_version_allowed() u32;
-pub extern fn z47_calc_state_get_config_file_version() u32;
 pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool;
 
 pub inline fn resetLoadContext() void {
@@ -72,11 +73,11 @@ pub inline fn getLoadedVersion() u32 {
 }
 
 pub inline fn versionAllowed() u32 {
-    return z47_calc_state_get_version_allowed();
+    return VERSION_ALLOWED;
 }
 
 pub inline fn configFileVersion() u32 {
-    return z47_calc_state_get_config_file_version();
+    return CONFIG_FILE_VERSION;
 }
 
 pub inline fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
