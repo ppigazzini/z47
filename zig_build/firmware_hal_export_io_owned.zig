@@ -1,8 +1,8 @@
-const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
 const file_io_bridge_owned = @import("firmware_hal_file_io_bridge_owned.zig");
+const export_io_path_owned = @import("firmware_hal_export_io_path_owned.zig");
 
 pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
-    return io_path_bridge_owned.ioFileNameFromFilePath(path, filename);
+    return export_io_path_owned.ioFileNameFromFilePath(path, filename);
 }
 
 pub fn ioFileOpen(path: c_int, mode: c_int, io_write_enabled: *c_int, io_read_enabled: *c_int) c_int {
