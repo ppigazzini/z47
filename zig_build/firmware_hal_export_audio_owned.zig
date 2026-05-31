@@ -1,14 +1,14 @@
-const audio_bridge_owned = @import("firmware_hal_audio_bridge_owned.zig");
 const buzz_bridge_owned = @import("firmware_hal_buzz_bridge_owned.zig");
 const play_bridge_owned = @import("firmware_hal_play_bridge_owned.zig");
 const export_volume_owned = @import("firmware_hal_export_volume_owned.zig");
+const export_tone_owned = @import("firmware_hal_export_tone_owned.zig");
 
 pub fn audioTone(frequency: u32) void {
-    audio_bridge_owned.audioTone(frequency);
+    export_tone_owned.audioTone(frequency);
 }
 
 pub fn dm42Squeak() void {
-    audio_bridge_owned.dm42Squeak();
+    export_tone_owned.dm42Squeak();
 }
 
 pub fn fnSetVolume(volume: u16) void {
