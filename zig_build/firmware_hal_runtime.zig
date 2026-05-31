@@ -7,6 +7,7 @@ const play_owned = @import("firmware_hal_play_owned.zig");
 const printer_owned = @import("firmware_hal_printer_owned.zig");
 const warning_owned = @import("firmware_hal_warning_owned.zig");
 const audio_bridge_owned = @import("firmware_hal_audio_bridge_owned.zig");
+const buzz_bridge_owned = @import("firmware_hal_buzz_bridge_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -187,11 +188,11 @@ pub export fn fnVolumeDown(unused_but_mandatory_parameter: u16) callconv(.c) voi
 }
 
 pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
-    buzz_owned.buzz(frequency, ms_delay);
+    buzz_bridge_owned.buzz(frequency, ms_delay);
 }
 
 pub export fn fnBuzz(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    buzz_owned.fnBuzz(unused_but_mandatory_parameter);
+    buzz_bridge_owned.fnBuzz(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPlay(regist: u16) callconv(.c) void {
