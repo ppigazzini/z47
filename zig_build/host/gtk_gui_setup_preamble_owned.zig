@@ -7,6 +7,7 @@ const GdkMonitor = opaque {};
 const setup_background_owned = @import("gtk_gui_setup_background_owned.zig");
 const setup_window_owned = @import("gtk_gui_setup_window_owned.zig");
 const setup_softkey_owned = @import("gtk_gui_setup_softkey_owned.zig");
+const setup_screen_owned = @import("gtk_gui_setup_screen_owned.zig");
 
 const GdkRectangle = extern struct {
     x: c_int,
@@ -106,24 +107,7 @@ fn setupSoftkeyLabels() void {
 }
 
 fn setupScreenBuffer() void {
-    screen = gtk_drawing_area_new();
-    gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-    gtk_widget_set_tooltip_text(screen, "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");
-    if (!NARROW_SCREEN) {
-        gtk_fixed_put(@ptrCast(grid), screen, 63, 72);
-    } else {
-        gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
-    }
-
-    screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
-    const num_bytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
-    const raw = malloc(num_bytes);
-    if (raw == null) {
-        moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
-        exit(1);
-    }
-    screenData = @ptrCast(@alignCast(raw.?));
-    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+    setup_screen_owned.setupScreenBuffer();
 }
 
 pub fn setupUiPreamble() void {
