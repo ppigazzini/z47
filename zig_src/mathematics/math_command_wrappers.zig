@@ -31,6 +31,7 @@ const sign_command_owned = @import("math_sign_command_owned.zig");
 const exponent_bernoulli_command_owned = @import("math_exponent_bernoulli_command_owned.zig");
 const lambertw_command_owned = @import("math_lambertw_command_owned.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
+const atan_owned = @import("math_atan_owned.zig");
 const atan2_owned = @import("math_atan2_owned.zig");
 const circular_trig_owned = @import("math_circular_trig_owned.zig");
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
@@ -63,6 +64,14 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Atan2(
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
     atan2_owned.arctan2Real(y, x, angle, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_C47_WP34S_Atan(
+    x: *const runtime.real_t,
+    angle: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    atan_owned.arctanReal(x, angle, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(

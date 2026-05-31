@@ -245,7 +245,7 @@ fn addMathAtanOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/mathematics/math_atan_export.zig"),
+        .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
