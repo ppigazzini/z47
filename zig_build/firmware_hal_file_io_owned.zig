@@ -1,3 +1,5 @@
+const file_io_open_owned = @import("firmware_hal_file_io_open_owned.zig");
+
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
 
@@ -27,61 +29,7 @@ extern var ppgm_fp: ?*anyopaque;
 extern var fileNameSelected: [*c]u8;
 
 pub fn ioFileOpen(path: c_int, mode: c_int, io_write_enabled: *c_int, io_read_enabled: *c_int) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
-    var filemode: u8 = 0;
-
-    fileNameSelected[0] = 0;
-
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) return ret;
-
-    switch (mode) {
-        IO_MODE_READ => {
-            filemode = FA_READ;
-            io_read_enabled.* = 1;
-        },
-        IO_MODE_WRITE => {
-            filemode = FA_CREATE_ALWAYS | FA_WRITE;
-            io_write_enabled.* = 1;
-        },
-        IO_MODE_UPDATE => {
-            filemode = FA_READ | FA_WRITE | FA_OPEN_EXISTING;
-            io_write_enabled.* = 1;
-            io_read_enabled.* = 1;
-        },
-        else => return FILE_ERROR,
-    }
-
-    if (mode != IO_MODE_READ) {
-        sys_disk_write_enable(1);
-    }
-
-    const result = f_open(ppgm_fp, &filename, filemode);
-    if (result != 0) {
-        if (mode != IO_MODE_READ) {
-            sys_disk_write_enable(0);
-        }
-        io_write_enabled.* = 0;
-        io_read_enabled.* = 0;
-        return FILE_ERROR;
-    }
-
-    if (mode == IO_MODE_READ) {
-        var jj: c_int = stringByteLength(&filename);
-        const kk: c_int = max(0, jj - stateFileNameVarLength + 1);
-        while (jj > kk) {
-            const c = filename[@intCast(jj - 1)];
-            if (c != '\\' and c != '/' and c != 0) {
-                jj -= 1;
-            } else {
-                break;
-            }
-        }
-        const selected: [*c]const u8 = @ptrCast((&filename)[@intCast(jj)..].ptr);
-        stringCopy(fileNameSelected, selected);
-    }
-
-    return FILE_OK;
+    return file_io_open_owned.ioFileOpen(path, mode, io_write_enabled, io_read_enabled);
 }
 
 pub fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void {
