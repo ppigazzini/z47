@@ -1,4 +1,11 @@
-const GtkWidget = opaque {};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const gtk_window_new = gtk_decls.gtk_window_new;
+const gtk_window_set_default_size = gtk_decls.gtk_window_set_default_size;
+const gtk_window_set_decorated = gtk_decls.gtk_window_set_decorated;
+const gtk_window_set_position = gtk_decls.gtk_window_set_position;
+const gtk_widget_set_name = gtk_decls.gtk_widget_set_name;
+const gtk_window_set_resizable = gtk_decls.gtk_window_set_resizable;
 
 const GTK_WINDOW_TOPLEVEL: c_int = 0;
 const GTK_WIN_POS_CENTER: c_int = 1;
@@ -7,13 +14,6 @@ const SCREEN_HEIGHT: c_int = 240;
 const BIG_SCREEN_COEF: c_int = 1;
 
 extern var frmCalc: ?*GtkWidget;
-
-extern fn gtk_window_new(window_type: c_int) ?*GtkWidget;
-extern fn gtk_window_set_default_size(window: ?*GtkWidget, width: c_int, height: c_int) void;
-extern fn gtk_window_set_decorated(window: ?*GtkWidget, setting: c_int) void;
-extern fn gtk_window_set_position(window: ?*GtkWidget, position: c_int) void;
-extern fn gtk_widget_set_name(widget: ?*GtkWidget, name: [*:0]const u8) void;
-extern fn gtk_window_set_resizable(window: ?*GtkWidget, resizable: c_int) void;
 
 pub fn setupShellWindow() void {
     frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);

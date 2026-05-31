@@ -1,11 +1,11 @@
-const GtkWidget = opaque {};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const g_signal_connect_data = gtk_decls.g_signal_connect_data;
+const gtk_widget_add_events = gtk_decls.gtk_widget_add_events;
 
 const GDK_CONFIGURE: c_int = 13;
 
 extern var frmCalc: ?*GtkWidget;
-
-extern fn g_signal_connect_data(instance: ?*anyopaque, detailed_signal: [*:0]const u8, c_handler: ?*const anyopaque, data: ?*anyopaque, destroy_data: ?*const anyopaque, connect_flags: c_int) c_ulong;
-extern fn gtk_widget_add_events(widget: ?*GtkWidget, events: c_int) void;
 
 extern fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;

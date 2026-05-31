@@ -1,13 +1,20 @@
-const GtkWidget = opaque {};
-const GtkDisplay = opaque {};
-const GdkMonitor = opaque {};
-
-const GdkRectangle = extern struct {
-    x: c_int,
-    y: c_int,
-    width: c_int,
-    height: c_int,
-};
+const gtk_decls = @import("gtk_gui_host_decls.zig");
+const GtkWidget = gtk_decls.GtkWidget;
+const GdkRectangle = gtk_decls.GdkRectangle;
+const gdk_display_get_default = gtk_decls.gdk_display_get_default;
+const gdk_display_get_monitor = gtk_decls.gdk_display_get_monitor;
+const gdk_monitor_get_geometry = gtk_decls.gdk_monitor_get_geometry;
+const gtk_window_new = gtk_decls.gtk_window_new;
+const gtk_window_set_default_size = gtk_decls.gtk_window_set_default_size;
+const gtk_widget_set_name = gtk_decls.gtk_widget_set_name;
+const gtk_window_set_resizable = gtk_decls.gtk_window_set_resizable;
+const gtk_window_set_title = gtk_decls.gtk_window_set_title;
+const g_signal_connect_data = gtk_decls.g_signal_connect_data;
+const gtk_window_set_decorated = gtk_decls.gtk_window_set_decorated;
+const gtk_window_set_position = gtk_decls.gtk_window_set_position;
+const gtk_widget_add_events = gtk_decls.gtk_widget_add_events;
+const gtk_fixed_new = gtk_decls.gtk_fixed_new;
+const gtk_container_add = gtk_decls.gtk_container_add;
 
 const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
@@ -24,21 +31,6 @@ extern var calcAutoLandscapePortrait: bool;
 extern var calcLandscape: bool;
 extern var frmCalc: ?*GtkWidget;
 extern var grid: ?*GtkWidget;
-
-extern fn gdk_display_get_default() ?*GtkDisplay;
-extern fn gdk_display_get_monitor(display: ?*GtkDisplay, monitor_num: c_int) ?*GdkMonitor;
-extern fn gdk_monitor_get_geometry(monitor: ?*GdkMonitor, geometry: *GdkRectangle) void;
-extern fn gtk_window_new(window_type: c_int) ?*GtkWidget;
-extern fn gtk_window_set_default_size(window: ?*GtkWidget, width: c_int, height: c_int) void;
-extern fn gtk_widget_set_name(widget: ?*GtkWidget, name: [*:0]const u8) void;
-extern fn gtk_window_set_resizable(window: ?*GtkWidget, resizable: c_int) void;
-extern fn gtk_window_set_title(window: ?*GtkWidget, title: [*:0]const u8) void;
-extern fn g_signal_connect_data(instance: ?*anyopaque, detailed_signal: [*:0]const u8, c_handler: ?*const anyopaque, data: ?*anyopaque, destroy_data: ?*const anyopaque, connect_flags: c_int) c_ulong;
-extern fn gtk_window_set_decorated(window: ?*GtkWidget, setting: c_int) void;
-extern fn gtk_window_set_position(window: ?*GtkWidget, position: c_int) void;
-extern fn gtk_widget_add_events(widget: ?*GtkWidget, events: c_int) void;
-extern fn gtk_fixed_new() ?*GtkWidget;
-extern fn gtk_container_add(container: ?*GtkWidget, widget: ?*GtkWidget) void;
 
 extern fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
