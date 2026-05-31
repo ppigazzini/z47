@@ -1,13 +1,13 @@
-const statefile_bridge_owned = @import("firmware_hal_statefile_bridge_owned.zig");
 const programfile_bridge_owned = @import("firmware_hal_programfile_bridge_owned.zig");
 const warning_bridge_owned = @import("firmware_hal_warning_bridge_owned.zig");
+const export_statefile_owned = @import("firmware_hal_export_statefile_owned.zig");
 
 pub fn saveStatefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int {
-    return statefile_bridge_owned.saveStatefile(fpath, fname, data);
+    return export_statefile_owned.saveStatefile(fpath, fname, data);
 }
 
 pub fn loadStatefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int {
-    return statefile_bridge_owned.loadStatefile(fpath, fname, data);
+    return export_statefile_owned.loadStatefile(fpath, fname, data);
 }
 
 pub fn saveProgramfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int {
