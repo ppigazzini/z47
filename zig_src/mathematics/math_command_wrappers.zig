@@ -31,7 +31,8 @@ const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const transcendental_command_owned = @import("math_transcendental_command_owned.zig");
-const powlog_command_owned = @import("math_powlog_command_owned.zig");
+const powlog_log_owned = @import("math_powlog_log_owned.zig");
+const powlog_power_owned = @import("math_powlog_power_owned.zig");
 const invert_command_owned = @import("math_invert_command_owned.zig");
 const sign_command_owned = @import("math_sign_command_owned.zig");
 const exponent_bernoulli_command_owned = @import("math_exponent_bernoulli_command_owned.zig");
@@ -450,19 +451,19 @@ pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fn2Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fn2Pow(unused_but_mandatory_parameter);
+    powlog_power_owned.fn2Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fn10Pow(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fn10Pow(unused_but_mandatory_parameter);
+    powlog_power_owned.fn10Pow(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog10(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fnLog10(unused_but_mandatory_parameter);
+    powlog_log_owned.fnLog10(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLog2(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    powlog_command_owned.fnLog2(unused_but_mandatory_parameter);
+    powlog_log_owned.fnLog2(unused_but_mandatory_parameter);
 }
 
 pub export fn fnInvert(unused_but_mandatory_parameter: u16) callconv(.c) void {
