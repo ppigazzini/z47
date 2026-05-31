@@ -70,6 +70,11 @@ Do not treat ignored local worktrees as tracked documentation surfaces.
 
 Use the tracked ledger whenever the maintained upstream pin changes.
 
+For a quick end-to-end status pass, run
+`bash ../.github/project/run-upstream-sync-checks.sh ..` from `zig_docs/`.
+That helper runs the upstream drift report, ledger validation, split C
+dependency report, and the strict product first-party C cap check in order.
+
 1. Run `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --fetch`.
 2. Update `../.github/project/upstream-pin.env` to the new upstream commit.
 3. Add or update a row in `../.github/project/upstream-port-ledger.tsv` for
