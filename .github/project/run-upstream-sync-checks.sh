@@ -23,7 +23,7 @@ echo "[3/4] C dependency status split"
 python3 .github/project/report-c-dependency-status.py --repo-root "$repo_root"
 
 echo
-echo "[4/4] Product first-party C strict-cap check (target: 0)"
+echo "[4/5] Product first-party C strict-cap check (target: 0)"
 if python3 .github/project/check-c-dependency-allowlist.py \
   --repo-root "$repo_root" \
   --config .github/project/c-dependency-product-allowlist.json \
@@ -33,3 +33,8 @@ else
   echo "FAIL: strict product first-party C cap is not yet satisfied." >&2
   exit 1
 fi
+
+echo
+echo "[5/5] Iteration report governance-section validation"
+python3 .github/project/check-iteration-report-sections.py \
+  --report "$repo_root/__DEV/reports/REPORT-13-CODEBASE.md"
