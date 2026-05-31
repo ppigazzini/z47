@@ -3,6 +3,7 @@ const key_event_owned = @import("gtk_gui_key_event_owned.zig");
 const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
 const setup_preamble_owned = @import("gtk_gui_setup_preamble_owned.zig");
+const startup_owned = @import("gtk_gui_startup_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -250,22 +251,11 @@ pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
 }
 
 pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
-    gtk_init(argc, argv);
-    setupUI();
-
-    // Keep the legacy settle pass that aligns shifted labels before restore.
-    calcModeAimGui();
-    while (gtk_events_pending() != 0) {
-        _ = gtk_main_iteration();
-    }
-    calcModeNormalGui();
-    while (gtk_events_pending() != 0) {
-        _ = gtk_main_iteration();
-    }
+    startup_owned.startupInitUi(argc, argv);
 }
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
-    gtk_main();
+    startup_owned.startupEnterMainloop();
 }
 
 fn normKey00ItemInLayout() i16 {
