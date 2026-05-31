@@ -29,6 +29,25 @@ the local maintainer flow.
 - Deterministic generated sources and data refresh through public `zig build`
   steps rather than ad hoc scripts.
 
+## Top-Level Locality Map (M13)
+
+Use this compact map first when triaging where a change belongs.
+
+| Bucket | Root count | Canonical source | Action rule |
+| --- | ---: | --- | --- |
+| z47-owned control roots | 9 | `../.github/project/source-ownership.txt` (`[z47-owned]`) | Place new maintained build, runtime-Zig, CI, and docs logic here. |
+| imported upstream roots | 20 | `../.github/project/source-ownership.txt` (`[imported-upstream]`) | Treat as imported baseline; change only with explicit reviewed exception. |
+| local environment and build-output roots | 5 | live worktree (`.tmp`, `.venv`, `.vscode`, `.zig-cache`, `zig-out`) | Keep untracked and out of policy claims; do not treat as owned source roots. |
+
+Root-clutter guardrails:
+
+- `.github/project/check-source-ownership.sh` rejects missing or unclassified
+  tracked top-level roots.
+- `.github/project/source-ownership.txt` is the single classification surface
+  for owned versus imported tracked roots.
+- avoid adding new top-level roots; prefer adding paths under existing
+  `zig_build/`, `zig_src/`, `zig_bridge/`, `.github/`, or `zig_docs/` trees.
+
 ## Build-Relevant File Layout
 
 ```text
