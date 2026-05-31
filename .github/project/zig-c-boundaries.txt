@@ -23,6 +23,9 @@ zig_build/firmware_io_runtime.zig
 zig_build/firmware_print_ir_runtime.zig
 zig_build/host/gtk_button_signals_export.zig
 zig_build/host/gtk_gui_setup_preamble_owned.zig
+zig_build/host/gtk_gui_setup_background_owned.zig
+zig_build/host/gtk_gui_startup_init_owned.zig
+zig_build/host/gtk_gui_startup_settle_owned.zig
 zig_build/host/gtk_gui_startup_owned.zig
 zig_build/host/gtk_gui_shell_owned.zig
 zig_build/host/gtk_gui_callback_bridge_owned.zig
