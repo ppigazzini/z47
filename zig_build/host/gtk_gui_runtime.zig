@@ -1,6 +1,6 @@
 const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
 const export_key_owned = @import("gtk_gui_export_key_owned.zig");
-const lifecycle_bridge_owned = @import("gtk_gui_lifecycle_bridge_owned.zig");
+const export_lifecycle_owned = @import("gtk_gui_export_lifecycle_owned.zig");
 const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
 const export_setup_owned = @import("gtk_gui_export_setup_owned.zig");
 
@@ -115,13 +115,13 @@ pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data:
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.destroyCalc(widget, event, data);
+    return export_lifecycle_owned.destroyCalc(widget, event, data);
 }
 
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.onConfigureEvent(widget, event, data);
+    return export_lifecycle_owned.onConfigureEvent(widget, event, data);
 }
 
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_bridge_owned.onUiActivity(widget, event, data);
+    return export_lifecycle_owned.onUiActivity(widget, event, data);
 }
