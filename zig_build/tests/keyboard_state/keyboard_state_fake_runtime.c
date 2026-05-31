@@ -24,14 +24,14 @@ int nimBufferCalls = 0;
 int16_t lastNimBufferItem = 0;
 int refreshScreenCalls = 0;
 int16_t lastRefreshScreenId = 0;
-int retainedProcessKeyActionCalls = 0;
-int retainedFnKeyEnterCalls = 0;
-int retainedFnKeyExitCalls = 0;
-int retainedFnKeyCCCalls = 0;
-int retainedFnKeyBackspaceCalls = 0;
-int retainedFnKeyUpCalls = 0;
-int retainedFnKeyDotDCalls = 0;
-int retainedFnKeyDownCalls = 0;
+int legacyProcessKeyActionCalls = 0;
+int legacyFnKeyEnterCalls = 0;
+int legacyFnKeyExitCalls = 0;
+int legacyFnKeyCCCalls = 0;
+int legacyFnKeyBackspaceCalls = 0;
+int legacyFnKeyUpCalls = 0;
+int legacyFnKeyDotDCalls = 0;
+int legacyFnKeyDownCalls = 0;
 
 static uint32_t keyboardFlags = 0;
 
@@ -54,14 +54,14 @@ void keyboardStateReset(void) {
   lastNimBufferItem = 0;
   refreshScreenCalls = 0;
   lastRefreshScreenId = 0;
-  retainedProcessKeyActionCalls = 0;
-  retainedFnKeyEnterCalls = 0;
-  retainedFnKeyExitCalls = 0;
-  retainedFnKeyCCCalls = 0;
-  retainedFnKeyBackspaceCalls = 0;
-  retainedFnKeyUpCalls = 0;
-  retainedFnKeyDotDCalls = 0;
-  retainedFnKeyDownCalls = 0;
+  legacyProcessKeyActionCalls = 0;
+  legacyFnKeyEnterCalls = 0;
+  legacyFnKeyExitCalls = 0;
+  legacyFnKeyCCCalls = 0;
+  legacyFnKeyBackspaceCalls = 0;
+  legacyFnKeyUpCalls = 0;
+  legacyFnKeyDotDCalls = 0;
+  legacyFnKeyDownCalls = 0;
   keyboardFlags = 0;
   memset(kbd_std, 0, sizeof(kbd_std));
   memset(kbd_usr, 0, sizeof(kbd_usr));
@@ -119,42 +119,42 @@ void z47_keyboard_state_runtime_standard_key(uint16_t index, calcKey_t *key) {
   *key = kbd_std[index];
 }
 
-void z47_keyboard_state_retained_processKeyAction(int16_t item) {
-  retainedProcessKeyActionCalls++;
+void z47_keyboard_state_legacy_processKeyAction(int16_t item) {
+  legacyProcessKeyActionCalls++;
   (void)item;
 }
 
-void z47_keyboard_state_retained_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyEnterCalls++;
+void z47_keyboard_state_legacy_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyEnterCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyExit(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyExitCalls++;
+void z47_keyboard_state_legacy_fnKeyExit(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyExitCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyCC(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyCCCalls++;
+void z47_keyboard_state_legacy_fnKeyCC(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyCCCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyBackspaceCalls++;
+void z47_keyboard_state_legacy_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyBackspaceCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyUp(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyUpCalls++;
+void z47_keyboard_state_legacy_fnKeyUp(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyUpCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyDown(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyDownCalls++;
+void z47_keyboard_state_legacy_fnKeyDown(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyDownCalls++;
   (void)unusedButMandatoryParameter;
 }
 
-void z47_keyboard_state_retained_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
-  retainedFnKeyDotDCalls++;
+void z47_keyboard_state_legacy_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
+  legacyFnKeyDotDCalls++;
   (void)unusedButMandatoryParameter;
 }

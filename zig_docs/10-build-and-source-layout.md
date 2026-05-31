@@ -14,7 +14,7 @@ the local maintainer flow.
 - `build.zig` is the canonical maintained entrypoint.
 - The repo-root `build.zig` stays small and routes work into `zig_build/`.
 - `zig_build/` is build-only; live runtime Zig lives under `zig_src/` and
-  retained runtime bridge C lives under `zig_bridge/`.
+  legacy runtime bridge C lives under `zig_bridge/`.
 - imported upstream paths route through `UPSTREAM_ROOT` in
   `../.github/project/upstream-pin.env`; the current value `.` keeps the
   imported baseline at repo root
@@ -78,9 +78,9 @@ repo root
 |     |- upstream-port-ledger.tsv
 |     |- check-upstream-port-ledger.py
 |     |- c_dependency_audit.py
-|     |- retained-bridge-review.tsv
-|     |- retained_bridge_review.py
-|     |- check-retained-bridge-ledger.py
+|     |- legacy-bridge-review.tsv
+|     |- legacy_bridge_review.py
+|     |- check-legacy-bridge-ledger.py
 |     |- report-c-dependency-status.py
 |     |- report-upstream-refresh.py
 |     |- source-ownership.txt
@@ -135,15 +135,15 @@ Checked-in build defaults currently come from these files:
   pinned-commit coverage, and pin-plus-ledger co-updates
 - `../.github/project/c_dependency_audit.py`: shared path extraction and
   classification logic for tracked first-party C telemetry
-- `../.github/project/retained-bridge-review.tsv`: tracked file-by-file review
+- `../.github/project/legacy-bridge-review.tsv`: tracked file-by-file review
   ledger for the active product-lane `zig_bridge` C seams
-- `../.github/project/retained_bridge_review.py`: shared retained-bridge review
+- `../.github/project/legacy_bridge_review.py`: shared legacy-bridge review
   parsing logic used by the status helper and ledger guard
-- `../.github/project/check-retained-bridge-ledger.py`: validates that the
-  retained-bridge review ledger covers the current active product-lane
+- `../.github/project/check-legacy-bridge-ledger.py`: validates that the
+  legacy-bridge review ledger covers the current active product-lane
   `zig_bridge` references exactly once
 - `../.github/project/report-c-dependency-status.py`: prints split live
-  first-party C metrics for active product-build, retained-bridge, and
+  first-party C metrics for active product-build, legacy-bridge, and
   parity-oracle or test buckets used by future codebase-status reports
 - `../.github/project/report-upstream-refresh.py`: summarizes new upstream
   commits, changed imported paths, and explicit z47-owned touchpoints before a
@@ -201,7 +201,7 @@ Maintenance rule:
 
 - add new z47-owned build logic under `zig_build/` or `.github/`
 - add new live runtime Zig under `zig_src/`
-- add new retained runtime bridge C under `zig_bridge/`
+- add new legacy runtime bridge C under `zig_bridge/`
 - do not place new z47-owned files under imported upstream-shaped directories
   unless the task is intentionally editing the canonical imported owner path
 - use a linked worktree when rehearsing an `upstream/master` refresh instead of
@@ -211,9 +211,9 @@ Maintenance rule:
   paths, and the likely z47-owned follow-up surfaces before the pin moves
 - run `../.github/project/report-c-dependency-status.py` when a maintainer
   report, roadmap update, or closure claim needs live split first-party C
-  telemetry; keep active product-build, retained-bridge, and parity-oracle or
+  telemetry; keep active product-build, legacy-bridge, and parity-oracle or
   test buckets separate instead of collapsing them into one closure sentence
-- run `../.github/project/check-retained-bridge-ledger.py` after any change to
+- run `../.github/project/check-legacy-bridge-ledger.py` after any change to
   the active product-lane `zig_bridge` set or its file-by-file review status so
   the ledger stays aligned with the live product subset
 - use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
@@ -227,7 +227,7 @@ Use one naming stratum per file.
 - semantic owner files use the domain name directly, for example
   `zig_src/frontier/frontier.zig`, `zig_src/state/calc_state.zig`, and
   `zig_src/ui/tone.zig`
-- direct retained-boundary Zig seams use `*_runtime.zig`, for example
+- direct legacy-boundary Zig seams use `*_runtime.zig`, for example
   `zig_src/frontier/frontier_runtime.zig` and
   `zig_src/state/calc_state_runtime.zig`
 - pure ABI shim forwarders use `*_export.zig`, for example
@@ -235,14 +235,14 @@ Use one naming stratum per file.
   `zig_src/mathematics/math_real_trig_export.zig`
 - internal implementation helpers that exist only behind a paired export shim
   use `*_owned.zig`, for example `zig_src/mathematics/math_atan2_owned.zig`
-- retained C owner or helper files stay explicit as `*_retained.c` or
+- legacy C owner or helper files stay explicit as `*_legacy.c` or
   `*_runtime_helpers.c`
 - inside semantic owner files and coherent internal-only helper clusters, use
   Zig casing only when the whole family can move together without leaving a
   mixed layer: directories and files `snake_case`, types `TitleCase`,
   functions `camelCase`, and other values `snake_case`
 - callable alias constants inside owner files are still values, so keep them
-  semantic and `snake_case` rather than leaking retained boundary spellings or
+  semantic and `snake_case` rather than leaking legacy boundary spellings or
   function-style casing into the owner layer
 - the current owned mathematics helper vocabulary follows that rule with names
   such as `arctanReal`, `arctan2Real`, `rectangularToPolarReal`,
@@ -257,13 +257,13 @@ Use one naming stratum per file.
   contract; any future naming reopener must start from a fresh owner-specific
   inventory instead of inheriting the now-closed queue
 - `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types,
-  and retained public names may keep upstream-compatible spellings where ABI
+  and legacy public names may keep upstream-compatible spellings where ABI
   stability or upstream tracking requires them
 - do not try to force one repo-wide casing rule across owner, runtime, and
   export layers; the repo needs layer-specific rules, not global churn
 
 Avoid historical mixed forms such as `*_owned_export.zig` and owner-file
-`*_entries.zig` suffixes. Keep upstream-compatible spellings at the retained
+`*_entries.zig` suffixes. Keep upstream-compatible spellings at the legacy
 boundary or export surface, not in the semantic owner filename.
 
 ## Build Entry Points

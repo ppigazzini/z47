@@ -1,19 +1,6 @@
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
-
-const compare_less_than_retained = runtime.retained.z47_math_wrappers_retained_fnXLessThan;
-const compare_less_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXLessEqual;
-const compare_greater_than_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterThan;
-const compare_greater_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXGreaterEqual;
-const compare_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXEqualsTo;
-const compare_not_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXNotEqual;
-const compare_almost_equal_retained = runtime.retained.z47_math_wrappers_retained_fnXAlmostEqual;
-
-fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
-    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
-    buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
-}
+const legacy = runtime.legacy;
 
 pub const Mode = enum(u8) {
     less_than = 0x1,
@@ -24,8 +11,43 @@ pub const Mode = enum(u8) {
     greater_equal = 0x6,
 };
 
+fn registFromParameter(parameter: u16) runtime.calcRegister_t {
+    return @intCast(parameter);
+}
+
+fn isOwnedStackRegister(regist: runtime.calcRegister_t) bool {
+    return switch (regist) {
+        runtime.REGISTER_X,
+        runtime.REGISTER_Y,
+        runtime.REGISTER_Z,
+        runtime.REGISTER_T,
+        => true,
+        else => false,
+    };
+}
+
+fn callLegacyCompare(mode: Mode, parameter: u16) void {
+    switch (mode) {
+        .less_than => legacy.fnXLessThan(parameter),
+        .equal => legacy.fnXEqualsTo(parameter),
+        .less_equal => legacy.fnXLessEqual(parameter),
+        .greater_than => legacy.fnXGreaterThan(parameter),
+        .not_equal => legacy.fnXNotEqual(parameter),
+        .greater_equal => legacy.fnXGreaterEqual(parameter),
+    }
+}
+
+fn runCompare(parameter: u16, mode: Mode) void {
+    const regist = registFromParameter(parameter);
+    if (!isOwnedStackRegister(regist)) {
+        callLegacyCompare(mode, parameter);
+        return;
+    }
+    compareScalarRegister(regist, mode);
+}
+
 pub fn isOwnedCompareRegister(regist: runtime.calcRegister_t) bool {
-    return regist == runtime.REGISTER_X or regist == runtime.REGISTER_Y or regist == runtime.REGISTER_Z or regist == runtime.REGISTER_T;
+    return isOwnedStackRegister(regist);
 }
 
 pub fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
@@ -33,13 +55,20 @@ pub fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
 }
 
 fn isOwnedCompareType(data_type: u32) bool {
-    return data_type == runtime.dtLongInteger or data_type == runtime.dtShortInteger or data_type == runtime.dtReal34 or data_type == runtime.dtComplex34;
+    return switch (data_type) {
+        runtime.dtLongInteger,
+        runtime.dtShortInteger,
+        runtime.dtReal34,
+        runtime.dtComplex34,
+        => true,
+        else => false,
+    };
 }
 
 fn compareTypeError(regist: runtime.calcRegister_t) void {
     var message_buffer: [128]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(regist, true, false));
-    const message = bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
+    const message = std.fmt.bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ regist, type_name }) catch "cannot convert Register";
 
     runtime.setTemporaryInformation(false);
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
@@ -152,69 +181,27 @@ pub fn compareScalarRegister(regist: runtime.calcRegister_t, mode: Mode) void {
 }
 
 pub fn fnXLessThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_less_than_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .less_than);
+    runCompare(unused_but_mandatory_parameter, .less_than);
 }
 
 pub fn fnXLessEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_less_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .less_equal);
+    runCompare(unused_but_mandatory_parameter, .less_equal);
 }
 
 pub fn fnXGreaterThan(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_greater_than_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .greater_than);
+    runCompare(unused_but_mandatory_parameter, .greater_than);
 }
 
 pub fn fnXGreaterEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_greater_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .greater_equal);
+    runCompare(unused_but_mandatory_parameter, .greater_equal);
 }
 
 pub fn fnXEqualsTo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .equal);
+    runCompare(unused_but_mandatory_parameter, .equal);
 }
 
 pub fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-
-    if (!isOwnedCompareRegister(regist)) {
-        compare_not_equal_retained(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .not_equal);
+    runCompare(unused_but_mandatory_parameter, .not_equal);
 }
 
 pub fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -223,7 +210,7 @@ pub fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const regist_type = runtime.getRegisterDataType(regist);
 
     if (!isOwnedCompareRegister(regist) or !isOwnedAlmostEqualIntegerType(x_type) or !isOwnedAlmostEqualIntegerType(regist_type)) {
-        compare_almost_equal_retained(unused_but_mandatory_parameter);
+        legacy.fnXAlmostEqual(unused_but_mandatory_parameter);
         return;
     }
 

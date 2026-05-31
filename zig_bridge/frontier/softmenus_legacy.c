@@ -2,7 +2,7 @@
 
 #include "c47.h"
 
-#define fnDynamicMenu z47_frontier_retained_fnDynamicMenu
+#define fnDynamicMenu z47_frontier_legacy_fnDynamicMenu
 #include "../../src/c47/softmenus.c"
 
 int16_t z47_frontier_dynamic_menu_softmenu_id(void) {

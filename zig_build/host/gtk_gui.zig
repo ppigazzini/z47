@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const retained_gtk_sources_manifest = @embedFile("gtk_gui_retained_gtk_sources.txt");
+const legacy_gtk_sources_manifest = @embedFile("gtk_gui_legacy_gtk_sources.txt");
 const runtime_helper_sources_manifest = @embedFile("gtk_gui_runtime_helper_sources.txt");
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -18,7 +18,7 @@ pub fn filterGtkSources(b: *std.Build, gtk_sources: [][]const u8) ![][]const u8 
     errdefer filtered.deinit(b.allocator);
 
     for (gtk_sources) |source| {
-        if (manifestContainsPath(retained_gtk_sources_manifest, source)) {
+        if (manifestContainsPath(legacy_gtk_sources_manifest, source)) {
             continue;
         }
         try filtered.append(b.allocator, source);

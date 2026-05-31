@@ -20,13 +20,13 @@ pub extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn setSystemFlag(flag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t, regist: calcRegister_t) void;
-pub extern fn z47_solver_retained_fnIntegrate(label_or_variable: u16) void;
-pub extern fn z47_solver_retained_fnIntegrateYX(label_or_variable: u16) void;
-pub extern fn z47_solver_retained_fnProgrammableSum(label: u16) void;
-pub extern fn z47_solver_retained_fnProgrammableProduct(label: u16) void;
-pub extern fn z47_solver_retained_fnProgrammableiSum(label: u16) void;
-pub extern fn z47_solver_retained_fnProgrammableiProduct(label: u16) void;
-pub extern fn z47_solver_retained_fn1stDeriv(label: u16) void;
+pub extern fn z47_solver_fnIntegrate(label_or_variable: u16) void;
+pub extern fn z47_solver_fnIntegrateYX(label_or_variable: u16) void;
+pub extern fn z47_solver_fnProgrammableSum(label: u16) void;
+pub extern fn z47_solver_fnProgrammableProduct(label: u16) void;
+pub extern fn z47_solver_fnProgrammableiSum(label: u16) void;
+pub extern fn z47_solver_fnProgrammableiProduct(label: u16) void;
+pub extern fn z47_solver_fn1stDeriv(label: u16) void;
 
 pub inline fn isLabel(label: u16) bool {
     return FIRST_LABEL <= label and label <= LAST_LABEL;

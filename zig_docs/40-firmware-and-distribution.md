@@ -9,8 +9,8 @@ the build-domain split is already clear.
 
 ## Firmware Surface At A Glance
 
-The current firmware build graph is Zig-owned orchestration around retained C
-inputs and retained third-party tools.
+The current firmware build graph is Zig-owned orchestration around legacy C
+inputs and legacy third-party tools.
 
 That means:
 
@@ -24,7 +24,7 @@ That means:
 - the live firmware graph now filters imported `src/c47/stack.c` and links the
   Zig stack-state object from `../zig_src/state/stack.zig` plus
   `../zig_bridge/state/stack_runtime_helpers.c`
-  while the rest of the core remains retained C
+  while the rest of the core remains legacy C
 - the cross-GMP bootstrap still uses upstream Autoconf and Make internally
 - package creation is still more than compilation; it includes program, QSPI,
   map, and archive outputs
@@ -60,7 +60,7 @@ Current firmware prerequisites are:
 - `make`
 - native `cc` or `gcc` for the cross-GMP bootstrap
 
-Current retained dependency inputs are:
+Current legacy dependency inputs are:
 
 - `../dep/DMCP_SDK`
 - `../dep/DMCP5_SDK`
@@ -83,9 +83,9 @@ Current behavior:
   is absent
 - verify the tarball SHA-256 before use
 - configure GMP for `arm-none-eabi`
-- build it with retained Autoconf and Make tooling
+- build it with legacy Autoconf and Make tooling
 
-This is still a retained C dependency build, not a Zig-native GMP rewrite.
+This is still a legacy C dependency build, not a Zig-native GMP rewrite.
 
 ## Distribution Surface
 
@@ -157,14 +157,14 @@ The Linux CI firmware artifact keeps the default C47 DMCP package from
 `dist_dmcp` and uses `dist_dmcp_pkg1`, `dist_dmcp_pkg2`, and `dist_dmcp_pkg3`
 so each smaller package variant is preserved instead of overwritten.
 
-When a retained-state, keyboard-helper, or package-trim change must stay safe on
+When a legacy-state, keyboard-helper, or package-trim change must stay safe on
 old hardware, rerun `zig build dist_dmcp_pkg3 --summary none`; rerun
 `zig build dist_dmcp_pkg2 --summary none` as well when the change touches the
 package-2-only overlay trims.
 
 ## Change Rules
 
-- Keep retained SDK, linker-script, CRC, and GMP dependencies explicit.
+- Keep legacy SDK, linker-script, CRC, and GMP dependencies explicit.
 - Do not claim firmware parity without producing the actual firmware artifacts.
 - Keep host-package behavior aligned with the workflow lanes that publish those
   artifacts.

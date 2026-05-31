@@ -59,7 +59,7 @@ flowchart TD
 - [20-zig-build-graph.md](20-zig-build-graph.md): how `build.zig` routes work
   into the host, firmware, distribution, and rewrite domains
 - [30-host-and-generated-surfaces.md](30-host-and-generated-surfaces.md): host
-  simulator, generated artifacts, docs build, and retained host dependency
+  simulator, generated artifacts, docs build, and legacy host dependency
   contracts
 - [40-firmware-and-distribution.md](40-firmware-and-distribution.md): DMCP and
   DMCP5 firmware targets, package variants, and host-package rules

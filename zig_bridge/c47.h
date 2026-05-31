@@ -29,7 +29,7 @@
 #define SAVE_SPACE_DM42_24_PROFILES
 #endif
 
-// Package 3 only needs a small additional trim after the retained-state split,
+// Package 3 only needs a small additional trim after the legacy-state split,
 // so prefer the least user-visible savings before dropping major features.
 #if defined(DMCP_BUILD) && defined(OLD_HW) && defined(TWO_FILE_PGM) && defined(DMCP_PACKAGE) && DMCP_PACKAGE == 3
 #define SAVE_SPACE_DM42_8F

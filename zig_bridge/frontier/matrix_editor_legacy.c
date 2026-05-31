@@ -2,43 +2,43 @@
 
 #include "c47.h"
 
-#define fnEditMatrix z47_frontier_retained_fnEditMatrix
-#define fnOldMatrix z47_frontier_retained_fnOldMatrix
-#define fnGoToElement z47_frontier_retained_fnGoToElement
-#define fnGoToRow z47_frontier_retained_fnGoToRow
-#define fnGoToColumn z47_frontier_retained_fnGoToColumn
-#define fnSetGrowMode z47_frontier_retained_fnSetGrowMode
-#define fnIncDecI z47_frontier_retained_fnIncDecI
-#define fnIncDecJ z47_frontier_retained_fnIncDecJ
-#define fnInsRow z47_frontier_retained_fnInsRow
-#define fnAddRow z47_frontier_retained_fnAddRow
-#define fnInsCol z47_frontier_retained_fnInsCol
-#define fnAddCol z47_frontier_retained_fnAddCol
-#define fnDelRow z47_frontier_retained_fnDelRow
-#define fnDelCol z47_frontier_retained_fnDelCol
-#define getIRegisterAsInt z47_frontier_retained_getIRegisterAsInt
-#define getJRegisterAsInt z47_frontier_retained_getJRegisterAsInt
-#define setIRegisterAsInt z47_frontier_retained_setIRegisterAsInt
-#define setJRegisterAsInt z47_frontier_retained_setJRegisterAsInt
-#define wrapIJ z47_frontier_retained_wrapIJ
-#define _fnInsRow z47_frontier_retained__fnInsRow
-#define _fnInsCol z47_frontier_retained__fnInsCol
-#define mimFinalize z47_frontier_retained_mimFinalize
-#define mimRestore z47_frontier_retained_mimRestore
-#define mimAddNumber z47_frontier_retained_mimAddNumber
-#define mimRunFunction z47_frontier_retained_mimRunFunction
-#define showMatrixEditor z47_frontier_retained_showMatrixEditor
-#define mimEnter z47_frontier_retained_mimEnter
+#define fnEditMatrix z47_frontier_legacy_fnEditMatrix
+#define fnOldMatrix z47_frontier_legacy_fnOldMatrix
+#define fnGoToElement z47_frontier_legacy_fnGoToElement
+#define fnGoToRow z47_frontier_legacy_fnGoToRow
+#define fnGoToColumn z47_frontier_legacy_fnGoToColumn
+#define fnSetGrowMode z47_frontier_legacy_fnSetGrowMode
+#define fnIncDecI z47_frontier_legacy_fnIncDecI
+#define fnIncDecJ z47_frontier_legacy_fnIncDecJ
+#define fnInsRow z47_frontier_legacy_fnInsRow
+#define fnAddRow z47_frontier_legacy_fnAddRow
+#define fnInsCol z47_frontier_legacy_fnInsCol
+#define fnAddCol z47_frontier_legacy_fnAddCol
+#define fnDelRow z47_frontier_legacy_fnDelRow
+#define fnDelCol z47_frontier_legacy_fnDelCol
+#define getIRegisterAsInt z47_frontier_legacy_getIRegisterAsInt
+#define getJRegisterAsInt z47_frontier_legacy_getJRegisterAsInt
+#define setIRegisterAsInt z47_frontier_legacy_setIRegisterAsInt
+#define setJRegisterAsInt z47_frontier_legacy_setJRegisterAsInt
+#define wrapIJ z47_frontier_legacy_wrapIJ
+#define _fnInsRow z47_frontier_legacy__fnInsRow
+#define _fnInsCol z47_frontier_legacy__fnInsCol
+#define mimFinalize z47_frontier_legacy_mimFinalize
+#define mimRestore z47_frontier_legacy_mimRestore
+#define mimAddNumber z47_frontier_legacy_mimAddNumber
+#define mimRunFunction z47_frontier_legacy_mimRunFunction
+#define showMatrixEditor z47_frontier_legacy_showMatrixEditor
+#define mimEnter z47_frontier_legacy_mimEnter
 
-int16_t z47_frontier_retained_getIRegisterAsInt(bool_t asArrayPointer);
-int16_t z47_frontier_retained_getJRegisterAsInt(bool_t asArrayPointer);
-void z47_frontier_retained_setIRegisterAsInt(bool_t asArrayPointer, int16_t toStore);
-void z47_frontier_retained_setJRegisterAsInt(bool_t asArrayPointer, int16_t toStore);
-bool_t z47_frontier_retained_wrapIJ(uint16_t rows, uint16_t cols);
-void z47_frontier_retained_showMatrixEditor(void);
-void z47_frontier_retained_mimEnter(bool_t commit);
-void z47_frontier_retained_mimAddNumber(int16_t item);
-void z47_frontier_retained_mimRunFunction(int16_t func, uint16_t param);
+int16_t z47_frontier_legacy_getIRegisterAsInt(bool_t asArrayPointer);
+int16_t z47_frontier_legacy_getJRegisterAsInt(bool_t asArrayPointer);
+void z47_frontier_legacy_setIRegisterAsInt(bool_t asArrayPointer, int16_t toStore);
+void z47_frontier_legacy_setJRegisterAsInt(bool_t asArrayPointer, int16_t toStore);
+bool_t z47_frontier_legacy_wrapIJ(uint16_t rows, uint16_t cols);
+void z47_frontier_legacy_showMatrixEditor(void);
+void z47_frontier_legacy_mimEnter(bool_t commit);
+void z47_frontier_legacy_mimAddNumber(int16_t item);
+void z47_frontier_legacy_mimRunFunction(int16_t func, uint16_t param);
 
 #include "../../src/c47/ui/matrixEditor.c"
 

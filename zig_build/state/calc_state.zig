@@ -5,7 +5,7 @@ pub const RuntimeObjects = struct {
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
         cmd.addArg("zig_bridge/state/" ++ "calc_state_runtime_helpers.c");
-        cmd.addArg("zig_bridge/state/" ++ "calc_state_retained.c");
+        cmd.addArg("zig_bridge/state/" ++ "calc_state_legacy.c");
         cmd.addFileArg(self.calc_state.getEmittedBin());
     }
 };
@@ -94,7 +94,7 @@ pub fn addToModule(
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
     module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "calc_state_runtime_helpers.c"), .flags = c_flags });
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "calc_state_retained.c"), .flags = c_flags });
+    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "calc_state_legacy.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 

@@ -2,5 +2,5 @@
 
 #include "c47.h"
 
-#define fn1stDeriv z47_solver_retained_fn1stDeriv
+#define fn1stDeriv z47_solver_fn1stDeriv
 #include "../../src/c47/solver/differentiate.c"

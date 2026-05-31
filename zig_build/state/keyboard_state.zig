@@ -9,7 +9,7 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "keyboard_state_retained.c");
+        cmd.addArg("zig_bridge/state/" ++ "keyboard_state_legacy.c");
         cmd.addFileArg(self.keyboard_state.getEmittedBin());
     }
 };

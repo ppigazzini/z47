@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
+#define systemFlags0Changed z47_flags_legacy_systemFlags0Changed
+#define systemFlags1Changed z47_flags_legacy_systemFlags1Changed
+#define systemFlags2Changed z47_flags_legacy_systemFlags2Changed
+#define setSystemFlag z47_flags_legacy_setSystemFlag
+#define clearSystemFlag z47_flags_legacy_clearSystemFlag
+#define getSystemFlag z47_flags_legacy_getSystemFlag
+#define didSystemFlagChange z47_flags_legacy_didSystemFlagChange
+#define setAllSystemFlagChanged z47_flags_legacy_setAllSystemFlagChanged
+#define setSystemFlagChanged z47_flags_legacy_setSystemFlagChanged
+#define flipSystemFlag z47_flags_legacy_flipSystemFlag
+#define forceSystemFlag z47_flags_legacy_forceSystemFlag
+#define getFlag z47_flags_legacy_getFlag
+#define fnGetSystemFlag z47_flags_legacy_fnGetSystemFlag
+#define fnSetFlag z47_flags_legacy_fnSetFlag
+#define fnClearFlag z47_flags_legacy_fnClearFlag
+#define fnFlipFlag z47_flags_legacy_fnFlipFlag
+#define fnClFAll z47_flags_legacy_fnClFAll
+#define fnIsFlagClear z47_flags_legacy_fnIsFlagClear
+#define fnIsFlagSet z47_flags_legacy_fnIsFlagSet
+#define fnIsFlagClearClear z47_flags_legacy_fnIsFlagClearClear
+#define fnIsFlagSetClear z47_flags_legacy_fnIsFlagSetClear
+#define fnIsFlagClearSet z47_flags_legacy_fnIsFlagClearSet
+#define fnIsFlagSetSet z47_flags_legacy_fnIsFlagSetSet
+#define fnIsFlagClearFlip z47_flags_legacy_fnIsFlagClearFlip
+#define fnIsFlagSetFlip z47_flags_legacy_fnIsFlagSetFlip
+#define SetSetting z47_flags_legacy_SetSetting
+
+#include "../../src/c47/flags.c"

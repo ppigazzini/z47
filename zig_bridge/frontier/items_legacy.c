@@ -2,5 +2,5 @@
 
 #include "c47.h"
 
-#define fnNop z47_frontier_retained_fnNop
+#define fnNop z47_frontier_legacy_fnNop
 #include "../../src/c47/items.c"

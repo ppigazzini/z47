@@ -1,8 +1,8 @@
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
-const to_polar2_retained = runtime.retained.z47_math_wrappers_retained_fnToPolar2;
-const to_rect2_retained = runtime.retained.z47_math_wrappers_retained_fnToRect2;
+const to_polar2_legacy = runtime.legacy.fnToPolar2;
+const to_rect2_legacy = runtime.legacy.fnToRect2;
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
     switch (data_type) {
@@ -232,7 +232,7 @@ pub fn toPolar2(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    to_polar2_retained(unused_but_mandatory_parameter);
+    to_polar2_legacy(unused_but_mandatory_parameter);
 }
 
 pub fn toRect2(unused_but_mandatory_parameter: u16) void {
@@ -240,7 +240,7 @@ pub fn toRect2(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    to_rect2_retained(unused_but_mandatory_parameter);
+    to_rect2_legacy(unused_but_mandatory_parameter);
 }
 
 pub fn toRect(unused_but_mandatory_parameter: u16) void {

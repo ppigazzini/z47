@@ -10,7 +10,7 @@ The imported `Makefile` and Meson files remain audit and parity-reference
 surfaces. They are not the maintained z47 control plane.
 
 Build orchestration lives under `zig_build/`. Live runtime Zig now lives under
-`zig_src/`, and retained runtime bridge C lives under `zig_bridge/`.
+`zig_src/`, and legacy runtime bridge C lives under `zig_bridge/`.
 
 A Zig-owned build layer is not treated as value by itself in this repo. If a
 new Zig surface does not replace buggy or retired C owners, fix a real build or
@@ -26,7 +26,7 @@ Imported upstream paths now route through `UPSTREAM_ROOT` in
 baseline still lives at repo root.
 
 The May 2026 structural naming milestone is complete under the current
-layer-scoped naming contract. For live owner, runtime, export, and retained
+layer-scoped naming contract. For live owner, runtime, export, and legacy
 naming rules, use
 [zig_docs/10-build-and-source-layout.md](zig_docs/10-build-and-source-layout.md)
 and
@@ -83,7 +83,7 @@ bash .github/project/workflow-imported-root-paths.sh check-workflow
 Use `zig_docs/` for the detailed contract behind these areas:
 
 - host simulator, generated artifacts, and docs build
-- firmware prerequisites and retained SDK or GMP dependencies
+- firmware prerequisites and legacy SDK or GMP dependencies
 - distribution targets and host-specific package behavior
 - approved Zig or C boundaries and current rewrite slices
 - CI lanes, artifacts, and local reproduction commands
