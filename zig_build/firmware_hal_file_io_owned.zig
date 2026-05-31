@@ -1,5 +1,6 @@
 const file_io_open_owned = @import("firmware_hal_file_io_open_owned.zig");
 const file_io_close_owned = @import("firmware_hal_file_io_close_owned.zig");
+const file_io_stream_owned = @import("firmware_hal_file_io_stream_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -34,14 +35,11 @@ pub fn ioFileOpen(path: c_int, mode: c_int, io_write_enabled: *c_int, io_read_en
 }
 
 pub fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void {
-    var bytes_written: u32 = 0;
-    _ = f_write(ppgm_fp, buffer, size, &bytes_written);
+    file_io_stream_owned.ioFileWrite(buffer, size);
 }
 
 pub fn ioFileRead(buffer: ?*anyopaque, size: u32) u32 {
-    var bytes_read: u32 = 0;
-    _ = f_read(ppgm_fp, buffer, size, &bytes_read);
-    return bytes_read;
+    return file_io_stream_owned.ioFileRead(buffer, size);
 }
 
 pub fn ioFileSeek(position: u32) void {
@@ -53,7 +51,7 @@ pub fn ioFileClose(io_write_enabled: *c_int, io_read_enabled: *c_int) void {
 }
 
 pub fn ioEof() c_int {
-    return f_eof(ppgm_fp);
+    return file_io_stream_owned.ioEof();
 }
 
 pub fn ioFileRemove(path: c_int, error_number: ?*u32) c_int {
