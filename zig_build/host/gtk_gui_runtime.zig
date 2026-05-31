@@ -7,6 +7,7 @@ const startup_owned = @import("gtk_gui_startup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
 const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
 const shortcut_bridge_owned = @import("gtk_gui_shortcut_bridge_owned.zig");
+const key_wrapper_owned = @import("gtk_gui_key_wrapper_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -306,19 +307,19 @@ pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque,
 }
 
 pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return z47_keyPressed_impl(widget, event, data);
+    return key_wrapper_owned.keyPressedWrapper(widget, event, data);
 }
 
 pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return z47_keyReleased_impl(widget, event, data);
+    return key_wrapper_owned.keyReleasedWrapper(widget, event, data);
 }
 
 pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyPressedImpl(widget, event, data);
+    return key_wrapper_owned.keyPressedImpl(widget, event, data);
 }
 
 pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyReleasedImpl(widget, event, data);
+    return key_wrapper_owned.keyReleasedImpl(widget, event, data);
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
