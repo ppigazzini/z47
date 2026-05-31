@@ -1,5 +1,5 @@
 const export_audio_owned = @import("firmware_hal_export_audio_owned.zig");
-const printer_bridge_owned = @import("firmware_hal_printer_bridge_owned.zig");
+const export_printer_owned = @import("firmware_hal_export_printer_owned.zig");
 const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
 const file_io_bridge_owned = @import("firmware_hal_file_io_bridge_owned.zig");
 const statefile_bridge_owned = @import("firmware_hal_statefile_bridge_owned.zig");
@@ -50,15 +50,15 @@ pub export fn fnPlay(regist: u16) callconv(.c) void {
 }
 
 pub export fn getLineDelay() callconv(.c) u32 {
-    return printer_bridge_owned.getLineDelay();
+    return export_printer_owned.getLineDelay();
 }
 
 pub export fn setLineDelay(delay: u16) callconv(.c) void {
-    printer_bridge_owned.setLineDelay(delay);
+    export_printer_owned.setLineDelay(delay);
 }
 
 pub export fn sendByteIR(byte: u8) callconv(.c) void {
-    printer_bridge_owned.sendByteIR(byte);
+    export_printer_owned.sendByteIR(byte);
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
