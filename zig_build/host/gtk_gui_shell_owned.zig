@@ -1,5 +1,6 @@
 const GtkWidget = opaque {};
 const shell_window_owned = @import("gtk_gui_shell_window_owned.zig");
+const shell_event_owned = @import("gtk_gui_shell_event_owned.zig");
 
 const GTK_WINDOW_TOPLEVEL: c_int = 0;
 const GTK_WIN_POS_CENTER: c_int = 1;
@@ -40,11 +41,7 @@ extern fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*a
 
 pub fn setupUiNoKeyboardShell() void {
     shell_window_owned.setupShellWindow();
-    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
-
-    gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
+    shell_event_owned.wireShellEvents();
 
     grid = gtk_fixed_new();
     gtk_container_add(@ptrCast(frmCalc), grid);
