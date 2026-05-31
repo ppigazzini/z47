@@ -23,15 +23,10 @@ zig_build/firmware_io_runtime.zig
 zig_build/firmware_print_ir_runtime.zig
 zig_build/host/gtk_button_signals_export.zig
 zig_build/host/gtk_gui_runtime.zig
-zig_build/host/gtk_gui_setup_background_owned.zig
-zig_build/host/gtk_gui_setup_window_owned.zig
-zig_build/host/gtk_gui_setup_softkey_owned.zig
-zig_build/host/gtk_gui_setup_screen_owned.zig
+zig_build/host/gtk_gui_setup_owned.zig
 zig_build/host/gtk_gui_startup_settle_owned.zig
 zig_build/host/gtk_gui_host_decls.zig
-zig_build/host/gtk_gui_shell_window_owned.zig
-zig_build/host/gtk_gui_shell_event_owned.zig
-zig_build/host/gtk_gui_shell_screen_owned.zig
+zig_build/host/gtk_gui_shell_owned.zig
 zig_build/host/gtk_gui_callback_button_owned.zig
 zig_build/host/gtk_gui_callback_bridge_owned.zig
 zig_build/host/gtk_gui_key_event_owned.zig
