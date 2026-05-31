@@ -6,6 +6,7 @@ const io_path_owned = @import("firmware_hal_io_path_owned.zig");
 const play_owned = @import("firmware_hal_play_owned.zig");
 const printer_owned = @import("firmware_hal_printer_owned.zig");
 const warning_owned = @import("firmware_hal_warning_owned.zig");
+const audio_bridge_owned = @import("firmware_hal_audio_bridge_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -158,31 +159,31 @@ extern fn decQuadToUInt32(source: [*c]const DecQuad, context: *DecContext, round
 extern var ctxtReal34: DecContext;
 
 pub export fn audioTone(frequency: u32) callconv(.c) void {
-    audio_volume_owned.audioTone(frequency);
+    audio_bridge_owned.audioTone(frequency);
 }
 
 pub export fn dm42_squeak() callconv(.c) void {
-    audio_volume_owned.dm42Squeak();
+    audio_bridge_owned.dm42Squeak();
 }
 
 pub export fn fnSetVolume(volume: u16) callconv(.c) void {
-    audio_volume_owned.fnSetVolume(volume);
+    audio_bridge_owned.fnSetVolume(volume);
 }
 
 pub export fn getBeepVolume() callconv(.c) u16 {
-    return audio_volume_owned.getBeepVolume();
+    return audio_bridge_owned.getBeepVolume();
 }
 
 pub export fn fnGetVolume(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_volume_owned.fnGetVolume(unused_but_mandatory_parameter);
+    audio_bridge_owned.fnGetVolume(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeUp(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_volume_owned.fnVolumeUp(unused_but_mandatory_parameter);
+    audio_bridge_owned.fnVolumeUp(unused_but_mandatory_parameter);
 }
 
 pub export fn fnVolumeDown(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    audio_volume_owned.fnVolumeDown(unused_but_mandatory_parameter);
+    audio_bridge_owned.fnVolumeDown(unused_but_mandatory_parameter);
 }
 
 pub export fn _Buzz(frequency: u32, ms_delay: u32) callconv(.c) void {
