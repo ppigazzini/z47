@@ -2,6 +2,7 @@ const profile_owned = @import("gtk_gui_profile_owned.zig");
 const key_event_owned = @import("gtk_gui_key_event_owned.zig");
 const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
+const setup_preamble_owned = @import("gtk_gui_setup_preamble_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -207,115 +208,8 @@ extern fn free(ptr: ?*anyopaque) void;
 extern fn exit(code: c_int) noreturn;
 extern fn moreInfoOnError(prefix: [*:0]const u8, message: [*:0]const u8, third: ?[*:0]const u8, fourth: ?[*:0]const u8) void;
 
-fn isR47FAM() bool {
-    return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
-}
-
 fn setupUiPreamble() void {
-    var monitor: GdkRectangle = undefined;
-    gdk_monitor_get_geometry(gdk_display_get_monitor(gdk_display_get_default(), 0), &monitor);
-    if (calcAutoLandscapePortrait) {
-        calcLandscape = monitor.height < 1025;
-    }
-
-    frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    if (calcLandscape) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 1000, 540);
-    } else if (NARROW_SCREEN) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 400, 862);
-    } else {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 526, 980);
-    }
-
-    gtk_widget_set_name(frmCalc, "mainWindow");
-    gtk_window_set_resizable(@ptrCast(frmCalc), 0);
-    gtk_window_set_title(@ptrCast(frmCalc), if (isR47FAM()) "R47" else "C47");
-    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onConfigureEvent), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "button-press-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-in-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-out-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-
-    if (BIG_SCREEN_COEF > 1 or NARROW_SCREEN) {
-        gtk_window_set_decorated(@ptrCast(frmCalc), 0);
-        gtk_window_set_position(@ptrCast(frmCalc), GTK_WIN_POS_CENTER);
-    }
-
-    gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
-    grid = gtk_fixed_new();
-    gtk_container_add(@ptrCast(frmCalc), grid);
-
-    if (modelString[0] == 0) {
-        const base = if (isR47FAM()) "R47" else "C47";
-        var idx: usize = 0;
-        modelString[0] = 'r'; modelString[1] = 'e'; modelString[2] = 's'; modelString[3] = '/'; idx = 4;
-        for (base) |ch| {
-            modelString[idx] = ch;
-            idx += 1;
-        }
-        if (calcLandscape) {
-            const suffix = "short.png";
-            for (suffix) |ch| { modelString[idx] = ch; idx += 1; }
-        } else {
-            const suffix = ".png";
-            for (suffix) |ch| { modelString[idx] = ch; idx += 1; }
-        }
-        modelString[idx] = 0;
-    } else {
-        const prefix = "res/";
-        var idx: usize = 0;
-        for (prefix) |ch| { modelString[idx] = ch; idx += 1; }
-        for (modelString[0..]) |ch| {
-            if (ch == 0) break;
-            modelString[idx] = ch;
-            idx += 1;
-        }
-        modelString[idx] = 0;
-    }
-
-    if (!NARROW_SCREEN) {
-        backgroundImage = gtk_image_new_from_file(@as([*:0]const u8, @ptrCast(&modelString[0])));
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 0);
-    } else {
-        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-        gtk_fixed_put(@ptrCast(grid), backgroundImage, 0, 240);
-    }
-
-    lblFKey2 = gtk_label_new("");
-    gtk_widget_set_name(lblFKey2, "fSoftkeyArea");
-    if (kbd_usr[10].primary == ITM_SHIFTf) {
-        gtk_widget_set_size_request(lblFKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblFKey2, 350 + 4 + 2, 563 - 1);
-    }
-
-    lblGKey2 = gtk_label_new("");
-    gtk_widget_set_name(lblGKey2, "gSoftkeyArea");
-    if (kbd_usr[11].primary == ITM_SHIFTg) {
-        gtk_widget_set_size_request(lblGKey2, 61 - 8 - 2 - 2, 5 - 2);
-        gtk_fixed_put(@ptrCast(grid), lblGKey2, 350 + 4 + 2 + DELTA_KEYS_X, 563 - 1);
-    }
-
-    screen = gtk_drawing_area_new();
-    gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-    gtk_widget_set_tooltip_text(screen, "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+m: Menu image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s: SNAP\n");
-    if (!NARROW_SCREEN) {
-        gtk_fixed_put(@ptrCast(grid), screen, 63, 72);
-    } else {
-        gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
-    }
-
-    screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
-    const numBytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
-    const raw = malloc(numBytes);
-    if (raw == null) {
-        moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
-        exit(1);
-    }
-    screenData = @ptrCast(@alignCast(raw.?));
-    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+    setup_preamble_owned.setupUiPreamble();
 }
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
