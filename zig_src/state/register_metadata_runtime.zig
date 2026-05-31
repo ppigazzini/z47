@@ -97,34 +97,6 @@ pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 
-fn bytesPerBlock() comptime_int {
-    return payload_bytes_owned.bytesPerBlock();
-}
-
-fn toBlocks(bytes: usize) u16 {
-    return payload_bytes_owned.toBlocks(bytes);
-}
-
-fn copyBytesToValue(comptime T: type, data_ptr: ?*const anyopaque) T {
-    return payload_bytes_owned.copyBytesToValue(T, data_ptr);
-}
-
-fn copyValueToBytes(comptime T: type, data_ptr: ?*anyopaque, value: *const T) void {
-    payload_bytes_owned.copyValueToBytes(T, data_ptr, value);
-}
-
-fn matrixRows(data_ptr: ?*const anyopaque) u16 {
-    return payload_bytes_owned.matrixRows(data_ptr);
-}
-
-fn matrixColumns(data_ptr: ?*const anyopaque) u16 {
-    return payload_bytes_owned.matrixColumns(data_ptr);
-}
-
-fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void {
-    payload_bytes_owned.setMatrixRowsColumns(data_ptr, rows, columns);
-}
-
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_access_owned.globalDescriptor(reg);
 }
@@ -170,17 +142,21 @@ pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
-    return copyBytesToValue(strLgIntHeader_t, data_ptr).dataMaxLengthInBlocks;
+    return payload_bytes_owned.copyBytesToValue(strLgIntHeader_t, data_ptr).dataMaxLengthInBlocks;
 }
 
 pub fn setDataMaxLengthInBlocks(data_ptr: ?*anyopaque, max_data_len: u16) void {
-    var header = copyBytesToValue(strLgIntHeader_t, data_ptr);
+    var header = payload_bytes_owned.copyBytesToValue(strLgIntHeader_t, data_ptr);
     header.dataMaxLengthInBlocks = max_data_len;
-    copyValueToBytes(strLgIntHeader_t, data_ptr, &header);
+    payload_bytes_owned.copyValueToBytes(strLgIntHeader_t, data_ptr, &header);
 }
 
 pub fn matrixPayloadSizeInBlocks(data_ptr: ?*const anyopaque, element_size_in_blocks: u16) u16 {
-    return @intCast(@as(u32, matrixRows(data_ptr)) * @as(u32, matrixColumns(data_ptr)) * @as(u32, element_size_in_blocks));
+    return @intCast(
+        @as(u32, payload_bytes_owned.matrixRows(data_ptr)) *
+            @as(u32, payload_bytes_owned.matrixColumns(data_ptr)) *
+            @as(u32, element_size_in_blocks),
+    );
 }
 
 pub fn strLgIntHeaderSizeInBlocks() u16 {
