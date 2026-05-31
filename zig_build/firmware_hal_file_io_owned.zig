@@ -1,4 +1,5 @@
 const file_io_open_owned = @import("firmware_hal_file_io_open_owned.zig");
+const file_io_close_owned = @import("firmware_hal_file_io_close_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -48,12 +49,7 @@ pub fn ioFileSeek(position: u32) void {
 }
 
 pub fn ioFileClose(io_write_enabled: *c_int, io_read_enabled: *c_int) void {
-    _ = f_close(ppgm_fp);
-    if (io_write_enabled.* != 0) {
-        sys_disk_write_enable(0);
-    }
-    io_write_enabled.* = 0;
-    io_read_enabled.* = 0;
+    file_io_close_owned.ioFileClose(io_write_enabled, io_read_enabled);
 }
 
 pub fn ioEof() c_int {
