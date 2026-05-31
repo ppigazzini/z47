@@ -26,7 +26,6 @@ const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owne
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_command_owned = @import("math_logxy_command_owned.zig");
 const logxy_wrapper_owned = @import("math_logxy_wrapper_owned.zig");
-const change_sign_wrapper_owned = @import("math_change_sign_wrapper_owned.zig");
 const circular_trig_command_owned = @import("math_circular_trig_command_owned.zig");
 const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const transcendental_command_owned = @import("math_transcendental_command_owned.zig");
@@ -314,19 +313,19 @@ pub export fn realArcosh(
 }
 
 pub export fn chsReal() callconv(.c) void {
-    change_sign_wrapper_owned.chsReal();
+    sign_command_owned.chsReal();
 }
 
 pub export fn chsCplx() callconv(.c) void {
-    change_sign_wrapper_owned.chsCplx();
+    sign_command_owned.chsCplx();
 }
 
 pub export fn chsShoI() callconv(.c) void {
-    change_sign_wrapper_owned.chsShoI();
+    sign_command_owned.chsShoI();
 }
 
 fn chsLonI() callconv(.c) void {
-    change_sign_wrapper_owned.chsLonI();
+    sign_command_owned.chsLonI();
 }
 
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
