@@ -46,6 +46,7 @@ const matrix_vector_cross_scalar_owned = @import("math_matrix_vector_cross_scala
 const matrix_vector_dot_matrix_owned = @import("math_matrix_vector_dot_matrix_owned.zig");
 const matrix_vector_dot_scalar_owned = @import("math_matrix_vector_dot_scalar_owned.zig");
 const matrix_vector_validation_owned = @import("math_matrix_vector_validation_owned.zig");
+const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const linpol_pipeline_owned = @import("math_matrix_vector_linpol_pipeline_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const parallel_command_owned = @import("math_transform_parallel_command_owned.zig");
@@ -72,6 +73,16 @@ pub export fn z47_math_wrappers_owned_C47_WP34S_Atan(
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
     atan_owned.arctanReal(x, angle, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_realRectangularToPolar(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    magnitude: *runtime.real_t,
+    theta: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, magnitude, theta, real_context);
 }
 
 pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(
