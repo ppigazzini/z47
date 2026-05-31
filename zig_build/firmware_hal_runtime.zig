@@ -1,7 +1,6 @@
 const export_audio_owned = @import("firmware_hal_export_audio_owned.zig");
 const export_printer_owned = @import("firmware_hal_export_printer_owned.zig");
-const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
-const file_io_bridge_owned = @import("firmware_hal_file_io_bridge_owned.zig");
+const export_io_owned = @import("firmware_hal_export_io_owned.zig");
 const statefile_bridge_owned = @import("firmware_hal_statefile_bridge_owned.zig");
 const programfile_bridge_owned = @import("firmware_hal_programfile_bridge_owned.zig");
 const warning_bridge_owned = @import("firmware_hal_warning_bridge_owned.zig");
@@ -62,35 +61,35 @@ pub export fn sendByteIR(byte: u8) callconv(.c) void {
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
-    return io_path_bridge_owned.ioFileNameFromFilePath(path, filename);
+    return export_io_owned.ioFileNameFromFilePath(path, filename);
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
-    return file_io_bridge_owned.ioFileOpen(path, mode, &io_write_enabled, &io_read_enabled);
+    return export_io_owned.ioFileOpen(path, mode, &io_write_enabled, &io_read_enabled);
 }
 
 pub export fn ioFileWrite(buffer: ?*const anyopaque, size: u32) callconv(.c) void {
-    file_io_bridge_owned.ioFileWrite(buffer, size);
+    export_io_owned.ioFileWrite(buffer, size);
 }
 
 pub export fn ioFileRead(buffer: ?*anyopaque, size: u32) callconv(.c) u32 {
-    return file_io_bridge_owned.ioFileRead(buffer, size);
+    return export_io_owned.ioFileRead(buffer, size);
 }
 
 pub export fn ioFileSeek(position: u32) callconv(.c) void {
-    file_io_bridge_owned.ioFileSeek(position);
+    export_io_owned.ioFileSeek(position);
 }
 
 pub export fn ioFileClose() callconv(.c) void {
-    file_io_bridge_owned.ioFileClose(&io_write_enabled, &io_read_enabled);
+    export_io_owned.ioFileClose(&io_write_enabled, &io_read_enabled);
 }
 
 pub export fn ioEof() callconv(.c) c_int {
-    return file_io_bridge_owned.ioEof();
+    return export_io_owned.ioEof();
 }
 
 pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    return file_io_bridge_owned.ioFileRemove(path, error_number);
+    return export_io_owned.ioFileRemove(path, error_number);
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
