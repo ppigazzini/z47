@@ -24,6 +24,7 @@ zig_build/firmware_io_runtime.zig
 zig_build/firmware_print_ir_runtime.zig
 zig_build/host/gtk_button_signals_export.zig
 zig_build/host/gtk_gui_runtime.zig
+zig_build/host/gtk_gui_setup_preamble_owned.zig
 zig_build/host/gtk_gui_key_event_owned.zig
 zig_build/host/gtk_gui_lifecycle_owned.zig
 zig_build/host/gtk_gui_profile_owned.zig
