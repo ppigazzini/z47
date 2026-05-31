@@ -1,6 +1,7 @@
 const GtkWidget = opaque {};
 const shell_window_owned = @import("gtk_gui_shell_window_owned.zig");
 const shell_event_owned = @import("gtk_gui_shell_event_owned.zig");
+const shell_screen_owned = @import("gtk_gui_shell_screen_owned.zig");
 
 const GTK_WINDOW_TOPLEVEL: c_int = 0;
 const GTK_WIN_POS_CENTER: c_int = 1;
@@ -43,21 +44,5 @@ pub fn setupUiNoKeyboardShell() void {
     shell_window_owned.setupShellWindow();
     shell_event_owned.wireShellEvents();
 
-    grid = gtk_fixed_new();
-    gtk_container_add(@ptrCast(frmCalc), grid);
-
-    screen = gtk_drawing_area_new();
-    gtk_widget_set_size_request(screen, SCREEN_WIDTH * BIG_SCREEN_COEF, SCREEN_HEIGHT * BIG_SCREEN_COEF);
-    gtk_fixed_put(@ptrCast(grid), screen, 0, 0);
-
-    screenStride = @intCast(@divTrunc(cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH), 4));
-    const num_bytes: usize = @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT * 4;
-    const raw = malloc(num_bytes);
-    if (raw == null) {
-        moreInfoOnError("In function setupUI:", "error allocating screenData", null, null);
-        exit(1);
-    }
-    screenData = @ptrCast(@alignCast(raw.?));
-
-    _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
+    shell_screen_owned.setupShellScreen();
 }
