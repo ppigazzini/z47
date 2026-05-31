@@ -22,7 +22,6 @@ const special_algebraic_command_owned = @import("math_special_algebraic_command_
 const increment_decrement_command_owned = @import("math_increment_decrement_command_owned.zig");
 const decomp_owned = @import("math_scalar_integer_decomp_command_owned.zig");
 const precision_owned = @import("math_scalar_integer_precision_owned.zig");
-const round_owned = @import("math_scalar_integer_round_command_owned.zig");
 const trig_complex_primitives_owned = @import("math_trig_complex_primitives_owned.zig");
 const transcendental_wrapper_owned = @import("math_transcendental_wrapper_owned.zig");
 const logxy_command_owned = @import("math_logxy_command_owned.zig");
@@ -69,6 +68,7 @@ comptime {
 }
 
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
+const no_register = @as(runtime.calcRegister_t, -1);
 pub export fn pcg32_random_r(rng: *runtime.pcg32_random_t) callconv(.c) u32 {
     return random_primitives_owned.pcg32RandomR(rng);
 }
@@ -621,7 +621,18 @@ pub export fn fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) vo
 }
 
 pub export fn fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    round_owned.round(unused_but_mandatory_parameter);
+    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
+
+    if (register_data_type != runtime.dtLongInteger and register_data_type != runtime.dtShortInteger) {
+        runtime.retained.z47_math_wrappers_retained_fnRound(unused_but_mandatory_parameter);
+        return;
+    }
+
+    if (!runtime.saveLastX()) {
+        return;
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, no_register, no_register);
 }
 
 pub export fn fnCheckInteger(mode: u16) callconv(.c) void {
