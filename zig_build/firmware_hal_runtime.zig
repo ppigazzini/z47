@@ -10,6 +10,7 @@ const audio_bridge_owned = @import("firmware_hal_audio_bridge_owned.zig");
 const buzz_bridge_owned = @import("firmware_hal_buzz_bridge_owned.zig");
 const play_bridge_owned = @import("firmware_hal_play_bridge_owned.zig");
 const printer_bridge_owned = @import("firmware_hal_printer_bridge_owned.zig");
+const io_path_bridge_owned = @import("firmware_hal_io_path_bridge_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -214,7 +215,7 @@ pub export fn sendByteIR(byte: u8) callconv(.c) void {
 }
 
 pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c) c_int {
-    return io_path_owned.ioFileNameFromFilePath(path, filename);
+    return io_path_bridge_owned.ioFileNameFromFilePath(path, filename);
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
