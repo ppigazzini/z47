@@ -1,7 +1,7 @@
 const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
 const export_key_owned = @import("gtk_gui_export_key_owned.zig");
 const export_lifecycle_owned = @import("gtk_gui_export_lifecycle_owned.zig");
-const callback_bridge_owned = @import("gtk_gui_callback_bridge_owned.zig");
+const export_callback_owned = @import("gtk_gui_export_callback_owned.zig");
 const export_setup_owned = @import("gtk_gui_export_setup_owned.zig");
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
@@ -87,11 +87,11 @@ pub export fn shortCutFNCommand(
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.btnFnPressedWrapper(widget, event, data);
+    return export_callback_owned.btnFnPressedWrapper(widget, event, data);
 }
 
 pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.btnFnReleasedWrapper(widget, event, data);
+    return export_callback_owned.btnFnReleasedWrapper(widget, event, data);
 }
 
 pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
@@ -111,7 +111,7 @@ pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_bridge_owned.drawScreenWrapper(widget, cr, data);
+    return export_callback_owned.drawScreenWrapper(widget, cr, data);
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
