@@ -5,6 +5,7 @@ const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
 const setup_preamble_owned = @import("gtk_gui_setup_preamble_owned.zig");
 const startup_owned = @import("gtk_gui_startup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
+const profile_bridge_owned = @import("gtk_gui_profile_bridge_owned.zig");
 
 const GtkWidget = opaque {};
 const GtkCssProvider = opaque {};
@@ -231,23 +232,23 @@ pub export fn z47_startup_enter_mainloop() callconv(.c) void {
 }
 
 fn normKey00ItemInLayout() i16 {
-    return profile_owned.normKey00ItemInLayout();
+    return profile_bridge_owned.normKey00ItemInLayout();
 }
 
 fn shortcutProfileValue() u8 {
-    return profile_owned.shortcutProfileValue();
+    return profile_bridge_owned.shortcutProfileValue();
 }
 
 fn currentStdKeyboard() *const [37]calcKey_t {
-    return @ptrCast(profile_owned.currentStdKeyboard());
+    return @ptrCast(profile_bridge_owned.currentStdKeyboard());
 }
 
 fn isLabelText() bool {
-    return profile_owned.isLabelText();
+    return profile_bridge_owned.isLabelText();
 }
 
 fn alphaArrowsOffAndUpDn() bool {
-    return profile_owned.alphaArrowsOffAndUpDn();
+    return profile_bridge_owned.alphaArrowsOffAndUpDn();
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -259,7 +260,7 @@ pub export fn sendKey(sent: i16) callconv(.c) void {
 }
 
 pub export fn checkNormal(keyNr: i16, item: i16) callconv(.c) bool {
-    return profile_owned.checkNormal(keyNr, item);
+    return profile_bridge_owned.checkNormal(keyNr, item);
 }
 
 pub export fn shortCutCommand(
