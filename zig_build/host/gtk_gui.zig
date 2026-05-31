@@ -42,16 +42,6 @@ pub fn addToModule(
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
 
-    const signal_wrappers = b.addObject(.{
-        .name = b.fmt("{s}-gtk-button-signals", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/host/gtk_button_signals_export.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-
     const gui_runtime = b.addObject(.{
         .name = b.fmt("{s}-gtk-gui-runtime", .{name_prefix}),
         .root_module = b.createModule(.{
@@ -92,7 +82,6 @@ pub fn addToModule(
         }),
     });
 
-    module.addObject(signal_wrappers);
     module.addObject(gui_runtime);
     module.addObject(hal_runtime);
     module.addObject(io_runtime);

@@ -8,6 +8,8 @@ extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn setupUI() void;
 extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+extern fn btnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 
 pub export fn z47_setupUI_preamble() callconv(.c) void {
     setup_owned.configureWindowLayout();
@@ -30,6 +32,16 @@ pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) 
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
     gtk_main();
+}
+
+pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    btnPressed(widget, event, data);
+    return 0;
+}
+
+pub export fn z47_btnReleased_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    btnReleased(widget, event, data);
+    return 0;
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
