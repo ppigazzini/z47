@@ -36,6 +36,22 @@ fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDotD(unused_but_mandatory_parameter);
 }
 
+fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    runtime.btnPressedHostOverlay(not_used, event, data);
+}
+
+fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    runtime.btnClickedHostOverlay(not_used, data);
+}
+
+fn btnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
+    runtime.btnPressedDmcpOverlay(data);
+}
+
+fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    runtime.btnClickedDmcpOverlay(unused, data);
+}
+
 comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
@@ -46,6 +62,11 @@ comptime {
         @export(&keyUpHost, .{ .name = "fnKeyUp" });
         @export(&keyDownHost, .{ .name = "fnKeyDown" });
         @export(&keyDotDHost, .{ .name = "fnKeyDotD" });
+        @export(&btnPressedHost, .{ .name = "btnPressed" });
+        @export(&btnClickedHost, .{ .name = "btnClicked" });
+    } else {
+        @export(&btnPressedDmcp, .{ .name = "btnPressed" });
+        @export(&btnClickedDmcp, .{ .name = "btnClicked" });
     }
 }
 

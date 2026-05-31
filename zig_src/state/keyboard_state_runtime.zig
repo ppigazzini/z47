@@ -79,10 +79,18 @@ pub const FLAG_IRFRQ: i32 = 0xc048;
 pub const TI_NO_INFO: u8 = 0;
 
 pub const PGM_WAITING: u8 = 2;
+const PGM_RUNNING: u8 = 1;
+const PGM_PAUSED: u8 = 3;
 
 pub const SCRUPD_MANUAL_STACK: u8 = 0x02;
 pub const SCRUPD_MANUAL_MENU: u8 = 0x04;
 pub const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
+const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
+const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
+
+const FLAG_INTING: i32 = 0xc025;
+const FLAG_SOLVING: i32 = 0xc026;
+const ITM_RS: i16 = 1725;
 
 pub extern var calcMode: u8;
 pub extern var itemToBeAssigned: i16;
@@ -97,6 +105,7 @@ pub extern var screenUpdatingMode: u8;
 pub extern var keyActionProcessed: bool_t;
 pub extern var ListXYposition: i16;
 pub extern var calcModel: u8;
+pub extern var lastKeyItemDetermined: i16;
 
 pub extern var kbd_std_C47: [37]calcKey_t;
 pub extern var kbd_std_DM42: [37]calcKey_t;
@@ -177,3 +186,54 @@ pub fn keyDownRetained(unused_but_mandatory_parameter: u16) void {
 pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
     z47_keyboard_state_retained_fnKeyDotD(unused_but_mandatory_parameter);
 }
+
+fn clearStatusbarUpdateFlags(mode: u8) u8 {
+    return mode & ~@as(u8, SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+}
+
+fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updating_mode: u8) void {
+    if ((previous_program_run_stop == PGM_RUNNING or previous_program_run_stop == PGM_PAUSED) and
+        programRunStop == PGM_WAITING and
+        (lastKeyItemDetermined == ITM_RS or lastKeyItemDetermined == ITM_EXIT1_ITEM) and
+        !getSystemFlag(FLAG_INTING) and
+        !getSystemFlag(FLAG_SOLVING)) {
+        screenUpdatingMode = clearStatusbarUpdateFlags(previous_screen_updating_mode);
+    }
+}
+
+pub fn btnPressedHostOverlay(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void {
+    const previous_program_run_stop = programRunStop;
+    const previous_screen_updating_mode = screenUpdatingMode;
+
+    retained_host.@"z47_keyboard_state_retained_btnPressed"(not_used, event, data);
+    repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
+}
+
+pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
+    const previous_program_run_stop = programRunStop;
+    const previous_screen_updating_mode = screenUpdatingMode;
+
+    retained_host.@"z47_keyboard_state_retained_btnClicked"(not_used, data);
+    repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
+}
+
+pub fn btnPressedDmcpOverlay(data: ?*anyopaque) void {
+    retained_dmcp.@"z47_keyboard_state_retained_btnPressed"(data);
+}
+
+pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
+    _ = unused;
+    btnPressedDmcpOverlay(data);
+    btnReleased(data);
+}
+
+extern fn btnReleased(data: ?*anyopaque) void;
+
+const retained_host = struct {
+    extern fn @"z47_keyboard_state_retained_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+    extern fn @"z47_keyboard_state_retained_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
+};
+
+const retained_dmcp = struct {
+    extern fn @"z47_keyboard_state_retained_btnPressed"(data: ?*anyopaque) void;
+};

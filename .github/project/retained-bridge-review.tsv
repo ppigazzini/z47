@@ -5,7 +5,6 @@ zig_bridge/mathematics/random_runtime_helpers.c	zig_src/mathematics/math_command
 zig_bridge/state/calc_state_retained.c	zig_src/state/calc_state.zig	calc_state_parity	keep-temporarily	Retained save and load entrypoints still own the broader cross-target state restore flow.
 zig_bridge/state/calc_state_runtime_helpers.c	zig_src/state/calc_state_runtime.zig	calc_state_parity	keep-temporarily	File I O and post-load UI helpers remain coupled to the retained calc-state entrypoints.
 zig_bridge/state/flags_retained.c	zig_src/state/flags.zig	flags_parity	keep-temporarily	Whole retained flags command surface still fronts the imported flags module.
-zig_bridge/state/keyboard_state_overlay.c	zig_src/state/keyboard_state.zig	keyboard_statusbar_flags_regression	keep-temporarily	Overlay preserves stop-statusbar mask behavior around the retained keyboard entrypoints.
 zig_bridge/state/keyboard_state_retained.c	zig_src/state/keyboard_state.zig	keyboard_state_parity	keep-temporarily	Public keyboard entrypoints and the tweak layer still route through retained keyboard sources.
 zig_bridge/state/program_serialization_retained.c	zig_src/state/program_serialization.zig	program_serialization_parity	keep-temporarily	Retained fnSaveProgram and fnLoadProgram still front the imported saveRestorePrograms surface.
 zig_bridge/state/program_serialization_runtime_helpers.c	zig_src/state/program_serialization_runtime.zig	program_serialization_parity	keep-temporarily	File I O and label-selection helpers still couple directly to the retained program serialization flow.
