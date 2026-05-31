@@ -5,6 +5,7 @@ const GtkDisplay = opaque {};
 const GdkScreen = opaque {};
 const GdkMonitor = opaque {};
 const setup_background_owned = @import("gtk_gui_setup_background_owned.zig");
+const setup_window_owned = @import("gtk_gui_setup_window_owned.zig");
 
 const GdkRectangle = extern struct {
     x: c_int,
@@ -92,41 +93,7 @@ fn isR47FAM() bool {
 }
 
 fn configureWindowLayout() void {
-    var monitor: GdkRectangle = undefined;
-    gdk_monitor_get_geometry(gdk_display_get_monitor(gdk_display_get_default(), 0), &monitor);
-    if (calcAutoLandscapePortrait) {
-        calcLandscape = monitor.height < 1025;
-    }
-
-    frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    if (calcLandscape) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 1000, 540);
-    } else if (NARROW_SCREEN) {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 400, 862);
-    } else {
-        gtk_window_set_default_size(@ptrCast(frmCalc), 526, 980);
-    }
-
-    gtk_widget_set_name(frmCalc, "mainWindow");
-    gtk_window_set_resizable(@ptrCast(frmCalc), 0);
-    gtk_window_set_title(@ptrCast(frmCalc), if (isR47FAM()) "R47" else "C47");
-    _ = g_signal_connect_data(frmCalc, "destroy", @ptrCast(&z47_destroyCalc), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_press_event", @ptrCast(&z47_keyPressed_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "key_release_event", @ptrCast(&z47_keyReleased_wrapper), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onConfigureEvent), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "configure-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "button-press-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-in-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-    _ = g_signal_connect_data(frmCalc, "focus-out-event", @ptrCast(&z47_onUIActivity), null, null, 0);
-
-    if (BIG_SCREEN_COEF > 1 or NARROW_SCREEN) {
-        gtk_window_set_decorated(@ptrCast(frmCalc), 0);
-        gtk_window_set_position(@ptrCast(frmCalc), GTK_WIN_POS_CENTER);
-    }
-
-    gtk_widget_add_events(frmCalc, GDK_CONFIGURE);
-    grid = gtk_fixed_new();
-    gtk_container_add(@ptrCast(frmCalc), grid);
+    setup_window_owned.configureWindowLayout();
 }
 
 fn setupBackgroundImage() void {
