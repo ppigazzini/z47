@@ -1,7 +1,6 @@
 const std = @import("std");
 const register_storage_owned = @import("shortint_runtime_register_storage_owned.zig");
 const real_owned = @import("shortint_runtime_real_owned.zig");
-const tag_owned = @import("shortint_runtime_tag_owned.zig");
 const error_info_owned = @import("shortint_runtime_error_info_owned.zig");
 
 pub const calcRegister_t = i16;
@@ -105,11 +104,11 @@ pub fn setRawShortIntegerRegister(regist: calcRegister_t, base: u32, value: u64)
 }
 
 pub fn getRegisterShortIntegerBase(regist: calcRegister_t) u32 {
-    return tag_owned.getRegisterShortIntegerBase(getRegisterTag, regist);
+    return getRegisterTag(regist);
 }
 
 pub fn setRegisterShortIntegerBase(regist: calcRegister_t, base: u32) void {
-    tag_owned.setRegisterShortIntegerBase(setRegisterTag, regist, base);
+    setRegisterTag(regist, base);
 }
 
 pub fn zeroReal() real_t {

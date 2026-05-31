@@ -1,14 +1,12 @@
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
-const descriptor_access_owned = @import("register_metadata_descriptor_access_owned.zig");
-const bridge_owned = @import("register_metadata_bridge_owned.zig");
+const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const size_owned = @import("register_metadata_size_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
-const variable_storage_owned = @import("register_metadata_variable_storage_owned.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
@@ -97,48 +95,66 @@ pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 
+extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
+extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
+extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
+extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
+extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
+extern fn z47_register_metadata_builtin_menu_item_count() u32;
+extern fn z47_register_metadata_builtin_menu_item_is_menu(index: u32) bool;
+extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
+extern fn z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
+extern fn z47_registers_retained_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
+extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
+extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
+extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
+extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
+extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
+extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
+
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return descriptor_access_owned.globalDescriptor(reg);
+    return descriptor_storage.globalDescriptor(reg);
 }
 
 pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) void {
-    descriptor_access_owned.setGlobalDescriptor(reg, descriptor);
+    descriptor_storage.setGlobalDescriptor(reg, descriptor);
 }
 
 pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return descriptor_access_owned.tryGetNamedDescriptor(reg, descriptor);
+    return descriptor_storage.tryGetNamedDescriptor(reg, descriptor);
 }
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return descriptor_access_owned.trySetNamedDescriptor(reg, descriptor);
+    return descriptor_storage.trySetNamedDescriptor(reg, descriptor);
 }
 
 pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
-    return descriptor_access_owned.namedDescriptorUnchecked(index);
+    return descriptor_storage.namedDescriptorUnchecked(index);
 }
 
 pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
-    descriptor_access_owned.setNamedDescriptorUnchecked(index, descriptor);
+    descriptor_storage.setNamedDescriptorUnchecked(index, descriptor);
 }
 
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    return descriptor_access_owned.tryGetLocalDescriptor(reg, descriptor);
+    return descriptor_storage.tryGetLocalDescriptor(reg, descriptor);
 }
 
 pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    return descriptor_access_owned.trySetLocalDescriptor(reg, descriptor);
+    return descriptor_storage.trySetLocalDescriptor(reg, descriptor);
 }
 
 pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return descriptor_access_owned.reservedDescriptor(reg);
+    return z47_register_metadata_get_reserved_descriptor(reg);
 }
 
 pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return descriptor_access_owned.reservedDataTypeDescriptor(reg);
+    return z47_register_metadata_get_reserved_data_type_descriptor(reg);
 }
 
 pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
-    return descriptor_access_owned.reservedAllowsDataTypeWrite(reg);
+    return z47_register_metadata_reserved_allows_data_type_write(reg);
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
@@ -200,23 +216,23 @@ pub fn reportRamFull() void {
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
-    return bridge_owned.toPcMemPtr(mem_ptr);
+    return z47_register_metadata_to_pc_mem_ptr(mem_ptr);
 }
 
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {
-    return bridge_owned.toC47MemPtr(mem_ptr);
+    return z47_register_metadata_to_c47_mem_ptr(mem_ptr);
 }
 
 pub fn builtinMenuItemCount() u32 {
-    return bridge_owned.builtinMenuItemCount();
+    return z47_register_metadata_builtin_menu_item_count();
 }
 
 pub fn builtinMenuItemIsMenu(index: u32) bool {
-    return bridge_owned.builtinMenuItemIsMenu(index);
+    return z47_register_metadata_builtin_menu_item_is_menu(index);
 }
 
 pub fn builtinMenuItemName(index: u32) [*c]const u8 {
-    return bridge_owned.builtinMenuItemName(index);
+    return z47_register_metadata_builtin_menu_item_name(index);
 }
 
 pub fn userMenuCount() u32 {
@@ -232,15 +248,15 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
-    return variable_storage_owned.allocateFirstNamedVariableHeader();
+    return z47_register_metadata_allocate_first_named_variable_header();
 }
 
 pub fn appendNamedVariableHeader(index: *u16) bool {
-    return variable_storage_owned.appendNamedVariableHeader(index);
+    return z47_register_metadata_append_named_variable_header(index);
 }
 
 pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    variable_storage_owned.storeNamedVariableName(index, variable_name);
+    z47_register_metadata_store_named_variable_name(index, variable_name);
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
@@ -248,19 +264,19 @@ pub fn removeNamedVariableRecallAssignment(index: u16) void {
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {
-    variable_storage_owned.clearNamedVariableSlot(index);
+    z47_register_metadata_clear_named_variable_slot(index);
 }
 
 pub fn shrinkNamedVariableHeaderStorage() void {
-    variable_storage_owned.shrinkNamedVariableHeaderStorage();
+    z47_register_metadata_shrink_named_variable_header_storage();
 }
 
 pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
-    return variable_storage_owned.compareMenuNames(left, right);
+    return z47_register_metadata_compare_menu_names(left, right);
 }
 
 pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
-    return variable_storage_owned.findReservedVariableName(variable_name, glyph_length);
+    return z47_register_metadata_find_reserved_variable_name(variable_name, glyph_length);
 }
 
 pub fn reportInvalidName() void {
@@ -292,9 +308,9 @@ pub fn requestClearAllVariablesConfirmation() void {
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
-    bridge_owned.allocateLocalRegistersRetained(number_of_registers_to_allocate);
+    z47_registers_retained_allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
 pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    bridge_owned.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
+    z47_registers_retained_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }

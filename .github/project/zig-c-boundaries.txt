@@ -90,17 +90,13 @@ zig_src/state/flags_runtime.zig
 zig_src/state/keyboard_state_runtime.zig
 zig_src/state/memory_runtime.zig
 zig_src/state/program_serialization_runtime.zig
-zig_src/state/register_metadata_bridge_owned.zig
 zig_src/state/register_metadata_clear_sigma_owned.zig
 zig_src/state/register_metadata_confirmation_owned.zig
-zig_src/state/register_metadata_descriptor_access_owned.zig
 zig_src/state/register_metadata_error_owned.zig
 zig_src/state/register_metadata_named_menu_owned.zig
 zig_src/state/register_metadata_size_owned.zig
 zig_src/state/register_metadata_runtime.zig
-zig_src/state/register_metadata_variable_storage_owned.zig
 zig_src/state/stack_runtime_command_control_owned.zig
-zig_src/state/stack_runtime_conversion_owned.zig
 zig_src/state/stack_runtime_long_integer_owned.zig
 zig_src/state/stack_runtime_product_real_owned.zig
 zig_src/state/stack_runtime_reg_params_owned.zig
