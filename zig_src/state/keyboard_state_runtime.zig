@@ -126,14 +126,14 @@ pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn runFunction(item: i16) void;
 pub extern fn addItemToNimBuffer(item: i16) void;
 pub extern fn refreshScreen(reason: i16) void;
-extern fn z47_keyboard_state_legacy_processKeyAction(item: i16) void;
-extern fn z47_keyboard_state_legacy_fnKeyEnter(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyExit(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyCC(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyBackspace(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyUp(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyDown(unused_but_mandatory_parameter: u16) void;
-extern fn z47_keyboard_state_legacy_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_processKeyAction(item: i16) void;
+extern fn z47_keyboard_state_fnKeyEnter(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyExit(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyCC(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyBackspace(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyUp(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyDown(unused_but_mandatory_parameter: u16) void;
+extern fn z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
 
 pub inline fn kbdStdAt(index: usize) calcKey_t {
     const selected: *[37]calcKey_t = switch (calcModel) {
@@ -156,35 +156,35 @@ pub inline fn maxAbs(item: i16) u16 {
 }
 
 pub fn processKeyActionRetained(item: i16) void {
-    z47_keyboard_state_legacy_processKeyAction(item);
+    z47_keyboard_state_processKeyAction(item);
 }
 
 pub fn keyEnterRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyEnter(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyEnter(unused_but_mandatory_parameter);
 }
 
 pub fn keyExitRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyExit(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyExit(unused_but_mandatory_parameter);
 }
 
 pub fn keyCCRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyCC(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyCC(unused_but_mandatory_parameter);
 }
 
 pub fn keyBackspaceRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyBackspace(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyBackspace(unused_but_mandatory_parameter);
 }
 
 pub fn keyUpRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyUp(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyUp(unused_but_mandatory_parameter);
 }
 
 pub fn keyDownRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyDown(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyDown(unused_but_mandatory_parameter);
 }
 
 pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
-    z47_keyboard_state_legacy_fnKeyDotD(unused_but_mandatory_parameter);
+    z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter);
 }
 
 fn clearStatusbarUpdateFlags(mode: u8) u8 {
@@ -205,7 +205,7 @@ pub fn btnPressedHostOverlay(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*
     const previous_program_run_stop = programRunStop;
     const previous_screen_updating_mode = screenUpdatingMode;
 
-    legacy_host.@"z47_keyboard_state_legacy_btnPressed"(not_used, event, data);
+    legacy_host.@"z47_keyboard_state_btnPressed"(not_used, event, data);
     repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
 }
 
@@ -213,12 +213,12 @@ pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
     const previous_program_run_stop = programRunStop;
     const previous_screen_updating_mode = screenUpdatingMode;
 
-    legacy_host.@"z47_keyboard_state_legacy_btnClicked"(not_used, data);
+    legacy_host.@"z47_keyboard_state_btnClicked"(not_used, data);
     repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
 }
 
 pub fn btnPressedDmcpOverlay(data: ?*anyopaque) void {
-    legacy_dmcp.@"z47_keyboard_state_legacy_btnPressed"(data);
+    legacy_dmcp.@"z47_keyboard_state_btnPressed"(data);
 }
 
 pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
@@ -230,10 +230,10 @@ pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
 extern fn btnReleased(data: ?*anyopaque) void;
 
 const legacy_host = struct {
-    extern fn @"z47_keyboard_state_legacy_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
-    extern fn @"z47_keyboard_state_legacy_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
+    extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+    extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
 };
 
 const legacy_dmcp = struct {
-    extern fn @"z47_keyboard_state_legacy_btnPressed"(data: ?*anyopaque) void;
+    extern fn @"z47_keyboard_state_btnPressed"(data: ?*anyopaque) void;
 };

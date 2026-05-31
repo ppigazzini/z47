@@ -2,7 +2,7 @@
 
 #include "c47.h"
 
-void z47_registers_legacy_sort_reg(uint16_t range_start, uint16_t range_end);
+void z47_registers_sort_reg(uint16_t range_start, uint16_t range_end);
 
 uint16_t z47_stack_runtime_get_stack_top(void) {
   return getStackTop();
@@ -343,7 +343,7 @@ void z47_stack_runtime_do_partial_register_load(uint16_t s, uint16_t n, uint16_t
 }
 
 void z47_stack_runtime_sort_register_range(uint16_t range_start, uint16_t range_end) {
-  z47_registers_legacy_sort_reg(range_start, range_end);
+  z47_registers_sort_reg(range_start, range_end);
 }
 
 void z47_stack_runtime_report_register_command_error(uint8_t error_code) {
