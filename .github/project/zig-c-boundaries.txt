@@ -27,10 +27,7 @@ zig_build/host/gtk_gui_setup_owned.zig
 zig_build/host/gtk_gui_startup_settle_owned.zig
 zig_build/host/gtk_gui_host_decls.zig
 zig_build/host/gtk_gui_shell_owned.zig
-zig_build/host/gtk_gui_callback_button_owned.zig
-zig_build/host/gtk_gui_key_event_owned.zig
-zig_build/host/gtk_gui_lifecycle_owned.zig
-zig_build/host/gtk_gui_profile_owned.zig
+zig_build/host/gtk_gui_events_owned.zig
 zig_build/host/gtk_gui_shortcut_owned.zig
 zig_build/host/gtk_io_runtime.zig
 zig_build/host/gtk_io_owned.zig
