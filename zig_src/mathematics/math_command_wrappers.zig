@@ -1,11 +1,8 @@
-const atan2_export = @import("math_atan2_export.zig");
 const check_value_owned = @import("math_check_value_owned.zig");
-const circular_trig_export = @import("math_circular_trig_export.zig");
+const build_options = @import("math_command_wrappers_build_options");
 const compare_owned = @import("math_compare_owned.zig");
 const convergence_owned = @import("math_convergence_owned.zig");
 const integer_part_owned = @import("math_integer_part_owned.zig");
-const ln_complex_export = @import("math_ln_complex_export.zig");
-const real_trig_export = @import("math_real_trig_export.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const get_type_owned = @import("math_get_type_owned.zig");
 const projection_owned = @import("math_projection_owned.zig");
@@ -34,6 +31,10 @@ const sign_command_owned = @import("math_sign_command_owned.zig");
 const exponent_bernoulli_command_owned = @import("math_exponent_bernoulli_command_owned.zig");
 const lambertw_command_owned = @import("math_lambertw_command_owned.zig");
 const integer_residue_command_owned = @import("math_integer_residue_command_owned.zig");
+const atan2_owned = @import("math_atan2_owned.zig");
+const circular_trig_owned = @import("math_circular_trig_owned.zig");
+const ln_complex_owned = @import("math_ln_complex_owned.zig");
+const real_trig_owned = @import("math_real_trig_owned.zig");
 const erf_owned = @import("math_special_function_erf_owned.zig");
 const factorial_owned = @import("math_special_function_factorial_owned.zig");
 const fibonacci_owned = @import("math_special_function_fibonacci_owned.zig");
@@ -52,20 +53,103 @@ const power_command_owned = @import("math_transform_power_command_owned.zig");
 const root_command_owned = @import("math_transform_root_command_owned.zig");
 const unit_vector_command_owned = @import("math_transform_unit_vector_command_owned.zig");
 
-comptime {
-    _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
-    _ = circular_trig_export.z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan;
-    _ = ln_complex_export.z47_math_wrappers_owned_lnComplex;
-    _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Asin;
-    _ = real_trig_export.z47_math_wrappers_owned_C47_WP34S_Acos;
-    _ = real_trig_export.z47_math_wrappers_owned_WP34S_SinhCosh;
-    _ = real_trig_export.z47_math_wrappers_owned_WP34S_Tanh;
-    _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcSinh;
-    _ = real_trig_export.z47_math_wrappers_owned_WP34S_ArcTanh;
-}
-
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const no_register = @as(runtime.calcRegister_t, -1);
+
+pub export fn z47_math_wrappers_owned_C47_WP34S_Atan2(
+    y: *const runtime.real_t,
+    x: *const runtime.real_t,
+    angle: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    atan2_owned.arctan2Real(y, x, angle, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_C47_WP34S_Cvt2RadSinCosTan(
+    angle: *const runtime.real_t,
+    mode: runtime.angularMode_t,
+    sin: ?*runtime.real_t,
+    cos: ?*runtime.real_t,
+    tan: ?*runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    circular_trig_owned.convertAngleToSinCosTan(angle, mode, sin, cos, tan, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_lnComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    ln_real: *runtime.real_t,
+    ln_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    ln_complex_owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
+}
+
+fn publicLnComplex(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    ln_real: *runtime.real_t,
+    ln_imag: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    ln_complex_owned.lnComplex(real, imag, ln_real, ln_imag, real_context);
+}
+
+comptime {
+    if (build_options.export_public_ln_complex) {
+        @export(&publicLnComplex, .{ .name = "lnComplex" });
+    }
+}
+
+pub export fn z47_math_wrappers_owned_C47_WP34S_Asin(
+    x: *const runtime.real_t,
+    angle: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.arcsinReal(x, angle, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_C47_WP34S_Acos(
+    x: *const runtime.real_t,
+    angle: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.arccosReal(x, angle, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_WP34S_SinhCosh(
+    x: *const runtime.real_t,
+    sinh_out: ?*runtime.real_t,
+    cosh_out: ?*runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.sinhCoshReal(x, sinh_out, cosh_out, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_WP34S_Tanh(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.tanhReal(x, res, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_WP34S_ArcSinh(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.arcsinhReal(x, res, real_context);
+}
+
+pub export fn z47_math_wrappers_owned_WP34S_ArcTanh(
+    x: *const runtime.real_t,
+    res: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+) callconv(.c) void {
+    real_trig_owned.arctanhReal(x, res, real_context);
+}
 
 fn realLog10Value(
     x: *const runtime.real_t,
