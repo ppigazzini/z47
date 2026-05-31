@@ -15,6 +15,77 @@ const IO_PATH_SAVE_PROGRAM: c_int = 8;
 const IO_PATH_EXPORT_RTF_PROGRAM: c_int = 10;
 const IO_PATH_LOAD_PROGRAM: c_int = 11;
 
+const FixedPathSpec = struct {
+    io_path: c_int,
+    required_dir: ?[*:0]const u8,
+    target_path: [*:0]const u8,
+};
+
+const DialogPathSpec = struct {
+    io_path: c_int,
+    title: [*:0]const u8,
+    base_dir: [*:0]const u8,
+    ext: [*:0]const u8,
+    callback: ?*const anyopaque,
+    disp_save: c_int,
+    overwrite_check: c_int,
+};
+
+const fixed_path_specs = [_]FixedPathSpec{
+    .{ .io_path = IO_PATH_MANUAL_SAVE, .required_dir = "SAVFILES", .target_path = "SAVFILES\\C47.sav" },
+    .{ .io_path = IO_PATH_AUTO_SAVE, .required_dir = "SAVFILES", .target_path = "SAVFILES\\C47auto.sav" },
+    .{ .io_path = IO_PATH_PGM_FILE, .required_dir = "LIBRARY", .target_path = "LIBRARY\\C47.dat" },
+    .{ .io_path = IO_PATH_TEST_PGMS, .required_dir = null, .target_path = "testPgms.bin" },
+};
+
+const dialog_path_specs = [_]DialogPathSpec{
+    .{
+        .io_path = IO_PATH_SAVE_STATE_FILE,
+        .title = "Save Calculator State",
+        .base_dir = "STATE",
+        .ext = ".s47",
+        .callback = @ptrCast(&save_statefile),
+        .disp_save = 1,
+        .overwrite_check = 1,
+    },
+    .{
+        .io_path = IO_PATH_LOAD_STATE_FILE,
+        .title = "Load Calculator State",
+        .base_dir = "STATE",
+        .ext = ".s47",
+        .callback = @ptrCast(&load_statefile),
+        .disp_save = 0,
+        .overwrite_check = 0,
+    },
+    .{
+        .io_path = IO_PATH_SAVE_PROGRAM,
+        .title = "Save Program",
+        .base_dir = "PROGRAMS",
+        .ext = ".p47",
+        .callback = @ptrCast(&save_programfile),
+        .disp_save = 1,
+        .overwrite_check = 1,
+    },
+    .{
+        .io_path = IO_PATH_EXPORT_RTF_PROGRAM,
+        .title = "Export Program RTF",
+        .base_dir = "PROGRAMS",
+        .ext = ".rtf",
+        .callback = @ptrCast(&save_programfile),
+        .disp_save = 1,
+        .overwrite_check = 1,
+    },
+    .{
+        .io_path = IO_PATH_LOAD_PROGRAM,
+        .title = "Load Program",
+        .base_dir = "PROGRAMS",
+        .ext = ".p47",
+        .callback = @ptrCast(&load_programfile),
+        .disp_save = 0,
+        .overwrite_check = 0,
+    },
+};
+
 extern fn check_create_dir(path: [*c]const u8) void;
 extern fn file_selection_screen(
     title: [*c]const u8,
@@ -25,60 +96,63 @@ extern fn file_selection_screen(
     overwrite_check: c_int,
     data: ?*anyopaque,
 ) c_int;
-extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int;
 extern fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int;
 extern fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int;
 extern fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) c_int;
 
-pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
-    var ret: c_int = 0;
-    switch (path) {
-        IO_PATH_MANUAL_SAVE => {
-            check_create_dir("SAVFILES");
-            _ = strcpy(filename, "SAVFILES\\C47.sav");
-            return FILE_OK;
-        },
-        IO_PATH_AUTO_SAVE => {
-            check_create_dir("SAVFILES");
-            _ = strcpy(filename, "SAVFILES\\C47auto.sav");
-            return FILE_OK;
-        },
-        IO_PATH_PGM_FILE => {
-            check_create_dir("LIBRARY");
-            _ = strcpy(filename, "LIBRARY\\C47.dat");
-            return FILE_OK;
-        },
-        IO_PATH_TEST_PGMS => {
-            _ = strcpy(filename, "testPgms.bin");
-            return FILE_OK;
-        },
-        IO_PATH_REG_DUMP => return FILE_OK,
-        IO_PATH_SAVE_STATE_FILE => {
-            check_create_dir("STATE");
-            ret = file_selection_screen("Save Calculator State", "STATE", ".s47", @ptrCast(&save_statefile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_STATE_FILE => {
-            check_create_dir("STATE");
-            ret = file_selection_screen("Load Calculator State", "STATE", ".s47", @ptrCast(&load_statefile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_SAVE_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Save Program", "PROGRAMS", ".p47", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_EXPORT_RTF_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Export Program RTF", "PROGRAMS", ".rtf", @ptrCast(&save_programfile), 1, 1, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        IO_PATH_LOAD_PROGRAM => {
-            check_create_dir("PROGRAMS");
-            ret = file_selection_screen("Load Program", "PROGRAMS", ".p47", @ptrCast(&load_programfile), 0, 0, filename);
-            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
-        },
-        else => return FILE_ERROR,
+fn writeZ(dest: [*c]u8, src: [*:0]const u8) void {
+    var i: usize = 0;
+    while (src[i] != 0) : (i += 1) {
+        dest[i] = src[i];
     }
+    dest[i] = 0;
+}
+
+fn applyFixedPath(path: c_int, filename: [*c]u8) ?c_int {
+    inline for (fixed_path_specs) |spec| {
+        if (spec.io_path == path) {
+            if (spec.required_dir) |dir| {
+                check_create_dir(@ptrCast(dir));
+            }
+            writeZ(filename, spec.target_path);
+            return FILE_OK;
+        }
+    }
+    return null;
+}
+
+fn applyDialogPath(path: c_int, filename: [*c]u8) ?c_int {
+    inline for (dialog_path_specs) |spec| {
+        if (spec.io_path == path) {
+            check_create_dir(@ptrCast(spec.base_dir));
+            const ret = file_selection_screen(
+                @ptrCast(spec.title),
+                @ptrCast(spec.base_dir),
+                @ptrCast(spec.ext),
+                spec.callback,
+                spec.disp_save,
+                spec.overwrite_check,
+                filename,
+            );
+            return if (ret == MRET_EXIT) FILE_CANCEL else FILE_OK;
+        }
+    }
+    return null;
+}
+
+pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
+    if (path == IO_PATH_REG_DUMP) {
+        return FILE_OK;
+    }
+
+    if (applyFixedPath(path, filename)) |ret| {
+        return ret;
+    }
+
+    if (applyDialogPath(path, filename)) |ret| {
+        return ret;
+    }
+
+    return FILE_ERROR;
 }

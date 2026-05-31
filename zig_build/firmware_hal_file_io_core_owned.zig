@@ -18,10 +18,6 @@ pub extern fn f_close(fp: ?*anyopaque) c_uint;
 pub extern fn f_eof(fp: ?*anyopaque) c_int;
 pub extern fn f_unlink(path: [*c]const u8) c_uint;
 pub extern fn sys_disk_write_enable(enabled: c_int) void;
-pub extern fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int;
-pub extern fn stringByteLength(s: [*c]const u8) c_int;
-pub extern fn stringCopy(dst: [*c]u8, src: [*c]const u8) void;
-pub extern fn max(a: c_int, b: c_int) c_int;
 
 pub extern var stateFileNameVarLength: c_int;
 pub extern var ppgm_fp: ?*anyopaque;
