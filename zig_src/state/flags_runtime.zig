@@ -174,48 +174,6 @@ extern fn z47_flags_runtime_leave_alpha_mode() void;
 extern fn z47_flags_runtime_request_clf_all_confirmation() void;
 extern fn fnClFAll(confirmation: u16) callconv(.c) void;
 
-extern fn z47_flags_retained_setSystemFlag(sf: u32) void;
-extern fn z47_flags_retained_clearSystemFlag(sf: u32) void;
-extern fn z47_flags_retained_flipSystemFlag(sf: u32) void;
-extern fn z47_flags_retained_getSystemFlag(sf: i32) bool;
-extern fn z47_flags_retained_getFlag(flag: u16) bool;
-extern fn z47_flags_retained_didSystemFlagChange(sf: i32) bool;
-extern fn z47_flags_retained_setSystemFlagChanged(sf: i32) void;
-extern fn z47_flags_retained_setAllSystemFlagChanged() void;
-extern fn z47_flags_retained_forceSystemFlag(sf: u32, set: i32) void;
-
-pub fn setSystemFlagRetained(sf: u32) void {
-    z47_flags_retained_setSystemFlag(sf);
-}
-
-pub fn clearSystemFlagRetained(sf: u32) void {
-    z47_flags_retained_clearSystemFlag(sf);
-}
-
-pub fn flipSystemFlagRetained(sf: u32) void {
-    z47_flags_retained_flipSystemFlag(sf);
-}
-
-pub fn getSystemFlagRetained(sf: i32) bool {
-    return z47_flags_retained_getSystemFlag(sf);
-}
-
-pub fn didSystemFlagChangeRetained(sf: i32) bool {
-    return z47_flags_retained_didSystemFlagChange(sf);
-}
-
-pub fn setSystemFlagChangedRetained(sf: i32) void {
-    z47_flags_retained_setSystemFlagChanged(sf);
-}
-
-pub fn setAllSystemFlagChangedRetained() void {
-    z47_flags_retained_setAllSystemFlagChanged();
-}
-
-pub fn forceSystemFlagRetained(sf: u32, set: i32) void {
-    z47_flags_retained_forceSystemFlag(sf, set);
-}
-
 pub fn handleWriteProtectedFlag() void {
     if (use_fake_harness_surface) {
         z47_flags_runtime_handle_write_protected_flag();
