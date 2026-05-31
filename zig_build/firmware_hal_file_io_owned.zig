@@ -1,6 +1,7 @@
 const file_io_open_owned = @import("firmware_hal_file_io_open_owned.zig");
 const file_io_close_owned = @import("firmware_hal_file_io_close_owned.zig");
 const file_io_stream_owned = @import("firmware_hal_file_io_stream_owned.zig");
+const file_io_seekremove_owned = @import("firmware_hal_file_io_seekremove_owned.zig");
 
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
@@ -43,7 +44,7 @@ pub fn ioFileRead(buffer: ?*anyopaque, size: u32) u32 {
 }
 
 pub fn ioFileSeek(position: u32) void {
-    _ = f_lseek(ppgm_fp, position);
+    file_io_seekremove_owned.ioFileSeek(position);
 }
 
 pub fn ioFileClose(io_write_enabled: *c_int, io_read_enabled: *c_int) void {
@@ -55,19 +56,5 @@ pub fn ioEof() c_int {
 }
 
 pub fn ioFileRemove(path: c_int, error_number: ?*u32) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
-
-    sys_disk_write_enable(1);
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) {
-        sys_disk_write_enable(0);
-        return ret;
-    }
-
-    const result = f_unlink(&filename);
-    if (result != 0 and error_number != null) {
-        error_number.?.* = result;
-    }
-    sys_disk_write_enable(0);
-    return if (result == 0) FILE_OK else FILE_ERROR;
+    return file_io_seekremove_owned.ioFileRemove(path, error_number);
 }
