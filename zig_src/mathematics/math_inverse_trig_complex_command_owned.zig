@@ -1,5 +1,5 @@
 const ln_complex_owned = @import("math_ln_complex_owned.zig");
-const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
+const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
@@ -21,7 +21,7 @@ pub fn arcsinCplx() callconv(.c) void {
         return;
     }
 
-    _ = inverse_trig_primitive_wrapper_owned.ArcsinComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
+    _ = inverse_trig_command_owned.ArcsinComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
 }
 
@@ -57,7 +57,7 @@ pub fn arctanCplx() callconv(.c) void {
         return;
     }
 
-    _ = inverse_trig_primitive_wrapper_owned.ArctanComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
+    _ = inverse_trig_command_owned.ArctanComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
 }
 
@@ -71,7 +71,7 @@ pub fn arcsinhCplx() callconv(.c) void {
         return;
     }
 
-    _ = inverse_trig_primitive_wrapper_owned.ArcsinhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
+    _ = inverse_trig_command_owned.ArcsinhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
 }
 

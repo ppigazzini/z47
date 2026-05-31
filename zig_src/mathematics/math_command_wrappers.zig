@@ -50,7 +50,6 @@ const polar_rect_command_owned = @import("math_transform_polar_rect_command_owne
 const power_command_owned = @import("math_transform_power_command_owned.zig");
 const root_command_owned = @import("math_transform_root_command_owned.zig");
 const unit_vector_command_owned = @import("math_transform_unit_vector_command_owned.zig");
-const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
 
 comptime {
     _ = atan2_export.z47_math_wrappers_owned_C47_WP34S_Atan2;
@@ -270,7 +269,7 @@ pub export fn ArcsinComplex(
     r_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_primitive_wrapper_owned.ArcsinComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArcsinComplex(x_real, x_imag, r_real, r_imag, real_context);
 }
 
 pub export fn ArctanComplex(
@@ -280,7 +279,7 @@ pub export fn ArctanComplex(
     r_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_primitive_wrapper_owned.ArctanComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArctanComplex(x_real, x_imag, r_real, r_imag, real_context);
 }
 
 pub export fn ArcsinhReal(
@@ -288,7 +287,7 @@ pub export fn ArcsinhReal(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_primitive_wrapper_owned.ArcsinhReal(x, res, real_context);
+    return inverse_trig_command_owned.ArcsinhReal(x, res, real_context);
 }
 
 pub export fn ArcsinhComplex(
@@ -298,7 +297,7 @@ pub export fn ArcsinhComplex(
     r_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) u8 {
-    return inverse_trig_primitive_wrapper_owned.ArcsinhComplex(x_real, x_imag, r_real, r_imag, real_context);
+    return inverse_trig_command_owned.ArcsinhComplex(x_real, x_imag, r_real, r_imag, real_context);
 }
 
 pub export fn realArcosh(
@@ -306,7 +305,7 @@ pub export fn realArcosh(
     res: *runtime.real_t,
     real_context: *runtime.realContext_t,
 ) callconv(.c) void {
-    inverse_trig_primitive_wrapper_owned.realArcosh(x, res, real_context);
+    inverse_trig_command_owned.realArcosh(x, res, real_context);
 }
 
 pub export fn chsReal() callconv(.c) void {
