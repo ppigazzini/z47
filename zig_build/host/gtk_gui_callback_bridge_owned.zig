@@ -1,5 +1,5 @@
 const callback_button_owned = @import("gtk_gui_callback_button_owned.zig");
-const callback_draw_owned = @import("gtk_gui_callback_draw_owned.zig");
+extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 
 const BridgeRoute = enum {
     btn_pressed,
@@ -17,8 +17,12 @@ const BridgeDispatchEntry = struct {
 const bridge_dispatch = [_]BridgeDispatchEntry{
     .{ .route = .btn_pressed, .handler = &callback_button_owned.btnFnPressedWrapper },
     .{ .route = .btn_released, .handler = &callback_button_owned.btnFnReleasedWrapper },
-    .{ .route = .draw_screen, .handler = &callback_draw_owned.drawScreenWrapper },
+    .{ .route = .draw_screen, .handler = &callDrawScreenDirect },
 };
+
+fn callDrawScreenDirect(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int {
+    return drawScreen(widget, cr, data);
+}
 
 fn dispatchBridge(comptime route: BridgeRoute, widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
     inline for (bridge_dispatch) |entry| {
