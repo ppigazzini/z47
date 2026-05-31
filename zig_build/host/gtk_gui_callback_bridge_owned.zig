@@ -1,6 +1,5 @@
 const callback_button_owned = @import("gtk_gui_callback_button_owned.zig");
-
-extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
+const callback_draw_owned = @import("gtk_gui_callback_draw_owned.zig");
 
 pub fn btnFnPressedWrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
     return callback_button_owned.btnFnPressedWrapper(widget, event, data);
@@ -11,5 +10,5 @@ pub fn btnFnReleasedWrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*any
 }
 
 pub fn drawScreenWrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int {
-    return drawScreen(widget, cr, data);
+    return callback_draw_owned.drawScreenWrapper(widget, cr, data);
 }
