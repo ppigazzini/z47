@@ -1,9 +1,7 @@
 const export_audio_owned = @import("firmware_hal_export_audio_owned.zig");
 const export_printer_owned = @import("firmware_hal_export_printer_owned.zig");
 const export_io_owned = @import("firmware_hal_export_io_owned.zig");
-const statefile_bridge_owned = @import("firmware_hal_statefile_bridge_owned.zig");
-const programfile_bridge_owned = @import("firmware_hal_programfile_bridge_owned.zig");
-const warning_bridge_owned = @import("firmware_hal_warning_bridge_owned.zig");
+const export_callback_owned = @import("firmware_hal_export_callback_owned.zig");
 
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
@@ -93,25 +91,25 @@ pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int 
 }
 
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return statefile_bridge_owned.saveStatefile(fpath, fname, data);
+    return export_callback_owned.saveStatefile(fpath, fname, data);
 }
 
 pub export fn load_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return statefile_bridge_owned.loadStatefile(fpath, fname, data);
+    return export_callback_owned.loadStatefile(fpath, fname, data);
 }
 
 pub export fn save_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return programfile_bridge_owned.saveProgramfile(fpath, fname, data);
+    return export_callback_owned.saveProgramfile(fpath, fname, data);
 }
 
 pub export fn load_programfile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
-    return programfile_bridge_owned.loadProgramfile(fpath, fname, data);
+    return export_callback_owned.loadProgramfile(fpath, fname, data);
 }
 
 pub export fn show_warning(str: [*c]u8) callconv(.c) void {
-    warning_bridge_owned.showWarning(str);
+    export_callback_owned.showWarning(str);
 }
 
 pub export fn fnDiskInfo(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    warning_bridge_owned.fnDiskInfo(unused_but_mandatory_parameter);
+    export_callback_owned.fnDiskInfo(unused_but_mandatory_parameter);
 }
