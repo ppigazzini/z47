@@ -1,6 +1,6 @@
 const atan_owned = @import("math_atan_owned.zig");
 const inverse_trig_complex_command_owned = @import("math_inverse_trig_complex_command_owned.zig");
-const inverse_trig_primitive_wrapper_owned = @import("math_inverse_trig_primitive_wrapper_owned.zig");
+const inverse_trig_command_owned = @import("math_inverse_trig_command_owned.zig");
 const real_trig_owned = @import("math_real_trig_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -99,7 +99,7 @@ pub fn arcsinhReal() callconv(.c) void {
         return;
     }
 
-    _ = inverse_trig_primitive_wrapper_owned.ArcsinhReal(&x, &x, &runtime.ctxtReal51);
+    _ = inverse_trig_command_owned.ArcsinhReal(&x, &x, &runtime.ctxtReal51);
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
 }
 
@@ -123,7 +123,7 @@ pub fn arccoshReal() callconv(.c) void {
             return;
         }
     } else {
-        inverse_trig_primitive_wrapper_owned.realArcosh(&x, &x, &runtime.ctxtReal75);
+        inverse_trig_command_owned.realArcosh(&x, &x, &runtime.ctxtReal75);
     }
 
     runtime.convertRealToResultRegister(&x, runtime.REGISTER_X, runtime.amNone);
