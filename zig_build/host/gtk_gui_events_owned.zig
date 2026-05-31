@@ -1,4 +1,4 @@
-const profile_owned = @import("gtk_gui_profile_owned.zig");
+const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 
 const calcKey_t = extern struct {
     keyId: i16,
@@ -51,10 +51,8 @@ const ITM_SHIFTg: i16 = 1732;
 const FLAG_USER: u16 = 0x8014;
 const FLAG_ALPHA: u16 = 0x800e;
 const CM_AIM: u8 = 1;
-const CM_NIM: u8 = 2;
 const CM_PEM: u8 = 3;
 const CM_EIM: u8 = 13;
-const SCRUPD_AUTO: u8 = 0x00;
 
 const GDK_KEY_Shift_L: u32 = 65505;
 const GDK_KEY_Shift_R: u32 = 65506;
@@ -79,6 +77,9 @@ pub var previousEventKeyR: u32 = 0;
 pub var previousEventStateP: u32 = 0;
 pub var previousEventKeyP: u32 = 0;
 
+var ui_settle_timer: c_uint = 0;
+var first_call_time_us: i64 = 0;
+
 extern var calcMode: u8;
 extern var screenUpdatingMode: u8;
 extern var shiftF: bool;
@@ -86,18 +87,45 @@ extern var shiftG: bool;
 extern var swapCtrlCode: bool;
 extern var tam: tamState_t;
 extern var kbd_usr: [37]calcKey_t;
+extern var ui_is_active: c_int;
 extern fn getSystemFlag(flag: u16) bool;
 extern fn btnClicked(widget: ?*anyopaque, data: [*:0]const u8) void;
 extern fn btnFnClickedR(widget: ?*anyopaque, data: [*:0]const u8) void;
+extern fn btnFnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
+extern fn btnFnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn refreshStatusBar() void;
 extern fn showShiftState() void;
 extern fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int;
+extern fn fnStopTimerApp() void;
+extern fn saveCalc() void;
+extern fn gtk_main_quit() void;
+extern fn gtk_widget_queue_draw(widget: ?*anyopaque) void;
+extern fn g_get_monotonic_time() i64;
+extern fn g_source_remove(tag: c_uint) c_int;
+extern fn g_timeout_add(interval: c_uint, function: *const fn (?*anyopaque) callconv(.c) c_int, data: ?*anyopaque) c_uint;
 
 fn stripCapsLockForCommand(keyval: u32) u32 {
     const is_alpha = (keyval >= 'A' and keyval <= 'Z') or (keyval >= 'a' and keyval <= 'z');
     if (!is_alpha) return keyval;
 
     return (keyval & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)));
+}
+
+fn clearUiActiveFlag(data: ?*anyopaque) callconv(.c) c_int {
+    _ = data;
+    ui_is_active = 0;
+    ui_settle_timer = 0;
+    return 0;
+}
+
+pub fn btnFnPressedWrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+    btnFnPressed(widget, event, data);
+    return 0;
+}
+
+pub fn btnFnReleasedWrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+    btnFnReleased(widget, event, data);
+    return 0;
 }
 
 pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
@@ -158,13 +186,13 @@ pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     const in_text_modes = calcMode == CM_AIM or calcMode == CM_EIM or tam.mode != 0 or (calcMode == CM_PEM and getSystemFlag(FLAG_ALPHA)) or tam.alpha;
     if (!in_text_modes) {
         const key_strip = stripCapsLockForCommand(key_event.keyval);
-        const standard_keys = profile_owned.currentStdKeyboard();
+        const standard_keys = shortcut_owned.currentStdKeyboard();
 
         switch (key_strip) {
             GDK_KEY_f => {
-                if (profile_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTf) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
@@ -176,9 +204,9 @@ pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
                 return 0;
             },
             GDK_KEY_g => {
-                if (profile_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTg) btnClicked(widget, "10") else {
                     shiftF = false;
@@ -232,18 +260,18 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
         return 0;
     }
 
-    const standard_keys = profile_owned.currentStdKeyboard();
+    const standard_keys = shortcut_owned.currentStdKeyboard();
 
     switch (key_event.keyval) {
         GDK_KEY_Shift_L, GDK_KEY_Shift_R => {
             event_command_shift = 0;
             if (SHIFT_State != 0) {
-                if (profile_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (profile_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[0].primary else standard_keys[0].primary) == KEY_fg) btnClicked(widget, "00") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
@@ -260,12 +288,12 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 
         GDK_KEY_Control_L, GDK_KEY_Control_R => {
             if (CTRL_State != 0) {
-                if (profile_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (profile_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (profile_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (profile_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
+                if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
+                if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
                 if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else {
                     shiftF = false;
                     shiftG = !shiftG;
@@ -276,12 +304,12 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
             CTRL_State = 0;
         },
 
-        GDK_KEY_F1 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "1"),
-        GDK_KEY_F2 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "2"),
-        GDK_KEY_F3 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "3"),
-        GDK_KEY_F4 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "4"),
-        GDK_KEY_F5 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "5"),
-        GDK_KEY_F6 => if (profile_owned.isLabelText() or tam.mode == 0 or profile_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "6"),
+        GDK_KEY_F1 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "1"),
+        GDK_KEY_F2 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "2"),
+        GDK_KEY_F3 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "3"),
+        GDK_KEY_F4 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "4"),
+        GDK_KEY_F5 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "5"),
+        GDK_KEY_F6 => if (shortcut_owned.isLabelText() or tam.mode == 0 or shortcut_owned.alphaArrowsOffAndUpDn()) btnFnClickedR(widget, "6"),
         else => {},
     }
 
@@ -291,5 +319,45 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 
     previousEventStateR = key_event.state;
     previousEventKeyR = key_event.keyval;
+    return 0;
+}
+
+pub fn destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+    _ = widget;
+    _ = event;
+    _ = data;
+
+    fnStopTimerApp();
+    saveCalc();
+    gtk_main_quit();
+    return 0;
+}
+
+pub fn onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+    _ = event;
+    _ = data;
+
+    gtk_widget_queue_draw(widget);
+    return 0;
+}
+
+pub fn onUiActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) c_int {
+    _ = widget;
+    _ = event;
+    _ = data;
+
+    if (first_call_time_us == 0) {
+        first_call_time_us = g_get_monotonic_time();
+    }
+
+    if ((g_get_monotonic_time() - first_call_time_us) < 500000) {
+        return 0;
+    }
+
+    ui_is_active = 1;
+    if (ui_settle_timer != 0) {
+        _ = g_source_remove(ui_settle_timer);
+    }
+    ui_settle_timer = g_timeout_add(100, clearUiActiveFlag, null);
     return 0;
 }

@@ -1,7 +1,5 @@
-const export_shortcut_owned = @import("gtk_gui_export_shortcut_owned.zig");
-const key_event_owned = @import("gtk_gui_key_event_owned.zig");
-const lifecycle_owned = @import("gtk_gui_lifecycle_owned.zig");
-const callback_button_owned = @import("gtk_gui_callback_button_owned.zig");
+const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
+const events_owned = @import("gtk_gui_events_owned.zig");
 const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
 const startup_settle_owned = @import("gtk_gui_startup_settle_owned.zig");
@@ -35,15 +33,15 @@ pub export fn z47_startup_enter_mainloop() callconv(.c) void {
 }
 
 pub export fn btnClicked_NU(widget: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    export_shortcut_owned.btnClickedNU(widget, data);
+    shortcut_owned.btnClickedNU(widget, data);
 }
 
 pub export fn sendKey(sent: i16) callconv(.c) void {
-    export_shortcut_owned.sendKey(sent);
+    shortcut_owned.sendKey(sent);
 }
 
 pub export fn checkNormal(key_nr: i16, item: i16) callconv(.c) bool {
-    return export_shortcut_owned.checkNormal(key_nr, item);
+    return shortcut_owned.checkNormal(key_nr, item);
 }
 
 pub export fn shortCutCommand(
@@ -59,7 +57,7 @@ pub export fn shortCutCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) callconv(.c) bool {
-    return export_shortcut_owned.shortCutCommand(
+    return shortcut_owned.shortCutCommand(
         widget,
         key,
         key_code,
@@ -86,7 +84,7 @@ pub export fn shortCutFNCommand(
     required_calc_mode2: i16,
     item_for_run_function: i16,
 ) callconv(.c) bool {
-    return export_shortcut_owned.shortCutFnCommand(
+    return shortcut_owned.shortCutFnCommand(
         widget,
         key,
         key_code,
@@ -101,27 +99,27 @@ pub export fn shortCutFNCommand(
 }
 
 pub export fn z47_btnFnPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_button_owned.btnFnPressedWrapper(widget, event, data);
+    return events_owned.btnFnPressedWrapper(widget, event, data);
 }
 
 pub export fn z47_btnFnReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return callback_button_owned.btnFnReleasedWrapper(widget, event, data);
+    return events_owned.btnFnReleasedWrapper(widget, event, data);
 }
 
 pub export fn z47_keyPressed_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyPressedImpl(widget, event, data);
+    return events_owned.keyPressedImpl(widget, event, data);
 }
 
 pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyReleasedImpl(widget, event, data);
+    return events_owned.keyReleasedImpl(widget, event, data);
 }
 
 pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyPressedImpl(widget, event, data);
+    return events_owned.keyPressedImpl(widget, event, data);
 }
 
 pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return key_event_owned.keyReleasedImpl(widget, event, data);
+    return events_owned.keyReleasedImpl(widget, event, data);
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
@@ -129,13 +127,13 @@ pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data:
 }
 
 pub export fn z47_destroyCalc(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.destroyCalc(widget, event, data);
+    return events_owned.destroyCalc(widget, event, data);
 }
 
 pub export fn z47_onConfigureEvent(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.onConfigureEvent(widget, event, data);
+    return events_owned.onConfigureEvent(widget, event, data);
 }
 
 pub export fn z47_onUIActivity(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
-    return lifecycle_owned.onUiActivity(widget, event, data);
+    return events_owned.onUiActivity(widget, event, data);
 }
