@@ -103,8 +103,6 @@ extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
 extern fn z47_register_metadata_builtin_menu_item_count() u32;
 extern fn z47_register_metadata_builtin_menu_item_is_menu(index: u32) bool;
 extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
-extern fn z47_registers_allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
-extern fn z47_registers_reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
 extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
 extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
@@ -112,6 +110,8 @@ extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
 extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
 extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
 extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
+extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
+extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
@@ -308,9 +308,9 @@ pub fn requestClearAllVariablesConfirmation() void {
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
-    z47_registers_allocateLocalRegisters(number_of_registers_to_allocate);
+    allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
 pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    z47_registers_reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+    reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }

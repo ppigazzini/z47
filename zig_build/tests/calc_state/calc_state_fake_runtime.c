@@ -12,8 +12,6 @@ uint8_t temporaryInformation = 19;
 uint8_t screenUpdatingMode = (uint8_t)(SCRUPD_MANUAL_MENU | 0x20u);
 int16_t cachedDynamicMenu = 17;
 
-static uint16_t savedCalcModelState = 0;
-static uint32_t loadedVersionState = 0;
 static char loadFile[MAX_CALC_STATE_PARITY_FILE_BYTES];
 static size_t loadFileSize = 0;
 static size_t loadFileOffset = 0;
@@ -50,8 +48,7 @@ static char fileNameSelected[32] = "STATE.SAV";
 static char lastStateFileOpened[MAX_CALC_STATE_LAST_STATE_FILE_BYTES];
 
 void calcStateParityReset(void) {
-  savedCalcModelState = 0;
-  loadedVersionState = 0;
+  z47_calc_state_reset_load_context();
   loadFile[0] = 0;
   loadFileSize = 0;
   loadFileOffset = 0;
@@ -153,8 +150,8 @@ void calcStateParityCapture(calc_state_snapshot_t *snapshot) {
   snapshot->finish_load_ui_calls = finishLoadUiCalls;
   snapshot->clear_user_calls = clearUserCalls;
   snapshot->finish_load_ui_refresh_code = finishLoadUiRefreshCode;
-  snapshot->saved_calc_model = savedCalcModelState;
-  snapshot->loaded_version = loadedVersionState;
+  snapshot->saved_calc_model = z47_calc_state_get_saved_calc_model();
+  snapshot->loaded_version = z47_calc_state_get_loaded_version();
   snapshot->last_error_code = lastErrorCode;
   snapshot->previous_error_code = previousErrorCode;
   snapshot->temporary_information = temporaryInformation;
@@ -164,44 +161,11 @@ void calcStateParityCapture(calc_state_snapshot_t *snapshot) {
   snapshot->last_state_file_opened[sizeof(snapshot->last_state_file_opened) - 1] = 0;
 }
 
-void z47_calc_state_reset_load_context(void) {
-  savedCalcModelState = 0;
-  loadedVersionState = 0;
-}
-
-void z47_calc_state_set_saved_calc_model(uint16_t saved_calc_model) {
-  savedCalcModelState = saved_calc_model;
-}
-
-uint16_t z47_calc_state_get_saved_calc_model(void) {
-  return savedCalcModelState;
-}
-
-void z47_calc_state_set_loaded_version(uint32_t version) {
-  loadedVersionState = version;
-}
-
-uint32_t z47_calc_state_get_loaded_version(void) {
-  return loadedVersionState;
-}
-
-uint32_t z47_calc_state_get_version_allowed(void) {
-  return 10000005u;
-}
-
-uint32_t z47_calc_state_get_config_file_version(void) {
-  return 10000023u;
-}
-
-bool_t z47_calc_state_restore_one_section(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, bool_t allowUserKeys) {
-  restoreCalls++;
-  lastRestoreLoadMode = loadMode;
-  lastRestoreS = s;
-  lastRestoreN = n;
-  lastRestoreD = d;
-  lastAllowUserKeys = allowUserKeys;
-  return restoreCalls <= restoreContinueCount;
-}
+// The eight z47_calc_state_* load-context, version, and restore-section symbols
+// are now owned and exported by the Zig calc_state module under test. The fake
+// runtime must not redefine them or the parity link fails with duplicate
+// symbols. The parity snapshot and reset paths above read and clear that state
+// through the Zig owner's getters and reset entrypoint.
 
 bool_t z47_calc_state_runtime_check_power(void) {
   checkPowerCalls++;
@@ -275,6 +239,25 @@ void z47_calc_state_runtime_read_line(char *buffer) {
     loadFileOffset++;
   }
   buffer[index] = 0;
+}
+
+// The Zig calc_state owner's readLine now pulls bytes through the io boundary.
+// Back ioEof and ioFileRead with the same loadFile buffer the parity fixture
+// fills, so the Zig owner and the legacy read path see identical input.
+int ioEof(void) {
+  if(!fileOpen) {
+    return 1;
+  }
+  return (loadFileOffset >= loadFileSize) ? 1 : 0;
+}
+
+uint32_t ioFileRead(void *buffer, uint32_t size) {
+  uint8_t *out = (uint8_t *)buffer;
+  uint32_t read = 0;
+  while(read < size && fileOpen && loadFileOffset < loadFileSize) {
+    out[read++] = (uint8_t)loadFile[loadFileOffset++];
+  }
+  return read;
 }
 
 bool_t z47_calc_state_runtime_line_equals(const char *line, const char *expected) {

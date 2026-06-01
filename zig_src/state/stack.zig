@@ -5,6 +5,11 @@ const mutation_owned = @import("stack_mutation_owned.zig");
 const result_owned = @import("stack_result_owned.zig");
 const undo_owned = @import("stack_undo_owned.zig");
 const runtime = @import("stack_runtime.zig");
+const build_options = @import("stack_state_build_options");
+
+const use_fake_stack_state_harness_surface =
+    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
+    build_options.use_fake_stack_state_harness_surface;
 
 pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
@@ -41,6 +46,16 @@ pub export fn fnRegCopy(unused_but_mandatory_parameter: u16) void {
 pub export fn fnRegSort(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
     register_commands_owned.regSort();
+}
+
+comptime {
+    if (!use_fake_stack_state_harness_surface) {
+        @export(&z47RegistersSortRegExport, .{ .name = "z47_registers_sort_reg" });
+    }
+}
+
+fn z47RegistersSortRegExport(range_start: u16, range_end: u16) callconv(.c) void {
+    runtime.sortRegisterRange(range_start, range_end);
 }
 
 pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {
