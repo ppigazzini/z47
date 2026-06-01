@@ -37,6 +37,17 @@ pub export fn fnSaveProgram(label: u16) void {
     saveProgram(label);
 }
 
+pub export fn fnExportProgram(label: u16) void {
+    // Compatibility shim: use the Zig-owned save path until dedicated export formatting lands.
+    saveProgram(label);
+}
+
+pub export fn fnSaveAllPrograms(unusedButMandatoryParameter: u16) void {
+    _ = unusedButMandatoryParameter;
+    // Match legacy "current or selected label" behavior used by UI bindings.
+    saveProgram(0);
+}
+
 pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
     _ = unusedButMandatoryParameter;
     loadProgram();

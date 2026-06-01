@@ -739,6 +739,50 @@ int16_t executeOneStep(uint8_t *step) {
     printTrace(op, NOPARAM);
   #endif //IR_PRINTING
 
+  if(op == ITM_toPOL2 || op == ITM_XLE || op == ITM_POINT || op == ITM_STOADD || op == ITM_INC || op == ITM_GTO) {
+    const uint32_t dataTypeX = getRegisterDataType(REGISTER_X);
+    const uint32_t dataTypeY = getRegisterDataType(REGISTER_Y);
+    const uint32_t dataTypeZ = getRegisterDataType(REGISTER_Z);
+    char xBuf[64] = {0};
+    char yBuf[64] = {0};
+    char zBuf[64] = {0};
+
+    if(dataTypeX == dtReal34) {
+      real34ToString(REGISTER_REAL34_DATA(REGISTER_X), xBuf);
+    }
+    else if(dataTypeX == dtLongInteger) {
+      longIntegerRegisterToDisplayString(REGISTER_X, xBuf, 63, 0, true, false);
+    }
+
+    if(dataTypeY == dtReal34) {
+      real34ToString(REGISTER_REAL34_DATA(REGISTER_Y), yBuf);
+    }
+    else if(dataTypeY == dtLongInteger) {
+      longIntegerRegisterToDisplayString(REGISTER_Y, yBuf, 63, 0, true, false);
+    }
+
+    if(dataTypeZ == dtReal34) {
+      real34ToString(REGISTER_REAL34_DATA(REGISTER_Z), zBuf);
+    }
+    else if(dataTypeZ == dtLongInteger) {
+      longIntegerRegisterToDisplayString(REGISTER_Z, zBuf, 63, 0, true, false);
+    }
+
+    printf("SPIRALTRACE p=%u s=%u op=%u(%s) ti=%u HPRP=%u X[%u]=%s Y[%u]=%s Z[%u]=%s\\n",
+           currentProgramNumber,
+           currentLocalStepNumber,
+           op,
+           indexOfItems[op].itemCatalogName,
+           temporaryInformation,
+           getSystemFlag(FLAG_HPRP),
+           dataTypeX,
+           xBuf,
+           dataTypeY,
+           yBuf,
+           dataTypeZ,
+           zBuf);
+  }
+
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  executeOneStep: §%i§%s§%s§\n", op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
     #endif // PC_BUILD

@@ -406,6 +406,11 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
 
 void runPgm(uint16_t unusedButMandatoryParameter) {
   if(label != INVALID_VARIABLE) {
+    reallocateRegister(REGISTER_I, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_J, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_I));
+    real34SetZero(REGISTER_REAL34_DATA(REGISTER_J));
+
     dynamicSoftmenu[0].numItems = 0;
     dynamicSoftmenu[0].menuContent = NULL;
     reallyRunFunction(ITM_XEQ, label);
@@ -3147,6 +3152,32 @@ void standardizeLine(void) {
 static bool_t timerOperation = false;
 static bool_t timedFunction = false;
 static time_t startTime = 0;  // module-level static variable
+
+static bool_t matrixTraceEnabled(void) {
+  static int initialized = 0;
+  static bool_t enabled = false;
+  if(!initialized) {
+    enabled = getenv("Z47_MATRIX_TRACE") != NULL;
+    initialized = 1;
+  }
+  return enabled;
+}
+
+static void matrixTracePrint(const char *phase) {
+  if(!matrixTraceEnabled()) {
+    return;
+  }
+
+  printf("\n[MATRIX_TRACE] %s | line=%d | prefix=%s | name=%s | suffix=%s | script=%s\n",
+         phase,
+         lineNumber,
+         testCasePrefix,
+         testCaseName,
+         testCaseSuffix,
+         line);
+  fflush(stdout);
+}
+
 void startTimer(void) {
   startTime = time(NULL);
 }
@@ -3226,10 +3257,16 @@ void processLine(void) {
 
   else if(strncmp(line, "OUT: ", 5) == 0) {
     //printf("%s\n", line);
+    if(timerOperation || timedFunction) {
+      matrixTracePrint("before-callFunction");
+    }
     if(timedFunction && timerOperation) {
       startTimer();
     }
     callFunction();
+    if(timerOperation || timedFunction) {
+      matrixTracePrint("after-callFunction");
+    }
     if(timedFunction && timerOperation) {
       timedFunction = true;
       stopTimerAndPrint();

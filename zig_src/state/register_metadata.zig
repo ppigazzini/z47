@@ -2,8 +2,14 @@ const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
 const local_registers_owned = @import("register_metadata_local_registers_owned.zig");
 const payload_owned = @import("register_metadata_payload_owned.zig");
 const reallocate_owned = @import("register_metadata_reallocate_owned.zig");
+const _registers_compat_exports = @import("registers_compat_exports.zig");
 const variables_owned = @import("register_metadata_variables_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
+
+comptime {
+    _ = _registers_compat_exports.varDescr;
+    _ = _registers_compat_exports.allReservedVariables;
+}
 
 pub export fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_len: u16) void {
     payload_owned.setRegisterMaxDataLengthInBlocks(reg, max_data_len);
@@ -22,6 +28,16 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 }
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
+    // Legacy callers may still issue malformed register IDs during migration.
+    if (reg < 0 or
+        (reg > runtime.LAST_GLOBAL_REGISTER and reg < runtime.FIRST_NAMED_VARIABLE) or
+        (reg > runtime.LAST_RESERVED_VARIABLE and reg < runtime.FIRST_LOCAL_REGISTER) or
+        reg > runtime.LAST_LOCAL_REGISTER)
+    {
+        runtime.reportUndefSourceVar();
+        return;
+    }
+
     reallocate_owned.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }
 

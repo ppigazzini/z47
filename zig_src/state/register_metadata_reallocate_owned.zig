@@ -67,7 +67,8 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
 
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     if (isReservedRegister(reg)) {
-        runtime.reallocateRegisterRetained(reg, data_type, data_size_without_data_len_blocks, tag);
+        // Reserved descriptors are storage-bound; migrating callers may still attempt reallocation.
+        // Keep this as a no-op to avoid recursive retained dispatch and preserve backing pointers.
         return;
     }
 
