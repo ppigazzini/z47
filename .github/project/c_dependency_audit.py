@@ -12,6 +12,12 @@ STRING_CONCAT_RE = re.compile(
 REPLACED_CORE_SOURCES_RE = re.compile(
     r"const\s+replaced_core_sources(?:_manifest)?\s*=\s*(?:\[_\]\[\]const u8\s*\{|@embedFile\()"
 )
+MANIFEST_EMBED_RE = re.compile(r'@embedFile\("([^"]*sources\.txt)"\)')
+# Manifests whose entries are NOT first-party product C: replaced-core lists the
+# upstream units Zig already owns (excluded from compilation), and parity-oracle
+# lists test-lane oracle sources. Every other *sources.txt manifest feeds
+# addCSourceFile in the product build graph and must be counted.
+EXCLUDED_MANIFEST_MARKERS = ("replaced_core", "parity_oracle")
 
 
 def load_json(path: Path) -> dict:
@@ -42,6 +48,21 @@ def normalize_path(repo_root: Path, value: str) -> str:
     return value
 
 
+def manifest_c_entries(repo_root: Path, manifest_path: Path) -> set[str]:
+    """Read a build source manifest and return its existing first-party .c entries."""
+    found: set[str] = set()
+    if not manifest_path.is_file():
+        return found
+    for raw_line in manifest_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or not line.endswith(".c"):
+            continue
+        entry = normalize_path(repo_root, line)
+        if (repo_root / entry).is_file():
+            found.add(entry)
+    return found
+
+
 def candidate_literals_from_file(repo_root: Path, path: Path) -> set[str]:
     text = path.read_text(encoding="utf-8", errors="ignore")
     found: set[str] = set()
@@ -58,6 +79,12 @@ def candidate_literals_from_file(repo_root: Path, path: Path) -> set[str]:
 
         if "addCopyFileToSource(" in raw_line:
             continue
+
+        for embed in MANIFEST_EMBED_RE.finditer(raw_line):
+            manifest_name = embed.group(1)
+            if any(marker in manifest_name for marker in EXCLUDED_MANIFEST_MARKERS):
+                continue
+            found.update(manifest_c_entries(repo_root, path.parent / manifest_name))
 
         for chain in STRING_CONCAT_RE.finditer(raw_line):
             literal = normalize_path(repo_root, "".join(STRING_RE.findall(chain.group(0))))
