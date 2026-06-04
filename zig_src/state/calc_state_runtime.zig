@@ -68,6 +68,8 @@ pub extern fn z47_calc_state_runtime_restore_calc() void;
 pub extern fn z47_calc_state_legacy_doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
 pub extern fn z47_calc_state_legacy_fnSave(save_mode: u16) void;
 pub extern fn z47_calc_state_legacy_fnLoad(load_mode: u16) void;
+pub extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
+pub extern fn ioEof() c_int;
 pub extern fn z47_calc_state_legacy_fnSaveAuto(unused_but_mandatory_parameter: u16) void;
 
 fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {

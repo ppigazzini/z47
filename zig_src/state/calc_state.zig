@@ -8,9 +8,6 @@ const is_dmcp_build = builtin.target.os.tag == .freestanding;
 var compat_saved_calc_model: u16 = 0;
 var compat_loaded_version: u32 = 0;
 
-extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
-extern fn ioEof() c_int;
-
 fn parseIntCompat(comptime T: type, str: [*:0]const u8) T {
     return std.fmt.parseInt(T, std.mem.span(str), 10) catch 0;
 }
@@ -124,15 +121,15 @@ pub export fn readLine(line: [*c]u8) void {
     const out = line orelse return;
     var idx: usize = 0;
 
-    if (ioEof() == 0) {
-        _ = ioFileRead(&out[idx], 1);
-        while ((out[idx] == '\n' or out[idx] == '\r') and ioEof() == 0) {
-            _ = ioFileRead(&out[idx], 1);
+    if (runtime.ioEof() == 0) {
+        _ = runtime.ioFileRead(&out[idx], 1);
+        while ((out[idx] == '\n' or out[idx] == '\r') and runtime.ioEof() == 0) {
+            _ = runtime.ioFileRead(&out[idx], 1);
         }
 
-        while (out[idx] != '\n' and out[idx] != '\r' and ioEof() == 0) {
+        while (out[idx] != '\n' and out[idx] != '\r' and runtime.ioEof() == 0) {
             idx += 1;
-            _ = ioFileRead(&out[idx], 1);
+            _ = runtime.ioFileRead(&out[idx], 1);
         }
     }
 
