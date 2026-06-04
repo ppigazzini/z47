@@ -76,6 +76,7 @@ zig_src/state/stack_runtime_product_real_owned.zig
 zig_src/state/stack_runtime_reg_params_owned.zig
 zig_src/state/stack_runtime_store_owned.zig
 zig_src/state/register_metadata_variables_owned.zig
+zig_src/state/registers_compat_exports.zig
 zig_src/state/stack_result_owned.zig
 zig_src/state/stack_runtime.zig
 zig_src/state/stack_runtime_reg_param_product_owned.zig
