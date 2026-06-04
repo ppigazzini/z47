@@ -66,12 +66,11 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
 }
 
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    if (isReservedRegister(reg)) {
-        // Reserved descriptors are storage-bound; migrating callers may still attempt reallocation.
-        // Keep this as a no-op to avoid recursive retained dispatch and preserve backing pointers.
-        return;
-    }
-
+    // The upstream reallocateRegister applies the same allocation path to every
+    // register, reserved or not. Reserved registers must reallocate here too:
+    // skipping them leaves stale type and size metadata, which corrupts values
+    // stored into reserved variables. The earlier retained dispatch recursed
+    // back through the exported reallocateRegister; this local path does not.
     const normalized_payload_size = payload_owned.normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
     const allocated_size = payload_owned.allocationSizeInBlocks(data_type, normalized_payload_size);
 

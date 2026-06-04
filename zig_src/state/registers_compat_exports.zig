@@ -60,6 +60,27 @@ extern fn findNamedVariable(variable_name: [*:0]const u8) stack_runtime.calcRegi
 extern fn findNamedLabel(label_name: [*:0]const u8) stack_runtime.calcRegister_t;
 extern fn findMenu(menu_name: [*:0]const u8) i16;
 extern fn convertShortIntegerRegisterToUInt64(reg: stack_runtime.calcRegister_t, sign: *i16, value: *u64) void;
+
+// Indirect-addressing support: constants, runtime globals, and the long-integer
+// boundary used by the ported indirectAddressing resolver below.
+const FLAG_W: i16 = 224;
+const INVALID_MENU: i16 = 2791;
+const ERROR_LABEL_NOT_FOUND: u8 = 6;
+const ERROR_ENTER_NEW_NAME: u8 = 26;
+const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
+const ERROR_UNDEF_MENU: u8 = 59;
+
+extern var lastErrorCode: u8;
+extern fn convertLongIntegerRegisterToLongInteger(regist: stack_runtime.calcRegister_t, result: *stack_runtime.longInteger_t) void;
+extern fn __gmpz_cmp_si(op: *const stack_runtime.longInteger_t, value: c_long) c_int;
+extern fn __gmpz_cmp_ui(op: *const stack_runtime.longInteger_t, value: c_ulong) c_int;
+extern fn __gmpz_get_ui(op: *const stack_runtime.longInteger_t) c_ulong;
+extern fn __gmpz_clear(op: *stack_runtime.longInteger_t) void;
+
+fn indirectError(error_code: u8) i16 {
+    stack_runtime.displayCalcErrorMessage(error_code, stack_runtime.ERR_REGISTER_LINE, stack_runtime.REGISTER_X);
+    return FAILED_INDIRECTION;
+}
 extern fn realCompareAbsLessThan(number1: *const product_real.ProductReal, number2: *const product_real.ProductReal) bool;
 extern fn realToIntegralValue(source: *const product_real.ProductReal, destination: *product_real.ProductReal, mode: product_real.product_rounding_t, real_context: *product_real.ProductRealContext) void;
 extern fn realToInt32C47(source: *const product_real.ProductReal, err: ?*bool) i32;
@@ -247,14 +268,106 @@ pub export fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8 {
     return reg_param_product.getRegParamProduct(f, s, n, d, stack_runtime.currentLocalRegisterCount());
 }
 
+// The parity harness does not link GMP, the decNumber real helpers, or the
+// named-variable lookups that the real resolver needs, and it never exercises
+// indirect addressing. Select a dependency-free stub there so the link stays
+// clean; the product build uses the faithful resolver.
+const indirect_impl = if (use_fake_register_metadata_harness_surface)
+    indirectAddressingStub
+else
+    indirectAddressingReal;
+
 pub export fn indirectAddressing(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
+    return indirect_impl(regist, parameter_type, min_value, max_value_in, try_allocate);
+}
+
+fn indirectAddressingStub(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
     _ = regist;
     _ = parameter_type;
     _ = min_value;
     _ = max_value_in;
     _ = try_allocate;
-    stack_runtime.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, stack_runtime.ERR_REGISTER_LINE, stack_runtime.REGISTER_X);
-    return FAILED_INDIRECTION;
+    return indirectError(ERROR_OUT_OF_RANGE);
+}
+
+fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
+    const named_count: i16 = @intCast(register_runtime.numberOfNamedVariables);
+    var max_value: i16 = max_value_in;
+    switch (parameter_type) {
+        INDPM_REGISTER => max_value = register_runtime.FIRST_NAMED_VARIABLE + named_count - 1,
+        INDPM_FLAG => max_value = FLAG_W,
+        INDPM_LABEL => max_value = LAST_LOCAL_LABEL,
+        else => {},
+    }
+
+    var value: i16 = undefined;
+    var is_valid_alpha = false;
+    const data_type = stack_runtime.getRegisterDataType(regist);
+    const local_count: i16 = @intCast(stack_runtime.currentLocalRegisterCount());
+
+    if (regist >= stack_runtime.FIRST_LOCAL_REGISTER + local_count and
+        (regist < register_runtime.FIRST_NAMED_VARIABLE or
+            regist >= register_runtime.FIRST_NAMED_VARIABLE + named_count))
+    {
+        return indirectError(ERROR_OUT_OF_RANGE);
+    } else if (data_type == dtReal34 and parameter_type != INDPM_MENU) {
+        if (!parseRealRegisterToNonNegativeInt(regist, max_value, &value)) {
+            return indirectError(ERROR_OUT_OF_RANGE);
+        }
+    } else if (data_type == dtLongInteger and parameter_type != INDPM_MENU) {
+        var long_value: stack_runtime.longInteger_t = undefined;
+        convertLongIntegerRegisterToLongInteger(regist, &long_value);
+        if (__gmpz_cmp_si(&long_value, 0) < 0 or __gmpz_cmp_ui(&long_value, @intCast(max_value)) > 0) {
+            __gmpz_clear(&long_value);
+            return indirectError(ERROR_OUT_OF_RANGE);
+        }
+        value = @intCast(__gmpz_get_ui(&long_value));
+        __gmpz_clear(&long_value);
+    } else if (data_type == dtShortInteger and parameter_type != INDPM_MENU) {
+        var raw_value: u64 = undefined;
+        var sign: i16 = undefined;
+        convertShortIntegerRegisterToUInt64(regist, &sign, &raw_value);
+        if (sign == 1 or raw_value > 180) {
+            return indirectError(ERROR_OUT_OF_RANGE);
+        }
+        value = @intCast(raw_value);
+    } else if (data_type == dtString and parameter_type == INDPM_REGISTER) {
+        value = if (try_allocate)
+            findOrAllocateNamedVariable(registerStringData(regist))
+        else
+            findNamedVariable(registerStringData(regist));
+        is_valid_alpha = true;
+        if (value == register_runtime.INVALID_VARIABLE and lastErrorCode != ERROR_ENTER_NEW_NAME) {
+            return indirectError(ERROR_UNDEF_SOURCE_VAR);
+        }
+    } else if (data_type == dtString and parameter_type == INDPM_LABEL) {
+        value = findNamedLabel(registerStringData(regist));
+        is_valid_alpha = true;
+        if (value == register_runtime.INVALID_VARIABLE) {
+            return indirectError(ERROR_LABEL_NOT_FOUND);
+        }
+    } else if (data_type == dtString and parameter_type == INDPM_MENU) {
+        value = findMenu(registerStringData(regist));
+        is_valid_alpha = true;
+        if (value == INVALID_MENU) {
+            return indirectError(ERROR_UNDEF_MENU);
+        }
+    } else {
+        return indirectError(ERROR_INVALID_DATA_TYPE_FOR_OP);
+    }
+
+    if (min_value <= value and (value <= max_value or is_valid_alpha)) {
+        if (parameter_type == INDPM_REGISTER) {
+            if (value <= LAST_SPARE_REGISTERS_IN_KS_CODE) {
+                value = regKStoC(value);
+            }
+        } else if (parameter_type == INDPM_FLAG and value > LAST_LOCAL_FLAG and value < FLAG_M) {
+            return indirectError(ERROR_OUT_OF_RANGE);
+        }
+        return value;
+    }
+
+    return indirectError(ERROR_OUT_OF_RANGE);
 }
 
 pub export fn printStringToConsole(str: [*:0]const u8, before: [*:0]const u8, after: [*:0]const u8) void {
