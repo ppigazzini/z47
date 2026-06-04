@@ -9,6 +9,7 @@ pub const RuntimeObjects = struct {
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
+        cmd.addArg("zig_bridge/state/" ++ "keyboard_state_legacy.c");
         cmd.addFileArg(self.keyboard_state.getEmittedBin());
     }
 };
@@ -174,9 +175,7 @@ pub fn addHostRuntimeObjectsWithOptions(
 ) RuntimeObjects {
     const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/state/keyboard_state.zig"), options);
     configureHostModule(object.root_module, config);
-    return .{
-        .keyboard_state = object,
-    };
+    return .{ .keyboard_state = object };
 }
 
 pub fn addFirmwareRuntimeObjects(
@@ -199,9 +198,7 @@ pub fn addFirmwareRuntimeObjectsWithOptions(
 ) RuntimeObjects {
     const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/state/keyboard_state.zig"), options);
     configureFirmwareModule(object.root_module, config);
-    return .{
-        .keyboard_state = object,
-    };
+    return .{ .keyboard_state = object };
 }
 
 pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u8 {
