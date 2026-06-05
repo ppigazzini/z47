@@ -89,14 +89,6 @@ pub export fn z47_calc_state_save_sections() void {
     // Runtime helpers call this symbol; keep it side-effect free to avoid recursive loops.
 }
 
-pub export fn z47_calc_state_legacy_saveCalc() void {
-    // Runtime helpers call this symbol; keep it side-effect free to avoid recursive loops.
-}
-
-pub export fn z47_calc_state_legacy_restoreCalc() void {
-    // Runtime helpers call this symbol; keep it side-effect free to avoid recursive loops.
-}
-
 pub export fn stringToUint8(str: [*:0]const u8) u8 {
     return parseIntCompat(u8, str);
 }
