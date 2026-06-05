@@ -351,19 +351,21 @@ jobs:
           }
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          # Build every independent host parity suite, both simulators, and the
-          # test-program image in a single invocation so the Zig build runner
-          # compiles them in parallel across the runner cores instead of one at a
-          # time. register-metadata keeps its own retry, and the xvfb-bound test
-          # run stays separate.
-          zig build \
-            logical_shortint_parity rotate_bits_parity logical_boolean_ops_suite \
-            stack_state_parity flags_parity memory_parity \
-            program_serialization_parity calc_state_parity \
-            math_command_wrappers_parity math_random_parity keyboard_state_parity \
-            both testPgms
+          zig build logical_shortint_parity
+          zig build rotate_bits_parity
+          zig build logical_boolean_ops_suite
+          zig build stack_state_parity
           retry_once zig build register_metadata_parity
+          zig build flags_parity
+          zig build memory_parity
+          zig build program_serialization_parity
+          zig build calc_state_parity
+          zig build math_command_wrappers_parity
+          zig build math_random_parity
+          zig build keyboard_state_parity
+          zig build both
           zig build simulator_smoke
+          zig build testPgms
           xvfb-run --auto-servernum zig build test
           zig build generated
       - name: Run Linux ASAN wrapper surface
@@ -665,15 +667,17 @@ jobs:
           set -euo pipefail
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          # The dist_* targets build (and thereby validate) each firmware ELF
-          # before packaging, so the standalone dmcp/dmcpr47/dmcp5/dmcp5r47 builds
-          # were redundant and are dropped. Running every variant in a single
-          # invocation lets the Zig build runner compile the variants, and the two
-          # GMP cross-builds, in parallel across the runner cores instead of one
-          # at a time.
-          zig build \
-            dist_dmcp dist_dmcp_pkg1 dist_dmcp_pkg2 dist_dmcp_pkg3 \
-            dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
+          zig build dmcp
+          zig build dmcpr47
+          zig build dmcp5
+          zig build dmcp5r47
+          zig build dist_dmcp
+          zig build dist_dmcp_pkg1
+          zig build dist_dmcp_pkg2
+          zig build dist_dmcp_pkg3
+          zig build dist_dmcpr47
+          zig build dist_dmcp5
+          zig build dist_dmcp5r47
       - id: linux_firmware_meta
         name: Set Linux firmware artifact metadata
         shell: bash
