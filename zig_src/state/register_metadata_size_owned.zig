@@ -1,5 +1,14 @@
+const build_options = @import("register_metadata_build_options");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
+
+const use_fake_register_metadata_harness_surface =
+    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
+    build_options.use_fake_register_metadata_harness_surface;
+
+// sizeof(dtConfigDescriptor_t) is fixed at 840 bytes by the upstream
+// compatibility contract; the record is explicitly padded to that length.
+const CONFIG_DESCRIPTOR_SIZE_IN_BYTES: usize = 840;
 
 extern fn z47_register_metadata_config_size_in_blocks() u16;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
@@ -33,7 +42,10 @@ pub fn shortIntegerSizeInBlocks() u16 {
 }
 
 pub fn configSizeInBlocks() u16 {
-    return z47_register_metadata_config_size_in_blocks();
+    if (use_fake_register_metadata_harness_surface) {
+        return z47_register_metadata_config_size_in_blocks();
+    }
+    return toBlocks(CONFIG_DESCRIPTOR_SIZE_IN_BYTES);
 }
 
 pub fn memoryBlockAvailable(size_in_blocks: u16) bool {

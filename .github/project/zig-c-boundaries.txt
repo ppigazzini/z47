@@ -69,6 +69,7 @@ zig_src/state/register_metadata_confirmation_owned.zig
 zig_src/state/register_metadata_error_owned.zig
 zig_src/state/register_metadata_named_menu_owned.zig
 zig_src/state/register_metadata_size_owned.zig
+zig_src/state/register_metadata_tables_owned.zig
 zig_src/state/register_metadata_runtime.zig
 zig_src/state/stack_runtime_command_control_owned.zig
 zig_src/state/stack_runtime_convert_owned.zig

@@ -4,6 +4,7 @@ const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
 const size_owned = @import("register_metadata_size_owned.zig");
 const stack_runtime = @import("stack_runtime.zig");
+const tables_owned = @import("register_metadata_tables_owned.zig");
 const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
 const error_owned = @import("register_metadata_error_owned.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
@@ -95,21 +96,6 @@ pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 
-extern fn z47_register_metadata_get_reserved_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_register_metadata_get_reserved_data_type_descriptor(reg: calcRegister_t) register_descriptor_t;
-extern fn z47_register_metadata_reserved_allows_data_type_write(reg: calcRegister_t) bool;
-extern fn z47_register_metadata_to_pc_mem_ptr(mem_ptr: u16) ?*anyopaque;
-extern fn z47_register_metadata_to_c47_mem_ptr(mem_ptr: ?*const anyopaque) u16;
-extern fn z47_register_metadata_builtin_menu_item_count() u32;
-extern fn z47_register_metadata_builtin_menu_item_is_menu(index: u32) bool;
-extern fn z47_register_metadata_builtin_menu_item_name(index: u32) [*c]const u8;
-extern fn z47_register_metadata_allocate_first_named_variable_header() bool;
-extern fn z47_register_metadata_append_named_variable_header(index: *u16) bool;
-extern fn z47_register_metadata_store_named_variable_name(index: u16, variable_name: [*c]const u8) void;
-extern fn z47_register_metadata_clear_named_variable_slot(index: u16) void;
-extern fn z47_register_metadata_shrink_named_variable_header_storage() void;
-extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*c]const u8) i32;
-extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
@@ -146,15 +132,15 @@ pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descripto
 }
 
 pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_register_metadata_get_reserved_descriptor(reg);
+    return tables_owned.reservedDescriptor(reg);
 }
 
 pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
-    return z47_register_metadata_get_reserved_data_type_descriptor(reg);
+    return tables_owned.reservedDataTypeDescriptor(reg);
 }
 
 pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
-    return z47_register_metadata_reserved_allows_data_type_write(reg);
+    return tables_owned.reservedAllowsDataTypeWrite(reg);
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
@@ -216,23 +202,23 @@ pub fn reportRamFull() void {
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
-    return z47_register_metadata_to_pc_mem_ptr(mem_ptr);
+    return tables_owned.toPcMemPtr(mem_ptr);
 }
 
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {
-    return z47_register_metadata_to_c47_mem_ptr(mem_ptr);
+    return tables_owned.toC47MemPtr(mem_ptr);
 }
 
 pub fn builtinMenuItemCount() u32 {
-    return z47_register_metadata_builtin_menu_item_count();
+    return tables_owned.builtinMenuItemCount();
 }
 
 pub fn builtinMenuItemIsMenu(index: u32) bool {
-    return z47_register_metadata_builtin_menu_item_is_menu(index);
+    return tables_owned.builtinMenuItemIsMenu(index);
 }
 
 pub fn builtinMenuItemName(index: u32) [*c]const u8 {
-    return z47_register_metadata_builtin_menu_item_name(index);
+    return tables_owned.builtinMenuItemName(index);
 }
 
 pub fn userMenuCount() u32 {
@@ -248,15 +234,15 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
-    return z47_register_metadata_allocate_first_named_variable_header();
+    return tables_owned.allocateFirstNamedVariableHeader();
 }
 
 pub fn appendNamedVariableHeader(index: *u16) bool {
-    return z47_register_metadata_append_named_variable_header(index);
+    return tables_owned.appendNamedVariableHeader(index);
 }
 
 pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    z47_register_metadata_store_named_variable_name(index, variable_name);
+    tables_owned.storeNamedVariableName(index, variable_name);
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
@@ -264,19 +250,19 @@ pub fn removeNamedVariableRecallAssignment(index: u16) void {
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {
-    z47_register_metadata_clear_named_variable_slot(index);
+    tables_owned.clearNamedVariableSlot(index);
 }
 
 pub fn shrinkNamedVariableHeaderStorage() void {
-    z47_register_metadata_shrink_named_variable_header_storage();
+    tables_owned.shrinkNamedVariableHeaderStorage();
 }
 
 pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
-    return z47_register_metadata_compare_menu_names(left, right);
+    return tables_owned.compareMenuNames(left, right);
 }
 
 pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
-    return z47_register_metadata_find_reserved_variable_name(variable_name, glyph_length);
+    return tables_owned.findReservedVariableName(variable_name, glyph_length);
 }
 
 pub fn reportInvalidName() void {
