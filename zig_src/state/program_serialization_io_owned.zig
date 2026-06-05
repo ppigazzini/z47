@@ -100,7 +100,7 @@ extern fn z47_program_serialization_runtime_go_to_last_program() void;
 extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
 extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
 
-extern fn power_check_screen() c_int;
+extern fn z47_state_power_check_screen() bool;
 
 fn cStringLength(text: [*c]const u8) usize {
     var len: usize = 0;
@@ -119,10 +119,7 @@ pub fn checkPower() bool {
     if (use_fake_program_serialization_harness_surface) {
         return z47_program_serialization_runtime_check_power();
     }
-    if (is_dmcp_build) {
-        return power_check_screen() != 0;
-    }
-    return false;
+    return z47_state_power_check_screen();
 }
 
 pub fn selectProgram(label: u16) bool {

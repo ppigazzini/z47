@@ -122,6 +122,7 @@ zig_bridge/solver/isumprod_legacy.c
 zig_bridge/solver/solve_legacy.c
 zig_bridge/solver/sumprod_legacy.c
 zig_bridge/solver/tvm_legacy.c
+zig_bridge/state/calc_state_legacy.c
 zig_bridge/state/keyboard_state_legacy.c
 zig_build/host/gtk_c47_gtk_legacy.c
 zig_build/host/gtk_gui_legacy.c
