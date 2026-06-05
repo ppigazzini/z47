@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     calc_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "calc_state_runtime_helpers.c");
         cmd.addFileArg(self.calc_state.getEmittedBin());
     }
 };
@@ -29,19 +28,27 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/state/calc_state.zig"),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "use_fake_calc_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
+    // USER_C47 (46). Only allow_user_keys consumes this in the product path.
+    build_options.addOption(u16, "calc_model_user_id", if (std.mem.indexOf(u8, name_prefix, "r47") != null) 66 else 46);
+    module.addOptions("calc_state_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-calc-state", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/state/calc_state.zig"),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
@@ -91,8 +98,8 @@ pub fn addToModule(
     c_flags: []const []const u8,
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    _ = c_flags;
 
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "calc_state_runtime_helpers.c"), .flags = c_flags });
     module.addObject(runtime_object);
 }
 
