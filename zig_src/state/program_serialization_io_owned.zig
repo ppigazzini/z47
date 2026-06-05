@@ -1,0 +1,289 @@
+const std = @import("std");
+const builtin = @import("builtin");
+const build_options = @import("program_serialization_build_options");
+
+const use_fake_program_serialization_harness_surface =
+    @hasDecl(build_options, "use_fake_program_serialization_harness_surface") and
+    build_options.use_fake_program_serialization_harness_surface;
+
+const is_dmcp_build = builtin.target.os.tag == .freestanding;
+
+const REGISTER_X: i16 = 100;
+const REGISTER_Z: i16 = 102;
+const ERR_REGISTER_LINE: i16 = REGISTER_Z;
+
+const FIRST_LABEL: u16 = 2200;
+const LAST_LABEL: u16 = 6999;
+const RAM_SIZE_IN_BLOCKS: u16 = 65534;
+
+const ioPathSaveProgram: c_int = 8;
+const ioPathLoadProgram: c_int = 11;
+const ioModeWrite: c_int = 1;
+const ioModeRead: c_int = 0;
+
+const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERROR_CANNOT_READ_FILE: u8 = 35;
+const ERROR_CANNOT_WRITE_FILE: u8 = 55;
+
+const C47_NULL: u32 = 65535;
+
+const labelList_t = extern struct {
+    program: i16,
+    step: i32,
+    labelPointer: ?[*]u8,
+    instructionPointer: ?[*]u8,
+};
+
+const programList_t = extern struct {
+    step: i32,
+    instructionPointer: ?[*]u8,
+};
+
+// Only the fields consumed here are modelled; alpha sits at offset 4 and
+// digitsSoFar at offset 10, matching upstream tamState_t.
+const tamState_t = extern struct {
+    mode: u16,
+    function: i16,
+    alpha: u8,
+    currentOperation: i16,
+    dot: u8,
+    indirect: u8,
+    digitsSoFar: i16,
+};
+
+comptime {
+    // Lock the upstream field layout these helpers index into. Offsets are
+    // target-independent (small integers and one leading pointer-aligned field).
+    std.debug.assert(@offsetOf(labelList_t, "program") == 0);
+    std.debug.assert(@offsetOf(labelList_t, "step") == 4);
+    std.debug.assert(@offsetOf(labelList_t, "labelPointer") == 8);
+    std.debug.assert(@offsetOf(programList_t, "step") == 0);
+    std.debug.assert(@offsetOf(tamState_t, "alpha") == 4);
+    std.debug.assert(@offsetOf(tamState_t, "digitsSoFar") == 10);
+}
+
+extern var labelList: ?[*]labelList_t;
+extern var programList: ?[*]programList_t;
+extern var tam: tamState_t;
+extern var dynamicMenuItem: i16;
+extern var numberOfLabels: u16;
+extern var numberOfPrograms: u16;
+extern var currentProgramNumber: u16;
+extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var ram: [*c]u32;
+
+extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
+extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
+extern fn ioFileClose() void;
+extern fn show_warning(string: [*c]u8) void;
+const scanLabelsAndProgramsC = @extern(*const fn () callconv(.c) void, .{ .name = "scanLabelsAndPrograms" });
+extern fn goToGlobalStep(step: i32) void;
+extern fn fnGoto(label: u16) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+extern fn readLine(line: [*c]u8) void;
+
+extern fn z47_program_serialization_runtime_check_power() bool;
+extern fn z47_program_serialization_runtime_select_program(label: u16) bool;
+extern fn z47_program_serialization_runtime_open_save_program() c_int;
+extern fn z47_program_serialization_runtime_open_load_program() c_int;
+extern fn z47_program_serialization_runtime_write_literal(text: [*c]const u8) void;
+extern fn z47_program_serialization_runtime_write_u32_line(value: u32) void;
+extern fn z47_program_serialization_runtime_write_u8_line(value: u8) void;
+extern fn z47_program_serialization_runtime_read_line(buffer: [*c]u8) void;
+extern fn z47_program_serialization_runtime_close_file() void;
+extern fn z47_program_serialization_runtime_display_write_error() void;
+extern fn z47_program_serialization_runtime_display_read_error() void;
+extern fn z47_program_serialization_runtime_show_warning(message: [*c]const u8) void;
+extern fn z47_program_serialization_runtime_scan_labels_and_programs() void;
+extern fn z47_program_serialization_runtime_go_to_last_program() void;
+extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
+extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
+
+extern fn power_check_screen() c_int;
+
+fn cStringLength(text: [*c]const u8) usize {
+    var len: usize = 0;
+    while (text[len] != 0) : (len += 1) {}
+    return len;
+}
+
+fn copyLabelName(label_ptr: ?[*]u8) void {
+    const ptr = label_ptr orelse return;
+    const len = ptr[0];
+    _ = xcopy(tmpStringLabelOrVariableName, ptr + 1, len);
+    tmpStringLabelOrVariableName[len] = 0;
+}
+
+pub fn checkPower() bool {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_check_power();
+    }
+    if (is_dmcp_build) {
+        return power_check_screen() != 0;
+    }
+    return false;
+}
+
+pub fn selectProgram(label: u16) bool {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_select_program(label);
+    }
+
+    dynamicMenuItem = -1;
+
+    if (label == 0 and tam.alpha == 0 and tam.digitsSoFar == 0) {
+        const untitled = "untitled";
+        @memcpy(tmpStringLabelOrVariableName[0..untitled.len], untitled);
+        tmpStringLabelOrVariableName[untitled.len] = 0;
+
+        const labels = labelList orelse return true;
+        var current_label: u16 = 0;
+        while (current_label < numberOfLabels) : (current_label += 1) {
+            if (labels[current_label].program == currentProgramNumber) {
+                break;
+            }
+        }
+        while (current_label < numberOfLabels) : (current_label += 1) {
+            if (labels[current_label].step > 0) {
+                copyLabelName(labels[current_label].labelPointer);
+                break;
+            }
+        }
+        return true;
+    }
+
+    if (label >= FIRST_LABEL and label <= LAST_LABEL) {
+        fnGoto(label);
+        const labels = labelList orelse return true;
+        copyLabelName(labels[label - FIRST_LABEL].labelPointer);
+        return true;
+    }
+
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    return false;
+}
+
+pub fn openSaveProgram() c_int {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_open_save_program();
+    }
+    return ioFileOpen(ioPathSaveProgram, ioModeWrite);
+}
+
+pub fn openLoadProgram() c_int {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_open_load_program();
+    }
+    return ioFileOpen(ioPathLoadProgram, ioModeRead);
+}
+
+pub fn writeLiteral(text: [*c]const u8) void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_write_literal(text);
+        return;
+    }
+    ioFileWrite(text, @intCast(cStringLength(text)));
+}
+
+pub fn writeU32Line(value: u32) void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_write_u32_line(value);
+        return;
+    }
+    var buffer: [64]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
+    ioFileWrite(line.ptr, @intCast(line.len));
+}
+
+pub fn writeU8Line(value: u8) void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_write_u8_line(value);
+        return;
+    }
+    var buffer: [32]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
+    ioFileWrite(line.ptr, @intCast(line.len));
+}
+
+pub fn readLineInto(buffer: [*c]u8) void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_read_line(buffer);
+        return;
+    }
+    readLine(buffer);
+}
+
+pub fn closeFile() void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_close_file();
+        return;
+    }
+    ioFileClose();
+}
+
+pub fn displayWriteError() void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_display_write_error();
+        return;
+    }
+    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub fn displayReadError() void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_display_read_error();
+        return;
+    }
+    displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub fn showWarning(message: [*c]const u8) void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_show_warning(message);
+        return;
+    }
+    var warning: [256]u8 = undefined;
+    var idx: usize = 0;
+    while (idx < warning.len - 1 and message[idx] != 0) : (idx += 1) {
+        warning[idx] = message[idx];
+    }
+    warning[idx] = 0;
+    show_warning(&warning);
+}
+
+pub fn scanLabelsAndPrograms() void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_scan_labels_and_programs();
+        return;
+    }
+    scanLabelsAndProgramsC();
+}
+
+pub fn goToLastProgram() void {
+    if (use_fake_program_serialization_harness_surface) {
+        z47_program_serialization_runtime_go_to_last_program();
+        return;
+    }
+    if (numberOfPrograms > 0) {
+        const programs = programList orelse return;
+        goToGlobalStep(programs[numberOfPrograms - 1].step);
+    }
+}
+
+pub fn getRamSizeInBlocks() u16 {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_get_ram_size_in_blocks();
+    }
+    return RAM_SIZE_IN_BLOCKS;
+}
+
+pub fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
+    if (use_fake_program_serialization_harness_surface) {
+        return z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr);
+    }
+    if (mem_ptr == null) {
+        return @intCast(C47_NULL);
+    }
+    return @intCast((@intFromPtr(mem_ptr) - @intFromPtr(ram)) / @sizeOf(u32));
+}

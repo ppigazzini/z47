@@ -124,7 +124,6 @@ zig_bridge/solver/sumprod_legacy.c
 zig_bridge/solver/tvm_legacy.c
 zig_bridge/state/calc_state_runtime_helpers.c
 zig_bridge/state/keyboard_state_legacy.c
-zig_bridge/state/program_serialization_runtime_helpers.c
 zig_build/host/gtk_c47_gtk_legacy.c
 zig_build/host/gtk_gui_legacy.c
 zig_build/tests/calc_state/calc_state_fake_runtime.c

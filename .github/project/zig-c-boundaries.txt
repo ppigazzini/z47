@@ -63,6 +63,7 @@ zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
 zig_src/state/flags_runtime.zig
 zig_src/state/keyboard_state_runtime.zig
 zig_src/state/memory_runtime.zig
+zig_src/state/program_serialization_io_owned.zig
 zig_src/state/program_serialization_runtime.zig
 zig_src/state/register_metadata_clear_sigma_owned.zig
 zig_src/state/register_metadata_confirmation_owned.zig
