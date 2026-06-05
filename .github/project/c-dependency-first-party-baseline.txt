@@ -114,7 +114,6 @@ zig_bridge/mathematics/math_wrappers_runtime_wp34s.c
 zig_bridge/mathematics/math_wrappers_runtime_xfn.c
 zig_bridge/mathematics/math_wrappers_runtime_xthRoot.c
 zig_bridge/mathematics/math_wrappers_runtime_zeta.c
-zig_bridge/mathematics/random_runtime_helpers.c
 zig_bridge/solver/differentiate_legacy.c
 zig_bridge/solver/equation_legacy.c
 zig_bridge/solver/graph_legacy.c
@@ -156,6 +155,7 @@ zig_build/tests/math_wrappers/math_wrappers_oracle.c
 zig_build/tests/math_wrappers/math_wrappers_parity.c
 zig_build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_oracle.c
 zig_build/tests/math_wrappers/math_wrappers_real_trig_primitives_oracle.c
+zig_build/tests/math_wrappers/random_fake_runtime_helpers.c
 zig_build/tests/memory/memory_fake_runtime.c
 zig_build/tests/memory/memory_oracle.c
 zig_build/tests/memory/memory_parity.c

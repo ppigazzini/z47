@@ -106,7 +106,6 @@ zig_bridge/mathematics/math_wrappers_runtime_wp34s.c
 zig_bridge/mathematics/math_wrappers_runtime_xfn.c
 zig_bridge/mathematics/math_wrappers_runtime_xthRoot.c
 zig_bridge/mathematics/math_wrappers_runtime_zeta.c
-zig_bridge/mathematics/random_runtime_helpers.c
 zig_bridge/solver/differentiate_legacy.c
 zig_bridge/solver/equation_legacy.c
 zig_bridge/solver/graph_legacy.c

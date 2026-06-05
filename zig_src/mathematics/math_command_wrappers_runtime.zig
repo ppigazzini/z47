@@ -1,5 +1,7 @@
 const build_options = @import("math_command_wrappers_build_options");
 const use_fake_wp34s_harness_surface = @hasDecl(build_options, "use_fake_wp34s_harness_surface") and build_options.use_fake_wp34s_harness_surface;
+pub const harness_surface_is_fake = use_fake_wp34s_harness_surface;
+pub const is_testsuite_build = @hasDecl(build_options, "is_testsuite_build") and build_options.is_testsuite_build;
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
