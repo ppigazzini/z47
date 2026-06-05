@@ -1,5 +1,6 @@
 const build_options = @import("stack_state_build_options");
 const command_control_owned = @import("stack_runtime_command_control_owned.zig");
+const convert_owned = @import("stack_runtime_convert_owned.zig");
 const descriptor_storage = @import("register_descriptor_storage_owned.zig");
 const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
 const reg_param_product_owned = @import("stack_runtime_reg_param_product_owned.zig");
@@ -75,6 +76,12 @@ pub const amPolar: u32 = 16;
 pub const FLAG_POLAR: i32 = 0x8006;
 pub const LM_REGISTERS_PARTIAL: u16 = 6;
 pub const manualLoad: u16 = 1;
+
+// REAL34_SIZE_IN_BLOCKS = TO_BLOCKS(sizeof(real34_t)=16) = (16 + 3) >> 2.
+pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
+// NUMBER_OF_STATISTICAL_SUMS=28; REAL_SIZE_IN_BYTES(75)=60; REAL_SIZE_IN_BLOCKS(75)=15.
+pub const STATISTICAL_SUMS_BLOCKS: u16 = 28 * 15;
+pub const STATISTICAL_SUMS_BYTES: u32 = 28 * 60;
 const product_rounding_t = product_real_owned.product_rounding_t;
 const ProductReal = product_real_owned.ProductReal;
 const ProductRealContext = product_real_owned.ProductRealContext;
@@ -103,16 +110,6 @@ extern fn realCompareAbsLessThan(number1: *const ProductReal, number2: *const Pr
 extern fn realToInt32C47(source: *const ProductReal, err: ?*bool) i32;
 extern fn z47_stack_runtime_get_stack_top() calcRegister_t;
 extern fn z47_stack_runtime_real34_size_in_blocks() u16;
-extern fn z47_stack_runtime_try_fn_to_real_complex_zero() bool;
-extern fn z47_stack_runtime_try_fn_to_real_real34() bool;
-extern fn z47_stack_runtime_try_fn_to_real_long_integer() bool;
-extern fn z47_stack_runtime_try_fn_to_real_short_integer() bool;
-extern fn z47_stack_runtime_try_fn_to_real_time() bool;
-extern fn z47_stack_runtime_try_fn_to_real_date() bool;
-extern fn z47_stack_runtime_adjust_result_scalar_core(res: calcRegister_t) bool;
-extern fn z47_stack_runtime_adjust_result_real_matrix_core(res: calcRegister_t) bool;
-extern fn z47_stack_runtime_adjust_result_complex_matrix_core(res: calcRegister_t) bool;
-extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 extern fn z47_stack_runtime_statistical_sums_blocks() u16;
 extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 
@@ -175,51 +172,57 @@ fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, destin
 }
 
 pub fn getStackTop() calcRegister_t {
-    return z47_stack_runtime_get_stack_top();
+    if (use_fake_stack_state_harness_surface) {
+        return z47_stack_runtime_get_stack_top();
+    }
+    return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
 
 pub fn real34SizeInBlocks() u16 {
-    return z47_stack_runtime_real34_size_in_blocks();
+    if (use_fake_stack_state_harness_surface) {
+        return z47_stack_runtime_real34_size_in_blocks();
+    }
+    return REAL34_SIZE_IN_BLOCKS;
 }
 
 pub fn tryFnToRealComplexZero() bool {
-    return z47_stack_runtime_try_fn_to_real_complex_zero();
+    return convert_owned.tryFnToRealComplexZero();
 }
 
 pub fn tryFnToRealReal34() bool {
-    return z47_stack_runtime_try_fn_to_real_real34();
+    return convert_owned.tryFnToRealReal34();
 }
 
 pub fn tryFnToRealLongInteger() bool {
-    return z47_stack_runtime_try_fn_to_real_long_integer();
+    return convert_owned.tryFnToRealLongInteger();
 }
 
 pub fn tryFnToRealShortInteger() bool {
-    return z47_stack_runtime_try_fn_to_real_short_integer();
+    return convert_owned.tryFnToRealShortInteger();
 }
 
 pub fn tryFnToRealTime() bool {
-    return z47_stack_runtime_try_fn_to_real_time();
+    return convert_owned.tryFnToRealTime();
 }
 
 pub fn tryFnToRealDate() bool {
-    return z47_stack_runtime_try_fn_to_real_date();
+    return convert_owned.tryFnToRealDate();
 }
 
 pub fn adjustResultSetCpxRes() void {
-    z47_stack_runtime_adjust_result_set_cpxres();
+    convert_owned.adjustResultSetCpxRes();
 }
 
 pub fn adjustResultScalarCore(res: calcRegister_t) bool {
-    return z47_stack_runtime_adjust_result_scalar_core(res);
+    return convert_owned.adjustResultScalarCore(res);
 }
 
 pub fn adjustResultRealMatrixCore(res: calcRegister_t) bool {
-    return z47_stack_runtime_adjust_result_real_matrix_core(res);
+    return convert_owned.adjustResultRealMatrixCore(res);
 }
 
 pub fn adjustResultComplexMatrixCore(res: calcRegister_t) bool {
-    return z47_stack_runtime_adjust_result_complex_matrix_core(res);
+    return convert_owned.adjustResultComplexMatrixCore(res);
 }
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
@@ -244,11 +247,17 @@ pub fn reportInvalidSwapTarget(reg: u16) void {
 }
 
 pub fn statisticalSumsBlocks() u16 {
-    return z47_stack_runtime_statistical_sums_blocks();
+    if (use_fake_stack_state_harness_surface) {
+        return z47_stack_runtime_statistical_sums_blocks();
+    }
+    return STATISTICAL_SUMS_BLOCKS;
 }
 
 pub fn statisticalSumsBytes() u32 {
-    return z47_stack_runtime_statistical_sums_bytes();
+    if (use_fake_stack_state_harness_surface) {
+        return z47_stack_runtime_statistical_sums_bytes();
+    }
+    return STATISTICAL_SUMS_BYTES;
 }
 
 pub fn storeStackSizeInX(size: u32) void {
