@@ -1,6 +1,36 @@
 const runtime = @import("program_serialization_runtime.zig");
 
 pub fn saveProgram(label: u16) void {
+    saveProgramToPath(label, runtime.ioPathSaveProgram);
+}
+
+// Port of fnSaveAllPrograms: walk every global label and write each program
+// (whose first global label it is) to ioPathSaveAllPrograms, which writes
+// directly to PROGRAMS/ALLPGMS without the interactive file-picker dialog.
+pub fn saveAllPrograms() void {
+    const saved_current_local_step_number = runtime.currentLocalStepNumber;
+    const saved_current_program_number = runtime.currentProgramNumber;
+    defer {
+        runtime.currentLocalStepNumber = saved_current_local_step_number;
+        runtime.currentProgramNumber = saved_current_program_number;
+    }
+
+    var i: u16 = 0;
+    while (i < runtime.numberOfLabels) : (i += 1) {
+        var label_name: [16]u8 = undefined;
+        if (!runtime.globalLabelNameAt(i, &label_name)) {
+            continue;
+        }
+        const label = runtime.findNamedLabel(&label_name);
+        const old_program_number = runtime.currentProgramNumber;
+        _ = runtime.selectProgram(label);
+        if (runtime.currentProgramNumber != old_program_number) {
+            saveProgramToPath(label, runtime.ioPathSaveAllPrograms);
+        }
+    }
+}
+
+pub fn saveProgramToPath(label: u16, path: c_int) void {
     if (runtime.checkPower()) {
         return;
     }
@@ -16,7 +46,7 @@ pub fn saveProgram(label: u16) void {
         return;
     }
 
-    const ret = runtime.openSaveProgram();
+    const ret = runtime.openSaveProgram(path);
     if (ret != runtime.FILE_OK) {
         if (ret != runtime.FILE_CANCEL) {
             runtime.displayWriteError();

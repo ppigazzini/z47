@@ -44,8 +44,7 @@ pub export fn fnExportProgram(label: u16) void {
 
 pub export fn fnSaveAllPrograms(unusedButMandatoryParameter: u16) void {
     _ = unusedButMandatoryParameter;
-    // Match legacy "current or selected label" behavior used by UI bindings.
-    saveProgram(0);
+    save_owned.saveAllPrograms();
 }
 
 pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
