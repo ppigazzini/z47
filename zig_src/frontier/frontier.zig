@@ -13,6 +13,7 @@ const matrix_mim_run = @import("frontier_matrix_mim_run_owned.zig");
 const plot_regression = @import("frontier_plot_regression_owned.zig");
 const print_register = @import("frontier_print_register_owned.zig");
 const program_clear = @import("frontier_program_clear_owned.zig");
+const cauchy = @import("frontier_cauchy_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -887,4 +888,20 @@ pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
 
 pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
     plot_regression.run(plot_mode);
+}
+
+pub export fn fnCauchyP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    cauchy.cauchyP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnCauchyL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    cauchy.cauchyL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnCauchyR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    cauchy.cauchyR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnCauchyI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    cauchy.cauchyI(unused_but_mandatory_parameter);
 }

@@ -16,7 +16,6 @@ zig_bridge/frontier/binomial_legacy.c
 zig_bridge/frontier/bufferize_legacy.c
 zig_bridge/frontier/c47_legacy.c
 zig_bridge/frontier/calc_mode_legacy.c
-zig_bridge/frontier/cauchy_legacy.c
 zig_bridge/frontier/char_string_legacy.c
 zig_bridge/frontier/chi2_legacy.c
 zig_bridge/frontier/clcvar_legacy.c
