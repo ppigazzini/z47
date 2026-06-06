@@ -20,6 +20,7 @@ const rounding_t = c_int;
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_M: calcRegister_t = 112;
+pub const REGISTER_N: calcRegister_t = 113;
 pub const REGISTER_Q: calcRegister_t = 115;
 pub const REGISTER_R: calcRegister_t = 116;
 pub const REGISTER_S: calcRegister_t = 117;
@@ -27,6 +28,10 @@ pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 pub const amNone: angularMode_t = 5;
 
 pub const FLAG_SPCRES: i32 = 0x8017;
+
+// decContext rounding modes (dep/decNumberICU/decContext.h enum order).
+pub const DEC_ROUND_CEILING: c_int = 0;
+pub const DEC_ROUND_FLOOR: c_int = 6;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
@@ -73,6 +78,9 @@ extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn realSetNaN(value: *real_t) void;
+extern fn realIsAnInteger(value: *const real_t) bool;
+extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
+extern fn linpol(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void;
 
 pub extern fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_SinCosTanTaylor(angle: *const real_t, swap: bool, sin_out: ?*real_t, cos_out: ?*real_t, tan_out: ?*real_t, real_context: *realContext_t) void;
@@ -149,8 +157,20 @@ pub inline fn realChangeSign(value: *real_t) void {
 pub inline fn realLessThan(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs);
 }
+pub inline fn realEqual(lhs: *const real_t, rhs: *const real_t) bool {
+    return realCompareEqual(lhs, rhs);
+}
 pub inline fn realGreaterThan(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareGreaterThan(lhs, rhs);
+}
+pub inline fn isAnInteger(value: *const real_t) bool {
+    return realIsAnInteger(value);
+}
+pub inline fn toIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void {
+    realToIntegralValue(source, destination, mode, real_context);
+}
+pub inline fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
+    linpol(a, b, p, res);
 }
 pub inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);

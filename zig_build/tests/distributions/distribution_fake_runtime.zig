@@ -227,6 +227,15 @@ pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, m
     _ = decNumberToIntegralValue(destination, source, ctx);
     ctx.round = saved;
 }
+// Linear interpolation res = a + (b - a) * p. The harness only exercises finite
+// inputs, so the NaN/infinity guards of c47's linpol are not needed here.
+pub export fn linpol(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) callconv(.c) void {
+    var diff: real_t = undefined;
+    var scaled: real_t = undefined;
+    _ = decNumberSubtract(&diff, b, a, &ctxtReal39);
+    _ = decNumberMultiply(&scaled, &diff, p, &ctxtReal39);
+    _ = decNumberAdd(res, a, &scaled, &ctxtReal39);
+}
 pub export fn WP34S_ExpM1(x: *const real_t, res: *real_t, ctx: *realContext_t) callconv(.c) void {
     var e: real_t = undefined;
     _ = decNumberExp(&e, x, ctx);
