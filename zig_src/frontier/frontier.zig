@@ -28,6 +28,12 @@ const gev = @import("frontier_gev_owned.zig");
 const frontier_build_options = @import("frontier_build_options");
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
+
+// realType.c owner: exports low-level real<->int helpers with C linkage. It has
+// no command dispatch wrappers, so force its inclusion in the frontier object.
+comptime {
+    _ = @import("frontier_real_type_owned.zig");
+}
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
