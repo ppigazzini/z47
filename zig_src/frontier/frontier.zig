@@ -15,6 +15,7 @@ const print_register = @import("frontier_print_register_owned.zig");
 const program_clear = @import("frontier_program_clear_owned.zig");
 const cauchy = @import("frontier_cauchy_owned.zig");
 const weibull = @import("frontier_weibull_owned.zig");
+const logistic = @import("frontier_logistic_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -921,4 +922,20 @@ pub export fn fnWeibullR(unused_but_mandatory_parameter: u16) callconv(.c) void 
 
 pub export fn fnWeibullI(unused_but_mandatory_parameter: u16) callconv(.c) void {
     weibull.weibullI(unused_but_mandatory_parameter);
+}
+
+pub export fn fnLogisticP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    logistic.logisticP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnLogisticL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    logistic.logisticL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnLogisticR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    logistic.logisticR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnLogisticI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    logistic.logisticI(unused_but_mandatory_parameter);
 }

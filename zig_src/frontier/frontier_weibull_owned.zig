@@ -2,141 +2,36 @@
 //
 // Zig owner for the Weibull distribution commands, porting
 // `src/c47/distributions/weibull.c`. The four fn* entry points are dispatched
-// from the items.c function table; the WP34S_*_Weib helpers are weibull-internal
-// (no external references) and stay private.
-//
-// Frontier has no parity harness, so the decNumber/register surface is externed
-// straight to the c47-core symbols present in the product, test, and firmware
-// links.
+// from the items.c function table (exported via frontier.zig); the WP34S_*_Weib
+// helpers are weibull-internal and stay private. All decNumber/register access
+// goes through frontier_distribution_runtime.
 
-const DECNUMUNITS = 25;
-
-const DECNEG: u8 = 0x80;
-const DECNAN: u8 = 0x20;
-const DECSNAN: u8 = 0x10;
-const DECSPECIAL: u8 = 0x70;
-
-const calcRegister_t = i16;
-const angularMode_t = c_int;
-const rounding_t = c_int;
-
-const REGISTER_X: calcRegister_t = 100;
-const REGISTER_Z: calcRegister_t = 102;
-const REGISTER_Q: calcRegister_t = 115;
-const REGISTER_S: calcRegister_t = 117;
-const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
-const amNone: angularMode_t = 5;
-
-const FLAG_SPCRES: i32 = 0x8017;
-const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
-const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
-
-pub const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
-
-pub const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: rounding_t,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
-
-extern var ctxtReal39: realContext_t;
-extern var const_NaN: *const real_t;
-
-extern fn z47_math_wrappers_const_0() *const real_t;
-extern fn z47_math_wrappers_const_1() *const real_t;
-
-extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
-extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
-extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
-
-extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
-extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn realSetZero(value: *real_t) void;
-extern fn realSetOne(value: *real_t) void;
-extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
-
-extern fn saveLastX() bool;
-extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
-extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
-extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
-extern fn displayDomainErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
-extern fn getSystemFlag(flag: i32) bool;
-
-inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
-    _ = decNumberMultiply(result, lhs, rhs, real_context);
-}
-inline fn realDivide(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
-    _ = decNumberDivide(result, lhs, rhs, real_context);
-}
-inline fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
-    _ = decNumberMinus(result, operand, real_context);
-}
-
-inline fn realIsSpecial(value: *const real_t) bool {
-    return (value.bits & DECSPECIAL) != 0;
-}
-inline fn realIsNegative(value: *const real_t) bool {
-    return (value.bits & DECNEG) != 0;
-}
-inline fn realIsZero(value: *const real_t) bool {
-    return value.digits == 1 and value.lsu[0] == 0 and !realIsSpecial(value);
-}
-inline fn realChangeSign(value: *real_t) void {
-    value.bits ^= 0x80;
-}
-inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
-    return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);
-}
-inline fn realCompareGreaterEqual(lhs: *const real_t, rhs: *const real_t) bool {
-    return !realCompareLessThan(lhs, rhs);
-}
-
-fn const0() *const real_t {
-    return z47_math_wrappers_const_0();
-}
-fn const1() *const real_t {
-    return z47_math_wrappers_const_1();
-}
+const dr = @import("frontier_distribution_runtime.zig");
+const real_t = dr.real_t;
+const realContext_t = dr.realContext_t;
 
 fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) bool {
-    if (!saveLastX()) {
+    if (!dr.saveLastX()) {
         return false;
     }
 
-    if (!getRegisterAsReal(REGISTER_X, x) or !getRegisterAsReal(REGISTER_Q, shape) or !getRegisterAsReal(REGISTER_S, scale)) {
-        return fail();
+    if (!dr.getRegisterAsReal(dr.REGISTER_X, x) or !dr.getRegisterAsReal(dr.REGISTER_Q, shape) or !dr.getRegisterAsReal(dr.REGISTER_S, scale)) {
+        dr.specialResultNaN();
+        return false;
     }
 
-    if (realIsNegative(x)) {
-        displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function checkParamWeibull:", "cannot calculate for x < 0", null, null);
-        return fail();
-    } else if (realIsZero(shape) or realIsNegative(shape) or realIsZero(scale) or realIsNegative(scale)) {
-        displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b <= 0 or t <= 0", null, null);
-        return fail();
+    if (dr.realIsNegative(x)) {
+        dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for x < 0", null, null);
+        dr.specialResultNaN();
+        return false;
+    } else if (dr.realIsZero(shape) or dr.realIsNegative(shape) or dr.realIsZero(scale) or dr.realIsNegative(scale)) {
+        dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+        dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b <= 0 or t <= 0", null, null);
+        dr.specialResultNaN();
+        return false;
     }
     return true;
-}
-
-fn fail() bool {
-    if (getSystemFlag(FLAG_SPCRES)) {
-        convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
-    }
-    return false;
 }
 
 pub fn weibullP(unused_but_mandatory_parameter: u16) void {
@@ -147,9 +42,8 @@ pub fn weibullP(unused_but_mandatory_parameter: u16) void {
     var ans: real_t = undefined;
 
     if (checkParamWeibull(&val, &shape, &lifetime)) {
-        wp34sPdfWeib(&val, &lifetime, &shape, &ans, &ctxtReal39);
-        convertRealToResultRegister(&ans, REGISTER_X, amNone);
-        adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+        wp34sPdfWeib(&val, &lifetime, &shape, &ans, &dr.ctxtReal39);
+        dr.storeResult(&ans);
     }
 }
 
@@ -161,9 +55,8 @@ pub fn weibullL(unused_but_mandatory_parameter: u16) void {
     var ans: real_t = undefined;
 
     if (checkParamWeibull(&val, &shape, &lifetime)) {
-        wp34sCdfWeib(&val, &lifetime, &shape, &ans, &ctxtReal39);
-        convertRealToResultRegister(&ans, REGISTER_X, amNone);
-        adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+        wp34sCdfWeib(&val, &lifetime, &shape, &ans, &dr.ctxtReal39);
+        dr.storeResult(&ans);
     }
 }
 
@@ -175,9 +68,8 @@ pub fn weibullR(unused_but_mandatory_parameter: u16) void {
     var ans: real_t = undefined;
 
     if (checkParamWeibull(&val, &shape, &lifetime)) {
-        wp34sCdfuWeib(&val, &lifetime, &shape, &ans, &ctxtReal39);
-        convertRealToResultRegister(&ans, REGISTER_X, amNone);
-        adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+        wp34sCdfuWeib(&val, &lifetime, &shape, &ans, &dr.ctxtReal39);
+        dr.storeResult(&ans);
     }
 }
 
@@ -189,17 +81,14 @@ pub fn weibullI(unused_but_mandatory_parameter: u16) void {
     var ans: real_t = undefined;
 
     if (checkParamWeibull(&val, &shape, &lifetime)) {
-        if (realCompareLessEqual(&val, const0()) or realCompareGreaterEqual(&val, const1())) {
-            displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnWeibullI:", "the argument must be 0 < x < 1", null, null);
-            if (getSystemFlag(FLAG_SPCRES)) {
-                convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
-            }
+        if (dr.realCompareLessEqual(&val, dr.const0()) or dr.realCompareGreaterEqual(&val, dr.const1())) {
+            dr.displayDomainErrorMessage(dr.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
+            dr.moreInfoOnError("In function fnWeibullI:", "the argument must be 0 < x < 1", null, null);
+            dr.specialResultNaN();
             return;
         }
-        wp34sQfWeib(&val, &lifetime, &shape, &ans, &ctxtReal39);
-        convertRealToResultRegister(&ans, REGISTER_X, amNone);
-        adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+        wp34sQfWeib(&val, &lifetime, &shape, &ans, &dr.ctxtReal39);
+        dr.storeResult(&ans);
     }
 }
 
@@ -210,53 +99,53 @@ fn wp34sPdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real
     var q: real_t = undefined;
     var r: real_t = undefined;
 
-    realDivide(x, b, &p, real_context);
-    if (realIsSpecial(&p) or realIsNegative(&p) or realIsZero(&p)) {
-        realSetZero(res);
+    dr.realDivide(x, b, &p, real_context);
+    if (dr.realIsSpecial(&p) or dr.realIsNegative(&p) or dr.realIsZero(&p)) {
+        dr.setZero(res);
         return;
     }
-    realPower(&p, t, &q, real_context);
-    realMinus(&q, &r, real_context);
-    realExp(&r, &r, real_context);
-    realMultiply(&r, &q, &r, real_context);
-    realDivide(&r, &p, &r, real_context);
-    realMultiply(&r, t, &r, real_context);
-    realDivide(&r, b, res, real_context);
+    dr.realPow(&p, t, &q, real_context);
+    dr.realMinus(&q, &r, real_context);
+    dr.realExponential(&r, &r, real_context);
+    dr.realMultiply(&r, &q, &r, real_context);
+    dr.realDivide(&r, &p, &r, real_context);
+    dr.realMultiply(&r, t, &r, real_context);
+    dr.realDivide(&r, b, res, real_context);
 }
 
 fn wp34sCdfuWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
     var p: real_t = undefined;
 
-    realDivide(x, b, &p, real_context);
-    if (realIsNegative(&p) or realIsZero(&p)) {
-        realSetOne(res);
+    dr.realDivide(x, b, &p, real_context);
+    if (dr.realIsNegative(&p) or dr.realIsZero(&p)) {
+        dr.setOne(res);
         return;
     }
-    if (realIsSpecial(&p)) {
-        realSetZero(res);
+    if (dr.realIsSpecial(&p)) {
+        dr.setZero(res);
         return;
     }
-    realPower(&p, t, &p, real_context);
-    realChangeSign(&p);
-    realExp(&p, res, real_context);
+    dr.realPow(&p, t, &p, real_context);
+    dr.realChangeSign(&p);
+    dr.realExponential(&p, res, real_context);
 }
 
 fn wp34sCdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
     var p: real_t = undefined;
 
-    realDivide(x, b, &p, real_context);
-    if (realIsNegative(&p) or realIsZero(&p)) {
-        realSetZero(res);
+    dr.realDivide(x, b, &p, real_context);
+    if (dr.realIsNegative(&p) or dr.realIsZero(&p)) {
+        dr.setZero(res);
         return;
     }
-    if (realIsSpecial(&p)) {
-        realSetOne(res);
+    if (dr.realIsSpecial(&p)) {
+        dr.setOne(res);
         return;
     }
-    realPower(&p, t, &p, real_context);
-    realChangeSign(&p);
-    WP34S_ExpM1(&p, res, real_context);
-    realChangeSign(res);
+    dr.realPow(&p, t, &p, real_context);
+    dr.realChangeSign(&p);
+    dr.WP34S_ExpM1(&p, res, real_context);
+    dr.realChangeSign(res);
 }
 
 fn wp34sQfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
@@ -264,10 +153,10 @@ fn wp34sQfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_
     var p: real_t = undefined;
     var q: real_t = undefined;
 
-    realMinus(x, &p, real_context);
-    WP34S_Ln1P(&p, &p, real_context);
-    realChangeSign(&p);
-    realDivide(const1(), t, &q, real_context);
-    realPower(&p, &q, &p, real_context);
-    realMultiply(&p, b, res, real_context);
+    dr.realMinus(x, &p, real_context);
+    dr.WP34S_Ln1P(&p, &p, real_context);
+    dr.realChangeSign(&p);
+    dr.realDivide(dr.const1(), t, &q, real_context);
+    dr.realPow(&p, &q, &p, real_context);
+    dr.realMultiply(&p, b, res, real_context);
 }

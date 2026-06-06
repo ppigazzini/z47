@@ -45,7 +45,6 @@ zig_bridge/frontier/integers_legacy.c
 zig_bridge/frontier/items_legacy.c
 zig_bridge/frontier/jm_legacy.c
 zig_bridge/frontier/lbl_gto_xeq_legacy.c
-zig_bridge/frontier/logistic_legacy.c
 zig_bridge/frontier/manage_legacy.c
 zig_bridge/frontier/martel_fonts_legacy.c
 zig_bridge/frontier/matrix_editor_legacy.c
