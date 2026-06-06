@@ -18,6 +18,7 @@ const weibull = @import("frontier_weibull_owned.zig");
 const logistic = @import("frontier_logistic_owned.zig");
 const exponential = @import("frontier_exponential_owned.zig");
 const pareto = @import("frontier_pareto_owned.zig");
+const uniform = @import("frontier_uniform_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -988,4 +989,20 @@ pub export fn fnPareto2U(unused_but_mandatory_parameter: u16) callconv(.c) void 
 
 pub export fn fnPareto2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
     pareto.pareto2I(unused_but_mandatory_parameter);
+}
+
+pub export fn fnUniformP(discrete: u16) callconv(.c) void {
+    uniform.uniformP(discrete);
+}
+
+pub export fn fnUniformL(discrete: u16) callconv(.c) void {
+    uniform.uniformL(discrete);
+}
+
+pub export fn fnUniformU(discrete: u16) callconv(.c) void {
+    uniform.uniformU(discrete);
+}
+
+pub export fn fnUniformI(discrete: u16) callconv(.c) void {
+    uniform.uniformI(discrete);
 }

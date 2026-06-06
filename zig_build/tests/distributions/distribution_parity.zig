@@ -15,9 +15,11 @@ const fake = @import("distribution_fake_runtime.zig");
 const owners = @import("dist_owners");
 const exponential = owners.exponential;
 const pareto = owners.pareto;
+const uniform = owners.uniform;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_M: i16 = 112;
+const REGISTER_N: i16 = 113;
 const REGISTER_Q: i16 = 115;
 const REGISTER_R: i16 = 116;
 const REGISTER_S: i16 = 117;
@@ -39,6 +41,16 @@ fn case2(name: []const u8, f: DistFn, x_str: [*:0]const u8, r_str: [*:0]const u8
     fake.z47_distribution_parity_set_register(REGISTER_X, x_str);
     fake.z47_distribution_parity_set_register(REGISTER_R, r_str);
     f(0);
+    check(name, golden);
+}
+
+// Uniform: X plus low (REGISTER_M) and high (REGISTER_N); `discrete` is the fn arg.
+fn caseU(name: []const u8, f: DistFn, discrete: u16, x: [*:0]const u8, low: [*:0]const u8, high: [*:0]const u8, golden: [*:0]const u8) void {
+    fake.z47_distribution_parity_reset();
+    fake.z47_distribution_parity_set_register(REGISTER_X, x);
+    fake.z47_distribution_parity_set_register(REGISTER_M, low);
+    fake.z47_distribution_parity_set_register(REGISTER_N, high);
+    f(discrete);
     check(name, golden);
 }
 
@@ -92,6 +104,24 @@ pub fn main() void {
     caseP2("pareto2L", &pareto.pareto2L, "5", "1", "3", "1.5", "0.719434141125152652657874661608489276");
     caseP2("pareto2U", &pareto.pareto2U, "5", "1", "3", "1.5", "0.280565858874847347342125338391510724");
     caseP2("pareto2I", &pareto.pareto2I, "0.6", "1", "3", "1.5", "3.52604724796057990866973425036971083");
+
+    // Continuous Uniform on [2, 7] (discrete = 0).
+    caseU("uniformP", &uniform.uniformP, 0, "4", "2", "7", "0.2");
+    caseU("uniformL", &uniform.uniformL, 0, "4", "2", "7", "0.4");
+    caseU("uniformU", &uniform.uniformU, 0, "4", "2", "7", "0.6");
+    // fnUniformI always applies the discrete-style quantile floor((1-p)*low +
+    // p*(high+1)); it does not branch on `discrete`. p=0.3 -> floor(3.8) = 3.
+    caseU("uniformI", &uniform.uniformI, 0, "0.3", "2", "7", "3");
+    // p == 1 hits the realCopy(high) boundary branch -> high (= 7).
+    caseU("uniformI-unity", &uniform.uniformI, 0, "1", "2", "7", "7");
+    caseU("uniformP-oob", &uniform.uniformP, 0, "10", "2", "7", "0"); // x above high -> 0
+    caseU("uniformL-below", &uniform.uniformL, 0, "0", "2", "7", "0"); // x below low -> 0
+    caseU("uniformL-above", &uniform.uniformL, 0, "10", "2", "7", "1"); // x above high -> 1
+    // Discrete Uniform on integers [1, 6] (discrete = 1).
+    caseU("uniformP-d", &uniform.uniformP, 1, "3", "1", "6", "0.166666666666666666666666666666666667");
+    caseU("uniformL-d", &uniform.uniformL, 1, "3", "1", "6", "0.5");
+    caseU("uniformU-d", &uniform.uniformU, 1, "3", "1", "6", "0.666666666666666666666666666666666667");
+    caseU("uniformI-d", &uniform.uniformI, 1, "0.5", "1", "6", "4");
 
     if (failures == 0) {
         std.debug.print("distribution parity: all cases passed\n", .{});
