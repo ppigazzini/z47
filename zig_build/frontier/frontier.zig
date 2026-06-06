@@ -26,6 +26,11 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // Distribution clusters to compile out of the frontier object, matching the
+    // upstream SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/exponential) and
+    // SAVE_SPACE_DM42_17C (pareto/uniform) guards for flash-limited packages.
+    strip_17b: bool = false,
+    strip_17c: bool = false,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -49,20 +54,27 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const root_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/frontier/frontier.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "strip_17b", options.strip_17b);
+    build_options.addOption(bool, "strip_17c", options.strip_17c);
+    root_module.addOptions("frontier_build_options", build_options);
+
     return b.addObject(.{
         .name = b.fmt("{s}-frontier-root", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/frontier/frontier.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = root_module,
     });
 }
 
