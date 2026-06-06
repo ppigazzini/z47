@@ -1004,6 +1004,16 @@ jobs:
         run: |
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
+      - id: zig-build-cache
+        name: Restore Windows host Zig build caches
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            .zig-cache
+          key: zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
+            zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
       - id: xlsxio-ref
         name: Resolve xlsxio upstream HEAD
         shell: bash
