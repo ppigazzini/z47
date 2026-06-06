@@ -16,7 +16,6 @@ const FIRST_LABEL: u16 = 2200;
 const LAST_LABEL: u16 = 6999;
 const RAM_SIZE_IN_BLOCKS: u16 = 65534;
 
-const ioPathSaveProgram: c_int = 8;
 const ioPathLoadProgram: c_int = 11;
 const ioModeWrite: c_int = 1;
 const ioModeRead: c_int = 0;
@@ -161,11 +160,23 @@ pub fn selectProgram(label: u16) bool {
     return false;
 }
 
-pub fn openSaveProgram() c_int {
+pub fn openSaveProgram(path: c_int) c_int {
     if (use_fake_program_serialization_harness_surface) {
         return z47_program_serialization_runtime_open_save_program();
     }
-    return ioFileOpen(ioPathSaveProgram, ioModeWrite);
+    return ioFileOpen(path, ioModeWrite);
+}
+
+// Copies the i-th label's name into buf when it is a global label (step > 0),
+// returning false otherwise. Mirrors the per-label setup in fnSaveAllPrograms.
+pub fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
+    const labels = labelList orelse return false;
+    if (labels[i].step <= 0) return false;
+    const lp = labels[i].labelPointer orelse return false;
+    const len = lp[0];
+    _ = xcopy(buf, lp + 1, len);
+    buf[len] = 0;
+    return true;
 }
 
 pub fn openLoadProgram() c_int {

@@ -21,9 +21,14 @@ pub extern var freeProgramBytes: u16;
 pub extern var currentLocalStepNumber: u16;
 pub extern var currentProgramNumber: u16;
 pub extern var numberOfPrograms: u16;
+pub extern var numberOfLabels: u16;
 pub extern var temporaryInformation: u8;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
+pub extern fn findNamedLabel(labelName: [*c]const u8) u16;
+
+pub const ioPathSaveProgram: c_int = 8;
+pub const ioPathSaveAllPrograms: c_int = 12;
 
 const END_OPCODE_HIGH: u8 = 0x85;
 const END_OPCODE_LOW: u8 = 0xB2;
@@ -65,8 +70,12 @@ pub inline fn selectProgram(label: u16) bool {
     return io_owned.selectProgram(label);
 }
 
-pub inline fn openSaveProgram() c_int {
-    return io_owned.openSaveProgram();
+pub inline fn openSaveProgram(path: c_int) c_int {
+    return io_owned.openSaveProgram(path);
+}
+
+pub inline fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
+    return io_owned.globalLabelNameAt(i, buf);
 }
 
 pub inline fn openLoadProgram() c_int {
