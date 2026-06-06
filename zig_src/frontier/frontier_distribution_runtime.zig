@@ -71,11 +71,14 @@ extern fn realSetOne(value: *real_t) void;
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
+extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+extern fn realSetNaN(value: *real_t) void;
 
 pub extern fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
 pub extern fn C47_WP34S_SinCosTanTaylor(angle: *const real_t, swap: bool, sin_out: ?*real_t, cos_out: ?*real_t, tan_out: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcTanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_SinhCosh(x: *const real_t, sinh_out: ?*real_t, cosh_out: ?*real_t, real_context: *realContext_t) void;
@@ -112,6 +115,9 @@ pub inline fn realPow(base: *const real_t, exponent: *const real_t, result: *rea
 pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     realExp(x, res, real_context);
 }
+pub inline fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+    WP34S_ExpM1(x, res, real_context); // c47 realExpM1 forwards straight to WP34S_ExpM1
+}
 pub inline fn setZero(value: *real_t) void {
     realSetZero(value);
 }
@@ -120,6 +126,9 @@ pub inline fn setOne(value: *real_t) void {
 }
 pub inline fn setPlusInfinity(value: *real_t) void {
     realSetPlusInfinity(value);
+}
+pub inline fn setNaN(value: *real_t) void {
+    realSetNaN(value);
 }
 
 pub inline fn realIsSpecial(value: *const real_t) bool {
@@ -139,6 +148,9 @@ pub inline fn realChangeSign(value: *real_t) void {
 }
 pub inline fn realLessThan(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs);
+}
+pub inline fn realGreaterThan(lhs: *const real_t, rhs: *const real_t) bool {
+    return realCompareGreaterThan(lhs, rhs);
 }
 pub inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);

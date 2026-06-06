@@ -638,8 +638,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const tone_parity_step = b.step("tone_parity", "Run the tone UI parity suite");
     tone_parity_step.dependOn(&run_tone_parity.step);
 
-    const exponential_owner_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/frontier/frontier_exponential_owned.zig"),
+    const distribution_owners_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/frontier/frontier_distributions_test_owners.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -651,7 +651,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
             .optimize = optimize,
             .link_libc = true,
             .imports = &.{
-                .{ .name = "exponential_owner", .module = exponential_owner_module },
+                .{ .name = "dist_owners", .module = distribution_owners_module },
             },
         }),
     });

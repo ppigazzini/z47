@@ -12,10 +12,15 @@
 
 const std = @import("std");
 const fake = @import("distribution_fake_runtime.zig");
-const exponential = @import("exponential_owner");
+const owners = @import("dist_owners");
+const exponential = owners.exponential;
+const pareto = owners.pareto;
 
 const REGISTER_X: i16 = 100;
+const REGISTER_M: i16 = 112;
+const REGISTER_Q: i16 = 115;
 const REGISTER_R: i16 = 116;
+const REGISTER_S: i16 = 117;
 
 const DistFn = *const fn (u16) void;
 
@@ -33,6 +38,27 @@ fn case2(name: []const u8, f: DistFn, x_str: [*:0]const u8, r_str: [*:0]const u8
     fake.z47_distribution_parity_reset();
     fake.z47_distribution_parity_set_register(REGISTER_X, x_str);
     fake.z47_distribution_parity_set_register(REGISTER_R, r_str);
+    f(0);
+    check(name, golden);
+}
+
+// Type I Pareto: X plus sigma (REGISTER_S) and alpha (REGISTER_Q).
+fn caseP(name: []const u8, f: DistFn, x: [*:0]const u8, sigma: [*:0]const u8, alpha: [*:0]const u8, golden: [*:0]const u8) void {
+    fake.z47_distribution_parity_reset();
+    fake.z47_distribution_parity_set_register(REGISTER_X, x);
+    fake.z47_distribution_parity_set_register(REGISTER_S, sigma);
+    fake.z47_distribution_parity_set_register(REGISTER_Q, alpha);
+    f(0);
+    check(name, golden);
+}
+
+// Type II Pareto: X plus mu (REGISTER_M), sigma (REGISTER_S) and alpha (REGISTER_Q).
+fn caseP2(name: []const u8, f: DistFn, x: [*:0]const u8, mu: [*:0]const u8, sigma: [*:0]const u8, alpha: [*:0]const u8, golden: [*:0]const u8) void {
+    fake.z47_distribution_parity_reset();
+    fake.z47_distribution_parity_set_register(REGISTER_X, x);
+    fake.z47_distribution_parity_set_register(REGISTER_M, mu);
+    fake.z47_distribution_parity_set_register(REGISTER_S, sigma);
+    fake.z47_distribution_parity_set_register(REGISTER_Q, alpha);
     f(0);
     check(name, golden);
 }
@@ -55,6 +81,17 @@ pub fn main() void {
     // QF (inverse): p=0.5, lambda=1 -> ln(2); p=0.5, lambda=2 -> ln(2)/2.
     case2("expI(0.5,1)", &exponential.exponentialI, "0.5", "1", "0.693147180559945309417232121458176568");
     case2("expI(0.5,2)", &exponential.exponentialI, "0.5", "2", "0.346573590279972654708616060729088284");
+
+    // Type I Pareto (scale sigma=2, shape alpha=1.5) at x=5; QF at p=0.5.
+    caseP("paretoP", &pareto.paretoP, "5", "2", "1.5", "0.075894663844041103967973445066385245");
+    caseP("paretoL", &pareto.paretoL, "5", "2", "1.5", "0.747017787186529653440088516445382517");
+    caseP("paretoU", &pareto.paretoU, "5", "2", "1.5", "0.252982212813470346559911483554617483");
+    caseP("paretoI", &pareto.paretoI, "0.5", "2", "1.5", "3.17480210393639894950341127854461652");
+    // Type II GPD (mu=1, sigma=3, alpha=1.5) at x=5; QF at p=0.6.
+    caseP2("pareto2P", &pareto.pareto2P, "5", "1", "3", "1.5", "0.060121255473181574430455429655323727");
+    caseP2("pareto2L", &pareto.pareto2L, "5", "1", "3", "1.5", "0.719434141125152652657874661608489276");
+    caseP2("pareto2U", &pareto.pareto2U, "5", "1", "3", "1.5", "0.280565858874847347342125338391510724");
+    caseP2("pareto2I", &pareto.pareto2I, "0.6", "1", "3", "1.5", "3.52604724796057990866973425036971083");
 
     if (failures == 0) {
         std.debug.print("distribution parity: all cases passed\n", .{});
