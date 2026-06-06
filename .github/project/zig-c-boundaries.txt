@@ -36,8 +36,7 @@ zig_src/frontier/frontier_runtime.zig
 zig_src/state/register_descriptor_storage_owned.zig
 zig_src/state/register_memory_owned.zig
 zig_src/state/register_metadata_local_registers_owned.zig
-zig_src/frontier/frontier_cauchy_owned.zig
-zig_src/frontier/frontier_weibull_owned.zig
+zig_src/frontier/frontier_distribution_runtime.zig
 zig_src/frontier/frontier_clear_all_owned.zig
 zig_src/frontier/frontier_display_format_owned.zig
 zig_src/frontier/frontier_frontend_settings_owned.zig
