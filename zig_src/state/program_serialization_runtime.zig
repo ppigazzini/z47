@@ -1,5 +1,7 @@
 const io_owned = @import("program_serialization_io_owned.zig");
 
+pub const use_fake_harness_surface = io_owned.use_fake_program_serialization_harness_surface;
+
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 pub const BACKUP_FORMAT: u8 = 0;

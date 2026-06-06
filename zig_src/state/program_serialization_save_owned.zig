@@ -8,6 +8,12 @@ pub fn saveProgram(label: u16) void {
 // (whose first global label it is) to ioPathSaveAllPrograms, which writes
 // directly to PROGRAMS/ALLPGMS without the interactive file-picker dialog.
 pub fn saveAllPrograms() void {
+    // Host-only export-all path; the parity/fake harness neither exercises nor
+    // provides the labelList/findNamedLabel surface it walks, so gate it out.
+    if (runtime.use_fake_harness_surface) {
+        return;
+    }
+
     const saved_current_local_step_number = runtime.currentLocalStepNumber;
     const saved_current_program_number = runtime.currentProgramNumber;
     defer {
