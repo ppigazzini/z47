@@ -19,6 +19,7 @@ const logistic = @import("frontier_logistic_owned.zig");
 const exponential = @import("frontier_exponential_owned.zig");
 const pareto = @import("frontier_pareto_owned.zig");
 const uniform = @import("frontier_uniform_owned.zig");
+const gev = @import("frontier_gev_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1020,4 +1021,20 @@ pub export fn fnUniformU(discrete: u16) callconv(.c) void {
 
 pub export fn fnUniformI(discrete: u16) callconv(.c) void {
     if (comptime !strip_17c) uniform.uniformI(discrete);
+}
+
+pub export fn fnGEVP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17c) gev.gevP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGEVL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17c) gev.gevL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGEVR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17c) gev.gevR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGEVI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17c) gev.gevI(unused_but_mandatory_parameter);
 }

@@ -6,6 +6,11 @@
 // firmware links. Each distribution owner ports its upstream
 // src/c47/distributions/<name>.c using only this module.
 
+const frontier_build_options = @import("frontier_build_options");
+// Upstream compiles the EXTRA_INFO_ON_CALC_ERROR console hints out on firmware;
+// gate moreInfoOnError on the same flag so firmware sheds the calls and strings.
+const extra_info_on_calc_error: bool = frontier_build_options.extra_info_on_calc_error;
+
 const DECNUMUNITS = 25;
 
 const DECNEG: u8 = 0x80;
@@ -68,6 +73,8 @@ extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const rea
 extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopy(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
+extern fn decNumberFMA(result: *real_t, factor1: *const real_t, factor2: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
+extern fn PowerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void;
 
 extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
@@ -96,7 +103,10 @@ pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
 pub extern fn convertRealToResultRegister(real: *const real_t, dest: calcRegister_t, angle_mode: angularMode_t) void;
 pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 pub extern fn displayDomainErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
+const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+pub inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void {
+    if (comptime extra_info_on_calc_error) c_moreInfoOnError(msg1, msg2, msg3, msg4);
+}
 pub extern fn getSystemFlag(flag: i32) bool;
 
 pub inline fn realMultiply(lhs: *const real_t, rhs: *const real_t, result: *real_t, real_context: *realContext_t) void {
@@ -125,6 +135,12 @@ pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *rea
 }
 pub inline fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     WP34S_ExpM1(x, res, real_context); // c47 realExpM1 forwards straight to WP34S_ExpM1
+}
+pub inline fn realFMA(factor1: *const real_t, factor2: *const real_t, term: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberFMA(result, factor1, factor2, term, real_context); // result = factor1*factor2 + term
+}
+pub inline fn powerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    PowerReal(y, x, result, real_context);
 }
 pub inline fn setZero(value: *real_t) void {
     realSetZero(value);

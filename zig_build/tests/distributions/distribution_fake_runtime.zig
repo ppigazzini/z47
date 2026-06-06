@@ -184,6 +184,13 @@ pub export fn realPower(base: *const real_t, exponent: *const real_t, res: *real
     _ = decNumberPower(&tmp, base, exponent, ctx);
     _ = decNumberCopy(res, &tmp);
 }
+// c47 PowerReal(y, x) = y^x; for the finite positive bases the GEV path uses it
+// is equivalent to decNumberPower.
+pub export fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, ctx: *realContext_t) callconv(.c) void {
+    var tmp: real_t = undefined;
+    _ = decNumberPower(&tmp, y, x, ctx);
+    _ = decNumberCopy(res, &tmp);
+}
 pub export fn realSetZero(value: *real_t) callconv(.c) void {
     _ = decNumberZero(value);
 }

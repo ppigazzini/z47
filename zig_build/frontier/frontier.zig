@@ -31,6 +31,10 @@ pub const RuntimeObjectOptions = struct {
     // SAVE_SPACE_DM42_17C (pareto/uniform) guards for flash-limited packages.
     strip_17b: bool = false,
     strip_17c: bool = false,
+    // Emit the EXTRA_INFO_ON_CALC_ERROR console hints. Upstream compiles these
+    // out on firmware (DMCP_BUILD), so default off there to match and save flash;
+    // host/sim keep them. Default true mirrors a normal host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -70,6 +74,7 @@ fn addRuntimeObject(
     const build_options = b.addOptions();
     build_options.addOption(bool, "strip_17b", options.strip_17b);
     build_options.addOption(bool, "strip_17c", options.strip_17c);
+    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
     root_module.addOptions("frontier_build_options", build_options);
 
     return b.addObject(.{

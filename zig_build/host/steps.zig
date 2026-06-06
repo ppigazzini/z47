@@ -643,6 +643,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .target = context.host_target,
         .optimize = optimize,
     });
+    // The distribution owners (via frontier_distribution_runtime) expect the same
+    // frontier_build_options the product frontier object gets; the harness is a
+    // host-style link, so keep all distributions and the EXTRA_INFO hints.
+    const distribution_owners_options = b.addOptions();
+    distribution_owners_options.addOption(bool, "strip_17b", false);
+    distribution_owners_options.addOption(bool, "strip_17c", false);
+    distribution_owners_options.addOption(bool, "extra_info_on_calc_error", true);
+    distribution_owners_module.addOptions("frontier_build_options", distribution_owners_options);
     const distribution_parity = b.addExecutable(.{
         .name = "distribution-parity",
         .root_module = b.createModule(.{
