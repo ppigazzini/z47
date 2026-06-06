@@ -19,6 +19,14 @@ const logistic = @import("frontier_logistic_owned.zig");
 const exponential = @import("frontier_exponential_owned.zig");
 const pareto = @import("frontier_pareto_owned.zig");
 const uniform = @import("frontier_uniform_owned.zig");
+
+// Per-package distribution strip flags, injected by the build (default: keep
+// everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
+// exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
+// firmware packages compile those distribution owners out of the shared object.
+const frontier_build_options = @import("frontier_build_options");
+const strip_17b: bool = frontier_build_options.strip_17b;
+const strip_17c: bool = frontier_build_options.strip_17c;
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -895,114 +903,121 @@ pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
     plot_regression.run(plot_mode);
 }
 
+// Cauchy/Weibull/Logistic/Exponential are stripped upstream under
+// SAVE_SPACE_DM42_17B; Pareto/Uniform under SAVE_SPACE_DM42_17C. On packages
+// that strip a cluster the Zig owner must compile to an empty stub so its code
+// (and its pulled-in math helpers) does not consume flash. The comptime guard
+// makes the owner call unreachable when stripped, so the owner functions are not
+// codegen'd into the shared frontier object. See frontier_build_options.
+
 pub export fn fnCauchyP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    cauchy.cauchyP(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) cauchy.cauchyP(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCauchyL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    cauchy.cauchyL(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) cauchy.cauchyL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCauchyR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    cauchy.cauchyR(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) cauchy.cauchyR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnCauchyI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    cauchy.cauchyI(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) cauchy.cauchyI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWeibullP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    weibull.weibullP(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) weibull.weibullP(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWeibullL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    weibull.weibullL(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) weibull.weibullL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWeibullR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    weibull.weibullR(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) weibull.weibullR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnWeibullI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    weibull.weibullI(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) weibull.weibullI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogisticP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    logistic.logisticP(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) logistic.logisticP(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogisticL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    logistic.logisticL(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) logistic.logisticL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogisticR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    logistic.logisticR(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) logistic.logisticR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnLogisticI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    logistic.logisticI(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) logistic.logisticI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExponentialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponential.exponentialP(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) exponential.exponentialP(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExponentialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponential.exponentialL(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) exponential.exponentialL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExponentialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponential.exponentialR(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) exponential.exponentialR(unused_but_mandatory_parameter);
 }
 
 pub export fn fnExponentialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    exponential.exponentialI(unused_but_mandatory_parameter);
+    if (comptime !strip_17b) exponential.exponentialI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnParetoP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.paretoP(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.paretoP(unused_but_mandatory_parameter);
 }
 
 pub export fn fnParetoL(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.paretoL(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.paretoL(unused_but_mandatory_parameter);
 }
 
 pub export fn fnParetoU(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.paretoU(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.paretoU(unused_but_mandatory_parameter);
 }
 
 pub export fn fnParetoI(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.paretoI(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.paretoI(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPareto2P(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.pareto2P(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.pareto2P(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPareto2L(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.pareto2L(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.pareto2L(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPareto2U(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.pareto2U(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.pareto2U(unused_but_mandatory_parameter);
 }
 
 pub export fn fnPareto2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    pareto.pareto2I(unused_but_mandatory_parameter);
+    if (comptime !strip_17c) pareto.pareto2I(unused_but_mandatory_parameter);
 }
 
 pub export fn fnUniformP(discrete: u16) callconv(.c) void {
-    uniform.uniformP(discrete);
+    if (comptime !strip_17c) uniform.uniformP(discrete);
 }
 
 pub export fn fnUniformL(discrete: u16) callconv(.c) void {
-    uniform.uniformL(discrete);
+    if (comptime !strip_17c) uniform.uniformL(discrete);
 }
 
 pub export fn fnUniformU(discrete: u16) callconv(.c) void {
-    uniform.uniformU(discrete);
+    if (comptime !strip_17c) uniform.uniformU(discrete);
 }
 
 pub export fn fnUniformI(discrete: u16) callconv(.c) void {
-    uniform.uniformI(discrete);
+    if (comptime !strip_17c) uniform.uniformI(discrete);
 }

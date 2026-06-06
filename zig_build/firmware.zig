@@ -115,6 +115,19 @@ const firmware_common_link_flags: []const []const u8 = &.{
     "-Wl,--cref",
 };
 
+// Apply the per-package distribution strip flags to a frontier build options
+// value. Mirrors the upstream defines.h TWO_FILE_PGM package blocks: the 17B
+// cluster (cauchy/weibull/logistic/exponential) is stripped on packages 2 and 4,
+// and the 17C cluster (pareto/uniform) on packages 2, 3 and 4. A null package
+// (e.g. DMCP5) keeps every distribution.
+fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: ?u8) frontier.RuntimeObjectOptions {
+    var opts = base;
+    const pkg = dmcp_package orelse return opts;
+    opts.strip_17b = (pkg == 2 or pkg == 4);
+    opts.strip_17c = (pkg == 2 or pkg == 3 or pkg == 4);
+    return opts;
+}
+
 pub fn registerSteps(
     b: *std.Build,
     context: host_steps.Context,
@@ -274,7 +287,10 @@ pub fn registerSteps(
     const dmcp5_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_calc_state_options);
     const dmcp_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_program_serialization_options);
     const dmcp5_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_program_serialization_options);
-    const dmcp_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_frontier_options);
+    // The frontier object embeds package-specific distribution stubbing, so it
+    // must be built per package (the DM42 family) rather than shared. The
+    // dmcp/dmcpr47 steps both build DMCP_PACKAGE=`dmcp_package`.
+    const dmcp_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-pkg{d}", .{dmcp_package}), frontierDistributionStrip(firmware_frontier_options, dmcp_package));
     const dmcp5_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_frontier_options);
     const dmcp_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_solve_options);
     const dmcp5_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_solve_options);
@@ -336,6 +352,7 @@ pub fn registerSteps(
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
     for (dmcp_packages, 0..) |package, index| {
+        const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), frontierDistributionStrip(firmware_frontier_options, package));
         const variant_build = addFirmwareBuild(b, .{
             .step_name = b.fmt("dmcp_pkg{d}", .{package}),
             .description = b.fmt("Build the C47 DMCP firmware for package {d} without Make or Meson", .{package}),
@@ -345,7 +362,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, variant_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 
