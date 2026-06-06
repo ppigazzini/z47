@@ -63,7 +63,6 @@ zig_bridge/frontier/textfiles_legacy.c
 zig_bridge/frontier/timer_legacy.c
 zig_bridge/frontier/tam_legacy.c
 zig_bridge/frontier/uniform_legacy.c
-zig_bridge/frontier/weibull_legacy.c
 zig_bridge/frontier/xeqm_legacy.c
 zig_bridge/frontier/fonts_legacy.c
 zig_bridge/frontier/fractions_legacy.c

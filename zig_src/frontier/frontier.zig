@@ -14,6 +14,7 @@ const plot_regression = @import("frontier_plot_regression_owned.zig");
 const print_register = @import("frontier_print_register_owned.zig");
 const program_clear = @import("frontier_program_clear_owned.zig");
 const cauchy = @import("frontier_cauchy_owned.zig");
+const weibull = @import("frontier_weibull_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -904,4 +905,20 @@ pub export fn fnCauchyR(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnCauchyI(unused_but_mandatory_parameter: u16) callconv(.c) void {
     cauchy.cauchyI(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWeibullP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    weibull.weibullP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWeibullL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    weibull.weibullL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWeibullR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    weibull.weibullR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnWeibullI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    weibull.weibullI(unused_but_mandatory_parameter);
 }
