@@ -2,7 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const build_options = @import("program_serialization_build_options");
 
-const use_fake_program_serialization_harness_surface =
+pub const use_fake_program_serialization_harness_surface =
     @hasDecl(build_options, "use_fake_program_serialization_harness_surface") and
     build_options.use_fake_program_serialization_harness_surface;
 
@@ -170,6 +170,11 @@ pub fn openSaveProgram(path: c_int) c_int {
 // Copies the i-th label's name into buf when it is a global label (step > 0),
 // returning false otherwise. Mirrors the per-label setup in fnSaveAllPrograms.
 pub fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
+    // Product-only: the parity/fake harness does not provide labelList/xcopy, so
+    // keep their references behind the comptime gate (as the other helpers do).
+    if (use_fake_program_serialization_harness_surface) {
+        return false;
+    }
     const labels = labelList orelse return false;
     if (labels[i].step <= 0) return false;
     const lp = labels[i].labelPointer orelse return false;
