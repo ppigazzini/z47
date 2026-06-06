@@ -21,6 +21,7 @@ pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_M: calcRegister_t = 112;
 pub const REGISTER_Q: calcRegister_t = 115;
+pub const REGISTER_R: calcRegister_t = 116;
 pub const REGISTER_S: calcRegister_t = 117;
 pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 pub const amNone: angularMode_t = 5;
@@ -135,6 +136,9 @@ pub inline fn realIsZero(value: *const real_t) bool {
 }
 pub inline fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;
+}
+pub inline fn realLessThan(lhs: *const real_t, rhs: *const real_t) bool {
+    return realCompareLessThan(lhs, rhs);
 }
 pub inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
     return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);
