@@ -37,7 +37,6 @@ zig_bridge/frontier/matrix_editor_legacy.c
 zig_bridge/frontier/neg_binom_legacy.c
 zig_bridge/frontier/next_step_legacy.c
 zig_bridge/frontier/normal_legacy.c
-zig_bridge/frontier/pareto_legacy.c
 zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/poisson_legacy.c
 zig_bridge/frontier/programmable_menu_legacy.c

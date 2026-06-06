@@ -17,6 +17,7 @@ const cauchy = @import("frontier_cauchy_owned.zig");
 const weibull = @import("frontier_weibull_owned.zig");
 const logistic = @import("frontier_logistic_owned.zig");
 const exponential = @import("frontier_exponential_owned.zig");
+const pareto = @import("frontier_pareto_owned.zig");
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
 const plot_stat = @import("frontier_plot_stat_owned.zig");
@@ -955,4 +956,36 @@ pub export fn fnExponentialR(unused_but_mandatory_parameter: u16) callconv(.c) v
 
 pub export fn fnExponentialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
     exponential.exponentialI(unused_but_mandatory_parameter);
+}
+
+pub export fn fnParetoP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.paretoP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnParetoL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.paretoL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnParetoU(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.paretoU(unused_but_mandatory_parameter);
+}
+
+pub export fn fnParetoI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.paretoI(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPareto2P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.pareto2P(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPareto2L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.pareto2L(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPareto2U(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.pareto2U(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPareto2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    pareto.pareto2I(unused_but_mandatory_parameter);
 }
