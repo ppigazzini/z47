@@ -638,6 +638,42 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const tone_parity_step = b.step("tone_parity", "Run the tone UI parity suite");
     tone_parity_step.dependOn(&run_tone_parity.step);
 
+    const exponential_owner_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/frontier/frontier_exponential_owned.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    const distribution_parity = b.addExecutable(.{
+        .name = "distribution-parity",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/tests/distributions/distribution_parity.zig"),
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "exponential_owner", .module = exponential_owner_module },
+            },
+        }),
+    });
+    // Match the production decNumber compile: it includes decNumber.h directly
+    // (not c47.h), so DECNUMDIGITS keeps its default of 1 and the library mallocs
+    // working buffers per operation. Forcing DECNUMDIGITS=75 instead sized those
+    // buffers onto the stack and overran the caller frame on in-place ops.
+    const distribution_dec_flags: []const []const u8 = if (context.host_target.result.os.tag == .windows)
+        &.{ "-Wno-date-time", "-fno-sanitize=undefined", "-fno-strict-aliasing", "-DDECNUMBER_FASTMUL=1" }
+    else
+        &.{ "-Wno-date-time", "-fno-sanitize=undefined", "-DDECNUMBER_FASTMUL=1" };
+    distribution_parity.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    distribution_parity.root_module.addCSourceFiles(.{
+        .root = build_common.upstreamPath(b, "dep"),
+        .files = build_common.decnumber_sources,
+        .flags = distribution_dec_flags,
+    });
+    const run_distribution_parity = b.addRunArtifact(distribution_parity);
+    run_distribution_parity.setCwd(b.path("."));
+    const distribution_parity_step = b.step("distribution_parity", "Run the statistical-distribution parity suite");
+    distribution_parity_step.dependOn(&run_distribution_parity.step);
+
     const keyboard_statusbar_flags_regression = b.addExecutable(.{
         .name = "keyboard-statusbar-flags-regression",
         .root_module = b.createModule(.{
