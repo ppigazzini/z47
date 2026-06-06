@@ -16,6 +16,7 @@ const owners = @import("dist_owners");
 const exponential = owners.exponential;
 const pareto = owners.pareto;
 const uniform = owners.uniform;
+const gev = owners.gev;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_M: i16 = 112;
@@ -51,6 +52,17 @@ fn caseU(name: []const u8, f: DistFn, discrete: u16, x: [*:0]const u8, low: [*:0
     fake.z47_distribution_parity_set_register(REGISTER_M, low);
     fake.z47_distribution_parity_set_register(REGISTER_N, high);
     f(discrete);
+    check(name, golden);
+}
+
+// GEV: X plus mu (REGISTER_M), sigma (REGISTER_S) and xi (REGISTER_Q).
+fn caseG(name: []const u8, f: DistFn, x: [*:0]const u8, mu: [*:0]const u8, sigma: [*:0]const u8, xi: [*:0]const u8, golden: [*:0]const u8) void {
+    fake.z47_distribution_parity_reset();
+    fake.z47_distribution_parity_set_register(REGISTER_X, x);
+    fake.z47_distribution_parity_set_register(REGISTER_M, mu);
+    fake.z47_distribution_parity_set_register(REGISTER_S, sigma);
+    fake.z47_distribution_parity_set_register(REGISTER_Q, xi);
+    f(0);
     check(name, golden);
 }
 
@@ -122,6 +134,17 @@ pub fn main() void {
     caseU("uniformL-d", &uniform.uniformL, 1, "3", "1", "6", "0.5");
     caseU("uniformU-d", &uniform.uniformU, 1, "3", "1", "6", "0.666666666666666666666666666666666667");
     caseU("uniformI-d", &uniform.uniformI, 1, "0.5", "1", "6", "4");
+
+    // GEV, xi = 0.5 (mu=0, sigma=1) at x=2 -> t = 0.25; QF round-trips p=e^-0.25.
+    // The PDF reproduces upstream's t^(t+1) exponent (its comment says t^(xi+1)).
+    caseG("gevL", &gev.gevL, "2", "0", "1", "0.5", "0.778800783071404868245170266978320647");
+    caseG("gevR", &gev.gevR, "2", "0", "1", "0.5", "0.221199216928595131754829733021679353");
+    caseG("gevP", &gev.gevP, "2", "0", "1", "0.5", "0.137673828725795936903995265687411962");
+    caseG("gevI", &gev.gevI, "0.778800783071404868245170266978320647", "0", "1", "0.5", "2");
+    // GEV, xi = 0 (Gumbel) at x=1 -> t = e^-1; exercises the realFMA branch.
+    caseG("gevL-gumbel", &gev.gevL, "1", "0", "1", "0", "0.692200627555346353865421997182789761");
+    caseG("gevP-gumbel", &gev.gevP, "1", "0", "1", "0", "0.176266384070865029614622604509631273");
+    caseG("gevI-gumbel", &gev.gevI, "0.692200627555346353865421997182789761", "0", "1", "0", "1");
 
     if (failures == 0) {
         std.debug.print("distribution parity: all cases passed\n", .{});

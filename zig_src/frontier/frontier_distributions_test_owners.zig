@@ -9,3 +9,4 @@
 pub const exponential = @import("frontier_exponential_owned.zig");
 pub const pareto = @import("frontier_pareto_owned.zig");
 pub const uniform = @import("frontier_uniform_owned.zig");
+pub const gev = @import("frontier_gev_owned.zig");

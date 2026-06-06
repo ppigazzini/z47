@@ -226,6 +226,9 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful and reclaim flash.
+        .extra_info_on_calc_error = false,
     };
     const firmware_solve_options: solve.RuntimeObjectOptions = .{
         .strip = true,
