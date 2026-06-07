@@ -21,6 +21,7 @@ const pareto = @import("frontier_pareto_owned.zig");
 const uniform = @import("frontier_uniform_owned.zig");
 const gev = @import("frontier_gev_owned.zig");
 const geometric = @import("frontier_geometric_owned.zig");
+const poisson = @import("frontier_poisson_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1083,4 +1084,36 @@ pub export fn WP34S_qf_discrete_final(
     ctx: *geometric.realContext_t,
 ) callconv(.c) void {
     if (comptime !strip_17) geometric.wp34sQfDiscreteFinal(dist, r, p, i, j, k, res, ctx);
+}
+
+pub export fn fnPoissonP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) poisson.poissonP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPoissonL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) poisson.poissonL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPoissonR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) poisson.poissonR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnPoissonI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) poisson.poissonI(unused_but_mandatory_parameter);
+}
+
+// Poisson helpers reached by still-C cluster members where SAVE_SPACE_DM42_17 is
+// kept (host, DMCP5): the geometric dispatcher (Cdf2), the f distribution (Pdf),
+// and the binomial/hyper/negBinom quantiles (normal_moment_approx). Stubbed with
+// the cluster on DM42.
+pub export fn WP34S_Cdf_Poisson2(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) poisson.wp34sCdfPoisson2(x, lambda, res, ctx);
+}
+
+pub export fn WP34S_Pdf_Poisson(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) poisson.wp34sPdfPoisson(x, lambda, res, ctx);
+}
+
+pub export fn WP34S_normal_moment_approx(prob: *const poisson.real_t, variance: *const poisson.real_t, mean: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) poisson.wp34sNormalMomentApprox(prob, variance, mean, res, ctx);
 }
