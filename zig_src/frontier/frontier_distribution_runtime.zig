@@ -52,6 +52,7 @@ pub const FLAG_SPCRES: i32 = 0x8017;
 pub const DEC_ROUND_CEILING: c_int = 0;
 pub const DEC_ROUND_FLOOR: c_int = 6;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
@@ -81,6 +82,7 @@ extern fn z47_math_wrappers_const_0() *const real_t;
 extern fn z47_math_wrappers_const_1() *const real_t;
 extern fn z47_math_wrappers_const_1on2() *const real_t;
 extern fn z47_math_wrappers_const_pi() *const real_t;
+extern fn z47_math_wrappers_const_2() *const real_t;
 
 extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -90,6 +92,7 @@ extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *rea
 extern fn decNumberCopy(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+extern fn decNumberCopyAbs(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFMA(result: *real_t, factor1: *const real_t, factor2: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
 extern fn PowerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void;
 
@@ -129,6 +132,7 @@ pub extern fn WP34S_Qf_Newton(r_dist: u32, target: *const real_t, estimate: *con
 pub extern fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn checkRegisterNoFP(reg: *const real_t) bool;
+pub extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
 // Provided by the poisson owner (exported from frontier.zig); reached here by the
 // binomial/hyper/negBinom quantiles where the cluster is kept.
 pub extern fn WP34S_normal_moment_approx(prob: *const real_t, variance: *const real_t, mean: *const real_t, res: *real_t, real_context: *realContext_t) void;
@@ -170,6 +174,15 @@ pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *rea
 }
 pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, real_context: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, real_context);
+}
+pub inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+    _ = decNumberCopyAbs(destination, source);
+}
+pub inline fn realSetPositiveSign(operand: *real_t) void {
+    operand.bits &= 0x7f;
+}
+pub inline fn realSetNegativeSign(operand: *real_t) void {
+    operand.bits |= 0x80;
 }
 pub inline fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     WP34S_ExpM1(x, res, real_context); // c47 realExpM1 forwards straight to WP34S_ExpM1
@@ -275,6 +288,23 @@ pub fn const6() *const real_t {
         const_6_ready = true;
     }
     return &const_6_value;
+}
+
+pub fn const2() *const real_t {
+    return z47_math_wrappers_const_2();
+}
+
+// const_1e_37 (1e-37, the hypergeometric CDF convergence tolerance) has no c47
+// wrapper accessor; materialise it once as 1 with exponent -37.
+var const_1e_37_value: real_t = undefined;
+var const_1e_37_ready = false;
+pub fn const1e_37() *const real_t {
+    if (!const_1e_37_ready) {
+        _ = decNumberFromUInt32(&const_1e_37_value, 1);
+        const_1e_37_value.exponent = -37;
+        const_1e_37_ready = true;
+    }
+    return &const_1e_37_value;
 }
 
 // Shared NaN-on-FLAG_SPCRES error tail used by every checkParam* helper.

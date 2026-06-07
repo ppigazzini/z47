@@ -24,6 +24,7 @@ const geometric = @import("frontier_geometric_owned.zig");
 const poisson = @import("frontier_poisson_owned.zig");
 const binomial = @import("frontier_binomial_owned.zig");
 const neg_binom = @import("frontier_neg_binom_owned.zig");
+const hyper = @import("frontier_hyper_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1172,4 +1173,31 @@ pub export fn cdf_NegBinomial2(x: *const neg_binom.real_t, p0: *const neg_binom.
 
 pub export fn pdf_NegBinomial(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) callconv(.c) void {
     if (comptime !strip_17) neg_binom.pdfNegBinomial(x, p0, r, res, ctx);
+}
+
+pub export fn fnHypergeometricP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) hyper.hypergeometricP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnHypergeometricL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) hyper.hypergeometricL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnHypergeometricR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) hyper.hypergeometricR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnHypergeometricI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) hyper.hypergeometricI(unused_but_mandatory_parameter);
+}
+
+// Hypergeometric helpers reached by still-C cluster members where
+// SAVE_SPACE_DM42_17 is kept: the geometric dispatcher / f-distribution Newton
+// solver (cdf2) and the f distribution (pdf). Stubbed with the cluster on DM42.
+pub export fn cdf_Hypergeometric2(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) hyper.cdfHypergeometric2(x, k0, n, n0, res, ctx);
+}
+
+pub export fn pdf_Hypergeometric(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) hyper.pdfHypergeometric(x, k0, n, n0, res, ctx);
 }
