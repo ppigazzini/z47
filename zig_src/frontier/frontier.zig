@@ -33,6 +33,7 @@ const f_dist = @import("frontier_f_owned.zig");
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
 // exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
 // firmware packages compile those distribution owners out of the shared object.
+const dr = @import("frontier_distribution_runtime.zig");
 const frontier_build_options = @import("frontier_build_options");
 const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;
@@ -933,147 +934,147 @@ pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
 // makes the owner call unreachable when stripped, so the owner functions are not
 // codegen'd into the shared frontier object. See frontier_build_options.
 
-pub export fn fnCauchyP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnCauchyP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) cauchy.cauchyP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnCauchyL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnCauchyL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) cauchy.cauchyL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnCauchyR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnCauchyR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) cauchy.cauchyR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnCauchyI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnCauchyI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) cauchy.cauchyI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnWeibullP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnWeibullP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) weibull.weibullP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnWeibullL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnWeibullL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) weibull.weibullL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnWeibullR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnWeibullR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) weibull.weibullR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnWeibullI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnWeibullI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) weibull.weibullI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnLogisticP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogisticP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) logistic.logisticP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnLogisticL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogisticL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) logistic.logisticL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnLogisticR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogisticR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) logistic.logisticR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnLogisticI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogisticI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) logistic.logisticI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnExponentialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnExponentialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) exponential.exponentialP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnExponentialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnExponentialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) exponential.exponentialL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnExponentialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnExponentialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) exponential.exponentialR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnExponentialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnExponentialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) exponential.exponentialI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnParetoP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnParetoP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.paretoP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnParetoL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnParetoL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.paretoL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnParetoU(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnParetoU(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.paretoU(unused_but_mandatory_parameter);
 }
 
-pub export fn fnParetoI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnParetoI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.paretoI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPareto2P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPareto2P(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.pareto2P(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPareto2L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPareto2L(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.pareto2L(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPareto2U(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPareto2U(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.pareto2U(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPareto2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPareto2I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) pareto.pareto2I(unused_but_mandatory_parameter);
 }
 
-pub export fn fnUniformP(discrete: u16) callconv(.c) void {
+pub export fn fnUniformP(discrete: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) uniform.uniformP(discrete);
 }
 
-pub export fn fnUniformL(discrete: u16) callconv(.c) void {
+pub export fn fnUniformL(discrete: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) uniform.uniformL(discrete);
 }
 
-pub export fn fnUniformU(discrete: u16) callconv(.c) void {
+pub export fn fnUniformU(discrete: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) uniform.uniformU(discrete);
 }
 
-pub export fn fnUniformI(discrete: u16) callconv(.c) void {
+pub export fn fnUniformI(discrete: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) uniform.uniformI(discrete);
 }
 
-pub export fn fnGEVP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGEVP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) gev.gevP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGEVL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGEVL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) gev.gevL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGEVR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGEVR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) gev.gevR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGEVI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGEVI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17c) gev.gevI(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGeometricP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGeometricP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) geometric.geometricP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGeometricL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGeometricL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) geometric.geometricL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGeometricR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGeometricR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) geometric.geometricR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnGeometricI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnGeometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) geometric.geometricI(unused_but_mandatory_parameter);
 }
 
@@ -1089,23 +1090,23 @@ pub export fn WP34S_qf_discrete_final(
     k: [*c]const geometric.real_t,
     res: *geometric.real_t,
     ctx: *geometric.realContext_t,
-) callconv(.c) void {
+) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) geometric.wp34sQfDiscreteFinal(dist, r, p, i, j, k, res, ctx);
 }
 
-pub export fn fnPoissonP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPoissonP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.poissonP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPoissonL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPoissonL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.poissonL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPoissonR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPoissonR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.poissonR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnPoissonI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnPoissonI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.poissonI(unused_but_mandatory_parameter);
 }
 
@@ -1113,168 +1114,168 @@ pub export fn fnPoissonI(unused_but_mandatory_parameter: u16) callconv(.c) void 
 // kept (host, DMCP5): the geometric dispatcher (Cdf2), the f distribution (Pdf),
 // and the binomial/hyper/negBinom quantiles (normal_moment_approx). Stubbed with
 // the cluster on DM42.
-pub export fn WP34S_Cdf_Poisson2(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+pub export fn WP34S_Cdf_Poisson2(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.wp34sCdfPoisson2(x, lambda, res, ctx);
 }
 
-pub export fn WP34S_Pdf_Poisson(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+pub export fn WP34S_Pdf_Poisson(x: *const poisson.real_t, lambda: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.wp34sPdfPoisson(x, lambda, res, ctx);
 }
 
-pub export fn WP34S_normal_moment_approx(prob: *const poisson.real_t, variance: *const poisson.real_t, mean: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
+pub export fn WP34S_normal_moment_approx(prob: *const poisson.real_t, variance: *const poisson.real_t, mean: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) poisson.wp34sNormalMomentApprox(prob, variance, mean, res, ctx);
 }
 
-pub export fn fnBinomialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnBinomialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.binomialP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnBinomialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnBinomialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.binomialL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnBinomialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnBinomialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.binomialR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnBinomialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.binomialI(unused_but_mandatory_parameter);
 }
 
 // Binomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17 is
 // kept: the geometric dispatcher / f-distribution Newton solver (Cdf2) and the f
 // distribution (Pdf). Stubbed with the cluster on DM42.
-pub export fn WP34S_Cdf_Binomial2(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) callconv(.c) void {
+pub export fn WP34S_Cdf_Binomial2(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.wp34sCdfBinomial2(x, p0, n, res, ctx);
 }
 
-pub export fn WP34S_Pdf_Binomial(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) callconv(.c) void {
+pub export fn WP34S_Pdf_Binomial(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) binomial.wp34sPdfBinomial(x, p0, n, res, ctx);
 }
 
-pub export fn fnNegBinomialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNegBinomialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.negBinomialP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnNegBinomialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNegBinomialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.negBinomialL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnNegBinomialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNegBinomialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.negBinomialR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnNegBinomialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNegBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.negBinomialI(unused_but_mandatory_parameter);
 }
 
 // NegBinomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17
 // is kept: the geometric dispatcher / f-distribution Newton solver (cdf2) and the
 // f distribution (pdf). Stubbed with the cluster on DM42.
-pub export fn cdf_NegBinomial2(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) callconv(.c) void {
+pub export fn cdf_NegBinomial2(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.cdfNegBinomial2(x, p0, r, res, ctx);
 }
 
-pub export fn pdf_NegBinomial(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) callconv(.c) void {
+pub export fn pdf_NegBinomial(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) neg_binom.pdfNegBinomial(x, p0, r, res, ctx);
 }
 
-pub export fn fnHypergeometricP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnHypergeometricP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.hypergeometricP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnHypergeometricL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnHypergeometricL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.hypergeometricL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnHypergeometricR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnHypergeometricR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.hypergeometricR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnHypergeometricI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnHypergeometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.hypergeometricI(unused_but_mandatory_parameter);
 }
 
 // Hypergeometric helpers reached by still-C cluster members where
 // SAVE_SPACE_DM42_17 is kept: the geometric dispatcher / f-distribution Newton
 // solver (cdf2) and the f distribution (pdf). Stubbed with the cluster on DM42.
-pub export fn cdf_Hypergeometric2(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) callconv(.c) void {
+pub export fn cdf_Hypergeometric2(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.cdfHypergeometric2(x, k0, n, n0, res, ctx);
 }
 
-pub export fn pdf_Hypergeometric(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) callconv(.c) void {
+pub export fn pdf_Hypergeometric(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.pdfHypergeometric(x, k0, n, n0, res, ctx);
 }
 
-pub export fn fnChi2P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnChi2P(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) chi2.chi2P(unused_but_mandatory_parameter);
 }
 
-pub export fn fnChi2L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnChi2L(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) chi2.chi2L(unused_but_mandatory_parameter);
 }
 
-pub export fn fnChi2R(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnChi2R(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) chi2.chi2R(unused_but_mandatory_parameter);
 }
 
-pub export fn fnChi2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnChi2I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17b) chi2.chi2I(unused_but_mandatory_parameter);
 }
 
 // checkRegisterNoFP is defined in upstream chi2.c (17B cluster) and used by the
 // binomial/hyper/negBinom/f members; export it so they link where the cluster is
 // kept. On packages with 17B stripped it is the upstream stub (returns false).
-pub export fn checkRegisterNoFP(reg: *const chi2.real_t) callconv(.c) bool {
+pub export fn checkRegisterNoFP(reg: *const chi2.real_t) linksection(dr.code_section) callconv(.c) bool {
     if (comptime !strip_17b) return chi2.checkRegisterNoFP(reg);
     return false;
 }
 
-pub export fn fnStdNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnStdNormalP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalP(.std_normal);
 }
-pub export fn fnStdNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnStdNormalL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalL(.std_normal);
 }
-pub export fn fnStdNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnStdNormalR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalR(.std_normal);
 }
-pub export fn fnStdNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnStdNormalI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalI(.std_normal);
 }
-pub export fn fnNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNormalP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalP(.param_normal);
 }
-pub export fn fnNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNormalL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalL(.param_normal);
 }
-pub export fn fnNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNormalR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalR(.param_normal);
 }
-pub export fn fnNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnNormalI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalI(.param_normal);
 }
-pub export fn fnLogNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogNormalP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalP(.log_normal);
 }
-pub export fn fnLogNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogNormalL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalL(.log_normal);
 }
-pub export fn fnLogNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogNormalR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalR(.log_normal);
 }
-pub export fn fnLogNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnLogNormalI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     if (comptime !strip_16) normal.normalI(.log_normal);
 }
@@ -1282,27 +1283,27 @@ pub export fn fnLogNormalI(unused_but_mandatory_parameter: u16) callconv(.c) voi
 // WP34S_qf_q_est (defined in upstream normal.c) and WP34S_Cdf_Q are reached by the
 // other (17/17B) distribution members where their clusters are kept; export them.
 // On DM42 (cluster 16 stripped) they are the upstream stubs.
-pub export fn WP34S_qf_q_est(x: *const normal.real_t, res: *normal.real_t, res_y: [*c]normal.real_t, ctx: *normal.realContext_t) callconv(.c) void {
+pub export fn WP34S_qf_q_est(x: *const normal.real_t, res: *normal.real_t, res_y: [*c]normal.real_t, ctx: *normal.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_16) normal.wp34sQfQEst(x, res, res_y, ctx);
 }
 
-pub export fn WP34S_Cdf_Q(x: *const normal.real_t, res: *normal.real_t, ctx: *normal.realContext_t) callconv(.c) void {
+pub export fn WP34S_Cdf_Q(x: *const normal.real_t, res: *normal.real_t, ctx: *normal.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_16) normal.wp34sCdfQ(x, res, ctx);
 }
 
-pub export fn fnF_P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnF_P(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.fP(unused_but_mandatory_parameter);
 }
 
-pub export fn fnF_L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnF_L(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.fL(unused_but_mandatory_parameter);
 }
 
-pub export fn fnF_R(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnF_R(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.fR(unused_but_mandatory_parameter);
 }
 
-pub export fn fnF_I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnF_I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.fI(unused_but_mandatory_parameter);
 }
 
@@ -1317,6 +1318,6 @@ pub export fn WP34S_Qf_Newton(
     p3: [*c]const f_dist.real_t,
     res: *f_dist.real_t,
     ctx: *f_dist.realContext_t,
-) callconv(.c) void {
+) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.wp34sQfNewton(r_dist, target, estimate, p1, p2, p3, res, ctx);
 }
