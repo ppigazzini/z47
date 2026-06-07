@@ -23,6 +23,7 @@ const gev = @import("frontier_gev_owned.zig");
 const geometric = @import("frontier_geometric_owned.zig");
 const poisson = @import("frontier_poisson_owned.zig");
 const binomial = @import("frontier_binomial_owned.zig");
+const neg_binom = @import("frontier_neg_binom_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1144,4 +1145,31 @@ pub export fn WP34S_Cdf_Binomial2(x: *const binomial.real_t, p0: *const binomial
 
 pub export fn WP34S_Pdf_Binomial(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) callconv(.c) void {
     if (comptime !strip_17) binomial.wp34sPdfBinomial(x, p0, n, res, ctx);
+}
+
+pub export fn fnNegBinomialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.negBinomialP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnNegBinomialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.negBinomialL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnNegBinomialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.negBinomialR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnNegBinomialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.negBinomialI(unused_but_mandatory_parameter);
+}
+
+// NegBinomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17
+// is kept: the geometric dispatcher / f-distribution Newton solver (cdf2) and the
+// f distribution (pdf). Stubbed with the cluster on DM42.
+pub export fn cdf_NegBinomial2(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.cdfNegBinomial2(x, p0, r, res, ctx);
+}
+
+pub export fn pdf_NegBinomial(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) neg_binom.pdfNegBinomial(x, p0, r, res, ctx);
 }
