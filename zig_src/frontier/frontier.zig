@@ -27,6 +27,7 @@ const neg_binom = @import("frontier_neg_binom_owned.zig");
 const hyper = @import("frontier_hyper_owned.zig");
 const chi2 = @import("frontier_chi2_owned.zig");
 const normal = @import("frontier_normal_owned.zig");
+const f_dist = @import("frontier_f_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1287,4 +1288,35 @@ pub export fn WP34S_qf_q_est(x: *const normal.real_t, res: *normal.real_t, res_y
 
 pub export fn WP34S_Cdf_Q(x: *const normal.real_t, res: *normal.real_t, ctx: *normal.realContext_t) callconv(.c) void {
     if (comptime !strip_16) normal.wp34sCdfQ(x, res, ctx);
+}
+
+pub export fn fnF_P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) f_dist.fP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnF_L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) f_dist.fL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnF_R(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) f_dist.fR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnF_I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) f_dist.fI(unused_but_mandatory_parameter);
+}
+
+// The shared Newton-step solver (f.c) reached by the poisson/binomial/negBinom/
+// hyper quantiles where the cluster is kept; stubbed with the cluster on DM42.
+pub export fn WP34S_Qf_Newton(
+    r_dist: u32,
+    target: *const f_dist.real_t,
+    estimate: *const f_dist.real_t,
+    p1: [*c]const f_dist.real_t,
+    p2: [*c]const f_dist.real_t,
+    p3: [*c]const f_dist.real_t,
+    res: *f_dist.real_t,
+    ctx: *f_dist.realContext_t,
+) callconv(.c) void {
+    if (comptime !strip_17) f_dist.wp34sQfNewton(r_dist, target, estimate, p1, p2, p3, res, ctx);
 }
