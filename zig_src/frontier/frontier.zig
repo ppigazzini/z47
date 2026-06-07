@@ -36,6 +36,7 @@ comptime {
     _ = @import("frontier_free_list_owned.zig");
     _ = @import("frontier_fonts_owned.zig");
     _ = @import("frontier_martel_fonts_owned.zig");
+    _ = @import("frontier_printer_font8_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
