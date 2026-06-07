@@ -89,6 +89,7 @@ extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const rea
 extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopy(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
+extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberFMA(result: *real_t, factor1: *const real_t, factor2: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
 extern fn PowerReal(y: *const real_t, x: *const real_t, result: *real_t, real_context: *realContext_t) void;
 
@@ -121,6 +122,10 @@ pub extern fn WP34S_Cdf_Poisson2(x: *const real_t, lambda: *const real_t, res: *
 pub extern fn WP34S_Cdf_Binomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn cdf_NegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn cdf_Hypergeometric2(x: *const real_t, p0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_qf_q_est(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool, regularised: bool) void;
+pub extern fn WP34S_Qf_Newton(r_dist: u32, target: *const real_t, estimate: *const real_t, p1: [*c]const real_t, p2: [*c]const real_t, p3: [*c]const real_t, res: *real_t, real_context: *realContext_t) void;
 
 pub extern fn saveLastX() bool;
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
@@ -156,6 +161,9 @@ pub inline fn realPow(base: *const real_t, exponent: *const real_t, result: *rea
 }
 pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     realExp(x, res, real_context);
+}
+pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, real_context: *realContext_t) void {
+    _ = decNumberSquareRoot(res, operand, real_context);
 }
 pub inline fn realExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
     WP34S_ExpM1(x, res, real_context); // c47 realExpM1 forwards straight to WP34S_ExpM1
@@ -247,6 +255,17 @@ pub fn const4() *const real_t {
         const_4_ready = true;
     }
     return &const_4_value;
+}
+
+// const_6 likewise has no c47 wrapper accessor; materialise it once from 6.
+var const_6_value: real_t = undefined;
+var const_6_ready = false;
+pub fn const6() *const real_t {
+    if (!const_6_ready) {
+        _ = decNumberFromUInt32(&const_6_value, 6);
+        const_6_ready = true;
+    }
+    return &const_6_value;
 }
 
 // Shared NaN-on-FLAG_SPCRES error tail used by every checkParam* helper.
