@@ -12,7 +12,6 @@ src/testSuite/testSuite.c
 zig_bridge/frontier/addons_legacy.c
 zig_bridge/frontier/asn_browser_legacy.c
 zig_bridge/frontier/assign_legacy.c
-zig_bridge/frontier/binomial_legacy.c
 zig_bridge/frontier/bufferize_legacy.c
 zig_bridge/frontier/c47_legacy.c
 zig_bridge/frontier/calc_mode_legacy.c

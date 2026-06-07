@@ -126,6 +126,12 @@ pub extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realC
 pub extern fn WP34S_qf_q_est(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool, regularised: bool) void;
 pub extern fn WP34S_Qf_Newton(r_dist: u32, target: *const real_t, estimate: *const real_t, p1: [*c]const real_t, p2: [*c]const real_t, p3: [*c]const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, real_context: *realContext_t) void;
+pub extern fn checkRegisterNoFP(reg: *const real_t) bool;
+// Provided by the poisson owner (exported from frontier.zig); reached here by the
+// binomial/hyper/negBinom quantiles where the cluster is kept.
+pub extern fn WP34S_normal_moment_approx(prob: *const real_t, variance: *const real_t, mean: *const real_t, res: *real_t, real_context: *realContext_t) void;
 
 pub extern fn saveLastX() bool;
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
