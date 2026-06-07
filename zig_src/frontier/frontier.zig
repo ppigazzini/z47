@@ -26,12 +26,14 @@ const binomial = @import("frontier_binomial_owned.zig");
 const neg_binom = @import("frontier_neg_binom_owned.zig");
 const hyper = @import("frontier_hyper_owned.zig");
 const chi2 = @import("frontier_chi2_owned.zig");
+const normal = @import("frontier_normal_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
 // exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
 // firmware packages compile those distribution owners out of the shared object.
 const frontier_build_options = @import("frontier_build_options");
+const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
@@ -1225,4 +1227,64 @@ pub export fn fnChi2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn checkRegisterNoFP(reg: *const chi2.real_t) callconv(.c) bool {
     if (comptime !strip_17b) return chi2.checkRegisterNoFP(reg);
     return false;
+}
+
+pub export fn fnStdNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalP(.std_normal);
+}
+pub export fn fnStdNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalL(.std_normal);
+}
+pub export fn fnStdNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalR(.std_normal);
+}
+pub export fn fnStdNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalI(.std_normal);
+}
+pub export fn fnNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalP(.param_normal);
+}
+pub export fn fnNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalL(.param_normal);
+}
+pub export fn fnNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalR(.param_normal);
+}
+pub export fn fnNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalI(.param_normal);
+}
+pub export fn fnLogNormalP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalP(.log_normal);
+}
+pub export fn fnLogNormalL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalL(.log_normal);
+}
+pub export fn fnLogNormalR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalR(.log_normal);
+}
+pub export fn fnLogNormalI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (comptime !strip_16) normal.normalI(.log_normal);
+}
+
+// WP34S_qf_q_est (defined in upstream normal.c) and WP34S_Cdf_Q are reached by the
+// other (17/17B) distribution members where their clusters are kept; export them.
+// On DM42 (cluster 16 stripped) they are the upstream stubs.
+pub export fn WP34S_qf_q_est(x: *const normal.real_t, res: *normal.real_t, res_y: [*c]normal.real_t, ctx: *normal.realContext_t) callconv(.c) void {
+    if (comptime !strip_16) normal.wp34sQfQEst(x, res, res_y, ctx);
+}
+
+pub export fn WP34S_Cdf_Q(x: *const normal.real_t, res: *normal.real_t, ctx: *normal.realContext_t) callconv(.c) void {
+    if (comptime !strip_16) normal.wp34sCdfQ(x, res, ctx);
 }

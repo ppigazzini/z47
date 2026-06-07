@@ -84,6 +84,7 @@ extern fn z47_math_wrappers_const_1on2() *const real_t;
 extern fn z47_math_wrappers_const_pi() *const real_t;
 extern fn z47_math_wrappers_const_2() *const real_t;
 extern fn z47_math_wrappers_const_ln2() *const real_t;
+extern fn z47_math_wrappers_const_5() *const real_t;
 
 extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -135,6 +136,7 @@ pub extern fn WP34S_betai(b: *const real_t, a: *const real_t, x: *const real_t, 
 pub extern fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn checkRegisterNoFP(reg: *const real_t) bool;
 pub extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
+pub extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
 // Provided by the poisson owner (exported from frontier.zig); reached here by the
 // binomial/hyper/negBinom quantiles where the cluster is kept.
 pub extern fn WP34S_normal_moment_approx(prob: *const real_t, variance: *const real_t, mean: *const real_t, res: *real_t, real_context: *realContext_t) void;
@@ -297,6 +299,32 @@ pub fn const6() *const real_t {
 
 pub fn const2() *const real_t {
     return z47_math_wrappers_const_2();
+}
+
+pub fn const5() *const real_t {
+    return z47_math_wrappers_const_5();
+}
+
+var const_1on10_value: real_t = undefined;
+var const_1on10_ready = false;
+pub fn const1on10() *const real_t {
+    if (!const_1on10_ready) {
+        _ = decNumberFromUInt32(&const_1on10_value, 1);
+        const_1on10_value.exponent = -1; // 0.1
+        const_1on10_ready = true;
+    }
+    return &const_1on10_value;
+}
+
+// 2*pi at 39-digit precision; materialised once from pi.
+var const_2pi_value: real_t = undefined;
+var const_2pi_ready = false;
+pub fn const39_2pi() *const real_t {
+    if (!const_2pi_ready) {
+        _ = decNumberMultiply(&const_2pi_value, z47_math_wrappers_const_pi(), z47_math_wrappers_const_2(), &ctxtReal39);
+        const_2pi_ready = true;
+    }
+    return &const_2pi_value;
 }
 
 // const_1e_37 (1e-37, the hypergeometric CDF convergence tolerance) has no c47
