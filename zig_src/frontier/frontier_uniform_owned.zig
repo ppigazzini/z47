@@ -13,7 +13,7 @@ const real_t = dr.real_t;
 
 // Reads X, low (REGISTER_M) and high (REGISTER_N); validates and, when
 // requested, computes the range and the position of X relative to [low, high].
-fn checkParamUniform(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, cmp: ?*c_int, discrete: u16) bool {
+fn checkParamUniform(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, cmp: ?*c_int, discrete: u16) linksection(dr.code_section) bool {
     const ctx = &dr.ctxtReal39;
     if (!dr.saveLastX()) {
         return false;
@@ -61,7 +61,7 @@ fn checkParamUniform(x: *real_t, low: *real_t, high: *real_t, range: ?*real_t, c
     return true;
 }
 
-pub fn uniformP(discrete: u16) void {
+pub fn uniformP(discrete: u16) linksection(dr.code_section) void {
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var l: real_t = undefined;
@@ -86,7 +86,7 @@ pub fn uniformP(discrete: u16) void {
     }
 }
 
-pub fn uniformL(discrete: u16) void {
+pub fn uniformL(discrete: u16) linksection(dr.code_section) void {
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var low: real_t = undefined;
@@ -112,7 +112,7 @@ pub fn uniformL(discrete: u16) void {
     }
 }
 
-pub fn uniformU(discrete: u16) void {
+pub fn uniformU(discrete: u16) linksection(dr.code_section) void {
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var l: real_t = undefined;
@@ -138,7 +138,7 @@ pub fn uniformU(discrete: u16) void {
     }
 }
 
-pub fn uniformI(discrete: u16) void {
+pub fn uniformI(discrete: u16) linksection(dr.code_section) void {
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
     var low: real_t = undefined;

@@ -11,7 +11,7 @@ const dr = @import("frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 
 // Shared parameter check for both GPD types. `mu` is non-null for Type II only.
-fn checkParamGPD(x: *real_t, mu: ?*real_t, sigma: *real_t, alpha: *real_t, qf: bool) bool {
+fn checkParamGPD(x: *real_t, mu: ?*real_t, sigma: *real_t, alpha: *real_t, qf: bool) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -42,7 +42,7 @@ fn checkParamGPD(x: *real_t, mu: ?*real_t, sigma: *real_t, alpha: *real_t, qf: b
 
 // Type I Pareto distribution
 
-pub fn paretoP(unused_but_mandatory_parameter: u16) void {
+pub fn paretoP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -60,7 +60,7 @@ pub fn paretoP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn paretoL(unused_but_mandatory_parameter: u16) void {
+pub fn paretoL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -78,7 +78,7 @@ pub fn paretoL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn paretoU(unused_but_mandatory_parameter: u16) void {
+pub fn paretoU(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -93,7 +93,7 @@ pub fn paretoU(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn paretoI(unused_but_mandatory_parameter: u16) void {
+pub fn paretoI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -118,7 +118,7 @@ pub fn paretoI(unused_but_mandatory_parameter: u16) void {
 
 // Type II Pareto distribution
 
-pub fn pareto2P(unused_but_mandatory_parameter: u16) void {
+pub fn pareto2P(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -138,7 +138,7 @@ pub fn pareto2P(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn pareto2L(unused_but_mandatory_parameter: u16) void {
+pub fn pareto2L(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -159,7 +159,7 @@ pub fn pareto2L(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn pareto2U(unused_but_mandatory_parameter: u16) void {
+pub fn pareto2U(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -179,7 +179,7 @@ pub fn pareto2U(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn pareto2I(unused_but_mandatory_parameter: u16) void {
+pub fn pareto2I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;

@@ -10,7 +10,7 @@ const dr = @import("frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 const realContext_t = dr.realContext_t;
 
-fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) bool {
+fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -34,7 +34,7 @@ fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) bool {
     return true;
 }
 
-pub fn weibullP(unused_but_mandatory_parameter: u16) void {
+pub fn weibullP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var shape: real_t = undefined;
@@ -47,7 +47,7 @@ pub fn weibullP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn weibullL(unused_but_mandatory_parameter: u16) void {
+pub fn weibullL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var shape: real_t = undefined;
@@ -60,7 +60,7 @@ pub fn weibullL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn weibullR(unused_but_mandatory_parameter: u16) void {
+pub fn weibullR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var shape: real_t = undefined;
@@ -73,7 +73,7 @@ pub fn weibullR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn weibullI(unused_but_mandatory_parameter: u16) void {
+pub fn weibullI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var shape: real_t = undefined;
@@ -94,7 +94,7 @@ pub fn weibullI(unused_but_mandatory_parameter: u16) void {
 
 // These functions are borrowed from the WP34S project.
 
-fn wp34sPdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sPdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -113,7 +113,7 @@ fn wp34sPdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real
     dr.realDivide(&r, b, res, real_context);
 }
 
-fn wp34sCdfuWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfuWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.realDivide(x, b, &p, real_context);
@@ -130,7 +130,7 @@ fn wp34sCdfuWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *rea
     dr.realExponential(&p, res, real_context);
 }
 
-fn wp34sCdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.realDivide(x, b, &p, real_context);
@@ -148,7 +148,7 @@ fn wp34sCdfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real
     dr.realChangeSign(res);
 }
 
-fn wp34sQfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sQfWeib(x: *const real_t, b: *const real_t, t: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     // (-ln(1-p) ^ (1/k)) * J
     var p: real_t = undefined;
     var q: real_t = undefined;

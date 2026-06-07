@@ -10,7 +10,7 @@ const dr = @import("frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 const realContext_t = dr.realContext_t;
 
-fn checkParamExponential(x: *real_t, lambda: *real_t) bool {
+fn checkParamExponential(x: *real_t, lambda: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -34,7 +34,7 @@ fn checkParamExponential(x: *real_t, lambda: *real_t) bool {
     return true;
 }
 
-pub fn exponentialP(unused_but_mandatory_parameter: u16) void {
+pub fn exponentialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -46,7 +46,7 @@ pub fn exponentialP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn exponentialL(unused_but_mandatory_parameter: u16) void {
+pub fn exponentialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -58,7 +58,7 @@ pub fn exponentialL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn exponentialR(unused_but_mandatory_parameter: u16) void {
+pub fn exponentialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -70,7 +70,7 @@ pub fn exponentialR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn exponentialI(unused_but_mandatory_parameter: u16) void {
+pub fn exponentialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -96,7 +96,7 @@ pub fn exponentialI(unused_but_mandatory_parameter: u16) void {
 
 // These functions are borrowed from the WP34S project.
 
-fn wp34sPdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sPdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     if (dr.realCompareLessEqual(x, dr.const0())) {
         dr.setZero(res);
         return;
@@ -111,7 +111,7 @@ fn wp34sPdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_con
     dr.realMultiply(res, lambda, res, real_context);
 }
 
-fn wp34sCdfuExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfuExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     if (dr.realCompareLessEqual(x, dr.const0())) {
         dr.setOne(res);
         return;
@@ -129,7 +129,7 @@ fn wp34sCdfuExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_co
     dr.realExponential(res, res, real_context);
 }
 
-fn wp34sCdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     if (dr.realCompareLessEqual(x, dr.const0())) {
         dr.setZero(res);
         return;
@@ -148,7 +148,7 @@ fn wp34sCdfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_con
     dr.realChangeSign(res);
 }
 
-fn wp34sQfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sQfExpon(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.realSubtract(dr.const0(), x, &p, real_context);
