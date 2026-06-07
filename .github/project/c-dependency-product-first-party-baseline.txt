@@ -13,7 +13,6 @@ zig_bridge/frontier/chi2_legacy.c
 zig_bridge/frontier/clcvar_legacy.c
 zig_bridge/frontier/config_legacy.c
 zig_bridge/frontier/conversion_angles_legacy.c
-zig_bridge/frontier/conversion_units_legacy.c
 zig_bridge/frontier/curve_fitting_legacy.c
 zig_bridge/frontier/date_time_legacy.c
 zig_bridge/frontier/debug_legacy.c
