@@ -20,12 +20,14 @@ const exponential = @import("frontier_exponential_owned.zig");
 const pareto = @import("frontier_pareto_owned.zig");
 const uniform = @import("frontier_uniform_owned.zig");
 const gev = @import("frontier_gev_owned.zig");
+const geometric = @import("frontier_geometric_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
 // exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
 // firmware packages compile those distribution owners out of the shared object.
 const frontier_build_options = @import("frontier_build_options");
+const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
 
@@ -1049,4 +1051,36 @@ pub export fn fnGEVR(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub export fn fnGEVI(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (comptime !strip_17c) gev.gevI(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGeometricP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) geometric.geometricP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGeometricL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) geometric.geometricL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGeometricR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) geometric.geometricR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnGeometricI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) geometric.geometricI(unused_but_mandatory_parameter);
+}
+
+// Shared discrete-quantile dispatcher (geometric.c). Exported with C linkage so
+// the still-C f distribution links against it where the SAVE_SPACE_DM42_17
+// cluster is kept; on DM42 (strip_17) the body is empty and the owner is elided.
+pub export fn WP34S_qf_discrete_final(
+    dist: u16,
+    r: *const geometric.real_t,
+    p: *const geometric.real_t,
+    i: [*c]const geometric.real_t,
+    j: [*c]const geometric.real_t,
+    k: [*c]const geometric.real_t,
+    res: *geometric.real_t,
+    ctx: *geometric.realContext_t,
+) callconv(.c) void {
+    if (comptime !strip_17) geometric.wp34sQfDiscreteFinal(dist, r, p, i, j, k, res, ctx);
 }
