@@ -85,6 +85,8 @@ extern fn z47_math_wrappers_const_pi() *const real_t;
 extern fn z47_math_wrappers_const_2() *const real_t;
 extern fn z47_math_wrappers_const_ln2() *const real_t;
 extern fn z47_math_wrappers_const_5() *const real_t;
+extern fn z47_math_wrappers_const_1on3() *const real_t;
+extern fn z47_math_wrappers_const_minus_infinity() *const real_t;
 
 extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -128,6 +130,14 @@ pub extern fn WP34S_Cdf_Poisson2(x: *const real_t, lambda: *const real_t, res: *
 pub extern fn WP34S_Cdf_Binomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn cdf_NegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn cdf_Hypergeometric2(x: *const real_t, p0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, real_context: *realContext_t) void;
+// Discrete PDFs + the shared discrete-quantile dispatcher reached by the f
+// distribution's Newton solver (all exported by their Zig owners from frontier.zig).
+pub extern fn WP34S_Pdf_Poisson(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Pdf_Binomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn pdf_NegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn pdf_Hypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_qf_discrete_final(dist: u16, r: *const real_t, p: *const real_t, i: [*c]const real_t, j: [*c]const real_t, k: [*c]const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn LnBeta(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_qf_q_est(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool, regularised: bool) void;
@@ -325,6 +335,44 @@ pub fn const39_2pi() *const real_t {
         const_2pi_ready = true;
     }
     return &const_2pi_value;
+}
+
+pub fn const1on3() *const real_t {
+    return z47_math_wrappers_const_1on3();
+}
+pub fn constMinusInfinity() *const real_t {
+    return z47_math_wrappers_const_minus_infinity();
+}
+
+var const_3_value: real_t = undefined;
+var const_3_ready = false;
+pub fn const3() *const real_t {
+    if (!const_3_ready) {
+        _ = decNumberFromUInt32(&const_3_value, 3);
+        const_3_ready = true;
+    }
+    return &const_3_value;
+}
+
+var const_3on2_value: real_t = undefined;
+var const_3on2_ready = false;
+pub fn const3on2() *const real_t {
+    if (!const_3on2_ready) {
+        _ = decNumberFromUInt32(&const_3on2_value, 15);
+        const_3on2_value.exponent = -1; // 1.5
+        const_3on2_ready = true;
+    }
+    return &const_3on2_value;
+}
+
+var const_60_value: real_t = undefined;
+var const_60_ready = false;
+pub fn const60() *const real_t {
+    if (!const_60_ready) {
+        _ = decNumberFromUInt32(&const_60_value, 60);
+        const_60_ready = true;
+    }
+    return &const_60_value;
 }
 
 // const_1e_37 (1e-37, the hypergeometric CDF convergence tolerance) has no c47
