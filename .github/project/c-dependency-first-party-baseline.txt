@@ -49,7 +49,6 @@ zig_bridge/frontier/normal_legacy.c
 zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/poisson_legacy.c
 zig_bridge/frontier/print_legacy.c
-zig_bridge/frontier/printer_font8_legacy.c
 zig_bridge/frontier/programmable_menu_legacy.c
 zig_bridge/frontier/radio_button_catalog_legacy.c
 zig_bridge/frontier/recall_legacy.c
