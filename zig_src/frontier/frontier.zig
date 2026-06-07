@@ -28,6 +28,7 @@ const hyper = @import("frontier_hyper_owned.zig");
 const chi2 = @import("frontier_chi2_owned.zig");
 const normal = @import("frontier_normal_owned.zig");
 const f_dist = @import("frontier_f_owned.zig");
+const t_dist = @import("frontier_t_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1320,4 +1321,20 @@ pub export fn WP34S_Qf_Newton(
     ctx: *f_dist.realContext_t,
 ) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) f_dist.wp34sQfNewton(r_dist, target, estimate, p1, p2, p3, res, ctx);
+}
+
+pub export fn fnT_P(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
+    if (comptime !strip_17b) t_dist.tP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnT_L(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
+    if (comptime !strip_17b) t_dist.tL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnT_R(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
+    if (comptime !strip_17b) t_dist.tR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnT_I(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {
+    if (comptime !strip_17b) t_dist.tI(unused_but_mandatory_parameter);
 }
