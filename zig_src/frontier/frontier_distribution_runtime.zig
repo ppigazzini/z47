@@ -6,10 +6,22 @@
 // firmware links. Each distribution owner ports its upstream
 // src/c47/distributions/<name>.c using only this module.
 
+const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 // Upstream compiles the EXTRA_INFO_ON_CALC_ERROR console hints out on firmware;
 // gate moreInfoOnError on the same flag so firmware sheds the calls and strings.
 const extra_info_on_calc_error: bool = frontier_build_options.extra_info_on_calc_error;
+
+// Distribution commands are user-triggered and never hot, so on the flash-limited
+// old_hw DM42 their code lives in the executable QSPI region (XIP) to free the
+// 704 KB main FLASH. Host and DMCP5 keep the normal code section (mach-o needs a
+// SEG,sect form). Owners tag their fn declarations `linksection(dr.code_section)`.
+pub const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
+    ".qspi"
+else if (builtin.target.os.tag == .macos)
+    "__TEXT,__text"
+else
+    ".text";
 
 const DECNUMUNITS = 25;
 

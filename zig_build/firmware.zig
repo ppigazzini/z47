@@ -686,6 +686,9 @@ fn addFirmwareElfBuild(
 
     for (firmware_common_link_flags) |flag| cmd.addArg(flag);
     for (firmwareLinkFlags(config.board)) |flag| cmd.addArg(flag);
+    // Discard .ARM.exidx (see fragment) before the upstream script so QSPI-placed
+    // owner code does not blow the PREL31 exidx relocation range.
+    cmd.addPrefixedFileArg("-T", b.path("zig_build/firmware/discard_exidx.ld"));
     cmd.addPrefixedFileArg("-T", build_common.upstreamPath(b, firmwareBoardLinkerScript(config.board)));
     const map_name = switch (phase) {
         .pre => b.fmt("{s}_pre.map", .{config.program_name}),

@@ -14,7 +14,7 @@ const real_t = dr.real_t;
 
 // noinline: called from all four entry points; a single shared copy keeps the
 // flash-limited full package (pkg1) within budget.
-noinline fn checkParamGEV(x: *real_t, mu: *real_t, sigma: *real_t, xi: *real_t, qf: bool) bool {
+noinline fn checkParamGEV(x: *real_t, mu: *real_t, sigma: *real_t, xi: *real_t, qf: bool) linksection(dr.code_section) bool {
     const ctx = &dr.ctxtReal39;
     var t: real_t = undefined;
 
@@ -53,7 +53,7 @@ noinline fn checkParamGEV(x: *real_t, mu: *real_t, sigma: *real_t, xi: *real_t, 
     return dr.realCompareGreaterEqual(x, &t); // xi > 0, [(mu-sigma)/xi, +inf)
 }
 
-noinline fn tGEV(x: *const real_t, mu: *const real_t, sigma: *const real_t, xi: *const real_t, t: *real_t) void {
+noinline fn tGEV(x: *const real_t, mu: *const real_t, sigma: *const real_t, xi: *const real_t, t: *real_t) linksection(dr.code_section) void {
     const ctx = &dr.ctxtReal39;
     var z: real_t = undefined;
 
@@ -69,12 +69,12 @@ noinline fn tGEV(x: *const real_t, mu: *const real_t, sigma: *const real_t, xi: 
     dr.realExponential(&z, t, ctx);
 }
 
-fn lowerLnGEV(x: *const real_t, mu: *const real_t, sigma: *const real_t, xi: *const real_t, z: *real_t) void {
+fn lowerLnGEV(x: *const real_t, mu: *const real_t, sigma: *const real_t, xi: *const real_t, z: *real_t) linksection(dr.code_section) void {
     tGEV(x, mu, sigma, xi, z);
     dr.realChangeSign(z);
 }
 
-pub fn gevP(unused_but_mandatory_parameter: u16) void {
+pub fn gevP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -98,7 +98,7 @@ pub fn gevP(unused_but_mandatory_parameter: u16) void {
     dr.storeResult(&x);
 }
 
-pub fn gevL(unused_but_mandatory_parameter: u16) void {
+pub fn gevL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -114,7 +114,7 @@ pub fn gevL(unused_but_mandatory_parameter: u16) void {
     dr.storeResult(&x);
 }
 
-pub fn gevR(unused_but_mandatory_parameter: u16) void {
+pub fn gevR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var x: real_t = undefined;
@@ -131,7 +131,7 @@ pub fn gevR(unused_but_mandatory_parameter: u16) void {
     dr.storeResult(&x);
 }
 
-pub fn gevI(unused_but_mandatory_parameter: u16) void {
+pub fn gevI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     const ctx = &dr.ctxtReal39;
     var p: real_t = undefined;

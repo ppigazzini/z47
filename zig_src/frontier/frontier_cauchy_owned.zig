@@ -10,7 +10,7 @@ const dr = @import("frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 const realContext_t = dr.realContext_t;
 
-fn checkParamCauchy(x: *real_t, x0: *real_t, gamma: *real_t) bool {
+fn checkParamCauchy(x: *real_t, x0: *real_t, gamma: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -29,7 +29,7 @@ fn checkParamCauchy(x: *real_t, x0: *real_t, gamma: *real_t) bool {
     return true;
 }
 
-pub fn cauchyP(unused_but_mandatory_parameter: u16) void {
+pub fn cauchyP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -42,7 +42,7 @@ pub fn cauchyP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn cauchyL(unused_but_mandatory_parameter: u16) void {
+pub fn cauchyL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -55,7 +55,7 @@ pub fn cauchyL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn cauchyR(unused_but_mandatory_parameter: u16) void {
+pub fn cauchyR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -68,7 +68,7 @@ pub fn cauchyR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn cauchyI(unused_but_mandatory_parameter: u16) void {
+pub fn cauchyI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -95,7 +95,7 @@ pub fn cauchyI(unused_but_mandatory_parameter: u16) void {
 
 // These functions are borrowed from the WP34S project.
 
-fn wp34sPdfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sPdfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     wp34sCdfCauchyXform(x, x0, gamma, res, real_context);
     if (dr.realIsSpecial(res)) {
         dr.setZero(res); // Can only be infinite which has zero probability.
@@ -108,15 +108,15 @@ fn wp34sPdfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res
     dr.realDivide(dr.const1(), res, res, real_context);
 }
 
-fn wp34sCdfuCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfuCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     wp34sCdfCauchyCommon(x, x0, gamma, true, res, real_context);
 }
 
-fn wp34sCdfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     wp34sCdfCauchyCommon(x, x0, gamma, false, res, real_context);
 }
 
-fn wp34sCdfCauchyCommon(x: *const real_t, x0: *const real_t, gamma: *const real_t, complementary: bool, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfCauchyCommon(x: *const real_t, x0: *const real_t, gamma: *const real_t, complementary: bool, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     wp34sCdfCauchyXform(x, x0, gamma, &p, real_context);
@@ -132,12 +132,12 @@ fn wp34sCdfCauchyCommon(x: *const real_t, x0: *const real_t, gamma: *const real_
     dr.realAdd(&p, dr.const1on2(), res, real_context);
 }
 
-fn wp34sCdfCauchyXform(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfCauchyXform(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     dr.realSubtract(x, x0, res, real_context);
     dr.realDivide(res, gamma, res, real_context);
 }
 
-fn wp34sQfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sQfCauchy(x: *const real_t, x0: *const real_t, gamma: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var s: real_t = undefined;
     var c: real_t = undefined;

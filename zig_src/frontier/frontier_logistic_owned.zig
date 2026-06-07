@@ -10,7 +10,7 @@ const dr = @import("frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 const realContext_t = dr.realContext_t;
 
-fn checkParamLogistic(x: *real_t, mu: *real_t, s: *real_t) bool {
+fn checkParamLogistic(x: *real_t, mu: *real_t, s: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -29,7 +29,7 @@ fn checkParamLogistic(x: *real_t, mu: *real_t, s: *real_t) bool {
     return true;
 }
 
-pub fn logisticP(unused_but_mandatory_parameter: u16) void {
+pub fn logisticP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var mu: real_t = undefined;
@@ -42,7 +42,7 @@ pub fn logisticP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn logisticL(unused_but_mandatory_parameter: u16) void {
+pub fn logisticL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var mu: real_t = undefined;
@@ -55,7 +55,7 @@ pub fn logisticL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn logisticR(unused_but_mandatory_parameter: u16) void {
+pub fn logisticR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var mu: real_t = undefined;
@@ -68,7 +68,7 @@ pub fn logisticR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn logisticI(unused_but_mandatory_parameter: u16) void {
+pub fn logisticI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var mu: real_t = undefined;
@@ -89,7 +89,7 @@ pub fn logisticI(unused_but_mandatory_parameter: u16) void {
 
 // These functions are borrowed from the WP34S project.
 
-fn cdfLogitCommon(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn cdfLogitCommon(x: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.WP34S_Tanh(x, &p, real_context);
@@ -98,7 +98,7 @@ fn cdfLogitCommon(x: *const real_t, res: *real_t, real_context: *realContext_t) 
 }
 
 // Extract the logistic rescaled parameter (x-J) / 2K.
-fn logisticParam(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn logisticParam(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.realSubtract(x, mu, res, real_context);
@@ -106,7 +106,7 @@ fn logisticParam(x: *const real_t, mu: *const real_t, s: *const real_t, res: *re
     dr.realDivide(res, &p, res, real_context);
 }
 
-fn wp34sPdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sPdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var xx: real_t = undefined;
     var p: real_t = undefined;
     logisticParam(x, mu, s, &xx, real_context);
@@ -121,7 +121,7 @@ fn wp34sPdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *re
     dr.realDivide(dr.const1(), &p, res, real_context);
 }
 
-fn wp34sCdfuLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfuLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var xx: real_t = undefined;
     logisticParam(x, mu, s, &xx, real_context);
     if (dr.realIsSpecial(&xx)) {
@@ -132,7 +132,7 @@ fn wp34sCdfuLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *r
     cdfLogitCommon(&xx, res, real_context);
 }
 
-fn wp34sCdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     // (1 + tanh( (x-J) / 2K)) / 2
     var xx: real_t = undefined;
     logisticParam(x, mu, s, &xx, real_context);
@@ -143,7 +143,7 @@ fn wp34sCdfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *re
     cdfLogitCommon(&xx, res, real_context);
 }
 
-fn wp34sQfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sQfLogit(x: *const real_t, mu: *const real_t, s: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     // archtanh(2p - 1) * 2K + J
     var p: real_t = undefined;
     var q: real_t = undefined;
