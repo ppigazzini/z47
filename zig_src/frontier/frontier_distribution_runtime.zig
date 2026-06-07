@@ -28,6 +28,7 @@ const DECNUMUNITS = 25;
 const DECNEG: u8 = 0x80;
 const DECNAN: u8 = 0x20;
 const DECSNAN: u8 = 0x10;
+const DECINF: u8 = 0x40;
 const DECSPECIAL: u8 = 0x70;
 
 pub const calcRegister_t = i16;
@@ -38,6 +39,7 @@ pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_M: calcRegister_t = 112;
 pub const REGISTER_N: calcRegister_t = 113;
+pub const REGISTER_P: calcRegister_t = 114;
 pub const REGISTER_Q: calcRegister_t = 115;
 pub const REGISTER_R: calcRegister_t = 116;
 pub const REGISTER_S: calcRegister_t = 117;
@@ -71,6 +73,8 @@ pub const realContext_t = extern struct {
 };
 
 pub extern var ctxtReal39: realContext_t;
+pub extern var ctxtReal51: realContext_t;
+pub extern var ctxtReal75: realContext_t;
 extern var const_NaN: *const real_t;
 
 extern fn z47_math_wrappers_const_0() *const real_t;
@@ -109,6 +113,14 @@ pub extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContex
 pub extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_ArcTanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_SinhCosh(x: *const real_t, sinh_out: ?*real_t, cosh_out: ?*real_t, real_context: *realContext_t) void;
+
+// Other discrete CDFs reached through the shared qf_discrete_final dispatcher
+// (geometric owner); these remain in C as parity oracles, present wherever the
+// SAVE_SPACE_DM42_17 cluster is kept (host, DMCP5).
+pub extern fn WP34S_Cdf_Poisson2(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn WP34S_Cdf_Binomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn cdf_NegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) void;
+pub extern fn cdf_Hypergeometric2(x: *const real_t, p0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, real_context: *realContext_t) void;
 
 pub extern fn saveLastX() bool;
 pub extern fn getRegisterAsReal(reg: calcRegister_t, value: *real_t) bool;
@@ -178,6 +190,9 @@ pub inline fn realIsNegative(value: *const real_t) bool {
 }
 pub inline fn realIsZero(value: *const real_t) bool {
     return value.digits == 1 and value.lsu[0] == 0 and !realIsSpecial(value);
+}
+pub inline fn realIsInfinite(value: *const real_t) bool {
+    return (value.bits & DECINF) != 0;
 }
 pub inline fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;

@@ -31,7 +31,6 @@ zig_bridge/frontier/f_distribution_legacy.c
 zig_bridge/frontier/flag_browser_legacy.c
 zig_bridge/frontier/font_browser_legacy.c
 zig_bridge/frontier/fractions_legacy.c
-zig_bridge/frontier/geometric_legacy.c
 zig_bridge/frontier/graph_text_legacy.c
 zig_bridge/frontier/graphs_legacy.c
 zig_bridge/frontier/hyper_legacy.c

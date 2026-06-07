@@ -29,6 +29,7 @@ pub const RuntimeObjectOptions = struct {
     // Distribution clusters to compile out of the frontier object, matching the
     // upstream SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/exponential) and
     // SAVE_SPACE_DM42_17C (pareto/uniform) guards for flash-limited packages.
+    strip_17: bool = false,
     strip_17b: bool = false,
     strip_17c: bool = false,
     // Emit the EXTRA_INFO_ON_CALC_ERROR console hints. Upstream compiles these
@@ -77,6 +78,7 @@ fn addRuntimeObject(
     });
 
     const build_options = b.addOptions();
+    build_options.addOption(bool, "strip_17", options.strip_17);
     build_options.addOption(bool, "strip_17b", options.strip_17b);
     build_options.addOption(bool, "strip_17c", options.strip_17c);
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);

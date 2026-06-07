@@ -126,6 +126,7 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     // array rather than a pointer. DMCP5 (NEW_HW) keeps the pointer layout.
     opts.old_hw = true;
     const pkg = dmcp_package orelse return opts;
+    opts.strip_17 = true; // SAVE_SPACE_DM42_17 is set on every DM42 package
     opts.strip_17b = (pkg == 2 or pkg == 4);
     opts.strip_17c = (pkg == 2 or pkg == 3 or pkg == 4);
     return opts;
