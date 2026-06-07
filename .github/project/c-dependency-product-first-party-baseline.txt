@@ -47,7 +47,6 @@ zig_bridge/frontier/register_browser_legacy.c
 zig_bridge/frontier/register_value_conversions_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
-zig_bridge/frontier/sort_legacy.c
 zig_bridge/frontier/stats_legacy.c
 zig_bridge/frontier/status_bar_legacy.c
 zig_bridge/frontier/store_legacy.c
