@@ -25,6 +25,7 @@ const poisson = @import("frontier_poisson_owned.zig");
 const binomial = @import("frontier_binomial_owned.zig");
 const neg_binom = @import("frontier_neg_binom_owned.zig");
 const hyper = @import("frontier_hyper_owned.zig");
+const chi2 = @import("frontier_chi2_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1200,4 +1201,28 @@ pub export fn cdf_Hypergeometric2(x: *const hyper.real_t, k0: *const hyper.real_
 
 pub export fn pdf_Hypergeometric(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) callconv(.c) void {
     if (comptime !strip_17) hyper.pdfHypergeometric(x, k0, n, n0, res, ctx);
+}
+
+pub export fn fnChi2P(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17b) chi2.chi2P(unused_but_mandatory_parameter);
+}
+
+pub export fn fnChi2L(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17b) chi2.chi2L(unused_but_mandatory_parameter);
+}
+
+pub export fn fnChi2R(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17b) chi2.chi2R(unused_but_mandatory_parameter);
+}
+
+pub export fn fnChi2I(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17b) chi2.chi2I(unused_but_mandatory_parameter);
+}
+
+// checkRegisterNoFP is defined in upstream chi2.c (17B cluster) and used by the
+// binomial/hyper/negBinom/f members; export it so they link where the cluster is
+// kept. On packages with 17B stripped it is the upstream stub (returns false).
+pub export fn checkRegisterNoFP(reg: *const chi2.real_t) callconv(.c) bool {
+    if (comptime !strip_17b) return chi2.checkRegisterNoFP(reg);
+    return false;
 }
