@@ -35,6 +35,11 @@ pub const RuntimeObjectOptions = struct {
     // out on firmware (DMCP_BUILD), so default off there to match and save flash;
     // host/sim keep them. Default true mirrors a normal host build.
     extra_info_on_calc_error: bool = true,
+    // Firmware (DMCP_BUILD) vs host: selects backToSystem error tails, drops the
+    // PC-only allocation tracking, and (with old_hw) the static-array layout of
+    // freeMemoryRegions. Defaults match a host build.
+    dmcp_build: bool = false,
+    old_hw: bool = false,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -75,6 +80,8 @@ fn addRuntimeObject(
     build_options.addOption(bool, "strip_17b", options.strip_17b);
     build_options.addOption(bool, "strip_17c", options.strip_17c);
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
+    build_options.addOption(bool, "dmcp_build", options.dmcp_build);
+    build_options.addOption(bool, "old_hw", options.old_hw);
     root_module.addOptions("frontier_build_options", build_options);
 
     return b.addObject(.{

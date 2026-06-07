@@ -122,6 +122,9 @@ const firmware_common_link_flags: []const []const u8 = &.{
 // (e.g. DMCP5) keeps every distribution.
 fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: ?u8) frontier.RuntimeObjectOptions {
     var opts = base;
+    // The DMCP (DM42) family is OLD_HW, where freeMemoryRegions is a static
+    // array rather than a pointer. DMCP5 (NEW_HW) keeps the pointer layout.
+    opts.old_hw = true;
     const pkg = dmcp_package orelse return opts;
     opts.strip_17b = (pkg == 2 or pkg == 4);
     opts.strip_17c = (pkg == 2 or pkg == 3 or pkg == 4);
@@ -229,6 +232,10 @@ pub fn registerSteps(
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful and reclaim flash.
         .extra_info_on_calc_error = false,
+        // Firmware build: use backToSystem tails and drop the PC allocation
+        // tracking. old_hw (static freeMemoryRegions array) is set per board by
+        // frontierDistributionStrip for DMCP; DMCP5 keeps the default (pointer).
+        .dmcp_build = true,
     };
     const firmware_solve_options: solve.RuntimeObjectOptions = .{
         .strip = true,
