@@ -208,6 +208,9 @@ pub inline fn realIsZero(value: *const real_t) bool {
 pub inline fn realIsInfinite(value: *const real_t) bool {
     return (value.bits & DECINF) != 0;
 }
+pub inline fn realIsPositive(value: *const real_t) bool {
+    return (value.bits & DECNEG) == 0; // upstream realIsPositive: sign bit clear
+}
 pub inline fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;
 }

@@ -29,7 +29,6 @@ zig_bridge/frontier/jm_legacy.c
 zig_bridge/frontier/lbl_gto_xeq_legacy.c
 zig_bridge/frontier/manage_legacy.c
 zig_bridge/frontier/matrix_editor_legacy.c
-zig_bridge/frontier/neg_binom_legacy.c
 zig_bridge/frontier/next_step_legacy.c
 zig_bridge/frontier/normal_legacy.c
 zig_bridge/frontier/plotstat_legacy.c
