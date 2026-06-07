@@ -42,6 +42,7 @@ zig_src/frontier/frontier_real_type_owned.zig
 zig_src/frontier/frontier_free_list_owned.zig
 zig_src/frontier/frontier_conversion_units_owned.zig
 zig_src/frontier/frontier_fonts_owned.zig
+zig_src/frontier/frontier_sort_owned.zig
 zig_src/frontier/frontier_clear_all_owned.zig
 zig_src/frontier/frontier_display_format_owned.zig
 zig_src/frontier/frontier_frontend_settings_owned.zig
