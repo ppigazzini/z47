@@ -413,6 +413,16 @@ pub fn const8() *const real_t {
     return &const_8_value;
 }
 
+var const_7_value: real_t = undefined;
+var const_7_ready = false;
+pub fn const7() *const real_t {
+    if (!const_7_ready) {
+        _ = decNumberFromUInt32(&const_7_value, 7);
+        const_7_ready = true;
+    }
+    return &const_7_value;
+}
+
 // const_eE (Euler's e) has no c47 wrapper accessor; materialise it once as
 // exp(1) at 39-digit precision. It is only used to pick an initial estimate for
 // the chi-squared quantile refinement, so last-digit rounding is irrelevant.
