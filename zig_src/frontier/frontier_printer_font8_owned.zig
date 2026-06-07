@@ -5,11 +5,17 @@
 // exported with C linkage, force-included by frontier.zig, and generated
 // byte-for-byte from the upstream table.
 
+const builtin = @import("builtin");
 const build_options = @import("frontier_build_options");
 
-// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, default rodata
-// on host and DMCP5.
-const pf8_section = if (build_options.dmcp_build and build_options.old_hw) ".qspi" else ".rodata";
+// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, platform read-only
+// data section otherwise (mach-o needs SEG,sect form; ELF uses .rodata).
+const pf8_section = if (build_options.dmcp_build and build_options.old_hw)
+    ".qspi"
+else if (builtin.target.os.tag == .macos)
+    "__TEXT,__const"
+else
+    ".rodata";
 
 const glyphPrinter_t = extern struct {
     charCode: u16,

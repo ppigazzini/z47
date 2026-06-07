@@ -6,11 +6,18 @@
 // force-included by frontier.zig. findGlyph is exercised pervasively by the
 // testSuite via character display.
 
+const builtin = @import("builtin");
 const build_options = @import("frontier_build_options");
 
 // Upstream marks hexaFont TO_QSPI: the .qspi section only on old_hw DMCP
-// (DMCP_BUILD + TWO_FILE_PGM); host and DMCP5 keep default rodata placement.
-const hexa_font_section = if (build_options.dmcp_build and build_options.old_hw) ".qspi" else ".rodata";
+// (DMCP_BUILD + TWO_FILE_PGM); host and DMCP5 use the platform's read-only data
+// section (mach-o needs SEG,sect form; ELF uses .rodata).
+const hexa_font_section = if (build_options.dmcp_build and build_options.old_hw)
+    ".qspi"
+else if (builtin.target.os.tag == .macos)
+    "__TEXT,__const"
+else
+    ".rodata";
 
 const glyph_t = extern struct {
     charCode: u16,
