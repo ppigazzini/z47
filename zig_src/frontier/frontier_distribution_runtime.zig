@@ -83,6 +83,7 @@ extern fn z47_math_wrappers_const_1() *const real_t;
 extern fn z47_math_wrappers_const_1on2() *const real_t;
 extern fn z47_math_wrappers_const_pi() *const real_t;
 extern fn z47_math_wrappers_const_2() *const real_t;
+extern fn z47_math_wrappers_const_ln2() *const real_t;
 
 extern fn decNumberMultiply(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberDivide(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
@@ -91,6 +92,7 @@ extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const rea
 extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopy(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
+extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
 extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopyAbs(result: *real_t, rhs: *const real_t) *real_t;
 extern fn decNumberFMA(result: *real_t, factor1: *const real_t, factor2: *const real_t, term: *const real_t, real_context: *realContext_t) *real_t;
@@ -174,6 +176,9 @@ pub inline fn realExponential(x: *const real_t, res: *real_t, real_context: *rea
 }
 pub inline fn realSquareRoot(operand: *const real_t, res: *real_t, real_context: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, real_context);
+}
+pub inline fn int32ToReal(source: i32, destination: *real_t) void {
+    _ = decNumberFromInt32(destination, source);
 }
 pub inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopyAbs(destination, source);
@@ -305,6 +310,44 @@ pub fn const1e_37() *const real_t {
         const_1e_37_ready = true;
     }
     return &const_1e_37_value;
+}
+
+pub fn constLn2() *const real_t {
+    return z47_math_wrappers_const_ln2();
+}
+
+var const_1on4_value: real_t = undefined;
+var const_1on4_ready = false;
+pub fn const1on4() *const real_t {
+    if (!const_1on4_ready) {
+        _ = decNumberFromUInt32(&const_1on4_value, 25);
+        const_1on4_value.exponent = -2; // 0.25
+        const_1on4_ready = true;
+    }
+    return &const_1on4_value;
+}
+
+var const_8_value: real_t = undefined;
+var const_8_ready = false;
+pub fn const8() *const real_t {
+    if (!const_8_ready) {
+        _ = decNumberFromUInt32(&const_8_value, 8);
+        const_8_ready = true;
+    }
+    return &const_8_value;
+}
+
+// const_eE (Euler's e) has no c47 wrapper accessor; materialise it once as
+// exp(1) at 39-digit precision. It is only used to pick an initial estimate for
+// the chi-squared quantile refinement, so last-digit rounding is irrelevant.
+var const_eE_value: real_t = undefined;
+var const_eE_ready = false;
+pub fn constEE() *const real_t {
+    if (!const_eE_ready) {
+        realExp(z47_math_wrappers_const_1(), &const_eE_value, &ctxtReal39);
+        const_eE_ready = true;
+    }
+    return &const_eE_value;
 }
 
 // Shared NaN-on-FLAG_SPCRES error tail used by every checkParam* helper.
