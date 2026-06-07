@@ -22,6 +22,7 @@ const uniform = @import("frontier_uniform_owned.zig");
 const gev = @import("frontier_gev_owned.zig");
 const geometric = @import("frontier_geometric_owned.zig");
 const poisson = @import("frontier_poisson_owned.zig");
+const binomial = @import("frontier_binomial_owned.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
@@ -1116,4 +1117,31 @@ pub export fn WP34S_Pdf_Poisson(x: *const poisson.real_t, lambda: *const poisson
 
 pub export fn WP34S_normal_moment_approx(prob: *const poisson.real_t, variance: *const poisson.real_t, mean: *const poisson.real_t, res: *poisson.real_t, ctx: *poisson.realContext_t) callconv(.c) void {
     if (comptime !strip_17) poisson.wp34sNormalMomentApprox(prob, variance, mean, res, ctx);
+}
+
+pub export fn fnBinomialP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) binomial.binomialP(unused_but_mandatory_parameter);
+}
+
+pub export fn fnBinomialL(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) binomial.binomialL(unused_but_mandatory_parameter);
+}
+
+pub export fn fnBinomialR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) binomial.binomialR(unused_but_mandatory_parameter);
+}
+
+pub export fn fnBinomialI(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime !strip_17) binomial.binomialI(unused_but_mandatory_parameter);
+}
+
+// Binomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17 is
+// kept: the geometric dispatcher / f-distribution Newton solver (Cdf2) and the f
+// distribution (Pdf). Stubbed with the cluster on DM42.
+pub export fn WP34S_Cdf_Binomial2(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) binomial.wp34sCdfBinomial2(x, p0, n, res, ctx);
+}
+
+pub export fn WP34S_Pdf_Binomial(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) callconv(.c) void {
+    if (comptime !strip_17) binomial.wp34sPdfBinomial(x, p0, n, res, ctx);
 }
