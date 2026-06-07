@@ -48,15 +48,15 @@ extern var ctxtReal39: realContext_t;
 // `constants` is an extern byte array; @extern yields a pointer to its base.
 const constants = @extern([*]const u8, .{ .name = "constants" });
 
-extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 
 extern fn getRegisterAsReal(reg: i16, value: *real_t) bool;
 extern fn saveLastX() bool;
 extern fn getSystemFlag(flag: i32) bool;
-extern fn convertRealToResultRegister(src: *const real_t, dest: i16, angle: c_int) void;
+extern fn convertRealToResultRegister(src: *align(1) const real_t, dest: i16, angle: c_int) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_line: i16, err_register_line: i16) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn adjustResult(res: i16, drop_y: bool, set_cpx: bool, op1: i16, op2: i16, op3: i16) void;
@@ -70,8 +70,11 @@ extern fn fnFrom_ms(p: u16) void;
 extern fn WP34S_Log10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 
-inline fn cst(offset: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + offset));
+// `constants` is a byte array (alignment 1); the C macros cast (real_t *) and
+// access it unaligned, which arm64/x86/Cortex-M tolerate. Return an align(1)
+// pointer so we match that without asserting 4-byte alignment.
+inline fn cst(offset: u32) *align(1) const real_t {
+    return @ptrCast(constants + offset);
 }
 inline fn realIsZero(r: *const real_t) bool {
     return r.digits == 1 and r.lsu[0] == 0 and (r.bits & 0x70) == 0;
@@ -79,16 +82,16 @@ inline fn realIsZero(r: *const real_t) bool {
 inline fn realIsNegative(r: *const real_t) bool {
     return (r.bits & 0x80) != 0;
 }
-inline fn rMul(a: *const real_t, b: *const real_t, res: *real_t) void {
+inline fn rMul(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
     _ = decNumberMultiply(res, a, b, &ctxtReal39);
 }
-inline fn rDiv(a: *const real_t, b: *const real_t, res: *real_t) void {
+inline fn rDiv(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
     _ = decNumberDivide(res, a, b, &ctxtReal39);
 }
-inline fn rAdd(a: *const real_t, b: *const real_t, res: *real_t) void {
+inline fn rAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
     _ = decNumberAdd(res, a, b, &ctxtReal39);
 }
-inline fn rSub(a: *const real_t, b: *const real_t, res: *real_t) void {
+inline fn rSub(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t) void {
     _ = decNumberSubtract(res, a, b, &ctxtReal39);
 }
 inline fn getRegisterAngularMode(reg: i16) c_int {
@@ -280,7 +283,7 @@ const cvtTempOffsets = [12][4]u32{
     .{ OFF_const_273p15, OFF_const_1, OFF_const_9on5, OFF_const_32 }, // K->F
 };
 
-fn unitConversion(coefficient: *const real_t, multiply_divide: u16, invert: bool) void {
+fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, invert: bool) void {
     var re_x: real_t = undefined;
 
     if (!getRegisterAsReal(REGISTER_X, &re_x)) return;
