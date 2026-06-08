@@ -14,7 +14,6 @@ zig_bridge/frontier/curve_fitting_legacy.c
 zig_bridge/frontier/debug_legacy.c
 zig_bridge/frontier/decode_legacy.c
 zig_bridge/frontier/display_legacy.c
-zig_bridge/frontier/error_legacy.c
 zig_bridge/frontier/flag_browser_legacy.c
 zig_bridge/frontier/font_browser_legacy.c
 zig_bridge/frontier/fractions_legacy.c
