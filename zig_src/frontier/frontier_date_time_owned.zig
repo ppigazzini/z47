@@ -23,6 +23,16 @@
 const builtin = @import("builtin");
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
+
+// Cold date/time code (interactive, infrequent) runs from executable QSPI on
+// the flash-limited old_hw DM42 (XIP), keeping pkg1 main FLASH free for
+// always-on owners. Host/dmcp5/macos use the normal section (no-op there).
+const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
+    ".qspi"
+else if (builtin.target.os.tag == .macos)
+    "__TEXT,__text"
+else
+    ".text";
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 
@@ -428,7 +438,7 @@ inline fn SET_TI_TRUE_FALSE(condition: bool) void {
 // ===========================================================================
 // Implementation
 // ===========================================================================
-pub export fn fnSetDateFormat(dateFormat: u16) callconv(.c) void {
+pub export fn fnSetDateFormat(dateFormat: u16) linksection(code_section) callconv(.c) void {
     switch (dateFormat) {
         ITM_DMY => {
             clearSystemFlag(@bitCast(FLAG_MDY));
@@ -449,19 +459,19 @@ pub export fn fnSetDateFormat(dateFormat: u16) callconv(.c) void {
     }
 }
 
-pub export fn internalDateToJulianDay(source: *const real34_t, destination: *real34_t) callconv(.c) void {
+pub export fn internalDateToJulianDay(source: *const real34_t, destination: *real34_t) linksection(code_section) callconv(.c) void {
     real34Subtract(source, const34_43200, destination);
     real34Divide(destination, const34_86400, destination);
     real34ToIntegralValue(destination, destination, DEC_ROUND_FLOOR);
 }
 
-pub export fn julianDayToInternalDate(source: *const real34_t, destination: *real34_t) callconv(.c) void {
+pub export fn julianDayToInternalDate(source: *const real34_t, destination: *real34_t) linksection(code_section) callconv(.c) void {
     real34ToIntegralValue(source, destination, DEC_ROUND_FLOOR);
     real34Multiply(destination, const34_86400, destination);
     real34Add(destination, const34_43200, destination);
 }
 
-pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) callconv(.c) bool {
+pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksection(code_section) callconv(.c) bool {
     switch (getRegisterDataType(regist)) {
         dtDate => {
             internalDateToJulianDay(reg34(regist), jd);
@@ -490,7 +500,7 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) callconv(
     }
 }
 
-pub export fn isLeapYear(year: *const real34_t) callconv(.c) bool {
+pub export fn isLeapYear(year: *const real34_t) linksection(code_section) callconv(.c) bool {
     var val: real34_t = undefined;
     var val2: real34_t = undefined;
     var y400: i32 = undefined; // year mod 400
@@ -515,7 +525,7 @@ pub export fn isLeapYear(year: *const real34_t) callconv(.c) bool {
     return (@rem(y400, 4) == 0);
 }
 
-pub export fn isValidDay(year: *const real34_t, month: *const real34_t, day: *const real34_t) callconv(.c) bool {
+pub export fn isValidDay(year: *const real34_t, month: *const real34_t, day: *const real34_t) linksection(code_section) callconv(.c) bool {
     var val: real34_t = undefined;
 
     // Year (this rejects year -4713 and earlier)
@@ -596,24 +606,24 @@ pub export fn isValidDay(year: *const real34_t, month: *const real34_t, day: *co
     return true;
 }
 
-fn divInt(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) void {
+fn divInt(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) linksection(code_section) void {
     var tmp: real34_t = undefined;
     real34Divide(p, q, &tmp);
     real34ToIntegralValue(&tmp, r, DEC_ROUND_DOWN);
 }
-fn divInt2(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) void {
+fn divInt2(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) linksection(code_section) void {
     var tmp: real34_t = undefined;
     real34Divide(p, q, &tmp);
     real34ToIntegralValue(&tmp, r, DEC_ROUND_FLOOR);
 }
-fn modInt(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) void {
+fn modInt(p: *align(1) const real34_t, q: *align(1) const real34_t, r: *real34_t) linksection(code_section) void {
     var tmp: real34_t = undefined;
     divInt2(p, q, &tmp);
     real34Multiply(&tmp, q, &tmp);
     real34Subtract(p, &tmp, r);
 }
 
-pub export fn composeJulianDay(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) callconv(.c) void {
+pub export fn composeJulianDay(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) linksection(code_section) callconv(.c) void {
     var fg: real34_t = undefined;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -630,7 +640,7 @@ pub export fn composeJulianDay(year: *const real34_t, month: *const real34_t, da
 }
 
 // Gregorian
-pub export fn composeJulianDay_g(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) callconv(.c) void {
+pub export fn composeJulianDay_g(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) linksection(code_section) callconv(.c) void {
     var m_14_12: real34_t = undefined; // round_down((month - 14) / 12)
     var a: real34_t = undefined;
 
@@ -662,7 +672,7 @@ pub export fn composeJulianDay_g(year: *const real34_t, month: *const real34_t, 
 }
 
 // Julian
-pub export fn composeJulianDay_j(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) callconv(.c) void {
+pub export fn composeJulianDay_j(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) linksection(code_section) callconv(.c) void {
     var a: real34_t = undefined;
 
     real34Multiply(year, const34_367, jd);
@@ -683,7 +693,7 @@ pub export fn composeJulianDay_j(year: *const real34_t, month: *const real34_t, 
     real34Add(jd, const34_1729777, jd);
 }
 
-pub export fn decomposeJulianDay(jd: *const real34_t, year: *real34_t, month: *real34_t, day: *real34_t) callconv(.c) void {
+pub export fn decomposeJulianDay(jd: *const real34_t, year: *real34_t, month: *real34_t, day: *real34_t) linksection(code_section) callconv(.c) void {
     var e: real34_t = undefined;
     var h: real34_t = undefined;
     var tmp1: real34_t = undefined;
@@ -725,14 +735,14 @@ pub export fn decomposeJulianDay(jd: *const real34_t, year: *real34_t, month: *r
     real34Add(year, &tmp1, year);
 }
 
-pub export fn julianDayToDayOfWeek(jd: *real34_t) callconv(.c) u32 {
+pub export fn julianDayToDayOfWeek(jd: *real34_t) linksection(code_section) callconv(.c) u32 {
     var dow: real34_t = undefined;
     modInt(jd, const34_7, &dow);
     real34Add(&dow, const34_1, &dow);
     return real34ToUInt32(&dow);
 }
 
-pub export fn getJulianDayOfWeek(regist: calcRegister_t) callconv(.c) u32 {
+pub export fn getJulianDayOfWeek(regist: calcRegister_t) linksection(code_section) callconv(.c) u32 {
     var date34: real34_t = undefined;
     if (checkDateArgument(regist, &date34)) {
         return julianDayToDayOfWeek(&date34);
@@ -741,7 +751,7 @@ pub export fn getJulianDayOfWeek(regist: calcRegister_t) callconv(.c) u32 {
     }
 }
 
-pub export fn checkDateRange(date34: *const real34_t) callconv(.c) void {
+pub export fn checkDateRange(date34: *const real34_t) linksection(code_section) callconv(.c) void {
     if (real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function checkDateRange:", "value of date type is too large");
@@ -749,7 +759,7 @@ pub export fn checkDateRange(date34: *const real34_t) callconv(.c) void {
     }
 }
 
-pub export fn hmmssToSeconds(src: *const real34_t, dest: *real34_t) callconv(.c) void {
+pub export fn hmmssToSeconds(src: *const real34_t, dest: *real34_t) linksection(code_section) callconv(.c) void {
     var time34: real34_t = undefined;
     var real34: real34_t = undefined;
     var value34: real34_t = undefined;
@@ -780,7 +790,7 @@ pub export fn hmmssToSeconds(src: *const real34_t, dest: *real34_t) callconv(.c)
     }
 }
 
-pub export fn hmmssInRegisterToSeconds(regist: calcRegister_t) callconv(.c) void {
+pub export fn hmmssInRegisterToSeconds(regist: calcRegister_t) linksection(code_section) callconv(.c) void {
     var real34: real34_t = undefined;
 
     real34Copy(reg34(regist), &real34);
@@ -789,7 +799,7 @@ pub export fn hmmssInRegisterToSeconds(regist: calcRegister_t) callconv(.c) void
     checkTimeRange(reg34(regist));
 }
 
-pub export fn checkTimeRange(time34: *const real34_t) callconv(.c) void {
+pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) callconv(.c) void {
     var t: real34_t = undefined;
 
     real34CopyAbs(time34, &t);
@@ -800,7 +810,7 @@ pub export fn checkTimeRange(time34: *const real34_t) callconv(.c) void {
     }
 }
 
-pub export fn getWeekOfYear(jd: *real34_t) callconv(.c) u32 {
+pub export fn getWeekOfYear(jd: *real34_t) linksection(code_section) callconv(.c) u32 {
     var dsow: real34_t = undefined;
     var sow: real34_t = undefined;
     var rdow: real34_t = undefined;
@@ -833,7 +843,7 @@ pub export fn getWeekOfYear(jd: *real34_t) callconv(.c) u32 {
     return real34ToUInt32(&woy);
 }
 
-pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var date: real34_t = undefined;
 
@@ -899,7 +909,7 @@ pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) callconv(.c) 
     }
 }
 
-pub export fn fnDateToJulian(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnDateToJulian(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var jd34: real34_t = undefined;
 
@@ -912,7 +922,7 @@ pub export fn fnDateToJulian(unusedButMandatoryParameter: u16) callconv(.c) void
     }
 }
 
-pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var jd34: real34_t = undefined;
 
@@ -937,7 +947,7 @@ pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) callconv(.c) 
     }
 }
 
-pub export fn fnIsLeap(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnIsLeap(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -950,7 +960,7 @@ pub export fn fnIsLeap(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnSetFirstGregorianDay(param: u16) callconv(.c) void {
+pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
     var jd34: real34_t = undefined;
     const fgd: u32 = firstGregorianDay;
 
@@ -986,7 +996,7 @@ pub export fn fnSetFirstGregorianDay(param: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnGetFirstGregorianDay(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnGetFirstGregorianDay(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var j: real34_t = undefined;
 
@@ -996,7 +1006,7 @@ pub export fn fnGetFirstGregorianDay(unusedButMandatoryParameter: u16) callconv(
     julianDayToInternalDate(&j, reg34(REGISTER_X));
 }
 
-pub export fn fnYYDflt(tmp: u16) callconv(.c) void {
+pub export fn fnYYDflt(tmp: u16) linksection(code_section) callconv(.c) void {
     if (tmp == YY_TRACKING) {
         lastCenturyHighUsed = YY_MASK_TRACKING; //0x4000;
     } else if (tmp == YY_OFF) {
@@ -1008,7 +1018,7 @@ pub export fn fnYYDflt(tmp: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnXToDate(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnXToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (!saveLastX()) {
         return;
@@ -1041,7 +1051,7 @@ pub export fn fnXToDate(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnYear(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnYear(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1058,7 +1068,7 @@ pub export fn fnYear(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnMonth(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnMonth(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1075,7 +1085,7 @@ pub export fn fnMonth(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnDay(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnDay(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1092,7 +1102,7 @@ pub export fn fnDay(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnWday(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnWday(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const dayOfWeek: u32 = getJulianDayOfWeek(REGISTER_X);
     var result: mpz_struct = undefined;
@@ -1110,7 +1120,7 @@ pub export fn fnWday(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnDateTo(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnDateTo(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1132,7 +1142,7 @@ pub export fn fnDateTo(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnToDate(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1210,7 +1220,7 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnToHr(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnToHr(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (!saveLastX()) {
         return;
@@ -1228,7 +1238,7 @@ pub export fn fnToHr(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (!saveLastX()) {
         return;
@@ -1264,7 +1274,7 @@ pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     switch (calcMode) { //JM vv
         CM_NIM => {
@@ -1306,7 +1316,7 @@ pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnDate(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
@@ -1337,7 +1347,7 @@ pub export fn fnDate(unusedButMandatoryParameter: u16) callconv(.c) void {
     temporaryInformation = TI_DAY_OF_WEEK;
 }
 
-pub export fn fnTime(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var time34: real34_t = undefined;
 
@@ -1359,7 +1369,7 @@ pub export fn fnTime(unusedButMandatoryParameter: u16) callconv(.c) void {
     real34Copy(&time34, reg34(REGISTER_X));
 }
 
-pub export fn fnSetDate(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnSetDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime dmcp_build) {
         cancelFilename = true;
@@ -1381,7 +1391,7 @@ pub export fn fnSetDate(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnSetTime(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime dmcp_build) {
         cancelFilename = true;
@@ -1434,7 +1444,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnWeekOfYear(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnWeekOfYear(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var jd34: real34_t = undefined;
 
@@ -1453,7 +1463,7 @@ pub export fn fnWeekOfYear(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnSetWeekOfYearRule(param: u16) callconv(.c) void {
+pub export fn fnSetWeekOfYearRule(param: u16) linksection(code_section) callconv(.c) void {
     if (param != NOPARAM) {
         switch (param) {
             ITM_WOY_ISO => {
@@ -1474,7 +1484,7 @@ pub export fn fnSetWeekOfYearRule(param: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnGetWeekOfYearRule(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnGetWeekOfYearRule(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var fdow: real34_t = undefined;
     var fwoyd: real34_t = undefined;
@@ -1488,7 +1498,7 @@ pub export fn fnGetWeekOfYearRule(unusedButMandatoryParameter: u16) callconv(.c)
     temporaryInformation = TI_WOY_RULE;
 }
 
-pub export fn getDateString(dateString: [*]u8) callconv(.c) void {
+pub export fn getDateString(dateString: [*]u8) linksection(code_section) callconv(.c) void {
     if (comptime dmcp_build) {
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
@@ -1544,7 +1554,7 @@ pub export fn getDateString(dateString: [*]u8) callconv(.c) void {
     }
 }
 
-pub export fn getTimeString(timeString: [*]u8) callconv(.c) void {
+pub export fn getTimeString(timeString: [*]u8) linksection(code_section) callconv(.c) void {
     if (comptime dmcp_build) {
         var timeInfo: tm_t = undefined;
         var dateInfo: dt_t = undefined;
@@ -1578,7 +1588,7 @@ pub export fn getTimeString(timeString: [*]u8) callconv(.c) void {
     }
 }
 
-pub export fn getWeekOfYearString(weekOfYearString: [*]u8) callconv(.c) void {
+pub export fn getWeekOfYearString(weekOfYearString: [*]u8) linksection(code_section) callconv(.c) void {
     var jd: real34_t = undefined;
     var y: real34_t = undefined;
     var m: real34_t = undefined;
