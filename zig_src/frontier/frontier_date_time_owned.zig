@@ -50,8 +50,9 @@ const realContext_t = extern struct {
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 
-// GMP mpz_struct. mp_limb_t is c_ulong (32-bit on arm32 firmware, 64-bit on host).
-const mp_limb_t = c_ulong;
+// GMP mpz_struct. The limb width == pointer width on every z47 target (64-bit on
+// Linux and Win64, 32-bit on ARM32 firmware) — NOT c_ulong, which is 32-bit on Win64.
+const mp_limb_t = usize;
 const mpz_struct = extern struct {
     _mp_alloc: c_int,
     _mp_size: c_int,
