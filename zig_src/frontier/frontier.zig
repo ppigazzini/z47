@@ -56,6 +56,7 @@ comptime {
     _ = @import("frontier_integers_owned.zig");
     _ = @import("frontier_sort_owned.zig");
     _ = @import("frontier_error_owned.zig");
+    _ = @import("frontier_lbl_gto_xeq_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
