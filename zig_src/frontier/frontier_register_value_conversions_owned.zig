@@ -51,8 +51,11 @@ const complex34Matrix_t = extern struct { header: matrixHeader_t, matrixElements
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 
-// GMP mpz_struct. mp_limb_t is c_ulong (32-bit on arm32 firmware, 64-bit on host).
-const mp_limb_t = c_ulong;
+// GMP mpz_struct. The limb width == pointer width on every target z47 builds
+// (64-bit on Linux and Win64, 32-bit on ARM32 firmware). NOT c_ulong: Win64 is
+// LLP64, where `unsigned long` is 32-bit yet GMP limbs are 64-bit — that mismatch
+// mis-sized _mp_d and broke the @ptrCast to [*]u64 below on the Windows CI lane.
+const mp_limb_t = usize;
 const mpz_struct = extern struct {
     _mp_alloc: c_int,
     _mp_size: c_int,
