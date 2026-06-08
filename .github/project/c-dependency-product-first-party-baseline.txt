@@ -11,7 +11,6 @@ zig_bridge/frontier/char_string_legacy.c
 zig_bridge/frontier/clcvar_legacy.c
 zig_bridge/frontier/config_legacy.c
 zig_bridge/frontier/curve_fitting_legacy.c
-zig_bridge/frontier/date_time_legacy.c
 zig_bridge/frontier/debug_legacy.c
 zig_bridge/frontier/decode_legacy.c
 zig_bridge/frontier/display_legacy.c

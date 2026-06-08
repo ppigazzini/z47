@@ -52,6 +52,7 @@ comptime {
     _ = @import("frontier_conversion_units_owned.zig");
     _ = @import("frontier_conversion_angles_owned.zig");
     _ = @import("frontier_register_value_conversions_owned.zig");
+    _ = @import("frontier_date_time_owned.zig");
     _ = @import("frontier_sort_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
