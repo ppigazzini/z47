@@ -45,6 +45,7 @@ zig_src/frontier/frontier_conversion_angles_owned.zig
 zig_src/frontier/frontier_register_value_conversions_owned.zig
 zig_src/frontier/frontier_integers_owned.zig
 zig_src/frontier/frontier_date_time_owned.zig
+zig_src/frontier/frontier_lbl_gto_xeq_owned.zig
 zig_src/frontier/frontier_error_owned.zig
 zig_src/frontier/frontier_fonts_owned.zig
 zig_src/frontier/frontier_sort_owned.zig
