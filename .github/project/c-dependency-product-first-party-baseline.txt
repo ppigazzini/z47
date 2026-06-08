@@ -21,7 +21,6 @@ zig_bridge/frontier/fractions_legacy.c
 zig_bridge/frontier/graph_text_legacy.c
 zig_bridge/frontier/graphs_legacy.c
 zig_bridge/frontier/input_legacy.c
-zig_bridge/frontier/integers_legacy.c
 zig_bridge/frontier/items_legacy.c
 zig_bridge/frontier/jm_legacy.c
 zig_bridge/frontier/lbl_gto_xeq_legacy.c
