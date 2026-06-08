@@ -35,7 +35,6 @@ zig_bridge/frontier/programmable_menu_legacy.c
 zig_bridge/frontier/radio_button_catalog_legacy.c
 zig_bridge/frontier/recall_legacy.c
 zig_bridge/frontier/register_browser_legacy.c
-zig_bridge/frontier/register_value_conversions_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
 zig_bridge/frontier/stats_legacy.c
