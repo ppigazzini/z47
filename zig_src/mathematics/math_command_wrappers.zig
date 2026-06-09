@@ -55,6 +55,12 @@ const power_command_owned = @import("math_transform_power_command_owned.zig");
 const root_command_owned = @import("math_transform_root_command_owned.zig");
 const unit_vector_command_owned = @import("math_transform_unit_vector_command_owned.zig");
 
+comptime {
+    // Force-include the prime owner so its pub export fns (fnIsPrime,
+    // fnNextPrime, fnPrimeFactors, fnEvPFacts) are linked.
+    _ = @import("math_prime_owned.zig");
+}
+
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 const no_register = @as(runtime.calcRegister_t, -1);
 
