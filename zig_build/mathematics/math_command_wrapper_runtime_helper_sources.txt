@@ -6,7 +6,6 @@ zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_agm.c
 zig_bridge/mathematics/math_wrappers_runtime_bessel.c
-zig_bridge/mathematics/math_wrappers_runtime_beta.c
 zig_bridge/mathematics/math_wrappers_runtime_cpyx.c
 zig_bridge/mathematics/math_wrappers_runtime_cxToRe.c
 zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c
