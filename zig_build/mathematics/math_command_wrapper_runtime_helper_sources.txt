@@ -9,7 +9,6 @@ zig_bridge/mathematics/math_wrappers_runtime_cxToRe.c
 zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_elliptic.c
 zig_bridge/mathematics/math_wrappers_runtime_gamma.c
-zig_bridge/mathematics/math_wrappers_runtime_gammaX.c
 zig_bridge/mathematics/math_wrappers_runtime_iteration.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
 zig_bridge/mathematics/math_wrappers_runtime_mean.c
