@@ -80,6 +80,7 @@ comptime {
         _ = @import("math_cxtore_owned.zig");
         _ = @import("math_gammaX_owned.zig");
         _ = @import("math_power_owned.zig");
+        _ = @import("math_xthroot_owned.zig");
     }
 }
 
