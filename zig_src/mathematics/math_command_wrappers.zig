@@ -56,17 +56,25 @@ const root_command_owned = @import("math_transform_root_command_owned.zig");
 const unit_vector_command_owned = @import("math_transform_unit_vector_command_owned.zig");
 
 comptime {
-    // Force-include the prime owner so its pub export fns (fnIsPrime,
-    // fnNextPrime, fnPrimeFactors, fnEvPFacts) are linked.
-    _ = @import("math_prime_owned.zig");
-    // Force-include the WP34S transcendental engine owner (port of wp34s.c) so
-    // its pub export fns (C47_WP34S_*, WP34S_*) are linked.
-    _ = @import("math_wp34s_owned.zig");
-    _ = @import("math_cpyx_owned.zig");
-    _ = @import("math_agm_owned.zig");
-    _ = @import("math_gd_owned.zig");
-    _ = @import("math_lnbeta_owned.zig");
-    _ = @import("math_beta_owned.zig");
+    // Force-include the ported mathematics owners so their pub export fns are
+    // linked into the product (fnIsPrime/fnNextPrime/fnPrimeFactors/fnEvPFacts,
+    // the WP34S C47_WP34S_*/WP34S_* engine, fnBeta/fnLnBeta/fnGd/fnInvGd/fnAgm/
+    // fnCyx/fnPyx). These are EXCLUDED from the math_command_wrappers parity
+    // harness (use_fake_wp34s_harness_surface): that harness links
+    // math_wrappers_fake_runtime.c, which both duplicates the WP34S_* surface
+    // (wp34s owner) and lacks the real_t/decNumber/longInteger symbols these
+    // owners call — so including them there breaks the link. Their parity is the
+    // testSuite (prime/beta/lnbeta/gd/agm/cyx/pyx + all trig/gamma), not this
+    // fake-runtime harness.
+    if (!runtime.harness_surface_is_fake) {
+        _ = @import("math_prime_owned.zig");
+        _ = @import("math_wp34s_owned.zig");
+        _ = @import("math_cpyx_owned.zig");
+        _ = @import("math_agm_owned.zig");
+        _ = @import("math_gd_owned.zig");
+        _ = @import("math_lnbeta_owned.zig");
+        _ = @import("math_beta_owned.zig");
+    }
 }
 
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
