@@ -24,4 +24,3 @@ zig_bridge/mathematics/math_wrappers_runtime_slvq.c
 zig_bridge/mathematics/math_wrappers_runtime_variance.c
 zig_bridge/mathematics/math_wrappers_runtime_xfn.c
 zig_bridge/mathematics/math_wrappers_runtime_xthRoot.c
-zig_bridge/mathematics/math_wrappers_runtime_zeta.c

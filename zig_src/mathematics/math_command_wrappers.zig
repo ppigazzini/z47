@@ -74,6 +74,7 @@ comptime {
         _ = @import("math_gd_owned.zig");
         _ = @import("math_lnbeta_owned.zig");
         _ = @import("math_beta_owned.zig");
+        _ = @import("math_zeta_owned.zig");
         _ = @import("math_retocx_owned.zig");
         _ = @import("math_cxtore_owned.zig");
         _ = @import("math_gammaX_owned.zig");
