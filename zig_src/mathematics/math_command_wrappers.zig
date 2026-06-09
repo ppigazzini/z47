@@ -62,6 +62,7 @@ comptime {
     // Force-include the WP34S transcendental engine owner (port of wp34s.c) so
     // its pub export fns (C47_WP34S_*, WP34S_*) are linked.
     _ = @import("math_wp34s_owned.zig");
+    _ = @import("math_gd_owned.zig");
     _ = @import("math_lnbeta_owned.zig");
     _ = @import("math_beta_owned.zig");
 }
