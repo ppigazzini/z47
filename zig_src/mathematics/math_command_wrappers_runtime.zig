@@ -7,6 +7,17 @@ pub const is_testsuite_build = @hasDecl(build_options, "is_testsuite_build") and
 // WP34S_Mod / WP34S_BigMod range reduction. Only the "dmcp" build sets it.
 pub const wp34s_mod_small_buffers = @hasDecl(build_options, "wp34s_mod_small_buffers") and build_options.wp34s_mod_small_buffers;
 
+// Heavy/cold math owners run from executable QSPI (XIP) on the flash-limited
+// DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS keep the
+// normal section (no-op there). Same mechanism as the dateTime owner.
+const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+pub const code_section = if (dm42_pkg_xip)
+    ".qspi"
+else if (@import("builtin").target.os.tag == .macos)
+    "__TEXT,__text"
+else
+    ".text";
+
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
 pub const rounding_t = c_int;
