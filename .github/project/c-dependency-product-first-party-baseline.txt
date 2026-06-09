@@ -56,7 +56,6 @@ zig_bridge/mathematics/math_wrappers_runtime_ortho_polynom.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigma.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
-zig_bridge/mathematics/math_wrappers_runtime_power.c
 zig_bridge/mathematics/math_wrappers_runtime_rdp.c
 zig_bridge/mathematics/math_wrappers_runtime_rsd.c
 zig_bridge/mathematics/math_wrappers_runtime_slvc.c

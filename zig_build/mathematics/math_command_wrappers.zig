@@ -73,6 +73,11 @@ fn addRuntimeObject(
     // only the DM42 firmware ("dmcp", not "dmcp5"/sim/testSuite) uses the small
     // fallback mod buffers / reduced mod precision.
     build_options.addOption(bool, "wp34s_mod_small_buffers", std.mem.eql(u8, name_prefix, "dmcp"));
+    // The flash-limited DM42 old_hw firmware ("dmcp", not "dmcp5"/sim/testSuite)
+    // runs the heavy/cold math owners (bessel, elliptic, opmod, power, xthRoot)
+    // from executable QSPI (XIP) to keep main FLASH free; same mechanism the
+    // dateTime owner and the distribution owners use.
+    build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{
