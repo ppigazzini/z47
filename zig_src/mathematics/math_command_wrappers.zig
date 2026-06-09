@@ -59,6 +59,9 @@ comptime {
     // Force-include the prime owner so its pub export fns (fnIsPrime,
     // fnNextPrime, fnPrimeFactors, fnEvPFacts) are linked.
     _ = @import("math_prime_owned.zig");
+    // Force-include the WP34S transcendental engine owner (port of wp34s.c) so
+    // its pub export fns (C47_WP34S_*, WP34S_*) are linked.
+    _ = @import("math_wp34s_owned.zig");
 }
 
 const PowRealFn = *const fn (x: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) callconv(.c) void;
