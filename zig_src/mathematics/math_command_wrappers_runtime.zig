@@ -2,6 +2,10 @@ const build_options = @import("math_command_wrappers_build_options");
 const use_fake_wp34s_harness_surface = @hasDecl(build_options, "use_fake_wp34s_harness_surface") and build_options.use_fake_wp34s_harness_surface;
 pub const harness_surface_is_fake = use_fake_wp34s_harness_surface;
 pub const is_testsuite_build = @hasDecl(build_options, "is_testsuite_build") and build_options.is_testsuite_build;
+// Mirrors "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" in wp34s.c:
+// the DM42 firmware uses smaller fallback buffers and reduced precision in the
+// WP34S_Mod / WP34S_BigMod range reduction. Only the "dmcp" build sets it.
+pub const wp34s_mod_small_buffers = @hasDecl(build_options, "wp34s_mod_small_buffers") and build_options.wp34s_mod_small_buffers;
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
