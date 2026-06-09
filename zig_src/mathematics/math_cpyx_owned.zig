@@ -74,7 +74,9 @@ inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     runtime.__gmpz_set_ui(destination, source);
 }
 inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
-    return @truncate(@as(usize, @bitCast(runtime.__gmpz_get_ui(op))));
+    // c_ulong is 32-bit on Win64 LLP64; truncate directly (a @bitCast to a
+    // fixed-width usize would size-mismatch there).
+    return @truncate(runtime.__gmpz_get_ui(op));
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, v: i32) i32 {
     return @"__gmpz_cmp_si"(op, v);

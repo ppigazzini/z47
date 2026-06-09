@@ -103,10 +103,13 @@ inline fn stringToLongInteger(source: [*:0]const u8, radix: i32, destination: *m
     return @"__gmpz_set_str"(destination, source, radix);
 }
 inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
-    return @truncate(@as(usize, @bitCast(@"__gmpz_get_ui"(op))));
+    // __gmpz_get_ui returns c_ulong (32-bit on Win64 LLP64, 64-bit elsewhere);
+    // truncate the low 32 bits directly. @bitCast to a fixed-width usize would
+    // size-mismatch against the 32-bit c_ulong on Win64.
+    return @truncate(@"__gmpz_get_ui"(op));
 }
 inline fn longIntegerToInt32(op: *const mpz_struct) i32 {
-    return @truncate(@as(isize, @bitCast(@"__gmpz_get_si"(op))));
+    return @truncate(@"__gmpz_get_si"(op));
 }
 inline fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
@@ -146,7 +149,7 @@ inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, resu
     @"__gmpz_mod"(result, op1, op2);
 }
 inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
-    return @truncate(@as(usize, @bitCast(@"__gmpz_fdiv_ui"(op, u))));
+    return @truncate(@"__gmpz_fdiv_ui"(op, u));
 }
 inline fn longIntegerSquareRoot(op: *const mpz_struct, result: *mpz_struct) void {
     @"__gmpz_sqrt"(result, op);
@@ -1282,7 +1285,7 @@ fn is_perfect_square_uint32(n: u32, sqrt_out: ?*u32) c_int {
 
 fn longIntegerIsPerfectSquareCheckAndDo(n: *const mpz_struct, r: *mpz_struct) c_int {
     if (mpz_fits_uint_p(n)) {
-        const small: u32 = @truncate(@as(usize, @bitCast(mpz_get_ui(n))));
+        const small: u32 = @truncate(mpz_get_ui(n));
         var sqrt_small: u32 = undefined;
         if (is_perfect_square_uint32(small, &sqrt_small) != 0) {
             uInt32ToLongInteger(sqrt_small, r);
