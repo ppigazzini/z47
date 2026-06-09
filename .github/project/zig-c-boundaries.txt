@@ -33,6 +33,7 @@ zig_src/mathematics/math_circular_trig_command_owned.zig
 zig_src/mathematics/math_special_function_fibonacci_owned.zig
 zig_src/mathematics/math_prime_owned.zig
 zig_src/mathematics/math_wp34s_owned.zig
+zig_src/mathematics/math_agm_owned.zig
 zig_src/mathematics/math_gd_owned.zig
 zig_src/mathematics/math_lnbeta_owned.zig
 zig_src/mathematics/math_beta_owned.zig
