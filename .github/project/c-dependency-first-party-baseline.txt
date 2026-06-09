@@ -49,7 +49,6 @@ zig_bridge/frontier/tam_legacy.c
 zig_bridge/frontier/textfiles_legacy.c
 zig_bridge/frontier/timer_legacy.c
 zig_bridge/frontier/xeqm_legacy.c
-zig_bridge/mathematics/math_wrappers_runtime_bessel.c
 zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_elliptic.c

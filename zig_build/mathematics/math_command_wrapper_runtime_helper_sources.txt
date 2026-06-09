@@ -4,7 +4,6 @@ zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
-zig_bridge/mathematics/math_wrappers_runtime_bessel.c
 zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_elliptic.c
 zig_bridge/mathematics/math_wrappers_runtime_iteration.c

@@ -43,6 +43,7 @@ zig_src/mathematics/math_zeta_owned.zig
 zig_src/mathematics/math_retocx_owned.zig
 zig_src/mathematics/math_cxtore_owned.zig
 zig_src/mathematics/math_gammaX_owned.zig
+zig_src/mathematics/math_bessel_owned.zig
 zig_src/mathematics/math_opmod_owned.zig
 zig_src/mathematics/math_xthroot_owned.zig
 zig_src/mathematics/math_power_owned.zig

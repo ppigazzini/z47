@@ -82,6 +82,7 @@ comptime {
         _ = @import("math_power_owned.zig");
         _ = @import("math_xthroot_owned.zig");
         _ = @import("math_opmod_owned.zig");
+        _ = @import("math_bessel_owned.zig");
     }
 }
 
