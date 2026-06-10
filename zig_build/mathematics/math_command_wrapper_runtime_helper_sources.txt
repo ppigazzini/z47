@@ -14,6 +14,5 @@ zig_bridge/mathematics/math_wrappers_runtime_percentSigma.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_rdp.c
 zig_bridge/mathematics/math_wrappers_runtime_rsd.c
-zig_bridge/mathematics/math_wrappers_runtime_slvc.c
 zig_bridge/mathematics/math_wrappers_runtime_slvq.c
 zig_bridge/mathematics/math_wrappers_runtime_variance.c

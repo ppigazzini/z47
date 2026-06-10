@@ -85,6 +85,7 @@ comptime {
         _ = @import("math_bessel_owned.zig");
         _ = @import("math_elliptic_owned.zig");
         _ = @import("math_xfn_owned.zig");
+        _ = @import("math_slvc_owned.zig");
     }
 }
 
