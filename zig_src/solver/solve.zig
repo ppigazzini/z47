@@ -6,6 +6,7 @@ comptime {
     _ = @import("isumprod_owned.zig");
     _ = @import("differentiate_owned.zig");
     _ = @import("solve_owned.zig");
+    _ = @import("integrate_owned.zig");
 }
 
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {
