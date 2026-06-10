@@ -5,4 +5,3 @@ zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
-zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
