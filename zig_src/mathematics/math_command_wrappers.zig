@@ -96,6 +96,7 @@ comptime {
         _ = @import("math_variance_owned.zig");
         _ = @import("math_deltaPercentXmean_owned.zig");
         _ = @import("math_iteration_owned.zig");
+        _ = @import("math_percentSigmaDeltaPercentXmean_owned.zig");
     }
 }
 
