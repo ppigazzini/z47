@@ -2,5 +2,4 @@ zig_bridge/solver/equation_legacy.c
 zig_bridge/solver/graph_legacy.c
 zig_bridge/solver/solve_legacy.c
 zig_bridge/solver/integrate_legacy.c
-zig_bridge/solver/isumprod_legacy.c
 zig_bridge/solver/differentiate_legacy.c
