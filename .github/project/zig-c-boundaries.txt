@@ -51,6 +51,7 @@ zig_src/mathematics/math_power_owned.zig
 zig_src/mathematics/math_transcendental_command_owned.zig
 zig_src/mathematics/math_xfn_owned.zig
 zig_src/mathematics/math_slvc_owned.zig
+zig_src/mathematics/math_slvq_owned.zig
 zig_src/frontier/frontier.zig
 zig_src/frontier/frontier_runtime.zig
 zig_src/state/register_descriptor_storage_owned.zig
