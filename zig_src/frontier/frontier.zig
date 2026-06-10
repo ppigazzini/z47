@@ -63,6 +63,7 @@ comptime {
     _ = @import("frontier_store_owned.zig");
     _ = @import("frontier_stats_owned.zig");
     _ = @import("frontier_clcvar_owned.zig");
+    _ = @import("frontier_next_step_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
