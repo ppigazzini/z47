@@ -89,6 +89,7 @@ comptime {
         _ = @import("math_slvq_owned.zig");
         _ = @import("math_rsd_owned.zig");
         _ = @import("math_rdp_owned.zig");
+        _ = @import("math_ortho_polynom_owned.zig");
     }
 }
 
