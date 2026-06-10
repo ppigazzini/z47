@@ -104,6 +104,7 @@ zig_src/solver/tvm_owned.zig
 zig_src/solver/sumprod_owned.zig
 zig_src/solver/isumprod_owned.zig
 zig_src/solver/differentiate_owned.zig
+zig_src/solver/solve_owned.zig
 zig_src/ui/tone_runtime.zig
 zig_src/state/calc_state_runtime.zig
 zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
