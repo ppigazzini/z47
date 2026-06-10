@@ -699,6 +699,22 @@ const real_t *z47_math_wrappers_const_2(void) {
 #endif
 }
 
+const real_t *z47_math_wrappers_const_3(void) {
+#ifdef Z47_MATH_WRAPPERS_C47_H
+  static bool initialized = false;
+  static real_t value;
+
+  if(!initialized) {
+    z47_math_wrappers_init_constant(&value, 0, 0, 3);
+    initialized = true;
+  }
+
+  return &value;
+#else
+  return const_3;
+#endif
+}
+
 const real_t *z47_math_wrappers_const_5(void) {
 #ifdef Z47_MATH_WRAPPERS_C47_H
   static bool initialized = false;
@@ -948,6 +964,10 @@ const real_t *z47_math_wrappers_const_3piOn4(void) {
 
 const real_t *z47_math_wrappers_const_piOn2(void) {
   return const39_piOn2;
+}
+
+const real_t *z47_math_wrappers_const_3piOn2(void) {
+  return const39_3piOn2;
 }
 
 #undef int32ToReal
