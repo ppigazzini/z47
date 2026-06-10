@@ -77,6 +77,12 @@ comptime {
         // gets from math_wrappers_legacy_link_stubs.c.
         _ = @import("math_comparison_reals_owned.zig");
         _ = @import("math_register_compare_owned.zig");
+        // The addition/subtraction cell owners export the dispatch matrices
+        // and every add*/sub* cell plus the z47_math_wrappers_legacy_fnAdd
+        // and ..._fnSubtract fallback commands; the parity harness keeps its
+        // link stubs and oracle copies instead.
+        _ = @import("math_addition_cells_owned.zig");
+        _ = @import("math_subtraction_cells_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

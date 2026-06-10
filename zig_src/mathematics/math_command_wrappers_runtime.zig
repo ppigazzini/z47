@@ -190,7 +190,7 @@ pub extern var shortIntegerSignBit: u64;
 pub extern var currentAngularMode: angularMode_t;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var pcg32_global: pcg32_random_t;
-pub extern var significantDigits: i32;
+pub extern var significantDigits: u8;
 pub extern var temporaryInformation: u8;
 pub extern var lastErrorCode: u8;
 pub extern var systemFlags0: u64;
@@ -880,6 +880,47 @@ pub extern fn z47_math_wrappers_report_ln_p1_cplx_zero_domain_error() void;
 pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
 pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
 pub extern fn z47_math_wrappers_do_int_random_i() void;
+
+// Extern surface for the Zig-owned addition/subtraction dispatch cells
+// (math_addition_cells_owned.zig / math_subtraction_cells_owned.zig). These
+// resolve against the C product surface still in the dispatch bridge or the
+// frontier/state owners; the cell owners are excluded from the fake-harness
+// parity lanes.
+pub extern fn decQuadSubtract(res: *real34_t, operand1: *const real34_t, operand2: *const real34_t, context: *realContext_t) *real34_t;
+
+pub inline fn real34SubtractMacro(operand1: *const real34_t, operand2: *const real34_t, res: *real34_t) void {
+    _ = decQuadSubtract(res, operand1, operand2, &ctxtReal34);
+}
+
+pub extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
+pub extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
+
+pub const font_t = opaque {};
+pub extern const standardFont: font_t;
+pub extern const numericFont: font_t;
+pub extern var tmpString: [*c]u8;
+pub extern var roundingMode: u8;
+pub extern const roundingModeTable: [7]rounding_t;
+pub extern fn fnSwapXY(unused_but_mandatory_parameter: u16) void;
+pub extern fn convertLongIntegerRegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) void;
+pub extern fn elementwiseRealRema(realf: VoidCallback) void;
+pub extern fn elementwiseCxmaReal(cplxf: VoidCallback) void;
+pub extern fn elementwiseRealCxma(cplxf: VoidCallback) void;
+pub extern fn addRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn subtractRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn addComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn subtractComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn stringGlyphLength(str: [*c]const u8) i32;
+pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+pub extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, display_string: [*c]u8, str_lg: i32, max_width: i16, max_exp: i16, allow_large_li: bool) void;
+pub extern fn timeToDisplayString(regist: calcRegister_t, display_string: [*c]u8, ignore_t_disp: bool) void;
+pub extern fn dateToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
+pub extern fn real34MatrixToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
+pub extern fn complex34MatrixToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
+pub extern fn shortIntegerToDisplayString(regist: calcRegister_t, display_string: [*c]u8, determine_font: bool, base_override: u8) void;
+pub extern fn fractionToDisplayString(regist: calcRegister_t, display_string: [*c]u8) void;
+pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
+pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool) void;
 
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
