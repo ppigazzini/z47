@@ -29,7 +29,6 @@ zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/print_legacy.c
 zig_bridge/frontier/programmable_menu_legacy.c
 zig_bridge/frontier/radio_button_catalog_legacy.c
-zig_bridge/frontier/recall_legacy.c
 zig_bridge/frontier/register_browser_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
