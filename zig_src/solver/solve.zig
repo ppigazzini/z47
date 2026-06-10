@@ -3,6 +3,7 @@ const runtime = @import("solve_runtime.zig");
 comptime {
     _ = @import("tvm_owned.zig");
     _ = @import("sumprod_owned.zig");
+    _ = @import("isumprod_owned.zig");
 }
 
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {
