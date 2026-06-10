@@ -100,6 +100,7 @@ zig_src/frontier/frontier_print_user_owned.zig
 zig_src/frontier/frontier_printer_control_owned.zig
 zig_src/frontier/frontier_program_clear_owned.zig
 zig_src/frontier/frontier_string_funcs_owned.zig
+zig_src/frontier/frontier_recall_owned.zig
 zig_src/solver/solve_runtime.zig
 zig_src/solver/tvm_owned.zig
 zig_src/solver/sumprod_owned.zig
