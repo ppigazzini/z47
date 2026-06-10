@@ -43,20 +43,31 @@ fn addRuntimeObject(
     name_prefix: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_src/solver/solve.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    const build_options = b.addOptions();
+    // The flash-limited DM42 old_hw firmware ("dmcp", not "dmcp5"/sim/testSuite)
+    // runs the heavy/cold solver owners (tvm, sumprod) from executable QSPI
+    // (XIP) to keep main FLASH free; same mechanism as the mathematics owners.
+    build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
+    // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
+    // it here so the Zig solver owners (tvm_owned.zig) take the testSuite code
+    // path (fnTvmVar's `testing` short-circuit).
+    build_options.addOption(bool, "is_testsuite_build", std.mem.eql(u8, name_prefix, "testSuite"));
+    module.addOptions("solve_build_options", build_options);
     return b.addObject(.{
         .name = b.fmt("{s}-solver-solve", .{name_prefix}),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/solver/solve.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
