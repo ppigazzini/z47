@@ -72,6 +72,11 @@ comptime {
         // (sqrtComplex, realRectangularToPolar, ...) that the parity harness
         // already gets from math_wrappers_fake_runtime.c.
         _ = @import("math_transform_complex_helpers_owned.zig");
+        // The compare/incDec cluster owners export the legacy fallback names
+        // (z47_math_wrappers_legacy_fnXLessThan, ...) that the parity harness
+        // gets from math_wrappers_legacy_link_stubs.c.
+        _ = @import("math_comparison_reals_owned.zig");
+        _ = @import("math_register_compare_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
