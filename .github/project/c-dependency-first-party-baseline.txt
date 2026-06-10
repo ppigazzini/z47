@@ -30,7 +30,6 @@ zig_bridge/frontier/items_legacy.c
 zig_bridge/frontier/jm_legacy.c
 zig_bridge/frontier/manage_legacy.c
 zig_bridge/frontier/matrix_editor_legacy.c
-zig_bridge/frontier/next_step_legacy.c
 zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/print_legacy.c
 zig_bridge/frontier/programmable_menu_legacy.c
