@@ -107,6 +107,7 @@ zig_src/frontier/frontier_stats_owned.zig
 zig_src/frontier/frontier_clcvar_owned.zig
 zig_src/frontier/frontier_next_step_owned.zig
 zig_src/frontier/frontier_decode_owned.zig
+zig_src/frontier/frontier_curve_fitting_owned.zig
 zig_src/solver/solve_runtime.zig
 zig_src/solver/tvm_owned.zig
 zig_src/solver/sumprod_owned.zig
