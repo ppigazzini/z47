@@ -7,7 +7,6 @@ zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_deltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_iteration.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
-zig_bridge/mathematics/math_wrappers_runtime_mean.c
 zig_bridge/mathematics/math_wrappers_runtime_median.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_variance.c
