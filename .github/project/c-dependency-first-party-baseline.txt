@@ -58,7 +58,6 @@ zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c
-zig_bridge/mathematics/math_wrappers_runtime_variance.c
 zig_bridge/solver/differentiate_legacy.c
 zig_bridge/solver/equation_legacy.c
 zig_bridge/solver/graph_legacy.c
