@@ -36,4 +36,3 @@ zig_bridge/frontier/textfiles_legacy.c
 zig_bridge/frontier/timer_legacy.c
 zig_bridge/frontier/tam_legacy.c
 zig_bridge/frontier/xeqm_legacy.c
-zig_bridge/frontier/fractions_legacy.c
