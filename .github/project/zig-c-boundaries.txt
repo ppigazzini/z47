@@ -54,6 +54,7 @@ zig_src/mathematics/math_slvc_owned.zig
 zig_src/mathematics/math_slvq_owned.zig
 zig_src/mathematics/math_rsd_owned.zig
 zig_src/mathematics/math_rdp_owned.zig
+zig_src/mathematics/math_ortho_polynom_owned.zig
 zig_src/frontier/frontier.zig
 zig_src/frontier/frontier_runtime.zig
 zig_src/state/register_descriptor_storage_owned.zig

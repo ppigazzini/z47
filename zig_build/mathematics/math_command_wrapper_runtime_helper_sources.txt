@@ -9,7 +9,6 @@ zig_bridge/mathematics/math_wrappers_runtime_iteration.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
 zig_bridge/mathematics/math_wrappers_runtime_mean.c
 zig_bridge/mathematics/math_wrappers_runtime_median.c
-zig_bridge/mathematics/math_wrappers_runtime_ortho_polynom.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigma.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
 zig_bridge/mathematics/math_wrappers_runtime_variance.c
