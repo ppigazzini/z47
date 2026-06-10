@@ -29,7 +29,6 @@ zig_bridge/frontier/radio_button_catalog_legacy.c
 zig_bridge/frontier/register_browser_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
 zig_bridge/frontier/screen_legacy.c
-zig_bridge/frontier/stats_legacy.c
 zig_bridge/frontier/status_bar_legacy.c
 zig_bridge/frontier/textfiles_legacy.c
 zig_bridge/frontier/timer_legacy.c
