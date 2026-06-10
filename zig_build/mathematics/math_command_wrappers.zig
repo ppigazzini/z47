@@ -68,7 +68,9 @@ fn addRuntimeObject(
     build_options.addOption(bool, "export_public_ln_complex", true);
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // that here so the Zig random seed uses the deterministic test seed.
-    build_options.addOption(bool, "is_testsuite_build", std.mem.eql(u8, name_prefix, "testSuite"));
+    // startsWith, not eql: the ASAN lane builds "testSuite-asan", which must use
+    // the same deterministic test seed and testSuite code paths.
+    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
     // Mirror "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" from wp34s.c:
     // only the DM42 firmware ("dmcp", not "dmcp5"/sim/testSuite) uses the small
     // fallback mod buffers / reduced mod precision.
