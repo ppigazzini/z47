@@ -5,15 +5,9 @@
 // comparisonReals.c, compare.c and incDec.c are owned by
 // zig_src/mathematics/math_comparison_reals_owned.zig and
 // math_register_compare_owned.zig. checkValue.c and int.c have Zig owners in
-// math_command_wrappers.zig and no remaining live symbols.
-
-#define fnAdd z47_math_wrappers_legacy_fnAdd
-#include "../../src/c47/mathematics/addition.c"
-#undef fnAdd
-
-#define fnSubtract z47_math_wrappers_legacy_fnSubtract
-#include "../../src/c47/mathematics/subtraction.c"
-#undef fnSubtract
+// math_command_wrappers.zig and no remaining live symbols. addition.c and
+// subtraction.c are owned by math_addition_cells_owned.zig and
+// math_subtraction_cells_owned.zig.
 
 #define fnMultiply z47_math_wrappers_legacy_fnMultiply
 #include "../../src/c47/mathematics/multiplication.c"
