@@ -43,7 +43,6 @@ zig_bridge/frontier/timer_legacy.c
 zig_bridge/frontier/xeqm_legacy.c
 zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_helpers.c
-zig_bridge/mathematics/math_wrappers_runtime_iteration.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
 zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_percentSigmaDeltaPercentXmean.c
