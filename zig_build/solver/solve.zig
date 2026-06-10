@@ -64,6 +64,10 @@ fn addRuntimeObject(
     // it here so the Zig solver owners (tvm_owned.zig) take the testSuite code
     // path (fnTvmVar's `testing` short-circuit).
     build_options.addOption(bool, "is_testsuite_build", std.mem.eql(u8, name_prefix, "testSuite"));
+    // DMCP firmware builds (both "dmcp" old_hw and "dmcp5") stub calcModeAimGui()
+    // to a no-op (hal/gui.h: #if defined(DMCP_BUILD) ...); the on-screen-keyboard
+    // sim/testSuite link the real function. equation_owned.zig mirrors this.
+    build_options.addOption(bool, "is_dmcp_build", std.mem.startsWith(u8, name_prefix, "dmcp"));
     module.addOptions("solve_build_options", build_options);
     return b.addObject(.{
         .name = b.fmt("{s}-solver-solve", .{name_prefix}),

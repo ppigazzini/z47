@@ -1,2 +1,1 @@
-zig_bridge/solver/equation_legacy.c
 zig_bridge/solver/graph_legacy.c
