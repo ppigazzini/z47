@@ -65,6 +65,7 @@ comptime {
     _ = @import("frontier_clcvar_owned.zig");
     _ = @import("frontier_next_step_owned.zig");
     _ = @import("frontier_decode_owned.zig");
+    _ = @import("frontier_curve_fitting_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");

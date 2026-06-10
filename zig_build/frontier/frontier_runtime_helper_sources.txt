@@ -7,7 +7,6 @@ zig_bridge/frontier/bufferize_legacy.c
 zig_bridge/frontier/c47_legacy.c
 zig_bridge/frontier/char_string_legacy.c
 zig_bridge/frontier/config_legacy.c
-zig_bridge/frontier/curve_fitting_legacy.c
 zig_bridge/frontier/debug_legacy.c
 zig_bridge/frontier/display_legacy.c
 zig_bridge/frontier/flag_browser_legacy.c
