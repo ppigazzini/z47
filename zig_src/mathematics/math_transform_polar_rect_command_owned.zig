@@ -1,9 +1,6 @@
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
-const to_polar2_legacy = runtime.legacy.fnToPolar2;
-const to_rect2_legacy = runtime.legacy.fnToRect2;
-
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
     switch (data_type) {
         runtime.dtLongInteger => runtime.convertLongIntegerRegisterToReal(reg, value, &runtime.ctxtReal39),
@@ -228,19 +225,15 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
 }
 
 pub fn toPolar2(unused_but_mandatory_parameter: u16) void {
-    if (tryToPolar2Real34Pair()) {
-        return;
-    }
+    _ = unused_but_mandatory_parameter;
 
-    to_polar2_legacy(unused_but_mandatory_parameter);
+    _ = tryToPolar2Real34Pair();
 }
 
 pub fn toRect2(unused_but_mandatory_parameter: u16) void {
-    if (tryToRect2Real34Pair()) {
-        return;
-    }
+    _ = unused_but_mandatory_parameter;
 
-    to_rect2_legacy(unused_but_mandatory_parameter);
+    _ = tryToRect2Real34Pair();
 }
 
 pub fn toRect(unused_but_mandatory_parameter: u16) void {

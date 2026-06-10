@@ -40,6 +40,7 @@ zig_src/mathematics/math_lnbeta_owned.zig
 zig_src/mathematics/math_beta_owned.zig
 zig_src/mathematics/math_gamma_owned.zig
 zig_src/mathematics/math_zeta_owned.zig
+zig_src/mathematics/math_transform_complex_helpers_owned.zig
 zig_src/mathematics/math_retocx_owned.zig
 zig_src/mathematics/math_cxtore_owned.zig
 zig_src/mathematics/math_gammaX_owned.zig

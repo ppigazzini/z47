@@ -68,6 +68,10 @@ comptime {
     // testSuite (prime/beta/lnbeta/gd/agm/cyx/pyx + all trig/gamma), not this
     // fake-runtime harness.
     if (!runtime.harness_surface_is_fake) {
+        // The transform/complex helper owner exports upstream symbol names
+        // (sqrtComplex, realRectangularToPolar, ...) that the parity harness
+        // already gets from math_wrappers_fake_runtime.c.
+        _ = @import("math_transform_complex_helpers_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

@@ -28,6 +28,8 @@ pub const pcg32_random_t = extern struct {
     inc: u64,
 };
 
+pub const NOPARAM: u16 = 9876;
+
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
@@ -627,6 +629,7 @@ pub extern fn divRealComplex(
     real_context: *realContext_t,
 ) void;
 pub extern fn fnInvertMatrix(unused_but_mandatory_parameter: u16) void;
+pub extern fn fnMatrixSquareRoot(unused_but_mandatory_parameter: u16) void;
 pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
@@ -645,6 +648,7 @@ pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2() *const real_t;
+pub extern fn z47_math_wrappers_const_3() *const real_t;
 pub extern fn z47_math_wrappers_const_5() *const real_t;
 pub extern fn z47_math_wrappers_const_100() *const real_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
@@ -762,17 +766,8 @@ pub const legacy = struct {
         raw_fnInc(parameter);
     }
 
-    pub inline fn fnToPolar2(parameter: u16) void {
-        raw_fnToPolar2(parameter);
-    }
 
-    pub inline fn fnToRect2(parameter: u16) void {
-        raw_fnToRect2(parameter);
-    }
 
-    pub inline fn fnSquareRoot(parameter: u16) void {
-        raw_fnSquareRoot(parameter);
-    }
 
     pub inline fn fnDblMultiply(parameter: u16) void {
         raw_fnDblMultiply(parameter);
@@ -807,15 +802,6 @@ pub const legacy = struct {
     const raw_fnGetType: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnGetType" });
     const raw_fnDblDivide: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDblDivide" });
     const raw_fnDblDivideRemainder: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnDblDivideRemainder" });
-    const raw_fnToPolar2: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToPolar2" });
-    const raw_fnToRect2: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToRect2" });
-    const raw_fnToRect: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnToRect" });
-    const raw_fnParallel: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnParallel" });
-    const raw_fnUnitVector: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnUnitVector" });
-    const raw_fnSdl: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSdl" });
-    const raw_fnSdr: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSdr" });
-    const raw_fnSquareRoot: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnSquareRoot" });
-    const raw_fnCubeRoot: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnCubeRoot" });
     const raw_fnPercentMRR: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentMRR" });
     const raw_fnPercentPlusMG: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentPlusMG" });
     const raw_fnPercentT: RetainedU16Fn = @extern(RetainedU16Fn, .{ .name = legacy_prefix ++ "fnPercentT" });
@@ -835,6 +821,7 @@ pub extern fn z47_math_wrappers_const_ln10() *const real_t;
 pub extern fn z47_math_wrappers_const_piOn4() *const real_t;
 pub extern fn z47_math_wrappers_const_3piOn4() *const real_t;
 pub extern fn z47_math_wrappers_const_piOn2() *const real_t;
+pub extern fn z47_math_wrappers_const_3piOn2() *const real_t;
 pub extern fn z47_math_wrappers_const_pi() *const real_t;
 pub extern fn z47_math_wrappers_const75_piOn4() *const real_t;
 pub extern fn z47_math_wrappers_const75_piOn2() *const real_t;

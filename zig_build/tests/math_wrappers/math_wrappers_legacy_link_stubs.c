@@ -39,15 +39,6 @@ void z47_math_wrappers_legacy_fnCheckSpecial(uint16_t unusedButMandatoryParamete
 void z47_math_wrappers_legacy_fnCheckPlusZero(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnCheckMinusZero(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnGetType(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnToPolar2(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnToRect2(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnToRect(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnParallel(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnUnitVector(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnSdl(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnSdr(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnSquareRoot(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
-void z47_math_wrappers_legacy_fnCubeRoot(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnPercentMRR(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnPercentPlusMG(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnPercentT(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
