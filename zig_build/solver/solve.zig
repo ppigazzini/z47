@@ -63,7 +63,10 @@ fn addRuntimeObject(
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // it here so the Zig solver owners (tvm_owned.zig) take the testSuite code
     // path (fnTvmVar's `testing` short-circuit).
-    build_options.addOption(bool, "is_testsuite_build", std.mem.eql(u8, name_prefix, "testSuite"));
+    // startsWith, not eql: the ASAN lane builds "testSuite-asan", which must take
+    // the same testSuite code paths (fnTvmVar's `testing` short-circuit) or the
+    // TVM tests fail there while passing on the plain testSuite.
+    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
     // DMCP firmware builds (both "dmcp" old_hw and "dmcp5") stub calcModeAimGui()
     // to a no-op (hal/gui.h: #if defined(DMCP_BUILD) ...); the on-screen-keyboard
     // sim/testSuite link the real function. equation_owned.zig mirrors this.
