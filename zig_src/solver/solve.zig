@@ -1,5 +1,9 @@
 const runtime = @import("solve_runtime.zig");
 
+comptime {
+    _ = @import("tvm_owned.zig");
+}
+
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {
     if (runtime.isLabel(label)) {
         runtime.currentSolverProgram = runtime.labelToProgram(label);
