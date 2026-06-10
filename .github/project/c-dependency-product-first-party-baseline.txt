@@ -38,7 +38,6 @@ zig_bridge/mathematics/math_wrappers_runtime_matrix.c
 zig_bridge/mathematics/math_wrappers_runtime_misc_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_percent_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c
-zig_bridge/solver/graph_legacy.c
 zig_bridge/state/calc_state_legacy.c
 zig_bridge/state/keyboard_state_legacy.c
 zig_build/host/gtk_c47_gtk_legacy.c

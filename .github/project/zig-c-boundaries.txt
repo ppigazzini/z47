@@ -116,6 +116,7 @@ zig_src/solver/differentiate_owned.zig
 zig_src/solver/solve_owned.zig
 zig_src/solver/integrate_owned.zig
 zig_src/solver/equation_owned.zig
+zig_src/solver/graph_owned.zig
 zig_src/ui/tone_runtime.zig
 zig_src/state/calc_state_runtime.zig
 zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
