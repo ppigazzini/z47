@@ -87,6 +87,7 @@ comptime {
         _ = @import("math_xfn_owned.zig");
         _ = @import("math_slvc_owned.zig");
         _ = @import("math_slvq_owned.zig");
+        _ = @import("math_rsd_owned.zig");
     }
 }
 
