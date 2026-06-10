@@ -91,6 +91,7 @@ comptime {
         _ = @import("math_rdp_owned.zig");
         _ = @import("math_ortho_polynom_owned.zig");
         _ = @import("math_percentSigma_owned.zig");
+        _ = @import("math_mean_owned.zig");
     }
 }
 
