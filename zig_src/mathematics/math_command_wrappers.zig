@@ -48,6 +48,7 @@ const matrix_vector_dot_scalar_owned = @import("math_matrix_vector_dot_scalar_ow
 const matrix_vector_validation_owned = @import("math_matrix_vector_validation_owned.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar_owned.zig");
 const linpol_pipeline_owned = @import("math_matrix_vector_linpol_pipeline_owned.zig");
+const linpol_compute_owned = @import("math_matrix_vector_linpol_compute_owned.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command_owned.zig");
 const parallel_command_owned = @import("math_transform_parallel_command_owned.zig");
 const polar_rect_command_owned = @import("math_transform_polar_rect_command_owned.zig");
@@ -1032,6 +1033,17 @@ pub export fn fnFib(unused_but_mandatory_parameter: u16) callconv(.c) void {
 pub export fn fnLINPOL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     linpol_pipeline_owned.linpol();
+}
+
+// Canonical scalar interpolation helper from mathematics/linpol.c, still
+// externed by the median owner and the frontier distribution runtime.
+pub export fn linpol(
+    a: *const runtime.real_t,
+    b: *const runtime.real_t,
+    p: *const runtime.real_t,
+    res: *runtime.real_t,
+) callconv(.c) void {
+    linpol_compute_owned.linpolScalar(a, b, p, res);
 }
 
 pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
