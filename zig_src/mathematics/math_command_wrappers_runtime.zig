@@ -320,6 +320,15 @@ pub extern fn fnSubtract(parameter: u16) void;
 pub extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
 pub extern fn initMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
 pub extern fn redimMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, dim_mode: u16) bool;
+// Named-variable registers (registers.c), used by the matrix command owners.
+pub extern fn findNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
+pub extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
+pub extern fn allocateNamedVariable(variable_name: [*:0]const u8, data_type: u32, full_data_size_in_blocks: u16) void;
+pub extern fn clearRegister(reg: calcRegister_t) void;
+pub const INVALID_VARIABLE: calcRegister_t = 2199;
+pub const TEMP_REGISTER_2_SAVED_STATS: calcRegister_t = 136;
+pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
+pub const ERROR_TI_UNDO_FAILED: u8 = 126;
 pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
 pub inline fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
