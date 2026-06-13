@@ -133,6 +133,9 @@
 // getMatrixDimensionsToStack as a private Zig copy.
 #define fnGetMatrixDimensions z47_math_wrappers_legacy_fnGetMatrixDimensions
 #define fnGetMatrixDimensions42 z47_math_wrappers_legacy_fnGetMatrixDimensions42
+// Matrix-index helpers owned by math_matrix_index_command_owned.zig.
+#define isMatrixIndexed z47_math_wrappers_legacy_isMatrixIndexed
+#define fnIndexMatrix z47_math_wrappers_legacy_fnIndexMatrix
 #define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
 #define fnQrDecomposition z47_math_wrappers_legacy_fnQrDecomposition
 #define fnNewMatrix z47_math_wrappers_legacy_fnNewMatrix
