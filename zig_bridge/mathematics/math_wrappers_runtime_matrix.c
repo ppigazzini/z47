@@ -38,6 +38,13 @@
 #define _divideRealMatrix z47_math_wrappers_legacy__divideRealMatrix
 #define divideComplexMatrix z47_math_wrappers_legacy_divideComplexMatrix
 #define _divideComplexMatrix z47_math_wrappers_legacy__divideComplexMatrix
+// Row/column swap owned by math_matrix_swap_owned.zig. Only the four public
+// entry points are renamed; their shared static workers (_realMatrixSwap /
+// _complexMatrixSwap) keep internal linkage and back the legacy copies.
+#define realMatrixSwapRows z47_math_wrappers_legacy_realMatrixSwapRows
+#define realMatrixSwapColumns z47_math_wrappers_legacy_realMatrixSwapColumns
+#define complexMatrixSwapRows z47_math_wrappers_legacy_complexMatrixSwapRows
+#define complexMatrixSwapColumns z47_math_wrappers_legacy_complexMatrixSwapColumns
 
 #include "c47.h"
 
