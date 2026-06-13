@@ -170,6 +170,9 @@ comptime {
         _ = @import("math_matrix_invert_owned.zig");
         // The real LU owner replaces WP34S_LU_decomposition of mathematics/matrix.c.
         _ = @import("math_matrix_real_lu_owned.zig");
+        // The complex LU owner replaces complex_LU_decomposition of
+        // mathematics/matrix.c (it reuses the Zig dense-core luCpxMat).
+        _ = @import("math_matrix_complex_lu_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

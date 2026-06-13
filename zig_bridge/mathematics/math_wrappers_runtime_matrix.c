@@ -35,6 +35,9 @@
 #define multiplyComplexMatrices z47_math_wrappers_legacy_multiplyComplexMatrices
 // Real LU decomposition owned by math_matrix_real_lu_owned.zig.
 #define WP34S_LU_decomposition z47_math_wrappers_legacy_WP34S_LU_decomposition
+// Complex LU decomposition owned by math_matrix_complex_lu_owned.zig (it reuses
+// the Zig-owned luCpxMat from math_matrix_complex_core_owned.zig).
+#define complex_LU_decomposition z47_math_wrappers_legacy_complex_LU_decomposition
 // Matrix inverse owned by math_matrix_invert_owned.zig (via the Zig dense core
 // invCpxMat).
 #define invertRealMatrix z47_math_wrappers_legacy_invertRealMatrix
