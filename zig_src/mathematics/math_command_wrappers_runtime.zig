@@ -320,6 +320,7 @@ pub inline fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
 pub const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
+pub const TI_INACCURATE: u8 = 48;
 
 // REGISTER_MATRIX_HEADER / REGISTER_REAL34_DATA / REGISTER_IMAG34_DATA
 // (registers.h): the register data pointer reinterpreted as a matrix header or

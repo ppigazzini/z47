@@ -157,6 +157,11 @@ comptime {
         _ = @import("math_matrix_qr_command_owned.zig");
         _ = @import("math_matrix_new_command_owned.zig");
         _ = @import("math_matrix_set_dimensions_command_owned.zig");
+        // The complex dense core owner exports invCpxMat / mulCpxMat (LU-based
+        // inverse and product on interleaved-complex real_t arrays) for the
+        // matrix-divide and inverse owners. The upstream copies are file-local
+        // statics, so no bridge rename is needed.
+        _ = @import("math_matrix_complex_core_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
