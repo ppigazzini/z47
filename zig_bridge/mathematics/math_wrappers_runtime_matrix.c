@@ -97,6 +97,7 @@
 // Zig-owned and called by their canonical names).
 #define fnTranspose z47_math_wrappers_legacy_fnTranspose
 #define fnDeterminant z47_math_wrappers_legacy_fnDeterminant
+#define fnVectorAngle z47_math_wrappers_legacy_fnVectorAngle
 
 #include "c47.h"
 
