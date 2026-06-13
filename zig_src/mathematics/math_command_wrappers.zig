@@ -126,6 +126,10 @@ comptime {
         // The matrix delete owner replaces delRowRealMatrix / delColRealMatrix
         // and delRowComplexMatrix / delColComplexMatrix of mathematics/matrix.c.
         _ = @import("math_matrix_delete_owned.zig");
+        // The euclidean-norm owner replaces realVectorSize / complexVectorSize
+        // and euclideanNormRealMatrix / euclideanNormComplexMatrix (with the
+        // shared worker _euclideanNormRealMatrix) of mathematics/matrix.c.
+        _ = @import("math_matrix_euclidean_norm_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
