@@ -139,6 +139,9 @@ comptime {
         // The vector-angle owner replaces vectorAngle of mathematics/matrix.c;
         // it reuses the Zig-owned _dotRealVectors / _euclideanNormRealMatrix.
         _ = @import("math_matrix_vector_angle_owned.zig");
+        // The determinant owner replaces detRealMatrix / detComplexMatrix of
+        // mathematics/matrix.c (the complex LU workers are private to it).
+        _ = @import("math_matrix_determinant_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

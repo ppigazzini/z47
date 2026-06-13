@@ -82,6 +82,12 @@
 // Vector angle owned by math_matrix_vector_angle_owned.zig. It reuses the now
 // Zig-owned _dotRealVectors / _euclideanNormRealMatrix workers.
 #define vectorAngle z47_math_wrappers_legacy_vectorAngle
+// Determinant owned by math_matrix_determinant_owned.zig. Only the two public
+// entry points are renamed; the static LU workers (luCpxMat / detCpxMat) keep
+// internal linkage and back the not-yet-ported engine (the Zig owner carries
+// its own private copies).
+#define detRealMatrix z47_math_wrappers_legacy_detRealMatrix
+#define detComplexMatrix z47_math_wrappers_legacy_detComplexMatrix
 
 #include "c47.h"
 
