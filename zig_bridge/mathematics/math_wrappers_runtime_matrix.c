@@ -104,6 +104,7 @@
 #define fnVectorDist z47_math_wrappers_legacy_fnVectorDist
 #define fnInvertMatrix z47_math_wrappers_legacy_fnInvertMatrix
 #define fnMatrixIdentity z47_math_wrappers_legacy_fnMatrixIdentity
+#define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
 
 #include "c47.h"
 
