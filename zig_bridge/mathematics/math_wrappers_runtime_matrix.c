@@ -33,6 +33,11 @@
 // Matrix-by-matrix products owned by math_matrix_product_owned.zig (B2b).
 #define multiplyRealMatrices z47_math_wrappers_legacy_multiplyRealMatrices
 #define multiplyComplexMatrices z47_math_wrappers_legacy_multiplyComplexMatrices
+// Matrix-by-scalar divide owned by math_matrix_divide_scalar_owned.zig.
+#define divideRealMatrix z47_math_wrappers_legacy_divideRealMatrix
+#define _divideRealMatrix z47_math_wrappers_legacy__divideRealMatrix
+#define divideComplexMatrix z47_math_wrappers_legacy_divideComplexMatrix
+#define _divideComplexMatrix z47_math_wrappers_legacy__divideComplexMatrix
 
 #include "c47.h"
 
