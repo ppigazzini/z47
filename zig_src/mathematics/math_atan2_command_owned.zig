@@ -3,7 +3,6 @@ const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
-const atan2_legacy = runtime.legacy.fnAtan2;
 
 fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
     return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);
@@ -34,35 +33,6 @@ fn hasZeroDomainError(comptime function_name: [:0]const u8, y_value: *const runt
 fn convertAngleAndRound(x_value: *runtime.real_t) void {
     runtime.convertAngleFromTo(x_value, runtime.amRadian, runtime.currentAngularMode, &runtime.ctxtReal39);
     runtime.roundToSignificantDigits(x_value, x_value, if (runtime.significantDigits == 0) 34 else runtime.significantDigits, &runtime.ctxtReal75);
-}
-
-fn atan2RemaReal() void {
-    var y_matrix: runtime.real34Matrix_t = undefined;
-    var x_scalar: runtime.real_t = undefined;
-
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_X, &x_scalar)) {
-        return;
-    }
-
-    runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
-    const count = realMatrixElementCount(&y_matrix);
-
-    var index: usize = 0;
-    while (index < count) : (index += 1) {
-        var y_value: runtime.real_t = undefined;
-        var x_value = x_scalar;
-
-        runtime.real34ToReal(realMatrixElementPtr(&y_matrix, index), &y_value);
-        if (hasZeroDomainError("In function atan2RemaReal:", &y_value, &x_value)) {
-            return;
-        }
-
-        atan2_owned.arctan2Real(&y_value, &x_value, &x_value, &runtime.ctxtReal39);
-        convertAngleAndRound(&x_value);
-        runtime.realToReal34(&x_value, realMatrixElementPtr(&y_matrix, index));
-    }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&y_matrix, runtime.REGISTER_X);
 }
 
 fn atan2RemaRema() void {
@@ -96,7 +66,13 @@ fn atan2RemaRema() void {
         runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
     }
 
-    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+    if (build_options.use_fake_wp34s_model) {
+        // The fake harness copies the matrix out of the register, so it must be
+        // written back. The real runtime links the register data directly
+        // (upstream atan2RemaRema mutates it in place); converting a linked
+        // matrix back would reallocate the register and read freed memory.
+        runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+    }
 }
 
 fn atan2RealRema() void {
@@ -125,7 +101,11 @@ fn atan2RealRema() void {
         runtime.realToReal34(&x_value, realMatrixElementPtr(&x_matrix, index));
     }
 
-    runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+    if (build_options.use_fake_wp34s_model) {
+        // See atan2RemaRema: only the fake harness needs the copy-back; the
+        // real runtime mutates the linked register matrix in place.
+        runtime.convertReal34MatrixToReal34MatrixRegister(&x_matrix, runtime.REGISTER_X);
+    }
 }
 
 fn atan2Error() void {
@@ -152,13 +132,9 @@ fn atan2RealReal() callconv(.c) void {
 }
 
 pub fn atan2(unused_but_mandatory_parameter: u16) void {
+    _ = unused_but_mandatory_parameter;
     const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-
-    if (!build_options.use_fake_wp34s_model and (data_type_x == runtime.dtReal34Matrix or data_type_y == runtime.dtReal34Matrix)) {
-        atan2_legacy(unused_but_mandatory_parameter);
-        return;
-    }
 
     if (!runtime.saveLastX()) {
         return;

@@ -18,6 +18,13 @@ else if (@import("builtin").target.os.tag == .macos)
 else
     ".text";
 
+// Mirrors EXTRA_INFO_ON_CALC_ERROR (src/c47/defines.h): the console
+// extra-error-info path is compiled out under TESTSUITE_BUILD and on DMCP
+// firmware, and kept on the hosted on-screen-keyboard simulator. Dropping it
+// from the firmware also keeps the diagnostic strings out of the flash image.
+pub const extra_info_on_calc_error = !is_testsuite_build and
+    @import("builtin").target.os.tag != .freestanding;
+
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
 pub const rounding_t = c_int;
