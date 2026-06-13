@@ -279,6 +279,45 @@ pub extern fn convertReal34MatrixRegisterToReal34Matrix(reg: calcRegister_t, mat
 pub extern fn convertReal34MatrixRegisterToComplex34Matrix(reg: calcRegister_t, matrix: *complex34Matrix_t) void;
 pub extern fn convertReal34MatrixRegisterToComplex34MatrixRegister(source: calcRegister_t, destination: calcRegister_t) void;
 pub extern fn convertReal34MatrixToComplex34Matrix(real_matrix: *const real34Matrix_t, complex_matrix: *complex34Matrix_t) void;
+// Matrix primitives owned by the lifecycle/determinant/engine; declared here so
+// the fn* matrix command owners reach them through the runtime surface.
+pub extern fn realMatrixIdentity(matrix: *real34Matrix_t, size: u16) void;
+pub extern fn copyRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn copyComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn transposeRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn transposeComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn realMatrixSwapRows(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b: u16) void;
+pub extern fn detRealMatrix(matrix: *const real34Matrix_t, res: *real34_t) void;
+pub extern fn detComplexMatrix(matrix: *const complex34Matrix_t, res_r: *real34_t, res_i: *real34_t) void;
+pub extern fn euclideanNormRealMatrix(matrix: *const real34Matrix_t, p_param: u16, res: *real34_t) void;
+pub extern fn euclideanNormComplexMatrix(matrix: *const complex34Matrix_t, p_param: u16, res: *real34_t) void;
+pub extern fn vectorAngle(y: *const real34Matrix_t, x: *const real34Matrix_t, radians: *real34_t) void;
+// Still in the matrix bridge (renamed-or-original C); the command owners call
+// the canonical names, which resolve to the C engine until those land in Zig.
+pub extern fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
+pub extern fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+pub extern fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34Matrix_t, p: [*]u16) void;
+pub extern fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *complex34Matrix_t, p: [*]u16) void;
+pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) void;
+pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
+pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+
+// REGISTER_MATRIX_HEADER / REGISTER_REAL34_DATA / REGISTER_IMAG34_DATA
+// (registers.h): the register data pointer reinterpreted as a matrix header or
+// the real/imag halves of a real34/complex34 value.
+pub inline fn registerMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
+pub inline fn registerReal34Data(reg: calcRegister_t) *real34_t {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
+pub inline fn registerImag34Data(reg: calcRegister_t) *real34_t {
+    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(@alignCast(base + @sizeOf(real34_t)));
+}
 pub extern fn realVectorSize(matrix: *const real34Matrix_t) u16;
 pub extern fn dotRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34_t) void;
 pub extern fn crossRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
