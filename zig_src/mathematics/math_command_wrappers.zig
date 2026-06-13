@@ -148,6 +148,7 @@ comptime {
         // The matrix fn* command owners replace the register-level command
         // wrappers of mathematics/matrix.c (fnTranspose, ...).
         _ = @import("math_matrix_transpose_command_owned.zig");
+        _ = @import("math_matrix_determinant_command_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
