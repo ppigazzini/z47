@@ -66,6 +66,7 @@ comptime {
     _ = @import("frontier_next_step_owned.zig");
     _ = @import("frontier_decode_owned.zig");
     _ = @import("frontier_curve_fitting_owned.zig");
+    _ = @import("frontier_input_owned.zig");
     _ = @import("frontier_jm_owned.zig");
     _ = @import("frontier_flag_browser_owned.zig");
     _ = @import("frontier_calc_mode_owned.zig");
