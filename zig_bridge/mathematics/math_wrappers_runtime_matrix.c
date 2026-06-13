@@ -105,6 +105,7 @@
 #define fnInvertMatrix z47_math_wrappers_legacy_fnInvertMatrix
 #define fnMatrixIdentity z47_math_wrappers_legacy_fnMatrixIdentity
 #define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
+#define fnQrDecomposition z47_math_wrappers_legacy_fnQrDecomposition
 
 #include "c47.h"
 
