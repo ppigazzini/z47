@@ -36,6 +36,7 @@ zig_src/mathematics/math_matrix_arithmetic_owned.zig
 zig_src/mathematics/math_matrix_product_owned.zig
 zig_src/mathematics/math_matrix_divide_scalar_owned.zig
 zig_src/mathematics/math_matrix_swap_owned.zig
+zig_src/mathematics/math_matrix_insert_owned.zig
 zig_src/mathematics/math_circular_trig_command_owned.zig
 zig_src/mathematics/math_special_function_fibonacci_owned.zig
 zig_src/mathematics/math_prime_owned.zig
