@@ -153,6 +153,7 @@ comptime {
         _ = @import("math_matrix_euclidean_norm_command_owned.zig");
         _ = @import("math_matrix_invert_command_owned.zig");
         _ = @import("math_matrix_identity_command_owned.zig");
+        _ = @import("math_matrix_lu_command_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

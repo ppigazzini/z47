@@ -294,16 +294,20 @@ pub extern fn euclideanNormComplexMatrix(matrix: *const complex34Matrix_t, p_par
 pub extern fn vectorAngle(y: *const real34Matrix_t, x: *const real34Matrix_t, radians: *real34_t) void;
 // Still in the matrix bridge (renamed-or-original C); the command owners call
 // the canonical names, which resolve to the C engine until those land in Zig.
+// invertRealMatrix / invertComplexMatrix are public; the matrix sqrt and eigen
+// functions are static in matrix.c and cannot be wrapped from here.
 pub extern fn invertRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
 pub extern fn invertComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
-pub extern fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
-pub extern fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 pub extern fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34Matrix_t, p: [*]u16) void;
 pub extern fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *complex34Matrix_t, p: [*]u16) void;
 pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) void;
 pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+pub extern fn decQuadZero(result: *real34_t) *real34_t;
+pub inline fn real34SetZero(destination: *real34_t) void {
+    _ = decQuadZero(destination);
+}
 // The canonical subtract command (subtraction.c), used by fnVectorDist.
 pub extern fn fnSubtract(parameter: u16) void;
 // Matrix register allocation and the dimension-argument parser, still in the
