@@ -79,6 +79,9 @@
 // Vector cross products owned by math_matrix_cross_owned.zig.
 #define crossRealVectors z47_math_wrappers_legacy_crossRealVectors
 #define crossComplexVectors z47_math_wrappers_legacy_crossComplexVectors
+// Vector angle owned by math_matrix_vector_angle_owned.zig. It reuses the now
+// Zig-owned _dotRealVectors / _euclideanNormRealMatrix workers.
+#define vectorAngle z47_math_wrappers_legacy_vectorAngle
 
 #include "c47.h"
 
