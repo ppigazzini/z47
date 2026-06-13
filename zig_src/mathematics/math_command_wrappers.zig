@@ -111,6 +111,9 @@ comptime {
         // scalar-multiply functions of mathematics/matrix.c (the matrix*matrix
         // products, divide family and vector ops stay in the bridge for now).
         _ = @import("math_matrix_arithmetic_owned.zig");
+        // The matrix-by-matrix product owner replaces multiplyRealMatrices and
+        // multiplyComplexMatrices of mathematics/matrix.c.
+        _ = @import("math_matrix_product_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

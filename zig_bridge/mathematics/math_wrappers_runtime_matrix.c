@@ -30,6 +30,9 @@
 #define _multiplyRealMatrix z47_math_wrappers_legacy__multiplyRealMatrix
 #define multiplyComplexMatrix z47_math_wrappers_legacy_multiplyComplexMatrix
 #define _multiplyComplexMatrix z47_math_wrappers_legacy__multiplyComplexMatrix
+// Matrix-by-matrix products owned by math_matrix_product_owned.zig (B2b).
+#define multiplyRealMatrices z47_math_wrappers_legacy_multiplyRealMatrices
+#define multiplyComplexMatrices z47_math_wrappers_legacy_multiplyComplexMatrices
 
 #include "c47.h"
 
