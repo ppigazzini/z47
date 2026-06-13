@@ -29,6 +29,19 @@ else if (builtin.target.os.tag == .macos)
 else
     ".text";
 
+// Relocatable read-only DATA (constants whose contents are pointers, e.g.
+// letteredFlagDisplay's txt string pointers) cannot live in the truly
+// read-only __TEXT section on macOS: dyld applies ASLR rebase fixups to the
+// embedded pointers at load time and faults writing the read-only page
+// (EXC_BAD_ACCESS code=2). Route such constants to a rebase-capable section.
+// QSPI/XIP and ELF .text resolve the pointers at link time, so keep those.
+const code_data_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
+    ".qspi"
+else if (builtin.target.os.tag == .macos)
+    "__DATA_CONST,__const"
+else
+    ".text";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -126,7 +139,7 @@ const STD_INFINITY = "\xa2\x1e";
 // ---------------------------------------------------------------------------
 // letteredFlagDisplay[] table (TO_QSPI const).
 // ---------------------------------------------------------------------------
-pub export const letteredFlagDisplay linksection(code_section) = [_]letteredFlagDisplay_t{
+pub export const letteredFlagDisplay linksection(code_data_section) = [_]letteredFlagDisplay_t{
     .{ .txt = STD_SPACE_6_PER_EM ++ "X", .position = 3 },
     .{ .txt = STD_SPACE_6_PER_EM ++ "Y", .position = 3 + 1 * 12 },
     .{ .txt = STD_SPACE_6_PER_EM ++ "Z", .position = 3 + 2 * 12 },

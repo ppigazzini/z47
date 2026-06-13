@@ -18,6 +18,21 @@ else if (@import("builtin").target.os.tag == .macos)
 else
     ".text";
 
+// Relocatable read-only DATA (constants whose contents are pointers, e.g. the
+// add/sub cell dispatch tables of function pointers) must NOT share the truly
+// read-only __TEXT section on macOS: dyld applies ASLR rebase fixups to the
+// embedded pointers at load time and faults writing into the read-only page
+// (EXC_BAD_ACCESS code=2 -> SIGBUS, in dyld before main). Such constants need a
+// rebase-capable section (__DATA_CONST,__const, made read-only after fixup).
+// QSPI/XIP firmware and ELF .text resolve the pointers at link time (no runtime
+// rebase), so those targets keep the code section.
+pub const code_data_section = if (dm42_pkg_xip)
+    ".qspi"
+else if (@import("builtin").target.os.tag == .macos)
+    "__DATA_CONST,__const"
+else
+    ".text";
+
 // Mirrors EXTRA_INFO_ON_CALC_ERROR (src/c47/defines.h): the console
 // extra-error-info path is compiled out under TESTSUITE_BUILD and on DMCP
 // firmware, and kept on the hosted on-screen-keyboard simulator. Dropping it
