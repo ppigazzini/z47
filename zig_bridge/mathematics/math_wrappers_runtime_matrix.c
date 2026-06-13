@@ -70,6 +70,12 @@
 #define _euclideanNormRealMatrix z47_math_wrappers_legacy__euclideanNormRealMatrix
 #define euclideanNormRealMatrix z47_math_wrappers_legacy_euclideanNormRealMatrix
 #define euclideanNormComplexMatrix z47_math_wrappers_legacy_euclideanNormComplexMatrix
+// Vector dot products owned by math_matrix_dot_owned.zig. The static worker
+// _dotRealVectors is renamed too; the not-yet-ported vectorAngle keeps calling
+// its own legacy copy until that cluster lands.
+#define _dotRealVectors z47_math_wrappers_legacy__dotRealVectors
+#define dotRealVectors z47_math_wrappers_legacy_dotRealVectors
+#define dotComplexVectors z47_math_wrappers_legacy_dotComplexVectors
 
 #include "c47.h"
 

@@ -130,6 +130,9 @@ comptime {
         // and euclideanNormRealMatrix / euclideanNormComplexMatrix (with the
         // shared worker _euclideanNormRealMatrix) of mathematics/matrix.c.
         _ = @import("math_matrix_euclidean_norm_owned.zig");
+        // The dot-product owner replaces dotRealVectors / dotComplexVectors
+        // (with the shared worker _dotRealVectors) of mathematics/matrix.c.
+        _ = @import("math_matrix_dot_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
