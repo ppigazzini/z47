@@ -33,6 +33,10 @@
 // Matrix-by-matrix products owned by math_matrix_product_owned.zig (B2b).
 #define multiplyRealMatrices z47_math_wrappers_legacy_multiplyRealMatrices
 #define multiplyComplexMatrices z47_math_wrappers_legacy_multiplyComplexMatrices
+// Matrix inverse owned by math_matrix_invert_owned.zig (via the Zig dense core
+// invCpxMat).
+#define invertRealMatrix z47_math_wrappers_legacy_invertRealMatrix
+#define invertComplexMatrix z47_math_wrappers_legacy_invertComplexMatrix
 // Matrix-by-matrix divide owned by math_matrix_divide_matrices_owned.zig (y *
 // inverse(x)); the dense core invCpxMat/mulCpxMat is the Zig
 // math_matrix_complex_core_owned.zig copy.

@@ -165,6 +165,9 @@ comptime {
         // The matrix-by-matrix divide owner replaces divideRealMatrices /
         // divideComplexMatrices (y * inverse(x)) via the dense core.
         _ = @import("math_matrix_divide_matrices_owned.zig");
+        // The matrix inverse owner replaces invertRealMatrix /
+        // invertComplexMatrix via the dense core.
+        _ = @import("math_matrix_invert_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
