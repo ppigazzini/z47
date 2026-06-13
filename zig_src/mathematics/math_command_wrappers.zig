@@ -123,6 +123,9 @@ comptime {
         // The matrix insert owner replaces insRowRealMatrix / insColRealMatrix
         // and insRowComplexMatrix / insColComplexMatrix of mathematics/matrix.c.
         _ = @import("math_matrix_insert_owned.zig");
+        // The matrix delete owner replaces delRowRealMatrix / delColRealMatrix
+        // and delRowComplexMatrix / delColComplexMatrix of mathematics/matrix.c.
+        _ = @import("math_matrix_delete_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

@@ -50,6 +50,11 @@
 #define insColRealMatrix z47_math_wrappers_legacy_insColRealMatrix
 #define insRowComplexMatrix z47_math_wrappers_legacy_insRowComplexMatrix
 #define insColComplexMatrix z47_math_wrappers_legacy_insColComplexMatrix
+// Row/column delete owned by math_matrix_delete_owned.zig.
+#define delRowRealMatrix z47_math_wrappers_legacy_delRowRealMatrix
+#define delColRealMatrix z47_math_wrappers_legacy_delColRealMatrix
+#define delRowComplexMatrix z47_math_wrappers_legacy_delRowComplexMatrix
+#define delColComplexMatrix z47_math_wrappers_legacy_delColComplexMatrix
 
 #include "c47.h"
 
