@@ -142,6 +142,9 @@ comptime {
         // The determinant owner replaces detRealMatrix / detComplexMatrix of
         // mathematics/matrix.c (the complex LU workers are private to it).
         _ = @import("math_matrix_determinant_owned.zig");
+        // The register-link owner replaces linkToRealMatrixRegister /
+        // linkToComplexMatrixRegister of mathematics/matrix.c.
+        _ = @import("math_matrix_register_link_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
