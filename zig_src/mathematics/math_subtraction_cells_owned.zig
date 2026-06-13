@@ -25,7 +25,7 @@ const STD_CROSS = "\x80\xd7";
 
 // regX |    regY ==>   1            2            3            4            5            6         7            8            9             10
 //      V               Long integer Real34       Complex34    Time         Date         String    Real34 mat   Complex34 m  Short integer Config data
-pub export const subtraction: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]CellFn linksection(runtime.code_section) = .{
+pub export const subtraction: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]CellFn linksection(runtime.code_data_section) = .{
     // 1 Long integer
     .{ &subLonILonI, &subRealLonI, &subCplxLonI, &subTimeLonI, &subDateLonI, &subError, &subRemaLonI, &subCxmaLonI, &subShoILonI, &subError },
     // 2 Real34
