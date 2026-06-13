@@ -93,6 +93,14 @@ comptime {
         _ = @import("math_multiplication_cells_owned.zig");
         _ = @import("math_division_cells_owned.zig");
         _ = @import("math_integer_division_cells_owned.zig");
+        // The runtime-helper owners replace math_wrappers_runtime_helpers.c:
+        // the z47_math_wrappers_* helper API (const accessors, domain-error
+        // reporters, gcd/lcm/fib/factorial/mod/remainder/neighbour helpers,
+        // sign/integer-part helpers) and the thin real/real34 wrapper symbols.
+        // The parity harness compiles the relocated C file instead, so these
+        // owners are excluded there to avoid duplicate symbols.
+        _ = @import("math_runtime_helpers_owned.zig");
+        _ = @import("math_runtime_error_reporters_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

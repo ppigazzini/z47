@@ -160,7 +160,7 @@ pub fn addParityExecutable(
     });
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/math_wrappers"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/" ++ "math_wrappers_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/" ++ "random_fake_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_oracle.c"), .flags = &.{} });
@@ -188,7 +188,7 @@ pub fn addRandomParityExecutable(
     });
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/math_wrappers"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_bridge/mathematics/" ++ "math_wrappers_runtime_helpers.c"), .flags = &.{} });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/" ++ "random_fake_runtime_helpers.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_random_oracle.c"), .flags = &.{} });
