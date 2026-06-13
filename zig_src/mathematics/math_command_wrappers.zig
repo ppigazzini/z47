@@ -83,6 +83,16 @@ comptime {
         // link stubs and oracle copies instead.
         _ = @import("math_addition_cells_owned.zig");
         _ = @import("math_subtraction_cells_owned.zig");
+        // The multiplication/division/integer-division cell owners export the
+        // remaining arithmetic dispatch matrices and every mul*/div*/idiv*/
+        // dbl*/round/decomp cell plus the z47_math_wrappers_legacy_fnMultiply,
+        // ..._fnDivide, ..._fnIDiv, ..._fnIDivR, ..._fnDblMultiply,
+        // ..._fnDblDivide, ..._fnDblDivideRemainder, ..._fnRound and
+        // ..._fnDecomp fallback commands; the parity harness keeps its link
+        // stubs and oracle copies instead.
+        _ = @import("math_multiplication_cells_owned.zig");
+        _ = @import("math_division_cells_owned.zig");
+        _ = @import("math_integer_division_cells_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

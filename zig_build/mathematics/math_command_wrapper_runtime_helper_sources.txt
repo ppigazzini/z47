@@ -1,4 +1,3 @@
 # Runtime legacy helper C units for mathematics command wrappers.
 zig_bridge/mathematics/math_wrappers_runtime_helpers.c
-zig_bridge/mathematics/math_wrappers_runtime_dispatch_helpers.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
