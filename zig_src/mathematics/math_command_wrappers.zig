@@ -182,6 +182,9 @@ comptime {
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
+        // The get-dimensions command owner replaces fnGetMatrixDimensions /
+        // fnGetMatrixDimensions42 of mathematics/matrix.c.
+        _ = @import("math_matrix_get_dimensions_command_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

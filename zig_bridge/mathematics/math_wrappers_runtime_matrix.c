@@ -129,6 +129,10 @@
 #define fnVectorDist z47_math_wrappers_legacy_fnVectorDist
 #define fnInvertMatrix z47_math_wrappers_legacy_fnInvertMatrix
 #define fnMatrixIdentity z47_math_wrappers_legacy_fnMatrixIdentity
+// fnGetMatrixDimensions / fnGetMatrixDimensions42 own their static worker
+// getMatrixDimensionsToStack as a private Zig copy.
+#define fnGetMatrixDimensions z47_math_wrappers_legacy_fnGetMatrixDimensions
+#define fnGetMatrixDimensions42 z47_math_wrappers_legacy_fnGetMatrixDimensions42
 #define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
 #define fnQrDecomposition z47_math_wrappers_legacy_fnQrDecomposition
 #define fnNewMatrix z47_math_wrappers_legacy_fnNewMatrix
