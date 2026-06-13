@@ -61,6 +61,15 @@
 #define delColRealMatrix z47_math_wrappers_legacy_delColRealMatrix
 #define delRowComplexMatrix z47_math_wrappers_legacy_delRowComplexMatrix
 #define delColComplexMatrix z47_math_wrappers_legacy_delColComplexMatrix
+// Vector size and euclidean p-norm owned by
+// math_matrix_euclidean_norm_owned.zig. The static worker
+// _euclideanNormRealMatrix is renamed too; the not-yet-ported vectorAngle keeps
+// calling its own legacy copy until that cluster lands.
+#define realVectorSize z47_math_wrappers_legacy_realVectorSize
+#define complexVectorSize z47_math_wrappers_legacy_complexVectorSize
+#define _euclideanNormRealMatrix z47_math_wrappers_legacy__euclideanNormRealMatrix
+#define euclideanNormRealMatrix z47_math_wrappers_legacy_euclideanNormRealMatrix
+#define euclideanNormComplexMatrix z47_math_wrappers_legacy_euclideanNormComplexMatrix
 
 #include "c47.h"
 
