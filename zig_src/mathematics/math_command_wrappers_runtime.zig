@@ -306,6 +306,15 @@ pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 // The canonical subtract command (subtraction.c), used by fnVectorDist.
 pub extern fn fnSubtract(parameter: u16) void;
+// Matrix register allocation and the dimension-argument parser, still in the
+// matrix bridge; the command owners reach them through the runtime.
+pub extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
+pub extern fn initMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
+pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
+pub inline fn real34SetOne(destination: *real34_t) void {
+    _ = decQuadFromInt32(destination, 1);
+}
+pub const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 
 // REGISTER_MATRIX_HEADER / REGISTER_REAL34_DATA / REGISTER_IMAG34_DATA
 // (registers.h): the register data pointer reinterpreted as a matrix header or
