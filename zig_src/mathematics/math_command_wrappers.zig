@@ -114,6 +114,9 @@ comptime {
         // The matrix-by-matrix product owner replaces multiplyRealMatrices and
         // multiplyComplexMatrices of mathematics/matrix.c.
         _ = @import("math_matrix_product_owned.zig");
+        // The matrix-by-scalar divide owner replaces divideRealMatrix and
+        // divideComplexMatrix (and their _-prefixed real_t variants).
+        _ = @import("math_matrix_divide_scalar_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
