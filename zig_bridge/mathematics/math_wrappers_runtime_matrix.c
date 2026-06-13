@@ -107,6 +107,11 @@
 #define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
 #define fnQrDecomposition z47_math_wrappers_legacy_fnQrDecomposition
 #define fnNewMatrix z47_math_wrappers_legacy_fnNewMatrix
+// fnSetMatrixDimensions / fnSetMatrixDimensionsGr own their static worker
+// _SetMatrixDimensions as a private Zig copy; only the two public commands are
+// renamed.
+#define fnSetMatrixDimensions z47_math_wrappers_legacy_fnSetMatrixDimensions
+#define fnSetMatrixDimensionsGr z47_math_wrappers_legacy_fnSetMatrixDimensionsGr
 
 #include "c47.h"
 
