@@ -314,6 +314,7 @@ pub extern fn fnSubtract(parameter: u16) void;
 // matrix bridge; the command owners reach them through the runtime.
 pub extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
 pub extern fn initMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
+pub extern fn redimMatrixRegister(reg: calcRegister_t, rows: u16, cols: u16, dim_mode: u16) bool;
 pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
 pub inline fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);

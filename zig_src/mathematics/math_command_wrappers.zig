@@ -156,6 +156,7 @@ comptime {
         _ = @import("math_matrix_lu_command_owned.zig");
         _ = @import("math_matrix_qr_command_owned.zig");
         _ = @import("math_matrix_new_command_owned.zig");
+        _ = @import("math_matrix_set_dimensions_command_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
