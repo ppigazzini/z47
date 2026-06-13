@@ -133,6 +133,9 @@ comptime {
         // The dot-product owner replaces dotRealVectors / dotComplexVectors
         // (with the shared worker _dotRealVectors) of mathematics/matrix.c.
         _ = @import("math_matrix_dot_owned.zig");
+        // The cross-product owner replaces crossRealVectors / crossComplexVectors
+        // of mathematics/matrix.c.
+        _ = @import("math_matrix_cross_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
