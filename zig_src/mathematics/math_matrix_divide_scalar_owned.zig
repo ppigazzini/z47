@@ -2,9 +2,12 @@
 // Zig port of the matrix-by-scalar divide cluster of
 // src/c47/mathematics/matrix.c: divideRealMatrix / _divideRealMatrix and
 // divideComplexMatrix / _divideComplexMatrix (each element divided by a
-// real34/real or complex scalar). The scalar-by-matrix divide, the
-// matrix-by-matrix divide (which needs the linear-algebra solver) and the
-// rest of the engine stay in the matrix bridge until the final B cluster.
+// real34/real or complex scalar), plus the reciprocal divideByRealMatrix /
+// _divideByRealMatrix and divideByComplexMatrix / _divideByComplexMatrix
+// (a real34/real or complex scalar divided elementwise by each matrix
+// element). The matrix-by-matrix divide (which needs the linear-algebra
+// solver) and the rest of the engine stay in the matrix bridge until the
+// final B cluster.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -109,5 +112,73 @@ pub export fn _divideComplexMatrix(matrix: *const complex34Matrix_t, xr: *const 
         }
     } else {
         reportRamFull("In function divideComplexMatrix:");
+    }
+}
+
+pub export fn divideByRealMatrix(y: *const real34_t, matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void {
+    const rows = matrix.header.matrixRows;
+    const cols = matrix.header.matrixColumns;
+
+    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+        const me = constRealElems(matrix);
+        const re = realElems(res);
+        const count = @as(usize, cols) * @as(usize, rows);
+        var i: usize = 0;
+        while (i < count) : (i += 1) {
+            runtime.real34Divide(y, &me[i], &re[i]);
+        }
+    } else {
+        reportRamFull("In function divideByRealMatrix:");
+    }
+}
+
+pub export fn _divideByRealMatrix(y: *const real_t, matrix: *const real34Matrix_t, res: *real34Matrix_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    const rows = matrix.header.matrixRows;
+    const cols = matrix.header.matrixColumns;
+
+    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+        const me = constRealElems(matrix);
+        const re = realElems(res);
+        const count = @as(usize, cols) * @as(usize, rows);
+        var i: usize = 0;
+        while (i < count) : (i += 1) {
+            var x: real_t = undefined;
+            runtime.real34ToReal(&me[i], &x);
+            runtime.realDivide(y, &x, &x, real_context);
+            runtime.realToReal34(&x, &re[i]);
+        }
+    } else {
+        reportRamFull("In function _divideByRealMatrix:");
+    }
+}
+
+pub export fn divideByComplexMatrix(yr: *const real34_t, yi: *const real34_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+    var real_yr: real_t = undefined;
+    var real_yi: real_t = undefined;
+    runtime.real34ToReal(yr, &real_yr);
+    runtime.real34ToReal(yi, &real_yi);
+    _divideByComplexMatrix(&real_yr, &real_yi, matrix, res, &runtime.ctxtReal39);
+}
+
+pub export fn _divideByComplexMatrix(yr: *const real_t, yi: *const real_t, matrix: *const complex34Matrix_t, res: *complex34Matrix_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    const rows = matrix.header.matrixRows;
+    const cols = matrix.header.matrixColumns;
+
+    if (samePtr(matrix, res) or complexMatrixInit(res, rows, cols)) {
+        const me = constComplexElems(matrix);
+        const re = complexElems(res);
+        const count = @as(usize, cols) * @as(usize, rows);
+        var i: usize = 0;
+        while (i < count) : (i += 1) {
+            var xr: real_t = undefined;
+            var xi: real_t = undefined;
+            runtime.real34ToReal(&me[i].real, &xr);
+            runtime.real34ToReal(&me[i].imag, &xi);
+            runtime.divComplexComplex(yr, yi, &xr, &xi, &xr, &xi, real_context);
+            runtime.realToReal34(&xr, &re[i].real);
+            runtime.realToReal34(&xi, &re[i].imag);
+        }
+    } else {
+        reportRamFull("In function _divideByComplexMatrix:");
     }
 }

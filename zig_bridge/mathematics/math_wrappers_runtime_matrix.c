@@ -38,6 +38,12 @@
 #define _divideRealMatrix z47_math_wrappers_legacy__divideRealMatrix
 #define divideComplexMatrix z47_math_wrappers_legacy_divideComplexMatrix
 #define _divideComplexMatrix z47_math_wrappers_legacy__divideComplexMatrix
+// Reciprocal scalar-by-matrix divide (scalar / each element) also owned by
+// math_matrix_divide_scalar_owned.zig.
+#define divideByRealMatrix z47_math_wrappers_legacy_divideByRealMatrix
+#define _divideByRealMatrix z47_math_wrappers_legacy__divideByRealMatrix
+#define divideByComplexMatrix z47_math_wrappers_legacy_divideByComplexMatrix
+#define _divideByComplexMatrix z47_math_wrappers_legacy__divideByComplexMatrix
 // Row/column swap owned by math_matrix_swap_owned.zig. Only the four public
 // entry points are renamed; their shared static workers (_realMatrixSwap /
 // _complexMatrixSwap) keep internal linkage and back the legacy copies.
