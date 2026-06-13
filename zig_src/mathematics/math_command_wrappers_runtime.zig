@@ -304,6 +304,8 @@ pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
 pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+// The canonical subtract command (subtraction.c), used by fnVectorDist.
+pub extern fn fnSubtract(parameter: u16) void;
 
 // REGISTER_MATRIX_HEADER / REGISTER_REAL34_DATA / REGISTER_IMAG34_DATA
 // (registers.h): the register data pointer reinterpreted as a matrix header or
@@ -318,6 +320,14 @@ pub inline fn registerImag34Data(reg: calcRegister_t) *real34_t {
     const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
     return @ptrCast(@alignCast(base + @sizeOf(real34_t)));
 }
+
+// Error / program-state constants the matrix command owners need (defines.h).
+// These owners run only in the non-fake build, so the real values are used.
+pub const ERROR_SINGULAR_MATRIX: u8 = 22;
+pub const TI_NO_INFO: u8 = 0;
+pub const PGM_STOPPED: u8 = 0;
+pub const PGM_WAITING: u8 = 2;
+pub extern var programRunStop: u8;
 pub extern fn realVectorSize(matrix: *const real34Matrix_t) u16;
 pub extern fn dotRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34_t) void;
 pub extern fn crossRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
