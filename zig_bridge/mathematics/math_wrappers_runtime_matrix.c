@@ -102,6 +102,7 @@
 // private Zig copy; only the two public commands are renamed.
 #define fnEuclideanNorm z47_math_wrappers_legacy_fnEuclideanNorm
 #define fnVectorDist z47_math_wrappers_legacy_fnVectorDist
+#define fnInvertMatrix z47_math_wrappers_legacy_fnInvertMatrix
 
 #include "c47.h"
 
