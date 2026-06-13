@@ -326,6 +326,14 @@ pub extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) calcRegi
 pub extern fn allocateNamedVariable(variable_name: [*:0]const u8, data_type: u32, full_data_size_in_blocks: u16) void;
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub const INVALID_VARIABLE: calcRegister_t = 2199;
+// Matrix-index state (the register selected by INDEX) and the I/J row/column
+// setters in the matrix editor.
+pub extern var matrixIndex: u16;
+pub extern fn isRegInRange(reg: u16) bool;
+pub extern fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
+pub extern fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
+pub const FLAG_WRAPEND: i32 = 0xc01a;
+pub const FLAG_WRAPEDG: i32 = 0xc03f;
 pub const TEMP_REGISTER_2_SAVED_STATS: calcRegister_t = 136;
 pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 pub const ERROR_TI_UNDO_FAILED: u8 = 126;
