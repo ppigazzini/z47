@@ -150,6 +150,7 @@ comptime {
         _ = @import("math_matrix_transpose_command_owned.zig");
         _ = @import("math_matrix_determinant_command_owned.zig");
         _ = @import("math_matrix_vector_angle_command_owned.zig");
+        _ = @import("math_matrix_euclidean_norm_command_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");

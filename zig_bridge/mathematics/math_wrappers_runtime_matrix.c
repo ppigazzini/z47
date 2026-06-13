@@ -98,6 +98,10 @@
 #define fnTranspose z47_math_wrappers_legacy_fnTranspose
 #define fnDeterminant z47_math_wrappers_legacy_fnDeterminant
 #define fnVectorAngle z47_math_wrappers_legacy_fnVectorAngle
+// fnEuclideanNorm / fnVectorDist own their static worker _fnEuclideanNorm as a
+// private Zig copy; only the two public commands are renamed.
+#define fnEuclideanNorm z47_math_wrappers_legacy_fnEuclideanNorm
+#define fnVectorDist z47_math_wrappers_legacy_fnVectorDist
 
 #include "c47.h"
 
