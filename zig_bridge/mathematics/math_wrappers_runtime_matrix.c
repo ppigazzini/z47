@@ -109,6 +109,9 @@
 // Named-matrix helpers owned by math_matrix_named_owned.zig.
 #define allocateNamedMatrix z47_math_wrappers_legacy_allocateNamedMatrix
 #define appendRowAtMatrixRegister z47_math_wrappers_legacy_appendRowAtMatrixRegister
+// STATS-matrix undo helpers owned by math_matrix_stats_owned.zig.
+#define saveStatsMatrix z47_math_wrappers_legacy_saveStatsMatrix
+#define recallStatsMatrix z47_math_wrappers_legacy_recallStatsMatrix
 // Matrix dimension helpers owned by math_matrix_dimension_arg_owned.zig
 // (getDimensionArg keeps its static worker getSingleDimension as a private Zig
 // copy; only the two public helpers are renamed).
