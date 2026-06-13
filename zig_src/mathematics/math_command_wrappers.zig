@@ -101,6 +101,12 @@ comptime {
         // owners are excluded there to avoid duplicate symbols.
         _ = @import("math_runtime_helpers_owned.zig");
         _ = @import("math_runtime_error_reporters_owned.zig");
+        // The matrix lifecycle owner replaces the allocate/free/identity/redim,
+        // copy and transpose primitives of mathematics/matrix.c. The matrix
+        // bridge keeps the renamed legacy copies (still called by the rest of
+        // the not-yet-ported matrix engine); the parity harness has its own
+        // matrix surface in math_wrappers_fake_runtime.c.
+        _ = @import("math_matrix_lifecycle_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
