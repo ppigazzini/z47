@@ -123,6 +123,7 @@ zig_src/frontier/frontier_clcvar_owned.zig
 zig_src/frontier/frontier_next_step_owned.zig
 zig_src/frontier/frontier_decode_owned.zig
 zig_src/frontier/frontier_curve_fitting_owned.zig
+zig_src/frontier/frontier_calc_mode_owned.zig
 zig_src/frontier/frontier_register_browser_owned.zig
 zig_src/frontier/frontier_programmable_menu_owned.zig
 zig_src/frontier/frontier_font_browser_owned.zig
