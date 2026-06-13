@@ -20,6 +20,16 @@
 #define copyComplexMatrix z47_math_wrappers_legacy_copyComplexMatrix
 #define transposeRealMatrix z47_math_wrappers_legacy_transposeRealMatrix
 #define transposeComplexMatrix z47_math_wrappers_legacy_transposeComplexMatrix
+// Elementwise arithmetic owned by math_matrix_arithmetic_owned.zig (B2): add
+// and subtract of two matrices, and multiply of a matrix by a scalar.
+#define addRealMatrices z47_math_wrappers_legacy_addRealMatrices
+#define subtractRealMatrices z47_math_wrappers_legacy_subtractRealMatrices
+#define addComplexMatrices z47_math_wrappers_legacy_addComplexMatrices
+#define subtractComplexMatrices z47_math_wrappers_legacy_subtractComplexMatrices
+#define multiplyRealMatrix z47_math_wrappers_legacy_multiplyRealMatrix
+#define _multiplyRealMatrix z47_math_wrappers_legacy__multiplyRealMatrix
+#define multiplyComplexMatrix z47_math_wrappers_legacy_multiplyComplexMatrix
+#define _multiplyComplexMatrix z47_math_wrappers_legacy__multiplyComplexMatrix
 
 #include "c47.h"
 

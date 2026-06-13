@@ -107,6 +107,10 @@ comptime {
         // the not-yet-ported matrix engine); the parity harness has its own
         // matrix surface in math_wrappers_fake_runtime.c.
         _ = @import("math_matrix_lifecycle_owned.zig");
+        // The matrix arithmetic owner replaces the elementwise add/subtract and
+        // scalar-multiply functions of mathematics/matrix.c (the matrix*matrix
+        // products, divide family and vector ops stay in the bridge for now).
+        _ = @import("math_matrix_arithmetic_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
