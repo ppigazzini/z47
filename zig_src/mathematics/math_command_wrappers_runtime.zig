@@ -304,6 +304,10 @@ pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
 pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+// The complex dense core (math_matrix_complex_core_owned.zig): in-place inverse
+// and product on interleaved-complex real_t arrays.
+pub extern fn invCpxMat(matrix: [*]real_t, n: u16, real_context: *realContext_t) bool;
+pub extern fn mulCpxMat(y: [*]const real_t, x: [*]const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]real_t, real_context: *realContext_t) void;
 pub extern fn decQuadZero(result: *real34_t) *real34_t;
 pub inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);

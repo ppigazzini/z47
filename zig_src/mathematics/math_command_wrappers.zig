@@ -162,6 +162,9 @@ comptime {
         // matrix-divide and inverse owners. The upstream copies are file-local
         // statics, so no bridge rename is needed.
         _ = @import("math_matrix_complex_core_owned.zig");
+        // The matrix-by-matrix divide owner replaces divideRealMatrices /
+        // divideComplexMatrices (y * inverse(x)) via the dense core.
+        _ = @import("math_matrix_divide_matrices_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
