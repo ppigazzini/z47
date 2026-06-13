@@ -33,6 +33,8 @@
 // Matrix-by-matrix products owned by math_matrix_product_owned.zig (B2b).
 #define multiplyRealMatrices z47_math_wrappers_legacy_multiplyRealMatrices
 #define multiplyComplexMatrices z47_math_wrappers_legacy_multiplyComplexMatrices
+// Real LU decomposition owned by math_matrix_real_lu_owned.zig.
+#define WP34S_LU_decomposition z47_math_wrappers_legacy_WP34S_LU_decomposition
 // Matrix inverse owned by math_matrix_invert_owned.zig (via the Zig dense core
 // invCpxMat).
 #define invertRealMatrix z47_math_wrappers_legacy_invertRealMatrix

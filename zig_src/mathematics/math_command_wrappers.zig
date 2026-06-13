@@ -168,6 +168,8 @@ comptime {
         // The matrix inverse owner replaces invertRealMatrix /
         // invertComplexMatrix via the dense core.
         _ = @import("math_matrix_invert_owned.zig");
+        // The real LU owner replaces WP34S_LU_decomposition of mathematics/matrix.c.
+        _ = @import("math_matrix_real_lu_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
