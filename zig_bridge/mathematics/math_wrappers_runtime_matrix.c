@@ -76,6 +76,9 @@
 #define _dotRealVectors z47_math_wrappers_legacy__dotRealVectors
 #define dotRealVectors z47_math_wrappers_legacy_dotRealVectors
 #define dotComplexVectors z47_math_wrappers_legacy_dotComplexVectors
+// Vector cross products owned by math_matrix_cross_owned.zig.
+#define crossRealVectors z47_math_wrappers_legacy_crossRealVectors
+#define crossComplexVectors z47_math_wrappers_legacy_crossComplexVectors
 
 #include "c47.h"
 
