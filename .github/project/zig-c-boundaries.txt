@@ -32,6 +32,7 @@ zig_src/mathematics/math_command_wrappers_runtime.zig
 zig_src/mathematics/math_dispatch_cells_runtime.zig
 zig_src/mathematics/math_runtime_helpers_owned.zig
 zig_src/mathematics/math_matrix_lifecycle_owned.zig
+zig_src/mathematics/math_matrix_arithmetic_owned.zig
 zig_src/mathematics/math_circular_trig_command_owned.zig
 zig_src/mathematics/math_special_function_fibonacci_owned.zig
 zig_src/mathematics/math_prime_owned.zig
