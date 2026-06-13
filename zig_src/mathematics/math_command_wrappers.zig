@@ -176,6 +176,9 @@ comptime {
         // The dimension-arg owner replaces getMatrixDims and getDimensionArg
         // (with the static worker getSingleDimension) of mathematics/matrix.c.
         _ = @import("math_matrix_dimension_arg_owned.zig");
+        // The named-matrix owner replaces allocateNamedMatrix and
+        // appendRowAtMatrixRegister of mathematics/matrix.c.
+        _ = @import("math_matrix_named_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
