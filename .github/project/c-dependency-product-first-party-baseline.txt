@@ -13,7 +13,6 @@ zig_bridge/frontier/graph_text_legacy.c
 zig_bridge/frontier/graphs_legacy.c
 zig_bridge/frontier/input_legacy.c
 zig_bridge/frontier/items_legacy.c
-zig_bridge/frontier/jm_legacy.c
 zig_bridge/frontier/manage_legacy.c
 zig_bridge/frontier/matrix_editor_legacy.c
 zig_bridge/frontier/plotstat_legacy.c

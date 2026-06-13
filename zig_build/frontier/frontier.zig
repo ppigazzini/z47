@@ -42,6 +42,11 @@ pub const RuntimeObjectOptions = struct {
     // freeMemoryRegions. Defaults match a host build.
     dmcp_build: bool = false,
     old_hw: bool = false,
+    // OPTION_ELEC gates the ELEC functions (fnJM body in c47Extensions/jm.c).
+    // Upstream defines.h enables it by default and #undef's it for the
+    // flash-limited DMCP TWO_FILE packages 1, 2 and 4 (package 3 and DMCP5 keep
+    // it). Defaults true to match a host build.
+    option_elec: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -86,6 +91,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
+    build_options.addOption(bool, "option_elec", options.option_elec);
     root_module.addOptions("frontier_build_options", build_options);
 
     return b.addObject(.{
