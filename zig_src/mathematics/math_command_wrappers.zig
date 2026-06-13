@@ -136,6 +136,9 @@ comptime {
         // The cross-product owner replaces crossRealVectors / crossComplexVectors
         // of mathematics/matrix.c.
         _ = @import("math_matrix_cross_owned.zig");
+        // The vector-angle owner replaces vectorAngle of mathematics/matrix.c;
+        // it reuses the Zig-owned _dotRealVectors / _euclideanNormRealMatrix.
+        _ = @import("math_matrix_vector_angle_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
