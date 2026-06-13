@@ -106,6 +106,7 @@
 #define fnMatrixIdentity z47_math_wrappers_legacy_fnMatrixIdentity
 #define fnLuDecomposition z47_math_wrappers_legacy_fnLuDecomposition
 #define fnQrDecomposition z47_math_wrappers_legacy_fnQrDecomposition
+#define fnNewMatrix z47_math_wrappers_legacy_fnNewMatrix
 
 #include "c47.h"
 
