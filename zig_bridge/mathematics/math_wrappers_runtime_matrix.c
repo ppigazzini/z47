@@ -106,6 +106,11 @@
 // stack-local descriptor at a register's in-place matrix data without copying.
 #define linkToRealMatrixRegister z47_math_wrappers_legacy_linkToRealMatrixRegister
 #define linkToComplexMatrixRegister z47_math_wrappers_legacy_linkToComplexMatrixRegister
+// Matrix dimension helpers owned by math_matrix_dimension_arg_owned.zig
+// (getDimensionArg keeps its static worker getSingleDimension as a private Zig
+// copy; only the two public helpers are renamed).
+#define getMatrixDims z47_math_wrappers_legacy_getMatrixDims
+#define getDimensionArg z47_math_wrappers_legacy_getDimensionArg
 // fn* matrix command wrappers owned by the math_matrix_*_command_owned.zig
 // owners; the numeric primitives they drive stay in this bridge (or are already
 // Zig-owned and called by their canonical names).
