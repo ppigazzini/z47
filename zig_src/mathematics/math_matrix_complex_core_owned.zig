@@ -2,8 +2,9 @@
 // Zig port of the complex dense linear-algebra core of
 // src/c47/mathematics/matrix.c: invCpxMat (in-place inverse of an
 // interleaved-complex matrix via LU + pivoting solve) and mulCpxMat
-// (interleaved-complex matrix product), with their shared static workers
-// luCpxMat and complex_matrix_pivoting_solve kept private here. These back the
+// (interleaved-complex matrix product), with the shared partial-pivoting LU
+// worker luCpxMat (exported for complex_LU_decomposition to reuse) and the
+// private complex_matrix_pivoting_solve back-substitution. These back the
 // matrix-by-matrix divide and the matrix inverse; both are exported under their
 // canonical names so the later divide / invert owners reach them. The upstream
 // copies are file-local statics, so no bridge rename is needed.
@@ -41,7 +42,9 @@ fn reportRamFull(comptime info: [*:0]const u8) void {
 }
 
 // In-place partial-pivoting LU of an interleaved-complex size*size matrix.
-fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.realContext_t) bool {
+// Exported so complex_LU_decomposition can reuse it; the upstream copy is a
+// file-local static, so the global Zig symbol does not clash with it.
+pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.realContext_t) callconv(.c) bool {
     const n: usize = size;
     var max: real_t = undefined;
     var t: real_t = undefined;

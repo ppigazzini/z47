@@ -308,6 +308,7 @@ pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 // and product on interleaved-complex real_t arrays.
 pub extern fn invCpxMat(matrix: [*]real_t, n: u16, real_context: *realContext_t) bool;
 pub extern fn mulCpxMat(y: [*]const real_t, x: [*]const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]real_t, real_context: *realContext_t) void;
+pub extern fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *realContext_t) bool;
 pub extern fn decQuadZero(result: *real34_t) *real34_t;
 pub inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
