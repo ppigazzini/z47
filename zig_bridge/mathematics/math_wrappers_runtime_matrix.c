@@ -45,6 +45,11 @@
 #define realMatrixSwapColumns z47_math_wrappers_legacy_realMatrixSwapColumns
 #define complexMatrixSwapRows z47_math_wrappers_legacy_complexMatrixSwapRows
 #define complexMatrixSwapColumns z47_math_wrappers_legacy_complexMatrixSwapColumns
+// Row/column insert owned by math_matrix_insert_owned.zig.
+#define insRowRealMatrix z47_math_wrappers_legacy_insRowRealMatrix
+#define insColRealMatrix z47_math_wrappers_legacy_insColRealMatrix
+#define insRowComplexMatrix z47_math_wrappers_legacy_insRowComplexMatrix
+#define insColComplexMatrix z47_math_wrappers_legacy_insColComplexMatrix
 
 #include "c47.h"
 

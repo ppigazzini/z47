@@ -120,6 +120,9 @@ comptime {
         // The matrix swap owner replaces realMatrixSwapRows / realMatrixSwapColumns
         // and complexMatrixSwapRows / complexMatrixSwapColumns of mathematics/matrix.c.
         _ = @import("math_matrix_swap_owned.zig");
+        // The matrix insert owner replaces insRowRealMatrix / insColRealMatrix
+        // and insRowComplexMatrix / insColComplexMatrix of mathematics/matrix.c.
+        _ = @import("math_matrix_insert_owned.zig");
         _ = @import("math_prime_owned.zig");
         _ = @import("math_wp34s_owned.zig");
         _ = @import("math_cpyx_owned.zig");
