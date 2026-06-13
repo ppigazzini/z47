@@ -88,6 +88,10 @@
 // its own private copies).
 #define detRealMatrix z47_math_wrappers_legacy_detRealMatrix
 #define detComplexMatrix z47_math_wrappers_legacy_detComplexMatrix
+// Matrix register-linking owned by math_matrix_register_link_owned.zig: point a
+// stack-local descriptor at a register's in-place matrix data without copying.
+#define linkToRealMatrixRegister z47_math_wrappers_legacy_linkToRealMatrixRegister
+#define linkToComplexMatrixRegister z47_math_wrappers_legacy_linkToComplexMatrixRegister
 
 #include "c47.h"
 
