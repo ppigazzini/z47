@@ -76,6 +76,7 @@ comptime {
     _ = @import("frontier_asn_browser_owned.zig");
     _ = @import("frontier_textfiles_owned.zig");
     _ = @import("frontier_xeqm_owned.zig");
+    _ = @import("frontier_debug_owned.zig");
 }
 const printer_control = @import("frontier_printer_control_owned.zig");
 const runtime = @import("frontier_runtime.zig");
