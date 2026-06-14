@@ -78,6 +78,7 @@ zig_src/mathematics/math_deltaPercentXmean_owned.zig
 zig_src/mathematics/math_iteration_owned.zig
 zig_src/mathematics/math_percentSigmaDeltaPercentXmean_owned.zig
 zig_src/frontier/frontier.zig
+zig_src/frontier/frontier_config_owned.zig
 zig_src/frontier/frontier_runtime.zig
 zig_src/state/register_descriptor_storage_owned.zig
 zig_src/state/register_memory_owned.zig

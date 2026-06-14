@@ -76,6 +76,7 @@ comptime {
     _ = @import("frontier_asn_browser_owned.zig");
     _ = @import("frontier_textfiles_owned.zig");
     _ = @import("frontier_xeqm_owned.zig");
+    _ = @import("frontier_config_owned.zig");
     _ = @import("frontier_plotstat_owned.zig");
     _ = @import("frontier_matrix_editor_owned.zig");
     _ = @import("frontier_graphs_owned.zig");
