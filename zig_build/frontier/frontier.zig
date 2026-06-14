@@ -47,6 +47,16 @@ pub const RuntimeObjectOptions = struct {
     // flash-limited DMCP TWO_FILE packages 1, 2 and 4 (package 3 and DMCP5 keep
     // it). Defaults true to match a host build.
     option_elec: bool = true,
+    // IR_PRINTING gates the IR printer paths (printViewAview / printInputPrompt
+    // in display.c's fnView/fnAview/fnPrompt). Upstream defines.h enables it by
+    // default and #undef's it for every flash-limited DMCP TWO_FILE package
+    // (1, 2, 3 and 4). DMCP5 (NEW_HW) and host keep it. Defaults true (host).
+    ir_printing: bool = true,
+    // OPTION_VECTOR gates the 2D/3D vector display special-case in display.c's
+    // real34MatrixToDisplayString. Upstream enables it by default and #undef's
+    // it for DMCP packages 1, 2 and 4 (package 3 and DMCP5 keep it). Defaults
+    // true (host).
+    option_vector: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -92,6 +102,8 @@ fn addRuntimeObject(
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
     build_options.addOption(bool, "option_elec", options.option_elec);
+    build_options.addOption(bool, "ir_printing", options.ir_printing);
+    build_options.addOption(bool, "option_vector", options.option_vector);
     root_module.addOptions("frontier_build_options", build_options);
 
     return b.addObject(.{

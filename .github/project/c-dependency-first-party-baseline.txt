@@ -10,7 +10,6 @@ src/testSuite/hal/lcd.c
 src/testSuite/hal/print_ir.c
 src/testSuite/testSuite.c
 zig_bridge/frontier/addons_legacy.c
-zig_bridge/frontier/display_legacy.c
 zig_bridge/frontier/items_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c

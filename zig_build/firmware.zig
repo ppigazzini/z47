@@ -134,6 +134,10 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     // the ELEC functions (fnJM body). Mirrors the upstream defines.h package
     // blocks.
     opts.option_elec = (pkg == 3);
+    // IR_PRINTING is #undef'd for every DMCP TWO_FILE package (1, 2, 3, 4).
+    opts.ir_printing = false;
+    // OPTION_VECTOR is #undef'd for DMCP packages 1, 2 and 4; package 3 keeps it.
+    opts.option_vector = (pkg == 3);
     return opts;
 }
 
