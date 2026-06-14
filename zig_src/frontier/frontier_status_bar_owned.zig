@@ -768,7 +768,13 @@ fn showStringAndClear(str: [*c]const u8, font: *const font_t, x: u32, y: i32, dx
     getStringBounds(str, font, &col, &row);
 
     const xx: u32 = showString(str, font, x, @bitCast(y), videoMode, showLeadingCols, showEndingCols);
+    // The trailing clear region (split into a noinline helper to keep the thumb
+    // register allocator from running out of registers on this function).
+    showStringAndClearTail(x, y, dx, dy, xx, row);
+    return @intCast(xx);
+}
 
+noinline fn showStringAndClearTail(x: u32, y: i32, dx: u32, dy: u32, xx: u32, row: u32) void {
     if (xx < x + dx) {
         lcd_fill_rect(xx, @intCast(maxI(0, y)), x + dx - xx, @intCast(maxI(@as(i32, @intCast(row)), @as(i32, @intCast(dy))) + minI(0, y)), LCD_SET_VALUE);
     }
@@ -777,7 +783,6 @@ fn showStringAndClear(str: [*c]const u8, font: *const font_t, x: u32, y: i32, dx
     } else if (y > 0) {
         lcd_fill_rect(x, 0, dx, @bitCast(y - 0), LCD_SET_VALUE);
     }
-    return @intCast(xx);
 }
 
 // ===========================================================================
