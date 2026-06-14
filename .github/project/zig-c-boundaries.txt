@@ -134,6 +134,7 @@ zig_src/frontier/frontier_font_browser_owned.zig
 zig_src/frontier/frontier_asn_browser_owned.zig
 zig_src/frontier/frontier_textfiles_owned.zig
 zig_src/frontier/frontier_xeqm_owned.zig
+zig_src/frontier/frontier_print_owned.zig
 zig_src/frontier/frontier_plotstat_owned.zig
 zig_src/frontier/frontier_matrix_editor_owned.zig
 zig_src/frontier/frontier_graphs_owned.zig
