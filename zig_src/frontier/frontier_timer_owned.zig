@@ -160,7 +160,9 @@ extern var statisticalSumsPointer: ?*real_t;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 extern var ctxtReal75: realContext_t;
-extern const softmenu: [*c]const softmenu_t;
+// `softmenu` is a C ARRAY (const softmenu_t softmenu[]); bind its address with
+// @extern, not a pointer-typed extern (which loads the data as an address).
+const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern const standardFont: font_t;
 extern const numericFont: font_t;

@@ -290,7 +290,9 @@ extern var timerCraAndDeciseconds: u8;
 extern var Norm_Key_00: normKey_t;
 extern var printerState: printerState_t;
 extern var statisticalSumsPointer: ?*anyopaque;
-extern const indexOfItems: [*c]const item_t;
+// `indexOfItems` is a C ARRAY (const item_t indexOfItems[]); bind its address
+// with @extern, not a pointer-typed extern (which loads the data as an address).
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
 extern var PLOT_INTG: bool_t;
 extern var PLOT_DIFF: bool_t;
