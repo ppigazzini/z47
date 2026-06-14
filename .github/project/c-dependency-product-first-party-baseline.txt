@@ -8,7 +8,6 @@ zig_bridge/frontier/config_legacy.c
 zig_bridge/frontier/display_legacy.c
 zig_bridge/frontier/graphs_legacy.c
 zig_bridge/frontier/items_legacy.c
-zig_bridge/frontier/manage_legacy.c
 zig_bridge/frontier/matrix_editor_legacy.c
 zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/print_legacy.c
