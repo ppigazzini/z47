@@ -33,6 +33,19 @@ pub const RuntimeObjectOptions = struct {
     strip_17: bool = false,
     strip_17b: bool = false,
     strip_17c: bool = false,
+    // SAVE_SPACE_DM42_15 (all distributions) gates the DISTR submenu entry in
+    // softmenus.c's menu_PROB (DDMENU). Upstream defines it only for DMCP package
+    // 4. Defaults false (host / other packages keep the DISTR menu).
+    strip_15: bool = false,
+    // SAVE_SPACE_DM42_21_HP35 gates the SetHP35 dev-profile shortcut in
+    // softmenus.c's menu_Dev. Upstream defines it only for DMCP package 1.
+    // Defaults false (host / other packages keep the HP35 profile shortcut).
+    strip_21_hp35: bool = false,
+    // SAVE_SPACE_DM42_12{ORTHO,BESSEL,ELLIP} are always defined together (the
+    // NOBESSEL_NOORTHO packages 1, 3 and 4); they gate the corresponding
+    // ORTHO/BESSEL/ELLIP case labels in softmenus.c's savedspace() strike-out
+    // helper. Defaults false (host / package 2 / DMCP5 keep those functions).
+    strip_ortho_bessel_ellip: bool = false,
     // Emit the EXTRA_INFO_ON_CALC_ERROR console hints. Upstream compiles these
     // out on firmware (DMCP_BUILD), so default off there to match and save flash;
     // host/sim keep them. Default true mirrors a normal host build.
@@ -98,6 +111,9 @@ fn addRuntimeObject(
     build_options.addOption(bool, "strip_17", options.strip_17);
     build_options.addOption(bool, "strip_17b", options.strip_17b);
     build_options.addOption(bool, "strip_17c", options.strip_17c);
+    build_options.addOption(bool, "strip_15", options.strip_15);
+    build_options.addOption(bool, "strip_21_hp35", options.strip_21_hp35);
+    build_options.addOption(bool, "strip_ortho_bessel_ellip", options.strip_ortho_bessel_ellip);
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
