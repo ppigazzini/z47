@@ -836,7 +836,30 @@ jobs:
           export DYLD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
           zig build logical_shortint_parity
           zig build rotate_bits_parity
-          zig build logical_boolean_ops_suite
+          # The testSuite now links on macOS but crashes at runtime (signal BUS).
+          # On failure, re-run the crashing binary under lldb to dump the faulting
+          # stack so the exact frame can be fixed. The lane still fails (red).
+          run_with_backtrace() {
+            local step="$1" list="$2" rc ts
+            set +e
+            zig build "$step" 2>&1 | tee "$RUNNER_TEMP/zig_build_out.log"
+            rc=${PIPESTATUS[0]}
+            set -e
+            [ "$rc" -eq 0 ] && return 0
+            echo "::group::lldb backtrace for testSuite ($step)"
+            ts=$(grep -oE '\.zig-cache/o/[0-9a-f]+/testSuite' "$RUNNER_TEMP/zig_build_out.log" | head -1)
+            [ -z "$ts" ] || [ ! -x "$ts" ] && ts=$(ls -t .zig-cache/o/*/testSuite 2>/dev/null | head -1)
+            if [ -n "${ts:-}" ] && [ -x "$ts" ]; then
+              echo "Re-running the crashing binary under lldb: $ts $list"
+              lldb --batch -o "run" -o "thread backtrace all" -o "register read" \
+                -k "thread backtrace all" -k "quit" -- "$ts" "$list" || true
+            else
+              echo "Could not locate the testSuite binary for backtrace capture."
+            fi
+            echo "::endgroup::"
+            return "$rc"
+          }
+          run_with_backtrace logical_boolean_ops_suite zig_build/tests/testSuiteList_logical_boolean_ops.txt
           zig build stack_state_parity
           retry_once zig build register_metadata_parity
           zig build flags_parity
