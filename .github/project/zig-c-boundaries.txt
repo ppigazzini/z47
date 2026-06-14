@@ -133,6 +133,7 @@ zig_src/frontier/frontier_font_browser_owned.zig
 zig_src/frontier/frontier_asn_browser_owned.zig
 zig_src/frontier/frontier_textfiles_owned.zig
 zig_src/frontier/frontier_xeqm_owned.zig
+zig_src/frontier/frontier_radio_button_catalog_owned.zig
 zig_src/frontier/frontier_debug_owned.zig
 zig_src/solver/solve_runtime.zig
 zig_src/solver/tvm_owned.zig
