@@ -22,7 +22,6 @@ zig_bridge/frontier/plotstat_legacy.c
 zig_bridge/frontier/print_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
-zig_bridge/frontier/tam_legacy.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
 zig_bridge/state/calc_state_legacy.c
 zig_bridge/state/keyboard_state_legacy.c
