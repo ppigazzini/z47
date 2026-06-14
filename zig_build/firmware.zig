@@ -130,6 +130,15 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.strip_17 = true; // SAVE_SPACE_DM42_17 is set on every DM42 package
     opts.strip_17b = (pkg == 2 or pkg == 4);
     opts.strip_17c = (pkg == 2 or pkg == 3 or pkg == 4);
+    // SAVE_SPACE_DM42_15 (all distributions, drops the DISTR softmenu entry from
+    // menu_PROB) is defined only for package 4. Mirrors the upstream defines.h.
+    opts.strip_15 = (pkg == 4);
+    // SAVE_SPACE_DM42_21_HP35 (drops the SetHP35 dev-profile from menu_Dev) is
+    // defined only for package 1. Mirrors the upstream defines.h.
+    opts.strip_21_hp35 = (pkg == 1);
+    // SAVE_SPACE_DM42_12{ORTHO,BESSEL,ELLIP} (strike-out savedspace cases) are
+    // defined together for the NOBESSEL_NOORTHO packages 1, 3 and 4.
+    opts.strip_ortho_bessel_ellip = (pkg == 1 or pkg == 3 or pkg == 4);
     // OPTION_ELEC is #undef'd for DMCP packages 1, 2 and 4; only package 3 keeps
     // the ELEC functions (fnJM body). Mirrors the upstream defines.h package
     // blocks.
