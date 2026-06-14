@@ -1,2 +1,2 @@
 # Runtime legacy helper C units compiled for frontier root ownership bridge.
-zig_bridge/frontier/screen_legacy.c
+zig_bridge/frontier/screen_snap_helpers.c
