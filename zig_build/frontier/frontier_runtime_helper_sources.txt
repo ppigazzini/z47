@@ -1,4 +1,3 @@
 # Runtime legacy helper C units compiled for frontier root ownership bridge.
 zig_bridge/frontier/addons_legacy.c
-zig_bridge/frontier/items_legacy.c
 zig_bridge/frontier/screen_legacy.c
