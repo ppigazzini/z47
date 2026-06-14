@@ -87,7 +87,9 @@ const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_NONE: u8 = 0;
 
-const DEC_ROUND_HALF_EVEN: c_int = 0;
+// decContext.h enum: CEILING=0, UP=1, HALF_UP=2, HALF_EVEN=3, HALF_DOWN=4,
+// DOWN=5, FLOOR=6, 05UP=7.
+const DEC_ROUND_HALF_EVEN: c_int = 3;
 const DEC_ROUND_DOWN: c_int = 5;
 
 const dtLongInteger: u32 = 0;
