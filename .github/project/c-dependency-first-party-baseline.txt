@@ -14,7 +14,6 @@ zig_bridge/frontier/bufferize_legacy.c
 zig_bridge/frontier/c47_legacy.c
 zig_bridge/frontier/display_legacy.c
 zig_bridge/frontier/items_legacy.c
-zig_bridge/frontier/print_legacy.c
 zig_bridge/frontier/screen_legacy.c
 zig_bridge/frontier/softmenus_legacy.c
 zig_bridge/mathematics/math_wrappers_runtime_matrix.c
