@@ -315,7 +315,17 @@ extern fn realToUint32C47(r: *const anyopaque, err: ?*bool_t) u32;
 extern fn getBeepVolume() u16;
 extern fn compressConversionName(msg1: [*c]u8) void;
 extern fn itemToBeCoded(unusedButMandatoryParameter: u16) void;
-extern fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 extern fn strlen(s: [*c]const u8) usize;
 extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*:0]const u8, ...) c_int;
 

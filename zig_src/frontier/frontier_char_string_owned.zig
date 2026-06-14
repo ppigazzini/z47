@@ -1399,6 +1399,22 @@ pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) call
     return dest;
 }
 
+// On Windows (MINGW) the ucrt has no stpcpy, so charString.h declares stringCopy
+// as a real function (`#if defined(__MINGW64__)`) instead of a `#define
+// stringCopy stpcpy`; C units call it by name and must link it. Upstream defines
+// it in charString.c under that guard. Export it on Windows only (elsewhere
+// stringCopy is the macro, so this symbol must not exist / would be unused).
+fn stringCopyWindows(dest: [*c]u8, source: [*c]const u8) callconv(.c) [*c]u8 {
+    const l: u32 = @intCast(stringByteLength(source));
+    const p: [*c]u8 = @ptrCast(xcopy(dest, source, l + 1));
+    return p + @as(usize, l);
+}
+comptime {
+    if (builtin.target.os.tag == .windows) {
+        @export(&stringCopyWindows, .{ .name = "stringCopy", .linkage = .strong });
+    }
+}
+
 // ---------------------------------------------------------------------------
 // addChrBothSides
 // ---------------------------------------------------------------------------
