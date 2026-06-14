@@ -299,7 +299,17 @@ extern fn calcModeNormalGui() void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
-extern fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
@@ -1390,15 +1400,14 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
     }
 }
 
-// abortf host macro: fprintf(stderr,...);perror(a);fflush(stderr);abort();
-// reduced to a perror+abort (the color/location decoration is cosmetic).
-extern var stderr: ?*anyopaque;
+// abortf host macro: fprintf(stderr,...);perror(a);fflush(stderr);abort().
+// Reduced to perror+abort: perror already writes the message to stderr, and
+// this avoids referencing the `stderr` symbol directly, which is not portable
+// (it is __stderrp on macOS and not a plain symbol in Windows ucrt). The
+// color/location decoration is cosmetic.
 extern fn perror(s: [*c]const u8) void;
-extern fn fflush(stream: ?*anyopaque) c_int;
 fn abortfHost(a: [*c]const u8) noreturn {
-    _ = fprintf(stderr, "abort: createMenu\n");
     perror(a);
-    _ = fflush(stderr);
     abort();
 }
 

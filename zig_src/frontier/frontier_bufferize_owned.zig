@@ -936,7 +936,17 @@ extern fn stringToInt16(str: [*c]const u8) i16;
 extern fn stringToInt32(str: [*c]const u8) i32;
 extern fn toInt32(str: [*c]const u8) i32;
 // stringCopy(dest, source) = stpcpy(dest, source) (charString.h, non-MINGW64).
-extern fn stpcpy(dest: [*c]u8, source: [*c]const u8) [*c]u8;
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     return stpcpy(dest, source);
 }

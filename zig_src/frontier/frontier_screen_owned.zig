@@ -819,7 +819,10 @@ const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 const allNamedVariables = @extern([*c]const namedVariableHeader_t, .{ .name = "allNamedVariables" });
-const KEY_X = @extern([*c]const u16, .{ .name = "KEY_X" });
+// C: `const int KEY_X[7] = {-1, 66, ...}` -- signed 4-byte ints (KEY_X[0] is
+// -1). It must be c_int: a u16 view both mis-sizes the elements and turns -1
+// into 65535 (KEY_X[0]+1 then overflows u16).
+const KEY_X = @extern([*c]const c_int, .{ .name = "KEY_X" });
 const confirmationTI = @extern([*c]const confirmationTI_t, .{ .name = "confirmationTI" });
 const varDescr = @extern([*c]const reservedVariableDescStr_t, .{ .name = "varDescr" });
 const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetters" });
@@ -1415,7 +1418,17 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 }
 
 // macro reproductions (defines.h / registers.h / realType.h / longIntegerType.h)
-extern fn stpcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 extern fn decQuadFromInt32(r: *align(1) real34_t, v: i32) *align(1) real34_t;
 extern fn decQuadFromUInt32(r: *align(1) real34_t, v: u32) *align(1) real34_t;
 extern fn decQuadToInt32(d: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
@@ -1705,7 +1718,11 @@ pub export fn clear_fg_jm() callconv(.c) void {
 }
 
 inline fn getLine_buffer_bit(x: i32) u16 {
-    return @intCast(415 - x);
+    // C: `uint16_t getLine_buffer_bit(int x){ return 415-x; }` -- the signed
+    // result is implicitly truncated to uint16_t (it wraps when x > 415, which
+    // happens on the R47 f/g underline path). @intCast would panic; reproduce
+    // the C modulo-2^16 truncation.
+    return @truncate(@as(u32, @bitCast(415 - x)));
 }
 
 pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c) void {
@@ -1747,9 +1764,9 @@ pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c
         xIndex = 0;
         while (xIndex < 6) : (xIndex += 1) {
             if ((xSoftkeyMask >> @intCast(xIndex)) & 1 != 0) {
-                j = KEY_X[xIndex] + 1;
+                j = @intCast(KEY_X[xIndex] + 1);
                 j +%= @intCast(if (greyType != 0) mod(2 * @as(i32, line) - @as(i32, j), 5) else mod(@as(i32, j) + @as(i32, line), 2));
-                while (j < KEY_X[xIndex + 1]) : (j +%= colIncrease) {
+                while (@as(i32, j) < KEY_X[xIndex + 1]) : (j +%= colIncrease) {
                     buff_bit = getLine_buffer_bit(j);
                     tempByte = temp_line[buff_bit / 8];
                     if (xBg[xIndex] != 0) {

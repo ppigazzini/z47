@@ -228,7 +228,17 @@ extern fn decQuadAdd(r: *real34_t, a: *align(1) const real34_t, b: *align(1) con
 extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
 
 // libc.
-extern fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 
 // host-only glib externs (referenced under !dmcp_build).
 extern fn g_get_monotonic_time() i64;
