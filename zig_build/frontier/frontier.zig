@@ -60,6 +60,12 @@ pub const RuntimeObjectOptions = struct {
     // flash-limited DMCP TWO_FILE packages 1, 2 and 4 (package 3 and DMCP5 keep
     // it). Defaults true to match a host build.
     option_elec: bool = true,
+    // CALCMODEL selects the firmware/sim model the way upstream's compile-time
+    // -DCALCMODEL does: it seeds the calcModel global (c47.c) so isR47FAM() and
+    // the early startup render (window title, keyboard layout) are correct
+    // BEFORE c47-gtk.c re-sets calcModel after restore. USER_C47 = 46 (host C47
+    // sim + testSuite default), USER_R47 = 66 (host R47 sim + DMCP firmware).
+    calcmodel: u8 = 46,
     // IR_PRINTING gates the IR printer paths (printViewAview / printInputPrompt
     // in display.c's fnView/fnAview/fnPrompt). Upstream defines.h enables it by
     // default and #undef's it for every flash-limited DMCP TWO_FILE package
@@ -118,6 +124,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
     build_options.addOption(bool, "option_elec", options.option_elec);
+    build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_vector", options.option_vector);
     root_module.addOptions("frontier_build_options", build_options);
@@ -170,6 +177,7 @@ pub fn addToModule(
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
     c_flags: []const []const u8,
+    calcmodel: u8,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -179,6 +187,6 @@ pub fn addToModule(
         }
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel });
     module.addObject(runtime_object);
 }
