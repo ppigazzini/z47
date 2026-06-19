@@ -109,6 +109,12 @@
 // Named-matrix helpers owned by math_matrix_named_owned.zig.
 #define allocateNamedMatrix z47_math_wrappers_legacy_allocateNamedMatrix
 #define appendRowAtMatrixRegister z47_math_wrappers_legacy_appendRowAtMatrixRegister
+// Matrix-register allocate/reshape core owned by
+// math_matrix_register_memory_owned.zig (initMatrixRegister + redimMatrixRegister;
+// the static reshape worker copyAndZeroMatrixElements keeps internal linkage and
+// backs the legacy redimMatrixRegister copy, with its own private Zig copy).
+#define initMatrixRegister z47_math_wrappers_legacy_initMatrixRegister
+#define redimMatrixRegister z47_math_wrappers_legacy_redimMatrixRegister
 // STATS-matrix undo helpers owned by math_matrix_stats_owned.zig.
 #define saveStatsMatrix z47_math_wrappers_legacy_saveStatsMatrix
 #define recallStatsMatrix z47_math_wrappers_legacy_recallStatsMatrix
