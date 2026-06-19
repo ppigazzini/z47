@@ -150,6 +150,15 @@
 // renamed.
 #define fnSetMatrixDimensions z47_math_wrappers_legacy_fnSetMatrixDimensions
 #define fnSetMatrixDimensionsGr z47_math_wrappers_legacy_fnSetMatrixDimensionsGr
+// OPTION_VECTOR coordinate conversions owned by
+// math_matrix_coordinate_conversions_owned.zig (the still-bridged
+// fnComplexToVector / V3err / VtoAngleMode keep calling the legacy copies).
+#define convert3DtoSPH z47_math_wrappers_legacy_convert3DtoSPH
+#define convertSPHto3D z47_math_wrappers_legacy_convertSPHto3D
+#define convert3DtoCYL z47_math_wrappers_legacy_convert3DtoCYL
+#define convertCYLto3D z47_math_wrappers_legacy_convertCYLto3D
+#define convert2DtoPOL z47_math_wrappers_legacy_convert2DtoPOL
+#define convertPOLto2D z47_math_wrappers_legacy_convertPOLto2D
 
 #include "c47.h"
 
