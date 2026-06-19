@@ -159,6 +159,10 @@
 #define convertCYLto3D z47_math_wrappers_legacy_convertCYLto3D
 #define convert2DtoPOL z47_math_wrappers_legacy_convert2DtoPOL
 #define convertPOLto2D z47_math_wrappers_legacy_convertPOLto2D
+// OPTION_VECTOR vector helpers owned by math_matrix_vector_helpers_owned.zig
+// (the still-bridged V3RectoToSph/V3RectoToCyl callers use the legacy V3err).
+#define V3err z47_math_wrappers_legacy_V3err
+#define VtoAngleMode z47_math_wrappers_legacy_VtoAngleMode
 
 #include "c47.h"
 

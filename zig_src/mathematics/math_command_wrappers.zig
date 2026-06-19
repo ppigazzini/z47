@@ -187,6 +187,9 @@ comptime {
         // rectangular <-> spherical/cylindrical/polar helpers of
         // mathematics/matrix.c.
         _ = @import("math_matrix_coordinate_conversions_owned.zig");
+        // The vector-helpers owner replaces the OPTION_VECTOR V3err error
+        // reporter and VtoAngleMode of mathematics/matrix.c.
+        _ = @import("math_matrix_vector_helpers_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
