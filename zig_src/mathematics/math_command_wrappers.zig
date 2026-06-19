@@ -183,6 +183,10 @@ comptime {
         // redimMatrixRegister (the matrix-register allocate/reshape core) of
         // mathematics/matrix.c.
         _ = @import("math_matrix_register_memory_owned.zig");
+        // The coordinate-conversions owner replaces the OPTION_VECTOR
+        // rectangular <-> spherical/cylindrical/polar helpers of
+        // mathematics/matrix.c.
+        _ = @import("math_matrix_coordinate_conversions_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
