@@ -163,6 +163,7 @@
 // (the still-bridged V3RectoToSph/V3RectoToCyl callers use the legacy V3err).
 #define V3err z47_math_wrappers_legacy_V3err
 #define VtoAngleMode z47_math_wrappers_legacy_VtoAngleMode
+#define fnComplexToVector z47_math_wrappers_legacy_fnComplexToVector
 
 #include "c47.h"
 
