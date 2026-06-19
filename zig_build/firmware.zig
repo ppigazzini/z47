@@ -251,6 +251,9 @@ pub fn registerSteps(
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful and reclaim flash.
         .extra_info_on_calc_error = false,
+        // The DMCP firmware is built with -DCALCMODEL=USER_R47 (66), so calcModel
+        // must seed to USER_R47f_g -- matching upstream's static init.
+        .calcmodel = 66,
         // Firmware build: use backToSystem tails and drop the PC allocation
         // tracking. old_hw (static freeMemoryRegions array) is set per board by
         // frontierDistributionStrip for DMCP; DMCP5 keeps the default (pointer).

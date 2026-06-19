@@ -41,7 +41,11 @@ const INVALID_VARIABLE: u16 = 2199;
 const USER_R47: u8 = 66;
 const USER_R47f_g: u8 = 61;
 const USER_C47: u8 = 46;
-const CALCMODEL: u8 = USER_C47; // 46
+// CALCMODEL is the per-build model selector (upstream's compile-time -DCALCMODEL).
+// The host C47 sim + testSuite pass USER_C47 (46); the host R47 sim and the DMCP
+// firmware pass USER_R47 (66). Seeding calcModel from it (below) is what makes the
+// R47 sim's startup render isR47FAM()=true before c47-gtk.c re-sets calcModel.
+const CALCMODEL: u8 = @import("frontier_build_options").calcmodel;
 
 // ---------------------------------------------------------------------------
 // Aggregate type layouts (extern struct, verified by size/align probe)
