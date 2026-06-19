@@ -1243,7 +1243,12 @@ pub export const softmenu linksection(code_data_section) = [_]softmenu_t{
     .{ .menuItem = -2738, .numItems = @as(i16, @intCast(menu_42.len)), .softkeyItem = &menu_42 },
     .{ .menuItem = 0, .numItems = 0, .softkeyItem = null },
 };
-pub export var dynamicSoftmenu linksection(code_data_section) = [_]dynamicSoftmenu_t{
+// dynamicSoftmenu is a MUTABLE RAM global in C (softmenus.c:1164, written at
+// runtime by _dynmenuConstructUser etc.), NOT a TO_QSPI const. It must stay in
+// the normal writable data section -- code_data_section is read-only
+// (__DATA_CONST on macOS / .text on Windows+Linux), so writing to it there
+// faults (EXC_BAD_ACCESS code=2 on macOS, access violation on Windows).
+pub export var dynamicSoftmenu = [_]dynamicSoftmenu_t{
     .{ .menuItem = -1349, .numItems = 0, .menuContent = null },
     .{ .menuItem = -1350, .numItems = 0, .menuContent = null },
     .{ .menuItem = -1355, .numItems = 0, .menuContent = null },
