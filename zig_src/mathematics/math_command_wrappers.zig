@@ -179,6 +179,10 @@ comptime {
         // The named-matrix owner replaces allocateNamedMatrix and
         // appendRowAtMatrixRegister of mathematics/matrix.c.
         _ = @import("math_matrix_named_owned.zig");
+        // The register-memory owner replaces initMatrixRegister and
+        // redimMatrixRegister (the matrix-register allocate/reshape core) of
+        // mathematics/matrix.c.
+        _ = @import("math_matrix_register_memory_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");

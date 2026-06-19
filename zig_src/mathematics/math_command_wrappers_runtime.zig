@@ -351,6 +351,8 @@ pub const FLAG_WRAPEND: i32 = 0xc01a;
 pub const FLAG_WRAPEDG: i32 = 0xc03f;
 pub const TEMP_REGISTER_2_SAVED_STATS: calcRegister_t = 136;
 pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
+// TO_BLOCKS(sizeof(complex34_t)) = (32 + 3) >> 2 = 8 (BYTES_PER_BLOCK = 4).
+pub const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 pub const ERROR_TI_UNDO_FAILED: u8 = 126;
 pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
 pub inline fn real34SetOne(destination: *real34_t) void {
