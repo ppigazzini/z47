@@ -229,6 +229,7 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         pub fn keyDotD(unused_but_mandatory_parameter: u16) void {
+            _ = unused_but_mandatory_parameter;
             switch (runtime.calcMode) {
                 runtime.CM_NORMAL => {
                     const flag = if (runtime.getSystemFlag(runtime.FLAG_IRFRQ)) runtime.FLAG_IRFRAC else runtime.FLAG_FRACT;
@@ -254,7 +255,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_TIMER,
                 runtime.CM_LISTXY,
                 => return,
-                else => runtime.keyDotDRetained(unused_but_mandatory_parameter),
+                else => runtime.bugScreenWhileProcKey("fnKeyDotD", ".d!"),
             }
         }
     };
