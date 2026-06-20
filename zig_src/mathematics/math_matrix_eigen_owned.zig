@@ -14,11 +14,18 @@
 //
 // This owner mirrors the real-op + BigReal scaffolding of math_slvq_owned.zig.
 
+const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
+
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0 .. slice.len :0];
+}
 
 // --- decNumber primitives (operands *align(1) so blob constants + 159-digit
 // stack scratch both pass) ------------------------------------------------
@@ -29,6 +36,27 @@ extern fn decNumberSubtract(res: *align(1) real_t, op1: *align(1) const real_t, 
 extern fn decNumberMultiply(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberDivide(res: *align(1) real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn decNumberFMA(res: *align(1) real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
+extern fn realSetOne(r: *align(1) real_t) void;
+extern fn realCompareLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
+extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *align(1) real_t, qi: *align(1) real_t, ctxt: *realContext_t) void;
+extern fn realRectangularToPolar(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, theta: *align(1) real_t, ctxt: *realContext_t) void;
+extern fn realPolarToRectangular(magnitude: *align(1) const real_t, theta: *align(1) const real_t, re: *align(1) real_t, im: *align(1) real_t, ctxt: *realContext_t) void;
+// mulCpxMat is the math_matrix_complex_core-owned interleaved-complex matmul.
+extern fn mulCpxMat(y: [*]align(1) const real_t, x: [*]align(1) const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]align(1) real_t, ctxt: *realContext_t) void;
+extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
+extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
+
+inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberFMA(res, f1, f2, term, ctxt);
+}
+inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberFromString(destination, source, ctxt);
+}
+inline fn realIsNegativeA(source: *align(1) const real_t) bool {
+    return (source.bits & 0x80) == 0x80;
+}
 
 inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
@@ -94,11 +122,15 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
 }
 const OFF_const_0: u32 = 1708;
 const OFF_const_1: u32 = 4368;
+const OFF_const_2: u32 = 4440;
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);
 }
 inline fn const_1() *align(1) const real_t {
     return cstR(OFF_const_1);
+}
+inline fn const_2() *align(1) const real_t {
+    return cstR(OFF_const_2);
 }
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
@@ -208,5 +240,213 @@ pub export fn calculateEigenvalues22(
     if (is_real_symmetric) {
         realSetZero(t1i);
         realSetZero(t2i);
+    }
+}
+
+inline fn realSizeInBlocks(comptime digits: u32) u32 {
+    return (realSizeInBytes(digits) + 3) / 4;
+}
+
+// adjCpxMat: conjugate transpose of a size x size interleaved-complex matrix.
+fn adjCpxMat(x: [*]align(1) const real_t, size: u16, res: [*]align(1) real_t) void {
+    const sz: usize = size;
+    var i: usize = 0;
+    while (i < sz) : (i += 1) {
+        var j: usize = 0;
+        while (j < sz) : (j += 1) {
+            realCopy(&x[(i * sz + j) * 2], &res[(j * sz + i) * 2]);
+            realCopy(&x[(i * sz + j) * 2 + 1], &res[(j * sz + i) * 2 + 1]);
+            realChangeSign(&res[(j * sz + i) * 2 + 1]);
+        }
+    }
+}
+
+// ===========================================================================
+// QR_decomposition_householder -- Householder QR of the interleaved-complex
+// size x size matrix `mat`, producing q and r (also interleaved complex). Uses
+// a single C47-block bulk allocation for all scratch, matching upstream.
+// ===========================================================================
+pub export fn QR_decomposition_householder(
+    mat: [*]align(1) const real_t,
+    size: u16,
+    q: [*]align(1) real_t,
+    r: [*]align(1) real_t,
+    realContext: *realContext_t,
+) callconv(.c) void {
+    const sz: usize = size;
+    const n2: usize = sz * sz * 2; // real_t slots per matrix
+    const bulkSize: usize = (sz * sz * 5 + sz) * realSizeInBlocks(75) * 2;
+
+    if (allocC47Blocks(bulkSize)) |bulk| {
+        // Zero the entire bulk allocation.
+        {
+            var z: usize = 0;
+            const total = (sz * sz * 5 + sz) * 2;
+            while (z < total) : (z += 1) realSetZero(&bulk[z]);
+        }
+
+        const matr = bulk;
+        const matq = bulk + n2;
+        const qq = bulk + 2 * n2;
+        const qt = bulk + 3 * n2;
+        const newMat = bulk + 4 * n2;
+        const v = bulk + 5 * n2;
+
+        var sum: real_t = undefined;
+        var m: real_t = undefined;
+        var t: real_t = undefined;
+
+        // Copy mat -> matr.
+        var i: usize = 0;
+        while (i < sz * sz) : (i += 1) {
+            realCopy(&mat[i * 2], &matr[i * 2]);
+            realCopy(&mat[i * 2 + 1], &matr[i * 2 + 1]);
+        }
+        // Initialize Q to identity.
+        i = 0;
+        while (i < sz * sz) : (i += 1) {
+            realSetZero(&matq[i * 2]);
+            realSetZero(&matq[i * 2 + 1]);
+        }
+        i = 0;
+        while (i < sz) : (i += 1) realSetOne(&matq[(i * sz + i) * 2]);
+
+        var j: usize = 0;
+        while (j < sz - 1) : (j += 1) {
+            // Column vector of the sub-matrix + its norm.
+            realSetZero(&sum);
+            i = 0;
+            while (i < sz - j) : (i += 1) {
+                realCopy(&matr[((i + j) * sz + j) * 2], &v[i * 2]);
+                realCopy(&matr[((i + j) * sz + j) * 2 + 1], &v[i * 2 + 1]);
+                var temp_v1: real_t = undefined;
+                var temp_v2: real_t = undefined;
+                realFMA(&v[i * 2], &v[i * 2], &sum, &temp_v1, realContext);
+                realCopy(&temp_v1, &sum);
+                realFMA(&v[i * 2 + 1], &v[i * 2 + 1], &sum, &temp_v2, realContext);
+                realCopy(&temp_v2, &sum);
+            }
+            realSquareRoot(&sum, &sum, realContext);
+
+            // u = x - alpha e1 with the stable sign choice.
+            if (realIsZeroA(&v[1])) {
+                if (!realIsNegativeA(&v[0])) {
+                    realChangeSign(&sum);
+                }
+                realSubtract(&v[0], &sum, &v[0], realContext);
+            } else {
+                blockMonitoring = true;
+                realRectangularToPolar(&v[0], &v[1], &m, &t, realContext);
+                blockMonitoring = true;
+                realPolarToRectangular(&sum, &t, &m, &t, realContext);
+                blockMonitoring = false;
+                realAdd(&v[0], &m, &v[0], realContext);
+                realAdd(&v[1], &t, &v[1], realContext);
+            }
+
+            // Norm of u.
+            realSetZero(&sum);
+            i = 0;
+            while (i < sz - j) : (i += 1) {
+                var temp_v1: real_t = undefined;
+                var temp_v2: real_t = undefined;
+                realFMA(&v[i * 2], &v[i * 2], &sum, &temp_v1, realContext);
+                realCopy(&temp_v1, &sum);
+                realFMA(&v[i * 2 + 1], &v[i * 2 + 1], &sum, &temp_v2, realContext);
+                realCopy(&temp_v2, &sum);
+            }
+            realSquareRoot(&sum, &sum, realContext);
+
+            // v = u / ||u|| with a precision-relative minimum threshold.
+            var min_norm: real_t = undefined;
+            var threshold_buf: [24]u8 = undefined;
+            const threshold_str = bufPrintZ(&threshold_buf, "1E-{d}", .{realContext.digits}) catch "1E-75";
+            stringToReal(threshold_str, &min_norm, realContext);
+            i = 0;
+            while (i < sz - j) : (i += 1) {
+                if (realCompareLessThan(&sum, &min_norm)) {
+                    realCopy(&v[i * 2], &m);
+                    realCopy(&v[i * 2 + 1], &t);
+                } else if (realIsZeroA(&v[i * 2 + 1])) {
+                    realDivide(&v[i * 2], &sum, &m, realContext);
+                    realSetZero(&t);
+                } else {
+                    divComplexComplex(&v[i * 2], &v[i * 2 + 1], &sum, const_0(), &m, &t, realContext);
+                }
+                realCopy(&m, &v[i * 2]);
+                realCopy(&t, &v[i * 2 + 1]);
+            }
+
+            // qq = I.
+            i = 0;
+            while (i < sz * sz) : (i += 1) {
+                realSetZero(&qq[i * 2]);
+                realSetZero(&qq[i * 2 + 1]);
+            }
+            i = 0;
+            while (i < sz) : (i += 1) realSetOne(&qq[(i * sz + i) * 2]);
+
+            // qq -= 2 v v*.
+            i = 0;
+            while (i < sz - j) : (i += 1) {
+                var k: usize = 0;
+                while (k < sz - j) : (k += 1) {
+                    const qe = (i + j) * sz + k + j;
+                    realSubtract(const_0(), &v[k * 2 + 1], &sum, realContext);
+                    if (realIsZeroA(&v[i * 2 + 1]) and realIsZeroA(&sum)) {
+                        realMultiply(&v[i * 2], &v[k * 2], &m, realContext);
+                        realSetZero(&t);
+                    } else {
+                        mulComplexComplex(&v[i * 2], &v[i * 2 + 1], &v[k * 2], &sum, &m, &t, realContext);
+                    }
+                    realMultiply(&m, const_2(), &m, realContext);
+                    realMultiply(&t, const_2(), &t, realContext);
+                    realSubtract(&qq[qe * 2], &m, &qq[qe * 2], realContext);
+                    realSubtract(&qq[qe * 2 + 1], &t, &qq[qe * 2 + 1], realContext);
+                }
+            }
+
+            // R = qq * matr.
+            mulCpxMat(qq, matr, size, size, size, newMat, realContext);
+            i = 0;
+            while (i < sz * sz) : (i += 1) {
+                realCopy(&newMat[i * 2], &matr[i * 2]);
+                realCopy(&newMat[i * 2 + 1], &matr[i * 2 + 1]);
+            }
+            // Q = matq * qq*.
+            adjCpxMat(qq, size, qt);
+            mulCpxMat(matq, qt, size, size, size, newMat, realContext);
+            i = 0;
+            while (i < sz * sz) : (i += 1) {
+                realCopy(&newMat[i * 2], &matq[i * 2]);
+                realCopy(&newMat[i * 2 + 1], &matq[i * 2 + 1]);
+            }
+        }
+
+        // Force R lower part to zero.
+        j = 0;
+        while (j < sz - 1) : (j += 1) {
+            i = j + 1;
+            while (i < sz) : (i += 1) {
+                realSetZero(&matr[(i * sz + j) * 2]);
+                realSetZero(&matr[(i * sz + j) * 2 + 1]);
+            }
+        }
+
+        // Copy results out.
+        i = 0;
+        while (i < sz * sz) : (i += 1) {
+            realCopy(&matq[i * 2], &q[i * 2]);
+            realCopy(&matq[i * 2 + 1], &q[i * 2 + 1]);
+            realCopy(&matr[i * 2], &r[i * 2]);
+            realCopy(&matr[i * 2 + 1], &r[i * 2 + 1]);
+        }
+
+        freeC47Blocks(bulk, bulkSize);
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError("In function QR_decomposition_householder:", "Ram full", null, null);
+        }
     }
 }
