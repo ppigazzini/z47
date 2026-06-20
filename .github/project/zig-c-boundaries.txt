@@ -14,6 +14,7 @@ zig_build/firmware_audio_runtime.zig
 zig_build/firmware_io_runtime.zig
 zig_build/firmware_print_ir_runtime.zig
 zig_build/host/gtk_gui_runtime.zig
+zig_build/host/gtk_c47_main_owned.zig
 zig_build/host/gtk_gui_setup_owned.zig
 zig_build/host/gtk_gui_host_decls.zig
 zig_build/host/gtk_gui_shell_owned.zig

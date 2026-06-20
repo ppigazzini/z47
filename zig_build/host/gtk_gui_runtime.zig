@@ -2,6 +2,11 @@ const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const events_owned = @import("gtk_gui_events_owned.zig");
 const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
+// The ported GTK entry point main() + program globals (was c47-gtk.c via the
+// retired gtk_c47_gtk_legacy.c shim).
+comptime {
+    _ = @import("gtk_c47_main_owned.zig");
+}
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn setupUI() void;

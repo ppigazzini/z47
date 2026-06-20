@@ -1,2 +1,1 @@
-zig_build/host/gtk_c47_gtk_legacy.c
 zig_build/host/gtk_gui_legacy.c
