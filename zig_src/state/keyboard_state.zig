@@ -208,6 +208,52 @@ pub export fn fnT_ARROW(command: u16) callconv(.c) void {
     }
 }
 
+// keyboardTweak.c showShiftState: draw the f/g shift indicator (T register line).
+pub export fn showShiftState() callconv(.c) void {
+    if (!runtime.isShowMode() and runtime.temporaryInformation != runtime.TI_SHOW_REGISTER) {
+        if (runtime.shiftF) {
+            runtime.showShiftStateF();
+            runtime.show_f_jm();
+            runtime.showHideAlphaMode();
+        } else if (runtime.shiftG) {
+            runtime.showShiftStateG();
+            runtime.show_g_jm();
+            runtime.showHideAlphaMode();
+        } else {
+            runtime.clearShiftState();
+            runtime.clear_fg_jm();
+            runtime.showHideAlphaMode();
+            runtime.cleanupAfterShift = true;
+        }
+    }
+}
+
+// keyboardTweak.c resetShiftState: clear the f/g shift and its screen area.
+pub export fn resetShiftState() callconv(.c) void {
+    runtime.fnTimerStop(runtime.TO_FG_LONG);
+    runtime.fnTimerStop(runtime.TO_FG_TIMR);
+    // make sure a repeated key does not restart the f shift just reset
+    runtime.fnTimerStop(runtime.TO_3S_CTFF);
+    runtime.fnTimerStop(runtime.TO_AUTO_REPEAT);
+
+    if (runtime.shiftF or runtime.shiftG) {
+        runtime.shiftF = false;
+        runtime.shiftG = false;
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_SHIFT_STATUS;
+        showShiftState();
+        runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STACK_ONE_TIME;
+        runtime.force_refresh(runtime.timed);
+        refreshModeGui();
+    }
+}
+
+// keyboardTweak.c resetKeytimers: reset shift plus the CL/FN long-press timers.
+pub export fn resetKeytimers() callconv(.c) void {
+    resetShiftState();
+    runtime.fnTimerStop(runtime.TO_CL_LONG);
+    runtime.fnTimerStop(runtime.TO_FN_LONG);
+}
+
 // keyboardTweak.c refreshModeGui: sync the on-screen-keyboard mode to calcMode.
 // calcMode*Gui are empty macros on the DMCP lane, so the calls are host-only.
 pub export fn refreshModeGui() callconv(.c) void {

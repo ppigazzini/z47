@@ -656,6 +656,25 @@ pub extern fn showHideAlphaMode() void;
 // calcMode*Gui are real functions only on host (empty macros on the DMCP lane).
 pub extern fn calcModeAimGui() void;
 pub extern fn calcModeNormalGui() void;
+
+// --- keyboardTweak.c shift-state helpers ------------------------------------
+pub const SCRUPD_MANUAL_SHIFT_STATUS: u8 = 8;
+pub const TO_FG_LONG: u8 = 0;
+pub const TO_CL_LONG: u8 = 1;
+pub const TO_FG_TIMR: u8 = 2;
+pub const TO_FN_LONG: u8 = 3;
+pub const TO_3S_CTFF: u8 = 5;
+pub const TO_AUTO_REPEAT: u8 = 7;
+pub const timed: u8 = 0;
+pub extern var cleanupAfterShift: bool_t;
+pub extern fn showShiftStateF() void;
+pub extern fn showShiftStateG() void;
+pub extern fn clearShiftState() void;
+pub extern fn show_f_jm() void;
+pub extern fn show_g_jm() void;
+pub extern fn clear_fg_jm() void;
+pub extern fn force_refresh(mode: u8) void;
+pub extern fn fnTimerStop(nr: u8) void;
 pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
 
 const legacy_host = struct {
