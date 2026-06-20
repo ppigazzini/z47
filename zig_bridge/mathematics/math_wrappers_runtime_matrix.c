@@ -180,6 +180,11 @@
 // renamed so M.SQRT resolves to the Zig chain (which calls the Zig
 // real/complexEigenvalues + eigenvectors owners directly).
 #define fnMatrixSquareRoot z47_math_wrappers_legacy_fnMatrixSquareRoot
+// Register-level QR wrappers (now that QR_decomposition_householder + adjCpxMat
+// are Zig). These are public; the C fnQrDecomposition caller is legacy-renamed,
+// so the live caller is the Zig fnQrDecomposition command.
+#define real_QR_decomposition z47_math_wrappers_legacy_real_QR_decomposition
+#define complex_QR_decomposition z47_math_wrappers_legacy_complex_QR_decomposition
 
 #include "c47.h"
 
