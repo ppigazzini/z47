@@ -41,6 +41,10 @@ bool_t z47_keyboard_state_assignToMenu(uint8_t *data) {
   return _assignToMenu(data);
 }
 
+// menuUp / menuDown are static in keyboard.c too (used by the Zig fnKeyUp/Down).
+void z47_keyboard_state_menuUp(void)   { menuUp(); }
+void z47_keyboard_state_menuDown(void) { menuDown(); }
+
 #undef numlockReplacements
 #undef keyReplacements
 #undef caseReplacements

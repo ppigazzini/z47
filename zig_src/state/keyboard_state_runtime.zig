@@ -350,6 +350,134 @@ pub inline fn isShowMode() bool {
         temporaryInformation == TI_SHOWNOTHING);
 }
 
+// --- fnKeyUp / fnKeyDown dependencies ---------------------------------------
+const softmenuStack_t = extern struct {
+    softmenuId: i16,
+    firstItem: i16,
+    userMenuId: i16,
+    calcMode: u8,
+};
+const softmenu_t = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    softkeyItem: [*c]const i16,
+};
+const subroutineLevelHeader_t = extern struct {
+    returnProgramNumber: i16,
+    returnLocalStep: u16,
+    numberOfLocalFlags: u8,
+    numberOfLocalRegisters: u8,
+    subroutineLevel: u16,
+    ptrToNextLevel: u16,
+    ptrToPreviousLevel: u16,
+};
+
+pub const MNU_TAMALPHA: i16 = 1913;
+pub const MNU_REG: i16 = 2066;
+pub const MNU_FLG: i16 = 2067;
+pub const MNU_EQN: i16 = 1327;
+pub const MNU_PLOT_ASSESS: i16 = 1396;
+pub const MNU_TAMSTO: i16 = 1387;
+pub const MNU_TAMRCL: i16 = 1912;
+pub const MNU_alpha_omega: i16 = 1383;
+pub const MNU_ALPHAintl: i16 = 1384;
+pub const MNU_ALPHA_OMEGA: i16 = 1377;
+pub const MNU_ALPHAINTL: i16 = 1374;
+pub const ITM_MENU: i16 = 1520;
+pub const ITM_NOP: u16 = 1542;
+pub const ITM_1: u16 = 541;
+pub const ITM_9: u16 = 549;
+pub const ITM_2: u16 = 542;
+pub const ITM_0: u16 = 540;
+pub const ITM_Max: u16 = 2654;
+pub const ITM_Min: u16 = 2655;
+pub const TM_KEY: u16 = 10012;
+pub const TM_NEWMENU: u16 = 10011;
+pub const AC_UPPER: u8 = 0;
+pub const AC_LOWER: u8 = 1;
+pub const RBR_GLOBAL: u8 = 0;
+pub const RBR_LOCAL: u8 = 1;
+pub const RBR_NAMED: u8 = 2;
+pub const RBR_INCDEC1: i32 = 10;
+pub const LAST_GLOBAL_REGISTER_SCREEN: i32 = 120;
+pub const FIRST_LOCAL_REGISTER: i32 = 7000;
+pub const FIRST_NAMED_VARIABLE: i32 = 256;
+pub const LAST_RESERVED_VARIABLE: i32 = 2047;
+pub const FIRST_RESERVED_VARIABLE: i32 = 2000;
+pub const NUMBER_OF_LETTERED_VARIABLES: i32 = 26;
+pub const INVALID_VARIABLE: u16 = 2199;
+pub const PLOT_NXT: u16 = 1;
+pub const PLOT_REV: u16 = 2;
+// `#define arrowCasechange false` (defines.h) — always-false compile constant.
+pub const arrowCasechange = false;
+
+pub extern var softmenuStack: [8]softmenuStack_t; // SOFTMENU_STACK_SIZE
+// softmenu[] is a flexible `const softmenu_t[]`; take its base address.
+const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
+pub extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
+pub extern var dynamicMenuItem: i16;
+pub extern var numberOfFormulae: u16;
+pub extern var currentFormula: u16;
+pub extern var currentSolverVariable: u16;
+pub extern var graphVariabl1: i16; // calcRegister_t = int16_t
+pub extern var plotStatMx: [8]u8;
+pub extern var rbr1stDigit: bool_t;
+pub extern var rbrMode: u8;
+pub extern var currentRegisterBrowserScreen: i16;
+pub extern var numberOfNamedVariables: u16;
+pub extern var currentAsnScr: u8;
+pub extern var currentFntScr: u8;
+pub extern var numScreensStandardFont: u8;
+pub extern var numScreensNumericFont: u8;
+pub extern var numScreensTinyFont: u8;
+pub extern var alphaCase: u8;
+
+pub extern fn currentMenu() i16;
+pub extern fn fnAlphaCursorHome(unused: u16) void;
+pub extern fn fnAlphaCursorEnd(unused: u16) void;
+pub extern fn resetAlphaSelectionBuffer() void;
+pub extern fn addItemToBuffer(item: u16) void;
+pub extern fn fnProgrammableMenu(unused: u16) void;
+pub extern fn isJMAlphaSoftmenu(menu_id: i16) bool_t;
+pub extern fn currentSoftmenuScrolls() bool_t;
+pub extern fn closeNim() void;
+pub extern fn closeAim() void;
+pub extern fn fnBst(unused: u16) void;
+pub extern fn fnSst(unused: u16) void;
+pub extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on PC_BUILD
+pub extern fn fnPlotStat(unused: u16) void;
+pub extern fn fnUpTimerApp() void;
+pub extern fn fnDownTimerApp() void;
+pub extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
+// menuUp / menuDown are static in keyboard.c — trampoline via the legacy bridge.
+extern fn z47_keyboard_state_menuUp() void;
+extern fn z47_keyboard_state_menuDown() void;
+pub fn menuUp() void {
+    z47_keyboard_state_menuUp();
+}
+pub fn menuDown() void {
+    z47_keyboard_state_menuDown();
+}
+
+pub inline fn softmenuItemAt(index: i16) i16 {
+    return softmenu[@intCast(index)].menuItem;
+}
+pub inline fn currentNumberOfLocalRegisters() u8 {
+    return currentSubroutineLevelData.*.numberOfLocalRegisters;
+}
+// modulo(n, d) macro (defines.h, valid for d > 0): C truncated remainder lifted
+// into the non-negative range.
+pub fn modulo(n: i32, d: i32) i32 {
+    const r = @rem(n, d);
+    return if (r < 0) r + d else r;
+}
+const bugMsgRbrMode: usize = 8;
+pub fn bugScreenRbrMode(func_name: [*:0]const u8, key_str: [*:0]const u8, mode: u8) void {
+    const fmt = commonBugScreenMessages + bugMsgRbrMode * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
+    _ = sprintf(errorMessage, fmt, func_name, key_str, @as(c_int, mode));
+    displayBugScreen(errorMessage);
+}
+
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
     extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
