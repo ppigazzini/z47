@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 
 const legacy_gtk_sources_manifest = @embedFile("gtk_gui_legacy_gtk_sources.txt");
 const runtime_helper_sources_manifest = @embedFile("gtk_gui_runtime_helper_sources.txt");
@@ -34,6 +35,7 @@ pub fn addToModule(
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
     c_flags: []const []const u8,
+    calcmodel: u8,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -42,6 +44,14 @@ pub fn addToModule(
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
 
+    // Options consumed by gtk_c47_main_owned.zig (the ported main()): the
+    // compile-time calc model + the version stamps shown by --help.
+    const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
+    const gtk_options = b.addOptions();
+    gtk_options.addOption(u8, "calcmodel", calcmodel);
+    gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
+    gtk_options.addOption([]const u8, "version1", "0.109.03.02b0"); // mirrors defines.h VERSION1
+
     const gui_runtime = b.addObject(.{
         .name = b.fmt("{s}-gtk-gui-runtime", .{name_prefix}),
         .root_module = b.createModule(.{
@@ -49,6 +59,7 @@ pub fn addToModule(
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "host_gtk_options", .module = gtk_options.createModule() }},
         }),
     });
 
