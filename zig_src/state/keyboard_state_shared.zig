@@ -156,8 +156,169 @@ pub fn implementation(comptime runtime: type) type {
             runtime.processKeyActionRetained(item);
         }
 
+        // fnKeyEnter goto targets (keyboard.c labels at the tail of the function).
+        fn keyEnterRamFull() void {
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+            runtime.fnUndo(runtime.NOPARAM);
+        }
+        fn keyEnterUndoDisabled() void {
+            runtime.temporaryInformation = runtime.TI_UNDO_DISABLED;
+        }
+
         pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
-            runtime.keyEnterRetained(unused_but_mandatory_parameter);
+            _ = unused_but_mandatory_parameter;
+            runtime.doRefreshSoftMenu = true;
+            switch (runtime.calcMode) {
+                runtime.CM_NORMAL => {
+                    if (!runtime.getSystemFlag(runtime.FLAG_ERPN) or
+                        (!runtime.nimWhenButtonPressed and runtime.programRunStop != runtime.PGM_RUNNING) or
+                        (runtime.getSystemFlag(runtime.FLAG_ERPN) and runtime.programRunStop == runtime.PGM_RUNNING))
+                    {
+                        runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                        runtime.saveForUndo();
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterUndoDisabled();
+                            return;
+                        }
+                        runtime.liftStack();
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterRamFull();
+                            return;
+                        }
+                        runtime.copySourceRegisterToDestRegister(runtime.REGISTER_Y, runtime.REGISTER_X);
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterRamFull();
+                            return;
+                        }
+                    }
+
+                    if (runtime.getSystemFlag(runtime.FLAG_ERPN)) {
+                        runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                    } else {
+                        runtime.clearSystemFlag(runtime.FLAG_ASLIFT);
+                    }
+                },
+
+                runtime.CM_AIM => {
+                    if (runtime.softmenuStack[0].softmenuId <= 1 or runtime.menu(1) == -runtime.MNU_ALPHA) {
+                        runtime.popSoftmenu();
+                    }
+                    if (runtime.currentMenu() == -runtime.MNU_ALPHA) { // leave the ALPHA menu, go to MyM
+                        runtime.softmenuStack[0].softmenuId = 1;
+                    }
+
+                    runtime.calcModeNormal();
+                    runtime.popSoftmenu();
+
+                    if (runtime.aimBuffer[0] == 0) {
+                        runtime.undo();
+                    } else {
+                        const lenInBytes: i16 = @intCast(runtime.strlen(runtime.aimBuffer) + 1);
+
+                        runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtString, runtime.toBlocks(@intCast(lenInBytes)), runtime.amNone);
+                        _ = runtime.xcopy(runtime.registerStringData(runtime.REGISTER_X), runtime.aimBuffer, @intCast(lenInBytes));
+
+                        runtime.printTraceX(runtime.LINE_FULL); // IR_PRINTING
+
+                        if (!runtime.getSystemFlag(runtime.FLAG_ERPN)) {
+                            runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                            runtime.saveForUndo();
+                            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                                keyEnterUndoDisabled();
+                                return;
+                            }
+                            runtime.liftStack();
+                            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                                keyEnterRamFull();
+                                return;
+                            }
+                            runtime.clearSystemFlag(runtime.FLAG_ASLIFT);
+
+                            runtime.copySourceRegisterToDestRegister(runtime.REGISTER_Y, runtime.REGISTER_X);
+                            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                                keyEnterRamFull();
+                                return;
+                            }
+                            runtime.aimBuffer[0] = 0;
+                        } else {
+                            runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                            runtime.aimBuffer[0] = 0;
+                        }
+                    }
+                },
+
+                runtime.CM_MIM => {
+                    runtime.mimEnter(false);
+                },
+
+                runtime.CM_NIM => {
+                    runtime.closeNim();
+
+                    if (runtime.calcMode != runtime.CM_NIM and runtime.lastErrorCode == 0) {
+                        runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                        runtime.saveForUndo();
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterUndoDisabled();
+                            return;
+                        }
+                        runtime.liftStack();
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterRamFull();
+                            return;
+                        }
+                        runtime.clearSystemFlag(runtime.FLAG_ASLIFT);
+                        runtime.copySourceRegisterToDestRegister(runtime.REGISTER_Y, runtime.REGISTER_X);
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            keyEnterRamFull();
+                            return;
+                        }
+                    }
+                },
+
+                runtime.CM_EIM => {
+                    if (runtime.aimBuffer[0] != 0) {
+                        runtime.setEquation(runtime.currentFormula, runtime.aimBuffer);
+                        runtime.parseEquation(runtime.currentFormula, runtime.EQUATION_PARSER_MVAR, runtime.aimBuffer, runtime.tmpString);
+                        if (runtime.lastErrorCode != 0) { // Stay in Edit mode for the current equation
+                            if (runtime.toPcMemPtr(runtime.allFormulae[@intCast(runtime.currentFormula)].pointerToFormulaData)) |equationString| {
+                                _ = runtime.xcopy(runtime.aimBuffer, equationString, @intCast(runtime.strlen(equationString) + 1));
+                            } else {
+                                runtime.aimBuffer[0] = 0;
+                            }
+                            runtime.refreshRegisterLine(runtime.ERR_REGISTER_LINE);
+                            return;
+                        }
+                    }
+                    if (runtime.currentMenu() == -runtime.MNU_EQ_EDIT) {
+                        runtime.calcModeNormal();
+                        if (runtime.allFormulae[@intCast(runtime.currentFormula)].pointerToFormulaData == runtime.C47_NULL) {
+                            runtime.deleteEquation(runtime.currentFormula);
+                        }
+                    }
+                    runtime.popSoftmenu();
+                },
+
+                runtime.CM_REGISTER_BROWSER,
+                runtime.CM_FLAG_BROWSER,
+                runtime.CM_ASN_BROWSER,
+                runtime.CM_FONT_BROWSER,
+                runtime.CM_ERROR_MESSAGE,
+                runtime.CM_BUG_ON_SCREEN,
+                runtime.CM_PLOT_STAT,
+                runtime.CM_LISTXY,
+                runtime.CM_GRAPH,
+                => {},
+
+                runtime.CM_TIMER => {
+                    runtime.fnRegAddTimerApp(runtime.NOPARAM); // ENTER
+                },
+
+                runtime.CM_CONFIRMATION => {
+                    runtime.temporaryInformation = runtime.TI_ARE_YOU_SURE; // Keep confirmation message on screen
+                },
+
+                else => runtime.bugScreenWhileProcKey("fnKeyEnter", "ENTER"),
+            }
         }
 
         pub fn keyExit(unused_but_mandatory_parameter: u16) void {

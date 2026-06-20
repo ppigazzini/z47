@@ -80,7 +80,7 @@ pub const FLAG_IRFRQ: i32 = 0xc048;
 pub const TI_NO_INFO: u8 = 0;
 
 pub const PGM_WAITING: u8 = 2;
-const PGM_RUNNING: u8 = 1;
+pub const PGM_RUNNING: u8 = 1;
 const PGM_PAUSED: u8 = 3;
 
 pub const SCRUPD_MANUAL_STACK: u8 = 0x02;
@@ -476,6 +476,65 @@ pub fn bugScreenRbrMode(func_name: [*:0]const u8, key_str: [*:0]const u8, mode: 
     const fmt = commonBugScreenMessages + bugMsgRbrMode * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
     _ = sprintf(errorMessage, fmt, func_name, key_str, @as(c_int, mode));
     displayBugScreen(errorMessage);
+}
+
+// --- fnKeyEnter dependencies ------------------------------------------------
+const formulaHeader_t = extern struct {
+    pointerToFormulaData: u16,
+    sizeInBlocks: u8,
+    unused: u8,
+};
+
+pub const FLAG_ERPN: i32 = 32837;
+pub const FLAG_ASLIFT: u32 = 49187;
+pub const ERROR_RAM_FULL: u8 = 11;
+pub const TI_UNDO_DISABLED: u8 = 49;
+pub const NIM_REGISTER_LINE: i16 = 100;
+pub const dtString: u32 = 5;
+pub const EQUATION_PARSER_MVAR: u16 = 0;
+pub const MNU_ALPHA: i16 = 1922;
+pub const MNU_EQ_EDIT: i16 = 1399;
+pub const LINE_FULL: u16 = 0;
+pub const CM_ERROR_MESSAGE: u8 = 9;
+const STRLGINT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
+pub const C47_NULL: u16 = 65535;
+
+pub extern var nimWhenButtonPressed: bool_t;
+pub extern var ram: [*c]u32;
+pub extern var allFormulae: [*c]formulaHeader_t;
+pub extern var tmpString: [*c]u8;
+
+pub extern fn saveForUndo() void;
+pub extern fn liftStack() void;
+pub extern fn copySourceRegisterToDestRegister(r_source: i16, r_dest: i16) void;
+pub extern fn calcModeNormal() void;
+pub extern fn popSoftmenu() void;
+pub extern fn menu(n: u8) i16;
+pub extern fn undo() void;
+pub extern fn fnUndo(unused: u16) void;
+pub extern fn mimEnter(commit: bool_t) void;
+pub extern fn setEquation(equation_id: u16, equation_string: [*c]const u8) void;
+pub extern fn parseEquation(equation_id: u16, parse_mode: u16, buffer: [*c]u8, mvar_buffer: [*c]u8) void;
+pub extern fn deleteEquation(equation_id: u16) void;
+pub extern fn refreshRegisterLine(regist: i16) void;
+pub extern fn fnRegAddTimerApp(unused: u16) void;
+pub extern fn printTraceX(where_: u16) void;
+pub extern fn getRegisterDataPointer(regist: i16) [*c]u8; // void* in C (byte arithmetic)
+pub extern fn reallocateRegister(regist: i16, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn xcopy(dest: [*c]u8, source: [*c]const u8, n: u32) [*c]u8;
+
+// TO_BLOCKS(n): bytes -> 4-byte blocks (BYTES_PER_BLOCK = 4, BPB = 2).
+pub inline fn toBlocks(n: u32) u16 {
+    return @intCast((n + 3) >> 2);
+}
+// REGISTER_STRING_DATA(reg): skip the 4-byte string/long-int header.
+pub inline fn registerStringData(regist: i16) [*c]u8 {
+    return getRegisterDataPointer(regist) + STRLGINT_HEADER_SIZE;
+}
+// TO_PCMEMPTR(p): block number -> RAM pointer, or null for the C47_NULL sentinel.
+pub inline fn toPcMemPtr(p: u16) ?[*]u8 {
+    if (p == C47_NULL) return null;
+    return @ptrCast(ram + p);
 }
 
 const legacy_host = struct {
