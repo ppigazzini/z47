@@ -23,6 +23,7 @@ zig_build/host/gtk_gui_shortcut_owned.zig
 zig_build/host/gtk_io_runtime.zig
 zig_build/host/gtk_io_owned.zig
 zig_build/host/gtk_lcd_runtime.zig
+zig_build/tests/testsuite_hal_owned.zig
 zig_build/tests/constants/constants_parity.zig
 zig_build/tests/distributions/distribution_fake_runtime.zig
 zig_build/tools/generate_catalogs.zig
