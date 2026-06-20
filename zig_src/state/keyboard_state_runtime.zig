@@ -32,27 +32,27 @@ pub const tam_state_t = extern struct {
     keyInputFinished: bool_t,
 };
 
-pub const ITM_A: i16 = 132;
-pub const ITM_Z: i16 = 157;
-pub const ITM_a: i16 = 158;
-pub const ITM_z: i16 = 183;
-pub const ITM_sigma: i16 = 104;
-pub const ITM_SIGMA: i16 = 431;
-pub const ITM_delta: i16 = 105;
-pub const ITM_DELTA: i16 = 432;
-pub const ITM_NULL: i16 = 1911;
-pub const ITM_SPACE: i16 = 32;
-pub const ITM_EXIT1: i16 = 0;
-pub const ITM_UP1: i16 = 1;
-pub const ITM_DOWN1: i16 = 2;
-pub const ITM_BACKSPACE: i16 = 3;
+// items.h codes (probed against src/c47/items.h). The original keyboard scaffold
+// carried stale values for this block (e.g. ITM_A=132, ITM_UP1=1, ITM_BACKSPACE=3),
+// which silently broke caseReplacements / keyReplacements / the keyCC NIM path; the
+// testSuite did not exercise those branches. Corrected to the true item codes here.
+pub const ITM_A: i16 = 550;
+pub const ITM_Z: i16 = 575;
+pub const ITM_a: i16 = 576;
+pub const ITM_z: i16 = 601;
+pub const ITM_sigma: i16 = 646;
+pub const ITM_SIGMA: i16 = 620;
+pub const ITM_delta: i16 = 631;
+pub const ITM_DELTA: i16 = 605;
+pub const ITM_NULL: i16 = 0;
+pub const ITM_SPACE: i16 = 806;
+pub const ITM_EXIT1: i16 = 1737;
+pub const ITM_UP1: i16 = 1733;
+pub const ITM_DOWN1: i16 = 1735;
+pub const ITM_BACKSPACE: i16 = 1738;
 pub const ITM_ENTER: i16 = 35;
 pub const ITM_toREAL: i16 = 1691;
 pub const ITM_CC: i16 = 1730;
-pub const ITM_UP1_ITEM: i16 = 1733;
-pub const ITM_DOWN1_ITEM: i16 = 1735;
-pub const ITM_EXIT1_ITEM: i16 = 1737;
-pub const ITM_BACKSPACE_ITEM: i16 = 1738;
 pub const ITM_dotD: i16 = 1741;
 pub const KEY_COMPLEX: i16 = 1848;
 
@@ -72,7 +72,7 @@ pub const CM_GRAPH: u8 = 15;
 pub const CM_ASN_BROWSER: u8 = 17;
 pub const CM_LISTXY: u8 = 18;
 
-pub const FLAG_USER: i32 = 43;
+pub const FLAG_USER: i32 = 32788; // probed (was a stale 43 in the original scaffold)
 pub const FLAG_FRACT: u32 = 0x8007;
 pub const FLAG_IRFRAC: u32 = 0x8047;
 pub const FLAG_IRFRQ: i32 = 0xc048;
@@ -195,7 +195,7 @@ fn clearStatusbarUpdateFlags(mode: u8) u8 {
 fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updating_mode: u8) void {
     if ((previous_program_run_stop == PGM_RUNNING or previous_program_run_stop == PGM_PAUSED) and
         programRunStop == PGM_WAITING and
-        (lastKeyItemDetermined == ITM_RS or lastKeyItemDetermined == ITM_EXIT1_ITEM) and
+        (lastKeyItemDetermined == ITM_RS or lastKeyItemDetermined == ITM_EXIT1) and
         !getSystemFlag(FLAG_INTING) and
         !getSystemFlag(FLAG_SOLVING)) {
         screenUpdatingMode = clearStatusbarUpdateFlags(previous_screen_updating_mode);
