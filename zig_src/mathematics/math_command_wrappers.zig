@@ -193,6 +193,9 @@ comptime {
         // The eigen owner replaces the eigenvalue/eigenvector/matrix-sqrt
         // numeric engine of mathematics/matrix.c (built up bottom-up).
         _ = @import("math_matrix_eigen_owned.zig");
+        // The element-wise dispatch family + indexed-element dispatchers
+        // (callByVectorElement/callByIndexedMatrix) of mathematics/matrix.c.
+        _ = @import("math_matrix_elementwise_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
