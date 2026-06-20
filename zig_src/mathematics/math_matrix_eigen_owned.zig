@@ -47,6 +47,18 @@ extern fn realPolarToRectangular(magnitude: *align(1) const real_t, theta: *alig
 extern fn mulCpxMat(y: [*]align(1) const real_t, x: [*]align(1) const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]align(1) real_t, ctxt: *realContext_t) void;
 extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
 extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
+extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
+extern fn realCompareGreaterThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
+extern fn realCompareEqual(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
+extern fn complexMagnitude(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, ctxt: *realContext_t) void;
+
+inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
+    _ = decNumberCopyAbs(destination, source);
+}
+inline fn realIsSpecial(source: *align(1) const real_t) bool {
+    // decNumberIsSpecial: any of the Inf/NaN/sNaN bits (DECSPECIAL = 0x70).
+    return (source.bits & 0x70) != 0;
+}
 
 inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
@@ -140,6 +152,8 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
 const OFF_const_0: u32 = 1708;
 const OFF_const_1: u32 = 4368;
 const OFF_const_2: u32 = 4440;
+const OFF_const_1on2: u32 = 4092;
+const OFF_const_1e_6: u32 = 4008;
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);
 }
@@ -148,6 +162,12 @@ inline fn const_1() *align(1) const real_t {
 }
 inline fn const_2() *align(1) const real_t {
     return cstR(OFF_const_2);
+}
+inline fn const_1on2() *align(1) const real_t {
+    return cstR(OFF_const_1on2);
+}
+inline fn const_1e_6() *align(1) const real_t {
+    return cstR(OFF_const_1e_6);
 }
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
@@ -645,4 +665,196 @@ pub export fn calculateEigenvalues33(
         realSetZero(t2i);
         realSetZero(t3i);
     }
+}
+
+// ===========================================================================
+// QR-iteration support workers (all pub-exported so they compile now; dead
+// until calculateEigenvalues drives them).
+// ===========================================================================
+
+// Wilkinson-style shift from the bottom-right 2x2 block.
+pub export fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real_t, im: *align(1) real_t, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+    _ = is_real_symmetric;
+    if (size < 2) {
+        realSetZero(re);
+        realSetZero(im);
+        return;
+    }
+    const sz: usize = size;
+    const a_nn_re = &mat[((sz - 1) * sz + (sz - 1)) * 2];
+    const a_nn_im = &mat[((sz - 1) * sz + (sz - 1)) * 2 + 1];
+    const a_mm_re = &mat[((sz - 2) * sz + (sz - 2)) * 2];
+    const a_mm_im = &mat[((sz - 2) * sz + (sz - 2)) * 2 + 1];
+    const a_mn_re = &mat[((sz - 1) * sz + (sz - 2)) * 2];
+    const a_mn_im = &mat[((sz - 1) * sz + (sz - 2)) * 2 + 1];
+
+    var delta_re: real_t = undefined;
+    var delta_im: real_t = undefined;
+    realSubtract(a_mm_re, a_nn_re, &delta_re, realContext);
+    realSubtract(a_mm_im, a_nn_im, &delta_im, realContext);
+    realMultiply(&delta_re, const_1on2(), &delta_re, realContext);
+    realMultiply(&delta_im, const_1on2(), &delta_im, realContext);
+
+    var b_sq: real_t = undefined;
+    var temp: real_t = undefined;
+    realMultiply(a_mn_re, a_mn_re, &b_sq, realContext);
+    realMultiply(a_mn_im, a_mn_im, &temp, realContext);
+    realAdd(&b_sq, &temp, &b_sq, realContext);
+
+    var delta_sq: real_t = undefined;
+    realMultiply(&delta_re, &delta_re, &delta_sq, realContext);
+    realMultiply(&delta_im, &delta_im, &temp, realContext);
+    realAdd(&delta_sq, &temp, &delta_sq, realContext);
+
+    var sum: real_t = undefined;
+    var sqrt_term: real_t = undefined;
+    realAdd(&delta_sq, &b_sq, &sum, realContext);
+    realSquareRoot(&sum, &sqrt_term, realContext);
+
+    var sign_term: real_t = undefined;
+    var abs_delta_re: real_t = undefined;
+    realCopy(&sqrt_term, &sign_term);
+    realCopyAbs(&delta_re, &abs_delta_re);
+
+    var threshold: real_t = undefined;
+    realMultiply(&sqrt_term, const_1e_6(), &threshold, realContext);
+    if (realIsNegativeA(&delta_re) and realCompareGreaterThan(&abs_delta_re, &threshold)) {
+        realChangeSign(&sign_term);
+    }
+
+    var denom: real_t = undefined;
+    realSquareRoot(&delta_sq, &temp, realContext);
+    realAdd(&temp, &sign_term, &denom, realContext);
+
+    if (!realIsZeroA(&denom) and !realIsZeroA(&b_sq)) {
+        var ratio: real_t = undefined;
+        realDivide(&b_sq, &denom, &ratio, realContext);
+        realSubtract(a_nn_re, &ratio, re, realContext);
+        realCopy(a_nn_im, im);
+    } else {
+        realCopy(a_nn_re, re);
+        realCopy(a_nn_im, im);
+    }
+
+    if (realIsSpecial(re) or realIsSpecial(im)) {
+        realSetZero(re);
+        realSetZero(im);
+    }
+}
+
+// Merge-sort the computed eigenvalues (stored on the diagonal of eig) by
+// descending magnitude, using the (i+1)/(i+2) off-diagonal slots as scratch.
+pub export fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) callconv(.c) void {
+    const end_a: u16 = begin_b - 1;
+    const sz: usize = size;
+
+    if (size < 2) {
+        return;
+    } else if (begin_a == end_b) {
+        return;
+    } else if (size == 2) {
+        complexMagnitude(&eig[0], &eig[1], &eig[2], realContext);
+        complexMagnitude(&eig[6], &eig[7], &eig[4], realContext);
+        if (realCompareLessThan(&eig[2], &eig[4])) {
+            realCopy(&eig[0], &eig[2]);
+            realCopy(&eig[1], &eig[3]);
+            realCopy(&eig[6], &eig[0]);
+            realCopy(&eig[7], &eig[1]);
+            realCopy(&eig[2], &eig[6]);
+            realCopy(&eig[1], &eig[7]);
+        }
+    } else {
+        var a: u16 = begin_a;
+        var b: u16 = begin_b;
+        sortEigenvalues(eig, size, begin_a, @intCast((@as(u32, begin_a) + end_a + 2) / 2), end_a, realContext);
+        sortEigenvalues(eig, size, begin_b, @intCast((@as(u32, begin_b) + end_b + 2) / 2), end_b, realContext);
+        var i: u16 = begin_a;
+        while (i <= end_b) : (i += 1) {
+            const ii: usize = i;
+            complexMagnitude(&eig[(ii * sz + ii) * 2], &eig[(ii * sz + ii) * 2 + 1], &eig[(ii * sz + (ii + 1) % sz) * 2], realContext);
+        }
+        i = begin_a;
+        while (i <= end_b) : (i += 1) {
+            const ii: usize = i;
+            const dst = (ii * sz + (ii + 2) % sz) * 2;
+            if (a > end_a) {
+                const bb: usize = b;
+                realCopy(&eig[(bb * sz + bb) * 2], &eig[dst]);
+                realCopy(&eig[(bb * sz + bb) * 2 + 1], &eig[dst + 1]);
+                b += 1;
+            } else if (b > end_b) {
+                const aa: usize = a;
+                realCopy(&eig[(aa * sz + aa) * 2], &eig[dst]);
+                realCopy(&eig[(aa * sz + aa) * 2 + 1], &eig[dst + 1]);
+                a += 1;
+            } else if (realCompareLessThan(&eig[(@as(usize, a) * sz + (@as(usize, a) + 1) % sz) * 2], &eig[(@as(usize, b) * sz + (@as(usize, b) + 1) % sz) * 2])) {
+                const bb: usize = b;
+                realCopy(&eig[(bb * sz + bb) * 2], &eig[dst]);
+                realCopy(&eig[(bb * sz + bb) * 2 + 1], &eig[dst + 1]);
+                b += 1;
+            } else {
+                const aa: usize = a;
+                realCopy(&eig[(aa * sz + aa) * 2], &eig[dst]);
+                realCopy(&eig[(aa * sz + aa) * 2 + 1], &eig[dst + 1]);
+                a += 1;
+            }
+        }
+        i = begin_a;
+        while (i <= end_b) : (i += 1) {
+            const ii: usize = i;
+            realCopy(&eig[(ii * sz + (ii + 2) % sz) * 2], &eig[(ii * sz + ii) * 2]);
+            realCopy(&eig[(ii * sz + (ii + 2) % sz) * 2 + 1], &eig[(ii * sz + ii) * 2 + 1]);
+        }
+    }
+}
+
+// Final 2x2 deflation block: eigenvalues straight onto the diagonal.
+pub export fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+    const sz: usize = size;
+    var block: [8]real_t = undefined;
+    for (0..2) |i| {
+        for (0..2) |j| {
+            realCopy(&a[(i * sz + j) * 2], &block[(i * 2 + j) * 2]);
+            realCopy(&a[(i * sz + j) * 2 + 1], &block[(i * 2 + j) * 2 + 1]);
+        }
+    }
+    calculateEigenvalues22(&block, 2, &a[0], &a[1], &a[(sz + 1) * 2], &a[(sz + 1) * 2 + 1], is_real_symmetric, realContext);
+    for (0..2) |i| {
+        realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
+        realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
+    }
+}
+
+// Final 3x3 deflation block.
+pub export fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+    const sz: usize = size;
+    var block: [18]real_t = undefined;
+    for (0..3) |i| {
+        for (0..3) |j| {
+            realCopy(&a[(i * sz + j) * 2], &block[(i * 3 + j) * 2]);
+            realCopy(&a[(i * sz + j) * 2 + 1], &block[(i * 3 + j) * 2 + 1]);
+        }
+    }
+    calculateEigenvalues33(&block, 3, &a[0], &a[1], &a[(sz + 1) * 2], &a[(sz + 1) * 2 + 1], &a[(sz + 1) * 4], &a[(sz + 1) * 4 + 1], is_real_symmetric, realContext);
+    for (0..3) |i| {
+        realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
+        realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
+    }
+}
+
+// True when every off-diagonal element has magnitude below tol.
+pub export fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+    const sz: usize = size;
+    for (0..sz) |i| {
+        for (0..sz) |j| {
+            if (i != j) {
+                var offdiag_mag: real_t = undefined;
+                complexMagnitude(&matrix[(i * sz + j) * 2], &matrix[(i * sz + j) * 2 + 1], &offdiag_mag, realContext);
+                if (!realCompareLessThan(&offdiag_mag, tol)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }
