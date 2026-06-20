@@ -322,7 +322,380 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         pub fn keyExit(unused_but_mandatory_parameter: u16) void {
-            runtime.keyExitRetained(unused_but_mandatory_parameter);
+            _ = unused_but_mandatory_parameter;
+
+            if (runtime.tam.mode == runtime.TM_KEY and !runtime.tam.keyInputFinished) {
+                if (runtime.tam.digitsSoFar == 0) {
+                    runtime.tamProcessInput(runtime.ITM_2);
+                    runtime.tamProcessInput(runtime.ITM_1);
+                    runtime.shiftF = false;
+                    runtime.shiftG = false;
+                    runtime.refreshScreen(124);
+                }
+                return;
+            }
+            if (runtime.lastErrorCode == 0 and runtime.currentMenu() == -runtime.MNU_MVAR) {
+                runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_INTERACTIVE;
+            }
+
+            runtime.doRefreshSoftMenu = true;
+            runtime.jm_show_calc_state("fnKeyExit");
+
+            if (runtime.getSystemFlag(runtime.FLAG_INTING) or runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
+                runtime.displayCalcErrorMessage(runtime.ERROR_SOLVER_ABORT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                return; // Done elsewhere
+            }
+
+            // First pass: close any open catalog (skipped for browser/message modes).
+            switch (runtime.calcMode) {
+                runtime.CM_REGISTER_BROWSER,
+                runtime.CM_FLAG_BROWSER,
+                runtime.CM_ASN_BROWSER,
+                runtime.CM_FONT_BROWSER,
+                runtime.CM_CONFIRMATION,
+                runtime.CM_ERROR_MESSAGE,
+                runtime.CM_BUG_ON_SCREEN,
+                => {},
+                else => {
+                    if (runtime.catalog != 0 and (runtime.catalog != runtime.CATALOG_MVAR or runtime.tam.mode == 0)) {
+                        if (runtime.lastErrorCode != 0) {
+                            runtime.lastErrorCode = 0;
+                        } else {
+                            if (runtime.currentMenu() == -runtime.MNU_SYSFL) { // auto recover out of SYSFL
+                                runtime.numberOfTamMenusToPop = 2;
+                                runtime.leaveTamModeIfEnabled();
+                                return;
+                            }
+                            runtime.leaveAsmMode();
+                            runtime.popSoftmenu();
+                            if (runtime.tam.mode != 0) {
+                                runtime.numberOfTamMenusToPop -= 1;
+                            }
+                        }
+                        return;
+                    }
+                },
+            }
+
+            if (runtime.tam.mode != 0) { // if in TAM mode
+                if (runtime.numberOfTamMenusToPop > 1 and runtime.currentMenu() != -runtime.MNU_TAMALPHA) {
+                    runtime.popSoftmenu();
+                    runtime.numberOfTamMenusToPop -= 1;
+                } else {
+                    if (runtime.calcMode == runtime.CM_PEM) {
+                        runtime.aimBuffer[0] = 0;
+                    }
+                    runtime.leaveTamModeIfEnabled();
+                    if (runtime.calcMode == runtime.CM_PEM) {
+                        runtime.scrollPemBackwards();
+                    }
+                }
+                return;
+            }
+
+            // Second pass: NORMAL-mode custom menu exit.
+            switch (runtime.calcMode) {
+                runtime.CM_REGISTER_BROWSER,
+                runtime.CM_FLAG_BROWSER,
+                runtime.CM_ASN_BROWSER,
+                runtime.CM_FONT_BROWSER,
+                runtime.CM_CONFIRMATION,
+                runtime.CM_ERROR_MESSAGE,
+                runtime.CM_BUG_ON_SCREEN,
+                => {},
+                runtime.CM_NORMAL => {
+                    if (runtime.currentMenu() == -runtime.ITM_MENU) {
+                        runtime.dynamicMenuItem = 20;
+                        runtime.fnProgrammableMenu(runtime.NOPARAM);
+                        return;
+                    }
+                },
+                else => {},
+            }
+
+            // Main pass: per-calcMode exit behaviour.
+            var undo_disabled = false;
+            switch (runtime.calcMode) {
+                runtime.CM_NORMAL => {
+                    if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
+                        runtime.temporaryInformation = runtime.TI_NO_INFO;
+                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                        runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                    } else if (runtime.temporaryInformation == runtime.TI_SHOW_REGISTER or runtime.isShowMode()) {
+                        runtime.temporaryInformation = runtime.TI_NO_INFO;
+                        runtime.closeShowMenu();
+                    } else if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else {
+                        if (runtime.currentMenu() == -runtime.MNU_GRAPHS and runtime.menu(1) == -runtime.MNU_PLOT_FUNC) {
+                            runtime.calcMode = runtime.CM_GRAPH;
+                            runtime.fnEqSolvGraph(runtime.EQ_PLOT_LU);
+                            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                        } else if (runtime.softmenuStack[0].softmenuId <= 1) { // MyMenu/MyAlpha shown
+                            runtime.currentInputVariable = runtime.INVALID_VARIABLE;
+                            if (runtime.getSystemFlag(runtime.FLAG_BASE_HOME)) {
+                                runtime.showSoftmenu(-runtime.MNU_HOME);
+                            } else if (runtime.getSystemFlag(runtime.FLAG_BASE_MYM)) {
+                                runtime.BASE_OVERRIDEONCE = true;
+                                runtime.showSoftmenu(-runtime.MNU_MyMenu);
+                            }
+                        } else { // 43S cleared an error here
+                            runtime.popSoftmenu();
+                            if (runtime.currentMenu() == -runtime.MNU_MVAR and
+                                (runtime.currentSolverStatus & runtime.SOLVER_STATUS_EQUATION_MODE) == runtime.SOLVER_STATUS_EQUATION_INTEGRATE and
+                                (runtime.currentSolverStatus & runtime.SOLVER_STATUS_SINGLE_VARIABLE) != 0)
+                            {
+                                runtime.popSoftmenu();
+                                runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_EQUATION_MODE;
+                                runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_INTERACTIVE;
+                            }
+                            runtime.stayInAIM();
+                        }
+                        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+
+                        if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtShortInteger) {
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+                        } else if (runtime.temporaryInformation == runtime.TI_NO_INFO) {
+                            runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STACK_ONE_TIME;
+                        }
+                    }
+                },
+
+                runtime.CM_AIM => {
+                    if (runtime.currentMenu() == -runtime.MNU_ALPHA) { // leave ALPHA menu, go to MyM
+                        runtime.softmenuStack[0].softmenuId = 1;
+                    }
+
+                    if (runtime.softmenuStack[0].softmenuId <= 1 and runtime.menu(1) != -runtime.MNU_ALPHA) {
+                        runtime.closeAim();
+                        runtime.updateMatrixHeightCache();
+                        runtime.saveForUndo();
+                        if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                            undo_disabled = true;
+                        }
+                    } else {
+                        runtime.popSoftmenu();
+                        runtime.stayInAIM();
+                    }
+                },
+
+                runtime.CM_NIM => {
+                    runtime.addItemToNimBuffer(runtime.ITM_EXIT1);
+                    runtime.updateMatrixHeightCache();
+                },
+
+                runtime.CM_MIM => {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else if (runtime.temporaryInformation == runtime.TI_SHOW_REGISTER) {
+                        runtime.temporaryInformation = runtime.TI_NO_INFO;
+                    } else {
+                        if (runtime.currentMenu() == -runtime.MNU_M_EDIT) {
+                            runtime.mimEnter(true);
+                            if (@as(i32, runtime.matrixIndex) == @as(i32, runtime.findNamedVariable(&runtime.statMx[0]))) {
+                                runtime.calcSigma(0);
+                            }
+                            runtime.mimFinalize();
+                            runtime.calcModeNormal();
+                            runtime.updateMatrixHeightCache();
+                        }
+                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                        runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                        runtime.popSoftmenu(); // close softmenu dedicated for the MIM
+                    }
+                },
+
+                runtime.CM_PEM => pem: {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                        break :pem;
+                    }
+                    if (runtime.getSystemFlag(runtime.FLAG_ALPHA) and runtime.tam.mode == 0) {
+                        if (runtime.isAlphaSubmenu(0)) {
+                            runtime.popSoftmenu(); // Alpha sub-menu: just pop it
+                            break :pem;
+                        }
+                    }
+                    if (runtime.getSystemFlag(runtime.FLAG_ALPHA) and runtime.aimBuffer[0] == 0 and runtime.tam.mode == 0) {
+                        runtime.pemAlpha(runtime.ITM_BACKSPACE);
+                        runtime.fnBst(runtime.NOPARAM); // restore PGM pointer
+                        break :pem;
+                    }
+                    if (runtime.aimBuffer[0] != 0 and runtime.tam.mode == 0) {
+                        if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                            runtime.pemCloseAlphaInput();
+                        } else if (runtime.nimNumberPart == runtime.NP_INT_BASE) {
+                            break :pem;
+                        } else {
+                            runtime.pemCloseNumberInput();
+                        }
+                        runtime.aimBuffer[0] = 0;
+                        runtime.fnBst(runtime.NOPARAM); // restore PGM pointer
+                        break :pem;
+                    }
+                    if (runtime.softmenuStack[0].softmenuId > 1 and runtime.currentMenu() != -runtime.MNU_PFN) {
+                        runtime.popSoftmenu();
+                        break :pem;
+                    } else if (runtime.currentMenu() == -runtime.MNU_PFN) {
+                        runtime.extractPFNMenus(); // exit menus immediately when coming out of PEM
+                    }
+
+                    runtime.aimBuffer[0] = 0;
+                    runtime.leavePem();
+                    runtime.calcModeNormal();
+                    runtime.saveForUndo();
+                    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                        undo_disabled = true;
+                    }
+                },
+
+                runtime.CM_EIM => {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else {
+                        if (runtime.currentMenu() == -runtime.MNU_EQ_EDIT) {
+                            if (runtime.allFormulae[@intCast(runtime.currentFormula)].pointerToFormulaData != runtime.C47_NULL) {
+                                runtime.parseEquation(runtime.currentFormula, runtime.EQUATION_PARSER_MVAR, runtime.aimBuffer, runtime.tmpString);
+                                if (runtime.lastErrorCode != 0) {
+                                    runtime.deleteEquation(runtime.currentFormula);
+                                    runtime.lastErrorCode = 0;
+                                }
+                            } else {
+                                runtime.deleteEquation(runtime.currentFormula);
+                            }
+                            runtime.calcModeNormal();
+                        }
+                        runtime.popSoftmenu();
+                    }
+                },
+
+                runtime.CM_REGISTER_BROWSER, runtime.CM_FLAG_BROWSER, runtime.CM_FONT_BROWSER => {
+                    runtime.rbr1stDigit = true;
+                    runtime.calcMode = runtime.previousCalcMode;
+                    if (runtime.calcMode == runtime.CM_TIMER) {
+                        runtime.previousCalcMode = runtime.CM_NORMAL;
+                    }
+                },
+
+                runtime.CM_ASN_BROWSER => {
+                    if (runtime.previousCalcMode == runtime.CM_AIM or runtime.tam.alpha) {
+                        if (runtime.currentMenu() == -runtime.MNU_AIMCATALOG) {
+                            runtime.popSoftmenu();
+                        }
+                        runtime.showSoftmenu(-runtime.MNU_ALPHA);
+                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    } else {
+                        if (runtime.previousCalcMode == runtime.CM_EIM) {
+                            if (runtime.currentMenu() == -runtime.MNU_EIMCATALOG) {
+                                runtime.popSoftmenu();
+                            }
+                            runtime.showSoftmenu(-runtime.MNU_EQ_EDIT);
+                        }
+                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                        runtime.calcMode = runtime.CM_NORMAL; // get the stack back, then switch back
+                        runtime.refreshScreen(0);
+                    }
+                    runtime.calcMode = runtime.previousCalcMode;
+                },
+
+                runtime.CM_TIMER => {
+                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else {
+                        runtime.fnLeaveTimerApp();
+                    }
+                },
+
+                runtime.CM_BUG_ON_SCREEN => {
+                    runtime.calcMode = runtime.previousCalcMode;
+                },
+
+                runtime.CM_LISTXY => {
+                    runtime.calcMode = runtime.CM_GRAPH;
+                    runtime.reDraw = true;
+                    runtime.keyActionProcessed = true;
+                    runtime.fnRefreshState();
+                },
+
+                runtime.CM_GRAPH, runtime.CM_PLOT_STAT => {
+                    if (runtime.calcMode == runtime.CM_PLOT_STAT) {
+                        for (0..3) |_| {
+                            if (runtime.softmenuStack[0].softmenuId > 1 and !(-runtime.currentMenu() == runtime.MNU_HIST or
+                                -runtime.currentMenu() == runtime.MNU_PLOTTING or
+                                -runtime.currentMenu() == runtime.MNU_MODEL or
+                                -runtime.currentMenu() == runtime.MNU_REGR))
+                            {
+                                runtime.popSoftmenu();
+                            }
+                        }
+                    } else {
+                        if (runtime.currentMenu() == -runtime.MNU_PLOT_FUNC and runtime.menu(1) == -runtime.MNU_GRAPHS) {
+                            runtime.popSoftmenu();
+                        }
+                        runtime.popSoftmenu();
+                    }
+
+                    if (runtime.currentMenu() == -runtime.MNU_TIMERF) {
+                        runtime.clearScreen();
+                        runtime.fnItemTimerApp(runtime.NOPARAM);
+                        return;
+                    }
+
+                    runtime.lastPlotMode = runtime.PLOT_NOTHING;
+                    runtime.plotSelection = 0;
+
+                    runtime.calcModeNormal();
+                    runtime.SAVED_SIGMA_lastAddRem = runtime.SIGMA_NONE;
+                    const sf0 = runtime.systemFlags0;
+                    const sf1 = runtime.systemFlags1;
+                    runtime.fnUndo(runtime.NOPARAM);
+                    runtime.systemFlags0 = sf0;
+                    runtime.systemFlags1 = sf1;
+                    runtime.fnClDrawMx(1);
+                    if (runtime.statMx[0] != 'S') {
+                        runtime.printStatus(0, runtime.errorMessageAt(runtime.RESTORING_STATS), runtime.force_status);
+                        runtime.restoreStats();
+                    }
+                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    runtime.forceSBupdate();
+                },
+
+                runtime.CM_CONFIRMATION => {
+                    runtime.calcMode = runtime.previousCalcMode;
+                    runtime.popSoftmenu(); // Pop MNU_YESNO
+                    runtime.temporaryInformation = runtime.TI_NO_INFO;
+                    if (runtime.programRunStop == runtime.PGM_WAITING) {
+                        runtime.programRunStop = runtime.PGM_STOPPED;
+                    }
+                },
+
+                runtime.CM_ASSIGN => {
+                    if ((runtime.softmenuStack[0].softmenuId <= 1 and runtime.softmenuStack[1].softmenuId <= 1) or
+                        (runtime.previousCalcMode == runtime.CM_EIM and runtime.currentMenu() == -runtime.MNU_EQ_EDIT))
+                    {
+                        runtime.calcMode = runtime.previousCalcMode;
+                        if (runtime.tam.alpha) {
+                            runtime.assignLeaveAlpha();
+                        }
+                    } else {
+                        runtime.popSoftmenu();
+                        if (runtime.previousCalcMode == runtime.CM_AIM) {
+                            runtime.stayInAIM();
+                        }
+                    }
+                },
+
+                else => runtime.bugScreenWhileProcKey("fnKeyExit", "EXIT"),
+            }
+
+            if (undo_disabled) {
+                runtime.temporaryInformation = runtime.TI_UNDO_DISABLED;
+                return;
+            }
+
+            runtime.last_CM = runtime.calcMode; // sunsetting refresh-prioritisation method
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
         }
 
         // fnKeyCC type-check macros (keyboard.c:4061-4063).

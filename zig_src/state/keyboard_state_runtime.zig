@@ -86,11 +86,11 @@ const PGM_PAUSED: u8 = 3;
 pub const SCRUPD_MANUAL_STACK: u8 = 0x02;
 pub const SCRUPD_MANUAL_MENU: u8 = 0x04;
 pub const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
-const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
+pub const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
 pub const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
-const FLAG_INTING: i32 = 0xc025;
-const FLAG_SOLVING: i32 = 0xc026;
+pub const FLAG_INTING: i32 = 0xc025;
+pub const FLAG_SOLVING: i32 = 0xc026;
 const ITM_RS: i16 = 1725;
 
 pub extern var calcMode: u8;
@@ -285,7 +285,7 @@ pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) v
 // --- fnKeyBackspace dependencies --------------------------------------------
 pub const TI_VIEW_REGISTER: u8 = 15;
 pub const TI_ARE_YOU_SURE: u8 = 9;
-const TI_SHOW_REGISTER: u8 = 14;
+pub const TI_SHOW_REGISTER: u8 = 14;
 const TI_SHOW_REGISTER_BIG: u8 = 75;
 const TI_SHOW_REGISTER_SMALL: u8 = 76;
 const TI_SHOW_REGISTER_TINY: u8 = 77;
@@ -535,6 +535,94 @@ pub inline fn registerStringData(regist: i16) [*c]u8 {
 pub inline fn toPcMemPtr(p: u16) ?[*]u8 {
     if (p == C47_NULL) return null;
     return @ptrCast(ram + p);
+}
+
+// --- fnKeyExit dependencies -------------------------------------------------
+pub const MNU_SYSFL: i16 = 1379;
+pub const MNU_GRAPHS: i16 = 2374;
+pub const MNU_PLOT_FUNC: i16 = 2028;
+pub const MNU_HOME: i16 = 1921;
+pub const MNU_MyMenu: i16 = 1349;
+pub const MNU_M_EDIT: i16 = 1348;
+pub const MNU_PFN: i16 = 1403;
+pub const MNU_AIMCATALOG: i16 = 2552;
+pub const MNU_EIMCATALOG: i16 = 2227;
+pub const MNU_HIST: i16 = 1401;
+pub const MNU_PLOTTING: i16 = 2107;
+pub const MNU_MODEL: i16 = 2081;
+pub const MNU_REGR: i16 = 2080;
+pub const MNU_TIMERF: i16 = 1400;
+pub const MNU_YESNO: i16 = 2244;
+pub const MNU_MVAR: i16 = 1398;
+pub const SOLVER_STATUS_INTERACTIVE: u16 = 2;
+pub const SOLVER_STATUS_EQUATION_MODE: u16 = 8204;
+pub const SOLVER_STATUS_EQUATION_INTEGRATE: u16 = 4;
+pub const SOLVER_STATUS_SINGLE_VARIABLE: u16 = 16;
+pub const FLAG_BASE_HOME: i32 = 32862;
+pub const FLAG_BASE_MYM: i32 = 32860;
+pub const ERROR_SOLVER_ABORT: u8 = 60;
+pub const dtShortInteger: u32 = 8;
+pub const EQ_PLOT_LU: u16 = 5;
+pub const PLOT_NOTHING: u16 = 5;
+pub const SIGMA_NONE: i8 = 0;
+pub const RESTORING_STATS: usize = 102;
+pub const NP_INT_BASE: u8 = 3;
+pub const SCREEN_WIDTH: u32 = 400;
+pub const LCD_SET_VALUE: c_int = 0;
+pub const force_status: u8 = 1; // `force` enumerator passed to printStatus()
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
+
+pub extern var currentSolverStatus: u16;
+pub extern var systemFlags0: u64;
+pub extern var systemFlags1: u64;
+pub extern var numberOfTamMenusToPop: i16;
+pub extern var currentInputVariable: u16;
+pub extern var nimNumberPart: u8;
+pub extern var matrixIndex: u16;
+pub extern var statMx: [8]u8;
+pub extern var reDraw: bool_t;
+pub extern var last_CM: u8;
+pub extern var lastPlotMode: u16;
+pub extern var plotSelection: u16;
+pub extern var SAVED_SIGMA_lastAddRem: i8;
+pub extern var BASE_OVERRIDEONCE: bool_t;
+const errorMessages_base = @extern([*c]const u8, .{ .name = "errorMessages" });
+pub inline fn errorMessageAt(row: usize) [*c]const u8 {
+    return errorMessages_base + row * SIZE_OF_EACH_ERROR_MESSAGE;
+}
+
+pub extern fn leaveAsmMode() void;
+pub extern fn leaveTamModeIfEnabled() void;
+pub extern fn showSoftmenu(id: i16) void;
+pub extern fn fnEqSolvGraph(unused: u16) void;
+pub extern fn updateMatrixHeightCache() void;
+pub extern fn mimFinalize() void;
+pub extern fn findNamedVariable(variable_name: [*c]const u8) i16;
+pub extern fn calcSigma(max_offset: u16) void;
+pub extern fn pemCloseAlphaInput() void;
+pub extern fn pemCloseNumberInput() void;
+pub extern fn extractPFNMenus() void;
+pub extern fn leavePem() void;
+pub extern fn fnLeaveTimerApp() void;
+pub extern fn fnRefreshState() void;
+pub extern fn fnItemTimerApp(unused: u16) void;
+pub extern fn fnClDrawMx(origin: u8) void;
+pub extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
+pub extern fn restoreStats() void;
+pub extern fn forceSBupdate() void;
+pub extern fn isAlphaSubmenu(n: u8) bool_t;
+pub extern fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void;
+// jm_show_calc_state is an empty no-op unless PC_BUILD_TELLTALE; kept for fidelity.
+pub extern fn jm_show_calc_state(comment: [*c]const u8) void;
+// stayInAIM is static in keyboard.c — trampoline via the legacy bridge.
+extern fn z47_keyboard_state_stayInAIM() void;
+pub fn stayInAIM() void {
+    z47_keyboard_state_stayInAIM();
+}
+// clearScreen(cnt) macro (screen.h, !MONITOR_CLRSCR): full-screen fill + SB update.
+pub fn clearScreen() void {
+    lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
+    forceSBupdate();
 }
 
 const legacy_host = struct {
