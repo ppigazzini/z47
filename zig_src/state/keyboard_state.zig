@@ -208,6 +208,19 @@ pub export fn fnT_ARROW(command: u16) callconv(.c) void {
     }
 }
 
+// keyboardTweak.c key-click helpers. The DM42_KEYCLICK / CLICK_REFRESHSCR /
+// DM42_POWERMARKS / DM42_POWERMARK_KEYPRESS feature flags are never defined, so
+// these expand to no-ops on every build (host and DMCP alike).
+pub export fn @"_keyClick"(length_ms: u8, f: u32) callconv(.c) void {
+    _ = .{ length_ms, f };
+}
+pub export fn keyClick(length_ms: u8) callconv(.c) void {
+    _ = length_ms;
+}
+pub export fn powerMarkerMsF(length_ms: u8, f: u32) callconv(.c) void {
+    _ = .{ length_ms, f };
+}
+
 // keyboardTweak.c openHOMEorMyM: f/g triple/long-press opens HOME or MyMenu.
 pub export fn openHOMEorMyM(situation: runtime.bool_t) callconv(.c) void {
     const graphmode = runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH;
