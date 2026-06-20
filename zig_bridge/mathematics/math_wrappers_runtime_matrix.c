@@ -175,6 +175,11 @@
 // the Zig chain). sqrtRealMatrix/sqrtComplexMatrix still call the C-static
 // realEigenvectors/complexEigenvectors copies until M.SQRT is ported.
 #define fnEigenvectors z47_math_wrappers_legacy_fnEigenvectors
+// Matrix square root (M.SQRT). sqrtRealMatrix/sqrtComplexMatrix + the Eigen/
+// verify/diagonal helpers are static C; only the public fnMatrixSquareRoot is
+// renamed so M.SQRT resolves to the Zig chain (which calls the Zig
+// real/complexEigenvalues + eigenvectors owners directly).
+#define fnMatrixSquareRoot z47_math_wrappers_legacy_fnMatrixSquareRoot
 
 #include "c47.h"
 

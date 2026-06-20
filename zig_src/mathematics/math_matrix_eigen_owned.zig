@@ -218,6 +218,16 @@ const OFF_const_1e_30: u32 = 3984;
 inline fn const_1e_30() *align(1) const real_t {
     return cstR(OFF_const_1e_30);
 }
+const OFF_const_1e_34: u32 = 3972;
+inline fn const_1e_34() *align(1) const real_t {
+    return cstR(OFF_const_1e_34);
+}
+
+// Matrix-product owners + a real comparison, used by the matrix-sqrt engine.
+extern fn multiplyRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
+extern fn multiplyComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
+extern fn realCompareLessEqual(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
+const ERROR_NO_ROOT_FOUND: u8 = 20;
 
 // Complex dense inverse (math_matrix_complex_core_owned.zig) + NaN setter, both
 // taken at align(1) so the packed interleaved-complex bulk scratch passes.
@@ -2325,4 +2335,478 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
         }
         return;
     }
+}
+
+// ===========================================================================
+// Matrix square root (M.SQRT). MATRIX_SQRT_USE_EIGEN==1 default: A = Q L Q^-1,
+// sqrt(A) = Q sqrt(L) Q^-1. All helpers are static in matrix.c; only the public
+// fnMatrixSquareRoot is bridge-renamed.
+// ===========================================================================
+
+fn isRealMatrixDiagonal(matrix: *const real34Matrix_t) bool {
+    const rows = matrix.header.matrixRows;
+    const cols: usize = matrix.header.matrixColumns;
+    const elems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+    var i: usize = 0;
+    while (i < rows) : (i += 1) {
+        var j: usize = 0;
+        while (j < cols) : (j += 1) {
+            if (i != j and !runtime.real34IsZero(&elems[i * cols + j])) return false;
+        }
+    }
+    return true;
+}
+
+fn isComplexMatrixDiagonal(matrix: *const complex34Matrix_t) bool {
+    const rows = matrix.header.matrixRows;
+    const cols: usize = matrix.header.matrixColumns;
+    const elems: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
+    var i: usize = 0;
+    while (i < rows) : (i += 1) {
+        var j: usize = 0;
+        while (j < cols) : (j += 1) {
+            if (i != j and (!runtime.real34IsZero(&elems[i * cols + j].real) or !runtime.real34IsZero(&elems[i * cols + j].imag))) return false;
+        }
+    }
+    return true;
+}
+
+// verifySqrtMatrix -- confirm Y^2 == matrix below ||matrix||_F * 1e-30, run in
+// complex for both paths (catches spurious roots like [[0,0],[1,0]]).
+fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real34Matrix_t, inputComplex: ?*const complex34Matrix_t, resultComplex: ?*const complex34Matrix_t) bool {
+    const isComplex = inputComplex != null;
+    const rows: u16 = if (isComplex) inputComplex.?.header.matrixRows else inputReal.?.header.matrixRows;
+    const cols: u16 = if (isComplex) inputComplex.?.header.matrixColumns else inputReal.?.header.matrixColumns;
+    const total: usize = @as(usize, rows) * cols;
+    var verified = false;
+
+    var inputCopy = std.mem.zeroes(complex34Matrix_t);
+    var resultCopy = std.mem.zeroes(complex34Matrix_t);
+    var residual = std.mem.zeroes(complex34Matrix_t);
+
+    if (runtime.complexMatrixInit(&inputCopy, rows, cols) and runtime.complexMatrixInit(&resultCopy, rows, cols)) {
+        const inC: [*]runtime.complex34_t = @ptrCast(inputCopy.matrixElements);
+        const reC: [*]runtime.complex34_t = @ptrCast(resultCopy.matrixElements);
+        var i: usize = 0;
+        while (i < total) : (i += 1) {
+            if (isComplex) {
+                const ie: [*]const runtime.complex34_t = @ptrCast(inputComplex.?.matrixElements);
+                const re: [*]const runtime.complex34_t = @ptrCast(resultComplex.?.matrixElements);
+                inC[i].real = ie[i].real;
+                inC[i].imag = ie[i].imag;
+                reC[i].real = re[i].real;
+                reC[i].imag = re[i].imag;
+            } else {
+                const ie: [*]const real34_t = @ptrCast(inputReal.?.matrixElements);
+                const re: [*]const real34_t = @ptrCast(resultReal.?.matrixElements);
+                inC[i].real = ie[i];
+                reC[i].real = re[i];
+                runtime.real34SetZero(&inC[i].imag);
+                runtime.real34SetZero(&reC[i].imag);
+            }
+        }
+
+        multiplyComplexMatrices(&resultCopy, &resultCopy, &residual);
+        if (residual.matrixElements != null) {
+            runtime.subtractComplexMatrices(&residual, &inputCopy, &residual);
+            var residualNorm34: real34_t = undefined;
+            var inputNorm34: real34_t = undefined;
+            runtime.euclideanNormComplexMatrix(&residual, 2, &residualNorm34);
+            runtime.euclideanNormComplexMatrix(&inputCopy, 2, &inputNorm34);
+            var residualNorm: real_t = undefined;
+            var inputNorm: real_t = undefined;
+            var tolerance: real_t = undefined;
+            runtime.real34ToReal(&residualNorm34, &residualNorm);
+            runtime.real34ToReal(&inputNorm34, &inputNorm);
+            realMultiply(&inputNorm, const_1e_30(), &tolerance, &runtime.ctxtReal39);
+            verified = realCompareLessEqual(&residualNorm, &tolerance);
+            runtime.complexMatrixFree(&residual);
+        }
+    }
+    if (inputCopy.matrixElements != null) runtime.complexMatrixFree(&inputCopy);
+    if (resultCopy.matrixElements != null) runtime.complexMatrixFree(&resultCopy);
+    return verified;
+}
+
+fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void {
+    const n = matrix.header.matrixRows;
+    const nn: usize = n;
+    var Lambda = std.mem.zeroes(real34Matrix_t);
+    var LambdaImag = std.mem.zeroes(real34Matrix_t);
+    var Q = std.mem.zeroes(real34Matrix_t);
+    var QImag = std.mem.zeroes(real34Matrix_t);
+    var Qinv = std.mem.zeroes(real34Matrix_t);
+    var tmp = std.mem.zeroes(real34Matrix_t);
+    var failed = false;
+
+    blk: {
+        realEigenvalues(matrix, &Lambda, &LambdaImag);
+        if (Lambda.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        if (LambdaImag.matrixElements != null) {
+            var inputNorm34: real34_t = undefined;
+            var tol: real_t = undefined;
+            var val: real_t = undefined;
+            var scale: real_t = undefined;
+            runtime.euclideanNormRealMatrix(matrix, 2, &inputNorm34);
+            runtime.real34ToReal(&inputNorm34, &scale);
+            realMultiply(&scale, const_1e_34(), &tol, &runtime.ctxtReal39);
+            const li: [*]const real34_t = @ptrCast(LambdaImag.matrixElements);
+            var hasGenuine = false;
+            var i: usize = 0;
+            while (i < nn) : (i += 1) {
+                runtime.real34ToReal(&li[i * nn + i], &val);
+                if (runtime.realIsNegative(&val)) runtime.realChangeSign(&val);
+                if (realCompareGreaterThan(&val, &tol)) {
+                    hasGenuine = true;
+                    break;
+                }
+            }
+            if (hasGenuine) {
+                failed = true;
+                break :blk;
+            }
+        }
+
+        const lam: [*]real34_t = @ptrCast(Lambda.matrixElements);
+        var i: usize = 0;
+        while (i < nn) : (i += 1) {
+            var a: real_t = undefined;
+            runtime.real34ToReal(&lam[i * nn + i], &a);
+            if (runtime.realIsNegative(&a)) {
+                failed = true;
+                break :blk;
+            }
+            realSquareRoot(&a, &a, &runtime.ctxtReal39);
+            runtime.realToReal34(&a, &lam[i * nn + i]);
+        }
+
+        realEigenvectors(matrix, &Q, &QImag);
+        if (Q.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        if (QImag.matrixElements != null) {
+            var inputNorm34: real34_t = undefined;
+            var tol: real_t = undefined;
+            var val: real_t = undefined;
+            var scale: real_t = undefined;
+            runtime.euclideanNormRealMatrix(matrix, 2, &inputNorm34);
+            runtime.real34ToReal(&inputNorm34, &scale);
+            realMultiply(&scale, const_1e_34(), &tol, &runtime.ctxtReal39);
+            const qi: [*]const real34_t = @ptrCast(QImag.matrixElements);
+            var hasGenuine = false;
+            var k: usize = 0;
+            while (k < nn * nn) : (k += 1) {
+                runtime.real34ToReal(&qi[k], &val);
+                if (runtime.realIsNegative(&val)) runtime.realChangeSign(&val);
+                if (realCompareGreaterThan(&val, &tol)) {
+                    hasGenuine = true;
+                    break;
+                }
+            }
+            if (hasGenuine) {
+                failed = true;
+                break :blk;
+            }
+        }
+
+        runtime.invertRealMatrix(&Q, &Qinv);
+        if (Qinv.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        multiplyRealMatrices(&Q, &Lambda, &tmp);
+        if (tmp.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        multiplyRealMatrices(&tmp, &Qinv, res);
+        if (res.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+    }
+
+    if (Lambda.matrixElements != null) runtime.realMatrixFree(&Lambda);
+    if (LambdaImag.matrixElements != null) runtime.realMatrixFree(&LambdaImag);
+    if (Q.matrixElements != null) runtime.realMatrixFree(&Q);
+    if (QImag.matrixElements != null) runtime.realMatrixFree(&QImag);
+    if (Qinv.matrixElements != null) runtime.realMatrixFree(&Qinv);
+    if (tmp.matrixElements != null) runtime.realMatrixFree(&tmp);
+
+    if (failed) {
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
+    }
+}
+
+fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
+    const n = matrix.header.matrixRows;
+    const nn: usize = n;
+    var Lambda = std.mem.zeroes(complex34Matrix_t);
+    var Q = std.mem.zeroes(complex34Matrix_t);
+    var Qinv = std.mem.zeroes(complex34Matrix_t);
+    var tmp = std.mem.zeroes(complex34Matrix_t);
+    var failed = false;
+
+    blk: {
+        complexEigenvalues(matrix, &Lambda);
+        if (Lambda.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        const lam: [*]runtime.complex34_t = @ptrCast(Lambda.matrixElements);
+        var i: usize = 0;
+        while (i < nn) : (i += 1) {
+            var aReal: real_t = undefined;
+            var aImag: real_t = undefined;
+            var sqrtR: real_t = undefined;
+            var sqrtI: real_t = undefined;
+            runtime.real34ToReal(&lam[i * nn + i].real, &aReal);
+            runtime.real34ToReal(&lam[i * nn + i].imag, &aImag);
+            runtime.sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &runtime.ctxtReal39);
+            runtime.realToReal34(&sqrtR, &lam[i * nn + i].real);
+            runtime.realToReal34(&sqrtI, &lam[i * nn + i].imag);
+        }
+
+        complexEigenvectors(matrix, &Q);
+        if (Q.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        runtime.invertComplexMatrix(&Q, &Qinv);
+        if (Qinv.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        multiplyComplexMatrices(&Q, &Lambda, &tmp);
+        if (tmp.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+        multiplyComplexMatrices(&tmp, &Qinv, res);
+        if (res.matrixElements == null) {
+            failed = true;
+            break :blk;
+        }
+    }
+
+    if (Lambda.matrixElements != null) runtime.complexMatrixFree(&Lambda);
+    if (Q.matrixElements != null) runtime.complexMatrixFree(&Q);
+    if (Qinv.matrixElements != null) runtime.complexMatrixFree(&Qinv);
+    if (tmp.matrixElements != null) runtime.complexMatrixFree(&tmp);
+
+    if (failed) {
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
+    }
+}
+
+pub export fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void {
+    const n = matrix.header.matrixRows;
+    const nn: usize = n;
+    res.matrixElements = null;
+    res.header.matrixRows = 0;
+    res.header.matrixColumns = 0;
+
+    const elems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+    var a: real_t = undefined;
+
+    if (n == 1) {
+        runtime.real34ToReal(&elems[0], &a);
+        if (runtime.realIsNegative(&a)) return;
+        if (!runtime.realMatrixInit(res, 1, 1)) return;
+        realSquareRoot(&a, &a, &runtime.ctxtReal39);
+        const re: [*]real34_t = @ptrCast(res.matrixElements);
+        runtime.realToReal34(&a, &re[0]);
+        return;
+    }
+
+    if (isRealMatrixDiagonal(matrix)) {
+        if (!runtime.realMatrixInit(res, n, n)) return;
+        const re: [*]real34_t = @ptrCast(res.matrixElements);
+        var i: usize = 0;
+        while (i < nn) : (i += 1) {
+            runtime.real34ToReal(&elems[i * nn + i], &a);
+            if (runtime.realIsNegative(&a)) {
+                runtime.realMatrixFree(res);
+                res.matrixElements = null;
+                res.header.matrixRows = 0;
+                res.header.matrixColumns = 0;
+                return;
+            }
+            realSquareRoot(&a, &a, &runtime.ctxtReal39);
+            runtime.realToReal34(&a, &re[i * nn + i]);
+        }
+        return;
+    }
+
+    sqrtRealMatrixEigen(matrix, res);
+    if (res.matrixElements != null and !verifySqrtMatrix(matrix, res, null, null)) {
+        runtime.realMatrixFree(res);
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
+    }
+}
+
+pub export fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+    const n = matrix.header.matrixRows;
+    const nn: usize = n;
+    res.matrixElements = null;
+    res.header.matrixRows = 0;
+    res.header.matrixColumns = 0;
+
+    if (isComplexMatrixDiagonal(matrix)) {
+        if (!runtime.complexMatrixInit(res, n, n)) return;
+        const me: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
+        const re: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+        var i: usize = 0;
+        while (i < nn) : (i += 1) {
+            var aReal: real_t = undefined;
+            var aImag: real_t = undefined;
+            var sqrtR: real_t = undefined;
+            var sqrtI: real_t = undefined;
+            runtime.real34ToReal(&me[i * nn + i].real, &aReal);
+            runtime.real34ToReal(&me[i * nn + i].imag, &aImag);
+            runtime.sqrtComplex(&aReal, &aImag, &sqrtR, &sqrtI, &runtime.ctxtReal39);
+            runtime.realToReal34(&sqrtR, &re[i * nn + i].real);
+            runtime.realToReal34(&sqrtI, &re[i * nn + i].imag);
+        }
+        return;
+    }
+
+    sqrtComplexMatrixEigen(matrix, res);
+    if (res.matrixElements != null and !verifySqrtMatrix(null, null, matrix, res)) {
+        runtime.complexMatrixFree(res);
+        res.matrixElements = null;
+        res.header.matrixRows = 0;
+        res.header.matrixColumns = 0;
+    }
+}
+
+fn sqrtNoConverge() void {
+    runtime.temporaryInformation = runtime.TI_NO_INFO;
+    if (runtime.programRunStop == runtime.PGM_WAITING) runtime.programRunStop = runtime.PGM_STOPPED;
+}
+
+// ===========================================================================
+// fnMatrixSquareRoot (M.SQRT) -- the public command. Real input falls back to a
+// complex root (and auto-downgrades to real) when FL_CPXRES is set.
+// ===========================================================================
+pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) callconv(.c) void {
+    _ = unusedParamButMandatory;
+    if (!runtime.saveLastX()) return;
+
+    const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (dt == runtime.dtReal34Matrix) {
+        var x: real34Matrix_t = undefined;
+        runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [64]u8 = undefined;
+                const m = bufPrintZ(&buf, "not a square matrix ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
+                runtime.moreInfoOnError("In function fnMatrixSquareRoot:", m, null, null);
+            }
+        } else {
+            var res: real34Matrix_t = undefined;
+            sqrtRealMatrix(&x, &res);
+            if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+                if (res.matrixElements != null) {
+                    runtime.convertReal34MatrixToReal34MatrixRegister(&res, runtime.REGISTER_X);
+                    runtime.realMatrixFree(&res);
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                } else if (runtime.getSystemFlag(runtime.FLAG_CPXRES)) {
+                    var cx = std.mem.zeroes(complex34Matrix_t);
+                    var cres: complex34Matrix_t = undefined;
+                    runtime.convertReal34MatrixToComplex34Matrix(&x, &cx);
+                    if (cx.matrixElements != null) {
+                        sqrtComplexMatrix(&cx, &cres);
+                        runtime.complexMatrixFree(&cx);
+                        if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+                            if (cres.matrixElements != null) {
+                                const total: usize = @as(usize, cres.header.matrixRows) * cres.header.matrixColumns;
+                                const ce: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                                var allRealResult = true;
+                                var i: usize = 0;
+                                while (i < total) : (i += 1) {
+                                    if (!runtime.real34IsZero(&ce[i].imag)) {
+                                        allRealResult = false;
+                                        break;
+                                    }
+                                }
+                                if (allRealResult) {
+                                    var rres: real34Matrix_t = undefined;
+                                    if (runtime.realMatrixInit(&rres, cres.header.matrixRows, cres.header.matrixColumns)) {
+                                        const re: [*]real34_t = @ptrCast(rres.matrixElements);
+                                        i = 0;
+                                        while (i < total) : (i += 1) re[i] = ce[i].real;
+                                        runtime.convertReal34MatrixToReal34MatrixRegister(&rres, runtime.REGISTER_X);
+                                        runtime.realMatrixFree(&rres);
+                                    } else {
+                                        runtime.convertComplex34MatrixToComplex34MatrixRegister(&cres, runtime.REGISTER_X);
+                                    }
+                                } else {
+                                    runtime.convertComplex34MatrixToComplex34MatrixRegister(&cres, runtime.REGISTER_X);
+                                }
+                                runtime.complexMatrixFree(&cres);
+                                runtime.setSystemFlag(FLAG_ASLIFT);
+                            } else {
+                                runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no square root, or iteration failed to converge", null, null);
+                            }
+                        } else {
+                            sqrtNoConverge();
+                        }
+                    }
+                } else {
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no real square root, or iteration failed to converge", null, null);
+                }
+            } else {
+                sqrtNoConverge();
+            }
+        }
+    } else if (dt == runtime.dtComplex34Matrix) {
+        var x: complex34Matrix_t = undefined;
+        runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [64]u8 = undefined;
+                const m = bufPrintZ(&buf, "not a square matrix ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
+                runtime.moreInfoOnError("In function fnMatrixSquareRoot:", m, null, null);
+            }
+        } else {
+            var res: complex34Matrix_t = undefined;
+            sqrtComplexMatrix(&x, &res);
+            if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+                if (res.matrixElements != null) {
+                    runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
+                    runtime.complexMatrixFree(&res);
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                } else {
+                    runtime.displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnMatrixSquareRoot:", "matrix has no square root, or iteration failed to converge", null, null);
+                }
+            } else {
+                sqrtNoConverge();
+            }
+        }
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            var buf: [48]u8 = undefined;
+            const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
+            runtime.moreInfoOnError("In function fnMatrixSquareRoot:", m, "is not a (real or complex) matrix.", "");
+        }
+    }
+
+    runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
 }
