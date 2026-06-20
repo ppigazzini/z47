@@ -170,6 +170,11 @@
 // the public fnEigenvalues command is renamed so EIGVAL resolves to the Zig
 // chain (calculateEigenvalues + the closed-form/QR workers).
 #define fnEigenvalues z47_math_wrappers_legacy_fnEigenvalues
+// Eigenvector engine (calculateEigenvectors/real/complexEigenvectors are static
+// C; only the public fnEigenvectors command is renamed so EIGVEC resolves to
+// the Zig chain). sqrtRealMatrix/sqrtComplexMatrix still call the C-static
+// realEigenvectors/complexEigenvectors copies until M.SQRT is ported.
+#define fnEigenvectors z47_math_wrappers_legacy_fnEigenvectors
 
 #include "c47.h"
 

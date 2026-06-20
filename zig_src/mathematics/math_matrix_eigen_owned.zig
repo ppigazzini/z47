@@ -214,6 +214,15 @@ const OFF_const_1e_32: u32 = 5200;
 inline fn const_1e_32() *align(1) const real_t {
     return cstR(OFF_const_1e_32);
 }
+const OFF_const_1e_30: u32 = 3984;
+inline fn const_1e_30() *align(1) const real_t {
+    return cstR(OFF_const_1e_30);
+}
+
+// Complex dense inverse (math_matrix_complex_core_owned.zig) + NaN setter, both
+// taken at align(1) so the packed interleaved-complex bulk scratch passes.
+extern fn invCpxMat(matrix: [*]align(1) real_t, n: u16, ctxt: *realContext_t) bool;
+extern fn realSetNaN(value: *align(1) real_t) void;
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
 inline fn realMaxDigits(comptime digits: u32) u32 {
@@ -1774,5 +1783,546 @@ pub export fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix
         }
     } else {
         ramFull("In function extractDiagonalToRowComplex34Matrix:", "Ram full");
+    }
+}
+
+// ===========================================================================
+// cpxLinearEqn (static) -- solve A x = b for complex dense A by inverting A in
+// place (invCpxMat) and multiplying. Singular A -> ERROR_SINGULAR_MATRIX.
+// ===========================================================================
+fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) void {
+    const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
+    if (allocC47Blocks(blocks)) |inv_a| {
+        _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
+        if (invCpxMat(inv_a, size, realContext)) {
+            mulCpxMat(inv_a, b, size, size, 1, r, realContext);
+        } else if (runtime.lastErrorCode != runtime.ERROR_RAM_FULL) {
+            runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function cpxLinearEqn:", "attempt to invert a singular matrix", null, null);
+        }
+        freeC47Blocks(inv_a, blocks);
+    } else {
+        ramFull("In function cpxLinearEqn:", "Ram full");
+    }
+}
+
+// ===========================================================================
+// calculateEigenvectors (static) -- given the eigenvalues on the diagonal of
+// eig, solve (A - lambda I) v = 0 per eigenvalue via the augmented-system
+// technique, storing the eigenvectors column-wise into r. Diagonal A takes the
+// permuted-unit-vector fast path. matrix_any aliases real34Matrix_t /
+// complex34Matrix_t (shared header); the C copy stays file-local so the Zig
+// signature is chosen for convenience (no bridge rename).
+// ===========================================================================
+pub export fn calculateEigenvectors(matrix_any: *const anyopaque, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    const rm: *const real34Matrix_t = @ptrCast(@alignCast(matrix_any));
+    const cm: *const complex34Matrix_t = @ptrCast(@alignCast(matrix_any));
+    const size: u16 = rm.header.matrixRows;
+    const sz: usize = size;
+    if (rm.header.matrixRows != rm.header.matrixColumns) return;
+
+    const rElems: [*]const real34_t = @ptrCast(rm.matrixElements);
+    const cElems: [*]const runtime.complex34_t = @ptrCast(cm.matrixElements);
+
+    var i: usize = 0;
+    while (i < sz * sz * 2) : (i += 1) realSetZero(&r[i]);
+    var k: usize = 0;
+    while (k < sz) : (k += 1) {
+        realPlus(&eig[(k * sz + k) * 2], &eig[(k * sz + k) * 2], &runtime.ctxtReal34);
+        realPlus(&eig[(k * sz + k) * 2 + 1], &eig[(k * sz + k) * 2 + 1], &runtime.ctxtReal34);
+    }
+
+    // Fast path: diagonal A has permuted unit eigenvectors.
+    var isDiagonal = true;
+    {
+        var ii: usize = 0;
+        outer: while (ii < sz) : (ii += 1) {
+            var jj: usize = 0;
+            while (jj < sz) : (jj += 1) {
+                if (ii != jj) {
+                    if (isComplex) {
+                        if (!runtime.real34IsZero(&cElems[ii * sz + jj].real) or !runtime.real34IsZero(&cElems[ii * sz + jj].imag)) {
+                            isDiagonal = false;
+                            break :outer;
+                        }
+                    } else {
+                        if (!runtime.real34IsZero(&rElems[ii * sz + jj])) {
+                            isDiagonal = false;
+                            break :outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (isDiagonal) {
+        k = 0;
+        while (k < sz) : (k += 1) {
+            var j: usize = 0;
+            while (j < sz) : (j += 1) {
+                var alreadyUsed = false;
+                var kPrev: usize = 0;
+                while (kPrev < k) : (kPrev += 1) {
+                    if (!realIsZeroA(&r[(j * sz + kPrev) * 2])) {
+                        alreadyUsed = true;
+                        break;
+                    }
+                }
+                if (alreadyUsed) continue;
+                var diagR: real_t = undefined;
+                var diagI: real_t = undefined;
+                if (isComplex) {
+                    runtime.real34ToReal(&cElems[j * sz + j].real, &diagR);
+                    runtime.real34ToReal(&cElems[j * sz + j].imag, &diagI);
+                } else {
+                    runtime.real34ToReal(&rElems[j * sz + j], &diagR);
+                    realSetZero(&diagI);
+                }
+                var diff_r: real_t = undefined;
+                var diff_i: real_t = undefined;
+                var mag_eig: real_t = undefined;
+                var mag_diag: real_t = undefined;
+                var scale: real_t = undefined;
+                var tol: real_t = undefined;
+                realSubtract(&eig[(k * sz + k) * 2], &diagR, &diff_r, realContext);
+                realSubtract(&eig[(k * sz + k) * 2 + 1], &diagI, &diff_i, realContext);
+                complexMagnitude(&eig[(k * sz + k) * 2], &eig[(k * sz + k) * 2 + 1], &mag_eig, realContext);
+                complexMagnitude(&diagR, &diagI, &mag_diag, realContext);
+                realCopy(&mag_eig, &scale);
+                if (realCompareLessThan(&scale, &mag_diag)) realCopy(&mag_diag, &scale);
+                if (realCompareLessThan(&scale, const_1())) realCopy(const_1(), &scale);
+                realMultiply(&scale, const_1e_30(), &tol, realContext);
+                if (isElementWithinTolerance(&diff_r, &diff_i, &tol, realContext)) {
+                    realCopy(const_1(), &r[(j * sz + k) * 2]);
+                    break;
+                }
+            }
+        }
+        return;
+    }
+
+    var freeUnknowns: u16 = 1;
+    var duplicateEigenvalueCount: u16 = 0;
+    const utBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
+    if (allocC47Blocks(utBlocks)) |utBuf| {
+        const unknownsToFill: [*]u16 = @ptrCast(utBuf);
+        k = 0;
+        while (k < sz) : (k += 1) {
+            if (k > 0 and realCompareEqual(&eig[(k * sz + k) * 2], &eig[((k - 1) * sz + (k - 1)) * 2]) and realCompareEqual(&eig[(k * sz + k) * 2 + 1], &eig[((k - 1) * sz + (k - 1)) * 2 + 1])) {
+                duplicateEigenvalueCount += 1;
+                if (freeUnknowns > size) freeUnknowns = size;
+            } else {
+                duplicateEigenvalueCount = 0;
+                freeUnknowns = 1;
+                unknownsToFill[0] = 0;
+            }
+            const vBlocks: usize = sz * 2 * realSizeInBlocks(75) * 2;
+            if (allocC47Blocks(vBlocks)) |vBuf| {
+                const v: [*]align(1) real_t = @ptrCast(vBuf);
+                while (true) {
+                    var j: usize = 0;
+                    while (j < sz * 2 * 2) : (j += 1) realSetNaN(&v[j]);
+
+                    if (duplicateEigenvalueCount == 0) {
+                        const stride: usize = @as(usize, size) + freeUnknowns;
+                        var ii: usize = 0;
+                        while (ii < sz) : (ii += 1) {
+                            var jj: usize = 0;
+                            while (jj < sz) : (jj += 1) {
+                                if (isComplex) {
+                                    runtime.real34ToReal(&cElems[ii * sz + jj].real, @alignCast(&a[(ii * stride + jj) * 2]));
+                                    runtime.real34ToReal(&cElems[ii * sz + jj].imag, @alignCast(&a[(ii * stride + jj) * 2 + 1]));
+                                } else {
+                                    runtime.real34ToReal(&rElems[ii * sz + jj], @alignCast(&a[(ii * stride + jj) * 2]));
+                                    realSetZero(&a[(ii * stride + jj) * 2 + 1]);
+                                }
+                            }
+                            jj = 0;
+                            while (jj < freeUnknowns) : (jj += 1) {
+                                realCopy(if (jj == ii) const_1() else const_0(), &a[(ii * stride + jj + sz) * 2]);
+                                realSetZero(&a[(ii * stride + jj + sz) * 2 + 1]);
+                            }
+                        }
+                        ii = 0;
+                        while (ii < freeUnknowns) : (ii += 1) {
+                            var jj: usize = 0;
+                            while (jj < sz) : (jj += 1) {
+                                realCopy(if (jj == unknownsToFill[ii]) const_1() else const_0(), &a[((ii + sz) * stride + jj) * 2]);
+                                realSetZero(&a[((ii + sz) * stride + jj) * 2 + 1]);
+                            }
+                            jj = 0;
+                            while (jj < freeUnknowns) : (jj += 1) {
+                                realCopy(if (jj == ii) const_1() else const_0(), &a[((ii + sz) * stride + jj + sz) * 2]);
+                                realSetZero(&a[((ii + sz) * stride + jj + sz) * 2 + 1]);
+                            }
+                        }
+                        // Subtract the eigenvalue from the leading diagonal.
+                        var jd: usize = 0;
+                        while (jd < sz) : (jd += 1) {
+                            realSubtract(&a[(jd * stride + jd) * 2], &eig[(k * sz + k) * 2], &a[(jd * stride + jd) * 2], realContext);
+                            realSubtract(&a[(jd * stride + jd) * 2 + 1], &eig[(k * sz + k) * 2 + 1], &a[(jd * stride + jd) * 2 + 1], realContext);
+                        }
+                    }
+
+                    // Make the RHS unit vector.
+                    const stride: usize = @as(usize, size) + freeUnknowns;
+                    var jq: usize = 0;
+                    while (jq < stride) : (jq += 1) {
+                        realCopy(if (jq == @as(usize, duplicateEigenvalueCount) + sz) const_1() else const_0(), &q[jq * 2]);
+                        realSetZero(&q[jq * 2 + 1]);
+                    }
+
+                    runtime.lastErrorCode = runtime.ERROR_NONE;
+                    cpxLinearEqn(a, q, v, @intCast(stride), realContext);
+                    if (runtime.lastErrorCode != runtime.ERROR_SINGULAR_MATRIX) break;
+
+                    // Advance unknownsToFill to the next free-unknown selection.
+                    unknownsToFill[freeUnknowns - 1] += 1;
+                    var ia: u16 = 1;
+                    while (ia <= freeUnknowns - 1) : (ia += 1) {
+                        if (unknownsToFill[freeUnknowns - 1] >= size) {
+                            unknownsToFill[freeUnknowns - ia - 1] += 1;
+                            var jb: usize = freeUnknowns - ia;
+                            while (jb <= freeUnknowns - 1) : (jb += 1) {
+                                unknownsToFill[freeUnknowns + jb] = unknownsToFill[freeUnknowns + jb - 1];
+                            }
+                        } else break;
+                    }
+                    if (unknownsToFill[freeUnknowns - 1] >= size) {
+                        freeUnknowns += 1;
+                        var ic: u16 = 0;
+                        while (ic < size) : (ic += 1) unknownsToFill[ic] = ic;
+                    }
+                    if (freeUnknowns > size) break;
+                }
+                if (runtime.lastErrorCode == runtime.ERROR_SINGULAR_MATRIX) {
+                    var ii: usize = 0;
+                    while (ii < sz) : (ii += 1) {
+                        realSetZero(&v[ii * 2]);
+                        realSetZero(&v[ii * 2 + 1]);
+                    }
+                    runtime.lastErrorCode = runtime.ERROR_NONE;
+                }
+                var ii: usize = 0;
+                while (ii < sz) : (ii += 1) {
+                    realCopy(&v[ii * 2], &r[(ii * sz + k) * 2]);
+                    realCopy(&v[ii * 2 + 1], &r[(ii * sz + k) * 2 + 1]);
+                }
+                freeC47Blocks(vBuf, vBlocks);
+            } else {
+                ramFull("In function calculateEigenvectors:", "Ram full, 1av");
+                var ii: usize = 0;
+                while (ii < sz) : (ii += 1) {
+                    realSetNaN(&r[(ii * sz + k) * 2]);
+                    realSetNaN(&r[(ii * sz + k) * 2 + 1]);
+                }
+            }
+        }
+        freeC47Blocks(utBuf, utBlocks);
+    } else {
+        ramFull("In function calculateEigenvectors:", "Ram full, 2aw");
+        var ii: usize = 0;
+        while (ii < sz) : (ii += 1) {
+            realSetNaN(&r[(ii * sz + k) * 2]);
+            realSetNaN(&r[(ii * sz + k) * 2 + 1]);
+        }
+    }
+}
+
+// ===========================================================================
+// realEigenvectors (static) -- eigenvectors of a real square matrix: compute
+// eigenvalues, solve for each eigenvector, detect defective (zero) columns,
+// normalize each column, and write real (res) + imaginary (ires) parts back.
+// ===========================================================================
+pub export fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) callconv(.c) void {
+    const size: u16 = matrix.header.matrixRows;
+    const sz: usize = size;
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 4 * 2 * 4 + sz * sz * 2);
+    if (allocC47Blocks(bulkSize)) |bulk| {
+        const a = bulk;
+        const q = bulk + sz * sz * 4 * 2;
+        const r = bulk + sz * sz * 4 * 2 * 2;
+        const eig = bulk + sz * sz * 4 * 2 * 3;
+        const previousDiagonal = bulk + sz * sz * 4 * 2 * 4;
+        const elems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+
+        var i: usize = 0;
+        while (i < sz * sz) : (i += 1) {
+            runtime.real34ToReal(&elems[i], &a[i * 2]);
+            realSetZero(&a[i * 2 + 1]);
+        }
+        calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, false, &runtime.ctxtReal75);
+        calculateEigenvectors(@ptrCast(matrix), false, a, q, r, eig, &runtime.ctxtReal75);
+
+        // Defective-matrix detection: a genuine eigenvector is never all-zero.
+        var j: usize = 0;
+        while (j < sz) : (j += 1) {
+            var allZero = true;
+            i = 0;
+            while (i < sz) : (i += 1) {
+                if (!realIsZeroA(&r[(i * sz + j) * 2]) or !realIsZeroA(&r[(i * sz + j) * 2 + 1])) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (allZero) {
+                res.matrixElements = null;
+                res.header.matrixRows = 0;
+                res.header.matrixColumns = 0;
+                freeC47Blocks(bulk, bulkSize);
+                return;
+            }
+        }
+
+        var isComplex = false;
+        i = 0;
+        while (i < sz * sz) : (i += 1) {
+            if (!realIsZeroA(&r[i * 2 + 1])) {
+                isComplex = true;
+                break;
+            }
+        }
+
+        // Normalize each eigenvector column.
+        j = 0;
+        while (j < sz) : (j += 1) {
+            var sum: real_t = undefined;
+            realSetZero(&sum);
+            i = 0;
+            while (i < sz) : (i += 1) {
+                var t1: real_t = undefined;
+                var t2: real_t = undefined;
+                realFMA(&r[(i * sz + j) * 2], &r[(i * sz + j) * 2], &sum, &t1, &runtime.ctxtReal75);
+                realCopy(&t1, &sum);
+                realFMA(&r[(i * sz + j) * 2 + 1], &r[(i * sz + j) * 2 + 1], &sum, &t2, &runtime.ctxtReal75);
+                realCopy(&t2, &sum);
+            }
+            realSquareRoot(&sum, &sum, &runtime.ctxtReal75);
+            if (!realIsZeroA(&sum) and !realIsSpecial(&sum)) {
+                i = 0;
+                while (i < sz) : (i += 1) {
+                    realDivide(&r[(i * sz + j) * 2], &sum, &r[(i * sz + j) * 2], &runtime.ctxtReal75);
+                    realDivide(&r[(i * sz + j) * 2 + 1], &sum, &r[(i * sz + j) * 2 + 1], &runtime.ctxtReal75);
+                }
+            }
+        }
+
+        if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
+            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+            i = 0;
+            while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i * 2], &resElems[i]);
+            if (isComplex and ires != null) {
+                if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
+                    const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
+                    i = 0;
+                    while (i < sz * sz) : (i += 1) runtime.realToReal34(&r[i * 2 + 1], &iresElems[i]);
+                } else {
+                    ramFull("In function realEigenvectors:", "Ram full, 1bc");
+                }
+            }
+        } else {
+            ramFull("In function realEigenvectors:", "Ram full, 2be");
+        }
+        freeC47Blocks(bulk, bulkSize);
+    } else {
+        ramFull("In function realEigenvectors:", "Ram full, 3bf");
+    }
+}
+
+// ===========================================================================
+// complexEigenvectors (static) -- eigenvectors of a complex square matrix.
+// ===========================================================================
+pub export fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+    const size: u16 = matrix.header.matrixRows;
+    const sz: usize = size;
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 4 * 2 * 4 + sz * sz * 2);
+    if (allocC47Blocks(bulkSize)) |bulk| {
+        const a = bulk;
+        const q = bulk + sz * sz * 4 * 2;
+        const r = bulk + sz * sz * 4 * 2 * 2;
+        const eig = bulk + sz * sz * 4 * 2 * 3;
+        const previousDiagonal = bulk + sz * sz * 4 * 2 * 4;
+        const elems: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
+
+        var i: usize = 0;
+        while (i < sz * sz) : (i += 1) {
+            runtime.real34ToReal(&elems[i].real, &a[i * 2]);
+            runtime.real34ToReal(&elems[i].imag, &a[i * 2 + 1]);
+        }
+        calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, false, &runtime.ctxtReal75);
+        calculateEigenvectors(@ptrCast(matrix), true, a, q, r, eig, &runtime.ctxtReal75);
+
+        var j: usize = 0;
+        while (j < sz) : (j += 1) {
+            var allZero = true;
+            i = 0;
+            while (i < sz) : (i += 1) {
+                if (!realIsZeroA(&r[(i * sz + j) * 2]) or !realIsZeroA(&r[(i * sz + j) * 2 + 1])) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (allZero) {
+                res.matrixElements = null;
+                res.header.matrixRows = 0;
+                res.header.matrixColumns = 0;
+                freeC47Blocks(bulk, bulkSize);
+                return;
+            }
+        }
+
+        if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
+            const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+            i = 0;
+            while (i < sz * sz) : (i += 1) {
+                runtime.realToReal34(&r[i * 2], &resElems[i].real);
+                runtime.realToReal34(&r[i * 2 + 1], &resElems[i].imag);
+            }
+        } else {
+            ramFull("In function complexEigenvectors:", "Ram full, 1");
+        }
+        freeC47Blocks(bulk, bulkSize);
+    } else {
+        ramFull("In function complexEigenvectors:", "Ram full, 2bg");
+    }
+}
+
+// createEigenVectorIf1x1 (static) -- 1x1 matrices have the trivial eigenvector
+// [1]; build it directly. Returns 1 (handled), 255 (alloc failed), 0 (not 1x1).
+fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) u8 {
+    if (rows == 1 and cols == 1) {
+        runtime.setSystemFlag(FLAG_ASLIFT);
+        runtime.liftStack();
+        if (!runtime.initMatrixRegister(runtime.REGISTER_X, 1, 1, isComplex)) {
+            runtime.fnDrop(runtime.NOPARAM);
+            runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function createEigenVectorIf1x1:", "Not enough memory for a 1\xc3\x971 matrix", null, null);
+            return 255;
+        }
+        if (isComplex) {
+            var cmatrix: complex34Matrix_t = undefined;
+            runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &cmatrix);
+            const ce: [*]runtime.complex34_t = @ptrCast(cmatrix.matrixElements);
+            runtime.realToReal34(@alignCast(const_1()), &ce[0].real);
+            runtime.real34SetZero(&ce[0].imag);
+        } else {
+            var rmatrix: real34Matrix_t = undefined;
+            runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &rmatrix);
+            const re: [*]real34_t = @ptrCast(rmatrix.matrixElements);
+            runtime.realToReal34(@alignCast(const_1()), &re[0]);
+        }
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
+        return 1;
+    }
+    return 0;
+}
+
+// ===========================================================================
+// fnEigenvectors (EIGVEC) -- the public command. Eigenvectors of X as columns;
+// complex results lift onto the stack. Defective matrices raise SINGULAR.
+// ===========================================================================
+pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
+    _ = unusedParamButMandatory;
+    const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (dt == runtime.dtReal34Matrix) {
+        var x: real34Matrix_t = undefined;
+        runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [80]u8 = undefined;
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                runtime.moreInfoOnError("In function fnEigenvectors:", m, null, null);
+            }
+            return;
+        }
+        if (!runtime.saveLastX()) return;
+        switch (createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns, false)) {
+            1 => {},
+            255 => return,
+            else => {
+                var res: real34Matrix_t = undefined;
+                var ires: real34Matrix_t = undefined;
+                ires.header.matrixRows = 0;
+                ires.header.matrixColumns = 0;
+                ires.matrixElements = null;
+                realEigenvectors(&x, &res, &ires);
+                if (res.matrixElements != null) {
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                    runtime.liftStack();
+                    if (ires.matrixElements != null) {
+                        var cres: complex34Matrix_t = undefined;
+                        if (runtime.complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
+                            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+                            const iresElems: [*]real34_t = @ptrCast(ires.matrixElements);
+                            const cresElems: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                            const n: usize = @as(usize, x.header.matrixRows) * x.header.matrixColumns;
+                            var i: usize = 0;
+                            while (i < n) : (i += 1) {
+                                cresElems[i].real = resElems[i];
+                                cresElems[i].imag = iresElems[i];
+                            }
+                            runtime.convertComplex34MatrixToComplex34MatrixRegister(&cres, runtime.REGISTER_X);
+                            runtime.realMatrixFree(&ires);
+                            runtime.complexMatrixFree(&cres);
+                        } else {
+                            ramFull("In function fnEigenvectors:", "Ram full");
+                        }
+                    } else {
+                        runtime.convertReal34MatrixToReal34MatrixRegister(&res, runtime.REGISTER_X);
+                    }
+                    runtime.realMatrixFree(&res);
+                } else {
+                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
+                    return;
+                }
+            },
+        }
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
+        return;
+    } else if (dt == runtime.dtComplex34Matrix) {
+        var x: complex34Matrix_t = undefined;
+        runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [80]u8 = undefined;
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                runtime.moreInfoOnError("In function fnEigenvectors:", m, null, null);
+            }
+            return;
+        }
+        if (!runtime.saveLastX()) return;
+        switch (createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns, true)) {
+            1 => {},
+            255 => return,
+            else => {
+                var res: complex34Matrix_t = undefined;
+                complexEigenvectors(&x, &res);
+                if (res.matrixElements != null) {
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                    runtime.liftStack();
+                    runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
+                    runtime.complexMatrixFree(&res);
+                } else {
+                    runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvectors:", "matrix is defective: no full set of linearly independent eigenvectors", null, null);
+                    return;
+                }
+            },
+        }
+        runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
+        return;
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            var buf: [48]u8 = undefined;
+            const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
+            runtime.moreInfoOnError("In function fnEigenvectors:", m, "is not a matrix.", "");
+        }
+        return;
     }
 }
