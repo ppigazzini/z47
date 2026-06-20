@@ -4,19 +4,6 @@ pub fn implementation(comptime runtime: type) type {
             return runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH;
         }
 
-        fn canHandleFlagBrowserArrowProcess(item: i16) bool {
-            if (item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1) {
-                return false;
-            }
-
-            return runtime.calcMode == runtime.CM_FLAG_BROWSER and
-                runtime.tam.mode == 0 and
-                runtime.lastErrorCode == 0 and
-                runtime.temporaryInformation == runtime.TI_NO_INFO and
-                runtime.programRunStop != runtime.PGM_WAITING and
-                !isGraphMode();
-        }
-
         fn itemIsUppercaseLetter(item: i32) bool {
             return item >= runtime.ITM_A and item <= runtime.ITM_Z;
         }
@@ -134,26 +121,722 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
-        pub fn processKeyAction(item: i16) void {
-            if (canHandleFlagBrowserArrowProcess(item)) {
-                runtime.keyActionProcessed = false;
-                runtime.keyActionProcessed = true;
+        pub fn processKeyAction(item_arg: i16) void {
+            // keyboard.c processKeyAction (2336-3293). `item` is reassigned in
+            // several prongs, so take a mutable local copy of the argument.
+            var item = item_arg;
+            // ITM_0/ITM_9/ITM_NOP/INVALID_VARIABLE are u16 in the runtime; alias
+            // them as i16 for arithmetic/comparison against the signed `item`.
+            const ITM_0: i16 = @intCast(runtime.ITM_0);
+            const ITM_9: i16 = @intCast(runtime.ITM_9);
+            const INVALID_VARIABLE: i16 = @intCast(runtime.INVALID_VARIABLE);
 
-                if (item == runtime.ITM_UP1) {
-                    keyUp(0);
-                    runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
-                    runtime.refreshScreen(118);
-                } else {
-                    keyDown(0);
-                    runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
-                    runtime.refreshScreen(119);
-                }
+            runtime.keyActionProcessed = false;
 
-                runtime.keyActionProcessed = true;
-                return;
+            if (runtime.lastErrorCode != 0 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE) {
+                runtime.lastErrorCode = 0;
+                runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                runtime.refreshScreen(138);
             }
 
-            runtime.processKeyActionRetained(item);
+            if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
+                runtime.temporaryInformation = runtime.TI_NO_INFO;
+                runtime.updateMatrixHeightCache();
+                if (item == runtime.ITM_UP1 or item == runtime.ITM_DOWN1 or item == runtime.ITM_EXIT1 or item == runtime.ITM_BACKSPACE) {
+                    runtime.temporaryInformation = runtime.TI_VIEW_REGISTER;
+                }
+            } else if (runtime.temporaryInformation != runtime.TI_NO_INFO and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE and
+                !(((item == runtime.ITM_RCL or item == runtime.ITM_RS or (item >= ITM_0 and item <= ITM_9 and runtime.allowShowDigits)) and runtime.showMode())))
+            {
+                if (runtime.showMode()) {
+                    runtime.closeShowMenu();
+                }
+                runtime.temporaryInformation = runtime.TI_NO_INFO;
+                runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+            }
+
+            if (runtime.calcMode == runtime.CM_GRAPH and runtime.currentMenu() == -runtime.MNU_PLOT_FUNC and ((item >= ITM_0 and item <= ITM_9) or item == runtime.ITM_PERIOD)) {
+                runtime.calcMode = runtime.CM_NORMAL;
+                runtime.showSoftmenu(-runtime.MNU_GRAPHS);
+                runtime.screenUpdatingMode &= runtime.SCRUPD_MANUAL_MENU;
+                runtime.refreshScreen(125);
+            }
+
+            if (runtime.programRunStop == runtime.PGM_WAITING) {
+                runtime.programRunStop = runtime.PGM_STOPPED;
+            }
+
+            if (item == runtime.KEY_COMPLEX and runtime.calcMode == runtime.CM_MIM) {
+                item = runtime.ITM_CC;
+            }
+
+            if (runtime.calcMode == runtime.CM_NORMAL and runtime.showMode() and runtime.currentMenu() != -runtime.MNU_EQN) {
+                switch (item) {
+                    runtime.ITM_UP1, runtime.ITM_DOWN1, runtime.ITM_RS => {
+                        runtime.fnC47Show(@bitCast(item));
+                        runtime.keyActionProcessed = true;
+                        return;
+                    },
+                    else => {},
+                }
+            }
+
+            if (isGraphMode()) {
+                runtime.temporaryInformation = runtime.TI_NO_INFO;
+            }
+
+            if (isGraphMode() and item != runtime.ITM_BACKSPACE and item != runtime.ITM_EXIT1 and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_SNAP) {
+                runtime.keyActionProcessed = true;
+            } else if (runtime.calcMode == runtime.CM_ASN_BROWSER and item != runtime.ITM_PERIOD and item != runtime.ITM_USERMODE and item != runtime.ITM_BACKSPACE and item != runtime.ITM_EXIT1 and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1) {
+                runtime.keyActionProcessed = true;
+            } else {
+                switch (item) {
+                    runtime.ITM_BACKSPACE => {
+                        if (runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_EIM) {
+                            runtime.temporaryInformation = runtime.TI_NO_INFO;
+                            runtime.refreshRegisterLine(runtime.NIM_REGISTER_LINE);
+                        } else if (runtime.tam.mode != 0) {
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                        } else if (runtime.calcMode == runtime.CM_PEM) {
+                            // Let backspace fall through to Release, bypassing the
+                            // fnKeyBackspace below (the C `break` does just this).
+                        } else {
+                            runtime.keyActionProcessed = true;
+                            keyBackspace(runtime.NOPARAM);
+                            if (runtime.calcMode != runtime.CM_CONFIRMATION) {
+                                runtime.temporaryInformation = runtime.TI_NO_INFO;
+                            }
+                        }
+                    },
+
+                    runtime.ITM_UP1 => {
+                        if (runtime.calcMode != runtime.CM_CONFIRMATION) {
+                            runtime.keyActionProcessed = true;
+                            keyUp(runtime.NOPARAM);
+                            if (!runtime.keyActionProcessed) {
+                                runtime.addItemToBuffer(@bitCast(runtime.ITM_UP_ARROW));
+                            }
+                            if (runtime.calcMode != runtime.CM_LISTXY and (runtime.currentSoftmenuScrolls() or !(runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_PEM) or runtime.temporaryInformation != runtime.TI_NO_INFO)) {
+                                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
+                                runtime.refreshScreen(118);
+                            }
+                            runtime.keyActionProcessed = true;
+                        } else {
+                            runtime.keyActionProcessed = true;
+                        }
+                    },
+
+                    runtime.ITM_DOWN1 => {
+                        if (runtime.calcMode != runtime.CM_CONFIRMATION) {
+                            runtime.keyActionProcessed = true;
+                            keyDown(runtime.NOPARAM);
+                            if (!runtime.keyActionProcessed) {
+                                runtime.addItemToBuffer(@bitCast(runtime.ITM_DOWN_ARROW));
+                            }
+                            if (runtime.calcMode != runtime.CM_LISTXY and (runtime.currentSoftmenuScrolls() or !(runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_PEM) or runtime.temporaryInformation != runtime.TI_NO_INFO)) {
+                                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
+                                runtime.refreshScreen(119);
+                            }
+                            runtime.keyActionProcessed = true;
+                        } else {
+                            runtime.keyActionProcessed = true;
+                        }
+                    },
+
+                    runtime.ITM_EXIT1 => {
+                        if (runtime.showMode() or runtime.calcMode == runtime.CM_LISTXY) {
+                            keyExit(runtime.NOPARAM);
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_PEM) {
+                            if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                                keyExit(runtime.NOPARAM);
+                                runtime.keyActionProcessed = true;
+                            }
+                        }
+                        if ((runtime.temporaryInformation != runtime.TI_NO_INFO) and (runtime.calcMode != runtime.CM_CONFIRMATION)) {
+                            runtime.temporaryInformation = runtime.TI_NO_INFO;
+                            runtime.keyActionProcessed = true;
+                            runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_MANUAL_STATUSBAR);
+                            runtime.refreshScreen(120);
+                        } else if (runtime.lastErrorCode != 0) {
+                            runtime.lastErrorCode = 0;
+                            runtime.refreshRegisterLine(runtime.ERR_REGISTER_LINE);
+                            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                            runtime.refreshScreen(139);
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.temporaryInformation == runtime.TI_NO_INFO and
+                            ((runtime.softmenuStack[0].softmenuId == 0) or
+                                ((runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) and (item == runtime.ITM_RS or item == runtime.ITM_EXIT1))))
+                        {
+                            runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+                            runtime.refreshScreen(140);
+                        }
+                    },
+
+                    runtime.ITM_op_j_pol, runtime.ITM_op_j, runtime.ITM_CC => {
+                        if (runtime.calcMode == runtime.CM_ASSIGN) {
+                            if (runtime.itemToBeAssigned == 0) {
+                                runtime.itemToBeAssigned = item;
+                            } else {
+                                runtime.tamBuffer[0] = 0;
+                            }
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_REGISTER_BROWSER or runtime.calcMode == runtime.CM_FLAG_BROWSER or runtime.calcMode == runtime.CM_ASN_BROWSER or runtime.calcMode == runtime.CM_FONT_BROWSER or runtime.calcMode == runtime.CM_TIMER) {
+                            runtime.keyActionProcessed = true;
+                        }
+                    },
+
+                    runtime.ITM_ENTER => {
+                        if (runtime.calcMode == runtime.CM_ASSIGN) {
+                            if (runtime.itemToBeAssigned == 0) {
+                                if (runtime.tam.alpha) {
+                                    runtime.assignLeaveAlpha();
+                                    runtime.assignGetName1();
+                                    if (runtime.menu(1) == -runtime.MNU_ALPHA) {
+                                        runtime.popSoftmenu();
+                                    }
+                                    if (runtime.menu(0) == -runtime.MNU_ALPHA) {
+                                        runtime.popSoftmenu();
+                                    }
+                                } else {
+                                    runtime.itemToBeAssigned = runtime.ASSIGN_CLEAR;
+                                    if (runtime.previousCalcMode == runtime.CM_AIM) {
+                                        runtime.showSoftmenu(-runtime.MNU_MyAlpha);
+                                    }
+                                }
+                            } else {
+                                if (runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU) {
+                                    runtime.assignLeaveAlpha();
+                                    runtime.assignGetName2();
+                                } else if (runtime.tam.alpha) {
+                                    runtime.tamBuffer[0] = 0;
+                                }
+                            }
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_REGISTER_BROWSER or runtime.calcMode == runtime.CM_FLAG_BROWSER or runtime.calcMode == runtime.CM_ASN_BROWSER or runtime.calcMode == runtime.CM_FONT_BROWSER) {
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_CONFIRMATION) {
+                            runtime.temporaryInformation = runtime.TI_ARE_YOU_SURE;
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.tam.mode != 0) {
+                            runtime.tamProcessInput(@intCast(runtime.ITM_ENTER));
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_NIM) {
+                            runtime.addItemToBuffer(@bitCast(item));
+                            runtime.keyActionProcessed = true;
+                        }
+                    },
+
+                    runtime.CHR_caseUP => {
+                        if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {} else if (runtime.alphaCase == runtime.AC_LOWER) {
+                            processKeyAction(runtime.CHR_case);
+                        } else if (runtime.alphaCase == runtime.AC_UPPER) {
+                            processKeyAction(runtime.CHR_numL);
+                        }
+                        runtime.nextChar = runtime.NC_NORMAL;
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    runtime.CHR_caseDN => {
+                        if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {
+                            runtime.alphaCase = runtime.AC_UPPER;
+                            processKeyAction(runtime.CHR_numU);
+                        } else if (runtime.alphaCase == runtime.AC_UPPER) {
+                            processKeyAction(runtime.CHR_case);
+                        }
+                        runtime.nextChar = runtime.NC_NORMAL;
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    runtime.CHR_numL => {
+                        if (!runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {
+                            processKeyAction(runtime.CHR_num);
+                        }
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    runtime.CHR_numU => {
+                        if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {
+                            processKeyAction(runtime.CHR_num);
+                        }
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    runtime.CHR_num => {
+                        runtime.alphaCase = runtime.AC_UPPER;
+                        runtime.fnFlipFlag(@intCast(runtime.FLAG_NUMLOCK));
+                        if (!runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) {
+                            runtime.nextChar = runtime.NC_NORMAL;
+                        }
+                        runtime.showAlphaModeonGui();
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    runtime.CHR_case => {
+                        runtime.clearSystemFlag(@intCast(runtime.FLAG_NUMLOCK));
+                        const sm = runtime.currentMenu();
+                        runtime.nextChar = runtime.NC_NORMAL;
+                        if (runtime.alphaCase == runtime.AC_LOWER) {
+                            runtime.alphaCase = runtime.AC_UPPER;
+                            if (sm == -runtime.MNU_alpha_omega or sm == -runtime.MNU_ALPHAintl) {
+                                runtime.softmenuStack[0].softmenuId -= 1;
+                            }
+                        } else {
+                            runtime.alphaCase = runtime.AC_LOWER;
+                            if (sm == -runtime.MNU_ALPHA_OMEGA or sm == -runtime.MNU_ALPHAINTL) {
+                                runtime.softmenuStack[0].softmenuId += 1;
+                            }
+                        }
+                        runtime.showAlphaModeonGui();
+                        runtime.keyActionProcessed = true;
+                    },
+
+                    else => {
+                        if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and item == runtime.ITM_USERMODE) {
+                            while (runtime.softmenuStack[0].softmenuId > 1) {
+                                runtime.popSoftmenu();
+                            }
+                            if (runtime.previousCalcMode == runtime.CM_AIM) {
+                                runtime.softmenuStack[0].softmenuId = 1;
+                                runtime.calcModeAimGui();
+                            } else {
+                                runtime.leaveAsmMode();
+                            }
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0 and item == runtime.ITM_USERMODE) {
+                            runtime.tamEnterMode(runtime.ITM_USERMODE);
+                            runtime.calcMode = runtime.previousCalcMode;
+                            runtime.keyActionProcessed = true;
+                        } else if (runtime.calcMode == runtime.CM_ASSIGN and item == runtime.ITM_AIM) {
+                            runtime.assignEnterAlpha();
+                            runtime.keyActionProcessed = true;
+                        } else if ((runtime.calcMode != runtime.CM_PEM or !runtime.getSystemFlag(runtime.FLAG_ALPHA)) and runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR) {
+                            if (runtime.ITM_A <= item and item <= runtime.ITM_Z and runtime.lowercaseSelected()) {
+                                runtime.addItemToBuffer(@bitCast(item + (runtime.ITM_a - runtime.ITM_A)));
+                                runtime.keyActionProcessed = true;
+                            } else if (item == runtime.ITM_DOWN_ARROW or item == runtime.ITM_UP_ARROW) {
+                                runtime.addItemToBuffer(@bitCast(item));
+                                runtime.keyActionProcessed = true;
+                            }
+                        } else if (runtime.tam.mode != 0) {
+                            if (runtime.tam.alpha) {
+                                // C reads indexOfItems[item] before `|| item < 0`; the
+                                // reorder keeps the boolean result while avoiding the
+                                // out-of-range index for negative menu items.
+                                if (item < 0 or runtime.itemFuncIsAddItemToBuffer(item)) {
+                                    runtime.processAimInput(item);
+                                } else {
+                                    runtime.keyActionProcessed = true;
+                                }
+                            } else {
+                                if (comptime runtime.is_dmcp_build) {
+                                    runtime.wait_for_key_release(0);
+                                    _ = runtime.key_pop();
+                                }
+                                runtime.addItemToBuffer(@bitCast(item));
+                                if (comptime runtime.is_dmcp_build) {
+                                    _ = runtime.key_push(0);
+                                }
+                                runtime.keyActionProcessed = true;
+                            }
+                        } else if (item == runtime.ITM_SNAP) {
+                            runtime.runFunction(item);
+                            runtime.keyActionProcessed = true;
+                        } else {
+                            switch (runtime.calcMode) {
+                                runtime.CM_NORMAL => {
+                                    if (runtime.showMode()) {
+                                        if (item == runtime.ITM_RCL) {
+                                            runtime.keyActionProcessed = true;
+                                            runtime.fnRecall(runtime.showRegis);
+                                            runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                                            runtime.temporaryInformation = runtime.TI_COPY_FROM_SHOW;
+                                            runtime.closeShowMenu();
+                                        } else if (ITM_0 <= item and item <= ITM_9 and runtime.allowShowDigits) {
+                                            runtime.keyActionProcessed = true;
+                                            if (runtime.showRegis % 10 == 0 and runtime.showRegis <= 90) {
+                                                runtime.showRegis += @intCast(item - ITM_0);
+                                            } else {
+                                                runtime.showRegis = @intCast((item - ITM_0) * 10);
+                                            }
+                                            runtime.fnC47Show(runtime.ITM_NOP);
+                                        }
+                                    } else if (item == runtime.ITM_EXPONENT or item == runtime.ITM_PERIOD or (ITM_0 <= item and item <= ITM_9)) {
+                                        runtime.addItemToNimBuffer(item);
+                                        runtime.refreshRegisterLine(runtime.REGISTER_X);
+                                        runtime.keyActionProcessed = true;
+                                    } else if (item == runtime.ITM_UNDO or item == runtime.ITM_BST or item == runtime.ITM_SST or item == runtime.ITM_PR or item == runtime.ITM_AIM or item == runtime.ITM_SNAP) {
+                                        runtime.runFunction(item);
+                                        runtime.keyActionProcessed = true;
+                                    } else if (item == runtime.ITM_RS) {
+                                        runtime.showStep();
+                                        runtime.keyActionProcessed = true;
+                                        runtime.showFunctionNameItem = 0;
+                                        if (comptime runtime.is_dmcp_build) {
+                                            runtime.lcd_refresh();
+                                        } else {
+                                            _ = runtime.refreshLcd(null);
+                                        }
+                                    }
+                                },
+
+                                runtime.CM_AIM => {
+                                    if (item == runtime.ITM_BST or item == runtime.ITM_SST) {
+                                        runtime.closeAim();
+                                        runtime.runFunction(item);
+                                        runtime.keyActionProcessed = true;
+                                    } else {
+                                        runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
+                                        runtime.processAimInput(item);
+                                        runtime.refreshRegisterLine(runtime.AIM_REGISTER_LINE);
+                                    }
+                                },
+
+                                runtime.CM_EIM => {
+                                    runtime.processAimInput(item);
+                                    runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_SKIP_MENU_ONE_TIME);
+                                    runtime.refreshScreen(130);
+                                },
+
+                                runtime.CM_NIM => {
+                                    if (item == runtime.ITM_BST or item == runtime.ITM_SST) {
+                                        runtime.closeNim();
+                                        runtime.runFunction(item);
+                                        runtime.keyActionProcessed = true;
+                                    } else {
+                                        runtime.keyActionProcessed = true;
+                                        if (item == runtime.ITM_toINT or item == runtime.ITM_HASH_JM) {
+                                            runtime.resetShiftState();
+                                        }
+
+                                        if (runtime.calcMode == runtime.CM_NIM and (item == runtime.ITM_RI or item == runtime.ITM_dotD) and (runtime.nimNumberPart == runtime.NP_INT_10 or runtime.nimNumberPart == runtime.NP_INT_16) and runtime.lastIntegerBase > 0) {
+                                            runtime.lastIntegerBase = 0;
+                                            runtime.nimNumberPart = if (runtime.hexDigits == 0) runtime.NP_INT_10 else runtime.NP_INT_16;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+                                            runtime.resetShiftState();
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_SKIP_STACK_ONE_TIME;
+                                            runtime.keyActionProcessed = true;
+                                        } else if (runtime.calcMode == runtime.CM_NIM and (item == runtime.ITM_RI or item == runtime.ITM_dotD) and runtime.nimNumberPart == runtime.NP_INT_BASE and runtime.aimBuffer[runtime.strlen(runtime.aimBuffer) - 1] == '#') {
+                                            runtime.lastIntegerBase = 0;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+                                            runtime.resetShiftState();
+                                            runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
+                                            runtime.keyActionProcessed = true;
+                                        } else if (runtime.calcMode == runtime.CM_NIM and item == runtime.ITM_HASH_JM and runtime.nimNumberPart == runtime.NP_INT_BASE and runtime.aimBuffer[runtime.strlen(runtime.aimBuffer) - 1] == '#') {
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+                                            runtime.resetShiftState();
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_SKIP_STACK_ONE_TIME;
+                                            runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
+                                            runtime.keyActionProcessed = true;
+                                        } else if (runtime.calcMode == runtime.CM_NIM and item == runtime.ITM_PERIOD and runtime.nimNumberPart == runtime.NP_INT_BASE and runtime.aimBuffer[runtime.strlen(runtime.aimBuffer) - 1] == '#') {
+                                            runtime.lastIntegerBase = 0;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+                                            runtime.resetShiftState();
+                                            runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
+                                            runtime.addItemToNimBuffer(runtime.ITM_PERIOD);
+                                            runtime.refreshRegisterLine(runtime.REGISTER_X);
+                                            runtime.keyActionProcessed = true;
+                                        } else if (runtime.calcMode == runtime.CM_NIM and item == runtime.ITM_HASH_JM and runtime.nimNumberPart == runtime.NP_REAL_FLOAT_PART and runtime.aimBuffer[runtime.strlen(runtime.aimBuffer) - 1] == '.') {
+                                            runtime.lastIntegerBase = 0;
+                                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+                                            runtime.resetShiftState();
+                                            runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
+                                            runtime.addItemToNimBuffer(runtime.ITM_toINT);
+                                            runtime.refreshRegisterLine(runtime.REGISTER_X);
+                                            runtime.keyActionProcessed = true;
+                                        } else {
+                                            runtime.addItemToNimBuffer(item);
+                                        }
+
+                                        if (((ITM_0 <= item and item <= ITM_9) or item == runtime.ITM_toINT or item == runtime.ITM_HASH_JM or item == runtime.ITM_ms or ((runtime.ITM_A <= item and item <= runtime.ITM_F) and (runtime.lastIntegerBase >= 2) and runtime.getSystemFlag(runtime.FLAG_TOPHEX))) or item == runtime.ITM_CHS or item == runtime.ITM_EXPONENT or item == runtime.ITM_PERIOD) {
+                                            runtime.refreshRegisterLine(runtime.REGISTER_X);
+                                        }
+                                    }
+                                },
+
+                                runtime.CM_MIM => {
+                                    runtime.addItemToBuffer(@bitCast(item));
+                                    runtime.keyActionProcessed = true;
+                                },
+
+                                runtime.CM_REGISTER_BROWSER => {
+                                    if (item == runtime.ITM_PERIOD) {
+                                        runtime.rbr1stDigit = true;
+                                        if (runtime.rbrMode == runtime.RBR_GLOBAL) {
+                                            if (runtime.currentNumberOfLocalRegisters() != 0) {
+                                                runtime.rbrMode = runtime.RBR_LOCAL;
+                                                runtime.currentRegisterBrowserScreen = @intCast(runtime.FIRST_LOCAL_REGISTER);
+                                            } else {
+                                                runtime.rbrMode = runtime.RBR_NAMED;
+                                                runtime.currentRegisterBrowserScreen = @intCast(runtime.FIRST_NAMED_VARIABLE);
+                                            }
+                                        } else if (runtime.rbrMode == runtime.RBR_LOCAL) {
+                                            runtime.rbrMode = runtime.RBR_NAMED;
+                                            runtime.currentRegisterBrowserScreen = @intCast(runtime.FIRST_NAMED_VARIABLE);
+                                        } else if (runtime.rbrMode == runtime.RBR_NAMED) {
+                                            runtime.rbrMode = runtime.RBR_GLOBAL;
+                                            runtime.currentRegisterBrowserScreen = runtime.REGISTER_X;
+                                        }
+                                    } else if (item == runtime.ITM_RS) {
+                                        runtime.rbr1stDigit = true;
+                                        runtime.showContent = !runtime.showContent;
+                                    } else if (item == runtime.ITM_RCL) {
+                                        runtime.rbr1stDigit = true;
+                                        runtime.calcMode = runtime.previousCalcMode;
+                                        if (runtime.rbrMode == runtime.RBR_GLOBAL or runtime.rbrMode == runtime.RBR_LOCAL) {
+                                            runtime.fnRecall(@bitCast(runtime.currentRegisterBrowserScreen));
+                                            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                                            runtime.refreshScreen(128);
+                                        } else if (runtime.rbrMode == runtime.RBR_NAMED) {
+                                            if (@as(i32, runtime.currentRegisterBrowserScreen) >= runtime.FIRST_NAMED_VARIABLE + @as(i32, runtime.numberOfNamedVariables)) {
+                                                runtime.currentRegisterBrowserScreen = @intCast(@as(i32, runtime.currentRegisterBrowserScreen) - (runtime.FIRST_NAMED_VARIABLE + @as(i32, runtime.numberOfNamedVariables)));
+                                                runtime.currentRegisterBrowserScreen = @intCast(@as(i32, runtime.currentRegisterBrowserScreen) + (runtime.FIRST_RESERVED_VARIABLE + runtime.NUMBER_OF_LETTERED_VARIABLES));
+                                            }
+                                            runtime.fnRecall(@bitCast(runtime.currentRegisterBrowserScreen));
+                                        }
+                                        runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                                        runtime.temporaryInformation = runtime.TI_STORCL;
+                                        runtime.lastParam = runtime.currentRegisterBrowserScreen;
+                                    } else if (ITM_0 <= item and item <= ITM_9) {
+                                        if (runtime.rbr1stDigit) {
+                                            runtime.rbr1stDigit = false;
+                                            runtime.rbrRegister = item - ITM_0;
+                                        } else {
+                                            runtime.rbr1stDigit = true;
+                                            runtime.rbrRegister = @intCast(@as(i32, runtime.rbrRegister) * 10 + @as(i32, item) - @as(i32, ITM_0));
+
+                                            switch (runtime.rbrMode) {
+                                                runtime.RBR_GLOBAL => {
+                                                    runtime.currentRegisterBrowserScreen = runtime.rbrRegister;
+                                                },
+                                                runtime.RBR_LOCAL => {
+                                                    if (@as(i32, runtime.rbrRegister) >= @as(i32, runtime.currentNumberOfLocalRegisters())) {
+                                                        runtime.rbrRegister = 0;
+                                                    }
+                                                    runtime.currentRegisterBrowserScreen = @intCast(runtime.FIRST_LOCAL_REGISTER + @as(i32, runtime.rbrRegister));
+                                                },
+                                                runtime.RBR_NAMED => {
+                                                    runtime.rbrMode = runtime.RBR_GLOBAL;
+                                                    runtime.currentRegisterBrowserScreen = runtime.rbrRegister;
+                                                },
+                                                else => {},
+                                            }
+                                        }
+                                    } else if (runtime.ITM_X <= item and item <= runtime.ITM_Z) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_X + runtime.REGISTER_X;
+                                    } else if (item == runtime.ITM_T) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = runtime.REGISTER_T;
+                                    } else if (runtime.ITM_A <= item and item <= runtime.ITM_D) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_A + runtime.REGISTER_A;
+                                    } else if (item == runtime.ITM_L) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = runtime.REGISTER_L;
+                                    } else if (runtime.ITM_I <= item and item <= runtime.ITM_K) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_I + runtime.REGISTER_I;
+                                    } else if (item == runtime.ITM_M) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = runtime.REGISTER_M;
+                                    } else if (item == runtime.ITM_N) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = runtime.REGISTER_N;
+                                    } else if (runtime.ITM_P <= item and item <= runtime.ITM_S) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_P + runtime.REGISTER_P;
+                                    } else if (runtime.ITM_E <= item and item <= runtime.ITM_H) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_E + runtime.REGISTER_E;
+                                    } else if (item == runtime.ITM_O) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = runtime.REGISTER_O;
+                                    } else if (runtime.ITM_U <= item and item <= runtime.ITM_W) {
+                                        runtime.rbrMode = runtime.RBR_GLOBAL;
+                                        runtime.rbr1stDigit = true;
+                                        runtime.currentRegisterBrowserScreen = item - runtime.ITM_U + runtime.REGISTER_U;
+                                    }
+
+                                    runtime.keyActionProcessed = true;
+                                },
+
+                                runtime.CM_ASN_BROWSER => {
+                                    runtime.lastItem = 0;
+                                    runtime.lastUserMode = false;
+                                    if (item == runtime.ITM_PERIOD) {
+                                        runtime.fnAsnDisplayUSER = false;
+                                        runtime.keyActionProcessed = true;
+                                        runtime.lastItem = item;
+                                        runtime.refreshScreen(121);
+                                    } else if (item == runtime.ITM_USERMODE) {
+                                        runtime.runFunction(item);
+                                        runtime.keyActionProcessed = true;
+                                    }
+                                },
+
+                                runtime.CM_FLAG_BROWSER, runtime.CM_FONT_BROWSER, runtime.CM_ERROR_MESSAGE, runtime.CM_BUG_ON_SCREEN => {
+                                    runtime.keyActionProcessed = true;
+                                },
+
+                                runtime.CM_GRAPH, runtime.CM_PLOT_STAT, runtime.CM_LISTXY => {},
+
+                                runtime.CM_CONFIRMATION => {
+                                    runtime.temporaryInformation = runtime.TI_ARE_YOU_SURE;
+                                    runtime.keyActionProcessed = true;
+                                },
+
+                                runtime.CM_PEM => {
+                                    if (item == runtime.ITM_PR) {
+                                        runtime.leavePem();
+                                        runtime.calcModeNormal();
+                                        runtime.extractPFNMenus();
+                                        runtime.keyActionProcessed = true;
+                                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                                    } else if (item == runtime.ITM_OFF) {
+                                        runtime.fnOff(runtime.NOPARAM);
+                                        runtime.keyActionProcessed = true;
+                                    } else if (item == runtime.ITM_SST) {
+                                        runtime.fnSst(runtime.NOPARAM);
+                                        runtime.keyActionProcessed = true;
+                                        runtime.refreshScreen(122);
+                                    } else if (item == runtime.ITM_BST) {
+                                        runtime.fnBst(runtime.NOPARAM);
+                                        runtime.keyActionProcessed = true;
+                                        runtime.refreshScreen(123);
+                                    } else if (runtime.aimBuffer[0] != 0 and !runtime.getSystemFlag(runtime.FLAG_ALPHA) and (item == runtime.ITM_HASH_JM or item == runtime.ITM_toINT or (runtime.nimNumberPart == runtime.NP_INT_BASE and item == runtime.ITM_RCL))) {
+                                        if (item == runtime.ITM_HASH_JM) {
+                                            item = runtime.ITM_toINT;
+                                        }
+                                        runtime.pemAddNumber(item, true);
+                                        runtime.keyActionProcessed = true;
+                                        if (item == runtime.ITM_RCL) {
+                                            runtime.currentStep = runtime.findPreviousStep(runtime.currentStep);
+                                            runtime.currentLocalStepNumber -= 1;
+                                            if (!runtime.programListEnd) {
+                                                runtime.scrollPemBackwards();
+                                            }
+                                        }
+                                    } else if (item == runtime.ITM_RS) {
+                                        runtime.addStepInProgram(runtime.ITM_STOP);
+                                        runtime.keyActionProcessed = true;
+                                    } else if (item == runtime.ITM_dotD and runtime.aimBuffer[0] == 0) {
+                                        runtime.addStepInProgram(runtime.ITM_toREAL);
+                                        runtime.keyActionProcessed = true;
+                                    }
+                                },
+
+                                runtime.CM_ASSIGN => {
+                                    if (item > 0 and runtime.itemToBeAssigned == 0) {
+                                        if (runtime.tam.alpha) {
+                                            runtime.processAimInput(item);
+                                            if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
+                                                runtime.assignLeaveAlpha();
+                                                runtime.assignGetName1();
+                                            }
+                                        } else {
+                                            if (item == runtime.ITM_XEQ and runtime.tmpString[0] != 0 and (runtime.getSystemFlag(runtime.FLAG_USER) or ((@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and (runtime.keyStateCode == 0) and runtime.Norm_Key_00.used))) {
+                                                var label: [15]u8 = undefined;
+                                                _ = runtime.xcopy(&label, runtime.tmpString, @intCast(runtime.stringByteLength(runtime.tmpString) + 1));
+                                                const regist = runtime.findNamedLabel(&label);
+                                                if (regist != INVALID_VARIABLE) {
+                                                    item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
+                                                } else {
+                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                                                        _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", @as([*c]u8, &label));
+                                                        runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
+                                                    }
+                                                }
+                                            } else if (item == runtime.ITM_RCL and runtime.tmpString[0] != 0 and (runtime.getSystemFlag(runtime.FLAG_USER) or ((@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and (runtime.keyStateCode == 0) and runtime.Norm_Key_00.used))) {
+                                                var varName: [15]u8 = undefined;
+                                                _ = runtime.xcopy(&varName, runtime.tmpString, @intCast(runtime.stringByteLength(runtime.tmpString) + 1));
+                                                const regist = runtime.findNamedVariable(&varName);
+                                                if (regist != INVALID_VARIABLE) {
+                                                    item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
+                                                } else {
+                                                    runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                                                        _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", @as([*c]u8, &varName));
+                                                        runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
+                                                    }
+                                                }
+                                            }
+
+                                            runtime.itemToBeAssigned = @bitCast(numlockReplacements(item, runtime.getSystemFlag(runtime.FLAG_NUMLOCK), false, false));
+                                            if (runtime.ITM_A <= runtime.itemToBeAssigned and runtime.itemToBeAssigned <= runtime.ITM_Z and runtime.lowercaseSelected()) {
+                                                runtime.itemToBeAssigned += (runtime.ITM_a - runtime.ITM_A);
+                                            }
+
+                                            if (runtime.previousCalcMode == runtime.CM_AIM) {
+                                                runtime.softmenuStack[0].softmenuId = 1;
+                                            }
+                                        }
+                                        runtime.keyActionProcessed = true;
+                                    } else if (item != 0 and runtime.itemToBeAssigned != 0) {
+                                        if (runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU) {
+                                            if (item > 0) {
+                                                runtime.processAimInput(item);
+                                                if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
+                                                    runtime.assignLeaveAlpha();
+                                                    runtime.assignGetName2();
+                                                }
+                                                runtime.keyActionProcessed = true;
+                                            }
+                                        } else {
+                                            switch (item) {
+                                                runtime.ITM_ENTER, runtime.ITM_SHIFTf, runtime.ITM_SHIFTg, runtime.ITM_USERMODE, runtime.ITM_EXIT1, runtime.KEY_fg, runtime.ITM_BACKSPACE => {},
+                                                else => {
+                                                    // HOME_AND_PFN_KEYS is undefined on this lane,
+                                                    // so only the unconditional else body remains.
+                                                    runtime.tamBuffer[0] = 0;
+                                                    runtime.keyActionProcessed = true;
+                                                },
+                                            }
+                                        }
+                                    }
+                                },
+
+                                runtime.CM_TIMER => {
+                                    if (item == runtime.ITM_TIMER_R_S or item == runtime.ITM_RS) {
+                                        runtime.fnStartStopTimerApp(runtime.NOPARAM);
+                                    } else if (item >= ITM_0 and item <= ITM_9) {
+                                        runtime.fnDigitKeyTimerApp(@bitCast(item - ITM_0));
+                                    } else if (item == runtime.ITM_PERIOD) {
+                                        runtime.fnRegAddLapTimerApp(runtime.NOPARAM);
+                                    } else if (item == runtime.ITM_SIGMAPLUS) {
+                                        runtime.fnAddTimerApp(runtime.NOPARAM);
+                                    } else if (item == runtime.ITM_ADD) {
+                                        runtime.fnAddLapTimerApp(runtime.NOPARAM);
+                                    } else if (item == runtime.ITM_RCL) {
+                                        runtime.runFunction(runtime.ITM_TIMER_RCL);
+                                    }
+                                    runtime.keyActionProcessed = true;
+                                },
+
+                                else => {
+                                    _ = runtime.sprintf(runtime.errorMessage, "In function processKeyAction: %u is an unexpected value while processing calcMode!", @as(c_uint, runtime.calcMode));
+                                    runtime.displayBugScreen(runtime.errorMessage);
+                                },
+                            }
+                        }
+                    },
+                }
+            }
         }
 
         // fnKeyEnter goto targets (keyboard.c labels at the tail of the function).

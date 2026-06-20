@@ -81,7 +81,7 @@ pub const TI_NO_INFO: u8 = 0;
 
 pub const PGM_WAITING: u8 = 2;
 pub const PGM_RUNNING: u8 = 1;
-const PGM_PAUSED: u8 = 3;
+pub const PGM_PAUSED: u8 = 3;
 
 pub const SCRUPD_MANUAL_STACK: u8 = 0x02;
 pub const SCRUPD_MANUAL_MENU: u8 = 0x04;
@@ -91,7 +91,7 @@ pub const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
 pub const FLAG_INTING: i32 = 0xc025;
 pub const FLAG_SOLVING: i32 = 0xc026;
-const ITM_RS: i16 = 1725;
+pub const ITM_RS: i16 = 1725;
 
 pub extern var calcMode: u8;
 pub extern var itemToBeAssigned: i16;
@@ -286,10 +286,10 @@ pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) v
 pub const TI_VIEW_REGISTER: u8 = 15;
 pub const TI_ARE_YOU_SURE: u8 = 9;
 pub const TI_SHOW_REGISTER: u8 = 14;
-const TI_SHOW_REGISTER_BIG: u8 = 75;
-const TI_SHOW_REGISTER_SMALL: u8 = 76;
-const TI_SHOW_REGISTER_TINY: u8 = 77;
-const TI_SHOWNOTHING: u8 = 93;
+pub const TI_SHOW_REGISTER_BIG: u8 = 75;
+pub const TI_SHOW_REGISTER_SMALL: u8 = 76;
+pub const TI_SHOW_REGISTER_TINY: u8 = 77;
+pub const TI_SHOWNOTHING: u8 = 93;
 pub const SCRUPD_AUTO: u8 = 0;
 pub const ITM_DROP: i16 = 37;
 pub const ITM_CLX: i16 = 41;
@@ -707,6 +707,170 @@ pub extern fn fnExitAllMenus(unused: u16) void;
 pub extern fn showSoftmenuCurrentPart() void;
 pub extern fn @"_executeItem"(item: i16, key_code: c_int) void;
 pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
+
+// ---------------------------------------------------------------------------
+// processKeyAction dependencies (keyboard.c 2336-3293).
+// ---------------------------------------------------------------------------
+pub const ITM_RCL: i16 = 51;
+pub const ITM_PERIOD: i16 = 820;
+pub const ITM_USERMODE: i16 = 1729;
+pub const ITM_AIM: i16 = 1740;
+pub const ITM_SNAP: i16 = 1405;
+pub const ITM_UP_ARROW: i16 = 893;
+pub const ITM_DOWN_ARROW: i16 = 895;
+pub const ITM_EXPONENT: i16 = 990;
+pub const ITM_UNDO: i16 = 1723;
+pub const ITM_BST: i16 = 1734;
+pub const ITM_SST: i16 = 1736;
+pub const ITM_PR: i16 = 1724;
+pub const ITM_RI: i16 = 1871;
+pub const ITM_CHS: i16 = 97;
+pub const ITM_XEQ: i16 = 3;
+pub const ITM_OFF: i16 = 1543;
+pub const ITM_SHIFTf: i16 = 1731;
+pub const ITM_SHIFTg: i16 = 1732;
+pub const ITM_STOP: i16 = 70;
+pub const ITM_TIMER_R_S: i16 = 1786;
+pub const ITM_TIMER_RCL: i16 = 1779;
+pub const ITM_SIGMAPLUS: i16 = 433;
+pub const ITM_ADD: i16 = 95;
+// Lettered-register items (ITM_A=550 .. ITM_Z=575 already declared).
+pub const ITM_D: i16 = 553;
+pub const ITM_E: i16 = 554;
+pub const ITM_F: i16 = 555;
+pub const ITM_H: i16 = 557;
+pub const ITM_I: i16 = 558;
+pub const ITM_J: i16 = 559;
+pub const ITM_K: i16 = 560;
+pub const ITM_L: i16 = 561;
+pub const ITM_M: i16 = 562;
+pub const ITM_N: i16 = 563;
+pub const ITM_O: i16 = 564;
+pub const ITM_P: i16 = 565;
+pub const ITM_S: i16 = 568;
+pub const ITM_T: i16 = 569;
+pub const ITM_U: i16 = 570;
+pub const ITM_W: i16 = 572;
+pub const ITM_X: i16 = 573;
+pub const ITM_Y: i16 = 574;
+pub const CHR_caseUP: i16 = 1878;
+pub const CHR_caseDN: i16 = 1879;
+pub const CHR_numL: i16 = 2030;
+pub const CHR_numU: i16 = 2031;
+pub const CHR_num: i16 = 2029;
+pub const CHR_case: i16 = 1858;
+pub const KEY_fg: i16 = 1893;
+pub const NC_NORMAL: u8 = 0;
+pub const FLAG_NUMLOCK: i32 = 32835;
+pub const FLAG_TOPHEX: i32 = 32856;
+pub const TI_COPY_FROM_SHOW: u8 = 94;
+pub const TI_STORCL: u8 = 114;
+pub const NP_INT_10: u8 = 1;
+pub const NP_INT_16: u8 = 2;
+pub const NP_REAL_FLOAT_PART: u8 = 4;
+pub const REGISTER_Z: i16 = 102;
+pub const REGISTER_T: i16 = 103;
+pub const REGISTER_A: i16 = 104;
+pub const REGISTER_L: i16 = 108;
+pub const REGISTER_I: i16 = 109;
+pub const REGISTER_M: i16 = 112;
+pub const REGISTER_N: i16 = 113;
+pub const REGISTER_P: i16 = 114;
+pub const REGISTER_E: i16 = 118;
+pub const REGISTER_O: i16 = 122;
+pub const REGISTER_U: i16 = 123;
+pub const FIRST_LABEL: i16 = 2200;
+pub const ASSIGN_CLEAR: i16 = -32768;
+pub const ASSIGN_LABELS: i16 = 12000;
+pub const ASSIGN_NAMED_VARIABLES: i16 = 10000;
+pub const ERROR_LABEL_NOT_FOUND: u8 = 6;
+// allowShowDigits is a literal-false macro (defines.h:271).
+pub const allowShowDigits: bool = false;
+
+pub extern var tamBuffer: [*c]u8;
+pub extern var showRegis: u16;
+pub extern var showFunctionNameItem: i16;
+pub extern var rbrRegister: i16;
+pub extern var lastItem: i16;
+pub extern var lastUserMode: bool_t;
+pub extern var fnAsnDisplayUSER: bool_t;
+pub extern var showContent: bool_t;
+pub extern var lastIntegerBase: u32;
+pub extern var hexDigits: u8;
+pub extern var lastParam: i16;
+pub extern var currentKeyCode: u8;
+pub extern var keyStateCode: u8;
+pub extern var lastshiftF: bool_t;
+
+// lowercaseselected macro (keyboard.c:473).
+pub fn lowercaseSelected() bool {
+    return (alphaCase == AC_LOWER and !lastshiftF) or (alphaCase == AC_UPPER and lastshiftF);
+}
+
+pub const normKey_t = extern struct {
+    func: i16,
+    funcParam: [16]u8,
+    used: bool_t,
+};
+pub extern var Norm_Key_00: normKey_t;
+
+// Norm_Key_00_key macro (defines.h:554): key index of the blank/Norm key per model.
+pub fn normKey00Key() i16 {
+    return switch (calcModel) {
+        USER_C47 => 0,
+        USER_DM42 => 0,
+        USER_R47f_g => -1,
+        USER_R47bk_fg => 10,
+        USER_R47fg_bk => 11,
+        else => -1,
+    };
+}
+
+// SHOWMODE macro (defines.h:2187).
+pub fn showMode() bool {
+    return calcMode == CM_NORMAL and
+        (temporaryInformation == TI_SHOW_REGISTER or
+            temporaryInformation == TI_SHOW_REGISTER_BIG or
+            temporaryInformation == TI_SHOW_REGISTER_SMALL or
+            temporaryInformation == TI_SHOW_REGISTER_TINY or
+            temporaryInformation == TI_SHOWNOTHING);
+}
+
+pub extern fn fnC47Show(fn_show_param: u16) void;
+pub extern fn fnFlipFlag(flag: u16) void;
+pub extern fn assignGetName1() void;
+pub extern fn assignGetName2() void;
+pub extern fn assignEnterAlpha() void;
+pub extern fn tamEnterMode(func: i16) void;
+pub extern fn fnRecall(r: u16) void;
+pub extern fn showStep() void;
+pub extern fn fnOff(unused: u16) void;
+pub extern fn addStepInProgram(func: i16) void;
+pub extern fn findNamedLabel(label_name: [*c]const u8) i16;
+pub extern fn stringGlyphLength(str: [*c]const u8) i32;
+// stringByteLength is a macro: ((int32_t)strlen(str)) (charString.h:48).
+pub fn stringByteLength(str: [*c]const u8) i32 {
+    return @intCast(strlen(str));
+}
+pub extern fn fnStartStopTimerApp(unused: u16) void;
+pub extern fn fnDigitKeyTimerApp(digit: u16) void;
+pub extern fn fnRegAddLapTimerApp(unused: u16) void;
+pub extern fn fnAddTimerApp(unused: u16) void;
+pub extern fn fnAddLapTimerApp(unused: u16) void;
+pub extern fn processAimInput(item: i16) void;
+// resetShiftState / showAlphaModeonGui are the keyboardTweak.c owners exported
+// from keyboard_state.zig; reach them as their canonical C symbols.
+pub extern fn resetShiftState() void;
+pub extern fn showAlphaModeonGui() void;
+
+// DMCP-only firmware key-buffer / refresh ops. Referenced only inside the
+// is_dmcp_build branches of host-exported (PC_BUILD-only) owners, so on the
+// dmcp lane the referencing code is dead-stripped before link — same pattern
+// as lcd_fill_rect above.
+pub extern fn lcd_refresh() void;
+pub extern fn key_pop() c_int;
+pub extern fn key_push(k1: c_int) c_int;
+pub extern fn wait_for_key_release(tout: c_int) void;
 
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
