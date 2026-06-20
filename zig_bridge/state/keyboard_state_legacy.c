@@ -34,6 +34,13 @@ extern void btnClicked(void *unused, void *data);
 
 #include "../../src/c47/c47Extensions/keyboardTweak.c"
 
+// _assignToMenu is static inside keyboard.c, so the Zig fnKeyBackspace/Up/Down
+// owners cannot link it directly.  Expose a thin external trampoline from inside
+// this translation unit (where the static is in scope).
+bool_t z47_keyboard_state_assignToMenu(uint8_t *data) {
+  return _assignToMenu(data);
+}
+
 #undef numlockReplacements
 #undef keyReplacements
 #undef caseReplacements

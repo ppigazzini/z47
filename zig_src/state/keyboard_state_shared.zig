@@ -275,13 +275,225 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         pub fn keyBackspace(unused_but_mandatory_parameter: u16) void {
-            if (runtime.tam.mode == 0 and runtime.calcMode == runtime.CM_NIM) {
-                runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
-                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
+            _ = unused_but_mandatory_parameter;
+
+            if (runtime.tam.mode != 0) {
+                runtime.tamProcessInput(@intCast(runtime.ITM_BACKSPACE));
                 return;
             }
 
-            runtime.keyBackspaceRetained(unused_but_mandatory_parameter);
+            switch (runtime.calcMode) {
+                runtime.CM_NORMAL => {
+                    if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
+                        runtime.temporaryInformation = runtime.TI_NO_INFO;
+                        runtime.keyActionProcessed = true;
+                        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                        runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                        return;
+                    } else if (runtime.isShowMode()) {
+                        runtime.temporaryInformation = runtime.TI_NO_INFO;
+                        runtime.keyActionProcessed = true;
+                        runtime.closeShowMenu();
+                        return;
+                    } else if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                        return;
+                    } else {
+                        if (runtime.temporaryInformation != runtime.TI_NO_INFO) {
+                            runtime.temporaryInformation = runtime.TI_NO_INFO;
+                            runtime.keyActionProcessed = true;
+                            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                            runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+                            if (runtime.lastErrorCode != 0) {
+                                runtime.lastErrorCode = 0;
+                            }
+                        }
+                        if (runtime.getSystemFlag(runtime.FLAG_CLX_DROP)) {
+                            runtime.showFunctionName(runtime.ITM_DROP, 1000, "");
+                        } else {
+                            runtime.showFunctionName(runtime.ITM_CLX, 1000, "");
+                        }
+                    }
+                },
+
+                runtime.CM_AIM => {
+                    if (runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR) {
+                        if (runtime.strlen(runtime.aimBuffer) > 0) {
+                            const lg: usize = @intCast(runtime.stringLastGlyph(runtime.aimBuffer));
+                            runtime.aimBuffer[lg] = 0;
+                            runtime.xCursor = runtime.showString(runtime.aimBuffer, runtime.standardFont, 1, runtime.Y_POSITION_OF_AIM_LINE + 6, runtime.vmNormal, true, true);
+                        }
+                    } else if (runtime.strlen(runtime.aimBuffer) > 0) {
+                        // TEXT_MULTILINE_EDIT: split the buffer at the cursor, drop the
+                        // glyph before it, then rejoin the tail.
+                        const t_cursor: usize = @intCast(runtime.T_cursorPos);
+                        const t_cursor_tmp = runtime.aimBuffer[t_cursor];
+                        runtime.aimBuffer[t_cursor] = 0;
+                        const lg: usize = @intCast(runtime.stringLastGlyph(runtime.aimBuffer));
+                        runtime.aimBuffer[lg] = 0;
+                        runtime.aimBuffer[t_cursor] = t_cursor_tmp;
+                        var ix: usize = 0;
+                        while (runtime.aimBuffer[ix + t_cursor] != 0) : (ix += 1) {
+                            runtime.aimBuffer[ix + lg] = runtime.aimBuffer[ix + t_cursor];
+                        }
+                        runtime.aimBuffer[ix + lg] = 0;
+                        if (runtime.T_cursorPos <= 1 + runtime.stringLastGlyph(runtime.aimBuffer)) {
+                            runtime.fnT_ARROW(runtime.ITM_T_LEFT_ARROW);
+                        }
+                    }
+                },
+
+                runtime.CM_NIM => {
+                    runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
+                    runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
+                },
+
+                runtime.CM_MIM => {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else {
+                        runtime.mimAddNumber(runtime.ITM_BACKSPACE);
+                    }
+                },
+
+                runtime.CM_EIM => {
+                    if (runtime.xCursor > 0) {
+                        const buf = runtime.aimBuffer;
+                        const lst: usize = @intCast(runtime.stringNextGlyph(buf, runtime.stringLastGlyph(buf)));
+                        runtime.xCursor -= 1;
+                        var dst: usize = 0;
+                        var i: u32 = 0;
+                        while (i < runtime.xCursor) : (i += 1) {
+                            dst += if ((buf[dst] & 0x80) != 0) @as(usize, 2) else 1;
+                        }
+                        var src: usize = dst + (if ((buf[dst] & 0x80) != 0) @as(usize, 2) else 1);
+                        while (src <= lst) {
+                            buf[dst] = buf[src];
+                            dst += 1;
+                            src += 1;
+                        }
+                    }
+                },
+
+                runtime.CM_REGISTER_BROWSER, runtime.CM_FLAG_BROWSER, runtime.CM_FONT_BROWSER => {
+                    runtime.calcMode = runtime.previousCalcMode;
+                },
+
+                runtime.CM_ASN_BROWSER => {
+                    keyExit(runtime.NOPARAM); // Rather use the Exit routine as the code is the same
+                },
+
+                runtime.CM_BUG_ON_SCREEN,
+                runtime.CM_LISTXY,
+                runtime.CM_GRAPH,
+                runtime.CM_PLOT_STAT,
+                runtime.CM_CONFIRMATION,
+                => {
+                    runtime.temporaryInformation = runtime.TI_ARE_YOU_SURE; // Keep confirmation message on screen
+                    if (runtime.programRunStop == runtime.PGM_WAITING) {
+                        runtime.programRunStop = runtime.PGM_STOPPED;
+                    }
+                },
+
+                runtime.CM_PEM => {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                        return;
+                    }
+                    if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                        runtime.pemAlpha(runtime.ITM_BACKSPACE);
+                        if (runtime.aimBuffer[0] == 0 and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                            // close if no characters left
+                            runtime.pemAlpha(runtime.ITM_BACKSPACE);
+                        }
+                        if (runtime.aimBuffer[0] == 0 and !runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                            if (runtime.currentLocalStepNumber > 1) {
+                                runtime.currentLocalStepNumber -= 1;
+                                runtime.defineCurrentStep();
+                                if (!runtime.programListEnd) {
+                                    runtime.scrollPemBackwards();
+                                }
+                            } else {
+                                runtime.pemCursorIsZerothStep = true;
+                            }
+                        }
+                    } else if (runtime.aimBuffer[0] == 0) {
+                        if (runtime.currentLocalStepNumber > 1) {
+                            runtime.pemCursorIsZerothStep = false;
+                        }
+                        if (!runtime.pemCursorIsZerothStep) {
+                            const next_step = runtime.findNextStep(runtime.currentStep);
+                            if (runtime.currentStep[0] != 255 or runtime.currentStep[1] != 255) { // Not the last END
+                                runtime.deleteStepsFromTo(runtime.currentStep, next_step);
+                            }
+                            if (runtime.currentLocalStepNumber > 1) {
+                                runtime.currentLocalStepNumber -= 1;
+                                runtime.defineCurrentStep();
+                            } else {
+                                runtime.pemCursorIsZerothStep = true;
+                            }
+                            runtime.scrollPemBackwards();
+                        }
+                    } else {
+                        runtime.pemAddNumber(runtime.ITM_BACKSPACE, true);
+                        if (runtime.aimBuffer[0] == 0 and runtime.currentLocalStepNumber > 1) {
+                            runtime.currentStep = runtime.findPreviousStep(runtime.currentStep);
+                            runtime.currentLocalStepNumber -= 1;
+                            if (!runtime.programListEnd) {
+                                runtime.scrollPemBackwards();
+                            }
+                        }
+                    }
+                },
+
+                runtime.CM_ASSIGN => {
+                    if (runtime.itemToBeAssigned == 0) {
+                        if (!runtime.tam.alpha) {
+                            runtime.calcMode = runtime.previousCalcMode;
+                            runtime.showFunctionName(runtime.ITM_CLX, 1000, "");
+                        } else if (runtime.strlen(runtime.aimBuffer) != 0) {
+                            // Delete the character before the cursor
+                            if (runtime.alphaCursor > 0) {
+                                runtime.deleteAlphaCharacter(&runtime.alphaCursor);
+                            }
+                        } else {
+                            runtime.assignLeaveAlpha();
+                            runtime.itemToBeAssigned = runtime.ITM_BACKSPACE;
+                        }
+                    } else {
+                        if (!runtime.tam.alpha) {
+                            runtime.itemToBeAssigned = 0;
+                        } else if (runtime.strlen(runtime.aimBuffer) != 0) {
+                            // Delete the character before the cursor
+                            if (runtime.T_cursorPos > 0) {
+                                runtime.deleteAlphaCharacter(&runtime.T_cursorPos);
+                            }
+                        } else {
+                            runtime.assignLeaveAlpha();
+                            if (runtime.asnKey[1] != 0) {
+                                runtime.assignToKey(&runtime.asnKey[0]);
+                            } else {
+                                runtime.assignToMenu(&runtime.asnKey[0]);
+                            }
+                            runtime.calcMode = runtime.previousCalcMode;
+                            runtime.shiftF = false;
+                            runtime.shiftG = false;
+                            runtime.refreshScreen(129);
+                        }
+                    }
+                },
+
+                runtime.CM_TIMER => {
+                    if (runtime.lastErrorCode != 0) {
+                        runtime.lastErrorCode = 0;
+                    } else {
+                        runtime.fnBackspaceTimerApp();
+                    }
+                },
+
+                else => runtime.bugScreenWhileProcKey("fnKeyBackspace", "BACKSPACE"),
+            }
         }
 
         pub fn keyUp(unused_but_mandatory_parameter: u16) void {
