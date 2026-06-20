@@ -636,6 +636,21 @@ pub extern fn clearRegisterLine(regist: i16, clear_top: bool_t, clear_bottom: bo
 pub extern fn fnEqCla() void;
 pub extern fn fnKeyBackspace(unused: u16) void; // canonical (Zig export on host, C on dmcp)
 
+// --- keyboardTweak.c fnT_ARROW dependencies ---------------------------------
+pub const ITM_T_RIGHT_ARROW: u16 = 1953;
+pub const ITM_T_LLEFT_ARROW: u16 = 1954;
+pub const ITM_T_RRIGHT_ARROW: u16 = 1955;
+pub const ITM_T_UP_ARROW: u16 = 1926;
+pub const ITM_T_DOWN_ARROW: u16 = 1928;
+pub extern var displayAIMbufferoffset: i16;
+pub extern var current_cursor_x: u16;
+pub extern var current_cursor_y: u16;
+pub extern var multiEdLines: u8;
+pub extern fn stringPrevGlyph(str: [*c]const u8, pos: i16) i16;
+pub extern fn incOffset() void;
+pub extern fn findOffset() void;
+pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
+
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
     extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;

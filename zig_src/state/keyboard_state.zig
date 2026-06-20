@@ -134,6 +134,80 @@ pub export fn fnCla(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 }
 
+// keyboardTweak.c fnT_ARROW: move the multiline-edit cursor (TEXT_MULTILINE_EDIT).
+pub export fn fnT_ARROW(command: u16) callconv(.c) void {
+    const showUpTo = struct {
+        // showStringEdC47(multiEdLines, offset, cursor, buf, 1, -100, vmNormal, 1,1,1)
+        fn call() void {
+            _ = runtime.showStringEdC47(runtime.multiEdLines, runtime.displayAIMbufferoffset, runtime.T_cursorPos, runtime.aimBuffer, 1, @bitCast(@as(i32, -100)), runtime.vmNormal, true, true, true);
+        }
+    };
+
+    switch (@as(i32, command)) {
+        runtime.ITM_T_LEFT_ARROW => {
+            runtime.T_cursorPos = runtime.stringPrevGlyph(runtime.aimBuffer, runtime.T_cursorPos);
+            if (runtime.T_cursorPos < runtime.displayAIMbufferoffset and runtime.displayAIMbufferoffset > 0) {
+                runtime.displayAIMbufferoffset = runtime.stringPrevGlyph(runtime.aimBuffer, runtime.displayAIMbufferoffset);
+            }
+        },
+        runtime.ITM_T_RIGHT_ARROW => {
+            runtime.T_cursorPos = runtime.stringNextGlyph(runtime.aimBuffer, runtime.T_cursorPos);
+            runtime.incOffset();
+        },
+        runtime.ITM_T_LLEFT_ARROW => {
+            var ixx: u16 = 0;
+            while (ixx < 10) : (ixx += 1) {
+                fnT_ARROW(runtime.ITM_T_LEFT_ARROW);
+            }
+        },
+        runtime.ITM_T_RRIGHT_ARROW => {
+            var ixx: u16 = 0;
+            while (ixx < 10) : (ixx += 1) {
+                fnT_ARROW(runtime.ITM_T_RIGHT_ARROW);
+            }
+        },
+        runtime.ITM_T_UP_ARROW => {
+            var ixx: u16 = 0;
+            const x_old = runtime.current_cursor_x;
+            const y_old = runtime.current_cursor_y;
+            fnT_ARROW(runtime.ITM_T_RIGHT_ARROW);
+            while (ixx < 75 and (@as(u32, runtime.current_cursor_x) >= @as(u32, x_old) + 5 or runtime.current_cursor_y == y_old)) : (ixx += 1) {
+                fnT_ARROW(runtime.ITM_T_LEFT_ARROW);
+                showUpTo.call();
+            }
+        },
+        runtime.ITM_T_DOWN_ARROW => {
+            var ixx: u16 = 0;
+            const x_old = runtime.current_cursor_x;
+            const y_old = runtime.current_cursor_y;
+            fnT_ARROW(runtime.ITM_T_LEFT_ARROW);
+            while (ixx < 75 and (@as(u32, runtime.current_cursor_x) + 5 <= @as(u32, x_old) or runtime.current_cursor_y == y_old)) : (ixx += 1) {
+                fnT_ARROW(runtime.ITM_T_RIGHT_ARROW);
+                showUpTo.call();
+            }
+        },
+        runtime.ITM_UP1 => { // HOME
+            runtime.T_cursorPos = 0;
+            runtime.displayAIMbufferoffset = 0;
+        },
+        runtime.ITM_DOWN1 => { // END
+            runtime.T_cursorPos = @as(i16, @intCast(runtime.strlen(runtime.aimBuffer))) - 1;
+            runtime.T_cursorPos = runtime.stringNextGlyph(runtime.aimBuffer, runtime.T_cursorPos);
+            fnT_ARROW(runtime.ITM_T_RIGHT_ARROW);
+            runtime.findOffset();
+        },
+        else => {},
+    }
+
+    const last = runtime.stringNextGlyph(runtime.aimBuffer, runtime.stringLastGlyph(runtime.aimBuffer));
+    if (runtime.T_cursorPos > last) {
+        runtime.T_cursorPos = last;
+    }
+    if (runtime.T_cursorPos < 0) {
+        runtime.T_cursorPos = 0;
+    }
+}
+
 // keyboardTweak.c fnCln: clear to a clean "+0" entry (clear-number).
 pub export fn fnCln(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
