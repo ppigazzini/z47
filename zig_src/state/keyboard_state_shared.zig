@@ -121,6 +121,57 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn processAimInput(item: i16) void {
+            // keyboard.c processAimInput (475-568). The PC_BUILD jm_show_comment
+            // tracing is dropped (empty without PC_BUILD_VERBOSE2, which is #undef).
+            var item1: i16 = 0;
+
+            if (runtime.scrLock != runtime.NC_NORMAL) {
+                runtime.nextChar = runtime.scrLock;
+            }
+
+            var itemOut: i16 = item;
+            if (keyReplacements(item, &item1, runtime.getSystemFlag(runtime.FLAG_NUMLOCK), runtime.lastshiftF, runtime.lastshiftG)) {
+                if (item1 > 0) {
+                    runtime.addItemToBuffer(@bitCast(item1));
+                    runtime.keyActionProcessed = true;
+                }
+            } else if (caseReplacements(runtime.lowercaseSelected(), item, &itemOut)) {
+                runtime.addItemToBuffer(@bitCast(itemOut));
+                runtime.keyActionProcessed = true;
+            } else if (item == runtime.ITM_COLON or item == runtime.ITM_COMMA or item == runtime.ITM_QUESTION_MARK or item == runtime.ITM_SPACE or item == runtime.ITM_UNDERSCORE) {
+                runtime.addItemToBuffer(@bitCast(item));
+                runtime.keyActionProcessed = true;
+            } else if (item == runtime.ITM_DOWN_ARROW) {
+                if (runtime.nextChar == runtime.NC_NORMAL) {
+                    runtime.nextChar = runtime.NC_SUBSCRIPT;
+                } else if (runtime.nextChar == runtime.NC_SUPERSCRIPT) {
+                    runtime.nextChar = runtime.NC_NORMAL;
+                }
+                runtime.keyActionProcessed = true;
+            } else if (item == runtime.ITM_UP_ARROW) {
+                if (runtime.nextChar == runtime.NC_NORMAL) {
+                    runtime.nextChar = runtime.NC_SUPERSCRIPT;
+                } else if (runtime.nextChar == runtime.NC_SUBSCRIPT) {
+                    runtime.nextChar = runtime.NC_NORMAL;
+                }
+                runtime.keyActionProcessed = true;
+            } else if (item >= 0 and runtime.itemFuncIsAddItemToBuffer(item)) {
+                // C reads indexOfItems[item] unguarded; negative menu items reach
+                // here (processKeyAction's tam.alpha path forwards item < 0), so the
+                // index is guarded to avoid the panic. The OOB read in C effectively
+                // never matches addItemToBuffer, so item < 0 -> no action, as here.
+                runtime.addItemToBuffer(@bitCast(item));
+                runtime.keyActionProcessed = true;
+            }
+
+            if (runtime.keyActionProcessed) {
+                runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+            }
+
+            runtime.showHideAlphaMode();
+        }
+
         pub fn processKeyAction(item_arg: i16) void {
             // keyboard.c processKeyAction (2336-3293). `item` is reassigned in
             // several prongs, so take a mutable local copy of the argument.
@@ -426,7 +477,7 @@ pub fn implementation(comptime runtime: type) type {
                                 // reorder keeps the boolean result while avoiding the
                                 // out-of-range index for negative menu items.
                                 if (item < 0 or runtime.itemFuncIsAddItemToBuffer(item)) {
-                                    runtime.processAimInput(item);
+                                    processAimInput(item);
                                 } else {
                                     runtime.keyActionProcessed = true;
                                 }
@@ -489,13 +540,13 @@ pub fn implementation(comptime runtime: type) type {
                                         runtime.keyActionProcessed = true;
                                     } else {
                                         runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
-                                        runtime.processAimInput(item);
+                                        processAimInput(item);
                                         runtime.refreshRegisterLine(runtime.AIM_REGISTER_LINE);
                                     }
                                 },
 
                                 runtime.CM_EIM => {
-                                    runtime.processAimInput(item);
+                                    processAimInput(item);
                                     runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_SKIP_MENU_ONE_TIME);
                                     runtime.refreshScreen(130);
                                 },
@@ -743,7 +794,7 @@ pub fn implementation(comptime runtime: type) type {
                                 runtime.CM_ASSIGN => {
                                     if (item > 0 and runtime.itemToBeAssigned == 0) {
                                         if (runtime.tam.alpha) {
-                                            runtime.processAimInput(item);
+                                            processAimInput(item);
                                             if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
                                                 runtime.assignLeaveAlpha();
                                                 runtime.assignGetName1();
@@ -790,7 +841,7 @@ pub fn implementation(comptime runtime: type) type {
                                     } else if (item != 0 and runtime.itemToBeAssigned != 0) {
                                         if (runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU) {
                                             if (item > 0) {
-                                                runtime.processAimInput(item);
+                                                processAimInput(item);
                                                 if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
                                                     runtime.assignLeaveAlpha();
                                                     runtime.assignGetName2();

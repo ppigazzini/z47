@@ -8,6 +8,10 @@ fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
+fn processAimInputHost(item: i16) callconv(.c) void {
+    shared.processAimInput(item);
+}
+
 fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyEnter(unused_but_mandatory_parameter);
 }
@@ -55,6 +59,7 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
 comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
+        @export(&processAimInputHost, .{ .name = "processAimInput" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
         @export(&keyCCHost, .{ .name = "fnKeyCC" });
