@@ -115,12 +115,12 @@ pub extern var kbd_std_R47bk_fg: [37]calcKey_t;
 pub extern var kbd_std_R47fg_bk: [37]calcKey_t;
 pub extern var kbd_std_R47fg_g: [37]calcKey_t;
 
-const USER_DM42: u8 = 45;
-const USER_C47: u8 = 46;
+pub const USER_DM42: u8 = 45;
+pub const USER_C47: u8 = 46;
 const USER_R47f_g: u8 = 61;
-const USER_R47bk_fg: u8 = 62;
-const USER_R47fg_bk: u8 = 63;
-const USER_R47fg_g: u8 = 64;
+pub const USER_R47bk_fg: u8 = 62;
+pub const USER_R47fg_bk: u8 = 63;
+pub const USER_R47fg_g: u8 = 64;
 
 pub extern fn getSystemFlag(flag: i32) bool_t;
 pub extern fn clearSystemFlag(flag: u32) void;
@@ -675,6 +675,37 @@ pub extern fn show_g_jm() void;
 pub extern fn clear_fg_jm() void;
 pub extern fn force_refresh(mode: u8) void;
 pub extern fn fnTimerStop(nr: u8) void;
+
+// --- keyboardTweak.c openHOMEorMyM dependencies -----------------------------
+pub const keypress_fff: bool_t = true;
+pub const FLAG_HOME_TRIPLE: i32 = 32864;
+pub const FLAG_MYM_TRIPLE: i32 = 32863;
+pub const MNU_MyAlpha: i16 = 1350;
+pub const MNU_DYNAMIC: i16 = 1394;
+pub const ITM_ms: i16 = 1909;
+pub const ITM_HASH_JM: i16 = 1872;
+pub const ITM_toINT: i16 = 1687;
+const item_t = extern struct {
+    func: ?*const anyopaque, // void(*)(uint16_t) -- only ever compared, never called
+    param: u16,
+    itemCatalogName: [16]u8,
+    itemSoftmenuName: [16]u8,
+    tamMinMax: u16,
+    status: u16,
+};
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
+    const f = indexOfItems[@intCast(item)].func;
+    return f == @as(?*const anyopaque, @ptrCast(&addItemToBuffer));
+}
+pub extern var delayCloseNim: bool_t;
+pub extern var userKeyLabel: [*c]u8;
+pub extern fn isAlphabeticSoftmenu() bool_t;
+pub extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
+pub extern fn setCurrentUserMenu(item: i16, func_param: [*c]u8) bool_t;
+pub extern fn fnExitAllMenus(unused: u16) void;
+pub extern fn showSoftmenuCurrentPart() void;
+pub extern fn @"_executeItem"(item: i16, key_code: c_int) void;
 pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
 
 const legacy_host = struct {

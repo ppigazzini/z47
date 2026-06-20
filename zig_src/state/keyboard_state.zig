@@ -208,6 +208,111 @@ pub export fn fnT_ARROW(command: u16) callconv(.c) void {
     }
 }
 
+// keyboardTweak.c openHOMEorMyM: f/g triple/long-press opens HOME or MyMenu.
+pub export fn openHOMEorMyM(situation: runtime.bool_t) callconv(.c) void {
+    const graphmode = runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH;
+    if (!((runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE) or runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) and !graphmode and runtime.calcMode != runtime.CM_EIM and runtime.calcMode != runtime.CM_MIM)) {
+        return;
+    }
+    // f/g long-press is temporarily disabled in EIM and MIM.
+
+    var target_HOME: i16 = if (runtime.calcMode == runtime.CM_PEM) -runtime.MNU_PFN else -runtime.MNU_HOME;
+    const target_MYM: i16 = if (runtime.calcMode == runtime.CM_PEM) -runtime.MNU_PFN else -runtime.MNU_MyMenu;
+
+    var baseOverrideOnce: runtime.bool_t = false;
+    runtime.BASE_OVERRIDEONCE = baseOverrideOnce;
+
+    if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+        runtime.leaveTamModeIfEnabled();
+        if (runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE)) {
+            if (runtime.currentMenu() == -runtime.MNU_MyAlpha or runtime.currentMenu() == -runtime.MNU_AIMCATALOG or runtime.isAlphabeticSoftmenu()) {
+                runtime.popSoftmenu();
+            }
+            if (runtime.tam.alpha) {
+                runtime.showSoftmenu(-runtime.MNU_TAMALPHA);
+            } else {
+                runtime.showSoftmenu(-runtime.MNU_ALPHA);
+            }
+        } else if (runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) {
+            runtime.showSoftmenu(-runtime.MNU_MyAlpha);
+        }
+    } else {
+        runtime.leaveTamModeIfEnabled();
+
+        const keyCode: c_int = if (runtime.calcModel == runtime.USER_R47bk_fg)
+            11
+        else if (runtime.calcModel == runtime.USER_R47fg_bk or runtime.calcModel == runtime.USER_R47fg_g)
+            10
+        else if (runtime.calcModel == runtime.USER_C47 or runtime.calcModel == runtime.USER_DM42)
+            27
+        else
+            9999;
+        if (keyCode != 9999) {
+            const item = runtime.kbd_usr[@intCast(keyCode)].gShifted;
+            if (runtime.calcMode == runtime.CM_NIM and runtime.getSystemFlag(runtime.FLAG_USER) and
+                item != runtime.ITM_ms and item != runtime.ITM_CC and item != runtime.ITM_op_j and
+                item != runtime.ITM_op_j_pol and item != runtime.ITM_dotD and item != runtime.ITM_HASH_JM and
+                item != runtime.ITM_toINT and item != runtime.ITM_BACKSPACE and
+                !runtime.itemFuncIsAddItemToBuffer(item))
+            {
+                runtime.delayCloseNim = false;
+                runtime.closeNim();
+                runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+            }
+            if (runtime.getSystemFlag(runtime.FLAG_USER)) { // USER mode
+                if (runtime.calcMode != runtime.CM_AIM and runtime.calcMode != runtime.CM_EIM and item > 0) {
+                    runtime.@"_executeItem"(item, keyCode); // LONGPRESS_CFG is defined
+                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    runtime.refreshScreen(1000);
+                } else {
+                    if (item < 0) {
+                        if (item == -runtime.MNU_DYNAMIC) {
+                            const funcParam = runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + 1));
+                            _ = runtime.setCurrentUserMenu(item, funcParam);
+                        }
+                        target_HOME = if (item == -runtime.MNU_HOME and runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) -runtime.MNU_MyMenu else item;
+                        runtime.showSoftmenu(target_HOME);
+                    } else {
+                        if (runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE)) {
+                            runtime.leaveTamModeIfEnabled();
+                            runtime.showSoftmenu(target_HOME);
+                        } else if (runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) {
+                            runtime.leaveTamModeIfEnabled();
+                            if (situation == runtime.keypress_fff) {
+                                runtime.BASE_OVERRIDEONCE = true;
+                            }
+                            runtime.showSoftmenu(target_MYM);
+                        }
+                    }
+                }
+            } else { // Normal mode
+                if (runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE)) {
+                    runtime.leaveTamModeIfEnabled();
+                    runtime.showSoftmenu(target_HOME);
+                } else if (runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) {
+                    if (runtime.getSystemFlag(runtime.FLAG_BASE_MYM) or runtime.getSystemFlag(runtime.FLAG_BASE_HOME)) {
+                        runtime.leaveTamModeIfEnabled();
+                        if (situation == runtime.keypress_fff) {
+                            baseOverrideOnce = true;
+                        }
+                        runtime.BASE_OVERRIDEONCE = baseOverrideOnce;
+                        runtime.showSoftmenu(target_MYM);
+                    } else {
+                        baseOverrideOnce = false;
+                        runtime.BASE_OVERRIDEONCE = baseOverrideOnce;
+                        runtime.fnExitAllMenus(0); // both clear: return to the blank base menu
+                    }
+                }
+            }
+        }
+    }
+    runtime.BASE_OVERRIDEONCE = baseOverrideOnce;
+    runtime.showSoftmenuCurrentPart();
+    runtime.BASE_OVERRIDEONCE = baseOverrideOnce; // for the upcoming refresh
+    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+    runtime.refreshScreen(23);
+}
+
 // keyboardTweak.c showShiftState: draw the f/g shift indicator (T register line).
 pub export fn showShiftState() callconv(.c) void {
     if (!runtime.isShowMode() and runtime.temporaryInformation != runtime.TI_SHOW_REGISTER) {

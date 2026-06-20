@@ -15,6 +15,7 @@
 #define showShiftState z47_keyboard_state_showShiftState
 #define resetShiftState z47_keyboard_state_resetShiftState
 #define resetKeytimers z47_keyboard_state_resetKeytimers
+#define openHOMEorMyM z47_keyboard_state_openHOMEorMyM
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
@@ -59,6 +60,7 @@ void z47_keyboard_state_menuDown(void) { menuDown(); }
 // stayInAIM is static in keyboard.c (used by the Zig fnKeyExit).
 void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 
+#undef openHOMEorMyM
 #undef resetKeytimers
 #undef resetShiftState
 #undef showShiftState
