@@ -12,6 +12,10 @@ fn processAimInputHost(item: i16) callconv(.c) void {
     shared.processAimInput(item);
 }
 
+fn leavePemHost() callconv(.c) void {
+    shared.leavePem();
+}
+
 fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyEnter(unused_but_mandatory_parameter);
 }
@@ -60,6 +64,7 @@ comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&processAimInputHost, .{ .name = "processAimInput" });
+        @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
         @export(&keyCCHost, .{ .name = "fnKeyCC" });

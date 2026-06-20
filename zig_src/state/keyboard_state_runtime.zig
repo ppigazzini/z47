@@ -602,7 +602,6 @@ pub extern fn calcSigma(max_offset: u16) void;
 pub extern fn pemCloseAlphaInput() void;
 pub extern fn pemCloseNumberInput() void;
 pub extern fn extractPFNMenus() void;
-pub extern fn leavePem() void;
 pub extern fn fnLeaveTimerApp() void;
 pub extern fn fnRefreshState() void;
 pub extern fn fnItemTimerApp(unused: u16) void;
@@ -857,6 +856,26 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// leavePem dependencies (keyboard.c 2309-2334). Host owner: RAM_SIZE_IN_BLOCKS
+// is the !DMCP_BUILD (NEW_HW) value (defines.h:1988).
+pub const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+pub extern var freeProgramBytes: u16;
+pub extern var beginOfProgramMemory: [*c]u8;
+pub extern var firstDisplayedStep: [*c]u8;
+pub extern var beginOfCurrentProgram: [*c]u8;
+pub extern var endOfCurrentProgram: [*c]u8;
+pub extern var currentProgramNumber: u16;
+pub extern var firstDisplayedLocalStepNumber: u16;
+pub const programList_t = extern struct {
+    step: i32,
+    instructionPointer: [*c]u8,
+};
+pub extern var programList: [*c]programList_t;
+pub extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
+pub extern fn scanLabelsAndPrograms() void;
+pub extern fn defineFirstDisplayedStep() void;
+pub extern fn defineCurrentProgramFromCurrentStep() void;
+
 // processAimInput dependencies (keyboard.c 475-568).
 pub const ITM_COLON: i16 = 822;
 pub const ITM_COMMA: i16 = 818;

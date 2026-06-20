@@ -121,6 +121,36 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn leavePem() void {
+            // keyboard.c leavePem (2309-2334): push programs to the end of RAM.
+            if (runtime.freeProgramBytes >= 4) {
+                const byte_diff: usize = @intFromPtr(runtime.ram + runtime.RAM_SIZE_IN_BLOCKS) - @intFromPtr(runtime.beginOfProgramMemory);
+                const new_program_size: u32 = @as(u32, @truncate(byte_diff)) - @as(u32, runtime.freeProgramBytes & 0xfffc);
+                const local_step_number = runtime.currentLocalStepNumber;
+                const program_number = runtime.currentProgramNumber;
+                const fd_local_step_number = runtime.firstDisplayedLocalStepNumber;
+                const in_ram = runtime.programList[@as(usize, runtime.currentProgramNumber) - 1].step > 0;
+                if (in_ram) {
+                    const off: usize = runtime.freeProgramBytes & 0xfffc;
+                    runtime.currentStep += off;
+                    runtime.firstDisplayedStep += off;
+                    runtime.beginOfCurrentProgram += off;
+                    runtime.endOfCurrentProgram += off;
+                }
+                runtime.freeProgramBytes &= 0x03;
+                runtime.resizeProgramMemory(runtime.toBlocks(new_program_size));
+                runtime.scanLabelsAndPrograms();
+                if (in_ram) {
+                    runtime.currentLocalStepNumber = local_step_number;
+                    runtime.currentProgramNumber = program_number;
+                    runtime.firstDisplayedLocalStepNumber = fd_local_step_number;
+                    runtime.defineCurrentStep();
+                    runtime.defineFirstDisplayedStep();
+                    runtime.defineCurrentProgramFromCurrentStep();
+                }
+            }
+        }
+
         pub fn processAimInput(item: i16) void {
             // keyboard.c processAimInput (475-568). The PC_BUILD jm_show_comment
             // tracing is dropped (empty without PC_BUILD_VERBOSE2, which is #undef).
@@ -753,7 +783,7 @@ pub fn implementation(comptime runtime: type) type {
 
                                 runtime.CM_PEM => {
                                     if (item == runtime.ITM_PR) {
-                                        runtime.leavePem();
+                                        leavePem();
                                         runtime.calcModeNormal();
                                         runtime.extractPFNMenus();
                                         runtime.keyActionProcessed = true;
@@ -1275,7 +1305,7 @@ pub fn implementation(comptime runtime: type) type {
                     }
 
                     runtime.aimBuffer[0] = 0;
-                    runtime.leavePem();
+                    leavePem();
                     runtime.calcModeNormal();
                     runtime.saveForUndo();
                     if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
