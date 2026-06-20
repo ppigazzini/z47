@@ -12,6 +12,9 @@
 #define fnT_ARROW z47_keyboard_state_fnT_ARROW
 #define refreshModeGui z47_keyboard_state_refreshModeGui
 #define showAlphaModeonGui z47_keyboard_state_showAlphaModeonGui
+#define showShiftState z47_keyboard_state_showShiftState
+#define resetShiftState z47_keyboard_state_resetShiftState
+#define resetKeytimers z47_keyboard_state_resetKeytimers
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
@@ -56,6 +59,9 @@ void z47_keyboard_state_menuDown(void) { menuDown(); }
 // stayInAIM is static in keyboard.c (used by the Zig fnKeyExit).
 void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 
+#undef resetKeytimers
+#undef resetShiftState
+#undef showShiftState
 #undef showAlphaModeonGui
 #undef refreshModeGui
 #undef fnT_ARROW
