@@ -3,10 +3,6 @@
 
 src/generateConstants/generateConstants.c
 src/generateTestPgms/generateTestPgms.c
-src/testSuite/hal/audio.c
-src/testSuite/hal/gui.c
-src/testSuite/hal/io.c
-src/testSuite/hal/lcd.c
 src/testSuite/testSuite.c
 zig_bridge/state/calc_state_legacy.c
 zig_bridge/state/keyboard_state_legacy.c
