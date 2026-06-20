@@ -1,4 +1,5 @@
 pub const bool_t = bool;
+pub const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 
 pub const calcKey_t = extern struct {
     keyId: i16,
@@ -228,6 +229,43 @@ pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
 }
 
 extern fn btnReleased(data: ?*anyopaque) void;
+
+// --- fnKeyCC dependencies ---------------------------------------------------
+pub const REGISTER_X: i16 = 100;
+pub const REGISTER_Y: i16 = 101;
+pub const dtLongInteger: u8 = 0;
+pub const dtReal34: u8 = 1;
+pub const dtComplex34: u8 = 2;
+pub const dtReal34Matrix: u8 = 6;
+pub const dtComplex34Matrix: u8 = 7;
+pub const amNone: u8 = 5;
+pub const amAngleMask: u32 = 15;
+pub const FLAG_POLAR: i32 = 32774;
+pub const FLAG_ALPHA: i32 = 32782;
+pub const ITM_op_j: i16 = 1830;
+pub const ITM_op_j_pol: i16 = 1795;
+pub const ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT: u8 = 52;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+pub const ERR_REGISTER_LINE: i16 = 102;
+pub extern var doRefreshSoftMenu: bool_t;
+pub extern var temporaryFlagRect: bool_t;
+pub extern var temporaryFlagPolar: bool_t;
+pub extern var aimBuffer: [*c]u8;
+pub extern fn setSystemFlag(sf: c_uint) void;
+pub extern fn getRegisterDataType(regist: i16) u32;
+pub extern fn getRegisterTag(regist: i16) u32;
+pub extern fn fnSwapXY(unused: u16) void;
+pub extern fn fnReToCx(unused: u16) void;
+pub extern fn fnCxToRe(unused: u16) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+pub extern fn mimAddNumber(item: i16) void;
+pub extern fn pemAddNumber(item: i16, do_insert_in_program: bool_t) void;
+pub extern fn getDataTypeName(dt: u16, article: bool_t, pad_with_blanks: bool_t) [*c]const u8;
+pub extern fn getRegisterTagName(regist: i16, pad_with_blanks: bool_t) [*c]const u8;
+pub extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
+pub inline fn getRegisterAngularMode(regist: i16) u32 {
+    return getRegisterTag(regist) & amAngleMask;
+}
 
 // commonBugScreenMessages[bugMsgCalcModeWhileProcKey] is the "calcMode while
 // processing key" bug format; SIZE_OF_EACH_BUG_SCREEN_MESSAGE = 100 (probed).

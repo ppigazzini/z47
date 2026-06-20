@@ -164,13 +164,103 @@ pub fn implementation(comptime runtime: type) type {
             runtime.keyExitRetained(unused_but_mandatory_parameter);
         }
 
+        // fnKeyCC type-check macros (keyboard.c:4061-4063).
+        fn ccIsAngle(typ: u8, tag: u8) bool {
+            return typ == runtime.dtReal34 and tag != runtime.amNone;
+        }
+        fn ccIsValidAngle(typ: u8, tag: u8) bool {
+            _ = tag;
+            return typ == runtime.dtLongInteger or typ == runtime.dtReal34;
+        }
+        fn ccIsRadius(typ: u8, tag: u8) bool {
+            return typ == runtime.dtLongInteger or (typ == runtime.dtReal34 and tag == runtime.amNone);
+        }
+
         pub fn keyCC(complex_type: u16) void {
-            if (runtime.calcMode == runtime.CM_NIM and complex_type != @as(u16, @intCast(runtime.KEY_COMPLEX))) {
-                runtime.addItemToNimBuffer(runtime.ITM_CC);
+            const key_complex: u16 = @intCast(runtime.KEY_COMPLEX);
+            runtime.doRefreshSoftMenu = true;
+            if (runtime.calcMode == runtime.CM_NIM and complex_type == key_complex) {
+                runtime.addItemToNimBuffer(runtime.ITM_EXIT1); // Allow COMPLEX from NIM
+            }
+
+            if (runtime.calcMode == runtime.CM_NORMAL or (runtime.calcMode == runtime.CM_NIM and complex_type == key_complex)) {
+                var sdataTypeX: u8 = @intCast(runtime.getRegisterDataType(runtime.REGISTER_X));
+                var sdataAtagX: u8 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X));
+                var sdataTypeY: u8 = @intCast(runtime.getRegisterDataType(runtime.REGISTER_Y));
+                var sdataAtagY: u8 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_Y));
+                var toClearPolar = false;
+                if (runtime.getSystemFlag(runtime.FLAG_POLAR) and ccIsAngle(sdataTypeY, sdataAtagY) and ccIsRadius(sdataTypeX, sdataAtagX)) {
+                    runtime.fnSwapXY(0);
+                } else if (!runtime.getSystemFlag(runtime.FLAG_POLAR) and ccIsAngle(sdataTypeY, sdataAtagY) and ccIsRadius(sdataTypeX, sdataAtagX)) {
+                    runtime.fnSwapXY(0);
+                    runtime.setSystemFlag(@intCast(runtime.FLAG_POLAR));
+                    toClearPolar = true;
+                } else if (!runtime.getSystemFlag(runtime.FLAG_POLAR) and ccIsAngle(sdataTypeX, sdataAtagX) and ccIsRadius(sdataTypeY, sdataAtagY)) {
+                    runtime.setSystemFlag(@intCast(runtime.FLAG_POLAR));
+                    toClearPolar = true;
+                }
+
+                sdataTypeX = @intCast(runtime.getRegisterDataType(runtime.REGISTER_X));
+                sdataTypeY = @intCast(runtime.getRegisterDataType(runtime.REGISTER_Y));
+                sdataAtagX = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X));
+                sdataAtagY = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_Y));
+
+                const polarOk = ccIsRadius(sdataTypeY, sdataAtagY) and ccIsValidAngle(sdataTypeX, sdataAtagX) and runtime.getSystemFlag(runtime.FLAG_POLAR);
+                const rectOk = ccIsRadius(sdataTypeY, sdataAtagY) and ccIsRadius(sdataTypeX, sdataAtagX) and !runtime.getSystemFlag(runtime.FLAG_POLAR);
+
+                if (polarOk or rectOk) {
+                    runtime.fnReToCx(0);
+                } else if (sdataTypeX == runtime.dtComplex34) {
+                    runtime.fnCxToRe(0);
+                } else if (sdataTypeX == runtime.dtReal34Matrix and sdataTypeY == runtime.dtReal34Matrix) {
+                    runtime.fnReToCx(0);
+                } else if (sdataTypeX == runtime.dtComplex34Matrix) {
+                    runtime.fnCxToRe(0);
+                } else {
+                    if ((!polarOk and runtime.getSystemFlag(runtime.FLAG_POLAR)) or (!rectOk and !runtime.getSystemFlag(runtime.FLAG_POLAR))) {
+                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    } else {
+                        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                    }
+                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                        const dtnX = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_X)), true, false);
+                        const dtnY = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_Y)), true, false);
+                        if (!polarOk and runtime.getSystemFlag(runtime.FLAG_POLAR)) {
+                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with %s(%s) in X and %s(%s) in Y!", dtnX, runtime.getRegisterTagName(runtime.REGISTER_X, false), dtnY, runtime.getRegisterTagName(runtime.REGISTER_Y, false));
+                        } else if (!rectOk and !runtime.getSystemFlag(runtime.FLAG_POLAR)) {
+                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Rectangular complex number with %s(%s) in X and %s(%s) in Y!", dtnX, runtime.getRegisterTagName(runtime.REGISTER_X, false), dtnY, runtime.getRegisterTagName(runtime.REGISTER_Y, false));
+                        } else {
+                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX with %s in X and %s in Y!", dtnX, dtnY);
+                            runtime.moreInfoOnError("In function fnKeyCC:", runtime.errorMessage, null, null);
+                        }
+                    }
+                }
+                if (toClearPolar) {
+                    runtime.clearSystemFlag(@intCast(runtime.FLAG_POLAR));
+                }
                 return;
             }
 
+            if (complex_type == @as(u16, @intCast(runtime.ITM_op_j))) {
+                runtime.temporaryFlagRect = true;
+                runtime.temporaryFlagPolar = false;
+            } else if (complex_type == @as(u16, @intCast(runtime.ITM_op_j_pol))) {
+                runtime.temporaryFlagRect = false;
+                runtime.temporaryFlagPolar = true;
+            } else {
+                runtime.temporaryFlagRect = false;
+                runtime.temporaryFlagPolar = false;
+            }
+
             switch (runtime.calcMode) {
+                runtime.CM_NIM => runtime.addItemToNimBuffer(runtime.ITM_CC),
+                runtime.CM_MIM => runtime.mimAddNumber(runtime.ITM_CC),
+                runtime.CM_PEM => {
+                    if (runtime.aimBuffer[0] != 0 and !runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                        runtime.pemAddNumber(runtime.ITM_CC, true);
+                    }
+                },
+                runtime.CM_EIM,
                 runtime.CM_REGISTER_BROWSER,
                 runtime.CM_FLAG_BROWSER,
                 runtime.CM_ASN_BROWSER,
@@ -179,8 +269,8 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.CM_TIMER,
                 runtime.CM_LISTXY,
                 runtime.CM_GRAPH,
-                => return,
-                else => runtime.keyCCRetained(complex_type),
+                => {},
+                else => runtime.bugScreenWhileProcKey("fnKeyCC", "CC"),
             }
         }
 
