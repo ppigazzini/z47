@@ -2810,3 +2810,90 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) callconv(.c) void
 
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
 }
+
+// ===========================================================================
+// real_QR_decomposition / complex_QR_decomposition (public) -- register-level
+// QR wrappers around the now-ported QR_decomposition_householder. Convert the
+// real34/complex34 input to interleaved-complex real_t scratch, run Householder
+// QR at ctxtReal39, write Q and R back. fnQrDecomposition (Zig) drives these.
+// ===========================================================================
+pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) callconv(.c) void {
+    const rows = matrix.header.matrixRows;
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;
+    const blocks: usize = n2 * realSizeInBlocks(75) * 2 * 3;
+    if (allocC47Blocks(blocks)) |mat| {
+        const matq = mat + n2 * 2;
+        const matr = mat + n2 * 2 * 2;
+        const elems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+        var i: usize = 0;
+        while (i < n2) : (i += 1) {
+            runtime.real34ToReal(&elems[i], &mat[i * 2]);
+            realSetZero(&mat[i * 2 + 1]);
+        }
+        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal39);
+        if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+            const rr: usize = @as(usize, rows) * rows;
+            if (runtime.realMatrixInit(q, rows, rows)) {
+                const qe: [*]real34_t = @ptrCast(q.matrixElements);
+                i = 0;
+                while (i < rr) : (i += 1) runtime.realToReal34(&matq[i * 2], &qe[i]);
+                if (runtime.realMatrixInit(r, rows, rows)) {
+                    const re: [*]real34_t = @ptrCast(r.matrixElements);
+                    i = 0;
+                    while (i < rr) : (i += 1) runtime.realToReal34(&matr[i * 2], &re[i]);
+                } else {
+                    ramFull("In function real_QR_decomposition:", "Ram full, 1ao");
+                }
+            } else {
+                ramFull("In function real_QR_decomposition:", "Ram full, 2ap");
+            }
+        } else {
+            ramFull("In function real_QR_decomposition:", "Ram full, 2aq");
+        }
+        freeC47Blocks(mat, blocks);
+    } else {
+        ramFull("In function real_QR_decomposition:", "Ram full, 3ar");
+    }
+}
+
+pub export fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) callconv(.c) void {
+    const rows = matrix.header.matrixRows;
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;
+    const blocks: usize = n2 * realSizeInBlocks(75) * 2 * 3;
+    if (allocC47Blocks(blocks)) |mat| {
+        const matq = mat + n2 * 2;
+        const matr = mat + n2 * 2 * 2;
+        const elems: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
+        var i: usize = 0;
+        while (i < n2) : (i += 1) {
+            runtime.real34ToReal(&elems[i].real, &mat[i * 2]);
+            runtime.real34ToReal(&elems[i].imag, &mat[i * 2 + 1]);
+        }
+        QR_decomposition_householder(mat, rows, matq, matr, &runtime.ctxtReal39);
+        if (runtime.complexMatrixInit(q, rows, rows)) {
+            const qe: [*]runtime.complex34_t = @ptrCast(q.matrixElements);
+            i = 0;
+            while (i < n2) : (i += 1) {
+                runtime.realToReal34(&matq[i * 2], &qe[i].real);
+                runtime.realToReal34(&matq[i * 2 + 1], &qe[i].imag);
+            }
+            if (runtime.complexMatrixInit(r, rows, rows)) {
+                const re: [*]runtime.complex34_t = @ptrCast(r.matrixElements);
+                i = 0;
+                while (i < n2) : (i += 1) {
+                    runtime.realToReal34(&matr[i * 2], &re[i].real);
+                    runtime.realToReal34(&matr[i * 2 + 1], &re[i].imag);
+                }
+            } else {
+                ramFull("In function complex_QR_decomposition:", "Ram full, 1as");
+            }
+        } else {
+            ramFull("In function complex_QR_decomposition:", "Ram full, 2at");
+        }
+        freeC47Blocks(mat, blocks);
+    } else {
+        ramFull("In function complex_QR_decomposition:", "Ram full, 3au");
+    }
+}
