@@ -229,6 +229,21 @@ pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
 
 extern fn btnReleased(data: ?*anyopaque) void;
 
+// commonBugScreenMessages[bugMsgCalcModeWhileProcKey] is the "calcMode while
+// processing key" bug format; SIZE_OF_EACH_BUG_SCREEN_MESSAGE = 100 (probed).
+// Shared by every fnKey* handler's default (unexpected-calcMode) branch.
+pub extern var errorMessage: [*c]u8;
+pub extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+pub extern fn displayBugScreen(message: [*c]const u8) void;
+const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
+const bugMsgCalcModeWhileProcKey: usize = 1;
+const commonBugScreenMessages = @extern([*c]const u8, .{ .name = "commonBugScreenMessages" });
+pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) void {
+    const fmt = commonBugScreenMessages + bugMsgCalcModeWhileProcKey * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
+    _ = sprintf(errorMessage, fmt, func_name, @as(c_int, calcMode), key_str);
+    displayBugScreen(errorMessage);
+}
+
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
     extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
