@@ -5,7 +5,7 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         fn canHandleFlagBrowserArrowProcess(item: i16) bool {
-            if (item != runtime.ITM_UP1_ITEM and item != runtime.ITM_DOWN1_ITEM) {
+            if (item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1) {
                 return false;
             }
 
@@ -139,7 +139,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.keyActionProcessed = false;
                 runtime.keyActionProcessed = true;
 
-                if (item == runtime.ITM_UP1_ITEM) {
+                if (item == runtime.ITM_UP1) {
                     keyUp(0);
                     runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_STACK);
                     runtime.refreshScreen(118);
@@ -276,7 +276,7 @@ pub fn implementation(comptime runtime: type) type {
 
         pub fn keyBackspace(unused_but_mandatory_parameter: u16) void {
             if (runtime.tam.mode == 0 and runtime.calcMode == runtime.CM_NIM) {
-                runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE_ITEM);
+                runtime.addItemToNimBuffer(runtime.ITM_BACKSPACE);
                 runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
                 return;
             }
