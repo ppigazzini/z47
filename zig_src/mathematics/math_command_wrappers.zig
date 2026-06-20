@@ -202,6 +202,11 @@ comptime {
         // The simultaneous-linear-equation cluster (SIMQ + Mat_A/B/X editors +
         // real/complex_matrix_linear_eqn solvers).
         _ = @import("math_matrix_linear_eqn_owned.zig");
+        // Column min/max + matrix-find indexed commands.
+        _ = @import("math_matrix_column_commands_owned.zig");
+        // Residual OPTION_VECTOR commands: is_2D3D_Register_Ready +
+        // V3RectoToSph / V3RectoToCyl.
+        _ = @import("math_matrix_vector3d_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
