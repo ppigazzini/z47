@@ -1503,10 +1503,12 @@ pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t,
         dropNoise(eig, size, @intCast(toleranceDigits - extraDigits));
     } // size > 3
 
-    if ((blk: {
-        currentSolverNestingDepth -= 1;
-        break :blk currentSolverNestingDepth;
-    }) == 0) {
+    // Upstream increments currentSolverNestingDepth only in the size>3 branch
+    // but decrements it for every size; for size 2/3 that is an unsigned wrap in
+    // C (harmless -- the result is non-zero so the flag is not cleared). Match
+    // the wrap so a future size-2/3 caller does not panic.
+    currentSolverNestingDepth -%= 1;
+    if (currentSolverNestingDepth == 0) {
         runtime.clearSystemFlag(@intCast(FLAG_SOLVING));
     }
 }
