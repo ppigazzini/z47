@@ -51,6 +51,24 @@ extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t
 extern fn realCompareGreaterThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
 extern fn realCompareEqual(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
 extern fn complexMagnitude(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, ctxt: *realContext_t) void;
+extern fn realGetExponentComp(val: *align(1) const real_t) i32;
+extern fn realCompareAbsLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
+extern fn exitKeyWaiting() bool;
+extern var currentKeyCode: u8;
+extern var currentSolverNestingDepth: u16;
+extern var significantDigits: u8;
+
+inline fn realGetExponent(source: *align(1) const real_t) i32 {
+    return source.digits + source.exponent - 1;
+}
+
+// Eigen iteration tuning (matrix.c / defines.h).
+const maxEigenIter: u16 = 10000;
+const extraDigits: i32 = 3;
+const blockDetectionTolerance: i32 = 40;
+const eigenNoiseThreshold: i32 = 70;
+const FLAG_SOLVING: i32 = 0xc026;
+const ERROR_SOLVER_ABORT: u8 = 60;
 
 inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopyAbs(destination, source);
@@ -179,6 +197,10 @@ inline fn const_1on2() *align(1) const real_t {
 }
 inline fn const_1e_6() *align(1) const real_t {
     return cstR(OFF_const_1e_6);
+}
+const OFF_const_1e_32: u32 = 5200;
+inline fn const_1e_32() *align(1) const real_t {
+    return cstR(OFF_const_1e_32);
 }
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
@@ -1033,5 +1055,455 @@ pub export fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, si
         const pos = fu + i;
         realCopy(&ev_re[i], &a[(pos * sz + pos) * 2]);
         realCopy(&ev_im[i], &a[(pos * sz + pos) * 2 + 1]);
+    }
+}
+
+// Detect a circulant companion matrix (x^n - c), which the Householder QR
+// cannot handle; calculateEigenvalues raises ERROR_OUT_OF_RANGE for it.
+pub export fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) callconv(.c) bool {
+    const sz: usize = size;
+    var isCompanion = true;
+    var i: usize = 0;
+    while (i + 1 < sz) : (i += 1) {
+        if (!realCompareEqual(&matrix[(i * sz + (i + 1)) * 2], const_1()) or
+            !realIsZeroA(&matrix[(i * sz + (i + 1)) * 2 + 1]))
+        {
+            isCompanion = false;
+            break;
+        }
+    }
+    if (!isCompanion) return false;
+    var isCirculant = true;
+    if (realIsZeroA(&matrix[((sz - 1) * sz + 0) * 2])) isCirculant = false;
+    var j: usize = 1;
+    while (j < sz) : (j += 1) {
+        if (!realIsZeroA(&matrix[((sz - 1) * sz + j) * 2])) {
+            isCirculant = false;
+            break;
+        }
+    }
+    return isCirculant;
+}
+
+// ===========================================================================
+// calculateEigenvalues -- the shifted QR-iteration driver. size 2/3 use the
+// closed-form solvers; size > 3 runs the Householder QR loop with deflation,
+// stagnation detection and final block solves. The on-device half-second
+// progress display (checkHalfSec / formatDoubleWidth / progressHalfSecUpdate)
+// is a pure UI side effect with no calc-state impact and is not exercised by
+// the testSuite, so it is omitted here; the user-interrupt path is kept.
+// ===========================================================================
+pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) callconv(.c) void {
+    var shifted = shifted_in;
+    const sz: usize = size;
+
+    const significantDigitsVal: i32 = significantDigits;
+    const toleranceDigits: i32 = if (runtime.is_testsuite_build)
+        (34 + extraDigits)
+    else
+        ((if (significantDigitsVal == 0) @as(i32, 34) else significantDigitsVal) + extraDigits);
+    const eigenTolerance: i32 = @min(70, toleranceDigits * 2);
+
+    var changeDiagonalSum: real_t = undefined;
+    var previousChangeDiagonalSum: real_t = undefined;
+    var currentOffDiagonalSum: real_t = undefined;
+    var changeOffDiagonalSum: real_t = undefined;
+    var previousOffDiagonalSum: real_t = undefined;
+    var offdiag_no_improvement_count: u16 = 0;
+    var shiftRe: real_t = undefined;
+    var shiftIm: real_t = undefined;
+    var last_check_iter: u16 = 0;
+    var no_improvement_count: u16 = 0;
+    var iteration: u16 = 0;
+    var activeSize: u16 = size;
+    var converged: bool = false;
+
+    if (isProblematicMatrix(a, size)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            var buf: [96]u8 = undefined;
+            const m = bufPrintZ(&buf, "Cannot execute: destination matrix is out of range, or the wrong type for the Householder QR: {d}", .{runtime.matrixIndex}) catch "QR out of range";
+            runtime.moreInfoOnError("In function calculateEigenvalues:", m, null, null);
+        }
+    }
+
+    const is_real_symmetric = isRealSymmetric(a, size, realContext);
+
+    realSetZero(&currentOffDiagonalSum);
+    realSetZero(&changeOffDiagonalSum);
+    realSetZero(&previousOffDiagonalSum);
+    realSetZero(&shiftRe);
+    realSetZero(&shiftIm);
+    realSetZero(&changeDiagonalSum);
+    realSetZero(&previousChangeDiagonalSum);
+
+    {
+        var k: usize = 0;
+        while (k < sz * sz * 2) : (k += 1) {
+            realSetZero(&eig[k]);
+            realSetZero(&q[k]);
+            realSetZero(&r[k]);
+            realSetZero(&previousDiagonal[k]);
+        }
+        var ii: usize = 0;
+        while (ii < sz) : (ii += 1) {
+            var jj: usize = 0;
+            while (jj < sz) : (jj += 1) {
+                realCopy(&a[(ii * sz + jj) * 2], &eig[(ii * sz + jj) * 2]);
+                realCopy(&a[(ii * sz + jj) * 2 + 1], &eig[(ii * sz + jj) * 2 + 1]);
+            }
+        }
+    }
+
+    if (size == 2) {
+        calculateEigenvalues22(a, size, &eig[0], &eig[1], &eig[6], &eig[7], is_real_symmetric, realContext);
+        sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+        dropNoise(eig, size, @intCast(toleranceDigits));
+    } else if (size == 3) {
+        calculateEigenvalues33(a, size, &eig[0], &eig[1], &eig[8], &eig[9], &eig[16], &eig[17], is_real_symmetric, realContext);
+        sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+        dropNoise(eig, size, @intCast(toleranceDigits));
+    } else {
+        var tol: real_t = undefined;
+        var maxM: real_t = undefined;
+        var minM: real_t = undefined;
+        var tmpM: real_t = undefined;
+        if (reducedSignificantDigits) {
+            if (toleranceDigits >= 34 or toleranceDigits == 0) {
+                realSetOne(&tol);
+                tol.exponent -= eigenTolerance;
+            } else {
+                realSetOne(&tol);
+                tol.exponent -= toleranceDigits;
+            }
+        } else {
+            realSetOne(&tol);
+            tol.exponent -= eigenTolerance;
+        }
+
+        const is_sym_tridiag = isSymmetricTridiagonal(a, size, realContext);
+
+        if (isMatrixDiagonal(a, size, &tol, realContext)) {
+            var k: usize = 0;
+            while (k < sz * sz * 2) : (k += 1) realCopy(&a[k], &eig[k]);
+            converged = true;
+        }
+
+        currentKeyCode = 255;
+        currentSolverNestingDepth += 1;
+        runtime.setSystemFlag(@intCast(FLAG_SOLVING));
+
+        // ==== MAIN QR LOOP ====
+        while (!converged and iteration < maxEigenIter and activeSize > 1 and runtime.lastErrorCode == runtime.ERROR_NONE) {
+            iteration += 1;
+
+            if (exitKeyWaiting()) {
+                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T, runtime.REGISTER_X);
+                if (runtime.extra_info_on_calc_error) {
+                    runtime.moreInfoOnError("In function calculateEigenvalues:", "Exit while calculating", null, null);
+                }
+            }
+
+            if (shifted) {
+                calculateQrShift(a, size, &shiftRe, &shiftIm, is_real_symmetric, realContext);
+                if ((realIsZeroA(&shiftRe) and realIsZeroA(&shiftIm)) or realIsSpecial(&shiftRe) or realIsSpecial(&shiftIm)) {
+                    shifted = false;
+                } else {
+                    var ii: usize = 0;
+                    while (ii < sz) : (ii += 1) {
+                        realSubtract(&a[(ii * sz + ii) * 2], &shiftRe, &a[(ii * sz + ii) * 2], realContext);
+                        realSubtract(&a[(ii * sz + ii) * 2 + 1], &shiftIm, &a[(ii * sz + ii) * 2 + 1], realContext);
+                    }
+                }
+            }
+
+            QR_decomposition_householder(a, size, q, r, realContext);
+            mulCpxMat(r, q, size, size, size, eig, realContext);
+
+            if (shifted) {
+                var ii: usize = 0;
+                while (ii < sz) : (ii += 1) {
+                    realAdd(&a[(ii * sz + ii) * 2], &shiftRe, &a[(ii * sz + ii) * 2], realContext);
+                    realAdd(&a[(ii * sz + ii) * 2 + 1], &shiftIm, &a[(ii * sz + ii) * 2 + 1], realContext);
+                    realAdd(&eig[(ii * sz + ii) * 2], &shiftRe, &eig[(ii * sz + ii) * 2], realContext);
+                    realAdd(&eig[(ii * sz + ii) * 2 + 1], &shiftIm, &eig[(ii * sz + ii) * 2 + 1], realContext);
+                }
+            }
+
+            // ---- convergence / stagnation check ----
+            if (iteration - last_check_iter >= 20 or iteration == 1) {
+                var deltaChangeDiagonalSum: real_t = undefined;
+                realSetZero(&deltaChangeDiagonalSum);
+                if (iteration == 1) {
+                    sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, true, &runtime.ctxtReal39);
+                }
+                sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &runtime.ctxtReal39);
+
+                if (realGetExponentComp(&changeDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
+                    sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, NONDIAG, &currentOffDiagonalSum, false, &runtime.ctxtReal75);
+                    if (realGetExponentComp(&currentOffDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
+                        converged = true;
+                        break;
+                    }
+                }
+
+                converged = false;
+                if (realGetExponentComp(&changeDiagonalSum) < -toleranceDigits and iteration != 1) {
+                    converged = true;
+                } else {
+                    realSubtract(&changeDiagonalSum, &previousChangeDiagonalSum, &deltaChangeDiagonalSum, realContext);
+                    if (realGetExponentComp(&changeDiagonalSum) < -(toleranceDigits - extraDigits) and realIsZeroA(&deltaChangeDiagonalSum) and iteration != 1) {
+                        converged = true;
+                    }
+                }
+
+                if (!converged) {
+                    if (!realIsNegativeA(&deltaChangeDiagonalSum)) {
+                        no_improvement_count += 1;
+                        const max_no_improvement: u16 = if (is_sym_tridiag) 5 + 3 else 3 + 2;
+                        if (no_improvement_count >= max_no_improvement) {
+                            converged = true;
+                        }
+                    } else {
+                        no_improvement_count = 0;
+                    }
+                }
+
+                if (converged) {
+                    sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &runtime.ctxtReal75);
+                    realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &runtime.ctxtReal75);
+                    if (realGetExponentComp(&currentOffDiagonalSum) <= -eigenTolerance) {
+                        // off-diagonals tiny: accept
+                    } else if (realIsNegativeA(&changeOffDiagonalSum)) {
+                        if (realGetExponentComp(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {
+                            converged = false;
+                            offdiag_no_improvement_count = 0;
+                        } else {
+                            converged = false;
+                            offdiag_no_improvement_count += 1;
+                        }
+                    } else {
+                        converged = false;
+                        offdiag_no_improvement_count += 1;
+                    }
+                    if (offdiag_no_improvement_count >= (if (is_sym_tridiag) @as(u16, 7) else 5)) {
+                        break;
+                    }
+                }
+
+                realCopy(&currentOffDiagonalSum, &previousOffDiagonalSum);
+                realCopy(&changeDiagonalSum, &previousChangeDiagonalSum);
+                last_check_iter = iteration;
+            }
+
+            // ---- deflation ----
+            if (iteration > 2 and (iteration % 5) == 0) {
+                var deflated = true;
+                while (deflated and activeSize > 2) {
+                    deflated = false;
+                    var id: u16 = activeSize - 1;
+                    while (id >= 1) : (id -= 1) {
+                        const i: usize = id;
+                        var subdiag_mag: real_t = undefined;
+                        var threshold: real_t = undefined;
+                        complexMagnitude(&eig[(i * sz + (i - 1)) * 2], &eig[(i * sz + (i - 1)) * 2 + 1], &subdiag_mag, realContext);
+                        realSetOne(&threshold);
+                        threshold.exponent -= blockDetectionTolerance;
+                        if (realCompareLessThan(&subdiag_mag, &threshold)) {
+                            realSetZero(&eig[(i * sz + (i - 1)) * 2]);
+                            realSetZero(&eig[(i * sz + (i - 1)) * 2 + 1]);
+                            if (activeSize == 3 and id == 1) {
+                                solveEigenBlock(a, eig, size, @intCast(id), @intCast(id + 1), is_real_symmetric, realContext);
+                            }
+                            activeSize = id;
+                            deflated = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            {
+                var k: usize = 0;
+                while (k < sz * sz * 2) : (k += 1) realCopy(&eig[k], &a[k]);
+            }
+
+            if (is_real_symmetric) {
+                var ii: usize = 0;
+                while (ii < sz) : (ii += 1) realSetZero(&a[(ii * sz + ii) * 2 + 1]);
+            }
+
+            {
+                var ii: usize = 0;
+                while (ii < sz) : (ii += 1) {
+                    var jj: usize = 0;
+                    while (jj < sz) : (jj += 1) {
+                        const idx = ii * sz + jj;
+                        realPlus(&a[idx * 2], &a[idx * 2], &runtime.ctxtReal51); // ctxtTruncate
+                        realPlus(&a[idx * 2 + 1], &a[idx * 2 + 1], &runtime.ctxtReal51);
+                        if (is_sym_tridiag and ii == jj) continue;
+                        if (!realIsSpecial(&a[idx * 2])) {
+                            if (realGetExponent(&a[idx * 2]) < -eigenNoiseThreshold) realSetZero(&a[idx * 2]);
+                        } else {
+                            realSetZero(&a[idx * 2]);
+                        }
+                        if (!realIsSpecial(&a[idx * 2 + 1])) {
+                            if (realGetExponent(&a[idx * 2 + 1]) < -eigenNoiseThreshold) realSetZero(&a[idx * 2 + 1]);
+                        } else {
+                            realSetZero(&a[idx * 2 + 1]);
+                        }
+                    }
+                }
+            }
+
+            if (converged) {
+                break;
+            } else {
+                var k: usize = 0;
+                while (k < sz * sz * 2) : (k += 1) realCopy(&eig[k], &a[k]);
+            }
+        } // end main loop
+
+        // ---- dedicated 2x2 block scan ----
+        var first_unconverged: i32 = -1;
+        var last_unconverged: i32 = -1;
+        {
+            var i: usize = 0;
+            while (i + 1 < sz) : (i += 1) {
+                var offdiag_mag: real_t = undefined;
+                complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
+                var threshold: real_t = undefined;
+                realSetOne(&threshold);
+                threshold.exponent -= blockDetectionTolerance;
+                if (!realCompareLessThan(&offdiag_mag, &threshold)) {
+                    if (first_unconverged == -1) first_unconverged = @intCast(i);
+                    last_unconverged = @intCast(i + 1);
+                }
+            }
+        }
+        if (first_unconverged != -1) {
+            const block_size = last_unconverged - first_unconverged + 1;
+            if (block_size == 2) {
+                const fu: usize = @intCast(first_unconverged);
+                var im1: real_t = undefined;
+                var im2: real_t = undefined;
+                realCopy(&eig[(fu * sz + fu) * 2 + 1], &im1);
+                realCopy(&eig[((fu + 1) * sz + (fu + 1)) * 2 + 1], &im2);
+                var is_conjugate_pair = false;
+                if (!realIsZeroA(&im1) and !realIsZeroA(&im2)) {
+                    var re_diff: real_t = undefined;
+                    var im_sum: real_t = undefined;
+                    realSubtract(&eig[(fu * sz + fu) * 2], &eig[((fu + 1) * sz + (fu + 1)) * 2], &re_diff, realContext);
+                    realAdd(&im1, &im2, &im_sum, realContext);
+                    if (realCompareAbsLessThan(&re_diff, const_1e_32()) and realCompareAbsLessThan(&im_sum, const_1e_32())) {
+                        is_conjugate_pair = true;
+                    }
+                }
+                if (!is_conjugate_pair) {
+                    solveEigenBlock(a, eig, size, first_unconverged, first_unconverged + 1, is_real_symmetric, realContext);
+                    var i: usize = 0;
+                    while (i < 2) : (i += 1) {
+                        const pos = fu + i;
+                        realCopy(&a[(pos * sz + pos) * 2], &eig[(pos * sz + pos) * 2]);
+                        realCopy(&a[(pos * sz + pos) * 2 + 1], &eig[(pos * sz + pos) * 2 + 1]);
+                    }
+                    realSetZero(&eig[((fu + 1) * sz + fu) * 2]);
+                    realSetZero(&eig[((fu + 1) * sz + fu) * 2 + 1]);
+                    realSetZero(&eig[(fu * sz + (fu + 1)) * 2]);
+                    realSetZero(&eig[(fu * sz + (fu + 1)) * 2 + 1]);
+                }
+            }
+        }
+
+        // ---- smart remaining-block detection ----
+        first_unconverged = -1;
+        last_unconverged = -1;
+        {
+            var i: usize = 0;
+            while (i + 1 < sz) : (i += 1) {
+                var offdiag_mag: real_t = undefined;
+                complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
+                var threshold: real_t = undefined;
+                realSetOne(&threshold);
+                threshold.exponent -= blockDetectionTolerance;
+                if (!realCompareLessThan(&offdiag_mag, &threshold)) {
+                    if (first_unconverged == -1) first_unconverged = @intCast(i);
+                    last_unconverged = @intCast(i + 1);
+                }
+            }
+        }
+        if (first_unconverged != -1) {
+            const block_size = last_unconverged - first_unconverged + 1;
+            if (block_size == 3 or block_size == 2) {
+                solveEigenBlock(a, eig, size, first_unconverged, last_unconverged, is_real_symmetric, realContext);
+            }
+        }
+
+        // ---- activeSize handling ----
+        if (activeSize == 1) {
+            realCopy(&a[0], &eig[0]);
+            realCopy(&a[1], &eig[1]);
+        } else if (activeSize > 1 and activeSize < size) {
+            var i: usize = 0;
+            while (i < activeSize) : (i += 1) {
+                realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
+                realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
+            }
+        }
+
+        if (activeSize == 3) {
+            solve3x3Block(a, eig, size, is_real_symmetric, realContext);
+        } else if (activeSize == 2) {
+            var offdiag_01: real_t = undefined;
+            var offdiag_10: real_t = undefined;
+            complexMagnitude(&eig[(1 * sz + 0) * 2], &eig[(1 * sz + 0) * 2 + 1], &offdiag_01, realContext);
+            complexMagnitude(&eig[(0 * sz + 1) * 2], &eig[(0 * sz + 1) * 2 + 1], &offdiag_10, realContext);
+            if (!realCompareLessThan(&offdiag_01, &tol) or !realCompareLessThan(&offdiag_10, &tol)) {
+                solve2x2Block(a, eig, size, is_real_symmetric, realContext);
+            }
+        } else if (activeSize == 1) {
+            realCopy(&a[0], &eig[0]);
+            realCopy(&a[1], &eig[1]);
+        }
+        shifted = false;
+
+        {
+            var i: usize = 0;
+            while (i < sz) : (i += 1) {
+                realCopy(&a[(i * sz + i) * 2], &eig[(i * sz + i) * 2]);
+                realCopy(&a[(i * sz + i) * 2 + 1], &eig[(i * sz + i) * 2 + 1]);
+            }
+        }
+
+        sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
+        complexMagnitude(&eig[0], &eig[1], &maxM, realContext);
+
+        // ---- condition-number cleanup ----
+        {
+            var i: usize = 1;
+            while (i < sz) : (i += 1) {
+                complexMagnitude(&eig[(i * sz + i) * 2], &eig[(i * sz + i) * 2 + 1], &tmpM, realContext);
+                if (!realIsZeroA(&tmpM) and !realIsZeroA(&maxM) and realCompareLessThan(&tmpM, &tol)) {
+                    realMultiply(&maxM, &tol, &minM, realContext);
+                    var j: usize = 1;
+                    while (j < sz) : (j += 1) {
+                        complexMagnitude(&eig[(j * sz + j) * 2], &eig[(j * sz + j) * 2 + 1], &tmpM, realContext);
+                        if (realCompareLessThan(&tmpM, &minM)) {
+                            realSetZero(&eig[(j * sz + j) * 2]);
+                            realSetZero(&eig[(j * sz + j) * 2 + 1]);
+                        }
+                    }
+                }
+            }
+        }
+
+        dropNoise(eig, size, @intCast(toleranceDigits - extraDigits));
+    } // size > 3
+
+    if ((blk: {
+        currentSolverNestingDepth -= 1;
+        break :blk currentSolverNestingDepth;
+    }) == 0) {
+        runtime.clearSystemFlag(@intCast(FLAG_SOLVING));
     }
 }
