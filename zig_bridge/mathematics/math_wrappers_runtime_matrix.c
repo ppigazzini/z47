@@ -212,6 +212,17 @@
 #define callByVectorElement z47_math_wrappers_legacy_callByVectorElement
 #define callByIndexedMatrix z47_math_wrappers_legacy_callByIndexedMatrix
 
+// MIM-routed commands owned by math_matrix_mim_commands_owned.zig. The static
+// helpers (getArg/_swap*/get-put/_row_columnNorm) stay file-local in Zig; the
+// public commands resolve to Zig.
+#define fnGetMatrix z47_math_wrappers_legacy_fnGetMatrix
+#define fnPutMatrix z47_math_wrappers_legacy_fnPutMatrix
+#define fnSwapRows z47_math_wrappers_legacy_fnSwapRows
+#define fnSwapColumns z47_math_wrappers_legacy_fnSwapColumns
+#define fnRowColSum z47_math_wrappers_legacy_fnRowColSum
+#define fnPNorm z47_math_wrappers_legacy_fnPNorm
+#define getMatrixFromRegister z47_math_wrappers_legacy_getMatrixFromRegister
+
 #include "c47.h"
 
 #include "../../src/c47/mathematics/matrix.c"
