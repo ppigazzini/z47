@@ -18,6 +18,9 @@ const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const real_t = runtime.real_t;
+const real34_t = runtime.real34_t;
+const real34Matrix_t = runtime.real34Matrix_t;
+const complex34Matrix_t = runtime.complex34Matrix_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 
@@ -1505,5 +1508,100 @@ pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t,
         break :blk currentSolverNestingDepth;
     }) == 0) {
         runtime.clearSystemFlag(@intCast(FLAG_SOLVING));
+    }
+}
+
+// ===========================================================================
+// realEigenvalues / complexEigenvalues -- register-matrix wrappers: convert the
+// real34 register matrix to an interleaved-complex real_t bulk, run
+// calculateEigenvalues, and write the diagonal eigenvalues back. eigenContext is
+// &ctxtReal75. pub-exported, dead until fnEigenvalues wires them.
+// ===========================================================================
+fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    if (runtime.extra_info_on_calc_error) {
+        runtime.moreInfoOnError(where, tag, null, null);
+    }
+}
+
+pub export fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) callconv(.c) void {
+    const size: u16 = matrix.header.matrixRows;
+    const sz: usize = size;
+    const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    if (allocC47Blocks(bulkSize)) |bulk| {
+        const a = bulk;
+        const q = bulk + sz * sz * 2;
+        const r = bulk + sz * sz * 2 * 2;
+        const eig = bulk + sz * sz * 2 * 3;
+        const previousDiagonal = bulk + sz * sz * 2 * 4;
+        const elems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+        var i: usize = 0;
+        while (i < sz * sz) : (i += 1) {
+            runtime.real34ToReal(&elems[i], &a[i * 2]);
+            realSetZero(&a[i * 2 + 1]);
+        }
+        calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, true, &runtime.ctxtReal75);
+        var isComplex = false;
+        i = 0;
+        while (i < sz) : (i += 1) {
+            if (!realIsZeroA(&eig[(i * sz + i) * 2 + 1])) {
+                isComplex = true;
+                break;
+            }
+        }
+        if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.realMatrixInit(res, size, size)) {
+            const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+            i = 0;
+            while (i < sz) : (i += 1) runtime.realToReal34(&eig[(i * sz + i) * 2], &resElems[i * sz + i]);
+            if (isComplex and ires != null) {
+                if (@intFromPtr(matrix) == @intFromPtr(ires.?) or @intFromPtr(res) == @intFromPtr(ires.?) or runtime.realMatrixInit(ires.?, size, size)) {
+                    const iresElems: [*]real34_t = @ptrCast(ires.?.matrixElements);
+                    i = 0;
+                    while (i < sz) : (i += 1) runtime.realToReal34(&eig[(i * sz + i) * 2 + 1], &iresElems[i * sz + i]);
+                } else {
+                    ramFull("In function realEigenvalues:", "Ram full, 1ax");
+                }
+            }
+        } else {
+            ramFull("In function realEigenvalues:", "Ram full, 2ay");
+        }
+        freeC47Blocks(bulk, bulkSize);
+    } else {
+        ramFull("In function realEigenvalues:", "Ram full, 3az");
+    }
+}
+
+pub export fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+    const size: u16 = matrix.header.matrixRows;
+    const sz: usize = size;
+    const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
+    if (allocC47Blocks(bulkSize)) |bulk| {
+        const a = bulk;
+        const q = bulk + sz * sz * 2;
+        const r = bulk + sz * sz * 2 * 2;
+        const eig = bulk + sz * sz * 2 * 3;
+        const previousDiagonal = bulk + sz * sz * 2 * 4;
+        const elems: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
+        var i: usize = 0;
+        while (i < sz * sz) : (i += 1) {
+            runtime.real34ToReal(&elems[i].real, &a[i * 2]);
+            runtime.real34ToReal(&elems[i].imag, &a[i * 2 + 1]);
+        }
+        calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, true, &runtime.ctxtReal75);
+        if (@intFromPtr(matrix) == @intFromPtr(res) or runtime.complexMatrixInit(res, size, size)) {
+            const resElems: [*]runtime.complex34_t = @ptrCast(res.matrixElements);
+            i = 0;
+            while (i < sz) : (i += 1) {
+                runtime.realToReal34(&eig[(i * sz + i) * 2], &resElems[i * sz + i].real);
+                runtime.realToReal34(&eig[(i * sz + i) * 2 + 1], &resElems[i * sz + i].imag);
+            }
+        } else {
+            ramFull("In function complexEigenvalues:", "Ram full, 1ba");
+        }
+        freeC47Blocks(bulk, bulkSize);
+    } else {
+        ramFull("In function complexEigenvalues:", "Ram full, 2bb");
     }
 }
