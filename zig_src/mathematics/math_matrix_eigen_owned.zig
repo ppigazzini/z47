@@ -111,6 +111,23 @@ extern fn solveQuadraticEquation159(
     x2Imag: *align(1) real_t,
     realContext: *realContext_t,
 ) void;
+extern fn solveCubicEquation159(
+    c2Real: *align(1) const real_t,
+    c2Imag: *align(1) const real_t,
+    c1Real: *align(1) const real_t,
+    c1Imag: *align(1) const real_t,
+    c0Real: *align(1) const real_t,
+    c0Imag: *align(1) const real_t,
+    rReal: *align(1) real_t,
+    rImag: *align(1) real_t,
+    x1Real: *align(1) real_t,
+    x1Imag: *align(1) real_t,
+    x2Real: *align(1) real_t,
+    x2Imag: *align(1) real_t,
+    x3Real: *align(1) real_t,
+    x3Imag: *align(1) real_t,
+    realContext: *realContext_t,
+) void;
 
 // Eigen iteration monitoring flag (matrix.c suppresses the keyboard monitor).
 extern var blockMonitoring: bool;
@@ -448,5 +465,184 @@ pub export fn QR_decomposition_householder(
         if (runtime.extra_info_on_calc_error) {
             runtime.moreInfoOnError("In function QR_decomposition_householder:", "Ram full", null, null);
         }
+    }
+}
+
+// ===========================================================================
+// calculateEigenvalues33 -- closed-form eigenvalues of the bottom-right 3x3
+// sub-matrix via its characteristic cubic, solved at 159 digits by the
+// already-Zig-owned solveCubicEquation159 (math_slvc), then rounded back.
+// ===========================================================================
+pub export fn calculateEigenvalues33(
+    mat: [*]align(1) const real_t,
+    size: u16,
+    t1r: *align(1) real_t,
+    t1i: *align(1) real_t,
+    t2r: *align(1) real_t,
+    t2i: *align(1) real_t,
+    t3r: *align(1) real_t,
+    t3i: *align(1) real_t,
+    is_real_symmetric: bool,
+    realContext: *realContext_t,
+) callconv(.c) void {
+    var ctx159: realContext_t = runtime.ctxtReal75;
+    ctx159.digits = 159;
+
+    var aekr_b = BigReal(159){};
+    var aeki_b = BigReal(159){};
+    var bfgr_b = BigReal(159){};
+    var bfgi_b = BigReal(159){};
+    var cdhr_b = BigReal(159){};
+    var cdhi_b = BigReal(159){};
+    var cegr_b = BigReal(159){};
+    var cegi_b = BigReal(159){};
+    var bdkr_b = BigReal(159){};
+    var bdki_b = BigReal(159){};
+    var afhr_b = BigReal(159){};
+    var afhi_b = BigReal(159){};
+    var br_b = BigReal(159){};
+    var bi_b = BigReal(159){};
+    var cr_b = BigReal(159){};
+    var ci_b = BigReal(159){};
+    var dr_b = BigReal(159){};
+    var di_b = BigReal(159){};
+    var discrR_b = BigReal(159){};
+    var discrI_b = BigReal(159){};
+    const aekr = aekr_b.ptr();
+    const aeki = aeki_b.ptr();
+    const bfgr = bfgr_b.ptr();
+    const bfgi = bfgi_b.ptr();
+    const cdhr = cdhr_b.ptr();
+    const cdhi = cdhi_b.ptr();
+    const cegr = cegr_b.ptr();
+    const cegi = cegi_b.ptr();
+    const bdkr = bdkr_b.ptr();
+    const bdki = bdki_b.ptr();
+    const afhr = afhr_b.ptr();
+    const afhi = afhi_b.ptr();
+    const br = br_b.ptr();
+    const bi = bi_b.ptr();
+    const cr = cr_b.ptr();
+    const ci = ci_b.ptr();
+    const dr = dr_b.ptr();
+    const di = di_b.ptr();
+    const discrR = discrR_b.ptr();
+    const discrI = discrI_b.ptr();
+
+    const sz: usize = size;
+    var mr: [9]*align(1) const real_t = undefined;
+    var mi: [9]*align(1) const real_t = undefined;
+    const b0 = ((sz - 3) * sz + (sz - 3)) * 2;
+    const b3 = ((sz - 2) * sz + (sz - 3)) * 2;
+    const b6 = ((sz - 1) * sz + (sz - 3)) * 2;
+    const idx = [9]usize{ b0, b0 + 2, b0 + 4, b3, b3 + 2, b3 + 4, b6, b6 + 2, b6 + 4 };
+    for (0..9) |i| {
+        mr[i] = &mat[idx[i]];
+        mi[i] = &mat[idx[i] + 1];
+    }
+
+    realSetZero(br);
+    realSetZero(bi);
+    realSetZero(cr);
+    realSetZero(ci);
+    realSetZero(dr);
+    realSetZero(di);
+    realSetZero(discrR);
+    realSetZero(discrI);
+    realSetZero(aekr);
+    realSetZero(aeki);
+    realSetZero(bfgr);
+    realSetZero(bfgi);
+    realSetZero(cdhr);
+    realSetZero(cdhi);
+    realSetZero(cegr);
+    realSetZero(cegi);
+    realSetZero(bdkr);
+    realSetZero(bdki);
+    realSetZero(afhr);
+    realSetZero(afhi);
+
+    // quadratic coefficient: -trace
+    realAdd(mr[0], mr[4], br, &ctx159);
+    realAdd(mi[0], mi[4], bi, &ctx159);
+    realAdd(br, mr[8], br, &ctx159);
+    realAdd(bi, mi[8], bi, &ctx159);
+    realChangeSign(br);
+    realChangeSign(bi);
+
+    // linear coefficient: sum of principal 2x2 minors
+    mulComplexComplex(mr[0], mi[0], mr[4], mi[4], aekr, aeki, &ctx159);
+    mulComplexComplex(mr[1], mi[1], mr[3], mi[3], bdkr, bdki, &ctx159);
+    mulComplexComplex(mr[0], mi[0], mr[8], mi[8], cdhr, cdhi, &ctx159);
+    mulComplexComplex(mr[2], mi[2], mr[6], mi[6], cegr, cegi, &ctx159);
+    mulComplexComplex(mr[4], mi[4], mr[8], mi[8], bfgr, bfgi, &ctx159);
+    mulComplexComplex(mr[5], mi[5], mr[7], mi[7], afhr, afhi, &ctx159);
+    realAdd(aekr, cdhr, cr, &ctx159);
+    realAdd(aeki, cdhi, ci, &ctx159);
+    realAdd(cr, bfgr, cr, &ctx159);
+    realAdd(ci, bfgi, ci, &ctx159);
+    realSubtract(cr, bdkr, cr, &ctx159);
+    realSubtract(ci, bdki, ci, &ctx159);
+    realSubtract(cr, cegr, cr, &ctx159);
+    realSubtract(ci, cegi, ci, &ctx159);
+    realSubtract(cr, afhr, cr, &ctx159);
+    realSubtract(ci, afhi, ci, &ctx159);
+
+    // constant term: -determinant
+    mulComplexComplex(aekr, aeki, mr[8], mi[8], aekr, aeki, &ctx159);
+    mulComplexComplex(mr[1], mi[1], mr[5], mi[5], bfgr, bfgi, &ctx159);
+    mulComplexComplex(bfgr, bfgi, mr[6], mi[6], bfgr, bfgi, &ctx159);
+    mulComplexComplex(mr[2], mi[2], mr[3], mi[3], cdhr, cdhi, &ctx159);
+    mulComplexComplex(cdhr, cdhi, mr[7], mi[7], cdhr, cdhi, &ctx159);
+    mulComplexComplex(cegr, cegi, mr[4], mi[4], cegr, cegi, &ctx159);
+    mulComplexComplex(bdkr, bdki, mr[8], mi[8], bdkr, bdki, &ctx159);
+    mulComplexComplex(afhr, afhi, mr[0], mi[0], afhr, afhi, &ctx159);
+    realAdd(aekr, bfgr, dr, &ctx159);
+    realAdd(aeki, bfgi, di, &ctx159);
+    realAdd(dr, cdhr, dr, &ctx159);
+    realAdd(di, cdhi, di, &ctx159);
+    realSubtract(dr, cegr, dr, &ctx159);
+    realSubtract(di, cegi, di, &ctx159);
+    realSubtract(dr, bdkr, dr, &ctx159);
+    realSubtract(di, bdki, di, &ctx159);
+    realSubtract(dr, afhr, dr, &ctx159);
+    realSubtract(di, afhi, di, &ctx159);
+    realChangeSign(dr);
+    realChangeSign(di);
+
+    blockMonitoring = true;
+    var t1rH_b = BigReal(159){};
+    var t1iH_b = BigReal(159){};
+    var t2rH_b = BigReal(159){};
+    var t2iH_b = BigReal(159){};
+    var t3rH_b = BigReal(159){};
+    var t3iH_b = BigReal(159){};
+    const t1rH = t1rH_b.ptr();
+    const t1iH = t1iH_b.ptr();
+    const t2rH = t2rH_b.ptr();
+    const t2iH = t2iH_b.ptr();
+    const t3rH = t3rH_b.ptr();
+    const t3iH = t3iH_b.ptr();
+    realSetZero(t1rH);
+    realSetZero(t1iH);
+    realSetZero(t2rH);
+    realSetZero(t2iH);
+    realSetZero(t3rH);
+    realSetZero(t3iH);
+
+    solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
+
+    realPlus(t1rH, t1r, realContext);
+    realPlus(t1iH, t1i, realContext);
+    realPlus(t2rH, t2r, realContext);
+    realPlus(t2iH, t2i, realContext);
+    realPlus(t3rH, t3r, realContext);
+    realPlus(t3iH, t3i, realContext);
+    blockMonitoring = false;
+
+    if (is_real_symmetric) {
+        realSetZero(t1i);
+        realSetZero(t2i);
+        realSetZero(t3i);
     }
 }
