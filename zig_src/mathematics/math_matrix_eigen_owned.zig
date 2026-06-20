@@ -1800,7 +1800,9 @@ pub export fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix
 // cpxLinearEqn (static) -- solve A x = b for complex dense A by inverting A in
 // place (invCpxMat) and multiplying. Singular A -> ERROR_SINGULAR_MATRIX.
 // ===========================================================================
-fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) void {
+// Exported (was file-local) so the linear-equation solver owner can share it;
+// cpxLinearEqn is static in matrix.c, so the Zig global does not clash.
+pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) callconv(.c) void {
     const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
     if (allocC47Blocks(blocks)) |inv_a| {
         _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
