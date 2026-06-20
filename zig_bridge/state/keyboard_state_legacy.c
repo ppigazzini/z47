@@ -4,6 +4,9 @@
 #define caseReplacements z47_keyboard_state_caseReplacements
 #define keyReplacements z47_keyboard_state_keyReplacements
 #define numlockReplacements z47_keyboard_state_numlockReplacements
+#define fnSHIFTf z47_keyboard_state_fnSHIFTf
+#define fnSHIFTg z47_keyboard_state_fnSHIFTg
+#define fnSHIFTfg z47_keyboard_state_fnSHIFTfg
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
@@ -48,6 +51,9 @@ void z47_keyboard_state_menuDown(void) { menuDown(); }
 // stayInAIM is static in keyboard.c (used by the Zig fnKeyExit).
 void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 
+#undef fnSHIFTfg
+#undef fnSHIFTg
+#undef fnSHIFTf
 #undef numlockReplacements
 #undef keyReplacements
 #undef caseReplacements
