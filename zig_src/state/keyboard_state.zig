@@ -208,6 +208,40 @@ pub export fn fnT_ARROW(command: u16) callconv(.c) void {
     }
 }
 
+// keyboardTweak.c refreshModeGui: sync the on-screen-keyboard mode to calcMode.
+// calcMode*Gui are empty macros on the DMCP lane, so the calls are host-only.
+pub export fn refreshModeGui() callconv(.c) void {
+    if (runtime.tam.mode == 0) {
+        switch (runtime.calcMode) {
+            runtime.CM_AIM, runtime.CM_EIM => {
+                if (comptime !is_dmcp_build) runtime.calcModeAimGui();
+            },
+            runtime.CM_NORMAL => {
+                if (comptime !is_dmcp_build) runtime.calcModeNormalGui();
+            },
+            runtime.CM_PEM => {
+                if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                    if (comptime !is_dmcp_build) runtime.calcModeAimGui();
+                } else {
+                    if (comptime !is_dmcp_build) runtime.calcModeNormalGui();
+                }
+            },
+            else => {},
+        }
+    }
+}
+
+// keyboardTweak.c showAlphaModeonGui: refresh the alpha-mode indicator/keyboard.
+pub export fn showAlphaModeonGui() callconv(.c) void {
+    // The PC_BUILD jm_show_comment trace is a no-op (PC_BUILD_VERBOSE2 only).
+    if (runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_EIM or runtime.tam.mode != 0) {
+        runtime.showHideAlphaMode();
+        if (comptime !is_dmcp_build) runtime.calcModeAimGui();
+    }
+    runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+    runtime.screenUpdatingMode &= ~runtime.SCRUPD_SKIP_MENU_ONE_TIME;
+}
+
 // keyboardTweak.c fnCln: clear to a clean "+0" entry (clear-number).
 pub export fn fnCln(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;

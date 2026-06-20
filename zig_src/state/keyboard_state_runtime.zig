@@ -649,6 +649,13 @@ pub extern var multiEdLines: u8;
 pub extern fn stringPrevGlyph(str: [*c]const u8, pos: i16) i16;
 pub extern fn incOffset() void;
 pub extern fn findOffset() void;
+
+// --- keyboardTweak.c GUI-mode helpers ---------------------------------------
+pub const SCRUPD_SKIP_MENU_ONE_TIME: u8 = 64;
+pub extern fn showHideAlphaMode() void;
+// calcMode*Gui are real functions only on host (empty macros on the DMCP lane).
+pub extern fn calcModeAimGui() void;
+pub extern fn calcModeNormalGui() void;
 pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
 
 const legacy_host = struct {
