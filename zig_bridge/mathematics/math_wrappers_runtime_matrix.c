@@ -223,6 +223,16 @@
 #define fnPNorm z47_math_wrappers_legacy_fnPNorm
 #define getMatrixFromRegister z47_math_wrappers_legacy_getMatrixFromRegister
 
+// Simultaneous-linear-equation cluster owned by
+// math_matrix_linear_eqn_owned.zig (SIMQ command + Mat_A/B/X editor commands +
+// the public real/complex linear-equation solvers).
+#define fnSimultaneousLinearEquation z47_math_wrappers_legacy_fnSimultaneousLinearEquation
+#define fnEditLinearEquationMatrixA z47_math_wrappers_legacy_fnEditLinearEquationMatrixA
+#define fnEditLinearEquationMatrixB z47_math_wrappers_legacy_fnEditLinearEquationMatrixB
+#define fnEditLinearEquationMatrixX z47_math_wrappers_legacy_fnEditLinearEquationMatrixX
+#define real_matrix_linear_eqn z47_math_wrappers_legacy_real_matrix_linear_eqn
+#define complex_matrix_linear_eqn z47_math_wrappers_legacy_complex_matrix_linear_eqn
+
 #include "c47.h"
 
 #include "../../src/c47/mathematics/matrix.c"
