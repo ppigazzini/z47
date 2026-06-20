@@ -45,6 +45,9 @@ bool_t z47_keyboard_state_assignToMenu(uint8_t *data) {
 void z47_keyboard_state_menuUp(void)   { menuUp(); }
 void z47_keyboard_state_menuDown(void) { menuDown(); }
 
+// stayInAIM is static in keyboard.c (used by the Zig fnKeyExit).
+void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
+
 #undef numlockReplacements
 #undef keyReplacements
 #undef caseReplacements
