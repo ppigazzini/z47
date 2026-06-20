@@ -87,7 +87,7 @@ pub const SCRUPD_MANUAL_STACK: u8 = 0x02;
 pub const SCRUPD_MANUAL_MENU: u8 = 0x04;
 pub const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
 const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
-const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
+pub const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
 const FLAG_INTING: i32 = 0xc025;
 const FLAG_SOLVING: i32 = 0xc026;
@@ -280,6 +280,74 @@ pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) v
     const fmt = commonBugScreenMessages + bugMsgCalcModeWhileProcKey * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
     _ = sprintf(errorMessage, fmt, func_name, @as(c_int, calcMode), key_str);
     displayBugScreen(errorMessage);
+}
+
+// --- fnKeyBackspace dependencies --------------------------------------------
+pub const TI_VIEW_REGISTER: u8 = 15;
+pub const TI_ARE_YOU_SURE: u8 = 9;
+const TI_SHOW_REGISTER: u8 = 14;
+const TI_SHOW_REGISTER_BIG: u8 = 75;
+const TI_SHOW_REGISTER_SMALL: u8 = 76;
+const TI_SHOW_REGISTER_TINY: u8 = 77;
+const TI_SHOWNOTHING: u8 = 93;
+pub const SCRUPD_AUTO: u8 = 0;
+pub const ITM_DROP: i16 = 37;
+pub const ITM_CLX: i16 = 41;
+pub const ITM_T_LEFT_ARROW: u16 = 1952;
+pub const FLAG_CLX_DROP: i32 = 32859;
+pub const CATALOG_MVAR: i16 = 18;
+pub const CM_CONFIRMATION: u8 = 11;
+pub const CM_BUG_ON_SCREEN: u8 = 10;
+pub const PGM_STOPPED: u8 = 0;
+pub const Y_POSITION_OF_AIM_LINE: u32 = 132;
+pub const vmNormal: c_int = 0;
+pub const NOPARAM: u16 = 9876;
+
+pub extern var catalog: i16;
+pub extern var xCursor: u32;
+pub extern var T_cursorPos: i16;
+pub extern var alphaCursor: i16;
+pub extern var previousCalcMode: u8;
+pub extern var shiftF: bool_t;
+pub extern var shiftG: bool_t;
+pub extern var currentStep: [*c]u8;
+pub extern var currentLocalStepNumber: u16;
+pub extern var programListEnd: bool_t;
+pub extern var pemCursorIsZerothStep: bool_t;
+pub extern var asnKey: [4]u8;
+// standardFont is a `const font_t`; we only need its address for showString().
+pub const standardFont = @extern(*const anyopaque, .{ .name = "standardFont" });
+
+pub extern fn strlen(s: [*c]const u8) usize;
+pub extern fn tamProcessInput(item: u16) void;
+pub extern fn closeShowMenu() void;
+pub extern fn showFunctionName(itm: i16, delay_ms: i16, arg: [*c]const u8) void;
+pub extern fn stringLastGlyph(str: [*c]const u8) i16;
+pub extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
+pub extern fn showString(str: [*c]const u8, font: ?*const anyopaque, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t) u32;
+pub extern fn pemAlpha(item: i16) void;
+pub extern fn defineCurrentStep() void;
+pub extern fn scrollPemBackwards() void;
+pub extern fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) void;
+pub extern fn findNextStep(step: [*c]u8) [*c]u8;
+pub extern fn findPreviousStep(step: [*c]u8) [*c]u8;
+pub extern fn deleteAlphaCharacter(current_cursor: *i16) void;
+pub extern fn assignLeaveAlpha() void;
+pub extern fn assignToKey(data: [*c]const u8) void;
+pub extern fn fnBackspaceTimerApp() void;
+pub extern fn fnT_ARROW(command: u16) void;
+// Trampoline to the static keyboard.c _assignToMenu (see keyboard_state_legacy.c).
+extern fn z47_keyboard_state_assignToMenu(data: [*c]u8) bool_t;
+pub fn assignToMenu(data: [*c]u8) void {
+    _ = z47_keyboard_state_assignToMenu(data);
+}
+// SHOWMODE macro (defines.h): a normal-mode SHOW/VIEW temporaryInformation state.
+pub inline fn isShowMode() bool {
+    return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or
+        temporaryInformation == TI_SHOW_REGISTER_BIG or
+        temporaryInformation == TI_SHOW_REGISTER_SMALL or
+        temporaryInformation == TI_SHOW_REGISTER_TINY or
+        temporaryInformation == TI_SHOWNOTHING);
 }
 
 const legacy_host = struct {
