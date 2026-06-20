@@ -625,6 +625,17 @@ pub fn clearScreen() void {
     forceSBupdate();
 }
 
+// --- keyboardTweak.c fnCla / fnCln dependencies -----------------------------
+pub const AIM_REGISTER_LINE: i16 = 100;
+pub extern var nextChar: u8;
+pub extern var scrLock: u8;
+pub extern var yCursor: u32;
+pub extern var cursorFont: ?*const anyopaque;
+pub extern var cursorEnabled: bool_t;
+pub extern fn clearRegisterLine(regist: i16, clear_top: bool_t, clear_bottom: bool_t) void;
+pub extern fn fnEqCla() void;
+pub extern fn fnKeyBackspace(unused: u16) void; // canonical (Zig export on host, C on dmcp)
+
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
     extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;

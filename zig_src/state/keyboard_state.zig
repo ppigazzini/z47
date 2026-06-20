@@ -111,3 +111,35 @@ pub export fn fnSHIFTfg(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.btnClickedHostOverlay(null, @ptrCast(@constCast(key27)));
     }
 }
+
+// keyboardTweak.c fnCla: clear the whole AIM/EIM entry buffer.
+pub export fn fnCla(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    if (runtime.calcMode == runtime.CM_AIM) {
+        // Not using calcModeAim because some modes are reset which should not be.
+        runtime.aimBuffer[0] = 0;
+        runtime.T_cursorPos = 0;
+        runtime.nextChar = runtime.scrLock;
+        runtime.xCursor = 1;
+        runtime.yCursor = runtime.Y_POSITION_OF_AIM_LINE + 6;
+        runtime.cursorFont = runtime.standardFont;
+        runtime.cursorEnabled = true;
+        runtime.clearRegisterLine(runtime.AIM_REGISTER_LINE, true, true);
+        runtime.refreshRegisterLine(runtime.AIM_REGISTER_LINE); // force the 5/2 line check
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+    } else if (runtime.calcMode == runtime.CM_EIM) {
+        runtime.fnEqCla();
+        runtime.refreshRegisterLine(runtime.NIM_REGISTER_LINE);
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+    }
+}
+
+// keyboardTweak.c fnCln: clear to a clean "+0" entry (clear-number).
+pub export fn fnCln(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    _ = runtime.strcpy(runtime.aimBuffer, "+0");
+    runtime.fnKeyBackspace(0);
+    runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+    runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+}
