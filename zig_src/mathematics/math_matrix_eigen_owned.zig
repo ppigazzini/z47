@@ -69,6 +69,17 @@ inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctx
 inline fn realIsNegativeA(source: *align(1) const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
+inline fn realSetPositiveSign(operand: *align(1) real_t) void {
+    operand.bits &= 0x7f;
+}
+
+// diagMode_t (matrix.c) selects which elements sumOfSubSupDiagonalAll sums.
+const DIAG: c_int = 0;
+const SUPSUBDIAG: c_int = 1;
+const NONDIAG: c_int = 2;
+const CHDIAG: c_int = 3;
+// defines.h: symmetric/tridiagonal detection tolerance exponent.
+const symmetricTolerance: i32 = 30;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
@@ -857,4 +868,170 @@ pub export fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol:
         }
     }
     return true;
+}
+
+// ===========================================================================
+// Convergence / matrix-property helpers (pub-exported, dead until
+// calculateEigenvalues drives them). CONV_SUM_159 and ABS_SUMS are undef on
+// every z47 build, so the diagonal sums accumulate sum-of-squares directly.
+// ===========================================================================
+
+pub export fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: [*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) callconv(.c) void {
+    _ = heading;
+    var elemRe: real_t = undefined;
+    var elemIm: real_t = undefined;
+    realSetZero(sum);
+    const sz: usize = size;
+    var i: u16 = 0;
+    while (i < activeSize) : (i += 1) {
+        var j: u16 = 0;
+        while (j < activeSize) : (j += 1) {
+            var include = false;
+            switch (mode) {
+                DIAG => {
+                    include = (i == j);
+                },
+                SUPSUBDIAG => {
+                    include = (i == j + 1) or (j == i + 1);
+                },
+                NONDIAG => {
+                    include = (i != j);
+                },
+                CHDIAG => {
+                    include = (i == j);
+                },
+                else => {},
+            }
+            if (include) {
+                const ii: usize = i;
+                const jj: usize = j;
+                realCopy(&matrix[(ii * sz + jj) * 2], &elemRe);
+                realCopy(&matrix[(ii * sz + jj) * 2 + 1], &elemIm);
+                if (mode == CHDIAG) {
+                    if (firstCall) {
+                        realCopy(&elemRe, &previousDiagonal[ii * 2]);
+                        realCopy(&elemIm, &previousDiagonal[ii * 2 + 1]);
+                        continue;
+                    } else {
+                        var prevRe: real_t = undefined;
+                        var prevIm: real_t = undefined;
+                        var changeRe: real_t = undefined;
+                        var changeIm: real_t = undefined;
+                        realCopy(&previousDiagonal[ii * 2], &prevRe);
+                        realCopy(&previousDiagonal[ii * 2 + 1], &prevIm);
+                        realSubtract(&elemRe, &prevRe, &changeRe, realContext);
+                        realSubtract(&elemIm, &prevIm, &changeIm, realContext);
+                        realSetPositiveSign(&changeRe);
+                        realSetPositiveSign(&changeIm);
+                        realCopy(&elemRe, &previousDiagonal[ii * 2]);
+                        realCopy(&elemIm, &previousDiagonal[ii * 2 + 1]);
+                        elemRe = changeRe;
+                        elemIm = changeIm;
+                    }
+                } else {
+                    realSetPositiveSign(&elemRe);
+                    realSetPositiveSign(&elemIm);
+                }
+                realFMA(&elemRe, &elemRe, sum, sum, realContext);
+                realFMA(&elemIm, &elemIm, sum, sum, realContext);
+            }
+        }
+    }
+}
+
+pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) callconv(.c) void {
+    var c: realContext_t = runtime.ctxtReal39;
+    c.digits = dig;
+    c.round = runtime.DEC_ROUND_HALF_UP;
+    const sz: usize = size;
+    var i: usize = 0;
+    while (i < sz) : (i += 1) {
+        const ptr = &eig[(i * sz + i) * 2];
+        realPlus(ptr, ptr, &c);
+        const ptr2 = &eig[(i * sz + i) * 2 + 1];
+        realPlus(ptr2, ptr2, &c);
+    }
+}
+
+fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) bool {
+    var mag: real_t = undefined;
+    complexMagnitude(value_re, value_im, &mag, realContext);
+    return realCompareLessThan(&mag, tol);
+}
+
+pub export fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) callconv(.c) bool {
+    var tol: real_t = undefined;
+    realSetOne(&tol);
+    tol.exponent -= symmetricTolerance;
+    const sz: usize = size;
+    var i: u16 = 0;
+    while (i < size) : (i += 1) {
+        var j: u16 = i;
+        while (j < size) : (j += 1) {
+            const ii: usize = i;
+            const jj: usize = j;
+            const a_ij_re = &a[(ii * sz + jj) * 2];
+            const a_ij_im = &a[(ii * sz + jj) * 2 + 1];
+            const a_ji_re = &a[(jj * sz + ii) * 2];
+            const diff: i32 = @as(i32, j) - @as(i32, i);
+            if (checkTridiagonal and diff > 1) {
+                if (!isElementWithinTolerance(a_ij_re, a_ij_im, &tol, realContext)) {
+                    return false;
+                }
+            }
+            if (!isElementWithinTolerance(a_ij_im, const_0(), &tol, realContext)) {
+                return false;
+            }
+            if (i < j) {
+                var diff_val: real_t = undefined;
+                realSubtract(a_ij_re, a_ji_re, &diff_val, realContext);
+                if (!isElementWithinTolerance(&diff_val, const_0(), &tol, realContext)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+pub export fn isSymmetricTridiagonal(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) callconv(.c) bool {
+    return checkMatrixProperties(a, size, true, realContext);
+}
+
+pub export fn isRealSymmetric(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) callconv(.c) bool {
+    return checkMatrixProperties(a, size, false, realContext);
+}
+
+pub export fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+    const n = last_unconverged - first_unconverged + 1;
+    if (n < 2 or n > 3) {
+        return;
+    }
+    var block: [18]real_t = undefined;
+    const sz: usize = size;
+    const nn: usize = @intCast(n);
+    const fu: usize = @intCast(first_unconverged);
+    var row: usize = 0;
+    while (row < nn) : (row += 1) {
+        var col: usize = 0;
+        while (col < nn) : (col += 1) {
+            const src_row = fu + row;
+            const src_col = fu + col;
+            realCopy(&eig[(src_row * sz + src_col) * 2], &block[(row * nn + col) * 2]);
+            realCopy(&eig[(src_row * sz + src_col) * 2 + 1], &block[(row * nn + col) * 2 + 1]);
+        }
+    }
+    var ev_re: [3]real_t = undefined;
+    var ev_im: [3]real_t = undefined;
+    if (n == 2) {
+        calculateEigenvalues22(&block, 2, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], is_real_symmetric, realContext);
+    } else if (n == 3) {
+        calculateEigenvalues33(&block, 3, &ev_re[0], &ev_im[0], &ev_re[1], &ev_im[1], &ev_re[2], &ev_im[2], is_real_symmetric, realContext);
+    }
+    var i: usize = 0;
+    while (i < nn) : (i += 1) {
+        const pos = fu + i;
+        realCopy(&ev_re[i], &a[(pos * sz + pos) * 2]);
+        realCopy(&ev_im[i], &a[(pos * sz + pos) * 2 + 1]);
+    }
 }
