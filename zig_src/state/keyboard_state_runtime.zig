@@ -857,7 +857,15 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
-pub extern fn processAimInput(item: i16) void;
+// processAimInput dependencies (keyboard.c 475-568).
+pub const ITM_COLON: i16 = 822;
+pub const ITM_COMMA: i16 = 818;
+pub const ITM_QUESTION_MARK: i16 = 827;
+pub const ITM_UNDERSCORE: i16 = 833;
+pub const NC_SUBSCRIPT: u8 = 1;
+pub const NC_SUPERSCRIPT: u8 = 2;
+pub extern var lastshiftG: bool_t;
+
 // resetShiftState / showAlphaModeonGui are the keyboardTweak.c owners exported
 // from keyboard_state.zig; reach them as their canonical C symbols.
 pub extern fn resetShiftState() void;
