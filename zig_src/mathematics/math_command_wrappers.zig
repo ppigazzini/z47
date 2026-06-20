@@ -196,6 +196,9 @@ comptime {
         // The element-wise dispatch family + indexed-element dispatchers
         // (callByVectorElement/callByIndexedMatrix) of mathematics/matrix.c.
         _ = @import("math_matrix_elementwise_owned.zig");
+        // The MIM-routed commands (fnGetMatrix/fnPutMatrix/fnSwapRows/
+        // fnSwapColumns/fnRowColSum/fnPNorm + getMatrixFromRegister).
+        _ = @import("math_matrix_mim_commands_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");

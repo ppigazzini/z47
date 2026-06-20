@@ -25,7 +25,9 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     return buffer[0 .. slice.len :0];
 }
 
-fn _fnEuclideanNorm(p_param: u16) void {
+// Exported (was file-local) so fnPNorm in the MIM-commands owner can dispatch
+// to it; _fnEuclideanNorm is static in matrix.c so there is no symbol clash.
+pub export fn _fnEuclideanNorm(p_param: u16) callconv(.c) void {
     const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (data_type == runtime.dtReal34Matrix) {
         var matrix: real34Matrix_t = undefined;
