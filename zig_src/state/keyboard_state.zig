@@ -87,3 +87,27 @@ pub export fn numlockReplacements(id: u16, item: i16, numlock_enabled: runtime.b
 pub export fn setLastKeyCode(key: i32) void {
     shared.setLastKeyCode(key);
 }
+
+// keyboardTweak.c shift-key item handlers (dispatched via indexOfItems[].func).
+pub export fn fnSHIFTf(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    runtime.shiftF = true;
+    runtime.shiftG = false;
+}
+
+pub export fn fnSHIFTg(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    runtime.shiftF = false;
+    runtime.shiftG = true;
+}
+
+pub export fn fnSHIFTfg(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    // f+g chord = the same path as clicking key 27 (the f/g longpress combo).
+    const key27: [*:0]const u8 = "27";
+    if (is_dmcp_build) {
+        runtime.btnClickedDmcpOverlay(null, @ptrCast(@constCast(key27)));
+    } else {
+        runtime.btnClickedHostOverlay(null, @ptrCast(@constCast(key27)));
+    }
+}
