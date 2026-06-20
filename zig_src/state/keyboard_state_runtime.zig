@@ -856,6 +856,12 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// execFnTimeout dependencies (keyboardTweak.c 960-972). btnFnClicked is
+// (GtkWidget*, gpointer) on host and (void*, void*) on dmcp -- both two
+// pointers, so a single ?*anyopaque signature matches each lane's ABI.
+pub extern var FN_timed_out_to_NOP_or_Executed: bool_t;
+pub extern fn btnFnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
+
 // leavePem dependencies (keyboard.c 2309-2334). Host owner: RAM_SIZE_IN_BLOCKS
 // is the !DMCP_BUILD (NEW_HW) value (defines.h:1988).
 pub const RAM_SIZE_IN_BLOCKS: u32 = 65534;
