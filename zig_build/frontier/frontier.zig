@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_common = @import("../common.zig");
 
 const replaced_core_sources_manifest = @embedFile("frontier_replaced_core_sources.txt");
 const runtime_helper_sources_manifest = @embedFile("frontier_runtime_helper_sources.txt");
@@ -127,6 +128,25 @@ fn addRuntimeObject(
     build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_vector", options.option_vector);
+
+    // versionStr / versionStr2 (was screen_snap_helpers.c): assembled here the
+    // same way generated.zig builds version.h, so the ported owner needs no C
+    // preprocessor stamp. STD_SPACE_3_PER_EM = "\xa0\x04" (fonts.h). VERSION1
+    // mirrors defines.h. versionStr2's __DATE__ is the C compile date in
+    // "Mmm dd yyyy" form (date %b %e %Y); QSPI on firmware, Sim on host.
+    const sp3 = "\xa0\x04";
+    const modeltext = if (options.calcmodel == 66) "R47" else "C47";
+    const version1 = "0.109.03.02b0";
+    const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
+    const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
+    const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";
+    const version_string = b.fmt("custom{s}build{s}{s}{s}{s}", .{ sp3, sp3, vcs, sp3, today });
+    const version_str = b.fmt("  {s} {s}.", .{ modeltext, version_string });
+    const sim_or_qspi = if (options.dmcp_build) "QSPI" else "Sim";
+    const version_str2 = b.fmt("  {s} {s} {s}, dated {s}.", .{ modeltext, sim_or_qspi, version1, cdate });
+    build_options.addOption([]const u8, "version_str", version_str);
+    build_options.addOption([]const u8, "version_str2", version_str2);
+
     root_module.addOptions("frontier_build_options", build_options);
 
     return b.addObject(.{

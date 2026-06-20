@@ -1,2 +1,2 @@
 # Runtime legacy helper C units compiled for frontier root ownership bridge.
-zig_bridge/frontier/screen_snap_helpers.c
+# (empty: screen_snap_helpers.c retired — ported to frontier_screen_snap_owned.zig)
