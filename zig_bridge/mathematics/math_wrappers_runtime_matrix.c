@@ -233,6 +233,16 @@
 #define real_matrix_linear_eqn z47_math_wrappers_legacy_real_matrix_linear_eqn
 #define complex_matrix_linear_eqn z47_math_wrappers_legacy_complex_matrix_linear_eqn
 
+// Column-reduction / search commands owned by math_matrix_column_commands_owned.zig.
+#define fnColumnMin z47_math_wrappers_legacy_fnColumnMin
+#define fnColumnMax z47_math_wrappers_legacy_fnColumnMax
+#define fnMatrixFind z47_math_wrappers_legacy_fnMatrixFind
+
+// Residual OPTION_VECTOR commands owned by math_matrix_vector3d_owned.zig.
+#define is_2D3D_Register_Ready z47_math_wrappers_legacy_is_2D3D_Register_Ready
+#define V3RectoToSph z47_math_wrappers_legacy_V3RectoToSph
+#define V3RectoToCyl z47_math_wrappers_legacy_V3RectoToCyl
+
 #include "c47.h"
 
 #include "../../src/c47/mathematics/matrix.c"
