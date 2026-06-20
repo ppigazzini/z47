@@ -74,7 +74,7 @@ fn addMathLnComplexOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_ln_complex_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(math_ln_complex_object);
@@ -137,7 +137,7 @@ fn addMathRealRectangularToPolarOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
@@ -200,7 +200,7 @@ fn addMathAtan2Oracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_atan2_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
@@ -263,7 +263,7 @@ fn addMathAtanOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_atan_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
@@ -326,7 +326,7 @@ fn addMathRealTrigPrimitivesOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_real_trig_primitives_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
@@ -389,7 +389,7 @@ fn addMathCircularTrigOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/gui.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/lcd.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/audio.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/hal/print_ir.c"), .flags = core_c_flags });
+    exe.root_module.addObject(host_builders.addPrintIrHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_circular_trig_oracle.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
