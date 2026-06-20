@@ -15,6 +15,8 @@
 #define showShiftState z47_keyboard_state_showShiftState
 #define resetShiftState z47_keyboard_state_resetShiftState
 #define resetKeytimers z47_keyboard_state_resetKeytimers
+#define shiftCutoff z47_keyboard_state_shiftCutoff
+#define execFnTimeout z47_keyboard_state_execFnTimeout
 #define openHOMEorMyM z47_keyboard_state_openHOMEorMyM
 #define _keyClick z47_keyboard_state_keyClickImpl
 #define keyClick z47_keyboard_state_keyClick
@@ -69,6 +71,8 @@ void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 #undef keyClick
 #undef _keyClick
 #undef openHOMEorMyM
+#undef execFnTimeout
+#undef shiftCutoff
 #undef resetKeytimers
 #undef resetShiftState
 #undef showShiftState

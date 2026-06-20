@@ -382,6 +382,23 @@ pub export fn resetKeytimers() callconv(.c) void {
     runtime.fnTimerStop(runtime.TO_FN_LONG);
 }
 
+// keyboardTweak.c shiftCutoff: 3x-shift-within-1s cutoff stops the HOME timer.
+pub export fn shiftCutoff(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    runtime.fnTimerStop(runtime.TO_3S_CTFF);
+}
+
+// keyboardTweak.c execFnTimeout: delayed click of the primary function key.
+// VERBOSEKEYS tracing is dropped (never #defined on these lanes).
+pub export fn execFnTimeout(key: u16) callconv(.c) void {
+    var charKey: [3]u8 = undefined;
+    charKey[1] = 0;
+    charKey[0] = @truncate(key + 11); // key + (-37 + 48)
+    if (!runtime.FN_timed_out_to_NOP_or_Executed) {
+        runtime.btnFnClicked(null, @ptrCast(&charKey));
+    }
+}
+
 // keyboardTweak.c refreshModeGui: sync the on-screen-keyboard mode to calcMode.
 // calcMode*Gui are empty macros on the DMCP lane, so the calls are host-only.
 pub export fn refreshModeGui() callconv(.c) void {
