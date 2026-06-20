@@ -165,6 +165,12 @@
 #define VtoAngleMode z47_math_wrappers_legacy_VtoAngleMode
 #define fnComplexToVector z47_math_wrappers_legacy_fnComplexToVector
 
+// Eigenvalue engine owned by math_matrix_eigen_owned.zig. The static numeric
+// workers keep their file-local copies (the Zig ones are separate globals); only
+// the public fnEigenvalues command is renamed so EIGVAL resolves to the Zig
+// chain (calculateEigenvalues + the closed-form/QR workers).
+#define fnEigenvalues z47_math_wrappers_legacy_fnEigenvalues
+
 #include "c47.h"
 
 #include "../../src/c47/mathematics/matrix.c"

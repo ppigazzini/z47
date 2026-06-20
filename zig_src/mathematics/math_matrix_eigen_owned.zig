@@ -24,6 +24,15 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 
+// fnEigenvalues command-handler dependencies (matrix.c).
+extern fn fnRecallVElement(n: u16) void;
+extern fn decQuadPlus(res: *align(1) real34_t, operand: *align(1) const real34_t, ctxt: *realContext_t) *align(1) real34_t;
+inline fn real34Plus(operand: *align(1) const real34_t, res: *align(1) real34_t) void {
+    _ = decQuadPlus(res, operand, &runtime.ctxtReal34);
+}
+const FLAG_ASLIFT: i32 = 0xc023;
+const ERROR_MATRIX_MISMATCH: u8 = 21;
+
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
@@ -957,8 +966,14 @@ pub export fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1)
                     realSetPositiveSign(&elemRe);
                     realSetPositiveSign(&elemIm);
                 }
-                realFMA(&elemRe, &elemRe, sum, sum, realContext);
-                realFMA(&elemIm, &elemIm, sum, sum, realContext);
+                // Upstream defaults to ABS_SUMS (matrix.c:22): accumulate the
+                // sum of absolute values, NOT the sum of squares. The eigen
+                // convergence/stagnation thresholds (eigenTolerance,
+                // blockDetectionTolerance, toleranceDigits) are calibrated for
+                // this scaling; summing squares doubles the metric's exponent
+                // and makes the stagnation detector give up prematurely.
+                realAdd(&elemRe, sum, sum, realContext);
+                realAdd(&elemIm, sum, sum, realContext);
             }
         }
     }
@@ -1605,5 +1620,159 @@ pub export fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex
         freeC47Blocks(bulk, bulkSize);
     } else {
         ramFull("In function complexEigenvalues:", "Ram full, 2bb");
+    }
+}
+
+// ===========================================================================
+// fnEigenvalues (EIGVAL) -- the public command. Links X (real/complex matrix),
+// runs the eigenvalue wrapper, writes the eigenvalue matrix to X plus a row
+// vector of the eigenvalues lifted onto the stack. Pushed through the same
+// stack-lift / adjustResult sequence as upstream.
+// ===========================================================================
+pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
+    _ = unusedParamButMandatory;
+    var doneAdjusting = false;
+    const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
+    if (dt == runtime.dtReal34Matrix) {
+        var x: real34Matrix_t = undefined;
+        runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvalues:", "", null, null);
+            return;
+        }
+        if (!runtime.saveLastX()) return;
+        if (x.header.matrixRows == 1 and x.header.matrixColumns == 1) {
+            fnRecallVElement(1);
+        } else {
+            runtime.setSystemFlag(FLAG_ASLIFT);
+            runtime.liftStack();
+            runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &x);
+            var res: real34Matrix_t = undefined;
+            var ires: real34Matrix_t = undefined;
+            ires.header.matrixRows = 0;
+            ires.header.matrixColumns = 0;
+            ires.matrixElements = null;
+            realEigenvalues(&x, &res, &ires);
+            if (runtime.lastErrorCode == runtime.ERROR_NONE or runtime.lastErrorCode == ERROR_SOLVER_ABORT) {
+                if (ires.matrixElements != null) {
+                    var cres: complex34Matrix_t = undefined;
+                    if (runtime.complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
+                        const resElems: [*]real34_t = @ptrCast(res.matrixElements);
+                        const iresElems: [*]real34_t = @ptrCast(ires.matrixElements);
+                        const cresElems: [*]runtime.complex34_t = @ptrCast(cres.matrixElements);
+                        const n: usize = @as(usize, x.header.matrixRows) * x.header.matrixColumns;
+                        var i: usize = 0;
+                        while (i < n) : (i += 1) {
+                            cresElems[i].real = resElems[i];
+                            cresElems[i].imag = iresElems[i];
+                        }
+                        runtime.convertComplex34MatrixToComplex34MatrixRegister(&cres, runtime.REGISTER_X);
+                        runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+                        doneAdjusting = true;
+                        var cresRow: complex34Matrix_t = undefined;
+                        extractDiagonalToRowComplex34Matrix(&cres, &cresRow);
+                        runtime.setSystemFlag(FLAG_ASLIFT);
+                        runtime.liftStack();
+                        runtime.convertComplex34MatrixToComplex34MatrixRegister(&cresRow, runtime.REGISTER_X);
+                        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+                        runtime.complexMatrixFree(&cresRow);
+                        runtime.realMatrixFree(&ires);
+                        runtime.complexMatrixFree(&cres);
+                    } else {
+                        ramFull("In function fnEigenvalues:", "Ram full");
+                    }
+                } else {
+                    runtime.convertReal34MatrixToReal34MatrixRegister(&res, runtime.REGISTER_X);
+                    runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+                    doneAdjusting = true;
+                    var resRow: real34Matrix_t = undefined;
+                    extractDiagonalToRowReal34Matrix(&res, &resRow);
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                    runtime.liftStack();
+                    runtime.convertReal34MatrixToReal34MatrixRegister(&resRow, runtime.REGISTER_X);
+                    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+                    runtime.realMatrixFree(&resRow);
+                }
+                runtime.realMatrixFree(&res);
+            }
+        }
+        if (!doneAdjusting) runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+        return;
+    } else if (dt == runtime.dtComplex34Matrix) {
+        var x: complex34Matrix_t = undefined;
+        runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &x);
+        if (x.header.matrixRows != x.header.matrixColumns) {
+            runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [80]u8 = undefined;
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                runtime.moreInfoOnError("In function fnEigenvalues:", m, null, null);
+            }
+            return;
+        }
+        if (!runtime.saveLastX()) return;
+        if (x.header.matrixRows == 1 and x.header.matrixColumns == 1) {
+            fnRecallVElement(1);
+        } else {
+            runtime.setSystemFlag(FLAG_ASLIFT);
+            runtime.liftStack();
+            var res: complex34Matrix_t = undefined;
+            complexEigenvalues(&x, &res);
+            runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
+            runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+            doneAdjusting = true;
+            var resRow: complex34Matrix_t = undefined;
+            extractDiagonalToRowComplex34Matrix(&res, &resRow);
+            runtime.setSystemFlag(FLAG_ASLIFT);
+            runtime.liftStack();
+            runtime.convertComplex34MatrixToComplex34MatrixRegister(&resRow, runtime.REGISTER_X);
+            runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+            runtime.complexMatrixFree(&resRow);
+            runtime.complexMatrixFree(&res);
+        }
+        if (!doneAdjusting) runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+        return;
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            var buf: [48]u8 = undefined;
+            const m = bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
+            runtime.moreInfoOnError("In function fnEigenvalues:", m, "is not a matrix.", "");
+        }
+        return;
+    }
+}
+
+// Extract the diagonal of a square matrix into a 1xN row vector (the eigenvalue
+// list pushed onto the stack by fnEigenvalues). real34Plus rounds at ctxtReal34.
+pub export fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34Matrix_t) callconv(.c) void {
+    const size: u16 = source.header.matrixRows;
+    const sz: usize = size;
+    if (runtime.realMatrixInit(dest, 1, size)) {
+        const srcElems: [*]const real34_t = @ptrCast(source.matrixElements);
+        const dstElems: [*]real34_t = @ptrCast(dest.matrixElements);
+        var i: usize = 0;
+        while (i < sz) : (i += 1) {
+            real34Plus(&srcElems[i * sz + i], &dstElems[i]);
+        }
+    } else {
+        ramFull("In function extractDiagonalToRowReal34Matrix:", "Ram full");
+    }
+}
+
+pub export fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *complex34Matrix_t) callconv(.c) void {
+    const size: u16 = source.header.matrixRows;
+    const sz: usize = size;
+    if (runtime.complexMatrixInit(dest, 1, size)) {
+        const srcElems: [*]const runtime.complex34_t = @ptrCast(source.matrixElements);
+        const dstElems: [*]runtime.complex34_t = @ptrCast(dest.matrixElements);
+        var i: usize = 0;
+        while (i < sz) : (i += 1) {
+            real34Plus(&srcElems[i * sz + i].real, &dstElems[i].real);
+            real34Plus(&srcElems[i * sz + i].imag, &dstElems[i].imag);
+        }
+    } else {
+        ramFull("In function extractDiagonalToRowComplex34Matrix:", "Ram full");
     }
 }
