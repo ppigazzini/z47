@@ -190,6 +190,9 @@ comptime {
         // The vector-helpers owner replaces the OPTION_VECTOR V3err error
         // reporter and VtoAngleMode of mathematics/matrix.c.
         _ = @import("math_matrix_vector_helpers_owned.zig");
+        // The eigen owner replaces the eigenvalue/eigenvector/matrix-sqrt
+        // numeric engine of mathematics/matrix.c (built up bottom-up).
+        _ = @import("math_matrix_eigen_owned.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
         _ = @import("math_matrix_stats_owned.zig");
