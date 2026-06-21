@@ -27,6 +27,27 @@ pub fn printLabelBytes(data: [*c]const u8, length: c_int) void {
     _ = printf(")\n");
 }
 
+/// gtkGui.c check_utf_string: validates a widget string and, on failure, prints
+/// the offending widget/field plus a hex dump. Returns true when an issue was
+/// found (the caller ORs these into a per-widget consistency flag).
+pub fn checkUtfString(widget_name: [*c]const u8, what: [*c]const u8, s: [*c]const u8) bool {
+    if (s == null) {
+        return false;
+    }
+    var bad_pos: usize = 0;
+    if (!isValidUtf8(s, &bad_pos)) {
+        _ = printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n", widget_name, what, bad_pos);
+        _ = printf("Corrupted string: ");
+        var p = s;
+        while (p[0] != 0) : (p += 1) {
+            _ = printf("\\x%02x", @as(c_int, p[0]));
+        }
+        _ = printf("\n");
+        return true;
+    }
+    return false;
+}
+
 /// gtkGui.c check_label_consistency: warns on NULL or non-UTF-8 button-label
 /// text (length-capped at 22) and returns true when an issue was reported.
 pub fn checkLabelConsistency(lbl: [*c]const u8, context: [*c]const u8) bool {

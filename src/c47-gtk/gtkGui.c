@@ -11,6 +11,7 @@ extern int16_t z47_keyCodeFromGdkKey(uint32_t gdkKey); // Zig owner: gtk_gui_key
 extern void z47_prepareCssData(void); // Zig owner: gtk_gui_css_owned.zig
 extern void z47_print_label_bytes(const uint8_t* data, int length); // Zig owner: gtk_gui_label_owned.zig
 extern bool_t z47_check_label_consistency(const uint8_t* lbl, const char* context); // Zig owner: gtk_gui_label_owned.zig
+extern bool z47_check_utf_string(const char *widget_name, const char *what, const char *s); // Zig owner: gtk_gui_label_owned.zig
 
 
 #if defined(PC_BUILD)
@@ -4485,22 +4486,6 @@ const deadKeysMap_t deadKeysMap[] = {
 
 
 
-static bool check_utf_string(const char *widget_name, const char *what, const char *s) {
-  if(!s) {
-    return false;
-  }
-  size_t bad_pos = 0;
-  if(!z47_is_valid_utf8(s, &bad_pos)) {
-    printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n", widget_name, what, bad_pos);
-    printf("Corrupted string: ");
-    for(const char *p = s; *p; p++) {
-      printf("\\x%02x", (unsigned char)*p);
-    }
-    printf("\n");
-    return true;
-  }
-  return false;
-}
 
 #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
 #define CHECK_WIDGET_CONSISTENCY_CHECK(widget_var, widget_name) do {                                                  \
@@ -4514,18 +4499,18 @@ static bool check_utf_string(const char *widget_name, const char *what, const ch
     else {                                                                                                            \
       bool consistency_found = false;                                                                                 \
                                                                                                                       \
-      consistency_found |= check_utf_string(widget_name, "tooltip", gtk_widget_get_tooltip_text(widget));             \
-      consistency_found |= check_utf_string(widget_name, "tooltip markup", gtk_widget_get_tooltip_markup(widget));    \
+      consistency_found |= z47_check_utf_string(widget_name, "tooltip", gtk_widget_get_tooltip_text(widget));             \
+      consistency_found |= z47_check_utf_string(widget_name, "tooltip markup", gtk_widget_get_tooltip_markup(widget));    \
                                                                                                                       \
       if(GTK_IS_BUTTON(widget)) {                                                                                     \
-        consistency_found |= check_utf_string(widget_name, "button label", gtk_button_get_label(GTK_BUTTON(widget))); \
+        consistency_found |= z47_check_utf_string(widget_name, "button label", gtk_button_get_label(GTK_BUTTON(widget))); \
       }                                                                                                               \
       if(GTK_IS_LABEL(widget)) {                                                                                      \
         const char *text = gtk_label_get_text(GTK_LABEL(widget));                                                     \
-        consistency_found |= check_utf_string(widget_name, "label text", text);                                       \
+        consistency_found |= z47_check_utf_string(widget_name, "label text", text);                                       \
         const char *markup = gtk_label_get_label(GTK_LABEL(widget));                                                  \
         if(markup && markup != text) {                                                                                \
-          consistency_found |= check_utf_string(widget_name, "label markup", markup);                                 \
+          consistency_found |= z47_check_utf_string(widget_name, "label markup", markup);                                 \
       }                                                                                                               \
     }                                                                                                                 \
                                                                                                                       \
