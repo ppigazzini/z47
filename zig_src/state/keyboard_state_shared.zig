@@ -121,6 +121,17 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn checkKeyShifts(data: [*c]const u8) runtime.bool_t {
+            // keyboard.c checkKeyShifts (2014-2027). stringToKeyNumber(data) is a
+            // macro: (data[0]-'0')*10 + data[1]-'0' (keyboard.c:1434).
+            const key_no: usize = @intCast((@as(i32, data[0]) - '0') * 10 + @as(i32, data[1]) - '0');
+            const use_usr = runtime.getSystemFlag(runtime.FLAG_USER) and
+                (runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_AIM or
+                    runtime.calcMode == runtime.CM_EIM or runtime.calcMode == runtime.CM_NIM);
+            const primary = if (use_usr) runtime.kbd_usr[key_no].primary else runtime.kbdStdAt(key_no).primary;
+            return primary == runtime.ITM_SHIFTf or primary == runtime.ITM_SHIFTg or primary == runtime.KEY_fg;
+        }
+
         pub fn leavePem() void {
             // keyboard.c leavePem (2309-2334): push programs to the end of RAM.
             if (runtime.freeProgramBytes >= 4) {
