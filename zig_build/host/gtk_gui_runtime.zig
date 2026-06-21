@@ -97,6 +97,10 @@ pub export fn calcModeTamGui() callconv(.c) void {
     display_owned.calcModeTamGui();
 }
 
+pub export fn hideAllWidgets() callconv(.c) void {
+    display_owned.hideAllWidgets();
+}
+
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
     label_owned.labelCaptionAim(key, button, lbl_g, lbl_l);
 }
