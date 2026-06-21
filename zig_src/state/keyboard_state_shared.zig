@@ -121,6 +121,134 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn determineItem(data: [*c]const u8) i16 {
+            // keyboard.c determineItem (1511-1734). VERBOSEKEYS / jm_show_comment
+            // tracing dropped. stringToKeyNumber is the inline macro.
+            const ITM_0: i16 = @intCast(runtime.ITM_0);
+            const ITM_9: i16 = @intCast(runtime.ITM_9);
+
+            runtime.delayCloseNim = false;
+            var result: i16 = 0;
+            runtime.dynamicMenuItem = -1;
+            const key_no: i8 = @intCast((@as(i32, data[0]) - '0') * 10 + @as(i32, data[1]) - '0');
+            const key: runtime.calcKey_t = if (runtime.getSystemFlag(runtime.FLAG_USER)) runtime.kbd_usr[@intCast(key_no)] else runtime.kbdStdAt(@intCast(key_no));
+
+            runtime.fnTimerExec(runtime.TO_FN_EXEC);
+
+            if ((key.primary != runtime.ITM_SHIFTf) and (key.primary != runtime.KEY_fg) and (!runtime.showMode() or !(key.primary == runtime.ITM_RCL or key.primary == runtime.ITM_RS or key.primary == runtime.ITM_UP1 or key.primary == runtime.ITM_DOWN1 or (runtime.allowShowDigits and key.primary >= ITM_0 and key.primary <= ITM_9)))) {
+                runtime.showRegis = 9999;
+            }
+
+            var shiftOverride: i16 = 0;
+            result = runtime.normKey00ItemInLayout();
+            shiftOverride = runtime.Check_Norm_Key_00_Assigned(&result, key_no);
+
+            if (shiftOverride == 0) {
+                runtime.Setup_MultiPresses(key.primary);
+            }
+
+            // SHOWMODE f / fg: send EXIT over to the key release.
+            if (runtime.showMode() and (key.primary == runtime.KEY_fg or key.primary == runtime.ITM_SHIFTf)) {
+                runtime.shiftF = true;
+                runtime.shiftG = false;
+                runtime.lastItem = key.primary;
+                runtime.resetKeytimers();
+                runtime.screenUpdatingMode = runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_MANUAL_MENU | runtime.SCRUPD_MANUAL_SHIFT_STATUS;
+                return runtime.ITM_NOP;
+            }
+
+            // shift-button processing
+            if (runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_MIM or runtime.calcMode == runtime.CM_EIM or runtime.calcMode == runtime.CM_PEM or runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH or runtime.calcMode == runtime.CM_ASSIGN or runtime.calcMode == runtime.CM_ASN_BROWSER or runtime.calcMode == runtime.CM_REGISTER_BROWSER or runtime.calcMode == runtime.CM_FLAG_BROWSER or runtime.calcMode == runtime.CM_FONT_BROWSER or runtime.calcMode == runtime.CM_TIMER) {
+                if (key.primary == runtime.ITM_SHIFTf or shiftOverride == runtime.ITM_SHIFTf) {
+                    commonShiftProcessing(@intCast(runtime.ITM_SHIFTf));
+                    return runtime.ITM_NOP;
+                } else if (key.primary == runtime.ITM_SHIFTg or shiftOverride == runtime.ITM_SHIFTg) {
+                    commonShiftProcessing(@intCast(runtime.ITM_SHIFTg));
+                    return runtime.ITM_NOP;
+                } else if (key.primary == runtime.KEY_fg or shiftOverride == runtime.KEY_fg) {
+                    commonShiftProcessing(@intCast(runtime.KEY_fg));
+                    return runtime.ITM_NOP;
+                }
+            } else if ((key.primary == runtime.KEY_fg or key.primary == runtime.ITM_SHIFTf or key.primary == runtime.ITM_SHIFTg) and (runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_LISTXY)) {
+                if (runtime.lastErrorCode != 0) {
+                    runtime.shiftKeyClearsError = true;
+                }
+                if (runtime.programRunStop == runtime.PGM_WAITING) {
+                    runtime.programRunStop = runtime.PGM_STOPPED;
+                }
+                runtime.lastErrorCode = 0;
+                return runtime.ITM_NOP;
+            }
+
+            if (runtime.tam.mode == 0 and (runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_NORMAL) and (runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX)) and (key_no >= 0 and key_no <= 5)) {
+                result = if (runtime.shiftF) key.fShifted else if (runtime.shiftG) key.gShifted else key.primaryAim;
+                switch (result) {
+                    runtime.ITM_SHIFTf, runtime.ITM_SHIFTg, runtime.KEY_fg => result = runtime.ITM_NOP,
+                    else => {},
+                }
+                runtime.Check_MultiPresses(&result, key_no);
+                return result;
+            } else if (runtime.calcMode == runtime.CM_AIM or (runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR and runtime.calcMode != runtime.CM_NIM) or runtime.calcMode == runtime.CM_EIM or runtime.tam.alpha or (runtime.calcMode == runtime.CM_ASSIGN and (runtime.previousCalcMode == runtime.CM_AIM or runtime.previousCalcMode == runtime.CM_EIM)) or (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA))) {
+                result = if (runtime.shiftF) key.fShiftedAim else if (runtime.shiftG) key.gShiftedAim else key.primaryAim;
+                if (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                    if (result == runtime.ITM_DOWN_ARROW or runtime.scrLock == runtime.NC_SUBSCRIPT) {
+                        runtime.nextChar = runtime.NC_SUBSCRIPT;
+                    } else if (result == runtime.ITM_UP_ARROW or runtime.scrLock == runtime.NC_SUPERSCRIPT) {
+                        runtime.nextChar = runtime.NC_SUPERSCRIPT;
+                    }
+                } else if ((result == runtime.ITM_COMMA or result == runtime.ITM_PERIOD) and (runtime.calcMode == runtime.CM_EIM or runtime.calcMode == runtime.CM_AIM) and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                    switch ((@as(i16, if (runtime.shiftG) 2 else 0)) + (@as(i16, if (runtime.getSystemFlag(runtime.FLAG_NUMLOCK)) 1 else 0))) {
+                        1 => result = runtime.radix34MarkDecItm(),
+                        3 => result = runtime.radix34MarkNotDecItm(),
+                        else => {},
+                    }
+                }
+                if ((runtime.calcMode == runtime.CM_EIM) and (result == -runtime.MNU_AIMCATALOG)) {
+                    result = -runtime.MNU_EIMCATALOG;
+                }
+            } else if (runtime.tam.mode != 0) {
+                result = key.primaryTam;
+            } else if (runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_MIM or runtime.calcMode == runtime.CM_FONT_BROWSER or runtime.calcMode == runtime.CM_FLAG_BROWSER or runtime.calcMode == runtime.CM_ASN_BROWSER or runtime.calcMode == runtime.CM_REGISTER_BROWSER or runtime.calcMode == runtime.CM_BUG_ON_SCREEN or runtime.calcMode == runtime.CM_CONFIRMATION or runtime.calcMode == runtime.CM_PEM or isGraphMode() or runtime.calcMode == runtime.CM_ASSIGN or runtime.calcMode == runtime.CM_TIMER or runtime.calcMode == runtime.CM_LISTXY) {
+                result = if (runtime.shiftF) key.fShifted else if (runtime.shiftG) key.gShifted else key.primary;
+                if (runtime.calcMode == runtime.CM_REGISTER_BROWSER) {
+                    if (runtime.shiftF and key.primaryAim >= runtime.ITM_A and key.primaryAim <= runtime.ITM_Z) {
+                        result = key.primaryAim;
+                    }
+                }
+            } else {
+                runtime.displayBugScreen("In function determineItem: item was not determined!");
+                result = 0;
+            }
+
+            if (runtime.Check_Norm_Key_00_Assigned(&result, key_no) == 0) {
+                runtime.Check_MultiPresses(&result, key_no);
+            }
+
+            if (result == runtime.ITM_PROD_SIGN) {
+                result = if (runtime.getSystemFlag(runtime.FLAG_MULTx)) runtime.ITM_CROSS else runtime.ITM_DOT;
+            }
+
+            if (result != runtime.ITM_SNAP) {
+                runtime.resetShiftState();
+            }
+
+            if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and (result == runtime.ITM_NOP or result == runtime.ITM_NULL)) {
+                result = runtime.ITM_LBL;
+            }
+
+            if (runtime.calcMode == runtime.CM_REGISTER_BROWSER) {
+                switch (key.primary) {
+                    ITM_0...ITM_9, runtime.ITM_RCL => {},
+                    else => {
+                        if (key.primaryAim >= runtime.ITM_A and key.primaryAim <= runtime.ITM_Z) {
+                            result = key.primaryAim;
+                        }
+                    },
+                }
+            }
+            return result;
+        }
+
         pub fn commonShiftProcessing(shiftkey: u16) void {
             // keyboard.c commonShiftProcessing (1437-1507). VERBOSEKEYS dropped.
             const sk: i16 = @intCast(shiftkey);
