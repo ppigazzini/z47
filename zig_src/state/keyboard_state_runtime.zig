@@ -1110,6 +1110,21 @@ pub fn radix34MarkNotDecItm() i16 {
     return if (radix34MarkChar() == '.') ITM_COMMA else ITM_PERIOD;
 }
 
+// fg_processing_jm / Check_Norm_Key_00_Assigned / Setup_MultiPresses deps
+// (keyboardTweak.c 266-341).
+pub const TMR_RUNNING: u8 = 2;
+pub const TMR_STOPPED: u8 = 1;
+pub const JM_TO_3S_CTFF: u32 = 600;
+pub const TO_CL_DROP: u8 = 6;
+pub const JM_CLRDROP_TIMER: u32 = 500;
+pub extern var JM_SHIFT_HOME_TIMER1: u8;
+pub extern var JM_auto_doublepress_autodrop_enabled: i16;
+pub extern fn fnTimerGetStatus(nr: u8) u8;
+// isR47FAM macro (defines.h:557).
+pub fn isR47FAM() bool {
+    return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
+}
+
 // commonShiftProcessing dependencies (keyboard.c 1437-1507).
 pub const JM_TO_FG_LONG: u32 = 580;
 pub const JM_SHIFT_TIMER: u32 = 4000;
