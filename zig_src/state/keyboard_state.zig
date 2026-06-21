@@ -1114,6 +1114,220 @@ pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
     runtime.fnTimerStop(runtime.TO_FN_LONG);
 }
 
+// keyboardTweak.c Check_MultiPresses (351-639): build the longpress key cycle
+// for the pressed key and arm the long-press timer (TAMALPHA_f branch taken).
+pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void {
+    var lp1: i16 = 0;
+    runtime.longpressDelayedkey2 = 0;
+    runtime.longpressDelayedkey3 = 0;
+
+    const usr = runtime.getSystemFlag(runtime.FLAG_USER);
+    const ki: usize = @intCast(key_no);
+    var tmpp_: i16 = if (usr) runtime.kbd_usr[ki].primary else runtime.kbdStdAt(ki).primary;
+    var tmpf: i16 = 0;
+    var tmpf_: i16 = if (usr) runtime.kbd_usr[ki].fShifted else runtime.kbdStdAt(ki).fShifted;
+    var tmpg: i16 = 0;
+    var tmpg_: i16 = if (usr) runtime.kbd_usr[ki].gShifted else runtime.kbdStdAt(ki).gShifted;
+
+    if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and runtime.tam.mode == 0) {
+        if (((key_no >= 0 and key_no < 15) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124)) or ((tmpp_ == runtime.ITM_DRG and tmpf_ == runtime.ITM_USERMODE)) or (tmpp_ == runtime.ITM_XEQ and tmpf_ == runtime.ITM_AIM)) {
+            if (!runtime.shiftF and !runtime.shiftG and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX) and key_no >= 0 and key_no <= 5)) {
+                lp1 = tmpf_;
+                tmpf = tmpf_;
+                if (runtime.LongPressM == runtime.RBX_M1234) {
+                    runtime.longpressDelayedkey3 = tmpg_;
+                    tmpg = tmpg_;
+                }
+            }
+        }
+    } else if ((runtime.calcMode == runtime.CM_AIM or runtime.calcMode == runtime.CM_EIM or (runtime.calcMode == runtime.CM_PEM and runtime.getSystemFlag(runtime.FLAG_ALPHA))) and runtime.tam.mode == 0) {
+        tmpp_ = if (usr) runtime.kbd_usr[ki].primaryAim else runtime.kbdStdAt(ki).primaryAim;
+        tmpg_ = if (usr) runtime.kbd_usr[ki].gShiftedAim else runtime.kbdStdAt(ki).gShiftedAim;
+        if ((key_no != 32 and tmpp_ != runtime.ITM_SHIFTf and tmpp_ != runtime.ITM_SHIFTg and tmpp_ != runtime.KEY_fg and tmpp_ != runtime.ITM_BACKSPACE) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124)) {
+            if (!runtime.shiftF and !runtime.shiftG) {
+                lp1 = tmpg_;
+                tmpg = tmpg_;
+            }
+        }
+    } else if (runtime.tam.alpha) {
+        tmpp_ = if (usr) runtime.kbd_usr[ki].primaryAim else runtime.kbdStdAt(ki).primaryAim;
+        tmpf_ = if (usr) runtime.kbd_usr[ki].fShiftedAim else runtime.kbdStdAt(ki).fShiftedAim;
+        if ((key_no != 32 and tmpp_ != runtime.ITM_SHIFTf and tmpp_ != runtime.ITM_SHIFTg and tmpp_ != runtime.KEY_fg and tmpp_ != runtime.ITM_BACKSPACE) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124) and !((key_no == 12 or key_no == 36) and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_STORCL or runtime.tam.mode == runtime.TM_CMP or runtime.tam.mode == runtime.TM_KEY or runtime.tam.mode == runtime.TM_LBLONLY or runtime.tam.mode == runtime.TM_SOLVE or runtime.tam.mode == runtime.TM_MENU or runtime.tam.mode == runtime.TM_INTEGRATE or runtime.tam.mode == runtime.TM_REGISTER))) {
+            if (!runtime.shiftF and !runtime.shiftG) {
+                lp1 = tmpf_;
+                tmpg = tmpf_;
+            }
+        }
+    }
+
+    const funcParam = runtime.getNthString(runtime.userKeyLabel, key_no);
+
+    if (runtime.calcMode == runtime.CM_NORMAL and result.* == runtime.ITM_RS) {
+        lp1 = runtime.ITM_NOP;
+    }
+    if (runtime.calcMode == runtime.CM_NORMAL and result.* == runtime.ITM_UP1) {
+        lp1 = runtime.ITM_NOP;
+    } else if (runtime.calcMode == runtime.CM_NORMAL and result.* == runtime.ITM_DOWN1) {
+        lp1 = runtime.ITM_NOP;
+    } else if (runtime.calcMode == runtime.CM_ASSIGN and result.* == runtime.ITM_EXIT1) {
+        lp1 = -runtime.MNU_MyMenu;
+        runtime.longpressDelayedkey2 = -runtime.MNU_HOME;
+        runtime.longpressDelayedkey3 = -runtime.MNU_PFN;
+    } else if (runtime.calcMode == runtime.CM_NORMAL and result.* >= runtime.ITM_A and result.* <= runtime.ITM_F and runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX)) {
+        const ri: usize = @intCast(result.* - runtime.ITM_A);
+        lp1 = if (usr) runtime.kbd_usr[ri].primary else runtime.kbdStdAt(ri).primary;
+        runtime.longpressDelayedkey2 = if (usr) runtime.kbd_usr[ri].fShifted else runtime.kbdStdAt(ri).fShifted;
+        runtime.longpressDelayedkey3 = if (usr) runtime.kbd_usr[ri].gShifted else runtime.kbdStdAt(ri).gShifted;
+    } else if (((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_XEQ) and runtime.tam.mode == 0 and funcParam[0] == 0 and (if (usr) runtime.kbd_usr[ki].primary == runtime.kbdStdAt(ki).primary else true)) {
+        if (runtime.getSystemFlag(runtime.FLAG_SH_LONGPRESS)) {
+            if (tmpp_ == runtime.ITM_XEQ and tmpf == runtime.ITM_AIM) {
+                if (runtime.LongPressM == runtime.RBX_M14) {
+                    lp1 = runtime.ITM_AIM;
+                    runtime.longpressDelayedkey2 = 0;
+                    runtime.longpressDelayedkey3 = 0;
+                } else if (runtime.LongPressM == runtime.RBX_M124) {
+                    lp1 = runtime.ITM_AIM;
+                    runtime.longpressDelayedkey2 = 0;
+                    runtime.longpressDelayedkey3 = 0;
+                } else if (runtime.LongPressM == runtime.RBX_M1234) {
+                    lp1 = runtime.ITM_AIM;
+                    runtime.longpressDelayedkey2 = 0;
+                    runtime.longpressDelayedkey3 = tmpg;
+                }
+            } else {
+                lp1 = tmpf_;
+                runtime.longpressDelayedkey2 = 0;
+                runtime.longpressDelayedkey3 = tmpg_;
+            }
+        }
+    } else if (runtime.calcMode == runtime.CM_NORMAL and result.* == runtime.ITM_BACKSPACE and runtime.tam.mode == 0) {
+        lp1 = runtime.ITM_CLSTK;
+        runtime.longpressDelayedkey2 = 0;
+        runtime.longpressDelayedkey3 = runtime.ITM_EDIT;
+    } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_EXIT1) {
+        lp1 = runtime.longpressExit1();
+        runtime.longpressDelayedkey2 = 0;
+        runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+    } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and result.* == runtime.ITM_DRG) {
+        lp1 = 0;
+        runtime.longpressDelayedkey2 = 0;
+        runtime.longpressDelayedkey3 = 0;
+        if (tmpp_ == runtime.ITM_DRG) {
+            if (runtime.LongPressM == runtime.RBX_M14) {
+                lp1 = if (tmpf == runtime.ITM_USERMODE and runtime.getSystemFlag(runtime.FLAG_SH_LONGPRESS)) runtime.ITM_USERMODE else 0;
+            } else if (runtime.LongPressM == runtime.RBX_M124) {
+                lp1 = runtime.ITM_USERMODE;
+            } else if (runtime.LongPressM == runtime.RBX_M1234) {
+                lp1 = runtime.ITM_USERMODE;
+                runtime.longpressDelayedkey3 = tmpg;
+            }
+        }
+    } else {
+        switch (runtime.calcMode) {
+            runtime.CM_NIM => {
+                if (result.* == runtime.ITM_BACKSPACE and runtime.tam.mode == 0) {
+                    lp1 = runtime.ITM_CLN;
+                }
+            },
+            runtime.CM_AIM => switch (result.*) {
+                runtime.ITM_BACKSPACE => {
+                    if (runtime.tam.mode == 0) {
+                        lp1 = runtime.ITM_CLA;
+                        runtime.longpressDelayedkey2 = 0;
+                        runtime.longpressDelayedkey3 = runtime.ITM_EDIT;
+                    }
+                },
+                runtime.ITM_EXIT1 => {
+                    lp1 = -runtime.MNU_MyAlpha;
+                    runtime.longpressDelayedkey2 = 0;
+                    runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+                },
+                runtime.ITM_ENTER => {
+                    if (runtime.tam.mode == 0) {
+                        lp1 = runtime.ITM_XEDIT;
+                        runtime.longpressDelayedkey2 = 0;
+                        runtime.longpressDelayedkey3 = runtime.ITM_CR;
+                    }
+                },
+                else => {},
+            },
+            runtime.CM_EIM => switch (result.*) {
+                runtime.ITM_BACKSPACE => {
+                    if (runtime.tam.mode == 0) {
+                        lp1 = runtime.ITM_CLA;
+                        runtime.longpressDelayedkey3 = runtime.ITM_EDIT;
+                    }
+                },
+                runtime.ITM_EXIT1 => {
+                    lp1 = -runtime.MNU_MyAlpha;
+                    runtime.longpressDelayedkey2 = 0;
+                    runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+                },
+                runtime.ITM_ENTER => {
+                    if (runtime.tam.mode == 0) {
+                        lp1 = runtime.ITM_XEDIT;
+                        runtime.longpressDelayedkey2 = 0;
+                        runtime.longpressDelayedkey3 = runtime.ITM_CR;
+                    }
+                },
+                else => {},
+            },
+            runtime.CM_PEM => switch (result.*) {
+                runtime.ITM_BACKSPACE => {
+                    lp1 = runtime.ITM_EDIT;
+                },
+                runtime.ITM_EXIT1 => {
+                    lp1 = -runtime.MNU_PFN;
+                    runtime.longpressDelayedkey2 = runtime.longpressExit1();
+                    runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+                },
+                else => {},
+            },
+            else => switch (result.*) {
+                runtime.ITM_EXIT1 => {
+                    if (runtime.calcModel == runtime.USER_C47) {
+                        lp1 = runtime.ITM_CLRMOD;
+                        runtime.longpressDelayedkey2 = 0;
+                        runtime.longpressDelayedkey3 = 0;
+                    } else {
+                        lp1 = runtime.ITM_SNAP;
+                        runtime.longpressDelayedkey2 = 0;
+                        runtime.longpressDelayedkey3 = runtime.ITM_CLRMOD;
+                    }
+                },
+                else => {},
+            },
+        }
+    }
+
+    if (runtime.calcMode == runtime.CM_NIM) {
+        const lp2 = runtime.longpressDelayedkey2;
+        const lp3 = runtime.longpressDelayedkey3;
+        if ((result.* == runtime.ITM_ms or lp1 == runtime.ITM_ms or lp2 == runtime.ITM_ms or lp3 == runtime.ITM_ms) or
+            (result.* == runtime.ITM_CC or lp1 == runtime.ITM_CC or lp2 == runtime.ITM_CC or lp3 == runtime.ITM_CC) or
+            (result.* == runtime.ITM_dotD or lp1 == runtime.ITM_dotD or lp2 == runtime.ITM_dotD or lp3 == runtime.ITM_dotD) or
+            (result.* == runtime.ITM_HASH_JM or lp1 == runtime.ITM_HASH_JM or lp2 == runtime.ITM_HASH_JM or lp3 == runtime.ITM_HASH_JM) or
+            (result.* == runtime.ITM_toINT or lp1 == runtime.ITM_toINT or lp2 == runtime.ITM_toINT or lp3 == runtime.ITM_toINT) or
+            (result.* == runtime.ITM_op_j or lp1 == runtime.ITM_op_j or lp2 == runtime.ITM_op_j or lp3 == runtime.ITM_op_j) or
+            (result.* == runtime.ITM_op_j_pol or lp1 == runtime.ITM_op_j_pol or lp2 == runtime.ITM_op_j_pol or lp3 == runtime.ITM_op_j_pol))
+        {
+            runtime.delayCloseNim = true;
+        }
+    }
+
+    if (lp1 != 0) {
+        runtime.JM_auto_longpress_enabled = lp1;
+        runtime.fnTimerStart(runtime.TO_CL_LONG, @intCast(runtime.TO_CL_LONG), runtime.JM_TO_CL_LONG);
+        if (runtime.JM_auto_doublepress_autodrop_enabled != 0) {
+            runtime.hideFunctionName();
+            runtime.showFunctionName(runtime.JM_auto_doublepress_autodrop_enabled, runtime.FUNCTION_NOPTIME, "SF:M");
+            result.* = runtime.JM_auto_doublepress_autodrop_enabled;
+            runtime.fnTimerStop(runtime.TO_CL_DROP);
+            runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+        }
+    }
+}
+
 // keyboardTweak.c showAlphaModeonGui: refresh the alpha-mode indicator/keyboard.
 pub export fn showAlphaModeonGui() callconv(.c) void {
     // The PC_BUILD jm_show_comment trace is a no-op (PC_BUILD_VERBOSE2 only).
