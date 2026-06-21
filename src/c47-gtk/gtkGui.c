@@ -2819,7 +2819,7 @@ static void print_label_bytes(const uint8_t* data, int length) {
   printf(")\n");
 }
 
-static bool is_valid_utf8(const char *s, size_t *error_offset);
+extern bool z47_is_valid_utf8(const char *s, size_t *error_offset); // Zig owner: gtk_gui_label_owned.zig
 
 
 bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
@@ -2839,7 +2839,7 @@ bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
     }
 
     size_t bad_pos = 0;
-    if (!is_valid_utf8((const char*)lbl, &bad_pos)) {
+    if (!z47_is_valid_utf8((const char*)lbl, &bad_pos)) {
         printf("GTK3 Setup utf issue: Invalid UTF-8 at position %zu in %s: ",
                bad_pos, context);
         print_label_bytes(lbl, len);
@@ -4585,86 +4585,12 @@ const deadKeysMap_t deadKeysMap[] = {
 
 
 
-static bool is_valid_utf8(const char *s, size_t *error_offset) {
-  const unsigned char *p = (const unsigned char *)s;
-  size_t i = 0;
-  while(*p) {
-    if(*p < 0x80) {
-      p++;
-      i++;
-    }
-    else if((*p & 0xE0) == 0xC0) {
-      if((p[1] & 0xC0) != 0x80 || (*p & 0xFE) == 0xC0) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      p += 2;
-      i += 2;
-    }
-    else if((*p & 0xF0) == 0xE0) {
-      if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      uint32_t cp = ((p[0] & 0x0F) << 12) | ((p[1] & 0x3F) << 6) | (p[2] & 0x3F);
-      if(cp < 0x800 || (cp >= 0xD800 && cp <= 0xDFFF)) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      if(cp == 0xFFFE || cp == 0xFFFF) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      p += 3;
-      i += 3;
-    }
-    else if((*p & 0xF8) == 0xF0) {
-      if((p[1] & 0xC0) != 0x80 || (p[2] & 0xC0) != 0x80 || (p[3] & 0xC0) != 0x80) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      uint32_t cp = ((p[0] & 0x07) << 18) | ((p[1] & 0x3F) << 12) | ((p[2] & 0x3F) << 6) | (p[3] & 0x3F);
-      if(cp < 0x10000 || cp > 0x10FFFF) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      if((cp & 0xFFFF) == 0xFFFE || (cp & 0xFFFF) == 0xFFFF) {
-        if(error_offset) {
-          *error_offset = i;
-        }
-        return false;
-      }
-      p += 4;
-      i += 4;
-    }
-    else {
-      if(error_offset) {
-        *error_offset = i;
-      }
-      return false;
-    }
-  }
-  return true;
-}
-
 static bool check_utf_string(const char *widget_name, const char *what, const char *s) {
   if(!s) {
     return false;
   }
   size_t bad_pos = 0;
-  if(!is_valid_utf8(s, &bad_pos)) {
+  if(!z47_is_valid_utf8(s, &bad_pos)) {
     printf("*** UTF-8 ERROR in %s %s at byte offset %zu ***\n", widget_name, what, bad_pos);
     printf("Corrupted string: ");
     for(const char *p = s; *p; p++) {
