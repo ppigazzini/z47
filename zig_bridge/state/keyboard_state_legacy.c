@@ -36,6 +36,8 @@
 #define btnClickedR z47_keyboard_state_btnClickedR
 #define btnFnClickedP z47_keyboard_state_btnFnClickedP
 #define btnFnClickedR z47_keyboard_state_btnFnClickedR
+#define frmCalcMouseButtonPressed z47_keyboard_state_frmCalcMouseButtonPressed
+#define frmCalcMouseButtonReleased z47_keyboard_state_frmCalcMouseButtonReleased
 #define fnKeyEnter z47_keyboard_state_fnKeyEnter
 #define fnKeyExit z47_keyboard_state_fnKeyExit
 #define fnKeyCC z47_keyboard_state_fnKeyCC
@@ -70,12 +72,6 @@ bool_t z47_keyboard_state_assignToMenu(uint8_t *data) {
   return _assignToMenu(data);
 }
 
-// key[3] is a PC_BUILD file-static (mouse-coordinate dispatch); expose its base
-// so the Zig btnReleased owner can clear key[0].
-#if defined(PC_BUILD)
-uint8_t *z47_keyboard_state_key_static(void) { return (uint8_t *)key; }
-#endif
-
 // menuUp / menuDown are static in keyboard.c too (used by the Zig fnKeyUp/Down).
 void z47_keyboard_state_menuUp(void)   { menuUp(); }
 void z47_keyboard_state_menuDown(void) { menuDown(); }
@@ -105,6 +101,8 @@ void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 #undef caseReplacements
 #undef setLastKeyCode
 #if defined(PC_BUILD)
+#undef frmCalcMouseButtonReleased
+#undef frmCalcMouseButtonPressed
 #undef btnFnClickedR
 #undef btnFnClickedP
 #undef btnClickedR

@@ -61,15 +61,84 @@ fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDotD(unused_but_mandatory_parameter);
 }
 
-// Minimal GdkEventButton view: only `type` (offset 0) and `button` (offset 52)
-// are read; the layout matches the GTK ABI on the host lane.
+// Minimal GdkEventButton view matching the GTK ABI offsets on the host lane:
+// type@0, x@24, y@32, button@52.
 const GdkEventButton = extern struct {
     type: c_int,
-    _reserved: [48]u8,
+    _pad0: [20]u8,
+    x: f64,
+    y: f64,
+    _pad1: [12]u8,
     button: c_uint,
 };
 const GDK_DOUBLE_BUTTON_PRESS: c_int = 5;
 const GDK_TRIPLE_BUTTON_PRESS: c_int = 6;
+
+// keyboard.c `key[3]` (the mouse-coordinate dispatch state), now Zig-owned.
+var mouse_key: [3]u8 = .{ 0, 0, 0 };
+
+// keyboard.c convertXYToKey (1949-1978): map a click coordinate to a key string.
+fn convertXYToKey(x: c_int, y: c_int) void {
+    mouse_key[0] = 0;
+    mouse_key[1] = 0;
+    mouse_key[2] = 0;
+    var i: usize = 0;
+    while (i < 43) : (i += 1) {
+        const xMin = runtime.calcKeyboard[i].x;
+        const yMin = runtime.calcKeyboard[i].y;
+        var xMax: c_int = undefined;
+        var yMax: c_int = undefined;
+        if (i == 10 and runtime.currentBezel == 2 and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or (runtime.tam.mode == runtime.TM_SOLVE and (runtime.tam.function != runtime.ITM_SOLVE or runtime.calcMode != runtime.CM_PEM)) or (runtime.tam.mode == runtime.TM_KEY and runtime.tam.keyInputFinished))) {
+            xMax = xMin + runtime.calcKeyboard[10].width[3];
+            yMax = yMin + runtime.calcKeyboard[10].height[3];
+        } else {
+            xMax = xMin + runtime.calcKeyboard[i].width[@intCast(runtime.currentBezel)];
+            yMax = yMin + runtime.calcKeyboard[i].height[@intCast(runtime.currentBezel)];
+        }
+        if (xMin <= x and x <= xMax and yMin <= y and y <= yMax) {
+            if (i < 6) {
+                mouse_key[0] = @intCast(@as(usize, '1') + i);
+            } else {
+                mouse_key[0] = @intCast(@as(usize, '0') + (i - 6) / 10);
+                mouse_key[1] = @intCast(@as(usize, '0') + (i - 6) % 10);
+            }
+            break;
+        }
+    }
+}
+
+// keyboard.c frmCalcMouseButtonPressed (1980-1994).
+fn frmCalcMouseButtonPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    _ = data;
+    if (mouse_key[0] == 0) {
+        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        convertXYToKey(@intFromFloat(ev.x), @intFromFloat(ev.y));
+        if (mouse_key[0] == 0) {
+            return;
+        }
+        if (mouse_key[1] == 0) {
+            btnFnPressedHost(null, event, &mouse_key);
+        } else {
+            btnPressedHost(null, event, &mouse_key);
+        }
+    }
+}
+
+// keyboard.c frmCalcMouseButtonReleased (1996-2009).
+fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    _ = data;
+    if (mouse_key[0] == 0) {
+        return;
+    }
+    if (mouse_key[1] == 0) {
+        btnFnReleasedHost(null, event, &mouse_key);
+    } else {
+        btnReleasedHost(null, event, &mouse_key);
+    }
+    mouse_key[0] = 0;
+}
 
 // Full keyboard.c btnPressed (1778-1943) for the host lane. The C program-stop
 // path clears the status-bar flags with a buggy `&= !(mask)` (logical not);
@@ -451,7 +520,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                 runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
             } else {
                 if (item == runtime.ITM_RS or item == runtime.ITM_XEQ) {
-                    runtime.z47_keyboard_state_key_static()[0] = 0;
+                    mouse_key[0] = 0;
                 }
 
                 if (item != runtime.ITM_NOP and runtime.tam.alpha and !runtime.itemFuncIsAddItemToBuffer(item) and runtime.aimBuffer[0] == 0) {
@@ -617,6 +686,8 @@ comptime {
         @export(&btnClickedRHost, .{ .name = "btnClickedR" });
         @export(&btnFnClickedPHost, .{ .name = "btnFnClickedP" });
         @export(&btnFnClickedRHost, .{ .name = "btnFnClickedR" });
+        @export(&frmCalcMouseButtonPressedHost, .{ .name = "frmCalcMouseButtonPressed" });
+        @export(&frmCalcMouseButtonReleasedHost, .{ .name = "frmCalcMouseButtonReleased" });
         @export(&btnClickedHost, .{ .name = "btnClicked" });
     } else {
         @export(&btnPressedDmcp, .{ .name = "btnPressed" });
