@@ -54,6 +54,64 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
+const USER_C47: u8 = 46;
+const USER_DM42: u8 = 45;
+const ITM_op_j: i16 = 1830;
+const ITM_op_j_pol: i16 = 1795;
+const ITM_EE_EXP_TH: i16 = 1816;
+const ITM_AIM: i16 = 1740;
+const ITM_0: i16 = 540;
+const ITM_9: i16 = 549;
+const ITM_PERIOD: i16 = 820;
+const ITM_XEQ: i16 = 3;
+const ITM_RCL: i16 = 51;
+const ITM_SIGMAPLUS: i16 = 433;
+const MNU_DYNAMIC: i16 = 1394;
+const MNU_HOME: i16 = 1921;
+const MNU_MyMenu: i16 = 1349;
+const FLAG_CPXj: i32 = 32773;
+const FLAG_USER: i32 = 32788;
+const CM_NORMAL: u8 = 0;
+const CM_NIM: u8 = 2;
+const CM_PEM: u8 = 3;
+const CM_TIMER: u8 = 14;
+
+const STD_HAMBURGER: [*:0]const u8 = "\xa1\xcc";
+const STD_SST: [*:0]const u8 = "\xa1\xcb";
+const STD_BST: [*:0]const u8 = "\xa1\xc9";
+const STD_DOWN_BLOCKARROW: [*:0]const u8 = "\xab\x63";
+const STD_UP_BLOCKARROW: [*:0]const u8 = "\xab\x61";
+
+const normKey_t = extern struct {
+    func: i16,
+    funcParam: [16]u8,
+    used: bool,
+};
+
+extern var calcMode: u8;
+extern var Norm_Key_00: normKey_t;
+extern var userKeyLabel: [*c]u8;
+extern var userKeyLabelSize: u16;
+
+extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
+
+// Norm_Key_00_keyID / Norm_Key_00_item_in_layout (defines.h), model-dependent.
+fn normKey00KeyID() i16 {
+    return switch (calcModel) {
+        USER_C47, USER_DM42 => 21,
+        USER_R47bk_fg => 35,
+        USER_R47fg_bk => 36,
+        else => -1,
+    };
+}
+fn normKey00ItemInLayout() i16 {
+    return switch (calcModel) {
+        USER_C47, USER_DM42 => ITM_SIGMAPLUS,
+        USER_R47bk_fg, USER_R47fg_bk => ITM_NULL,
+        else => -1,
+    };
+}
 
 const tamState_t = extern struct {
     mode: u16,
@@ -100,6 +158,10 @@ fn softmenuName(idx: i16) [*c]const u8 {
     return &indexOfItems[@intCast(idx)].itemSoftmenuName;
 }
 
+fn strEq(a: [*c]const u8, b: [*c]const u8) bool {
+    return strcmp(a, b) == 0;
+}
+
 // gtkGui.c's "space -> middle-dot" label patch (lbl was a lone 0x20).
 fn patchSpaceLabel(lbl: *[22]u8) void {
     if (lbl[0] == 32 and lbl[1] == 0) {
@@ -110,6 +172,205 @@ fn patchSpaceLabel(lbl: *[22]u8) void {
         lbl[4] = 0xb7;
         lbl[5] = 0;
     }
+}
+
+/// gtkGui.c labelCaptionNormal: renders a key's primary button caption plus the
+/// f-shift / g-shift / letter label faces in NORMAL mode, including the
+/// Sigma+/Norm-key override, user-key-label substitution, R47FAM longpress
+/// colouring, and the CSS key-name assignment.
+pub fn labelCaptionNormal(key: *const calcKey_t, button: ?*anyopaque, lbl_f: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) void {
+    var lbl: [22]u8 = undefined;
+
+    var key_logical_id: i16 = undefined;
+    if (key.keyId < 30) {
+        key_logical_id = key.keyId - 21;
+    } else if (key.keyId < 40) {
+        key_logical_id = key.keyId - 25;
+    } else if (key.keyId < 50) {
+        key_logical_id = key.keyId - 29;
+    } else if (key.keyId < 60) {
+        key_logical_id = key.keyId - 34;
+    } else if (key.keyId < 70) {
+        key_logical_id = key.keyId - 39;
+    } else if (key.keyId < 80) {
+        key_logical_id = key.keyId - 44;
+    } else {
+        key_logical_id = key.keyId - 49;
+    }
+
+    var r47_longpress = false;
+    var sstmp: [16]u8 = undefined;
+
+    if (key.primary == 0) {
+        lbl[0] = 0;
+    } else {
+        _ = strcpy(&sstmp, softmenuName(absItem(key.primary)));
+        if ((key.primary == ITM_op_j or key.primary == ITM_op_j_pol) and getSystemFlag(FLAG_CPXj)) {
+            sstmp[1] +%= 1;
+        }
+        if (key.primary == ITM_EE_EXP_TH and getSystemFlag(FLAG_CPXj)) {
+            sstmp[3] +%= 1;
+        }
+        stringToUtf8(&sstmp, &lbl);
+        if (userKeyLabelSize > 0 and (strEq(&lbl, "DYNMNU") or strEq(&lbl, "XEQ") or strEq(&lbl, "RCL"))) {
+            const s = getNthString(userKeyLabel, key_logical_id * 6);
+            if (s[0] != 0) {
+                stringToUtf8(s, &lbl);
+            }
+        }
+    }
+
+    const norm_key_00_used = (calcMode == CM_NORMAL or calcMode == CM_NIM or calcMode == CM_PEM or calcMode == CM_TIMER) and
+        key.keyId == normKey00KeyID() and
+        Norm_Key_00.func != normKey00ItemInLayout() and
+        !getSystemFlag(FLAG_USER);
+
+    if (norm_key_00_used) {
+        if (Norm_Key_00.funcParam[0] != 0 and (Norm_Key_00.func == -MNU_DYNAMIC or Norm_Key_00.func == ITM_XEQ or Norm_Key_00.func == ITM_RCL)) {
+            _ = strcpy(&sstmp, &Norm_Key_00.funcParam);
+        } else {
+            _ = strcpy(&sstmp, softmenuName(absItem(Norm_Key_00.func)));
+            if ((Norm_Key_00.func == ITM_op_j or Norm_Key_00.func == ITM_op_j_pol) and getSystemFlag(FLAG_CPXj)) {
+                sstmp[1] +%= 1;
+            }
+            if (Norm_Key_00.func == ITM_EE_EXP_TH and getSystemFlag(FLAG_CPXj)) {
+                sstmp[3] +%= 1;
+            }
+        }
+        stringToUtf8(&sstmp, &lbl);
+    }
+
+    gtk_button_set_label(button, &lbl);
+
+    if ((key.primary == ITM_AIM and getSystemFlag(FLAG_USER) and calcMode == CM_NORMAL and key.keyId == normKey00KeyID()) or
+        (key.primary == normKey00ItemInLayout() and calcMode == CM_NORMAL and Norm_Key_00.func == ITM_AIM and key.keyId == normKey00KeyID()))
+    {
+        gtk_widget_set_name(button, "AlphaKey");
+    } else if (key.primary == ITM_SHIFTf or (key.primary == normKey00ItemInLayout() and Norm_Key_00.func == ITM_SHIFTf and key.keyId == normKey00KeyID())) {
+        gtk_widget_set_name(button, "calcKeyF");
+    } else if (key.primary == ITM_SHIFTg or (key.primary == normKey00ItemInLayout() and Norm_Key_00.func == ITM_SHIFTg and key.keyId == normKey00KeyID())) {
+        gtk_widget_set_name(button, "calcKeyG");
+    } else if (key.primary == KEY_fg or (key.primary == normKey00ItemInLayout() and Norm_Key_00.func == KEY_fg and key.keyId == normKey00KeyID())) {
+        gtk_widget_set_name(button, "calcKeyFG");
+    } else if ((key.primary >= ITM_0 and key.primary <= ITM_9) or key.primary == ITM_PERIOD) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strEq(&lbl, "÷") and key.keyId == 55) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strEq(&lbl, "×") and key.keyId == 65) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strEq(&lbl, "-") and key.keyId == 75) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strEq(&lbl, "+") and key.keyId == 85) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else {
+        gtk_widget_set_name(button, "calcKey");
+    }
+
+    if (key.fShifted == 0) {
+        sstmp[0] = 0;
+    } else {
+        _ = strcpy(&sstmp, softmenuName(absItem(key.fShifted)));
+    }
+    if ((key.fShifted == ITM_op_j or key.fShifted == ITM_op_j_pol) and getSystemFlag(FLAG_CPXj)) {
+        sstmp[1] +%= 1;
+    }
+    if (key.fShifted == ITM_EE_EXP_TH and getSystemFlag(FLAG_CPXj)) {
+        sstmp[3] +%= 1;
+    }
+    stringToUtf8(&sstmp, &lbl);
+    if (userKeyLabelSize > 0 and (strEq(&lbl, "DYNMNU") or strEq(&lbl, "XEQ") or strEq(&lbl, "RCL"))) {
+        const s = getNthString(userKeyLabel, key_logical_id * 6 + 1);
+        if (s[0] != 0) {
+            stringToUtf8(s, &lbl);
+        }
+    }
+    if (strEq(&lbl, "SST")) {
+        var tt: [20]u8 = undefined;
+        _ = strcpy(&tt, STD_HAMBURGER);
+        _ = strcat(&tt, if (isR47FAM()) STD_DOWN_BLOCKARROW else STD_SST);
+        stringToUtf8(&tt, &lbl);
+    } else if (strEq(&lbl, "BST")) {
+        var tt: [20]u8 = undefined;
+        _ = strcpy(&tt, STD_HAMBURGER);
+        _ = strcat(&tt, if (isR47FAM()) STD_UP_BLOCKARROW else STD_BST);
+        stringToUtf8(&tt, &lbl);
+    }
+    if (key.primary == ITM_SHIFTg and key.keyId == 71) {
+        _ = strcpy(&lbl, "      ");
+    }
+    gtk_label_set_label(lbl_f, &lbl);
+    if (r47_longpress) {
+        gtk_widget_set_name(lbl_f, "letter");
+    } else if (key.fShifted < 0) {
+        gtk_widget_set_name(lbl_f, "fShiftedUnderline");
+    } else {
+        gtk_widget_set_name(lbl_f, "fShifted");
+    }
+
+    if (isR47FAM() and key.primary == ITM_SHIFTf) {
+        _ = strcpy(&sstmp, softmenuName(if (key.gShifted == ITM_NULL) MNU_HOME else absItem(key.gShifted)));
+        r47_longpress = true;
+    } else if (isR47FAM() and key.primary == ITM_SHIFTg) {
+        _ = strcpy(&sstmp, softmenuName(if (key.gShifted == ITM_NULL) MNU_MyMenu else absItem(key.gShifted)));
+        r47_longpress = true;
+    } else if (isR47FAM() and key.primary == KEY_fg) {
+        if (getSystemFlag(FLAG_HOME_TRIPLE) or getSystemFlag(FLAG_MYM_TRIPLE)) {
+            if (key.gShifted == ITM_NULL) {
+                if (getSystemFlag(FLAG_HOME_TRIPLE)) {
+                    _ = strcpy(&sstmp, softmenuName(MNU_HOME));
+                } else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+                    _ = strcpy(&sstmp, softmenuName(MNU_MyMenu));
+                }
+            } else {
+                _ = strcpy(&sstmp, softmenuName(absItem(key.gShifted)));
+            }
+        } else {
+            sstmp[0] = 0;
+        }
+        r47_longpress = true;
+    } else if (key.gShifted == 0) {
+        lbl[0] = 0;
+    } else {
+        _ = strcpy(&sstmp, softmenuName(absItem(key.gShifted)));
+    }
+    if ((key.gShifted == ITM_op_j or key.gShifted == ITM_op_j_pol) and getSystemFlag(FLAG_CPXj)) {
+        sstmp[1] +%= 1;
+    }
+    if (key.gShifted == ITM_EE_EXP_TH and getSystemFlag(FLAG_CPXj)) {
+        sstmp[3] +%= 1;
+    }
+    stringToUtf8(&sstmp, &lbl);
+    if (userKeyLabelSize > 0 and (strEq(&lbl, "DYNMNU") or strEq(&lbl, "XEQ") or strEq(&lbl, "RCL"))) {
+        const s = getNthString(userKeyLabel, key_logical_id * 6 + 2);
+        if (s[0] != 0) {
+            stringToUtf8(s, &lbl);
+        }
+    }
+    if (strEq(&lbl, "MODE#") and key.keyId == 22) {
+        _ = strcpy(&lbl, "#");
+    } else if (strEq(&lbl, "LINPOL")) {
+        _ = strcpy(&lbl, "LIN");
+    }
+    gtk_label_set_label(lbl_g, &lbl);
+    if (r47_longpress) {
+        gtk_widget_set_name(lbl_g, "letter");
+    } else if (key.gShifted < 0) {
+        gtk_widget_set_name(lbl_g, "gShiftedUnderline");
+    } else {
+        gtk_widget_set_name(lbl_g, "gShifted");
+    }
+
+    stringToUtf8(softmenuName(key.primaryAim), &lbl);
+    if (key.primaryAim == 0) {
+        lbl[0] = 0;
+    }
+    patchSpaceLabel(&lbl);
+
+    if (debugLabelConsistency(&lbl, "Normal", key, button, true)) {
+        return;
+    }
+    gtk_label_set_label(lbl_l, &lbl);
+    gtk_widget_set_name(lbl_l, "letter");
 }
 
 /// gtkGui.c labelCaptionAimFa: f-shift face caption in AIM mode.

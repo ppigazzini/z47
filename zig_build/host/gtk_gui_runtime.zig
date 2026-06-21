@@ -88,6 +88,10 @@ pub export fn z47_labelCaptionAimFa(key: *const label_owned.calcKey_t, lbl_f: ?*
     label_owned.labelCaptionAimFa(key, lbl_f);
 }
 
+pub export fn z47_labelCaptionNormal(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_f: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
+    label_owned.labelCaptionNormal(key, button, lbl_f, lbl_g, lbl_l);
+}
+
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
     label_owned.labelCaptionAim(key, button, lbl_g, lbl_l);
 }
