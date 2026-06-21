@@ -548,8 +548,42 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
     runtime.fnTimerStop(runtime.TO_CL_LONG);
 }
 
+// btnClicked / btnClickedP/R / btnFnClickedP/R synthesize a left-click GdkEvent
+// (type 0, button 1) and drive the now-Zig press/release handlers.  Host-only;
+// DMCP keeps the C btnClicked via btnClickedDmcp.
 fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    runtime.btnClickedHostOverlay(not_used, data);
+    var ev: GdkEventButton = undefined;
+    ev.button = 1;
+    ev.type = 0;
+    btnPressedHost(not_used, &ev, data);
+    btnReleasedHost(not_used, &ev, data);
+}
+
+fn btnClickedPHost(w: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    var ev: GdkEventButton = undefined;
+    ev.button = 1;
+    ev.type = 0;
+    btnPressedHost(w, &ev, data);
+}
+
+fn btnClickedRHost(w: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    var ev: GdkEventButton = undefined;
+    ev.button = 1; // btnReleased ignores event.type, so it is left undefined as in C
+    btnReleasedHost(w, &ev, data);
+}
+
+fn btnFnClickedPHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    var ev: GdkEventButton = undefined;
+    ev.button = 1;
+    ev.type = 0;
+    btnFnPressedHost(not_used, &ev, data);
+}
+
+fn btnFnClickedRHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    var ev: GdkEventButton = undefined;
+    ev.button = 1;
+    ev.type = 0;
+    btnFnReleasedHost(not_used, &ev, data);
 }
 
 fn btnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
@@ -579,6 +613,10 @@ comptime {
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
         @export(&btnReleasedHost, .{ .name = "btnReleased" });
         @export(&btnFnReleasedHost, .{ .name = "btnFnReleased" });
+        @export(&btnClickedPHost, .{ .name = "btnClickedP" });
+        @export(&btnClickedRHost, .{ .name = "btnClickedR" });
+        @export(&btnFnClickedPHost, .{ .name = "btnFnClickedP" });
+        @export(&btnFnClickedRHost, .{ .name = "btnFnClickedR" });
         @export(&btnClickedHost, .{ .name = "btnClicked" });
     } else {
         @export(&btnPressedDmcp, .{ .name = "btnPressed" });
