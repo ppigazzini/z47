@@ -18,13 +18,12 @@ extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
-extern fn calcModeAimGui() void;
 extern fn calcModeNormalGui() void;
 extern fn gtk_events_pending() c_int;
 extern fn gtk_main_iteration() c_int;
 
 fn settleUiModePass() void {
-    calcModeAimGui();
+    display_owned.calcModeAimGui();
     while (gtk_events_pending() != 0) {
         _ = gtk_main_iteration();
     }
@@ -99,6 +98,10 @@ pub export fn calcModeTamGui() callconv(.c) void {
 
 pub export fn hideAllWidgets() callconv(.c) void {
     display_owned.hideAllWidgets();
+}
+
+pub export fn calcModeAimGui() callconv(.c) void {
+    display_owned.calcModeAimGui();
 }
 
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
