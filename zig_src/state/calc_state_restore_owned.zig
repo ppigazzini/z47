@@ -1,0 +1,888 @@
+// RESTORE-side parser of the calculator state file (c47.sav text format).
+//
+// Faithful Zig port of saveRestoreCalcState.c restoreOneSection() (lines
+// ~2360-3204): reads one section from the open save file and applies it
+// according to loadMode, returning true to continue (more sections) or false
+// when the terminal OTHER_CONFIGURATION_STUFF section has been consumed. The
+// host Zig io_flow path (calc_state_io_flow_owned.doLoad) already owns the
+// open/header/policy/close orchestration and drives this in a loop.
+//
+// The Zig owner owns the section dispatch, the per-field control flow, and the
+// loadMode gating; the file-static leaf primitives (toInt16/toUint*/next_word/
+// skip_*/toInt16_next_word/strcmp2 and restoreRegister/restoreMatrixData/
+// skipMatrixData) plus a few macro / static-inline reads are reached through
+// z47_css_* trampolines in calc_state_legacy.c. loadedVersion/savedCalcModel
+// come from the Zig header parse (compat shim); the C static loadedVersion is
+// kept in sync so the trampolined restorers see the same value.
+//
+// Verified by the save/load round-trip parity harness
+// (`zig build saveload_parity`): restore reconstructs state such that re-saving
+// is byte-identical to the original save.
+
+const std = @import("std");
+const runtime = @import("calc_state_runtime.zig");
+
+// --- Resolved constants (probed from the real headers) ---
+const FIRST_LOCAL_REGISTER: i16 = 7000;
+const FIRST_NAMED_VARIABLE: i16 = 256;
+const REGISTER_X: i16 = 100;
+const INVALID_VARIABLE: i16 = 2199;
+const C47_NULL: u16 = 65535;
+const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+const RAM_SIZE_IN_BLOCKS_NEW_HW: u32 = 65534;
+const RAM_SIZE_IN_BLOCKS_OLD_HW: u32 = 16384;
+const TMP_STR_LENGTH: usize = 2560;
+const MAX_DENMAX: u32 = 9999;
+
+const LM_ALL: u16 = 0;
+const LM_PROGRAMS: u16 = 1;
+const LM_REGISTERS: u16 = 2;
+const LM_NAMED_VARIABLES: u16 = 3;
+const LM_SUMS: u16 = 4;
+const LM_SYSTEM_STATE: u16 = 5;
+const LM_REGISTERS_PARTIAL: u16 = 6;
+const ERROR_NONE: u8 = 0;
+
+const USER_R47: u16 = 66;
+const USER_C47: u16 = 46;
+const USER_DM42: u16 = 45;
+const USER_R47f_g: u16 = 61;
+const USER_R47fg_g: u16 = 64;
+const USER_R47fg_bk: u16 = 63;
+const USER_R47bk_fg: u16 = 62;
+
+const ITM_END: i32 = 1458;
+const MNU_HOME: i16 = 1921;
+const MNU_MyMenu: i16 = 1349;
+const CMP_NAME: i32 = 3;
+const CFG_DFLT: u16 = 0;
+
+const RBX_FGLNOFF: u8 = 227;
+const RBX_FGLNLIM: u8 = 229;
+const RBX_FGLNFUL: u8 = 228;
+const RBX_M14: u8 = 224;
+const RBX_F14: u8 = 221;
+const BCDu: u8 = 218;
+
+const FLAG_MONIT: c_uint = 32832;
+const FLAG_FRACT: c_uint = 32775;
+const FLAG_IRFRAC: c_uint = 32839;
+const FLAG_IRFRQ: c_uint = 49224;
+const FLAG_FGLNLIM: c_uint = 32866;
+const FLAG_FGLNFUL: c_uint = 32867;
+const FLAG_HOME_TRIPLE: c_uint = 32864;
+const FLAG_MYM_TRIPLE: c_uint = 32863;
+const FLAG_SHFT_4s: c_uint = 32865;
+const FLAG_BASE_HOME: c_uint = 32862;
+const FLAG_BASE_MYM: c_uint = 32860;
+const FLAG_G_DOUBLETAP: c_uint = 32861;
+const FLAG_BCD: c_uint = 32857;
+const FLAG_TOPHEX: c_uint = 32856;
+const FLAG_LARGELI: c_uint = 32838;
+const FLAG_ERPN: c_uint = 32837;
+const FLAG_CPXMULT: c_uint = 32836;
+const FLAG_PFX_ALL: c_uint = 32841;
+
+fn TO_BYTES(n: anytype) u32 {
+    return @as(u32, @intCast(n)) << 2;
+}
+fn TO_BLOCKS(n: anytype) u32 {
+    return (@as(u32, @intCast(n)) + 3) >> 2;
+}
+
+// --- Struct models (asserted against the C ABI) ---
+const calcKey_t = extern struct {
+    keyId: i16,
+    primary: i16,
+    fShifted: i16,
+    gShifted: i16,
+    keyLblAim: i16,
+    primaryAim: i16,
+    fShiftedAim: i16,
+    gShiftedAim: i16,
+    primaryTam: i16,
+};
+const userMenuItem_t = extern struct {
+    item: i16,
+    unused: i16,
+    argumentName: [16]u8,
+};
+const userMenu_t = extern struct {
+    menuName: [16]u8,
+    menuItem: [18]userMenuItem_t,
+};
+const normKey_t = extern struct {
+    func: i16,
+    funcParam: [16]u8,
+    used: u8,
+};
+const formulaHeader_t = extern struct {
+    pointerToFormulaData: u16,
+    sizeInBlocks: u8,
+    unused: u8,
+};
+const programList_t = extern struct {
+    step: i32,
+    instructionPointer: [*c]u8,
+};
+const pcg32_random_t = extern struct {
+    state: u64,
+    inc: u64,
+};
+
+comptime {
+    std.debug.assert(@sizeOf(calcKey_t) == 18);
+    std.debug.assert(@sizeOf(userMenuItem_t) == 20);
+    std.debug.assert(@sizeOf(userMenu_t) == 376);
+    std.debug.assert(@sizeOf(normKey_t) == 20);
+    std.debug.assert(@sizeOf(formulaHeader_t) == 4);
+    std.debug.assert(@sizeOf(pcg32_random_t) == 16);
+}
+
+// --- libc / core helpers ---
+extern fn strlen(s: [*c]const u8) usize;
+extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn memset(dst: ?*anyopaque, val: c_int, n: usize) ?*anyopaque;
+extern fn readLine(line: [*c]u8) void;
+extern fn read2Lines(line1: [*c]u8, line2: [*c]u8) void;
+extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
+extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
+extern fn allocateLocalRegisters(num: u16) void;
+extern fn initStatisticalSums() void;
+extern fn reLoadStatisticalSums() void;
+extern fn stringToUint64(str: [*c]const u8) u64;
+extern fn stringToFloat(str: [*c]const u8) f32;
+extern fn freeC47Blocks(p: ?*anyopaque, size_in_blocks: usize) void;
+extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+extern fn setUserKeyArgument(position: u16, name: [*c]const u8) void;
+extern fn compareString(a: [*c]const u8, b: [*c]const u8, cmp: i32) i32;
+extern fn createMenu(name: [*c]const u8) void;
+extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
+extern fn scanLabelsAndPrograms() void;
+extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
+extern fn deleteEquation(equation_id: u16) void;
+extern fn setEquation(equation_id: u16, str: [*c]const u8) void;
+extern fn convert001090400T001090500(parameter: u8, offset: u8) u8;
+extern fn configCommon(idx: u16) void;
+extern fn resetOtherConfigurationStuff(allow_user_keys: bool) void;
+extern fn defaultStatusBar() void;
+extern fn setSystemFlag(sf: c_uint) void;
+extern fn getSystemFlag(sf: i32) bool;
+extern fn clearSystemFlag(sf: c_uint) void;
+extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
+extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
+extern fn setLineDelay(delay: u16) void;
+
+// --- load-parsing trampolines (calc_state_legacy.c) ---
+extern fn z47_css_toInt16(s: [*c]const u8) i16;
+extern fn z47_css_toUint8(s: [*c]const u8) u8;
+extern fn z47_css_toUint16(s: [*c]const u8) u16;
+extern fn z47_css_toUint32(s: [*c]const u8) u32;
+extern fn z47_css_next_word(s: [*c]u8) [*c]u8;
+extern fn z47_css_skip_space(s: [*c]u8) [*c]u8;
+extern fn z47_css_skip_to_space_newline(s: [*c]u8) [*c]u8;
+extern fn z47_css_toInt16_next_word(s: [*c]u8, val: *i16) [*c]u8;
+extern fn z47_css_strcmp2(a: [*c]u8, b: [*c]u8) u16;
+extern fn z47_css_restoreRegister(regist: i16, type_str: [*c]u8, value: [*c]u8) void;
+extern fn z47_css_restoreMatrixData(regist: i16) void;
+extern fn z47_css_skipMatrixData(type_str: [*c]u8, value: [*c]u8) void;
+extern fn z47_css_updateConstantsInEquations() void;
+extern fn z47_css_loadStatSum(str: [*c]const u8, i: u16) void;
+extern fn z47_css_isAtEndOfProgram(step: [*c]const u8) bool;
+extern fn z47_css_normKey00Key() i16;
+extern fn z47_css_kbdStdPrimary(idx: i16) i16;
+extern fn z47_css_set_loaded_version(v: u32) void;
+
+// --- core state globals ---
+extern var tmpString: [*c]u8;
+extern var aimBuffer: [*c]u8;
+extern var errorMessage: [*c]u8;
+extern var globalFlags: [8]u16;
+extern var lastErrorCode: u8;
+extern var statisticalSumsPointer: ?*anyopaque;
+extern var systemFlags0: u64;
+extern var systemFlags1: u64;
+extern var kbd_usr: [37]calcKey_t;
+extern var Norm_Key_00: normKey_t;
+extern var userKeyLabel: [*c]u8;
+extern var userKeyLabelSize: u16;
+extern var userMenuItems: [18]userMenuItem_t;
+extern var userAlphaItems: [18]userMenuItem_t;
+extern var numberOfUserMenus: u16;
+extern var userMenus: [*c]userMenu_t;
+extern var beginOfProgramMemory: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
+extern var freeProgramBytes: u16;
+extern var currentStep: [*c]u8;
+extern var firstDisplayedStep: [*c]u8;
+extern var beginOfCurrentProgram: [*c]u8;
+extern var endOfCurrentProgram: [*c]u8;
+extern var currentProgramNumber: u16;
+extern var programList: [*c]programList_t;
+extern var numberOfFormulae: u16;
+extern var currentFormula: u16;
+extern var allFormulae: [*c]formulaHeader_t;
+extern var currentLocalFlags: ?*u32;
+extern var ram: [*c]u32;
+extern var pcg32_global: pcg32_random_t;
+extern var calcModel: u8;
+extern var hourGlassIconEnabled: bool;
+extern var cancelFilename: bool;
+
+// --- OTHER_CONFIGURATION_STUFF scalars ---
+extern var firstGregorianDay: u32;
+extern var denMax: u32;
+extern var lastDenominator: u32;
+extern var displayFormat: u8;
+extern var displayFormatDigits: u8;
+extern var timeDisplayFormatDigits: u8;
+extern var shortIntegerWordSize: u8;
+extern var shortIntegerMode: u8;
+extern var significantDigits: u8;
+extern var fractionDigits: u8;
+extern var currentAngularMode: c_int;
+extern var gapItemLeft: u16;
+extern var gapItemRight: u16;
+extern var gapItemRadix: u16;
+extern var lastCenturyHighUsed: u16;
+extern var grpGroupingLeft: u8;
+extern var grpGroupingGr1LeftOverflow: u8;
+extern var grpGroupingGr1Left: u8;
+extern var grpGroupingRight: u8;
+extern var roundingMode: u8;
+extern var displayStack: u8;
+extern var exponentLimit: i16;
+extern var exponentHideLimit: i16;
+extern var lrSelection: u16;
+extern var dispBase: u8;
+extern var Input_Default: u8;
+extern var displayStackSHOIDISP: u8;
+extern var bcdDisplaySign: u8;
+extern var DRG_Cycling: u8;
+extern var DM_Cycling: u8;
+extern var LongPressM: u8;
+extern var LongPressF: u8;
+extern var lastIntegerBase: u32;
+extern var amortP1: u16;
+extern var amortP2: u16;
+extern var lrChosen: u16;
+extern var graph_dx: f32;
+extern var graph_dy: f32;
+extern var roundedTicks: u8;
+extern var PLOT_INTG: u8;
+extern var PLOT_DIFF: u8;
+extern var PLOT_RMS: u8;
+extern var PLOT_SHADE: u8;
+extern var PLOT_AXIS: u8;
+extern var PLOT_ZMY: i8;
+extern var firstDayOfWeek: u8;
+extern var firstWeekOfYearDay: u8;
+
+// printerState fields are enum-typed; set each through an enum-free trampoline.
+extern fn z47_css_setPrinterOn(v: u8) void;
+extern fn z47_css_setPrinterModel(v: u8) void;
+extern fn z47_css_setPrinterDelay(v: u16) void;
+
+fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
+    return strcmp(line, name) == 0;
+}
+
+fn b2i(x: bool) c_int {
+    return @intFromBool(x);
+}
+
+// TO_PCMEMPTR(p): RAM pointer for a block index, or null for C47_NULL.
+fn toPcmemptr(p: u32) [*c]u8 {
+    if (p == C47_NULL) return null;
+    return @ptrFromInt(@intFromPtr(ram) + @as(usize, @intCast(p)) * 4);
+}
+
+// TO_C47MEMPTR(p): block index of a RAM pointer.
+fn toC47memptr(p: [*c]const u8) u16 {
+    if (p == null) return C47_NULL;
+    return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / 4);
+}
+
+pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
+    const loaded_version = runtime.getLoadedVersion();
+    z47_css_set_loaded_version(loaded_version);
+    const saved_calc_model = runtime.getSavedCalcModel();
+
+    cancelFilename = true;
+    hourGlassIconEnabled = true;
+    readLine(tmpString);
+
+    var i: i16 = 0;
+    var numberOfRegs: i16 = 0;
+    var str: [*c]u8 = undefined;
+    var regist: i16 = 0;
+
+    if (cmpName(tmpString, "GLOBAL_REGISTERS")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(tmpString);
+            regist = z47_css_toInt16(tmpString + 1);
+            read2Lines(aimBuffer, tmpString);
+            if (load_mode == LM_ALL or
+                (load_mode == LM_REGISTERS and regist < REGISTER_X) or
+                (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n)))
+            {
+                const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
+                z47_css_restoreRegister(target, aimBuffer, tmpString);
+                z47_css_restoreMatrixData(target);
+            } else {
+                z47_css_skipMatrixData(aimBuffer, tmpString);
+            }
+        }
+    } else if (cmpName(tmpString, "GLOBAL_FLAGS")) {
+        readLine(tmpString);
+        if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            str = tmpString;
+            i = 0;
+            while (i < 7) : (i += 1) {
+                globalFlags[@intCast(i)] = z47_css_toUint16(str);
+                str = z47_css_next_word(str);
+            }
+            globalFlags[@intCast(i)] = z47_css_toUint16(str);
+        }
+    } else if (cmpName(tmpString, "LOCAL_REGISTERS")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
+            allocateLocalRegisters(@intCast(numberOfRegs));
+        }
+        if ((load_mode != LM_ALL and load_mode != LM_REGISTERS) or lastErrorCode == ERROR_NONE) {
+            i = 0;
+            while (i < numberOfRegs) : (i += 1) {
+                readLine(tmpString);
+                regist = z47_css_toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
+                read2Lines(aimBuffer, tmpString);
+                if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
+                    z47_css_restoreRegister(regist, aimBuffer, tmpString);
+                    z47_css_restoreMatrixData(regist);
+                } else {
+                    z47_css_skipMatrixData(aimBuffer, tmpString);
+                }
+            }
+        }
+    } else if (cmpName(tmpString, "LOCAL_FLAGS")) {
+        readLine(tmpString);
+        if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
+            currentLocalFlags.?.* = z47_css_toUint32(tmpString);
+        }
+    } else if (cmpName(tmpString, "NAMED_VARIABLES")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(errorMessage);
+            read2Lines(aimBuffer, tmpString);
+            const is_stats_or_histo = cmpName(errorMessage, "STATS") or cmpName(errorMessage, "HISTO");
+            if ((load_mode == LM_ALL or
+                load_mode == LM_NAMED_VARIABLES or
+                (load_mode == LM_SUMS and is_stats_or_histo)) and
+                !(load_mode == LM_NAMED_VARIABLES and is_stats_or_histo))
+            {
+                const varName: [*c]u8 = errorMessage + strlen(errorMessage) + 1;
+                utf8ToString(errorMessage, varName);
+                regist = findOrAllocateNamedVariable(varName);
+                if (regist != INVALID_VARIABLE) {
+                    z47_css_restoreRegister(regist, aimBuffer, tmpString);
+                    z47_css_restoreMatrixData(regist);
+                } else {
+                    z47_css_skipMatrixData(aimBuffer, tmpString);
+                }
+            } else {
+                z47_css_skipMatrixData(aimBuffer, tmpString);
+            }
+        }
+    } else if (cmpName(tmpString, "STATISTICAL_SUMS")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        if (numberOfRegs > 0 and (load_mode == LM_ALL or load_mode == LM_SUMS)) {
+            initStatisticalSums();
+            reLoadStatisticalSums();
+            i = 0;
+            while (i < numberOfRegs) : (i += 1) {
+                readLine(tmpString);
+                if (statisticalSumsPointer != null) {
+                    if (load_mode == LM_ALL or load_mode == LM_SUMS) {
+                        z47_css_loadStatSum(tmpString, @intCast(i));
+                    }
+                }
+            }
+        }
+    } else if (cmpName(tmpString, "SYSTEM_FLAGS")) {
+        readLine(tmpString);
+        if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            systemFlags0 = stringToUint64(tmpString);
+            systemFlags1 = 0;
+            if (loaded_version < 10000006) defaultStatusBar();
+            if (loaded_version < 10000009) setSystemFlag(FLAG_MONIT);
+        }
+    } else if (cmpName(tmpString, "SYSTEM_FLAGS1")) {
+        readLine(tmpString);
+        if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            systemFlags1 = stringToUint64(tmpString);
+            if (loaded_version < 10000006) defaultStatusBar();
+            if (loaded_version < 10000009) setSystemFlag(FLAG_MONIT);
+            if (loaded_version < 10000012) {
+                clearSystemFlag(FLAG_IRFRAC);
+                clearSystemFlag(FLAG_IRFRQ);
+            }
+            if (getSystemFlag(@intCast(FLAG_FRACT))) {
+                setSystemFlag(FLAG_FRACT);
+            } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {
+                setSystemFlag(FLAG_IRFRAC);
+            }
+        }
+    } else if (cmpName(tmpString, "KEYBOARD_ASSIGNMENTS")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(tmpString);
+            if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
+                const k = &kbd_usr[@intCast(i)];
+                str = z47_css_toInt16_next_word(tmpString, &k.keyId);
+                str = z47_css_toInt16_next_word(str, &k.primary);
+                str = z47_css_toInt16_next_word(str, &k.fShifted);
+                str = z47_css_toInt16_next_word(str, &k.gShifted);
+                str = z47_css_toInt16_next_word(str, &k.keyLblAim);
+                str = z47_css_toInt16_next_word(str, &k.primaryAim);
+                str = z47_css_toInt16_next_word(str, &k.fShiftedAim);
+                str = z47_css_toInt16_next_word(str, &k.gShiftedAim);
+                str = z47_css_toInt16_next_word(str, &k.primaryTam);
+            }
+        }
+    } else if (cmpName(tmpString, "KEYBOARD_ARGUMENTS")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
+            freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
+            userKeyLabelSize = 37 * 6 * 1 + 1;
+            userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
+            _ = memset(userKeyLabel, 0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+        }
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(tmpString);
+            if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
+                str = tmpString;
+                const key = z47_css_toUint16(str);
+                userMenuItems[@intCast(i)].argumentName[0] = 0;
+                str = z47_css_skip_to_space_newline(str);
+                if (str[0] == ' ') {
+                    str = z47_css_skip_space(str);
+                    if (str[0] != '\n' and str[0] != 0) {
+                        utf8ToString(str, tmpString + TMP_STR_LENGTH / 2);
+                        setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
+                    }
+                }
+            }
+        }
+    } else if (cmpName(tmpString, "MYMENU")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(tmpString);
+            if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+                parseMenuItem(&userMenuItems[@intCast(i)]);
+            }
+        }
+    } else if (cmpName(tmpString, "MYALPHA")) {
+        readLine(tmpString);
+        numberOfRegs = z47_css_toInt16(tmpString);
+        i = 0;
+        while (i < numberOfRegs) : (i += 1) {
+            readLine(tmpString);
+            if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+                parseMenuItem(&userAlphaItems[@intCast(i)]);
+            }
+        }
+    } else if (cmpName(tmpString, "USER_MENUS")) {
+        readLine(tmpString);
+        const numberOfMenus = z47_css_toInt16(tmpString);
+        var j: i32 = 0;
+        while (j < numberOfMenus) : (j += 1) {
+            readLine(tmpString);
+            var target: i16 = -1;
+            if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+                utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
+                i = 0;
+                while (i < numberOfUserMenus) : (i += 1) {
+                    if (compareString(tmpString + TMP_STR_LENGTH / 2, &userMenus[@intCast(i)].menuName[0], CMP_NAME) == 0) {
+                        target = i;
+                    }
+                }
+                if (target == -1) {
+                    createMenu(tmpString + TMP_STR_LENGTH / 2);
+                    target = @intCast(@as(i32, numberOfUserMenus) - 1);
+                }
+            }
+            readLine(tmpString);
+            numberOfRegs = z47_css_toInt16(tmpString);
+            i = 0;
+            while (i < numberOfRegs) : (i += 1) {
+                readLine(tmpString);
+                if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+                    parseMenuItem(&userMenus[@intCast(target)].menuItem[@intCast(i)]);
+                }
+            }
+        }
+    } else if (cmpName(tmpString, "PROGRAMS")) {
+        restoreProgramsSection(load_mode);
+    } else if (cmpName(tmpString, "EQUATIONS")) {
+        readLine(tmpString);
+        const formulae = z47_css_toUint16(tmpString);
+        if (formulae > 0 and (load_mode == LM_ALL or load_mode == LM_PROGRAMS)) {
+            i = @intCast(numberOfFormulae);
+            while (i > 0) : (i -= 1) {
+                deleteEquation(@intCast(i - 1));
+            }
+            allFormulae = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(@sizeOf(formulaHeader_t)) * formulae)));
+            numberOfFormulae = formulae;
+            currentFormula = 0;
+            i = 0;
+            while (i < formulae) : (i += 1) {
+                allFormulae[@intCast(i)].pointerToFormulaData = C47_NULL;
+                allFormulae[@intCast(i)].sizeInBlocks = 0;
+            }
+            i = 0;
+            while (i < formulae) : (i += 1) {
+                readLine(tmpString);
+                if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+                    utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
+                    setEquation(@intCast(i), tmpString + TMP_STR_LENGTH / 2);
+                }
+            }
+            if (loaded_version < 10000021) {
+                z47_css_updateConstantsInEquations();
+            }
+        }
+    } else if (cmpName(tmpString, "OTHER_CONFIGURATION_STUFF")) {
+        restoreOtherConfiguration(load_mode, allow_user_keys, loaded_version, saved_calc_model);
+        hourGlassIconEnabled = false;
+        return false; // terminal section
+    }
+
+    hourGlassIconEnabled = false;
+    return true;
+}
+
+// MYMENU / MYALPHA / per-user-menu item: `item` then an optional space + utf8
+// argument name.
+fn parseMenuItem(item: [*c]userMenuItem_t) void {
+    var str: [*c]u8 = tmpString;
+    item[0].item = z47_css_toInt16(str);
+    item[0].argumentName[0] = 0;
+    str = z47_css_skip_to_space_newline(str);
+    if (str[0] == ' ') {
+        str = z47_css_skip_space(str);
+        if (str[0] != '\n' and str[0] != 0) {
+            utf8ToString(str, &item[0].argumentName[0]);
+        }
+    }
+}
+
+fn restoreProgramsSection(load_mode: u16) void {
+    const oldSizeInBlocks: u16 = @intCast(RAM_SIZE_IN_BLOCKS - toC47memptr(beginOfProgramMemory));
+    var oldFirstFreeProgramByte: [*c]u8 = firstFreeProgramByte;
+    const oldFreeProgramBytes: u16 = freeProgramBytes;
+
+    readLine(tmpString);
+    const numberOfBlocks = z47_css_toUint16(tmpString);
+    if (load_mode == LM_ALL) {
+        resizeProgramMemory(numberOfBlocks);
+    } else if (load_mode == LM_PROGRAMS) {
+        resizeProgramMemory(@intCast(@as(u32, oldSizeInBlocks) + numberOfBlocks));
+        oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
+    }
+
+    readLine(tmpString); // currentStep block pointer
+    if (load_mode == LM_ALL) {
+        currentStep = toPcmemptr(z47_css_toUint32(tmpString));
+    }
+    readLine(tmpString); // currentStep offset within block
+    if (load_mode == LM_ALL) {
+        currentStep += z47_css_toUint32(tmpString);
+    } else if (load_mode == LM_PROGRAMS) {
+        if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
+            currentStep -= TO_BYTES(numberOfBlocks);
+            firstDisplayedStep -= TO_BYTES(numberOfBlocks);
+            beginOfCurrentProgram -= TO_BYTES(numberOfBlocks);
+            endOfCurrentProgram -= TO_BYTES(numberOfBlocks);
+        }
+    }
+
+    readLine(tmpString); // firstFreeProgramByte block pointer
+    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+        firstFreeProgramByte = toPcmemptr(z47_css_toUint32(tmpString));
+    }
+    readLine(tmpString); // firstFreeProgramByte offset within block
+    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+        firstFreeProgramByte += z47_css_toUint32(tmpString);
+    }
+
+    readLine(tmpString); // freeProgramBytes
+    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+        freeProgramBytes = z47_css_toUint16(tmpString);
+    }
+
+    // Host (non-OLD_HW) RAM-size relocation correction.
+    if (@intFromPtr(firstFreeProgramByte + freeProgramBytes) != @intFromPtr(beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+        const diff = TO_BYTES(RAM_SIZE_IN_BLOCKS_NEW_HW - RAM_SIZE_IN_BLOCKS_OLD_HW);
+        if (@intFromPtr(firstFreeProgramByte + freeProgramBytes) + diff == @intFromPtr(beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+            currentStep += diff;
+            firstFreeProgramByte += diff;
+        }
+    }
+
+    if (load_mode == LM_PROGRAMS) {
+        freeProgramBytes += oldFreeProgramBytes;
+        const at_end = (@intFromPtr(oldFirstFreeProgramByte) >= @intFromPtr(beginOfProgramMemory + 2)) and z47_css_isAtEndOfProgram(oldFirstFreeProgramByte - 2);
+        if (!at_end) {
+            if (oldFreeProgramBytes + freeProgramBytes < 2) {
+                const tmpFreeProgramBytes = freeProgramBytes;
+                resizeProgramMemory(@intCast(@as(u32, oldSizeInBlocks) + numberOfBlocks + 1));
+                oldFirstFreeProgramByte -= 4;
+                freeProgramBytes = tmpFreeProgramBytes + 4;
+                if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
+                    currentStep -= 4;
+                    firstDisplayedStep -= 4;
+                    beginOfCurrentProgram -= 4;
+                    endOfCurrentProgram -= 4;
+                }
+            }
+            oldFirstFreeProgramByte[0] = @intCast((@as(u32, @bitCast(ITM_END)) >> 8) | 0x80);
+            oldFirstFreeProgramByte[1] = @intCast(@as(u32, @bitCast(ITM_END)) & 0xff);
+            freeProgramBytes -= 2;
+            oldFirstFreeProgramByte += 2;
+        }
+    }
+
+    const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
+    var i: i16 = 0;
+    while (i < numberOfBlocks) : (i += 1) {
+        readLine(tmpString);
+        if (load_mode == LM_ALL) {
+            progWords[@intCast(i)] = z47_css_toUint32(tmpString);
+        } else if (load_mode == LM_PROGRAMS) {
+            var tmpBlock: u32 = z47_css_toUint32(tmpString);
+            _ = xcopy(oldFirstFreeProgramByte + TO_BYTES(i), &tmpBlock, 4);
+        }
+    }
+
+    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+        scanLabelsAndPrograms();
+    }
+}
+
+fn restoreOtherConfiguration(load_mode: u16, allow_user_keys: bool, loaded_version: u32, saved_calc_model: u16) void {
+    readLine(tmpString); // count (unused)
+
+    readLine(aimBuffer); // duplicated param / END marker
+    if (cmpName(aimBuffer, "END_OTHER_PARAM")) {
+        return; // short-form key-only state files: no reset
+    }
+    resetOtherConfigurationStuff(allow_user_keys);
+    readLine(tmpString); // duplicated 00
+
+    var i: u32 = 0;
+    while (i < 255) : (i += 1) {
+        readLine(aimBuffer); // param
+        if (cmpName(aimBuffer, "END_OTHER_PARAM") or aimBuffer[0] == 0) {
+            break;
+        }
+        readLine(tmpString); // value
+        if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            applyConfigField(loaded_version, allow_user_keys, saved_calc_model);
+            hourGlassIconEnabled = false;
+        }
+    }
+}
+
+fn matchU8(name: [*c]const u8, ptr: anytype) bool {
+    if (cmpName(aimBuffer, name)) {
+        ptr.* = z47_css_toUint8(tmpString);
+        return true;
+    }
+    return false;
+}
+
+fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model: u16) void {
+    const ab = aimBuffer;
+    if (cmpName(ab, "firstGregorianDay")) {
+        firstGregorianDay = z47_css_toUint32(tmpString);
+    } else if (cmpName(ab, "denMax")) {
+        denMax = z47_css_toUint32(tmpString);
+        if (denMax == 1 or denMax > MAX_DENMAX) denMax = MAX_DENMAX;
+    } else if (cmpName(ab, "lastDenominator")) {
+        lastDenominator = z47_css_toUint32(tmpString);
+        if (lastDenominator < 1 or lastDenominator > MAX_DENMAX) lastDenominator = 4;
+    } else if (matchU8("displayFormat", &displayFormat)) {} else if (matchU8("displayFormatDigits", &displayFormatDigits)) {} else if (matchU8("timeDisplayFormatDigits", &timeDisplayFormatDigits)) {} else if (matchU8("shortIntegerWordSize", &shortIntegerWordSize)) {} else if (matchU8("shortIntegerMode", &shortIntegerMode)) {} else if (matchU8("significantDigits", &significantDigits)) {} else if (matchU8("fractionDigits", &fractionDigits)) {} else if (cmpName(ab, "currentAngularMode")) {
+        currentAngularMode = z47_css_toUint8(tmpString);
+    } else if (cmpName(ab, "groupingGap")) {
+        configCommon(CFG_DFLT);
+        grpGroupingLeft = z47_css_toUint8(tmpString);
+        grpGroupingRight = grpGroupingLeft;
+    } else if (z47_css_strcmp2(ab, @constCast("gapItemLeft")) == 0) {
+        gapItemLeft = z47_css_toUint16(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("gapItemRight")) == 0) {
+        gapItemRight = z47_css_toUint16(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("gapItemRadix")) == 0) {
+        gapItemRadix = z47_css_toUint16(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("lastCenturyHighUsed")) == 0) {
+        lastCenturyHighUsed = z47_css_toUint16(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingLeft")) == 0) {
+        grpGroupingLeft = z47_css_toUint8(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingGr1LeftOverflow")) == 0) {
+        grpGroupingGr1LeftOverflow = z47_css_toUint8(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingGr1Left")) == 0) {
+        grpGroupingGr1Left = z47_css_toUint8(tmpString);
+    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
+        grpGroupingRight = z47_css_toUint8(tmpString);
+    } else if (matchU8("roundingMode", &roundingMode)) {} else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "rngState")) {
+        pcg32_global.state = stringToUint64(tmpString);
+        const w = z47_css_next_word(tmpString);
+        pcg32_global.inc = stringToUint64(w);
+    } else if (cmpName(ab, "exponentLimit")) {
+        exponentLimit = z47_css_toInt16(tmpString);
+    } else if (cmpName(ab, "exponentHideLimit")) {
+        exponentHideLimit = z47_css_toInt16(tmpString);
+    } else if (cmpName(ab, "notBestF")) {
+        lrSelection = z47_css_toUint16(tmpString);
+    } else if (cmpName(ab, "bestF")) {
+        lrSelection = z47_css_toUint16(tmpString);
+    } else if (cmpName(ab, "fgLN") or cmpName(ab, "jm_FG_LINE")) {
+        const fgLN = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_FGLNOFF);
+        if (fgLN == RBX_FGLNOFF) {
+            clearSystemFlag(FLAG_FGLNLIM);
+            clearSystemFlag(FLAG_FGLNFUL);
+        } else if (fgLN == RBX_FGLNLIM) {
+            setSystemFlag(FLAG_FGLNLIM);
+            clearSystemFlag(FLAG_FGLNFUL);
+        } else if (fgLN == RBX_FGLNFUL) {
+            clearSystemFlag(FLAG_FGLNLIM);
+            setSystemFlag(FLAG_FGLNFUL);
+        }
+    } else if (cmpName(ab, "HOME3")) {
+        if (loaded_version < 10000022) {
+            forceSystemFlag(FLAG_HOME_TRIPLE, @intFromBool(z47_css_toUint8(tmpString) != 0));
+            setLongPressFg(calcModel, -MNU_HOME);
+        }
+    } else if (cmpName(ab, "MYM3")) {
+        if (loaded_version < 10000022) {
+            forceSystemFlag(FLAG_MYM_TRIPLE, @intFromBool(z47_css_toUint8(tmpString) != 0));
+            setLongPressFg(calcModel, -MNU_MyMenu);
+        }
+    } else if (cmpName(ab, "dispBase")) {
+        dispBase = z47_css_toUint8(tmpString);
+    } else if (cmpName(ab, "ShiftTimoutMode")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_SHFT_4s, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "SH_BASE_HOME")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "BASE_HOME")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (allow_user_keys and cmpName(ab, "Norm_Key_00_VAR")) {
+        if (z47_css_normKey00Key() != -1) {
+            Norm_Key_00.func = @bitCast(z47_css_toUint16(tmpString));
+            Norm_Key_00.used = @intFromBool(Norm_Key_00.func != z47_css_kbdStdPrimary(z47_css_normKey00Key()));
+        } else {
+            Norm_Key_00.used = 0;
+        }
+    } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.func")) {
+        Norm_Key_00.func = @bitCast(z47_css_toUint16(tmpString));
+    } else if (cmpName(ab, "Norm_Key_00.funcParam")) {
+        if (cmpName(tmpString, "Norm_Key_00.used")) {
+            if (allow_user_keys) {
+                Norm_Key_00.funcParam[0] = 0;
+                Norm_Key_00.used = 0;
+            }
+            readLine(tmpString);
+        } else if (allow_user_keys and cmpName(tmpString, "NoNormKeyParamDef")) {
+            Norm_Key_00.funcParam[0] = 0;
+        } else if (allow_user_keys) {
+            _ = strcpy(&Norm_Key_00.funcParam[0], tmpString);
+        }
+    } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.used")) {
+        Norm_Key_00.used = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (allow_user_keys and cmpName(ab, "calcModel")) {
+        const calcModelRead = z47_css_toUint16(tmpString);
+        if (saved_calc_model == USER_R47 and (calcModelRead == USER_R47f_g or calcModelRead == USER_R47fg_g or calcModelRead == USER_R47fg_bk or calcModelRead == USER_R47bk_fg)) {
+            calcModel = @intCast(calcModelRead);
+        } else if (saved_calc_model == USER_C47 and (calcModelRead == USER_C47 or calcModelRead == USER_DM42)) {
+            calcModel = @intCast(calcModelRead);
+        }
+    } else if (cmpName(ab, "Input_Default")) {
+        Input_Default = z47_css_toUint8(tmpString);
+    } else if (cmpName(ab, "jm_BASE_SCREEN")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "BASE_MYM")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "jm_G_DOUBLETAP")) {
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_G_DOUBLETAP, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "displayStackSHOIDISP")) {
+        displayStackSHOIDISP = z47_css_toUint8(tmpString);
+    } else if (cmpName(ab, "bcdDisplay")) {
+        if (loaded_version < 10000020) forceSystemFlag(FLAG_BCD, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "topHex")) {
+        if (loaded_version < 10000019) forceSystemFlag(FLAG_TOPHEX, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "bcdDisplaySign")) {
+        bcdDisplaySign = convert001090400T001090500(z47_css_toUint8(tmpString), BCDu);
+    } else if (matchU8("DRG_Cycling", &DRG_Cycling)) {} else if (matchU8("DM_Cycling", &DM_Cycling)) {} else if (cmpName(ab, "LongPressM")) {
+        LongPressM = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_M14);
+    } else if (cmpName(ab, "LongPressF")) {
+        LongPressF = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_F14);
+    } else if (cmpName(ab, "lastIntegerBase")) {
+        lastIntegerBase = z47_css_toUint8(tmpString);
+    } else if (cmpName(ab, "amortP1")) {
+        amortP1 = z47_css_toUint16(tmpString);
+    } else if (cmpName(ab, "amortP2")) {
+        amortP2 = z47_css_toUint16(tmpString);
+    } else if (cmpName(ab, "lrChosen")) {
+        lrChosen = z47_css_toUint16(tmpString);
+    } else if (cmpName(ab, "graph_dx")) {
+        graph_dx = stringToFloat(tmpString);
+    } else if (cmpName(ab, "graph_dy")) {
+        graph_dy = stringToFloat(tmpString);
+    } else if (cmpName(ab, "roundedTicks")) {
+        roundedTicks = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_INTG")) {
+        PLOT_INTG = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_DIFF")) {
+        PLOT_DIFF = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_RMS")) {
+        PLOT_RMS = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_SHADE")) {
+        PLOT_SHADE = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_AXIS")) {
+        PLOT_AXIS = @intFromBool(z47_css_toUint8(tmpString) != 0);
+    } else if (cmpName(ab, "PLOT_ZMY")) {
+        PLOT_ZMY = @bitCast(z47_css_toUint8(tmpString));
+    } else if (matchU8("firstDayOfWeek", &firstDayOfWeek)) {} else if (matchU8("firstWeekOfYearDay", &firstWeekOfYearDay)) {} else if (cmpName(ab, "printerOn")) {
+        z47_css_setPrinterOn(z47_css_toUint8(tmpString));
+    } else if (cmpName(ab, "printerModel")) {
+        z47_css_setPrinterModel(z47_css_toUint8(tmpString));
+    } else if (cmpName(ab, "printerLineDelay")) {
+        const delay = z47_css_toUint16(tmpString);
+        z47_css_setPrinterDelay(delay);
+        setLineDelay(delay);
+    } else if (cmpName(ab, "jm_LARGELI")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_LARGELI, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "constantFractions")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRQ, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "constantFractionsOn")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRAC, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "eRPN")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_ERPN, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "CPXMult")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_CPXMULT, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    } else if (cmpName(ab, "SI_All")) {
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_PFX_ALL, @intFromBool(z47_css_toUint8(tmpString) != 0));
+    }
+}

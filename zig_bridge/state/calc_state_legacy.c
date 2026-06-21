@@ -52,6 +52,12 @@ bool_t z47_state_power_check_screen(void) {
 #endif
 }
 
+// The save/restore trampolines below are consumed only by the host-only Zig
+// section writer / parser owners (gated is_dmcp_build); guarding them off the
+// DMCP lane keeps firmware byte-identical (those owners are dead-stripped on
+// firmware, which loads/saves through the C retained path).
+#if !defined(DMCP_BUILD)
+
 // --- Save-serialization leaf formatters (z47_calc_state_save_sections owner) ---
 // registerToSaveString / saveMatrixElements / UI64toString and the
 // tmpRegisterString / loadedVersion buffers are file-static inside
@@ -85,3 +91,42 @@ void z47_css_postKeyboardFixup(void) {
 		setLongPressFg(calcModel, -MNU_HOME);
 	}
 }
+
+// --- Load-parsing leaf helpers (z47_calc_state_restore_one_section owner) ---
+// The parse primitives (toInt16/toUint8/toUint16/toUint32/next_word/skip_*/
+// toInt16_next_word/strcmp2) and the register/matrix restorers
+// (restoreRegister/restoreMatrixData/skipMatrixData) are file-static; the Zig
+// restoreOneSection owner reaches them through these same-TU trampolines. The
+// remaining wrappers cover macros (stringToReal, Norm_Key_00_key, kbd_std) and a
+// static-inline (isAtEndOfProgram) so that surface stays out of Zig. The Zig
+// port keeps the C statics loadedVersion/savedCalcModel in sync via the setter.
+int16_t  z47_css_toInt16(const char *s)  { return toInt16(s); }
+uint8_t  z47_css_toUint8(const char *s)  { return toUint8(s); }
+uint16_t z47_css_toUint16(const char *s) { return toUint16(s); }
+uint32_t z47_css_toUint32(const char *s) { return toUint32(s); }
+char *z47_css_next_word(char *s)              { return next_word(s); }
+char *z47_css_skip_space(char *s)             { return skip_space(s); }
+char *z47_css_skip_to_space_newline(char *s)  { return skip_to_space_newline(s); }
+char *z47_css_toInt16_next_word(char *s, int16_t *val) { return toInt16_next_word(s, val); }
+uint16_t z47_css_strcmp2(char *a, char *b)    { return strcmp2(a, b); }
+
+void z47_css_restoreRegister(int16_t regist, char *type, char *value) { restoreRegister(regist, type, value); }
+void z47_css_restoreMatrixData(int16_t regist) { restoreMatrixData(regist); }
+void z47_css_skipMatrixData(char *type, char *value) { skipMatrixData(type, value); }
+void z47_css_updateConstantsInEquations(void) { _updateConstantsInEquations(); }
+
+void z47_css_loadStatSum(const char *str, uint16_t i) {
+	stringToReal(str, statisticalSumsPointer + i, &ctxtReal75);
+}
+
+bool_t z47_css_isAtEndOfProgram(const uint8_t *step) { return isAtEndOfProgram(step); }
+int16_t z47_css_normKey00Key(void) { return Norm_Key_00_key; }
+int16_t z47_css_kbdStdPrimary(int16_t idx) { return kbd_std[idx].primary; }
+
+void z47_css_set_loaded_version(uint32_t v) { loadedVersion = v; }
+
+void z47_css_setPrinterOn(uint8_t v)    { printerState.print_on = v; }
+void z47_css_setPrinterModel(uint8_t v) { printerState.printer_model = v; }
+void z47_css_setPrinterDelay(uint16_t v){ printerState.delay = v; }
+
+#endif // !DMCP_BUILD

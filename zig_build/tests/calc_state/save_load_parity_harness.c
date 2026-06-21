@@ -56,15 +56,16 @@ bool_t          screenChange;
 // (the Zig section writer). The golden byte-compare therefore verifies the Zig
 // SAVE port against the original C output.
 //
-// LOAD/RESTORE is still C: fnLoad is bridge-renamed to z47_calc_state_legacy_*,
-// so the round-trip check exercises the C restore reading the Zig-written file
-// (the RESTORE port is a separate future commit). doLoad is static in
-// saveRestoreCalcState.c; the public bridged fnLoad(LM_ALL)->doLoad(manualLoad).
+// LOAD/RESTORE now also runs the Zig production path: the canonical fnLoad is
+// the Zig export -> load() -> io_flow doLoad -> header parse -> policy ->
+// restoreOneSection loop (the Zig parser). The round-trip therefore verifies the
+// Zig RESTORE port reconstructs state such that re-saving (also Zig) is
+// byte-identical to the original save.
 extern void fnSave(uint16_t saveMode);
-extern void z47_calc_state_legacy_fnLoad(uint16_t loadMode);
+extern void fnLoad(uint16_t loadMode);
 
 static void doSaveImpl(void)  { fnSave(SM_MANUAL_SAVE); }
-static void doLoadImpl(void)  { z47_calc_state_legacy_fnLoad(LM_ALL); }
+static void doLoadImpl(void)  { fnLoad(LM_ALL); }
 
 static long readWholeFile(const char *path, unsigned char *buf, long cap) {
   FILE *f = fopen(path, "rb");
