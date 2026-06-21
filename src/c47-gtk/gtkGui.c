@@ -3231,48 +3231,7 @@ char sstmp[16];
 
 
 
-    void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
-      uint8_t lbl[22];
-
-      lbl[0] = 0;
-      if(key->primaryTam != ITM_NULL) {
-        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
-      }
-
-      //THIS IS FOR TAM
-      gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-
-      if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
-        gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
-      }                                                          //JM
-
-      if(key->primaryTam == ITM_SHIFTf) {
-        gtk_widget_set_name(button, "calcKeyF");
-      }
-      else if(key->primaryTam == ITM_SHIFTg) {
-        gtk_widget_set_name(button, "calcKeyG");
-      }
-      else if(key->primaryTam == KEY_fg) {                              //JM
-        gtk_widget_set_name(button, "calcKeyFG");                        //JM
-      }
-
-      else if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "×") == 0 && key->keyId == 65) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "-") == 0 && key->keyId == 75) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "+") == 0 && key->keyId == 85) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-
-      else {
-        gtk_widget_set_name(button, "calcKey");
-      }
-    }
+    extern void z47_labelCaptionTam(const calcKey_t *key, GtkWidget *button); // Zig owner: gtk_gui_label_owned.zig
 
     void calcModeNormalGui(void) {
       #if defined(DEBUGMODES) && defined(PC_BUILD)
@@ -3811,49 +3770,49 @@ char sstmp[16];
 
       hideAllWidgets();
 
-      labelCaptionTam(keys++, btn21);
-      labelCaptionTam(keys++, btn22);
-      labelCaptionTam(keys++, btn23);
-      labelCaptionTam(keys++, btn24);
-      labelCaptionTam(keys++, btn25);
-      labelCaptionTam(keys++, btn26);
+      z47_labelCaptionTam(keys++, btn21);
+      z47_labelCaptionTam(keys++, btn22);
+      z47_labelCaptionTam(keys++, btn23);
+      z47_labelCaptionTam(keys++, btn24);
+      z47_labelCaptionTam(keys++, btn25);
+      z47_labelCaptionTam(keys++, btn26);
 
-      labelCaptionTam(keys++, btn31);
-      labelCaptionTam(keys++, btn32);
-      labelCaptionTam(keys++, btn33);
-      labelCaptionTam(keys++, btn34);
-      labelCaptionTam(keys++, btn35);
-      labelCaptionTam(keys++, btn36);
+      z47_labelCaptionTam(keys++, btn31);
+      z47_labelCaptionTam(keys++, btn32);
+      z47_labelCaptionTam(keys++, btn33);
+      z47_labelCaptionTam(keys++, btn34);
+      z47_labelCaptionTam(keys++, btn35);
+      z47_labelCaptionTam(keys++, btn36);
 
-      labelCaptionTam(keys++, btn41);
-      labelCaptionTam(keys++, btn42);
-      labelCaptionTam(keys++, btn43);
-      labelCaptionTam(keys++, btn44);
-      labelCaptionTam(keys++, btn45);
+      z47_labelCaptionTam(keys++, btn41);
+      z47_labelCaptionTam(keys++, btn42);
+      z47_labelCaptionTam(keys++, btn43);
+      z47_labelCaptionTam(keys++, btn44);
+      z47_labelCaptionTam(keys++, btn45);
 
-      labelCaptionTam(keys++, btn51);
-      labelCaptionTam(keys++, btn52);
-      labelCaptionTam(keys++, btn53);
-      labelCaptionTam(keys++, btn54);
-      labelCaptionTam(keys++, btn55);
+      z47_labelCaptionTam(keys++, btn51);
+      z47_labelCaptionTam(keys++, btn52);
+      z47_labelCaptionTam(keys++, btn53);
+      z47_labelCaptionTam(keys++, btn54);
+      z47_labelCaptionTam(keys++, btn55);
 
-      labelCaptionTam(keys++, btn61);
-      labelCaptionTam(keys++, btn62);
-      labelCaptionTam(keys++, btn63);
-      labelCaptionTam(keys++, btn64);
-      labelCaptionTam(keys++, btn65);
+      z47_labelCaptionTam(keys++, btn61);
+      z47_labelCaptionTam(keys++, btn62);
+      z47_labelCaptionTam(keys++, btn63);
+      z47_labelCaptionTam(keys++, btn64);
+      z47_labelCaptionTam(keys++, btn65);
 
-      labelCaptionTam(keys++, btn71);
-      labelCaptionTam(keys++, btn72);
-      labelCaptionTam(keys++, btn73);
-      labelCaptionTam(keys++, btn74);
-      labelCaptionTam(keys++, btn75);
+      z47_labelCaptionTam(keys++, btn71);
+      z47_labelCaptionTam(keys++, btn72);
+      z47_labelCaptionTam(keys++, btn73);
+      z47_labelCaptionTam(keys++, btn74);
+      z47_labelCaptionTam(keys++, btn75);
 
-      labelCaptionTam(keys++, btn81);
-      labelCaptionTam(keys++, btn82);
-      labelCaptionTam(keys++, btn83);
-      labelCaptionTam(keys++, btn84);
-      labelCaptionTam(keys++, btn85);
+      z47_labelCaptionTam(keys++, btn81);
+      z47_labelCaptionTam(keys++, btn82);
+      z47_labelCaptionTam(keys++, btn83);
+      z47_labelCaptionTam(keys++, btn84);
+      z47_labelCaptionTam(keys++, btn85);
 
       hideAllWidgets();
 

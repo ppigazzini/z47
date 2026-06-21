@@ -5,6 +5,73 @@
 // owner is the intended home for the rest of the label-rendering cluster.
 
 extern fn printf(fmt: [*c]const u8, ...) c_int;
+extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
+extern fn gtk_button_set_label(button: ?*anyopaque, label: [*c]const u8) void;
+extern fn gtk_widget_set_name(widget: ?*anyopaque, name: [*c]const u8) void;
+
+pub const calcKey_t = extern struct {
+    keyId: i16,
+    primary: i16,
+    fShifted: i16,
+    gShifted: i16,
+    keyLblAim: i16,
+    primaryAim: i16,
+    fShiftedAim: i16,
+    gShiftedAim: i16,
+    primaryTam: i16,
+};
+
+const item_t = extern struct {
+    func: ?*const anyopaque,
+    param: u16,
+    itemCatalogName: [16]u8,
+    itemSoftmenuName: [16]u8,
+    tamMinMax: u16,
+    status: u16,
+};
+
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+
+const ITM_NULL: i16 = 0;
+const ITM_SHIFTf: i16 = 1731;
+const ITM_SHIFTg: i16 = 1732;
+const KEY_fg: i16 = 1893;
+
+/// gtkGui.c labelCaptionTam: renders a key's TAM-mode (prompt) caption onto its
+/// button and assigns the CSS name (shift keys, fg, oversized operators).
+pub fn labelCaptionTam(key: *const calcKey_t, button: ?*anyopaque) void {
+    var lbl: [22]u8 = undefined;
+    lbl[0] = 0;
+    if (key.primaryTam != ITM_NULL) {
+        stringToUtf8(&indexOfItems[@intCast(key.primaryTam)].itemSoftmenuName, &lbl);
+    }
+
+    // THIS IS FOR TAM
+    gtk_button_set_label(button, &lbl);
+
+    if (strcmp(&lbl, "/") == 0 and key.keyId == 55) { // if "/", re-do to "divide"
+        gtk_button_set_label(button, "÷");
+    }
+
+    if (key.primaryTam == ITM_SHIFTf) {
+        gtk_widget_set_name(button, "calcKeyF");
+    } else if (key.primaryTam == ITM_SHIFTg) {
+        gtk_widget_set_name(button, "calcKeyG");
+    } else if (key.primaryTam == KEY_fg) {
+        gtk_widget_set_name(button, "calcKeyFG");
+    } else if (strcmp(&lbl, "/") == 0 and key.keyId == 55) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strcmp(&lbl, "×") == 0 and key.keyId == 65) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strcmp(&lbl, "-") == 0 and key.keyId == 75) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else if (strcmp(&lbl, "+") == 0 and key.keyId == 85) {
+        gtk_widget_set_name(button, "calcNumericKey");
+    } else {
+        gtk_widget_set_name(button, "calcKey");
+    }
+}
 
 /// Hex / printable-char / decimal dump of a label's raw bytes (gtkGui.c
 /// print_label_bytes). Used by the UTF-8 consistency diagnostics.
