@@ -1110,6 +1110,32 @@ pub fn radix34MarkNotDecItm() i16 {
     return if (radix34MarkChar() == '.') ITM_COMMA else ITM_PERIOD;
 }
 
+// Check_MultiPresses dependencies (keyboardTweak.c 351-639).
+pub const RBX_M1234: u8 = 226;
+pub const RBX_M124: u8 = 225;
+pub const RBX_M14: u8 = 224;
+pub const ITM_DRG: i16 = 1873;
+pub const ITM_CLSTK: i16 = 1428;
+pub const ITM_EDIT: i16 = 2404;
+pub const ITM_CLRMOD: i16 = 2005;
+pub const ITM_CLN: i16 = 1875;
+pub const ITM_CLA: i16 = 1874;
+pub const ITM_XEDIT: i16 = 2420;
+pub const ITM_CR: i16 = 1172;
+pub const JM_TO_CL_LONG: u32 = 800;
+pub const FUNCTION_NOPTIME: i16 = 800;
+pub const TM_INTEGRATE: u16 = 10013;
+pub extern var LongPressM: u8;
+pub extern var longpressDelayedkey2: i16;
+pub extern var longpressDelayedkey3: i16;
+// LongpressEXIT1 macro (keyboardTweak.c:344).
+pub fn longpressExit1() i16 {
+    if (calcModel == USER_C47) {
+        return if (calcMode == CM_AIM) -MNU_MyAlpha else ITM_BASEMENU;
+    }
+    return ITM_SNAP;
+}
+
 // fg_processing_jm / Check_Norm_Key_00_Assigned / Setup_MultiPresses deps
 // (keyboardTweak.c 266-341).
 pub const TMR_RUNNING: u8 = 2;
