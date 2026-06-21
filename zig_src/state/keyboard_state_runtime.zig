@@ -413,7 +413,7 @@ pub const arrowCasechange = false;
 
 pub extern var softmenuStack: [8]softmenuStack_t; // SOFTMENU_STACK_SIZE
 // softmenu[] is a flexible `const softmenu_t[]`; take its base address.
-const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
+pub const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 pub extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
 pub extern var dynamicMenuItem: i16;
 pub extern var numberOfFormulae: u16;
@@ -697,6 +697,9 @@ pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
     const f = indexOfItems[@intCast(item)].func;
     return f == @as(?*const anyopaque, @ptrCast(&addItemToBuffer));
 }
+pub fn indexOfItemsCatalogName(item: i16) [*c]const u8 {
+    return &indexOfItems[@intCast(item)].itemCatalogName;
+}
 pub extern var delayCloseNim: bool_t;
 pub extern var userKeyLabel: [*c]u8;
 pub extern fn isAlphabeticSoftmenu() bool_t;
@@ -856,6 +859,90 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// determineFunctionKeyItem_C47 dependencies (keyboard.c 12-333).
+pub const MNU_PROG: i16 = 1392;
+pub const MNU_VAR: i16 = 1389;
+pub const MNU_CONFIGS: i16 = 2231;
+pub const MNU_MATRS: i16 = 1343;
+pub const MNU_DATES: i16 = 1325;
+pub const MNU_TIMES: i16 = 1366;
+pub const MNU_SINTS: i16 = 1332;
+pub const MNU_STRINGS: i16 = 1364;
+pub const MNU_NUMBRS: i16 = 2230;
+pub const MNU_CPXS: i16 = 1324;
+pub const MNU_REALS: i16 = 1360;
+pub const MNU_ANGLES: i16 = 1314;
+pub const MNU_LINTS: i16 = 1338;
+pub const MNU_ALLVARS: i16 = 2232;
+pub const MNU_PROGS: i16 = 1355;
+pub const MNU_MENU: i16 = 2407;
+pub const MNU_MENUS: i16 = 1345;
+pub const ITM_GTOP: i16 = 1482;
+pub const ITM_SOLVE_VAR: i16 = 994;
+pub const ITM_DRAW: i16 = 2372;
+pub const ITM_CALC: i16 = 1767;
+pub const MNU_Solver_TOOL: i16 = 2376;
+pub const ITM_FPHERE: i16 = 2377;
+pub const ITM_FPPHERE: i16 = 2378;
+pub const MNU_Sf_TOOL: i16 = 2375;
+pub const ITM_INTEGRAL_YX: i16 = 1690;
+pub const ITM_Sfdx_VAR: i16 = 1002;
+pub const ITM_PROD_SIGN: i16 = 9999;
+pub const ITM_DOT: i16 = 849;
+pub const ITM_CROSS: i16 = 855;
+pub const ITM_ASSIGN: i16 = 1411;
+pub const TM_DELITM: u16 = 10014;
+pub const ASSIGN_USER_MENU: i16 = -10000;
+pub const FLAG_MULTx: i32 = 32795;
+pub const CMP_NAME: i32 = 3;
+pub const SOLVER_STATUS_USES_FORMULA: u16 = 256;
+pub const SOLVER_STATUS_EQUATION_GRAPHER: u16 = 8192;
+pub const SOLVER_STATUS_EQUATION_SOLVER: u16 = 0;
+pub const SOLVER_STATUS_EQUATION_1ST_DERIVATIVE: u16 = 8;
+pub const SOLVER_STATUS_EQUATION_2ND_DERIVATIVE: u16 = 12;
+
+pub const userMenuItem_t = extern struct {
+    item: i16,
+    unused: i16,
+    argumentName: [16]u8,
+};
+pub const userMenu_t = extern struct {
+    menuName: [16]u8,
+    menuItem: [18]userMenuItem_t,
+};
+pub const dynamicSoftmenu_t = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    menuContent: [*c]u8,
+};
+pub extern var userMenuItems: [18]userMenuItem_t;
+pub extern var userAlphaItems: [18]userMenuItem_t;
+pub const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+pub extern var userMenus: [*c]userMenu_t;
+pub extern var currentUserMenu: u16;
+pub extern var currentMvarLabel: u16;
+pub extern var numberOfUserMenus: u16;
+pub extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
+
+// IS_BASEBLANK_ / IS_EQN_* macros (defines.h 2276 / 2079-2086).
+pub fn isBaseBlank(menu_id: i16) bool {
+    return menu_id == 0 and !getSystemFlag(FLAG_BASE_MYM) and !getSystemFlag(FLAG_BASE_HOME);
+}
+pub fn isEqnIntegrate() bool {
+    return (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE and
+        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0;
+}
+pub fn isEqn1stDer() bool {
+    return (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and
+        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0 and
+        (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE;
+}
+pub fn isEqn2ndDer() bool {
+    return (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and
+        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0 and
+        (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE;
+}
+
 // execFnTimeout dependencies (keyboardTweak.c 960-972). btnFnClicked is
 // (GtkWidget*, gpointer) on host and (void*, void*) on dmcp -- both two
 // pointers, so a single ?*anyopaque signature matches each lane's ABI.

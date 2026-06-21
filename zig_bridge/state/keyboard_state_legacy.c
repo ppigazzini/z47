@@ -27,6 +27,7 @@
 #define processAimInput z47_keyboard_state_processAimInput
 #define leavePem z47_keyboard_state_leavePem
 #define checkKeyShifts z47_keyboard_state_checkKeyShifts
+#define determineFunctionKeyItem_C47 z47_keyboard_state_determineFunctionKeyItem_C47
 #define fnKeyEnter z47_keyboard_state_fnKeyEnter
 #define fnKeyExit z47_keyboard_state_fnKeyExit
 #define fnKeyCC z47_keyboard_state_fnKeyCC
@@ -90,6 +91,7 @@ void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 #undef caseReplacements
 #undef setLastKeyCode
 #if defined(PC_BUILD)
+#undef determineFunctionKeyItem_C47
 #undef checkKeyShifts
 #undef leavePem
 #undef processAimInput

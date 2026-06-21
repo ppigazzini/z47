@@ -20,6 +20,10 @@ fn checkKeyShiftsHost(data: [*c]const u8) callconv(.c) runtime.bool_t {
     return shared.checkKeyShifts(data);
 }
 
+fn determineFunctionKeyItem_C47Host(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
+    return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
+}
+
 fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyEnter(unused_but_mandatory_parameter);
 }
@@ -70,6 +74,7 @@ comptime {
         @export(&processAimInputHost, .{ .name = "processAimInput" });
         @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
+        @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
         @export(&keyCCHost, .{ .name = "fnKeyCC" });
