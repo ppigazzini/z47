@@ -246,3 +246,76 @@ pub fn addTestSuite(
     exe.root_module.linkSystemLibrary("m", .{});
     return exe;
 }
+
+// Save/load round-trip parity harness. Mirrors addTestSuite's full object graph
+// (the real calculator core + calc_state) but swaps testSuite.c's main for the
+// save_load_parity_harness.c driver, so it exercises the ACTUAL save/restore
+// serialization. Used to verify a Zig port of the save/restore bodies.
+pub fn addSaveLoadParityHarness(
+    b: *std.Build,
+    host_target: std.Build.ResolvedTarget,
+    name: []const u8,
+    optimize: std.builtin.OptimizeMode,
+    core_sources: []const []const u8,
+    test_sources: []const []const u8,
+    common: host_types.CommonConfig,
+    version_headers_dir: std.Build.LazyPath,
+    generated: host_types.GeneratedOutputs,
+    shortint_objects: host_types.ShortIntObjects,
+    keyboard_state_objects: host_types.KeyboardStateObjects,
+    stack_state_objects: host_types.StackStateObjects,
+    sanitize_c: ?std.zig.SanitizeC,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = name,
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    if (sanitize_c) |level| {
+        exe.root_module.sanitize_c = level;
+    }
+    host_platform.addHostMacros(exe.root_module, common);
+    host_platform.addHostSystemPaths(exe.root_module, common);
+    exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/testSuite"));
+    exe.root_module.addIncludePath(version_headers_dir);
+    exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    std.debug.assert(core_sources.len == 0);
+    _ = test_sources;
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/save_load_parity_harness.c"), .flags = core_c_flags });
+    exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
+    addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
+    memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    solve.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // C47 model
+    constants.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    tone.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = generated.constant_pointers2_c, .flags = core_c_flags });
+    shortint_objects.link(exe.root_module);
+    exe.root_module.addObject(keyboard_state_objects.keyboard_state);
+    exe.root_module.addObject(stack_state_objects.stack_state);
+    host_platform.linkGtk3(exe.root_module, common);
+    host_platform.linkGmp(exe.root_module, host_target);
+    exe.root_module.linkSystemLibrary("m", .{});
+    return exe;
+}
