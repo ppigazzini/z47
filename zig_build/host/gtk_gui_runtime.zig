@@ -68,6 +68,14 @@ pub export fn z47_prepareCssData() callconv(.c) void {
     css_owned.prepareCssData();
 }
 
+pub export fn z47_print_label_bytes(data: [*c]const u8, length: c_int) callconv(.c) void {
+    label_owned.printLabelBytes(data, length);
+}
+
+pub export fn z47_check_label_consistency(lbl: [*c]const u8, context: [*c]const u8) callconv(.c) bool {
+    return label_owned.checkLabelConsistency(lbl, context);
+}
+
 pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     btnPressed(widget, event, data);
     return 0;
