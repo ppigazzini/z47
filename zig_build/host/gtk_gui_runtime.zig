@@ -6,6 +6,7 @@ const keymap_owned = @import("gtk_gui_keymap_owned.zig");
 const label_owned = @import("gtk_gui_label_owned.zig");
 const css_owned = @import("gtk_gui_css_owned.zig");
 const display_owned = @import("gtk_gui_display_owned.zig");
+const keypress_owned = @import("gtk_gui_keypress_owned.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
@@ -213,6 +214,10 @@ pub export fn z47_keyReleased_wrapper(widget: ?*anyopaque, event: ?*anyopaque, d
 
 pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     return events_owned.keyPressedImpl(widget, event, data);
+}
+
+pub export fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    return keypress_owned.keyPressedCImpl(widget, event, data);
 }
 
 pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
