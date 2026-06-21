@@ -862,6 +862,24 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// closeAllCatalogMenus / _closeCatalog dependencies (keyboard.c 398-469).
+pub const SOFTMENU_STACK_SIZE: usize = 8;
+pub const MNU_ALPHAMISC: i16 = 1378;
+pub const MNU_FCNS: i16 = 1330;
+pub const MNU_CONST: i16 = 1322;
+pub const MNU_CHARS: i16 = 1319;
+pub const MNU_VARS: i16 = 1370;
+pub const MNU_CATALOG: i16 = 1318;
+pub const MNU_TAM: i16 = 1385;
+pub const MNU_TAMVARONLY: i16 = 2225;
+pub const MNU_TAMNONREG: i16 = 2068;
+pub const MNU_TAMCMP: i16 = 1386;
+pub const MNU_TAMFLAG: i16 = 1390;
+pub const MNU_TAMSHUFFLE: i16 = 1391;
+pub const MNU_TAMLABEL: i16 = 1393;
+pub const MNU_TAMLBLONLY: i16 = 2226;
+pub const ITM_DELITM: i16 = 1455;
+
 // determineItem dependencies (keyboard.c 1511-1734).
 pub const TO_FN_EXEC: u8 = 4;
 pub const ITM_LBL: i16 = 1;

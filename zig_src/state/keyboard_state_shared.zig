@@ -121,6 +121,51 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        // keyboard.c CatalogMenus[] (398-423): menus closed on a real CAT entry.
+        const catalog_menus = [_]i16{
+            runtime.MNU_ALPHA_OMEGA, runtime.MNU_ALPHAMISC, runtime.MNU_ALPHA,
+            runtime.MNU_FCNS,        runtime.MNU_CONST,      runtime.MNU_CHARS,
+            runtime.MNU_PROGS,       runtime.MNU_VARS,       runtime.MNU_MENUS,
+            runtime.MNU_CONFIGS,     runtime.MNU_MATRS,      runtime.MNU_DATES,
+            runtime.MNU_TIMES,       runtime.MNU_SINTS,      runtime.MNU_STRINGS,
+            runtime.MNU_NUMBRS,      runtime.MNU_CPXS,       runtime.MNU_REALS,
+            runtime.MNU_ANGLES,      runtime.MNU_LINTS,      runtime.MNU_ALLVARS,
+        };
+
+        pub fn closeAllCatalogMenus() void {
+            // keyboard.c closeAllCatalogMenus (425-434).
+            const menu_id = -runtime.currentMenu();
+            for (catalog_menus) |cm| {
+                if (menu_id == cm) {
+                    runtime.popSoftmenu();
+                    break;
+                }
+            }
+        }
+
+        pub fn _closeCatalog() void {
+            // keyboard.c _closeCatalog (437-469).
+            var in_catalog = false;
+            var i: usize = 0;
+            while (i < runtime.SOFTMENU_STACK_SIZE) : (i += 1) {
+                if (runtime.softmenu[@intCast(runtime.softmenuStack[i].softmenuId)].menuItem == -runtime.MNU_CATALOG) {
+                    in_catalog = true;
+                    break;
+                }
+            }
+            if (in_catalog or runtime.currentMenu() == -runtime.MNU_CONST) {
+                switch (-runtime.currentMenu()) {
+                    runtime.MNU_TAM, runtime.MNU_TAMVARONLY, runtime.MNU_TAMNONREG, runtime.MNU_TAMCMP, runtime.MNU_TAMSTO, runtime.MNU_TAMRCL, runtime.MNU_TAMFLAG, runtime.MNU_TAMSHUFFLE, runtime.MNU_TAMLABEL, runtime.MNU_TAMLBLONLY, runtime.ITM_DELITM => {
+                        // TAM menus are processed elsewhere.
+                    },
+                    else => {
+                        runtime.leaveAsmMode();
+                        closeAllCatalogMenus();
+                    },
+                }
+            }
+        }
+
         pub fn determineItem(data: [*c]const u8) i16 {
             // keyboard.c determineItem (1511-1734). VERBOSEKEYS / jm_show_comment
             // tracing dropped. stringToKeyNumber is the inline macro.
