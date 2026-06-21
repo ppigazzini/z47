@@ -6,6 +6,7 @@
 
 extern fn printf(fmt: [*c]const u8, ...) c_int;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn gtk_button_set_label(button: ?*anyopaque, label: [*c]const u8) void;
 extern fn gtk_widget_set_name(widget: ?*anyopaque, name: [*c]const u8) void;
@@ -37,6 +38,204 @@ const ITM_NULL: i16 = 0;
 const ITM_SHIFTf: i16 = 1731;
 const ITM_SHIFTg: i16 = 1732;
 const KEY_fg: i16 = 1893;
+const ITM_A: i16 = 550;
+const ITM_Z: i16 = 575;
+const MNU_TAMALPHA: i16 = 1913;
+const MNU_ALPHA: i16 = 1922;
+const MNU_MyAlpha: i16 = 1350;
+const CHR_caseUP: i16 = 1878;
+const CHR_caseDN: i16 = 1879;
+const AC_LOWER: u8 = 1;
+const AC_UPPER: u8 = 0;
+const FLAG_NUMLOCK: i32 = 32835;
+const FLAG_HOME_TRIPLE: i32 = 32864;
+const FLAG_MYM_TRIPLE: i32 = 32863;
+const USER_R47f_g: u8 = 61;
+const USER_R47bk_fg: u8 = 62;
+const USER_R47fg_bk: u8 = 63;
+const USER_R47fg_g: u8 = 64;
+
+const tamState_t = extern struct {
+    mode: u16,
+    function: i16,
+    alpha: bool,
+    currentOperation: i16,
+    dot: bool,
+    indirect: bool,
+    digitsSoFar: i16,
+    value0: i16,
+    value: i16,
+    min: i16,
+    max: i16,
+    key: i16,
+    keyAlpha: bool,
+    keyDot: bool,
+    keyIndirect: bool,
+    keyInputFinished: bool,
+};
+
+extern var calcModel: u8;
+extern var shiftF: bool;
+extern var shiftG: bool;
+extern var alphaCase: u8;
+extern var tam: tamState_t;
+
+extern fn getSystemFlag(sf: i32) bool;
+extern fn numlockReplacements(id: u16, item: i16, nl: bool, shft: bool, gshft: bool) u16;
+extern fn gtk_label_set_label(label: ?*anyopaque, str: [*c]const u8) void;
+extern fn debugLabelConsistency(lbl: [*c]const u8, ctx: [*c]const u8, key: *const calcKey_t, btn: ?*anyopaque, show_btn: bool) bool;
+
+fn isR47FAM() bool {
+    return calcModel == USER_R47f_g or calcModel == USER_R47bk_fg or
+        calcModel == USER_R47fg_bk or calcModel == USER_R47fg_g;
+}
+
+// max(item, -item) from gtkGui.c, i.e. abs, computed in i32 to match C's
+// integer promotion (so i16 MIN can't trap).
+fn absItem(x: i16) i16 {
+    return @intCast(@max(@as(i32, x), -@as(i32, x)));
+}
+
+fn softmenuName(idx: i16) [*c]const u8 {
+    return &indexOfItems[@intCast(idx)].itemSoftmenuName;
+}
+
+// gtkGui.c's "space -> middle-dot" label patch (lbl was a lone 0x20).
+fn patchSpaceLabel(lbl: *[22]u8) void {
+    if (lbl[0] == 32 and lbl[1] == 0) {
+        lbl[0] = 0xC2;
+        lbl[1] = 0xB7;
+        lbl[2] = '_';
+        lbl[3] = 0xc2;
+        lbl[4] = 0xb7;
+        lbl[5] = 0;
+    }
+}
+
+/// gtkGui.c labelCaptionAimFa: f-shift face caption in AIM mode.
+pub fn labelCaptionAimFa(key: *const calcKey_t, lbl_f: ?*anyopaque) void {
+    var lbl: [22]u8 = undefined;
+    var r47_longpress = false;
+
+    if (key.primaryAim == ITM_NULL) {
+        lbl[0] = 0;
+    } else if (isR47FAM() and key.fShiftedAim == ITM_NULL and key.primaryAim == ITM_SHIFTf) {
+        stringToUtf8(softmenuName(if (tam.alpha) MNU_TAMALPHA else MNU_ALPHA), &lbl);
+        r47_longpress = true;
+    } else if (isR47FAM() and key.fShiftedAim == ITM_NULL and key.primaryAim == ITM_SHIFTg) {
+        stringToUtf8(softmenuName(MNU_MyAlpha), &lbl);
+        r47_longpress = true;
+    } else if (isR47FAM() and key.primaryAim == KEY_fg) {
+        if (getSystemFlag(FLAG_HOME_TRIPLE)) {
+            stringToUtf8(softmenuName(if (tam.alpha) MNU_TAMALPHA else MNU_ALPHA), &lbl);
+        } else if (getSystemFlag(FLAG_MYM_TRIPLE)) {
+            stringToUtf8(softmenuName(MNU_MyAlpha), &lbl);
+        } else {
+            lbl[0] = 0;
+        }
+        r47_longpress = true;
+    } else {
+        stringToUtf8(softmenuName(@intCast(numlockReplacements(4, absItem(key.fShiftedAim), getSystemFlag(FLAG_NUMLOCK), true, false))), &lbl);
+    }
+
+    if (lbl[0] == 32 and lbl[1] == 0) {
+        patchSpaceLabel(&lbl);
+    } else if (key.fShiftedAim == CHR_caseUP or key.fShiftedAim == CHR_caseDN) {
+        lbl[5] = 0;
+    }
+
+    if (debugLabelConsistency(&lbl, "labelCaptionAimFa", key, null, false)) {
+        return;
+    }
+    gtk_label_set_label(lbl_f, &lbl);
+    if (r47_longpress) {
+        gtk_widget_set_name(lbl_f, "letter");
+    } else if (key.primary < 0) {
+        gtk_widget_set_name(lbl_f, "fShiftedUnderline");
+    } else {
+        gtk_widget_set_name(lbl_f, "fShifted");
+    }
+}
+
+/// gtkGui.c labelCaptionAim: primary/g-shift faces in AIM mode.
+pub fn labelCaptionAim(key: *const calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) void {
+    var lbl: [22]u8 = undefined;
+
+    if (key.keyLblAim == ITM_SHIFTf) {
+        _ = strcpy(&lbl, softmenuName(ITM_SHIFTf));
+    } else if (key.keyLblAim == ITM_SHIFTg) {
+        _ = strcpy(&lbl, softmenuName(ITM_SHIFTg));
+    } else if (key.keyLblAim == KEY_fg) {
+        _ = strcpy(&lbl, softmenuName(KEY_fg));
+    } else if (key.primaryAim == ITM_NULL or key.gShiftedAim == ITM_NULL) {
+        lbl[0] = 0;
+    } else {
+        if (shiftG and (ITM_A <= key.primaryAim and key.primaryAim <= ITM_Z)) {
+            stringToUtf8(softmenuName(@intCast(numlockReplacements(5, absItem(key.gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG))), &lbl);
+        } else if (((!shiftF and (alphaCase == AC_LOWER)) or (shiftF and (alphaCase == AC_UPPER))) and (ITM_A <= key.primaryAim and key.primaryAim <= ITM_Z)) {
+            stringToUtf8(softmenuName(@intCast(numlockReplacements(5, absItem(key.primaryAim) + 26, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG))), &lbl);
+        } else {
+            if (shiftF) {
+                stringToUtf8(softmenuName(@intCast(numlockReplacements(6, absItem(key.fShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG))), &lbl);
+            } else if (shiftG) {
+                stringToUtf8(softmenuName(@intCast(numlockReplacements(6, absItem(key.gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG))), &lbl);
+            } else {
+                stringToUtf8(softmenuName(@intCast(numlockReplacements(6, absItem(key.primaryAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG))), &lbl);
+            }
+        }
+    }
+
+    if (lbl[0] == 32 and lbl[1] == 0) {
+        patchSpaceLabel(&lbl);
+    }
+
+    gtk_button_set_label(button, &lbl);
+
+    if (key.keyLblAim == ITM_SHIFTf) {
+        gtk_widget_set_name(button, "calcKeyF");
+    } else if (key.keyLblAim == ITM_SHIFTg) {
+        gtk_widget_set_name(button, "calcKeyG");
+    } else if (key.keyLblAim == KEY_fg) {
+        gtk_widget_set_name(button, "calcKeyFG");
+    } else {
+        gtk_widget_set_name(button, "calcKey");
+    }
+
+    stringToUtf8(softmenuName(@intCast(numlockReplacements(10, key.gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true))), &lbl);
+
+    if (key.gShiftedAim == 0) {
+        lbl[0] = 0;
+    }
+
+    gtk_label_set_label(lbl_g, &lbl);
+
+    if (key.gShiftedAim < 0) {
+        gtk_widget_set_name(lbl_g, "gShiftedUnderline");
+    } else {
+        gtk_widget_set_name(lbl_g, "AimfShifted");
+    }
+
+    if (key.primaryAim == 0) {
+        lbl[0] = 0;
+    } else {
+        stringToUtf8(softmenuName(key.primaryAim), &lbl);
+    }
+
+    if (lbl[0] == 32 and lbl[1] == 0) {
+        lbl[0] = 0xC2;
+        lbl[1] = 0xB7;
+        lbl[2] = ' ';
+        lbl[3] = 0xc2;
+        lbl[4] = 0xb7;
+        lbl[5] = 0;
+    }
+
+    if (debugLabelConsistency(&lbl, "labelCaptionAim", key, button, true)) {
+        return;
+    }
+    gtk_label_set_label(lbl_l, &lbl);
+    gtk_widget_set_name(lbl_l, "letter");
+}
 
 /// gtkGui.c labelCaptionTam: renders a key's TAM-mode (prompt) caption onto its
 /// button and assigns the CSS name (shift keys, fg, oversized operators).
