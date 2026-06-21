@@ -20,6 +20,13 @@ fn checkKeyShiftsHost(data: [*c]const u8) callconv(.c) runtime.bool_t {
     return shared.checkKeyShifts(data);
 }
 
+// commonShiftProcessing is a keyboard.c static; the Zig owner is exported under
+// a z47-namespaced symbol (no C external collides) to force compile-analysis
+// until its caller determineItem is ported to call the sibling directly.
+fn commonShiftProcessingHost(shiftkey: u16) callconv(.c) void {
+    shared.commonShiftProcessing(shiftkey);
+}
+
 fn determineFunctionKeyItem_C47Host(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
     return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
 }
@@ -74,6 +81,7 @@ comptime {
         @export(&processAimInputHost, .{ .name = "processAimInput" });
         @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
+        @export(&commonShiftProcessingHost, .{ .name = "z47_keyboard_state_commonShiftProcessing_owner" });
         @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });

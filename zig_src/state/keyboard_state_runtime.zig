@@ -859,6 +859,21 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// commonShiftProcessing dependencies (keyboard.c 1437-1507).
+pub const JM_TO_FG_LONG: u32 = 580;
+pub const JM_SHIFT_TIMER: u32 = 4000;
+pub const FLAG_SHFT_4s: i32 = 32865;
+pub const FLAG_SH_LONGPRESS: i32 = 32830;
+pub const MNU_SHOW: i16 = 2315;
+pub extern var Shft_LongPress_f_g: bool_t;
+pub extern var Shft_timeouts: bool_t;
+pub extern var shiftKeyClearsError: bool_t;
+pub extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
+pub extern fn fg_processing_jm() void;
+// keyboardTweak.c owners exported from keyboard_state.zig; reach their C names.
+pub extern fn showShiftState() void;
+pub extern fn refreshModeGui() void;
+
 // determineFunctionKeyItem_C47 dependencies (keyboard.c 12-333).
 pub const MNU_PROG: i16 = 1392;
 pub const MNU_VAR: i16 = 1389;
