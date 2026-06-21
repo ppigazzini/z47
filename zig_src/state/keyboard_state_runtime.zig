@@ -874,6 +874,15 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// btnPressed dependencies (keyboard.c 1778-1943).
+pub const PGM_KEY_PRESSED_WHILE_PAUSED: u8 = 4;
+pub const ITM_DENMAX2: i16 = 2551;
+pub const ITM_WSIZE: i16 = 1638;
+pub const ITM_SETFDIGS: i16 = 2154;
+pub extern var lastT_cursorPos: i16;
+pub extern fn refreshStatusBar() void;
+pub extern fn printTrace(func: i16, param: u16) void;
+
 // executeFunction dependencies (keyboard.c 928-1430).
 pub const VAR_LX: i16 = 1206;
 pub const VAR_UX: i16 = 1205;

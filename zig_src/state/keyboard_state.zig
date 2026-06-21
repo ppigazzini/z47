@@ -20,14 +20,6 @@ fn checkKeyShiftsHost(data: [*c]const u8) callconv(.c) runtime.bool_t {
     return shared.checkKeyShifts(data);
 }
 
-// determineItem (and the commonShiftProcessing it calls) are keyboard.c statics;
-// the Zig owner is exported under a z47-namespaced symbol (no C external
-// collides) to force compile-analysis until its caller btnPressed is ported to
-// call the sibling directly.
-fn determineItemHost(data: [*c]const u8) callconv(.c) i16 {
-    return shared.determineItem(data);
-}
-
 // btnFnClicked: a function-key click runs the function directly. Host-only
 // export (its body reaches executeFunction -> clearScreen -> lcd_fill_rect,
 // which only resolves on the host lane); DMCP keeps the canonical C.  This is
@@ -69,8 +61,117 @@ fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDotD(unused_but_mandatory_parameter);
 }
 
+// Minimal GdkEventButton view: only `type` (offset 0) and `button` (offset 52)
+// are read; the layout matches the GTK ABI on the host lane.
+const GdkEventButton = extern struct {
+    type: c_int,
+    _reserved: [48]u8,
+    button: c_uint,
+};
+const GDK_DOUBLE_BUTTON_PRESS: c_int = 5;
+const GDK_TRIPLE_BUTTON_PRESS: c_int = 6;
+
+// Full keyboard.c btnPressed (1778-1943) for the host lane. The C program-stop
+// path clears the status-bar flags with a buggy `&= !(mask)` (logical not);
+// the previous btnPressedHostOverlay patched it afterwards, and that fix is
+// folded in here as the correct `&= ~(mask)`.  DMCP keeps the C body via the
+// btnPressedDmcp overlay.
 fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
-    runtime.btnPressedHostOverlay(not_used, event, data);
+    _ = not_used;
+    const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+    const dat: [*c]u8 = @ptrCast(data);
+
+    runtime.reDraw = false;
+    runtime.nimWhenButtonPressed = (runtime.calcMode == runtime.CM_NIM);
+    runtime.lastT_cursorPos = runtime.T_cursorPos;
+
+    const keyCode: c_int = (@as(c_int, dat[0]) - '0') * 10 + @as(c_int, dat[1]) - '0';
+    runtime.currentKeyCode = @intCast(keyCode);
+    runtime.asnKey[0] = dat[0];
+    runtime.asnKey[1] = dat[1];
+    runtime.asnKey[2] = 0;
+
+    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+        shared.setLastKeyCode(keyCode + 1);
+    } else {
+        runtime.lastKeyCode = 0;
+    }
+
+    if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
+        return;
+    }
+    if (ev.button == 2) {
+        runtime.shiftF = true;
+        runtime.shiftG = false;
+    }
+    if (ev.button == 3) {
+        runtime.shiftF = false;
+        runtime.shiftG = true;
+    }
+
+    const f = runtime.shiftF;
+    const g = runtime.shiftG;
+    const ff = runtime.lastshiftF;
+    const gg = runtime.lastshiftG;
+    runtime.lastshiftF = runtime.shiftF;
+    runtime.lastshiftG = runtime.shiftG;
+
+    const item = shared.determineItem(dat);
+    runtime.lastKeyItemDetermined = item;
+
+    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+        if ((item == runtime.ITM_RS or item == runtime.ITM_EXIT1) and !runtime.getSystemFlag(runtime.FLAG_INTING) and !runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
+            runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+            runtime.programRunStop = runtime.PGM_WAITING;
+            runtime.showFunctionNameItem = 0;
+            // IR_PRINTING (defined on host): trace the STOP.
+            runtime.refreshStatusBar();
+            runtime.printTrace(runtime.ITM_STOP, runtime.NOPARAM);
+        } else if (runtime.programRunStop == runtime.PGM_PAUSED) {
+            runtime.programRunStop = runtime.PGM_KEY_PRESSED_WHILE_PAUSED;
+        }
+        return;
+    }
+
+    var funcParam: [*c]const u8 = "";
+    runtime.keyStateCode = @intCast((if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) @as(c_int, 3) else 0) + (if (g) @as(c_int, 2) else if (f) @as(c_int, 1) else 0));
+    if (runtime.getSystemFlag(runtime.FLAG_USER)) {
+        funcParam = runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + runtime.keyStateCode));
+        _ = runtime.xcopy(runtime.tmpString, funcParam, @intCast(runtime.stringByteLength(funcParam) + 1));
+    } else if ((@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and (runtime.keyStateCode == 0) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX))) {
+        funcParam = &runtime.Norm_Key_00.funcParam;
+        _ = runtime.xcopy(runtime.tmpString, funcParam, @intCast(runtime.stringByteLength(funcParam) + 1));
+    } else {
+        runtime.tmpString[0] = 0;
+    }
+
+    runtime.showFunctionNameItem = 0;
+
+    if (item != runtime.ITM_NOP and item != runtime.ITM_NULL) {
+        shared.processKeyAction(item);
+        if (!runtime.keyActionProcessed) {
+            runtime.showFunctionName(item, 1000, funcParam);
+        }
+    } else if (runtime.calcMode == runtime.CM_REGISTER_BROWSER) {
+        runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+        runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+        runtime.refreshScreen(126);
+    }
+
+    switch (runtime.tam.function) {
+        runtime.ITM_DENMAX2, runtime.ITM_WSIZE, runtime.ITM_SETFDIGS => {
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+            runtime.refreshStatusBar();
+        },
+        else => {},
+    }
+
+    if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and runtime.tamBuffer[0] == 0) {
+        runtime.shiftF = f;
+        runtime.shiftG = g;
+        runtime.lastshiftF = ff;
+        runtime.lastshiftG = gg;
+    }
 }
 
 fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -91,7 +192,6 @@ comptime {
         @export(&processAimInputHost, .{ .name = "processAimInput" });
         @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
-        @export(&determineItemHost, .{ .name = "z47_keyboard_state_determineItem_owner" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
         @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
