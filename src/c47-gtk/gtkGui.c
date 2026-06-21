@@ -2778,271 +2778,7 @@ bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t 
 
 
 
-void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL) {
-  uint8_t lbl[22];
-  int16_t keyLogicalId;
-
-  if(key->keyId < 30) {
-    keyLogicalId = key->keyId -21;
-  }
-  else if(key->keyId < 40) {
-    keyLogicalId = key->keyId -25;
-  }
-  else if(key->keyId < 50) {
-    keyLogicalId = key->keyId -29;
-  }
-  else if(key->keyId < 60) {
-    keyLogicalId = key->keyId -34;
-  }
-  else if(key->keyId < 70) {
-    keyLogicalId = key->keyId -39;
-  }
-  else if(key->keyId < 80) {
-    keyLogicalId = key->keyId -44;
-  }
-  else {
-    keyLogicalId = key->keyId -49;
-  }
-
-  bool_t R47LongpressColour = false;
-
-
-  if(key->primary == 0) {
-    lbl[0] = 0;
-  }
-  else {
-    //stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
-    char sstmp[16];
-    strcpy(sstmp, indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName);
-    if((key->primary == ITM_op_j || key->primary == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
-      sstmp[1]++;
-    }
-    if(key->primary == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
-      sstmp[3]++;
-    }
-    stringToUtf8(sstmp, lbl);
-    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6)) != 0) {
-        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
-      }
-    }
-  }
-
-      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER )
-                                  && key->keyId == Norm_Key_00_keyID
-                                  && Norm_Key_00.func != Norm_Key_00_item_in_layout
-                                  && !getSystemFlag(FLAG_USER)
-                                  );
-
-      if(Norm_Key_00_used) {                                       //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
-        //stringToUtf8(indexOfItems[max(Norm_Key_00_VAR, -Norm_Key_00_VAR)].itemSoftmenuName, lbl);
-        char sstmp[16];
-        if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
-          strcpy(sstmp, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
-        }
-        else {
-          strcpy(sstmp, indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName);
-          if((Norm_Key_00.func == ITM_op_j || Norm_Key_00.func == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
-            sstmp[1]++;
-          }
-          if(Norm_Key_00.func == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
-            sstmp[3]++;
-          }
-        }
-        stringToUtf8(sstmp, lbl);
-      }
-
-      gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-      //printf("--THIS IS NORMAL mode primary-position:   %s\n",lbl);
-
-      //if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
-      //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
-      //}                                                          //JM
-
-      if((key->primary == ITM_AIM && getSystemFlag(FLAG_USER) && calcMode == CM_NORMAL && key->keyId == Norm_Key_00_keyID) ||                       //Sigma+NRM: Colour the alpha key gold if assigned.
-        (key->primary == Norm_Key_00_item_in_layout && calcMode == CM_NORMAL && Norm_Key_00.func == ITM_AIM && key->keyId == Norm_Key_00_keyID)) {
-        gtk_widget_set_name(button, "AlphaKey");
-      }
-      else if(key->primary == ITM_SHIFTf  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTf && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftf key yellow if assigned.
-        gtk_widget_set_name(button, "calcKeyF");
-      }
-      else if(key->primary == ITM_SHIFTg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == ITM_SHIFTg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftg key blue if assigned.
-        gtk_widget_set_name(button, "calcKeyG");
-      }
-      else if(key->primary == KEY_fg  || (key->primary == Norm_Key_00_item_in_layout && Norm_Key_00.func == KEY_fg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftfg key yellow if assigned.
-        gtk_widget_set_name(button, "calcKeyFG");
-      }
-      else if((key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_PERIOD) {
-        gtk_widget_set_name(button, "calcNumericKey");
-      }
-      else if(strcmp((char *)lbl, "÷") == 0 && key->keyId == 55) {      //JM increase the font size of the operators to the numeric key size
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "×") == 0 && key->keyId == 65) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "-") == 0 && key->keyId == 75) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else if(strcmp((char *)lbl, "+") == 0 && key->keyId == 85) {      //JM increase the font size of the operators
-        gtk_widget_set_name(button, "calcNumericKey");                  //JM increase the font size of the operators
-      }                                                                 //JM increase the font size of the operators
-      else {
-        gtk_widget_set_name(button, "calcKey");
-      }
-char sstmp[16];
-
-//  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(key->fShifted == 0) {
-      sstmp[0] = 0;
-  }
-  else {
-    strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-  }
-
-  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
-    sstmp[1]++;
-  }
-  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
-    sstmp[3]++;
-  }
-  stringToUtf8(sstmp, lbl);
-  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-    }
-  }
-
-  if(strcmp((char *)lbl, "SST") == 0) {
-    char tt[20];
-    strcpy(tt, STD_HAMBURGER);
-    strcat(tt, isR47FAM ? STD_DOWN_BLOCKARROW : STD_SST);
-    stringToUtf8(tt, lbl);
-  }
-  else if(strcmp((char *)lbl, "BST") == 0) {
-    char tt[20];
-    strcpy(tt, STD_HAMBURGER);
-    strcat(tt, isR47FAM ? STD_UP_BLOCKARROW : STD_BST);
-    stringToUtf8(tt, lbl);
-  }
-
-  if(key->primary == ITM_SHIFTg && key->keyId == 71) {
-    strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
-  }
-
-  gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
-  //printf("--THIS IS f-shifted:               %s\n",lbl);
-
-  if(R47LongpressColour) {
-    gtk_widget_set_name(lblF, "letter");
-  }
-  else if(key->fShifted < 0) {
-    gtk_widget_set_name(lblF, "fShiftedUnderline");
-  }
-  else {
-    gtk_widget_set_name(lblF, "fShifted");
-  }
-
-//  if(key->gShifted == ITM_op_j) {
-//    strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
-//  }
-//  else {
-  if(isR47FAM && (key->primary == ITM_SHIFTf)) {
-    if(key->gShifted == ITM_NULL) {
-      strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
-    }
-    else {
-      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
-    }
-    R47LongpressColour = true;
-  }
-  else if(isR47FAM && key->primary == ITM_SHIFTg) {
-    if(key->gShifted == ITM_NULL) {
-      strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
-    }
-    else {
-      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
-    }
-    R47LongpressColour = true;
-  }
-  else if(isR47FAM && key->primary == KEY_fg) {
-    if(getSystemFlag(FLAG_HOME_TRIPLE) || getSystemFlag(FLAG_MYM_TRIPLE)) {
-      if(key->gShifted == ITM_NULL) {
-        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
-          strcpy(sstmp, indexOfItems[MNU_HOME].itemSoftmenuName);
-        }
-        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
-          strcpy(sstmp, indexOfItems[MNU_MyMenu].itemSoftmenuName);
-        }
-      }
-      else {
-        strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
-      }
-    }
-    else {
-      sstmp[0] = 0;
-    }
-    R47LongpressColour = true;
-  }
-  else if(key->gShifted == 0) {
-    lbl[0] = 0;
-  }
-  else {
-    strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
-  }
-
-  if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) {
-    sstmp[1]++;
-  }
-  if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) {
-    sstmp[3]++;
-  }
-  stringToUtf8(sstmp, lbl);
-  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
-    }
-  }
-
-  if(strcmp((char *)lbl, "MODE#") == 0 && key->keyId == 22) {
-    strcpy((char *)lbl, "#");
-  }
-  else if(strcmp((char *)lbl, "LINPOL") == 0) {
-    strcpy((char *)lbl, "LIN");
-  }
-
-  gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
-
-  if(R47LongpressColour) {
-    gtk_widget_set_name(lblG, "letter");
-  }
-  else if(key->gShifted < 0 /*|| key->gShifted == ITM_TIMER*/) {
-    gtk_widget_set_name(lblG, "gShiftedUnderline");
-  }
-  else {
-    gtk_widget_set_name(lblG, "gShifted");
-  }
-
-      stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);
-      if(key->primaryAim == 0) {
-        lbl[0] = 0;
-      }
-
-      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }                       //JM SPACE
-
-  if(debugLabelConsistency(lbl, "Normal", key, button, true)) {
-    return;
-  }
-  gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-  gtk_widget_set_name(lblL, "letter");
-}
+extern void z47_labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL); // Zig owner: gtk_gui_label_owned.zig
 
 
     //dr
@@ -3071,49 +2807,49 @@ char sstmp[16];
       gtk_widget_show( lblFKey2);  //JMLINES
       gtk_widget_show( lblGKey2);  //JMLINES
 
-      labelCaptionNormal(keys++, btn21, lbl21F, lbl21G, lbl21L);
-      labelCaptionNormal(keys++, btn22, lbl22F, lbl22G, lbl22L);
-      labelCaptionNormal(keys++, btn23, lbl23F, lbl23G, lbl23L);
-      labelCaptionNormal(keys++, btn24, lbl24F, lbl24G, lbl24L);
-      labelCaptionNormal(keys++, btn25, lbl25F, lbl25G, lbl25L);
-      labelCaptionNormal(keys++, btn26, lbl26F, lbl26G, lbl26L);
+      z47_labelCaptionNormal(keys++, btn21, lbl21F, lbl21G, lbl21L);
+      z47_labelCaptionNormal(keys++, btn22, lbl22F, lbl22G, lbl22L);
+      z47_labelCaptionNormal(keys++, btn23, lbl23F, lbl23G, lbl23L);
+      z47_labelCaptionNormal(keys++, btn24, lbl24F, lbl24G, lbl24L);
+      z47_labelCaptionNormal(keys++, btn25, lbl25F, lbl25G, lbl25L);
+      z47_labelCaptionNormal(keys++, btn26, lbl26F, lbl26G, lbl26L);
 
-      labelCaptionNormal(keys++, btn31, lbl31F, lbl31G, lbl31L);
-      labelCaptionNormal(keys++, btn32, lbl32F, lbl32G, lbl32L);
-      labelCaptionNormal(keys++, btn33, lbl33F, lbl33G, lbl33L);
-      labelCaptionNormal(keys++, btn34, lbl34F, lbl34G, lbl34L);
-      labelCaptionNormal(keys++, btn35, lbl35F, lbl35G, lbl35L);
-      labelCaptionNormal(keys++, btn36, lbl36F, lbl36G, lbl36L);
+      z47_labelCaptionNormal(keys++, btn31, lbl31F, lbl31G, lbl31L);
+      z47_labelCaptionNormal(keys++, btn32, lbl32F, lbl32G, lbl32L);
+      z47_labelCaptionNormal(keys++, btn33, lbl33F, lbl33G, lbl33L);
+      z47_labelCaptionNormal(keys++, btn34, lbl34F, lbl34G, lbl34L);
+      z47_labelCaptionNormal(keys++, btn35, lbl35F, lbl35G, lbl35L);
+      z47_labelCaptionNormal(keys++, btn36, lbl36F, lbl36G, lbl36L);
 
-      labelCaptionNormal(keys++, btn41, lbl41F, lbl41G, lbl41L);
-      labelCaptionNormal(keys++, btn42, lbl42F, lbl42G, lbl42L);
-      labelCaptionNormal(keys++, btn43, lbl43F, lbl43G, lbl43L);
-      labelCaptionNormal(keys++, btn44, lbl44F, lbl44G, lbl44L);
-      labelCaptionNormal(keys++, btn45, lbl45F, lbl45G, lbl45L);
+      z47_labelCaptionNormal(keys++, btn41, lbl41F, lbl41G, lbl41L);
+      z47_labelCaptionNormal(keys++, btn42, lbl42F, lbl42G, lbl42L);
+      z47_labelCaptionNormal(keys++, btn43, lbl43F, lbl43G, lbl43L);
+      z47_labelCaptionNormal(keys++, btn44, lbl44F, lbl44G, lbl44L);
+      z47_labelCaptionNormal(keys++, btn45, lbl45F, lbl45G, lbl45L);
 
-      labelCaptionNormal(keys++, btn51, lbl51F, lbl51G, lbl51L);
-      labelCaptionNormal(keys++, btn52, lbl52F, lbl52G, lbl52L);
-      labelCaptionNormal(keys++, btn53, lbl53F, lbl53G, lbl53L);
-      labelCaptionNormal(keys++, btn54, lbl54F, lbl54G, lbl54L);
-      labelCaptionNormal(keys++, btn55, lbl55F, lbl55G, lbl55L);
+      z47_labelCaptionNormal(keys++, btn51, lbl51F, lbl51G, lbl51L);
+      z47_labelCaptionNormal(keys++, btn52, lbl52F, lbl52G, lbl52L);
+      z47_labelCaptionNormal(keys++, btn53, lbl53F, lbl53G, lbl53L);
+      z47_labelCaptionNormal(keys++, btn54, lbl54F, lbl54G, lbl54L);
+      z47_labelCaptionNormal(keys++, btn55, lbl55F, lbl55G, lbl55L);
 
-      labelCaptionNormal(keys++, btn61, lbl61F, lbl61G, lbl61L);
-      labelCaptionNormal(keys++, btn62, lbl62F, lbl62G, lbl62L);
-      labelCaptionNormal(keys++, btn63, lbl63F, lbl63G, lbl63L);
-      labelCaptionNormal(keys++, btn64, lbl64F, lbl64G, lbl64L);
-      labelCaptionNormal(keys++, btn65, lbl65F, lbl65G, lbl65L);
+      z47_labelCaptionNormal(keys++, btn61, lbl61F, lbl61G, lbl61L);
+      z47_labelCaptionNormal(keys++, btn62, lbl62F, lbl62G, lbl62L);
+      z47_labelCaptionNormal(keys++, btn63, lbl63F, lbl63G, lbl63L);
+      z47_labelCaptionNormal(keys++, btn64, lbl64F, lbl64G, lbl64L);
+      z47_labelCaptionNormal(keys++, btn65, lbl65F, lbl65G, lbl65L);
 
-      labelCaptionNormal(keys++, btn71, lbl71F, lbl71G, lbl71L);
-      labelCaptionNormal(keys++, btn72, lbl72F, lbl72G, lbl72L);
-      labelCaptionNormal(keys++, btn73, lbl73F, lbl73G, lbl73L);
-      labelCaptionNormal(keys++, btn74, lbl74F, lbl74G, lbl74L);
-      labelCaptionNormal(keys++, btn75, lbl75F, lbl75G, lbl75L);
+      z47_labelCaptionNormal(keys++, btn71, lbl71F, lbl71G, lbl71L);
+      z47_labelCaptionNormal(keys++, btn72, lbl72F, lbl72G, lbl72L);
+      z47_labelCaptionNormal(keys++, btn73, lbl73F, lbl73G, lbl73L);
+      z47_labelCaptionNormal(keys++, btn74, lbl74F, lbl74G, lbl74L);
+      z47_labelCaptionNormal(keys++, btn75, lbl75F, lbl75G, lbl75L);
 
-      labelCaptionNormal(keys++, btn81, lbl81F, lbl81G, lbl81L);
-      labelCaptionNormal(keys++, btn82, lbl82F, lbl82G, lbl82L);
-      labelCaptionNormal(keys++, btn83, lbl83F, lbl83G, lbl83L);
-      labelCaptionNormal(keys++, btn84, lbl84F, lbl84G, lbl84L);
-      labelCaptionNormal(keys++, btn85, lbl85F, lbl85G, lbl85L);
+      z47_labelCaptionNormal(keys++, btn81, lbl81F, lbl81G, lbl81L);
+      z47_labelCaptionNormal(keys++, btn82, lbl82F, lbl82G, lbl82L);
+      z47_labelCaptionNormal(keys++, btn83, lbl83F, lbl83G, lbl83L);
+      z47_labelCaptionNormal(keys++, btn84, lbl84F, lbl84G, lbl84L);
+      z47_labelCaptionNormal(keys++, btn85, lbl85F, lbl85G, lbl85L);
 
       gtk_widget_show(btn11);
       gtk_widget_show(btn12);
