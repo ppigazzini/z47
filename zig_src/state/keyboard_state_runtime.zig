@@ -338,8 +338,8 @@ pub extern fn fnBackspaceTimerApp() void;
 pub extern fn fnT_ARROW(command: u16) void;
 // Trampoline to the static keyboard.c _assignToMenu (see keyboard_state_legacy.c).
 extern fn z47_keyboard_state_assignToMenu(data: [*c]u8) bool_t;
-pub fn assignToMenu(data: [*c]u8) void {
-    _ = z47_keyboard_state_assignToMenu(data);
+pub fn assignToMenu(data: [*c]u8) bool_t {
+    return z47_keyboard_state_assignToMenu(data);
 }
 // SHOWMODE macro (defines.h): a normal-mode SHOW/VIEW temporaryInformation state.
 pub inline fn isShowMode() bool {
@@ -874,6 +874,22 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// btnFnReleased dependencies (keyboard.c 811-917).
+pub const ITM_3: i16 = 543;
+pub const ITM_4: i16 = 544;
+pub const ITM_5: i16 = 545;
+pub const ITM_6: i16 = 546;
+pub const ITM_7: i16 = 547;
+pub const ITM_8: i16 = 548;
+pub extern fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;
+pub extern fn displayShiftAndTamBuffer() void;
+
+// btnFnPressed dependencies (keyboard.c 579-742).
+pub extern var releaseOverride: bool_t;
+pub extern var FN_key_pressed: i16;
+pub extern fn updateAssignTamBuffer() void;
+pub extern fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;
+
 // btnReleased dependencies (keyboard.c 2032-2306).
 pub const SCREENDUMP: i16 = 9875;
 pub const PGM_RESUMING: u8 = 5;

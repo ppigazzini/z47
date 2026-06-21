@@ -30,6 +30,8 @@
 #define determineFunctionKeyItem_C47 z47_keyboard_state_determineFunctionKeyItem_C47
 #define btnFnClicked z47_keyboard_state_btnFnClicked
 #define btnReleased z47_keyboard_state_btnReleased
+#define btnFnPressed z47_keyboard_state_btnFnPressed
+#define btnFnReleased z47_keyboard_state_btnFnReleased
 #define fnKeyEnter z47_keyboard_state_fnKeyEnter
 #define fnKeyExit z47_keyboard_state_fnKeyExit
 #define fnKeyCC z47_keyboard_state_fnKeyCC
@@ -99,6 +101,8 @@ void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
 #undef caseReplacements
 #undef setLastKeyCode
 #if defined(PC_BUILD)
+#undef btnFnReleased
+#undef btnFnPressed
 #undef btnReleased
 #undef btnFnClicked
 #undef determineFunctionKeyItem_C47

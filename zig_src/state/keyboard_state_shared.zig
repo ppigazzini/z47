@@ -2530,7 +2530,7 @@ pub fn implementation(comptime runtime: type) type {
                             if (runtime.asnKey[1] != 0) {
                                 runtime.assignToKey(&runtime.asnKey[0]);
                             } else {
-                                runtime.assignToMenu(&runtime.asnKey[0]);
+                                _ = runtime.assignToMenu(&runtime.asnKey[0]);
                             }
                             runtime.calcMode = runtime.previousCalcMode;
                             runtime.shiftF = false;
@@ -2701,7 +2701,7 @@ pub fn implementation(comptime runtime: type) type {
                         if (runtime.asnKey[1] != 0) {
                             runtime.assignToKey(&runtime.asnKey[0]);
                         } else {
-                            runtime.assignToMenu(&runtime.asnKey[0]);
+                            _ = runtime.assignToMenu(&runtime.asnKey[0]);
                         }
                         runtime.calcMode = runtime.previousCalcMode;
                         runtime.shiftF = false;
@@ -2866,7 +2866,7 @@ pub fn implementation(comptime runtime: type) type {
                         if (runtime.asnKey[1] != 0) {
                             runtime.assignToKey(&runtime.asnKey[0]);
                         } else {
-                            runtime.assignToMenu(&runtime.asnKey[0]);
+                            _ = runtime.assignToMenu(&runtime.asnKey[0]);
                         }
                         runtime.calcMode = runtime.previousCalcMode;
                         runtime.shiftF = false;
