@@ -1114,6 +1114,23 @@ pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
     runtime.fnTimerStop(runtime.TO_FN_LONG);
 }
 
+// keyboardTweak.c nameFunction (643-658): the item for a function-key number.
+pub export fn nameFunction(fn_: i16, f_shift: runtime.bool_t, g_shift: runtime.bool_t) callconv(.c) i16 {
+    var str: [3]u8 = undefined;
+    str[0] = @intCast(@as(i16, '0') + fn_);
+    str[1] = 0;
+    const func = shared.determineFunctionKeyItem_C47(&str, f_shift, g_shift);
+    runtime.lastKeyItemDetermined = func;
+    return if (func < 0) -func else func;
+}
+
+// keyboardTweak.c FN_cancel (721-725): cancel the pending function-key timeout.
+pub export fn FN_cancel() callconv(.c) void {
+    runtime.FN_key_pressed = 0;
+    runtime.FN_timeouts_in_progress = false;
+    runtime.fnTimerStop(runtime.TO_FN_LONG);
+}
+
 // keyboardTweak.c Check_MultiPresses (351-639): build the longpress key cycle
 // for the pressed key and arm the long-press timer (TAMALPHA_f branch taken).
 pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void {

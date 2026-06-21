@@ -1110,6 +1110,8 @@ pub fn radix34MarkNotDecItm() i16 {
     return if (radix34MarkChar() == '.') ITM_COMMA else ITM_PERIOD;
 }
 
+pub extern var FN_timeouts_in_progress: bool_t;
+
 // Check_MultiPresses dependencies (keyboardTweak.c 351-639).
 pub const RBX_M1234: u8 = 226;
 pub const RBX_M124: u8 = 225;

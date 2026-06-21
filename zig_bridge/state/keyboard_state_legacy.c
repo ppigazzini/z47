@@ -19,6 +19,8 @@
 #define Check_Norm_Key_00_Assigned z47_keyboard_state_Check_Norm_Key_00_Assigned
 #define Setup_MultiPresses z47_keyboard_state_Setup_MultiPresses
 #define Check_MultiPresses z47_keyboard_state_Check_MultiPresses
+#define nameFunction z47_keyboard_state_nameFunction
+#define FN_cancel z47_keyboard_state_FN_cancel
 #define shiftCutoff z47_keyboard_state_shiftCutoff
 #define execFnTimeout z47_keyboard_state_execFnTimeout
 #define openHOMEorMyM z47_keyboard_state_openHOMEorMyM
@@ -73,6 +75,8 @@ extern void btnClicked(void *unused, void *data);
 #undef keyClick
 #undef _keyClick
 #undef openHOMEorMyM
+#undef FN_cancel
+#undef nameFunction
 #undef Check_MultiPresses
 #undef Setup_MultiPresses
 #undef Check_Norm_Key_00_Assigned
