@@ -874,6 +874,18 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// frmCalcMouseButton* / convertXYToKey dependencies (keyboard.c 1948-2009).
+pub const ITM_SOLVE: i16 = 1608;
+pub const calcKeyboard_t = extern struct {
+    x: c_int,
+    y: c_int,
+    width: [4]c_int,
+    height: [4]c_int,
+    keyImage: [4]?*anyopaque,
+};
+pub extern var calcKeyboard: [43]calcKeyboard_t;
+pub extern var currentBezel: c_int;
+
 // btnFnReleased dependencies (keyboard.c 811-917).
 pub const ITM_3: i16 = 543;
 pub const ITM_4: i16 = 544;
@@ -903,9 +915,6 @@ pub extern fn hideFunctionName() void;
 pub extern fn insertUserItemInProgram(func: i16, func_param: [*c]u8) void;
 pub extern fn runProgram(single_step: bool_t, menu_label: u16) void;
 pub extern fn showingProbMenu() bool_t; // PROBMENU macro
-// keyboard.c `key[3]` is a PC_BUILD file-static (mouse-coordinate dispatch);
-// reach it through the bridge trampoline so btnReleased can clear key[0].
-pub extern fn z47_keyboard_state_key_static() [*c]u8;
 
 // btnPressed dependencies (keyboard.c 1778-1943).
 pub const PGM_KEY_PRESSED_WHILE_PAUSED: u8 = 4;
