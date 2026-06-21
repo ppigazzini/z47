@@ -1112,6 +1112,29 @@ pub fn radix34MarkNotDecItm() i16 {
 
 pub extern var FN_timeouts_in_progress: bool_t;
 
+// btnFnPressed/Released_StateMachine deps (keyboardTweak.c 729-957).
+pub const ST_1_PRESS1: u8 = 1;
+pub const ST_2_REL1: u8 = 2;
+pub const ST_3_PRESS2: u8 = 3;
+pub const ST_4_REL2: u8 = 4;
+pub const TIME_FN_12XX_TO_F: u32 = 476;
+pub const TIME_FN_DOUBLE_G_TO_NOP: u32 = 448;
+pub const TIME_FN_DOUBLE_RELEASE: u32 = 150;
+pub const FLAG_G_DOUBLETAP: i32 = 32861;
+pub const DEBUGSFN: bool = true; // defines.h:305 (#define DEBUGSFN true)
+pub extern var FN_state: u8;
+pub extern var FN_key_pressed_last: i16;
+pub extern var FN_handle_timed_out_to_EXEC: bool_t;
+pub extern var FN_timed_out_to_RELEASE_EXEC: bool_t;
+pub extern fn underline_softkey(x_softkey_mask: u16, y_softkey: u16) void;
+// BLOCK_DOUBLEPRESS_MENU macro (defines.h:2262).
+pub fn blockDoublepressMenu(menu_id: i16, x: i16, y: i16) bool {
+    return (menu_id == -MNU_ALPHA and y == 0 and (x == 4 or x == 5)) or
+        (menu_id == -MNU_M_EDIT and y == 0 and (x == 4 or x == 5)) or
+        (menu_id == -MNU_EQ_EDIT and y == 0 and (x == 4 or x == 5)) or
+        (menu_id == -MNU_TAMALPHA and y == 0 and (x == 4 or x == 5));
+}
+
 // Check_MultiPresses dependencies (keyboardTweak.c 351-639).
 pub const RBX_M1234: u8 = 226;
 pub const RBX_M124: u8 = 225;
