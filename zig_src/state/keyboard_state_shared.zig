@@ -473,6 +473,62 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn assignToMenu(data: [*c]u8) runtime.bool_t {
+            // keyboard.c _assignToMenu (748-807). goto endReturnTrue -> labeled block.
+            const position: u16 = @intCast((@as(i32, data[0]) - '1') + (if (runtime.shiftG) @as(i32, 12) else if (runtime.shiftF) @as(i32, 6) else 0));
+            end_true: {
+                switch (-runtime.currentMenu()) {
+                    runtime.MNU_MyMenu => {
+                        runtime.assignToMyMenu(position);
+                        break :end_true;
+                    },
+                    runtime.MNU_MyAlpha => {
+                        runtime.assignToMyAlpha(position);
+                        break :end_true;
+                    },
+                    runtime.MNU_DYNAMIC => {
+                        runtime.assignToUserMenu(position);
+                        break :end_true;
+                    },
+                    runtime.MNU_HOME => {
+                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, @constCast("HOME"))) {
+                            return false;
+                        }
+                        runtime.assignToUserMenu(position);
+                        break :end_true;
+                    },
+                    runtime.MNU_PFN => {
+                        if (!runtime.setCurrentUserMenu(-runtime.MNU_DYNAMIC, @constCast("P.FN"))) {
+                            return false;
+                        }
+                        runtime.assignToUserMenu(position);
+                        break :end_true;
+                    },
+                    runtime.MNU_CATALOG, runtime.MNU_ALPHA, runtime.MNU_CHARS, runtime.MNU_PROGS, runtime.MNU_VARS, runtime.MNU_MENUS => {
+                        runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                        return false;
+                    },
+                    else => {
+                        runtime.displayCalcErrorMessage(runtime.ERROR_CANNOT_ASSIGN_HERE, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+                        if (comptime !runtime.is_dmcp_build) {
+                            runtime.moreInfoOnError("In function _assignToMenu:", "the menu", runtime.indexOfItemsCatalogName(-runtime.currentMenu()), "is write-protected.");
+                        }
+                        // C falls through into endReturnTrue.
+                    },
+                }
+            }
+            // endReturnTrue:
+            runtime.calcMode = runtime.previousCalcMode;
+            runtime.shiftF = false;
+            runtime.shiftG = false;
+            _closeCatalog();
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+            runtime.refreshScreen(103);
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+            return true;
+        }
+
         pub fn _closeCatalog() void {
             // keyboard.c _closeCatalog (437-469).
             var in_catalog = false;
@@ -2530,7 +2586,7 @@ pub fn implementation(comptime runtime: type) type {
                             if (runtime.asnKey[1] != 0) {
                                 runtime.assignToKey(&runtime.asnKey[0]);
                             } else {
-                                _ = runtime.assignToMenu(&runtime.asnKey[0]);
+                                _ = assignToMenu(&runtime.asnKey[0]);
                             }
                             runtime.calcMode = runtime.previousCalcMode;
                             runtime.shiftF = false;
@@ -2701,7 +2757,7 @@ pub fn implementation(comptime runtime: type) type {
                         if (runtime.asnKey[1] != 0) {
                             runtime.assignToKey(&runtime.asnKey[0]);
                         } else {
-                            _ = runtime.assignToMenu(&runtime.asnKey[0]);
+                            _ = assignToMenu(&runtime.asnKey[0]);
                         }
                         runtime.calcMode = runtime.previousCalcMode;
                         runtime.shiftF = false;
@@ -2866,7 +2922,7 @@ pub fn implementation(comptime runtime: type) type {
                         if (runtime.asnKey[1] != 0) {
                             runtime.assignToKey(&runtime.asnKey[0]);
                         } else {
-                            _ = runtime.assignToMenu(&runtime.asnKey[0]);
+                            _ = assignToMenu(&runtime.asnKey[0]);
                         }
                         runtime.calcMode = runtime.previousCalcMode;
                         runtime.shiftF = false;

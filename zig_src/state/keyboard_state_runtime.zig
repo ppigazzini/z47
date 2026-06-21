@@ -336,11 +336,11 @@ pub extern fn assignLeaveAlpha() void;
 pub extern fn assignToKey(data: [*c]const u8) void;
 pub extern fn fnBackspaceTimerApp() void;
 pub extern fn fnT_ARROW(command: u16) void;
-// Trampoline to the static keyboard.c _assignToMenu (see keyboard_state_legacy.c).
-extern fn z47_keyboard_state_assignToMenu(data: [*c]u8) bool_t;
-pub fn assignToMenu(data: [*c]u8) bool_t {
-    return z47_keyboard_state_assignToMenu(data);
-}
+// _assignToMenu (keyboard.c 748-807) is ported in keyboard_state_shared.zig.
+pub const ERROR_CANNOT_ASSIGN_HERE: u8 = 47;
+pub extern fn assignToMyMenu(position: u16) void;
+pub extern fn assignToMyAlpha(position: u16) void;
+pub extern fn assignToUserMenu(position: u16) void;
 // SHOWMODE macro (defines.h): a normal-mode SHOW/VIEW temporaryInformation state.
 pub inline fn isShowMode() bool {
     return calcMode == CM_NORMAL and (temporaryInformation == TI_SHOW_REGISTER or
