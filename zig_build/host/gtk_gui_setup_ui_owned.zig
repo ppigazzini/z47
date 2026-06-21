@@ -43,7 +43,58 @@ extern var lcd_buffer: [*c]u8;
 extern var calcLandscape: bool;
 extern var enableFunctionKeysDisplay: bool;
 extern var calcModel: u8;
-extern const shortCutString: [37]shortCut_t;
+
+fn s16(comptime str: []const u8) [16]u8 {
+    var a = [_]u8{0} ** 16;
+    @memcpy(a[0..str.len], str);
+    return a;
+}
+
+// Per-key shortcut tooltip strings (ported from gtkGui.c). Indexed by
+// keyCnt/keyCntA in setupUI; the C/R variants pick the C47-family vs R47-family
+// tooltip and the A variants are the alpha-mode labels.
+// zig fmt: off
+const shortCutString = [_]shortCut_t{
+    .{ .C47 = s16("a"), .C47A = s16("A"), .R47 = s16("Q"), .R47A = s16("A") },
+    .{ .C47 = s16("v"), .C47A = s16("B"), .R47 = s16("q"), .R47A = s16("B") },
+    .{ .C47 = s16("q"), .C47A = s16("C"), .R47 = s16("v"), .R47A = s16("C") },
+    .{ .C47 = s16("o"), .C47A = s16("D"), .R47 = s16("Y"), .R47A = s16("D") },
+    .{ .C47 = s16("l"), .C47A = s16("E"), .R47 = s16("o"), .R47A = s16("E") },
+    .{ .C47 = s16("x"), .C47A = s16("F"), .R47 = s16("l"), .R47A = s16("F") },
+    .{ .C47 = s16("m"), .C47A = s16("G"), .R47 = s16("m"), .R47A = s16("G") },
+    .{ .C47 = s16("r"), .C47A = s16("H"), .R47 = s16("r"), .R47A = s16("H") },
+    .{ .C47 = s16("d"), .C47A = s16("I"), .R47 = s16("d"), .R47A = s16("I") },
+    .{ .C47 = s16("s"), .C47A = s16("J"), .R47 = s16(">"), .R47A = s16("J") },
+    .{ .C47 = s16("c"), .C47A = s16("K"), .R47 = s16(""), .R47A = s16("") },
+    .{ .C47 = s16("t"), .C47A = s16("L"), .R47 = s16(""), .R47A = s16("") },
+    .{ .C47 = s16("Enter"), .C47A = s16(""), .R47 = s16("Enter"), .R47A = s16("") },
+    .{ .C47 = s16("w"), .C47A = s16("M"), .R47 = s16("w"), .R47A = s16("K") },
+    .{ .C47 = s16("n"), .C47A = s16("N"), .R47 = s16("n"), .R47A = s16("L") },
+    .{ .C47 = s16("e"), .C47A = s16("O"), .R47 = s16("e"), .R47A = s16("M") },
+    .{ .C47 = s16("Backspace"), .C47A = s16(""), .R47 = s16("Backspace"), .R47A = s16("") },
+    .{ .C47 = s16("Up"), .C47A = s16(""), .R47 = s16("x"), .R47A = s16("") },
+    .{ .C47 = s16("7"), .C47A = s16("P"), .R47 = s16("7"), .R47A = s16("N") },
+    .{ .C47 = s16("8"), .C47A = s16("Q"), .R47 = s16("8"), .R47A = s16("O") },
+    .{ .C47 = s16("9"), .C47A = s16("R"), .R47 = s16("9"), .R47A = s16("P") },
+    .{ .C47 = s16("/"), .C47A = s16("S"), .R47 = s16("/"), .R47A = s16("Q") },
+    .{ .C47 = s16("Dn"), .C47A = s16(""), .R47 = s16("Up"), .R47A = s16("") },
+    .{ .C47 = s16("4"), .C47A = s16("T"), .R47 = s16("4"), .R47A = s16("R") },
+    .{ .C47 = s16("5"), .C47A = s16("U"), .R47 = s16("5"), .R47A = s16("S") },
+    .{ .C47 = s16("6"), .C47A = s16("V"), .R47 = s16("6"), .R47A = s16("T") },
+    .{ .C47 = s16("x"), .C47A = s16("W"), .R47 = s16("x"), .R47A = s16("U") },
+    .{ .C47 = s16("f/g"), .C47A = s16(""), .R47 = s16("Dn"), .R47A = s16("") },
+    .{ .C47 = s16("1"), .C47A = s16("X"), .R47 = s16("1"), .R47A = s16("V") },
+    .{ .C47 = s16("2"), .C47A = s16("Y"), .R47 = s16("2"), .R47A = s16("W") },
+    .{ .C47 = s16("3"), .C47A = s16("Z"), .R47 = s16("3"), .R47A = s16("X") },
+    .{ .C47 = s16("-"), .C47A = s16("_"), .R47 = s16("-"), .R47A = s16("Y") },
+    .{ .C47 = s16("Esc"), .C47A = s16(""), .R47 = s16("Esc"), .R47A = s16("") },
+    .{ .C47 = s16("0"), .C47A = s16(":"), .R47 = s16("0"), .R47A = s16("Z") },
+    .{ .C47 = s16("."), .C47A = s16("."), .R47 = s16("."), .R47A = s16(",") },
+    .{ .C47 = s16("\\"), .C47A = s16("?"), .R47 = s16("\\"), .R47A = s16("?") },
+    .{ .C47 = s16("+"), .C47A = s16("Space"), .R47 = s16("+"), .R47A = s16("Space") },
+};
+// zig fmt: on
+
 extern var btn11: ?*anyopaque;
 extern var btn12: ?*anyopaque;
 extern var btn13: ?*anyopaque;
