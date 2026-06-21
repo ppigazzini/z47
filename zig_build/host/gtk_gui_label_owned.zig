@@ -4,6 +4,57 @@
 // pure UTF-8 validator used by the button-label consistency diagnostics; this
 // owner is the intended home for the rest of the label-rendering cluster.
 
+extern fn printf(fmt: [*c]const u8, ...) c_int;
+
+/// Hex / printable-char / decimal dump of a label's raw bytes (gtkGui.c
+/// print_label_bytes). Used by the UTF-8 consistency diagnostics.
+pub fn printLabelBytes(data: [*c]const u8, length: c_int) void {
+    var i: c_int = 0;
+    while (i < length) : (i += 1) {
+        _ = printf("0x%02x ", @as(c_int, data[@intCast(i)]));
+    }
+    _ = printf("(");
+    i = 0;
+    while (i < length) : (i += 1) {
+        const b = data[@intCast(i)];
+        _ = printf("%c", @as(c_int, if (b >= 32 and b < 127) b else '.'));
+    }
+    _ = printf("  dec: ");
+    i = 0;
+    while (i < length) : (i += 1) {
+        _ = printf("%03d ", @as(c_int, data[@intCast(i)]));
+    }
+    _ = printf(")\n");
+}
+
+/// gtkGui.c check_label_consistency: warns on NULL or non-UTF-8 button-label
+/// text (length-capped at 22) and returns true when an issue was reported.
+pub fn checkLabelConsistency(lbl: [*c]const u8, context: [*c]const u8) bool {
+    if (lbl == null) {
+        _ = printf("GTK3 Setup utf issue: NULL label in %s\n", context);
+        return true;
+    }
+
+    // Calculate length safely (stop at 22 or null terminator).
+    var len: c_int = 0;
+    while (lbl[@intCast(len)] != 0 and len < 22) {
+        len += 1;
+    }
+
+    if (len == 0) {
+        return false; // Empty string is OK
+    }
+
+    var bad_pos: usize = 0;
+    if (!isValidUtf8(lbl, &bad_pos)) {
+        _ = printf("GTK3 Setup utf issue: Invalid UTF-8 at position %zu in %s: ", bad_pos, context);
+        printLabelBytes(lbl, len);
+        return true;
+    }
+
+    return false; // All good
+}
+
 /// Faithful port of gtkGui.c is_valid_utf8(): validates a NUL-terminated string
 /// as well-formed UTF-8, rejecting overlong forms, surrogates, and the U+xxFFFE
 /// / U+xxFFFF noncharacters. On the first invalid byte it records that byte

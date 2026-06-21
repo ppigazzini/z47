@@ -9,6 +9,8 @@
 
 extern int16_t z47_keyCodeFromGdkKey(uint32_t gdkKey); // Zig owner: gtk_gui_keymap_owned.zig
 extern void z47_prepareCssData(void); // Zig owner: gtk_gui_css_owned.zig
+extern void z47_print_label_bytes(const uint8_t* data, int length); // Zig owner: gtk_gui_label_owned.zig
+extern bool_t z47_check_label_consistency(const uint8_t* lbl, const char* context); // Zig owner: gtk_gui_label_owned.zig
 
 
 #if defined(PC_BUILD)
@@ -2742,61 +2744,21 @@ const char* get_button_name(GtkWidget* widget) {
 
 
 //----------------------------------------------------------------------------------
-static void print_label_bytes(const uint8_t* data, int length) {
-  for(int i = 0; i < length; i++) {
-    printf("0x%02x ", data[i]);
-  }
-  printf("(");
-  for(int i = 0; i < length; i++) {
-    printf("%c", (data[i] >= 32 && data[i] < 127) ? data[i] : '.');
-  }
-  printf("  dec: ");
-  for(int i = 0; i < length; i++) {
-    printf("%03d ", data[i]);
-  }
-  printf(")\n");
-}
 
 extern bool z47_is_valid_utf8(const char *s, size_t *error_offset); // Zig owner: gtk_gui_label_owned.zig
 
 
-bool_t check_label_consistency(const uint8_t* lbl, const char* context) {
-    if (!lbl) {
-        printf("GTK3 Setup utf issue: NULL label in %s\n", context);
-        return 1;
-    }
-
-    // Calculate length safely (stop at 22 or null terminator)
-    int len = 0;
-    while (lbl[len] != 0 && len < 22) {
-        len++;
-    }
-
-    if (len == 0) {
-        return 0; // Empty string is OK
-    }
-
-    size_t bad_pos = 0;
-    if (!z47_is_valid_utf8((const char*)lbl, &bad_pos)) {
-        printf("GTK3 Setup utf issue: Invalid UTF-8 at position %zu in %s: ",
-               bad_pos, context);
-        print_label_bytes(lbl, len);
-        return 1;
-    }
-
-    return 0; // All good
-}
 
 
 //----------------------------------------------------------------------------------
 
 
 bool debugLabelConsistency(const uint8_t *lbl, const char *ctx, const calcKey_t *key, GtkWidget *btn, bool showBtn) {
-  if(!check_label_consistency(lbl,ctx)) {
+  if(!z47_check_label_consistency(lbl,ctx)) {
     return false;
   }
   if(key) {
-    print_label_bytes(lbl, 16);
+    z47_print_label_bytes(lbl, 16);
     if(showBtn&&btn) {
       printf("     : key details - btn:=%s\n", get_button_name(btn));
     }
