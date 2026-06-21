@@ -377,8 +377,19 @@ extern fn malloc(size: usize) ?*anyopaque;
 extern fn exit(code: c_int) noreturn;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn lcd_clear_buf() void;
-extern fn check_all_btn_widgets_for_consistency() void;
 extern fn z47_prepareCssData() void;
+extern fn printf(format: [*:0]const u8, ...) c_int;
+extern fn abort() noreturn;
+extern fn g_type_check_instance_is_a(instance: ?*anyopaque, iface_type: usize) c_int;
+extern fn gtk_widget_get_type() usize;
+extern fn gtk_button_get_type() usize;
+extern fn gtk_label_get_type() usize;
+extern fn gtk_widget_get_tooltip_text(widget: ?*anyopaque) [*c]u8;
+extern fn gtk_widget_get_tooltip_markup(widget: ?*anyopaque) [*c]u8;
+extern fn gtk_button_get_label(button: ?*anyopaque) [*c]const u8;
+extern fn gtk_label_get_text(label: ?*anyopaque) [*c]const u8;
+extern fn gtk_label_get_label(label: ?*anyopaque) [*c]const u8;
+extern fn z47_check_utf_string(widget_name: [*c]const u8, what: [*c]const u8, s: [*c]const u8) bool;
 extern fn z47_setupUI_preamble() void;
 extern fn z47_btnFnPressed_wrapper(a: ?*anyopaque, b: ?*anyopaque, c: ?*anyopaque) c_int;
 extern fn z47_btnFnReleased_wrapper(a: ?*anyopaque, b: ?*anyopaque, c: ?*anyopaque) c_int;
@@ -1390,5 +1401,111 @@ pub fn setupUI() void {
     lcd_buffer = @as([*c]u8, @ptrCast(malloc(SCREEN_HEIGHT * (SCREEN_WIDTH / 8 + 2) + 2))) + 2;
     lcd_clear_buf();
 
-    check_all_btn_widgets_for_consistency();
+    checkAllBtnWidgetsForConsistency();
+}
+
+fn checkWidget(widget: ?*anyopaque, name: [*:0]const u8) void {
+    if (widget == null) {
+        _ = printf("Widget %s is NULL - skipping\n", name);
+        return;
+    }
+    if (g_type_check_instance_is_a(widget, gtk_widget_get_type()) == 0) {
+        _ = printf("Widget %s (%p) is not a valid GTK widget - skipping\n", name, widget);
+        return;
+    }
+    var found = false;
+    found = z47_check_utf_string(name, "tooltip", gtk_widget_get_tooltip_text(widget)) or found;
+    found = z47_check_utf_string(name, "tooltip markup", gtk_widget_get_tooltip_markup(widget)) or found;
+    if (g_type_check_instance_is_a(widget, gtk_button_get_type()) != 0) {
+        found = z47_check_utf_string(name, "button label", gtk_button_get_label(widget)) or found;
+    }
+    if (g_type_check_instance_is_a(widget, gtk_label_get_type()) != 0) {
+        const text = gtk_label_get_text(widget);
+        found = z47_check_utf_string(name, "label text", text) or found;
+        const markup = gtk_label_get_label(widget);
+        if (markup != null and markup != text) {
+            found = z47_check_utf_string(name, "label markup", markup) or found;
+        }
+    }
+    if (found) abort();
+}
+
+fn checkAllBtnWidgetsForConsistency() void {
+    _ = printf("Checking all btn widgets for consistency...\n");
+    checkWidget(btn11, "btn11");
+    checkWidget(btn12, "btn12");
+    checkWidget(btn13, "btn13");
+    checkWidget(btn14, "btn14");
+    checkWidget(btn15, "btn15");
+    checkWidget(btn16, "btn16");
+    checkWidget(btn21, "btn21");
+    checkWidget(btn22, "btn22");
+    checkWidget(btn23, "btn23");
+    checkWidget(btn24, "btn24");
+    checkWidget(btn25, "btn25");
+    checkWidget(btn26, "btn26");
+    checkWidget(btn21A, "btn21A");
+    checkWidget(btn22A, "btn22A");
+    checkWidget(btn23A, "btn23A");
+    checkWidget(btn24A, "btn24A");
+    checkWidget(btn25A, "btn25A");
+    checkWidget(btn26A, "btn26A");
+    checkWidget(btn31, "btn31");
+    checkWidget(btn32, "btn32");
+    checkWidget(btn33, "btn33");
+    checkWidget(btn34, "btn34");
+    checkWidget(btn35, "btn35");
+    checkWidget(btn36, "btn36");
+    checkWidget(btn31A, "btn31A");
+    checkWidget(btn32A, "btn32A");
+    checkWidget(btn33A, "btn33A");
+    checkWidget(btn34A, "btn34A");
+    checkWidget(btn35A, "btn35A");
+    checkWidget(btn36A, "btn36A");
+    checkWidget(btn41, "btn41");
+    checkWidget(btn42, "btn42");
+    checkWidget(btn43, "btn43");
+    checkWidget(btn44, "btn44");
+    checkWidget(btn45, "btn45");
+    checkWidget(btn42A, "btn42A");
+    checkWidget(btn43A, "btn43A");
+    checkWidget(btn44A, "btn44A");
+    checkWidget(btn51, "btn51");
+    checkWidget(btn52, "btn52");
+    checkWidget(btn53, "btn53");
+    checkWidget(btn54, "btn54");
+    checkWidget(btn55, "btn55");
+    checkWidget(btn52A, "btn52A");
+    checkWidget(btn53A, "btn53A");
+    checkWidget(btn54A, "btn54A");
+    checkWidget(btn55A, "btn55A");
+    checkWidget(btn61, "btn61");
+    checkWidget(btn62, "btn62");
+    checkWidget(btn63, "btn63");
+    checkWidget(btn64, "btn64");
+    checkWidget(btn65, "btn65");
+    checkWidget(btn62A, "btn62A");
+    checkWidget(btn63A, "btn63A");
+    checkWidget(btn64A, "btn64A");
+    checkWidget(btn65A, "btn65A");
+    checkWidget(btn71, "btn71");
+    checkWidget(btn72, "btn72");
+    checkWidget(btn73, "btn73");
+    checkWidget(btn74, "btn74");
+    checkWidget(btn75, "btn75");
+    checkWidget(btn71A, "btn71A");
+    checkWidget(btn72A, "btn72A");
+    checkWidget(btn73A, "btn73A");
+    checkWidget(btn74A, "btn74A");
+    checkWidget(btn75A, "btn75A");
+    checkWidget(btn81, "btn81");
+    checkWidget(btn82, "btn82");
+    checkWidget(btn83, "btn83");
+    checkWidget(btn84, "btn84");
+    checkWidget(btn85, "btn85");
+    checkWidget(btn82A, "btn82A");
+    checkWidget(btn83A, "btn83A");
+    checkWidget(btn84A, "btn84A");
+    checkWidget(btn85A, "btn85A");
+    _ = printf("Consistency check complete - none found.\n");
 }
