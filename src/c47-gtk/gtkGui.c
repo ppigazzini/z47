@@ -3046,188 +3046,12 @@ char sstmp[16];
 
 
     //dr
-    void labelCaptionAimFa(const calcKey_t* key, GtkWidget* lblF) {
-      uint8_t lbl[22];
-      bool_t R47LongpressColour = false;
-
-      if(key->primaryAim == ITM_NULL) {
-        lbl[0] = 0;
-      }
-      else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
-        if(tam.alpha) {
-          stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
-        }
-        else {
-          stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
-        }
-        R47LongpressColour = true;
-      }
-      else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
-        stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
-        R47LongpressColour = true;
-      }
-      else if(isR47FAM && key->primaryAim == KEY_fg) {
-        if(getSystemFlag(FLAG_HOME_TRIPLE)) {
-          if(tam.alpha) {
-            stringToUtf8(indexOfItems[MNU_TAMALPHA].itemSoftmenuName, lbl);
-          }
-          else {
-            stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
-          }
-        }
-        else if(getSystemFlag(FLAG_MYM_TRIPLE)) {
-          stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
-        }
-        else {
-          lbl[0] = 0;
-        }
-        R47LongpressColour = true;
-      }
-      else {
-          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
-      }
-
-      if(lbl[0] == 32 && lbl[1]==0) {
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }
-      else if(key->fShiftedAim == CHR_caseUP || key->fShiftedAim == CHR_caseDN) {
-        lbl[5] = 0;
-      }
-
-      if(debugLabelConsistency(lbl, "labelCaptionAimFa", key, NULL, false)) {
-        return;
-      }
-      gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
-      if(R47LongpressColour) {
-        gtk_widget_set_name(lblF, "letter");
-      }
-      else if(key->primary < 0) {
-        gtk_widget_set_name(lblF, "fShiftedUnderline");
-      }
-      else {
-        gtk_widget_set_name(lblF, "fShifted");
-      }
-    }
+    extern void z47_labelCaptionAimFa(const calcKey_t *key, GtkWidget *lblF); // Zig owner: gtk_gui_label_owned.zig
 
 
 
 
-    void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblG, GtkWidget *lblL) {
-      uint8_t lbl[22];
-
-      if(key->keyLblAim == ITM_SHIFTf) {
-        strcpy((char *)lbl, indexOfItems[ITM_SHIFTf].itemSoftmenuName);
-      }
-      else if(key->keyLblAim == ITM_SHIFTg) {
-        strcpy((char *)lbl, indexOfItems[ITM_SHIFTg].itemSoftmenuName);
-      }
-      else if(key->keyLblAim == KEY_fg) {
-        strcpy((char *)lbl, indexOfItems[KEY_fg].itemSoftmenuName);
-      }
-      else if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
-        lbl[0] = 0;
-      }
-      else {
-        if( shiftG && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-          stringToUtf8(indexOfItems[numlockReplacements(5,max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
-        }
-        else {
-          if( ((!shiftF && (alphaCase == AC_LOWER)) || ( shiftF && (alphaCase == AC_UPPER))) && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-            stringToUtf8(indexOfItems[numlockReplacements(5,max(key->primaryAim, -key->primaryAim) + 26, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
-          }
-          else {
-            if(shiftF) {
-              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
-            }
-            else if(shiftG) {
-              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
-            }
-            else {
-              stringToUtf8(indexOfItems[numlockReplacements(6, max(key->primaryAim, -key->primaryAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
-            }
-          }
-        }
-      }
-      //printf("####B^^ %d %d %d %d %u %s\n", numLock, shiftF, shiftG, calcMode==CM_AIM, lbl[0], (gchar*)lbl);
-      if(lbl[0] == 32 && lbl[1]==0) {
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]='_';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }
-
-      gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-      //printf("--THIS IS AIM primary face:               %s\n",lbl);
-
-      //Specify the different categories of coloured zones
-      if(key->keyLblAim == ITM_SHIFTf) {
-        gtk_widget_set_name(button, "calcKeyF");
-      }
-      else if(key->keyLblAim == ITM_SHIFTg) {
-        gtk_widget_set_name(button, "calcKeyG");
-      }
-      else if(key->keyLblAim == KEY_fg) {                                 //JM
-        gtk_widget_set_name(button, "calcKeyFG");                          //JM
-      }
-      else {
-        /*        //vv dr - new AIM
-        if((key->fShiftedAim == key->keyLblAim || key->fShiftedAim == ITM_PROD_SIGN) && key->keyLblAim != ITM_NULL) {
-          gtk_widget_set_name(button, "calcKeyGoldenBorder");
-        }
-        else {*/  //^^
-          gtk_widget_set_name(button, "calcKey");
-        /*}*/       //dr - new AIM
-      }
-
-      stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
-
-      //GShift set label
-      if(key->gShiftedAim == 0) {
-        lbl[0] = 0;
-      }
-
-      gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
-      //printf("--THIS IS AIM g-position:                 %s\n",lbl);
-
-      //GShift colours
-      if(key->gShiftedAim < 0) {
-        gtk_widget_set_name(lblG, "gShiftedUnderline");     //dr - new AIM
-      }
-      else {
-        gtk_widget_set_name(lblG, "AimfShifted");
-      }
-
-      //Primaries, convert to UTF
-      if(key->primaryAim == 0) {
-        lbl[0] = 0;
-      }
-      else {
-        stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);  //Convert to UTF !
-      }
-
-      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
-        lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
-        lbl[1]=0xB7;          //JM SPACE
-        lbl[2]=' ';           //JM SPACE
-        lbl[3]=0xc2;          //JM SPACE
-        lbl[4]=0xb7;          //JM SPACE
-        lbl[5]=0;             //JM SPACE
-      }                       //JM SPACE
-
-      if(debugLabelConsistency(lbl, "labelCaptionAim", key, button, true)) {
-        return;
-      }
-      //LOAD letter in AIM, NOT SURE WHERE THIS IS. SUSPECT C47 DOES NOT USE IT
-      gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-      gtk_widget_set_name(lblL, "letter");
-    }
+    extern void z47_labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblG, GtkWidget *lblL); // Zig owner: gtk_gui_label_owned.zig
 
 
 
@@ -3482,85 +3306,85 @@ char sstmp[16];
 
       hideAllWidgets();
 
-      labelCaptionAimFa(keys, lbl21Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn21A, lbl21Gr, lbl21L);     //vv dr - new AIM
-      labelCaptionAimFa(keys, lbl22Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn22A, lbl22Gr, lbl22L);
-      labelCaptionAimFa(keys, lbl23Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn23A, lbl23Gr, lbl23L);
-      labelCaptionAimFa(keys, lbl24Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn24A, lbl24Gr, lbl24L);
-      labelCaptionAimFa(keys, lbl25Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn25A, lbl25Gr, lbl25L);
-      labelCaptionAimFa(keys, lbl26Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn26A, lbl26Gr, lbl26L);
+      z47_labelCaptionAimFa(keys, lbl21Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn21A, lbl21Gr, lbl21L);     //vv dr - new AIM
+      z47_labelCaptionAimFa(keys, lbl22Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn22A, lbl22Gr, lbl22L);
+      z47_labelCaptionAimFa(keys, lbl23Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn23A, lbl23Gr, lbl23L);
+      z47_labelCaptionAimFa(keys, lbl24Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn24A, lbl24Gr, lbl24L);
+      z47_labelCaptionAimFa(keys, lbl25Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn25A, lbl25Gr, lbl25L);
+      z47_labelCaptionAimFa(keys, lbl26Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn26A, lbl26Gr, lbl26L);
 
-      labelCaptionAimFa(keys, lbl31Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn31A, lbl31Gr, lbl31L);
-      labelCaptionAimFa(keys, lbl32Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn32A, lbl32Gr, lbl32L);
-      labelCaptionAimFa(keys, lbl33Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn33A, lbl33Gr, lbl33L);
-      labelCaptionAimFa(keys, lbl34Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn34A, lbl34Gr, lbl34L);
-      labelCaptionAimFa(keys, lbl35Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn35A, lbl35Gr, lbl35L);
-      labelCaptionAimFa(keys, lbl36Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn36A, lbl36Gr, lbl36L);     //^^
+      z47_labelCaptionAimFa(keys, lbl31Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn31A, lbl31Gr, lbl31L);
+      z47_labelCaptionAimFa(keys, lbl32Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn32A, lbl32Gr, lbl32L);
+      z47_labelCaptionAimFa(keys, lbl33Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn33A, lbl33Gr, lbl33L);
+      z47_labelCaptionAimFa(keys, lbl34Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn34A, lbl34Gr, lbl34L);
+      z47_labelCaptionAimFa(keys, lbl35Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn35A, lbl35Gr, lbl35L);
+      z47_labelCaptionAimFa(keys, lbl36Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn36A, lbl36Gr, lbl36L);     //^^
 
-      labelCaptionAimFa(keys, lbl41Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn41,  lbl41Gr, lbl41L);
-      labelCaptionAimFa(keys, lbl42Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn42A, lbl42Gr, lbl42L);
-      labelCaptionAimFa(keys, lbl43Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn43A, lbl43Gr, lbl43L);
-      labelCaptionAimFa(keys, lbl44Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn44A, lbl44Gr, lbl44L);     //^^
-      labelCaptionAimFa(keys, lbl45Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn45,  lbl45Gr, lbl45L);
+      z47_labelCaptionAimFa(keys, lbl41Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn41,  lbl41Gr, lbl41L);
+      z47_labelCaptionAimFa(keys, lbl42Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn42A, lbl42Gr, lbl42L);
+      z47_labelCaptionAimFa(keys, lbl43Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn43A, lbl43Gr, lbl43L);
+      z47_labelCaptionAimFa(keys, lbl44Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn44A, lbl44Gr, lbl44L);     //^^
+      z47_labelCaptionAimFa(keys, lbl45Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn45,  lbl45Gr, lbl45L);
 
-      labelCaptionAimFa(keys, lbl51Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn51,  lbl51Gr, lbl51L);
-      labelCaptionAimFa(keys, lbl52Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn52A, lbl52Gr, lbl52L);
-      labelCaptionAimFa(keys, lbl53Fa);
-      labelCaptionAim(keys++, btn53A, lbl53Gr, lbl53L);
-      labelCaptionAimFa(keys, lbl54Fa);
-      labelCaptionAim(keys++, btn54A, lbl54Gr, lbl54L);
-      labelCaptionAimFa(keys, lbl55Fa);
-      labelCaptionAim(keys++, btn55A, lbl55Gr, lbl55L);     //^^
+      z47_labelCaptionAimFa(keys, lbl51Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn51,  lbl51Gr, lbl51L);
+      z47_labelCaptionAimFa(keys, lbl52Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn52A, lbl52Gr, lbl52L);
+      z47_labelCaptionAimFa(keys, lbl53Fa);
+      z47_labelCaptionAim(keys++, btn53A, lbl53Gr, lbl53L);
+      z47_labelCaptionAimFa(keys, lbl54Fa);
+      z47_labelCaptionAim(keys++, btn54A, lbl54Gr, lbl54L);
+      z47_labelCaptionAimFa(keys, lbl55Fa);
+      z47_labelCaptionAim(keys++, btn55A, lbl55Gr, lbl55L);     //^^
 
-      labelCaptionAimFa(keys, lbl61Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn61,  lbl61Gr, lbl61L);
-      labelCaptionAimFa(keys, lbl62Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn62A, lbl62Gr, lbl62L);
-      labelCaptionAimFa(keys, lbl63Fa);
-      labelCaptionAim(keys++, btn63A, lbl63Gr, lbl63L);
-      labelCaptionAimFa(keys, lbl64Fa);
-      labelCaptionAim(keys++, btn64A, lbl64Gr, lbl64L);
-      labelCaptionAimFa(keys, lbl65Fa);
-      labelCaptionAim(keys++, btn65A, lbl65Gr, lbl65L);     //^^
+      z47_labelCaptionAimFa(keys, lbl61Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn61,  lbl61Gr, lbl61L);
+      z47_labelCaptionAimFa(keys, lbl62Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn62A, lbl62Gr, lbl62L);
+      z47_labelCaptionAimFa(keys, lbl63Fa);
+      z47_labelCaptionAim(keys++, btn63A, lbl63Gr, lbl63L);
+      z47_labelCaptionAimFa(keys, lbl64Fa);
+      z47_labelCaptionAim(keys++, btn64A, lbl64Gr, lbl64L);
+      z47_labelCaptionAimFa(keys, lbl65Fa);
+      z47_labelCaptionAim(keys++, btn65A, lbl65Gr, lbl65L);     //^^
 
-      labelCaptionAimFa(keys, lbl71Fa);                     //vv dr - new AIM //JM newest AIM
-      labelCaptionAim(keys++, btn71A, lbl71Gr, lbl71L);
-      labelCaptionAimFa(keys, lbl72Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn72A, lbl72Gr, lbl72L);
-      labelCaptionAimFa(keys, lbl73Fa);
-      labelCaptionAim(keys++, btn73A, lbl73Gr, lbl73L);
-      labelCaptionAimFa(keys, lbl74Fa);
-      labelCaptionAim(keys++, btn74A, lbl74Gr, lbl74L);
-      labelCaptionAimFa(keys, lbl75Fa);
-      labelCaptionAim(keys++, btn75A, lbl75Gr, lbl75L);     //^^
+      z47_labelCaptionAimFa(keys, lbl71Fa);                     //vv dr - new AIM //JM newest AIM
+      z47_labelCaptionAim(keys++, btn71A, lbl71Gr, lbl71L);
+      z47_labelCaptionAimFa(keys, lbl72Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn72A, lbl72Gr, lbl72L);
+      z47_labelCaptionAimFa(keys, lbl73Fa);
+      z47_labelCaptionAim(keys++, btn73A, lbl73Gr, lbl73L);
+      z47_labelCaptionAimFa(keys, lbl74Fa);
+      z47_labelCaptionAim(keys++, btn74A, lbl74Gr, lbl74L);
+      z47_labelCaptionAimFa(keys, lbl75Fa);
+      z47_labelCaptionAim(keys++, btn75A, lbl75Gr, lbl75L);     //^^
 
-      labelCaptionAim(keys++, btn81,  lbl81Gr, lbl81L);
-      labelCaptionAimFa(keys, lbl82Fa);                     //vv dr - new AIM
-      labelCaptionAim(keys++, btn82A, lbl82Gr, lbl82L);
-      labelCaptionAimFa(keys, lbl83Fa);
-      labelCaptionAim(keys++, btn83A, lbl83Gr, lbl83L);
-      labelCaptionAimFa(keys, lbl84Fa);
-      labelCaptionAim(keys++, btn84A, lbl84Gr, lbl84L);
-      labelCaptionAimFa(keys, lbl85Fa);
-      labelCaptionAim(keys++, btn85A, lbl85Gr, lbl85L);     //^^
+      z47_labelCaptionAim(keys++, btn81,  lbl81Gr, lbl81L);
+      z47_labelCaptionAimFa(keys, lbl82Fa);                     //vv dr - new AIM
+      z47_labelCaptionAim(keys++, btn82A, lbl82Gr, lbl82L);
+      z47_labelCaptionAimFa(keys, lbl83Fa);
+      z47_labelCaptionAim(keys++, btn83A, lbl83Gr, lbl83L);
+      z47_labelCaptionAimFa(keys, lbl84Fa);
+      z47_labelCaptionAim(keys++, btn84A, lbl84Gr, lbl84L);
+      z47_labelCaptionAimFa(keys, lbl85Fa);
+      z47_labelCaptionAim(keys++, btn85A, lbl85Gr, lbl85L);     //^^
 
       gtk_widget_show(btn11);
       gtk_widget_show(btn12);

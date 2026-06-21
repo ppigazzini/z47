@@ -84,6 +84,14 @@ pub export fn z47_labelCaptionTam(key: *const label_owned.calcKey_t, button: ?*a
     label_owned.labelCaptionTam(key, button);
 }
 
+pub export fn z47_labelCaptionAimFa(key: *const label_owned.calcKey_t, lbl_f: ?*anyopaque) callconv(.c) void {
+    label_owned.labelCaptionAimFa(key, lbl_f);
+}
+
+pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
+    label_owned.labelCaptionAim(key, button, lbl_g, lbl_l);
+}
+
 pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     btnPressed(widget, event, data);
     return 0;
