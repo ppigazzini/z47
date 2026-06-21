@@ -51,14 +51,19 @@ bool_t          screenChange;
 // the deterministic c47.sav text format via save_sections / restoreOneSection,
 // which are the porting targets. A Zig port repoints doSaveImpl/doLoadImpl
 // below at the production entry and the golden confirms byte-identity.
-// doSave/doLoad are static in saveRestoreCalcState.c; the public bridged
-// entries fnSave/fnLoad (namespaced to z47_calc_state_legacy_* by the shim)
-// call them and are linkable. fnSave(SM_MANUAL_SAVE)->doSave(manualSave);
-// fnLoad(LM_ALL)->doLoad(...,manualLoad).
-extern void z47_calc_state_legacy_fnSave(uint16_t saveMode);
+// SAVE now runs the Zig production path: the canonical fnSave is the Zig export
+// (calc_state.zig) -> save() -> io_flow doSave -> z47_calc_state_save_sections
+// (the Zig section writer). The golden byte-compare therefore verifies the Zig
+// SAVE port against the original C output.
+//
+// LOAD/RESTORE is still C: fnLoad is bridge-renamed to z47_calc_state_legacy_*,
+// so the round-trip check exercises the C restore reading the Zig-written file
+// (the RESTORE port is a separate future commit). doLoad is static in
+// saveRestoreCalcState.c; the public bridged fnLoad(LM_ALL)->doLoad(manualLoad).
+extern void fnSave(uint16_t saveMode);
 extern void z47_calc_state_legacy_fnLoad(uint16_t loadMode);
 
-static void doSaveImpl(void)  { z47_calc_state_legacy_fnSave(SM_MANUAL_SAVE); }
+static void doSaveImpl(void)  { fnSave(SM_MANUAL_SAVE); }
 static void doLoadImpl(void)  { z47_calc_state_legacy_fnLoad(LM_ALL); }
 
 static long readWholeFile(const char *path, unsigned char *buf, long cap) {

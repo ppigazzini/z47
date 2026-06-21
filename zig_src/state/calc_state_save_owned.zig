@@ -1,0 +1,503 @@
+// SAVE-side serialization of the calculator state file (c47.sav text format).
+//
+// This is a faithful Zig port of saveRestoreCalcState.c doSave()'s section
+// writer (the C body between opening and closing the file, lines ~1768-2032).
+// The host Zig io_flow path (calc_state_io_flow_owned.doSave) already owns the
+// open/close/status orchestration and calls writeSaveSections() -> this. The
+// per-element value formatters (registerToSaveString / saveMatrixElements /
+// UI64toString / realToString) and the few file-static / enum-typed reads stay
+// in C, reached through z47_css_* trampolines in calc_state_legacy.c; this owner
+// frames every section and selects the fields.
+//
+// Verified byte-for-byte against the current C output by the save/load parity
+// harness (`zig build saveload_parity`): the golden file is the C doSave bytes.
+
+// --- Resolved constants (probed from the real headers) ---
+const FIRST_GLOBAL_REGISTER: i16 = 0;
+const LAST_GLOBAL_REGISTER: i16 = 136;
+const FIRST_LOCAL_REGISTER: i16 = 7000;
+const FIRST_NAMED_VARIABLE: i16 = 256;
+const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
+const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+const C47_NULL: u16 = 65535;
+const configFileVersion: u32 = 10000023;
+
+// --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
+const subroutineLevelHeader_t = extern struct {
+    returnProgramNumber: i16,
+    returnLocalStep: u16,
+    numberOfLocalFlags: u8,
+    numberOfLocalRegisters: u8,
+    subroutineLevel: u16,
+    ptrToNextLevel: u16,
+    ptrToPreviousLevel: u16,
+};
+
+const calcKey_t = extern struct {
+    keyId: i16,
+    primary: i16,
+    fShifted: i16,
+    gShifted: i16,
+    keyLblAim: i16,
+    primaryAim: i16,
+    fShiftedAim: i16,
+    gShiftedAim: i16,
+    primaryTam: i16,
+};
+
+const userMenuItem_t = extern struct {
+    item: i16,
+    unused: i16,
+    argumentName: [16]u8,
+};
+
+const userMenu_t = extern struct {
+    menuName: [16]u8,
+    menuItem: [18]userMenuItem_t,
+};
+
+const namedVariableHeader_t = extern struct {
+    header: u32,
+    variableName: [16]u8,
+};
+
+const formulaHeader_t = extern struct {
+    pointerToFormulaData: u16,
+    sizeInBlocks: u8,
+    unused: u8,
+};
+
+const normKey_t = extern struct {
+    func: i16,
+    funcParam: [16]u8,
+    used: u8,
+};
+
+const pcg32_random_t = extern struct {
+    state: u64,
+    inc: u64,
+};
+
+comptime {
+    const assert = @import("std").debug.assert;
+    assert(@sizeOf(calcKey_t) == 18);
+    assert(@sizeOf(userMenuItem_t) == 20);
+    assert(@sizeOf(userMenu_t) == 376);
+    assert(@sizeOf(namedVariableHeader_t) == 20);
+    assert(@offsetOf(namedVariableHeader_t, "variableName") == 4);
+    assert(@sizeOf(formulaHeader_t) == 4);
+    assert(@sizeOf(normKey_t) == 20);
+    assert(@offsetOf(normKey_t, "used") == 18);
+    assert(@sizeOf(pcg32_random_t) == 16);
+}
+
+// --- libc / core helpers ---
+extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
+extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
+extern fn strlen(s: [*c]const u8) usize;
+extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
+extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
+
+// --- save-serialization trampolines (calc_state_legacy.c) ---
+extern fn z47_css_registerToSaveString(regist: i16) void;
+extern fn z47_css_saveMatrixElements(regist: i16) void;
+extern fn z47_css_UI64toString(value: u64, out: [*c]u8) void;
+extern fn z47_css_tmpRegisterString() [*c]u8;
+extern fn z47_css_statSumString(i: u16) void;
+extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
+extern fn z47_css_postKeyboardFixup() void;
+
+// --- core state globals ---
+extern var aimBuffer1: [400]u8;
+extern var globalFlags: [8]u16;
+extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
+extern var currentLocalRegisters: ?*anyopaque;
+extern var currentLocalFlags: ?*u32;
+extern var numberOfNamedVariables: u16;
+extern var allNamedVariables: [*c]namedVariableHeader_t;
+extern var statisticalSumsPointer: ?*anyopaque;
+extern var systemFlags0: u64;
+extern var systemFlags1: u64;
+extern var userKeyLabel: [*c]u8;
+extern var userMenuItems: [18]userMenuItem_t;
+extern var userAlphaItems: [18]userMenuItem_t;
+extern var numberOfUserMenus: u16;
+extern var userMenus: [*c]userMenu_t;
+extern var beginOfProgramMemory: [*c]u8;
+extern var currentStep: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
+extern var freeProgramBytes: u16;
+extern var numberOfFormulae: u16;
+extern var allFormulae: [*c]formulaHeader_t;
+extern var ram: [*c]u32;
+extern var kbd_usr: [37]calcKey_t;
+extern var Norm_Key_00: normKey_t;
+extern var pcg32_global: pcg32_random_t;
+
+// --- OTHER_CONFIGURATION_STUFF scalars ---
+extern var firstGregorianDay: u32;
+extern var denMax: u32;
+extern var lastDenominator: u32;
+extern var displayFormat: u8;
+extern var displayFormatDigits: u8;
+extern var timeDisplayFormatDigits: u8;
+extern var shortIntegerWordSize: u8;
+extern var shortIntegerMode: u8;
+extern var significantDigits: u8;
+extern var fractionDigits: u8;
+extern var currentAngularMode: c_int; // angularMode_t (4 bytes), saved as uint8_t
+extern var gapItemLeft: u16;
+extern var gapItemRight: u16;
+extern var gapItemRadix: u16;
+extern var lastCenturyHighUsed: u16;
+extern var grpGroupingLeft: u8;
+extern var grpGroupingGr1LeftOverflow: u8;
+extern var grpGroupingGr1Left: u8;
+extern var grpGroupingRight: u8;
+extern var roundingMode: u8;
+extern var displayStack: u8;
+extern var exponentLimit: i16;
+extern var exponentHideLimit: i16;
+extern var lrSelection: u16;
+extern var dispBase: u8;
+extern var calcModel: u8;
+extern var Input_Default: u8;
+extern var displayStackSHOIDISP: u8;
+extern var bcdDisplaySign: u8;
+extern var DRG_Cycling: u8;
+extern var DM_Cycling: u8;
+extern var LongPressM: u8;
+extern var LongPressF: u8;
+extern var lastIntegerBase: u32; // saved as uint8_t
+extern var amortP1: u16;
+extern var amortP2: u16;
+extern var lrChosen: u16;
+extern var graph_dx: f32;
+extern var graph_dy: f32;
+extern var roundedTicks: u8;
+extern var PLOT_INTG: u8;
+extern var PLOT_DIFF: u8;
+extern var PLOT_RMS: u8;
+extern var PLOT_SHADE: u8;
+extern var PLOT_AXIS: u8;
+extern var PLOT_ZMY: i8;
+extern var firstDayOfWeek: u8;
+extern var firstWeekOfYearDay: u8;
+
+// Section-framing scratch buffer; mirrors doSave's local `char tmpString[3000]`
+// (deliberately distinct from the global tmpString into which
+// registerToSaveString writes register values).
+var buf: [3000]u8 = undefined;
+
+inline fn b() [*c]u8 {
+    return &buf[0];
+}
+
+fn save(text: [*c]const u8) void {
+    ioFileWrite(text, @intCast(strlen(text)));
+}
+
+fn cu(value: anytype) c_uint {
+    return @intCast(value);
+}
+
+fn ci(value: anytype) c_int {
+    return @intCast(value);
+}
+
+// TO_C47MEMPTR(p): block index of a RAM pointer, or C47_NULL for null.
+fn toC47memptr(p: [*c]const u8) u16 {
+    if (p == null) return C47_NULL;
+    const diff = @intFromPtr(p) - @intFromPtr(ram);
+    return @intCast(diff / 4);
+}
+
+// Byte offset of a RAM pointer within its block.
+fn offsetWithinBlock(p: [*c]const u8) u32 {
+    const blk = toC47memptr(p);
+    const base = @intFromPtr(ram) + @as(usize, blk) * 4;
+    return @intCast(@intFromPtr(p) - base);
+}
+
+// TO_PCMEMPTR(p): RAM pointer for a block index, or null for C47_NULL.
+fn toPcmemptr(p: u16) [*c]u8 {
+    if (p == C47_NULL) return null;
+    return @ptrFromInt(@intFromPtr(ram) + @as(usize, p) * 4);
+}
+
+pub fn writeSaveSections() void {
+    // SAV file version number + identifying model line.
+    _ = sprintf(b(), "SAVE_FILE_REVISION\n%u\n", cu(@as(u8, 0)));
+    save(b());
+    _ = sprintf(b(), "C47_save_file_00\n%u\n", cu(configFileVersion));
+    save(b());
+
+    // Global registers
+    _ = sprintf(b(), "GLOBAL_REGISTERS\n%u\n", cu(@as(u16, @intCast(LAST_GLOBAL_REGISTER + 1))));
+    save(b());
+    {
+        var regist: i16 = FIRST_GLOBAL_REGISTER;
+        while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
+            z47_css_registerToSaveString(regist);
+            _ = sprintf(b(), "R%03d\n%s\n%s\n", ci(regist), &aimBuffer1[0], z47_css_tmpRegisterString());
+            save(b());
+            z47_css_saveMatrixElements(regist);
+        }
+    }
+
+    // Global flags
+    save("GLOBAL_FLAGS\n");
+    _ = sprintf(b(), "%u %u %u %u %u %u %u %u\n", cu(globalFlags[0]), cu(globalFlags[1]), cu(globalFlags[2]), cu(globalFlags[3]), cu(globalFlags[4]), cu(globalFlags[5]), cu(globalFlags[6]), cu(globalFlags[7]));
+    save(b());
+
+    // Local registers
+    const localRegisterCount: u8 = currentSubroutineLevelData.?.numberOfLocalRegisters;
+    _ = sprintf(b(), "LOCAL_REGISTERS\n%u\n", cu(localRegisterCount));
+    save(b());
+    {
+        var i: u32 = 0;
+        while (i < localRegisterCount) : (i += 1) {
+            z47_css_registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
+            _ = sprintf(b(), "R.%02u\n%s\n%s\n", cu(i), &aimBuffer1[0], z47_css_tmpRegisterString());
+            save(b());
+            z47_css_saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
+        }
+    }
+
+    // Local flags
+    if (currentLocalRegisters != null) {
+        _ = sprintf(b(), "LOCAL_FLAGS\n%u\n", cu(currentLocalFlags.?.*));
+        save(b());
+    }
+
+    // Named variables
+    _ = sprintf(b(), "NAMED_VARIABLES\n%u\n", cu(numberOfNamedVariables));
+    save(b());
+    {
+        var i: u32 = 0;
+        while (i < numberOfNamedVariables) : (i += 1) {
+            z47_css_registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
+            stringToUtf8(&allNamedVariables[i].variableName[1], b());
+            const n = strlen(b());
+            _ = sprintf(b() + n, "\n%s\n%s\n", &aimBuffer1[0], z47_css_tmpRegisterString());
+            save(b());
+            z47_css_saveMatrixElements(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
+        }
+    }
+
+    // Statistical sums
+    const sumsCount: u16 = if (statisticalSumsPointer != null) NUMBER_OF_STATISTICAL_SUMS else 0;
+    _ = sprintf(b(), "STATISTICAL_SUMS\n%u\n", cu(sumsCount));
+    save(b());
+    {
+        var i: u16 = 0;
+        while (i < sumsCount) : (i += 1) {
+            z47_css_statSumString(i);
+            _ = sprintf(b(), "%s\n", z47_css_tmpRegisterString());
+            save(b());
+        }
+    }
+
+    // System flags
+    var yy1: [35]u8 = undefined;
+    var yy2: [35]u8 = undefined;
+    z47_css_UI64toString(systemFlags0, &yy1[0]);
+    _ = sprintf(b(), "SYSTEM_FLAGS\n%s\n", &yy1[0]);
+    save(b());
+    z47_css_UI64toString(systemFlags1, &yy1[0]);
+    _ = sprintf(b(), "SYSTEM_FLAGS1\n%s\n", &yy1[0]);
+    save(b());
+
+    // Keyboard assignments
+    save("KEYBOARD_ASSIGNMENTS\n37\n");
+    {
+        var i: usize = 0;
+        while (i < 37) : (i += 1) {
+            const k = kbd_usr[i];
+            _ = sprintf(b(), "%d %d %d %d %d %d %d %d %d\n", ci(k.keyId), ci(k.primary), ci(k.fShifted), ci(k.gShifted), ci(k.keyLblAim), ci(k.primaryAim), ci(k.fShiftedAim), ci(k.gShiftedAim), ci(k.primaryTam));
+            save(b());
+        }
+    }
+    z47_css_postKeyboardFixup();
+
+    // Keyboard arguments
+    save("KEYBOARD_ARGUMENTS\n");
+    {
+        var num: u32 = 0;
+        var i: u32 = 0;
+        while (i < 37 * 6) : (i += 1) {
+            if (getNthString(userKeyLabel, @intCast(i))[0] != 0) {
+                num += 1;
+            }
+        }
+        _ = sprintf(b(), "%u\n", cu(num));
+        save(b());
+
+        i = 0;
+        while (i < 37 * 6) : (i += 1) {
+            if (getNthString(userKeyLabel, @intCast(i))[0] != 0) {
+                _ = sprintf(b(), "%u ", cu(i));
+                stringToUtf8(getNthString(userKeyLabel, @intCast(i)), b() + strlen(b()));
+                _ = strcat(b(), "\n");
+                save(b());
+            }
+        }
+    }
+
+    // MyMenu
+    save("MYMENU\n18\n");
+    saveUserMenuBlock(&userMenuItems);
+
+    // MyAlpha
+    save("MYALPHA\n18\n");
+    saveUserMenuBlock(&userAlphaItems);
+
+    // User menus
+    save("USER_MENUS\n");
+    _ = sprintf(b(), "%u\n", cu(numberOfUserMenus));
+    save(b());
+    {
+        var j: u32 = 0;
+        while (j < numberOfUserMenus) : (j += 1) {
+            stringToUtf8(&userMenus[j].menuName[0], b());
+            _ = strcat(b(), "\n18\n");
+            save(b());
+            saveUserMenuBlock(&userMenus[j].menuItem);
+        }
+    }
+
+    // Programs
+    const currentSizeInBlocks: u16 = @intCast(RAM_SIZE_IN_BLOCKS - toC47memptr(beginOfProgramMemory));
+    _ = sprintf(b(), "PROGRAMS\n%u\n", cu(currentSizeInBlocks));
+    save(b());
+    _ = sprintf(b(), "%u\n%u\n", cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)));
+    save(b());
+    _ = sprintf(b(), "%u\n%u\n", cu(toC47memptr(firstFreeProgramByte)), cu(offsetWithinBlock(firstFreeProgramByte)));
+    save(b());
+    _ = sprintf(b(), "%u\n", cu(freeProgramBytes));
+    save(b());
+    {
+        const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
+        var i: u16 = 0;
+        while (i < currentSizeInBlocks) : (i += 1) {
+            _ = sprintf(b(), "%u\n", cu(progWords[i]));
+            save(b());
+        }
+    }
+
+    // Equations
+    _ = sprintf(b(), "EQUATIONS\n%u\n", cu(numberOfFormulae));
+    save(b());
+    {
+        var i: u32 = 0;
+        while (i < numberOfFormulae) : (i += 1) {
+            stringToUtf8(toPcmemptr(allFormulae[i].pointerToFormulaData), b());
+            _ = strcat(b(), "\n");
+            save(b());
+        }
+    }
+
+    // Other configuration stuff
+    _ = sprintf(b(), "OTHER_CONFIGURATION_STUFF\n00\n");
+    save(b());
+    save(b()); // historical repeat (now a short-circuit marker on load)
+
+    saveField("firstGregorianDay", "%u\n", .{cu(firstGregorianDay)});
+    saveField("denMax", "%u\n", .{cu(denMax)});
+    saveField("lastDenominator", "%u\n", .{cu(lastDenominator)});
+    saveField("displayFormat", "%u\n", .{cu(displayFormat)});
+    saveField("displayFormatDigits", "%u\n", .{cu(displayFormatDigits)});
+    saveField("timeDisplayFormatDigits", "%u\n", .{cu(timeDisplayFormatDigits)});
+    saveField("shortIntegerWordSize", "%u\n", .{cu(shortIntegerWordSize)});
+    saveField("shortIntegerMode", "%u\n", .{cu(shortIntegerMode)});
+    saveField("significantDigits", "%u\n", .{cu(significantDigits)});
+    saveField("fractionDigits", "%u\n", .{cu(fractionDigits)});
+    saveField("currentAngularMode", "%u\n", .{cu(@as(u8, @truncate(@as(u32, @bitCast(currentAngularMode)))))});
+    saveField("gapItemLeft", "%u\n", .{cu(gapItemLeft)});
+    saveField("gapItemRight", "%u\n", .{cu(gapItemRight)});
+    saveField("gapItemRadix", "%u\n", .{cu(gapItemRadix)});
+    saveField("lastCenturyHighUsed", "%u\n", .{cu(lastCenturyHighUsed)});
+    saveField("grpGroupingLeft", "%u\n", .{cu(grpGroupingLeft)});
+    saveField("grpGroupingGr1LeftOverflow", "%u\n", .{cu(grpGroupingGr1LeftOverflow)});
+    saveField("grpGroupingGr1Left", "%u\n", .{cu(grpGroupingGr1Left)});
+    saveField("grpGroupingRight", "%u\n", .{cu(grpGroupingRight)});
+    saveField("roundingMode", "%u\n", .{cu(roundingMode)});
+    saveField("displayStack", "%u\n", .{cu(displayStack)});
+
+    z47_css_UI64toString(pcg32_global.state, &yy1[0]);
+    z47_css_UI64toString(pcg32_global.inc, &yy2[0]);
+    _ = sprintf(b(), "rngState\n%s %s\n", &yy1[0], &yy2[0]);
+    save(b());
+
+    saveField("exponentLimit", "%d\n", .{ci(exponentLimit)});
+    saveField("exponentHideLimit", "%d\n", .{ci(exponentHideLimit)});
+    saveField("bestF", "%u\n", .{cu(lrSelection)});
+    saveField("dispBase", "%u\n", .{cu(dispBase)});
+    saveField("calcModel", "%d\n", .{ci(@as(i16, calcModel))});
+    saveField("Norm_Key_00.func", "%d\n", .{ci(Norm_Key_00.func)});
+    {
+        const paramPtr: [*c]const u8 = if (Norm_Key_00.funcParam[0] == 0) "NoNormKeyParamDef" else &Norm_Key_00.funcParam[0];
+        _ = sprintf(b(), "Norm_Key_00.funcParam\n%s\n", paramPtr);
+        save(b());
+    }
+    saveField("Norm_Key_00.used", "%u\n", .{cu(Norm_Key_00.used)});
+    saveField("Input_Default", "%u\n", .{cu(Input_Default)});
+    saveField("displayStackSHOIDISP", "%u\n", .{cu(displayStackSHOIDISP)});
+    saveField("bcdDisplaySign", "%u\n", .{cu(bcdDisplaySign)});
+    saveField("DRG_Cycling", "%u\n", .{cu(DRG_Cycling)});
+    saveField("DM_Cycling", "%u\n", .{cu(DM_Cycling)});
+    saveField("LongPressM", "%u\n", .{cu(LongPressM)});
+    saveField("LongPressF", "%u\n", .{cu(LongPressF)});
+    saveField("lastIntegerBase", "%u\n", .{cu(@as(u8, @truncate(lastIntegerBase)))});
+    saveField("amortP1", "%u\n", .{cu(amortP1)});
+    saveField("amortP2", "%u\n", .{cu(amortP2)});
+    saveField("lrChosen", "%u\n", .{cu(lrChosen)});
+    saveField("graph_dx", "%f\n", .{@as(f64, graph_dx)});
+    saveField("graph_dy", "%f\n", .{@as(f64, graph_dy)});
+    saveField("roundedTicks", "%u\n", .{cu(roundedTicks)});
+    saveField("PLOT_INTG", "%u\n", .{cu(PLOT_INTG)});
+    saveField("PLOT_DIFF", "%u\n", .{cu(PLOT_DIFF)});
+    saveField("PLOT_RMS", "%u\n", .{cu(PLOT_RMS)});
+    saveField("PLOT_SHADE", "%u\n", .{cu(PLOT_SHADE)});
+    saveField("PLOT_AXIS", "%u\n", .{cu(PLOT_AXIS)});
+    saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
+    saveField("firstDayOfWeek", "%u\n", .{cu(firstDayOfWeek)});
+    saveField("firstWeekOfYearDay", "%u\n", .{cu(firstWeekOfYearDay)});
+
+    {
+        var pon: u8 = 0;
+        var pmodel: u8 = 0;
+        var pdelay: u16 = 0;
+        z47_css_printerState(&pon, &pmodel, &pdelay);
+        saveField("printerOn", "%u\n", .{cu(pon)});
+        saveField("printerModel", "%u\n", .{cu(pmodel)});
+        saveField("printerLineDelay", "%u\n", .{cu(pdelay)});
+    }
+
+    _ = sprintf(b(), "END_OTHER_PARAM\n");
+    save(b());
+}
+
+// Emit one `name\n<value>` config line. `value_format` is the C printf format
+// for the value portion (e.g. "%u\n"); args are the already-promoted variadic
+// arguments matching it.
+fn saveField(comptime name: []const u8, comptime value_format: []const u8, args: anytype) void {
+    _ = @call(.auto, sprintf, .{ b(), name ++ "\n" ++ value_format } ++ args);
+    save(b());
+}
+
+// MYMENU / MYALPHA / per-user-menu item block: 18 items, each `item` then an
+// optional space + utf8 argument name, then newline.
+fn saveUserMenuBlock(items: [*c]const userMenuItem_t) void {
+    var i: usize = 0;
+    while (i < 18) : (i += 1) {
+        _ = sprintf(b(), "%d", ci(items[i].item));
+        if (items[i].argumentName[0] != 0) {
+            _ = strcat(b(), " ");
+            stringToUtf8(&items[i].argumentName[0], b() + strlen(b()));
+        }
+        _ = strcat(b(), "\n");
+        save(b());
+    }
+}
