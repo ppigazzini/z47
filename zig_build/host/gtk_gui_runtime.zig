@@ -4,6 +4,7 @@ const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
 const keymap_owned = @import("gtk_gui_keymap_owned.zig");
 const label_owned = @import("gtk_gui_label_owned.zig");
+const css_owned = @import("gtk_gui_css_owned.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
@@ -61,6 +62,10 @@ pub export fn z47_keyCodeFromGdkKey(gdk_key: u32) callconv(.c) i16 {
 
 pub export fn z47_is_valid_utf8(s: [*c]const u8, error_offset: [*c]usize) callconv(.c) bool {
     return label_owned.isValidUtf8(s, error_offset);
+}
+
+pub export fn z47_prepareCssData() callconv(.c) void {
+    css_owned.prepareCssData();
 }
 
 pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {

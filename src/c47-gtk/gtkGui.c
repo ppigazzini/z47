@@ -8,6 +8,7 @@
 
 
 extern int16_t z47_keyCodeFromGdkKey(uint32_t gdkKey); // Zig owner: gtk_gui_keymap_owned.zig
+extern void z47_prepareCssData(void); // Zig owner: gtk_gui_css_owned.zig
 
 
 #if defined(PC_BUILD)
@@ -1662,69 +1663,6 @@ returnKeyPressedFalse:
 
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     /* Reads the CSS file to configure the calc's GUI style. */
-    static void prepareCssData(void) {
-      FILE *cssFile;
-      char *toReplace, *replaceWith, needle[100], newNeedle[100];
-      int  fileLg;
-
-      // Convert the pre-CSS data to CSS data
-      cssFile = fopen(CSSFILE, "rb");
-      if(cssFile == NULL) {
-        moreInfoOnError("In function prepareCssData:", "error opening file " CSSFILE "!", NULL, NULL);
-        exit(1);
-      }
-
-      // Get the file length
-      fseek(cssFile, 0L, SEEK_END);
-      fileLg = ftell(cssFile);
-      fseek(cssFile, 0L, SEEK_SET);
-
-      cssData = malloc(2*fileLg); // To be sure there is enough space
-      if(cssData == NULL) {
-        moreInfoOnError("In function prepareCssData:", "error allocating 10000 bytes for CSS data", NULL, NULL);
-        exit(1);
-      }
-
-      ignoreReturnedValue(fread(cssData, 1, fileLg, cssFile));
-      fclose(cssFile);
-      cssData[fileLg] = 0;
-
-      toReplace = strstr(cssData, "/* Replace $");
-      while(toReplace != NULL) {
-        int i = -1;
-        toReplace += 11;
-        while(toReplace[++i] != ' ') {
-          needle[i] = toReplace[i];
-        }
-        needle[i] = 0;
-
-        *toReplace = ' ';
-
-        replaceWith = strstr(toReplace, " with ");
-        if(replaceWith == NULL) {
-          moreInfoOnError("In function prepareCssData:", "Can't find \" with \" after \"/* Replace $\" in CSS file " CSSFILE, NULL, NULL);
-          exit(1);
-        }
-
-        replaceWith[1] = ' ';
-        replaceWith += 6;
-        i = -1;
-        while(replaceWith[++i] != ' ') {
-          newNeedle[i] = replaceWith[i];
-        }
-        newNeedle[i] = 0;
-
-        strReplace(toReplace, needle, newNeedle);
-
-        toReplace = strstr(cssData, "/* Replace $");
-      }
-
-      if(strstr(cssData, "$") != NULL) {
-        moreInfoOnError("In function prepareCssData:", "There is still an unreplaced $ in the CSS file!\nPlease check file " CSSFILE, NULL, NULL);
-        printf("%s\n", cssData);
-        exit(1);
-      }
-    }
 
 
 
@@ -4755,7 +4693,7 @@ void check_all_btn_widgets_for_consistency(void) {
       GdkDisplay     *cssDisplay;
       GdkScreen      *cssScreen;
 
-      prepareCssData();
+      z47_prepareCssData();
 
       cssProvider = gtk_css_provider_new();
       cssDisplay  = gdk_display_get_default();
