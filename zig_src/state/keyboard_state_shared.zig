@@ -121,6 +121,191 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        // determineFunctionKeyItem_C47 default/MNU_EQN-fallthrough case body.
+        fn fnKeyItemDefault(menuId: i16, firstItem: i16, itemShift: i16, fn_: i16) i16 {
+            var item: i16 = runtime.ITM_NOP;
+            const sm = &runtime.softmenu[@intCast(menuId)];
+            const row: i32 = @min(@as(i32, 3), @divTrunc(@as(i32, sm.numItems) + runtime.modulo(firstItem - sm.numItems, 6), 6) - @divTrunc(@as(i32, firstItem), 6)) - 1;
+            if (@divTrunc(@as(i32, itemShift), 6) <= row and firstItem + itemShift + fn_ < sm.numItems) {
+                item = @rem(sm.softkeyItem[@intCast(firstItem + itemShift + fn_)], 10000);
+                if (item == runtime.ITM_PROD_SIGN) {
+                    item = if (runtime.getSystemFlag(runtime.FLAG_MULTx)) runtime.ITM_DOT else runtime.ITM_CROSS;
+                }
+                if (runtime.softmenu[@intCast(menuId)].menuItem == -runtime.MNU_ALPHA and runtime.calcMode == runtime.CM_PEM and item == runtime.ITM_ASSIGN) {
+                    item = runtime.ITM_NULL;
+                }
+            }
+            return item;
+        }
+
+        pub fn determineFunctionKeyItem_C47(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) i16 {
+            // keyboard.c determineFunctionKeyItem_C47 (12-333). VERBOSEKEYS /
+            // PC_BUILD jm_show_comment tracing dropped.
+            var item: i16 = runtime.ITM_NOP;
+            runtime.dynamicMenuItem = -1;
+            const itemShift: i16 = if (shiftF) 6 else if (shiftG) 12 else 0;
+            const fn_: i16 = @as(i16, data[0]) - '0' - 1;
+            const menuId: i16 = runtime.softmenuStack[0].softmenuId;
+            const firstItem: i16 = runtime.softmenuStack[0].firstItem;
+
+            if (runtime.isBaseBlank(menuId)) {
+                return item;
+            }
+
+            switch (-runtime.softmenu[@intCast(menuId)].menuItem) {
+                runtime.MNU_MyMenu => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = runtime.userMenuItems[@intCast(runtime.dynamicMenuItem)].item;
+                    _ = runtime.setCurrentUserMenu(item, &runtime.userMenuItems[@intCast(runtime.dynamicMenuItem)].argumentName);
+                },
+                runtime.MNU_MyAlpha => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = runtime.userAlphaItems[@intCast(runtime.dynamicMenuItem)].item;
+                },
+                runtime.MNU_DYNAMIC => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = runtime.userMenus[runtime.currentUserMenu].menuItem[@intCast(runtime.dynamicMenuItem)].item;
+                },
+                runtime.MNU_PROG => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    if (runtime.tam.function == runtime.ITM_GTOP) {
+                        item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else runtime.ITM_GTOP;
+                    } else {
+                        item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else runtime.MNU_DYNAMIC;
+                    }
+                },
+                runtime.MNU_VAR => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else runtime.MNU_DYNAMIC;
+                },
+                runtime.MNU_MVAR => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    const numItems = runtime.dynamicSoftmenu[@intCast(menuId)].numItems;
+                    const usesFormulaInteractive = (runtime.currentSolverStatus & runtime.SOLVER_STATUS_USES_FORMULA) != 0 and (runtime.currentSolverStatus & runtime.SOLVER_STATUS_INTERACTIVE) != 0;
+                    const eqnMode = runtime.currentSolverStatus & runtime.SOLVER_STATUS_EQUATION_MODE;
+                    if (runtime.tam.mode != 0) {
+                        item = if (runtime.dynamicMenuItem >= numItems) runtime.ITM_NOP else runtime.MNU_DYNAMIC;
+                    } else if (runtime.currentMvarLabel != runtime.INVALID_VARIABLE) {
+                        item = if (runtime.dynamicMenuItem >= numItems) runtime.ITM_NOP else runtime.ITM_SOLVE_VAR;
+                    } else if (usesFormulaInteractive and eqnMode == runtime.SOLVER_STATUS_EQUATION_GRAPHER and runtime.dynamicMenuItem == 5) {
+                        item = runtime.ITM_DRAW;
+                    } else if (usesFormulaInteractive and eqnMode == runtime.SOLVER_STATUS_EQUATION_GRAPHER and runtime.dynamicMenuItem == 4) {
+                        item = -runtime.MNU_GRAPHS;
+                    } else if (usesFormulaInteractive and eqnMode == runtime.SOLVER_STATUS_EQUATION_SOLVER and runtime.dynamicMenuItem == 5) {
+                        item = runtime.ITM_CALC;
+                    } else if (usesFormulaInteractive and eqnMode == runtime.SOLVER_STATUS_EQUATION_SOLVER and runtime.dynamicMenuItem == 4) {
+                        item = -runtime.MNU_Solver_TOOL;
+                    } else if (usesFormulaInteractive and runtime.getNthString(runtime.dynamicSoftmenu[@intCast(runtime.softmenuStack[0].softmenuId)].menuContent, runtime.dynamicMenuItem)[0] == 0) {
+                        item = runtime.ITM_NOP;
+                    } else if (runtime.isEqn1stDer() and runtime.dynamicMenuItem == 5) {
+                        item = runtime.ITM_FPHERE;
+                    } else if (runtime.isEqn1stDer() and runtime.dynamicMenuItem == 4) {
+                        item = -runtime.MNU_GRAPHS;
+                    } else if (runtime.isEqn2ndDer() and runtime.dynamicMenuItem == 5) {
+                        item = runtime.ITM_FPPHERE;
+                    } else if (runtime.isEqn2ndDer() and runtime.dynamicMenuItem == 4) {
+                        item = -runtime.MNU_GRAPHS;
+                    } else if (runtime.dynamicMenuItem >= numItems) {
+                        item = runtime.ITM_NOP;
+                    } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_INTERACTIVE) == 0) {
+                        item = runtime.MNU_DYNAMIC;
+                    } else if (runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 4) {
+                        item = -runtime.MNU_Sf_TOOL;
+                    } else if (runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 5) {
+                        item = runtime.ITM_INTEGRAL_YX;
+                    } else if (runtime.isEqnIntegrate()) {
+                        item = runtime.ITM_Sfdx_VAR;
+                    } else {
+                        item = runtime.ITM_SOLVE_VAR;
+                    }
+                },
+                runtime.MNU_CONFIGS, runtime.MNU_MATRS, runtime.MNU_DATES, runtime.MNU_TIMES, runtime.MNU_SINTS, runtime.MNU_STRINGS, runtime.MNU_NUMBRS, runtime.MNU_CPXS, runtime.MNU_REALS, runtime.MNU_ANGLES, runtime.MNU_LINTS, runtime.MNU_ALLVARS => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else if (runtime.tam.mode == runtime.TM_DELITM) runtime.MNU_DYNAMIC else runtime.ITM_RCL;
+                },
+                runtime.MNU_PROGS => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else if (runtime.tam.mode == runtime.TM_DELITM) runtime.MNU_DYNAMIC else runtime.ITM_XEQ;
+                },
+                runtime.MNU_MENU, runtime.MNU_MENUS => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = runtime.ITM_NOP;
+                    if (runtime.dynamicMenuItem < runtime.dynamicSoftmenu[@intCast(menuId)].numItems) {
+                        var i: u16 = 0;
+                        while (runtime.softmenu[i].menuItem < 0) : (i += 1) {
+                            if (runtime.compareString(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem), runtime.indexOfItemsCatalogName(-runtime.softmenu[i].menuItem), runtime.CMP_NAME) == 0) {
+                                if (runtime.tam.mode == runtime.TM_DELITM) {
+                                    item = runtime.MNU_DYNAMIC;
+                                    runtime.tam.value = @intCast(runtime.numberOfUserMenus);
+                                } else {
+                                    item = runtime.softmenu[i].menuItem;
+                                }
+                            }
+                        }
+                        var j: u32 = 0;
+                        while (j < runtime.numberOfUserMenus) : (j += 1) {
+                            if (runtime.compareString(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem), &runtime.userMenus[j].menuName, runtime.CMP_NAME) == 0) {
+                                if (runtime.tam.mode == runtime.TM_DELITM) {
+                                    item = runtime.MNU_DYNAMIC;
+                                    runtime.tam.value = @intCast(j);
+                                } else {
+                                    item = -runtime.MNU_DYNAMIC;
+                                    if (runtime.calcMode != runtime.CM_ASSIGN) {
+                                        runtime.currentUserMenu = @intCast(j);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                runtime.ITM_MENU => {
+                    runtime.dynamicMenuItem = firstItem + itemShift + fn_;
+                    item = runtime.ITM_MENU;
+                },
+                runtime.MNU_EQN => {
+                    if (!(runtime.numberOfFormulae == 0 and (firstItem + itemShift + fn_) > 0)) {
+                        item = fnKeyItemDefault(menuId, firstItem, itemShift, fn_);
+                    }
+                },
+                else => {
+                    item = fnKeyItemDefault(menuId, firstItem, itemShift, fn_);
+                },
+            }
+
+            if (runtime.calcMode == runtime.CM_ASSIGN and item != runtime.ITM_NOP and item != runtime.ITM_NULL) {
+                switch (-runtime.softmenu[@intCast(menuId)].menuItem) {
+                    runtime.MNU_PROG, runtime.MNU_PROGS => {
+                        return @intCast(@as(i32, runtime.findNamedLabel(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem))) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
+                    },
+                    runtime.MNU_VAR, runtime.MNU_CONFIGS, runtime.MNU_MATRS, runtime.MNU_DATES, runtime.MNU_TIMES, runtime.MNU_SINTS, runtime.MNU_STRINGS, runtime.MNU_NUMBRS, runtime.MNU_CPXS, runtime.MNU_REALS, runtime.MNU_ANGLES, runtime.MNU_LINTS, runtime.MNU_ALLVARS => {
+                        return @intCast(@as(i32, runtime.findNamedVariable(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem))) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
+                    },
+                    runtime.MNU_MENUS => {
+                        if (item == -runtime.MNU_DYNAMIC) {
+                            var i: i32 = 0;
+                            while (i < runtime.numberOfUserMenus) : (i += 1) {
+                                if (runtime.compareString(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem), &runtime.userMenus[@intCast(i)].menuName, runtime.CMP_NAME) == 0) {
+                                    return @intCast(@as(i32, runtime.ASSIGN_USER_MENU) - i);
+                                }
+                            }
+                            runtime.displayBugScreen("In function determineFunctionKeyItem: nonexistent menu specified!");
+                            return item;
+                        } else {
+                            return item;
+                        }
+                    },
+                    else => {
+                        return item;
+                    },
+                }
+            } else {
+                if (item == 0) {
+                    return runtime.ITM_NOP;
+                }
+                return item;
+            }
+        }
+
         pub fn checkKeyShifts(data: [*c]const u8) runtime.bool_t {
             // keyboard.c checkKeyShifts (2014-2027). stringToKeyNumber(data) is a
             // macro: (data[0]-'0')*10 + data[1]-'0' (keyboard.c:1434).
