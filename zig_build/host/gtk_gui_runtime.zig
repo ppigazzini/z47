@@ -107,6 +107,10 @@ pub export fn calcModeNormalGui() callconv(.c) void {
     display_owned.calcModeNormalGui();
 }
 
+pub export fn moveLabels() callconv(.c) void {
+    display_owned.moveLabels();
+}
+
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
     label_owned.labelCaptionAim(key, button, lbl_g, lbl_l);
 }
