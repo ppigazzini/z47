@@ -28,12 +28,13 @@ fn determineItemHost(data: [*c]const u8) callconv(.c) i16 {
     return shared.determineItem(data);
 }
 
-// executeFunction (and the _closeCatalog / closeAllCatalogMenus /
-// determineFunctionKeyItem_C47 it calls) is a keyboard.c static; exported under
-// a z47-namespaced name to force compile-analysis until btnFnClicked (its
-// caller) is ported to call the sibling directly.
-fn executeFunctionHost(data: [*c]const u8, item_: i16) callconv(.c) void {
-    shared.executeFunction(data, item_);
+// btnFnClicked: a function-key click runs the function directly. Host-only
+// export (its body reaches executeFunction -> clearScreen -> lcd_fill_rect,
+// which only resolves on the host lane); DMCP keeps the canonical C.  This is
+// also the live caller that forces executeFunction's compile-analysis.
+fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    shared.executeFunction(@ptrCast(data), 0);
 }
 
 fn determineFunctionKeyItem_C47Host(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
@@ -91,7 +92,7 @@ comptime {
         @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
         @export(&determineItemHost, .{ .name = "z47_keyboard_state_determineItem_owner" });
-        @export(&executeFunctionHost, .{ .name = "z47_keyboard_state_executeFunction_owner" });
+        @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
         @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
