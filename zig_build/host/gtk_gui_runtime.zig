@@ -2,6 +2,7 @@ const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
 const events_owned = @import("gtk_gui_events_owned.zig");
 const setup_owned = @import("gtk_gui_setup_owned.zig");
 const shell_owned = @import("gtk_gui_shell_owned.zig");
+const keymap_owned = @import("gtk_gui_keymap_owned.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
@@ -51,6 +52,10 @@ pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) 
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
     gtk_main();
+}
+
+pub export fn z47_keyCodeFromGdkKey(gdk_key: u32) callconv(.c) i16 {
+    return keymap_owned.keyCodeFromGdkKey(gdk_key);
 }
 
 pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
