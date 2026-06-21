@@ -76,6 +76,10 @@ pub export fn z47_check_label_consistency(lbl: [*c]const u8, context: [*c]const 
     return label_owned.checkLabelConsistency(lbl, context);
 }
 
+pub export fn z47_check_utf_string(widget_name: [*c]const u8, what: [*c]const u8, s: [*c]const u8) callconv(.c) bool {
+    return label_owned.checkUtfString(widget_name, what, s);
+}
+
 pub export fn z47_btnPressed_signal(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     btnPressed(widget, event, data);
     return 0;
