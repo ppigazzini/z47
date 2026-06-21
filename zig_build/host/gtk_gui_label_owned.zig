@@ -154,7 +154,7 @@ fn absItem(x: i16) i16 {
     return @intCast(@max(@as(i32, x), -@as(i32, x)));
 }
 
-fn softmenuName(idx: i16) [*c]const u8 {
+pub fn softmenuName(idx: i16) [*c]const u8 {
     return &indexOfItems[@intCast(idx)].itemSoftmenuName;
 }
 

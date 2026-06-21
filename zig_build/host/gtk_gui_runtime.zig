@@ -111,6 +111,10 @@ pub export fn moveLabels() callconv(.c) void {
     display_owned.moveLabels();
 }
 
+pub export fn debugLabelConsistency(lbl: [*c]const u8, ctx: [*c]const u8, key: ?*const label_owned.calcKey_t, btn: ?*anyopaque, show_btn: bool) callconv(.c) bool {
+    return display_owned.debugLabelConsistency(lbl, ctx, key, btn, show_btn);
+}
+
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
     label_owned.labelCaptionAim(key, button, lbl_g, lbl_l);
 }
