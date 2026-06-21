@@ -697,6 +697,18 @@ pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
     const f = indexOfItems[@intCast(item)].func;
     return f == @as(?*const anyopaque, @ptrCast(&addItemToBuffer));
 }
+pub fn itemFuncEquals(item: i16, f: ?*const anyopaque) bool {
+    return indexOfItems[@intCast(item)].func == f;
+}
+pub fn indexOfItemsParam(item: i16) u16 {
+    return indexOfItems[@intCast(item)].param;
+}
+pub fn indexOfItemsStatus(item: i16) u16 {
+    return indexOfItems[@intCast(item)].status;
+}
+pub fn addItemToBufferPtr() ?*const anyopaque {
+    return @ptrCast(&addItemToBuffer);
+}
 pub fn indexOfItemsCatalogName(item: i16) [*c]const u8 {
     return &indexOfItems[@intCast(item)].itemCatalogName;
 }
@@ -862,6 +874,79 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// executeFunction dependencies (keyboard.c 928-1430).
+pub const VAR_LX: i16 = 1206;
+pub const VAR_UX: i16 = 1205;
+pub const MNU_GAP_R: i16 = 2153;
+pub const MNU_GAP_L: i16 = 2151;
+pub const MNU_GAP_RX: i16 = 2152;
+pub const ITM_GAP_R: i16 = 2161;
+pub const ITM_GAP_L: i16 = 2159;
+pub const ITM_GAP_RX: i16 = 2160;
+pub const MNU_Sfdx: i16 = 1381;
+pub const ITM_INTEGRAL: i16 = 1700;
+pub const TM_MENU: u16 = 10017;
+pub const MNU_TAMINDIRECT: i16 = 2108;
+pub const CATALOG_PROG: i16 = 7;
+pub const TM_FLAGR: u16 = 10004;
+pub const TM_FLAGW: u16 = 10005;
+pub const ITM_DELP: i16 = 1425;
+pub const ITM_INDIRECTION: i16 = 539;
+pub const MNU_Solver: i16 = 1361;
+pub const MNU_Grapher: i16 = 1388;
+pub const MNU_Sf: i16 = 1380;
+pub const MNU_1STDERIV: i16 = 1335;
+pub const MNU_2NDDERIV: i16 = 1336;
+pub const TM_VALUE: u16 = 10001;
+pub const TM_VALUE_CHB: u16 = 10002;
+pub const TM_STORCL: u16 = 10006;
+pub const TM_LABEL: u16 = 10009;
+pub const TM_LBLONLY: u16 = 10018;
+pub const TM_SOLVE: u16 = 10010;
+pub const TM_M_DIM: u16 = 10007;
+pub const TM_REGISTER: u16 = 10003;
+pub const TM_CMP: u16 = 10021;
+pub const ITM_TAMMAX: i16 = 2110;
+pub const ITM_YY_TRACK: i16 = 2237;
+pub const ITM_YY_OFF: i16 = 1919;
+pub const MNU_MODE: i16 = 1346;
+pub const MNU_PREF: i16 = 2037;
+pub const ITM_EQ_LEFT: i16 = 995;
+pub const ITM_EQ_RIGHT: i16 = 996;
+pub const EIM_STATUS: u16 = 256;
+pub const EIM_ENABLED: u16 = 256;
+pub const ITM_NUMBER_SIGN: i16 = 809;
+pub const ITM_DMS2: i16 = 116;
+pub const ITM_2BIN: i16 = 1831;
+pub const ITM_2OCT: i16 = 1832;
+pub const ITM_2DEC: i16 = 1833;
+pub const ITM_2HEX: i16 = 1834;
+pub const ITM_KEYMAP: i16 = 1958;
+pub const ITM_SCR: i16 = 2191;
+pub const JC_UC: u16 = 198;
+pub const JC_NL: u16 = 197;
+pub const ITM_YES: i16 = 2245;
+pub const ITM_NO: i16 = 2246;
+pub const SCRUPD_ONE_TIME_FLAGS: u8 = 240;
+pub extern var hourGlassIconEnabled: bool_t;
+pub extern var fnKeyInCatalog: bool_t;
+pub extern fn isFunctionItemAMenu(item: i16) bool_t;
+pub extern fn reallyRunFunction(func: i16, param: u16) void;
+pub extern fn fnAim(unused: u16) void;
+pub extern fn isFunctionOldParam16(func: u16) bool_t;
+pub extern fn getItemFunc(item_nr: i16) ?*const anyopaque;
+pub extern fn tamOperation() i16;
+pub extern fn dynmenuGetLabel(menuitem: i16) [*c]u8;
+pub extern fn isJMAlphaOnlySoftmenu() bool_t;
+pub extern fn fnCFGsettings(unused: u16) void;
+pub extern fn fnAlphaCursorLeft(unused: u16) void;
+pub extern fn fnAlphaCursorRight(unused: u16) void;
+pub extern fn SetSetting(jm_config: u16) void;
+pub extern fn setLastintegerBasetoZero() void;
+pub extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+pub extern fn fnConstant(constant: u16) void;
+pub extern fn fnGetSystemFlag(system_flag: u16) void;
+
 // closeAllCatalogMenus / _closeCatalog dependencies (keyboard.c 398-469).
 pub const SOFTMENU_STACK_SIZE: usize = 8;
 pub const MNU_ALPHAMISC: i16 = 1378;

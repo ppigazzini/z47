@@ -121,6 +121,336 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn executeFunction(data: [*c]const u8, item_: i16) void {
+            // keyboard.c executeFunction (928-1430). VERBOSEKEYS / VERBOSE_*
+            // tracing dropped; EXTRA_INFO_ON_CALC_ERROR gated as elsewhere.
+            const ITM_0: i16 = @intCast(runtime.ITM_0);
+            var item: i16 = runtime.ITM_NOP;
+            runtime.FN_timed_out_to_NOP_or_Executed = true;
+
+            if (runtime.calcMode != runtime.CM_REGISTER_BROWSER and runtime.calcMode != runtime.CM_FLAG_BROWSER and runtime.calcMode != runtime.CM_ASN_BROWSER and runtime.calcMode != runtime.CM_FONT_BROWSER) {
+                if (data[0] == 0) {
+                    item = item_;
+                } else {
+                    item = determineFunctionKeyItem_C47(data, runtime.shiftF, runtime.shiftG);
+                    if (runtime.calcMode == runtime.CM_NIM and (item == runtime.ITM_HASH_JM or item == runtime.ITM_toINT)) {
+                        runtime.addItemToNimBuffer(item);
+                        item = runtime.ITM_NOP;
+                    }
+                    runtime.lastKeyItemDetermined = item;
+                }
+
+                if (runtime.calcMode == runtime.CM_GRAPH and runtime.currentMenu() == -runtime.MNU_PLOT_FUNC and (item == runtime.VAR_LX or item == runtime.VAR_UX)) {
+                    runtime.calcMode = runtime.CM_NORMAL;
+                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                    runtime.clearScreen();
+                    runtime.refreshScreen(127);
+                    runtime.showSoftmenu(-runtime.MNU_GRAPHS);
+                    item = 0;
+                }
+
+                if ((runtime.currentMenu() == -runtime.MNU_DYNAMIC) or (runtime.currentMenu() == -runtime.MNU_HOME) or (runtime.currentMenu() == -runtime.MNU_PFN)) {
+                    _ = runtime.setCurrentUserMenu(item, &runtime.userMenus[runtime.currentUserMenu].menuItem[@intCast(runtime.dynamicMenuItem)].argumentName);
+                }
+
+                if (runtime.calcMode == runtime.CM_PEM and runtime.isFunctionItemAMenu(item)) {
+                    switch (item) {
+                        runtime.ITM_GAP_R => item = -runtime.MNU_GAP_R,
+                        runtime.ITM_GAP_L => item = -runtime.MNU_GAP_L,
+                        runtime.ITM_GAP_RX => item = -runtime.MNU_GAP_RX,
+                        else => {},
+                    }
+                }
+
+                runtime.resetShiftState();
+
+                if (item != 0) {
+                    runtime.showFunctionNameItem = 0;
+                    if (runtime.calcMode != runtime.CM_CONFIRMATION and data[0] != 0) {
+                        runtime.lastErrorCode = 0;
+
+                        if (runtime.calcMode != runtime.CM_PEM and item == -runtime.MNU_Sfdx) {
+                            runtime.tamEnterMode(runtime.MNU_Sfdx);
+                            runtime.refreshScreen(109);
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                            return;
+                        } else if (runtime.calcMode != runtime.CM_PEM and (item == runtime.ITM_INTEGRAL or item == runtime.ITM_INTEGRAL_YX)) {
+                            switch (runtime.calcMode) {
+                                runtime.CM_NIM => runtime.closeNim(),
+                                runtime.CM_AIM => runtime.closeAim(),
+                                else => {},
+                            }
+                            runtime.reallyRunFunction(item, runtime.currentSolverVariable);
+                            runtime.refreshScreen(110);
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                            return;
+                        } else if (item < 0) { // softmenu
+                            if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0 and runtime.currentMenu() == -runtime.MNU_MENUS) {
+                                runtime.itemToBeAssigned = item;
+                                runtime.leaveAsmMode();
+                                runtime.popSoftmenu();
+                            } else if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and (item == -runtime.MNU_HOME or item == -runtime.MNU_PFN or item == -runtime.MNU_MyMenu)) {
+                                runtime.itemToBeAssigned = item;
+                                runtime.leaveAsmMode();
+                                runtime.showSoftmenu(item);
+                            } else if ((runtime.tam.mode == runtime.TM_MENU) and (item != -runtime.MNU_MENU) and !runtime.tam.alpha) {
+                                if ((runtime.currentMenu() == -runtime.MNU_TAMINDIRECT) and ((item == -runtime.MNU_VAR) or (item == -runtime.MNU_REG))) {
+                                    runtime.showSoftmenu(item);
+                                } else {
+                                    runtime.fnKeyInCatalog = true;
+                                    if (item < 0) {
+                                        item = -item;
+                                    }
+                                    runtime.addItemToBuffer(@bitCast(item));
+                                }
+                            } else {
+                                runtime.showSoftmenu(item);
+                                if (isGraphMode()) {
+                                    runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+                                    if (item == -runtime.MNU_GRAPHS) {
+                                        runtime.calcMode = runtime.CM_NORMAL;
+                                        runtime.fnUndo(runtime.NOPARAM);
+                                    }
+                                }
+                                if (item == -runtime.MNU_ALPHA) {
+                                    runtime.fnAim(0);
+                                }
+                                if ((item == -runtime.MNU_Solver or item == -runtime.MNU_Grapher or item == -runtime.MNU_Sf or item == -runtime.MNU_1STDERIV or item == -runtime.MNU_2NDDERIV or item == -runtime.MNU_Sf_TOOL or item == -runtime.MNU_Solver_TOOL) and runtime.lastErrorCode != 0) {
+                                    runtime.popSoftmenu();
+                                    runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_INTERACTIVE;
+                                    runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_EQUATION_MODE;
+                                }
+                            }
+                            runtime.refreshScreen(111);
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                            return;
+                        }
+
+                        if (runtime.tam.mode != 0 and runtime.catalog != 0 and (runtime.tam.digitsSoFar != 0 or runtime.isFunctionOldParam16(@bitCast(runtime.tam.function)) or (!runtime.tam.indirect and (runtime.tam.mode == runtime.TM_VALUE or runtime.tam.mode == runtime.TM_VALUE_CHB or (runtime.tam.mode == runtime.TM_KEY and !runtime.tam.keyInputFinished))))) {
+                            // disabled
+                        } else if (runtime.tam.function == runtime.ITM_GTOP and runtime.catalog == runtime.CATALOG_PROG) {
+                            runtime.runFunction(item);
+                            runtime.leaveTamModeIfEnabled();
+                            runtime.hourGlassIconEnabled = false;
+                            _closeCatalog();
+                            runtime.refreshScreen(112);
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                            return;
+                        } else if ((runtime.tam.mode != 0 or runtime.getItemFunc(item) != runtime.addItemToBufferPtr()) and runtime.calcMode == runtime.CM_PEM and runtime.catalog == 0 and (runtime.tam.mode == runtime.TM_FLAGR or runtime.tam.mode == runtime.TM_FLAGW) and !(runtime.tam.mode != 0 and runtime.tam.function == runtime.ITM_DELP)) {
+                            if ((runtime.tam.mode == runtime.TM_FLAGR or runtime.tam.mode == runtime.TM_FLAGW) and (item != runtime.ITM_INDIRECTION) and !runtime.tam.indirect) {
+                                runtime.tam.value = @intCast(runtime.indexOfItemsParam(item) & 0xff);
+                                runtime.addStepInProgram(runtime.tamOperation());
+                                runtime.leaveTamModeIfEnabled();
+                            }
+                        } else if ((runtime.tam.mode != 0 or runtime.getItemFunc(item) != runtime.addItemToBufferPtr()) and runtime.calcMode == runtime.CM_PEM and runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR and !(runtime.tam.mode != 0 and runtime.tam.function == runtime.ITM_DELP)) {
+                            runtime.fnKeyInCatalog = true;
+                            if (runtime.itemFuncEquals(item, @ptrCast(&runtime.fnGetSystemFlag)) and (runtime.tam.mode == runtime.TM_FLAGR or runtime.tam.mode == runtime.TM_FLAGW) and !runtime.tam.indirect) {
+                                runtime.tam.value = @intCast(runtime.indexOfItemsParam(item) & 0xff);
+                                runtime.tam.alpha = true;
+                                runtime.addStepInProgram(runtime.tamOperation());
+                                runtime.leaveTamModeIfEnabled();
+                            } else if (runtime.itemFuncIsAddItemToBuffer(item)) {
+                                if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
+                                    processAimInput(item);
+                                    if (runtime.tam.mode != 0) {
+                                        runtime.popSoftmenu();
+                                    }
+                                } else {
+                                    runtime.addStepInProgram(item);
+                                }
+                                runtime.hourGlassIconEnabled = false;
+                            } else if (runtime.tam.mode != 0) {
+                                const itmLabel = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+                                const nameLength: u16 = @intCast(runtime.stringByteLength(itmLabel));
+                                _ = runtime.xcopy(runtime.aimBuffer, itmLabel, @as(u32, nameLength) + 1);
+                                runtime.tam.alpha = true;
+                                runtime.addStepInProgram(runtime.tamOperation());
+                                runtime.leaveTamModeIfEnabled();
+                            } else {
+                                runtime.runFunction(item);
+                            }
+                            runtime.hourGlassIconEnabled = false;
+                            _closeCatalog();
+                            runtime.fnKeyInCatalog = false;
+                            runtime.refreshScreen(113);
+                            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+                            return;
+                        } else if (runtime.calcMode == runtime.CM_PEM and !runtime.getSystemFlag(runtime.FLAG_ALPHA) and (item == runtime.ITM_toINT or item == runtime.ITM_HASH_JM)) {
+                            if (runtime.aimBuffer[0] != 0) {
+                                runtime.pemAddNumber(runtime.ITM_toINT, true);
+                                runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                                runtime.refreshScreen(115);
+                                return;
+                            }
+                        }
+
+                        runtime.fnKeyInCatalog = true;
+                        if (runtime.tam.mode != 0 and runtime.catalog != 0 and (runtime.tam.digitsSoFar != 0 or runtime.isFunctionOldParam16(@bitCast(runtime.tam.function)) or (!runtime.tam.indirect and (runtime.tam.mode == runtime.TM_VALUE or runtime.tam.mode == runtime.TM_VALUE_CHB)))) {
+                            // disabled
+                        } else if (runtime.tam.mode != 0 and (!runtime.tam.alpha or runtime.isAlphabeticSoftmenu()) and !(runtime.tam.mode == runtime.TM_VALUE and (item == runtime.ITM_TAMMAX or item == runtime.ITM_YY_TRACK or item == runtime.ITM_YY_OFF))) {
+                            const isInConfig = runtime.tam.mode == runtime.TM_FLAGW and runtime.currentMenu() == -runtime.MNU_SYSFL;
+                            if (runtime.menu(1) == -runtime.MNU_TAMALPHA and runtime.isAlphaSubmenu(0)) {
+                                runtime.popSoftmenu();
+                                runtime.numberOfTamMenusToPop -= 1;
+                            }
+                            runtime.addItemToBuffer(@bitCast(item));
+                            if ((runtime.currentMenu() == -runtime.MNU_MODE or runtime.currentMenu() == -runtime.MNU_PREF) and isInConfig and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE) {
+                                runtime.fnCFGsettings(0);
+                            }
+                        } else if (runtime.calcMode == runtime.CM_EIM and ((runtime.catalog != 0 and runtime.catalog != runtime.CATALOG_MVAR) or (runtime.currentMenu() == -runtime.MNU_EQ_EDIT and item != runtime.ITM_EQ_LEFT and item != runtime.ITM_EQ_RIGHT and item != runtime.CHR_num and item != runtime.CHR_case and (runtime.indexOfItemsStatus(item) & runtime.EIM_STATUS) == runtime.EIM_ENABLED))) {
+                            if (runtime.currentMenu() == -runtime.MNU_CONST) {
+                                runtime.addItemToBuffer(@bitCast(runtime.ITM_NUMBER_SIGN));
+                            }
+                            runtime.addItemToBuffer(@bitCast(item));
+                            while (runtime.currentMenu() != -runtime.MNU_EQ_EDIT) {
+                                runtime.popSoftmenu();
+                            }
+                        } else if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and (ITM_0 <= item and item <= runtime.ITM_F) and (runtime.catalog == 0 or runtime.catalog == runtime.CATALOG_MVAR)) {
+                            if (runtime.lastIntegerBase == 0) {
+                                runtime.lastIntegerBase = 16;
+                            }
+                            runtime.addItemToNimBuffer(item);
+                        } else if ((runtime.calcMode == runtime.CM_NIM) and ((item == runtime.ITM_DMS2 or item == runtime.ITM_dotD) and runtime.catalog == 0)) {
+                            runtime.addItemToNimBuffer(item);
+                        } else if (runtime.calcMode == runtime.CM_MIM and runtime.currentMenu() != -runtime.MNU_M_EDIT and (item != runtime.ITM_CC and item != runtime.ITM_op_j and item != runtime.ITM_op_j_pol)) {
+                            runtime.addItemToBuffer(@bitCast(item));
+                        } else if (item > 0) { // function
+                            blk: {
+                                if (runtime.calcMode == runtime.CM_NORMAL and ((runtime.lastIntegerBase == 2 and item == runtime.ITM_2BIN) or (runtime.lastIntegerBase == 8 and item == runtime.ITM_2OCT) or (runtime.lastIntegerBase == 10 and item == runtime.ITM_2DEC) or (runtime.lastIntegerBase == 16 and item == runtime.ITM_2HEX))) {
+                                    runtime.setLastintegerBasetoZero();
+                                    runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+                                    break :blk;
+                                }
+                                if (runtime.calcMode == runtime.CM_NIM and item != runtime.ITM_CC and item != runtime.ITM_op_j and item != runtime.ITM_op_j_pol and item != runtime.ITM_HASH_JM and item != runtime.ITM_toINT and item != runtime.ITM_ms) {
+                                    runtime.closeNim();
+                                    if (runtime.calcMode != runtime.CM_NIM) {
+                                        if (runtime.itemFuncEquals(item, @ptrCast(&runtime.fnConstant))) {
+                                            runtime.setSystemFlag(runtime.FLAG_ASLIFT);
+                                        }
+                                    }
+                                }
+                                if (item == runtime.ITM_KEYMAP) {
+                                    runtime.cursorEnabled = false;
+                                }
+                                if (runtime.calcMode == runtime.CM_AIM and !(runtime.isAlphabeticSoftmenu() or runtime.isJMAlphaOnlySoftmenu() or item == runtime.ITM_KEYMAP)) {
+                                    runtime.closeAim();
+                                }
+                                if (runtime.tam.mode != 0 and runtime.tam.alpha) {
+                                    if (item == runtime.ITM_T_LEFT_ARROW) {
+                                        runtime.fnAlphaCursorLeft(runtime.NOPARAM);
+                                        runtime.tamProcessInput(@intCast(runtime.ITM_T_LEFT_ARROW));
+                                        break :blk;
+                                    } else if (item == runtime.ITM_T_RIGHT_ARROW) {
+                                        runtime.fnAlphaCursorRight(runtime.NOPARAM);
+                                        runtime.tamProcessInput(@intCast(runtime.ITM_NOP));
+                                        break :blk;
+                                    } else if (item == runtime.ITM_NOP) {
+                                        runtime.tamProcessInput(@intCast(runtime.ITM_NOP));
+                                        break :blk;
+                                    }
+                                }
+                                if (runtime.tam.alpha and runtime.calcMode != runtime.CM_ASSIGN and runtime.tam.mode != runtime.TM_NEWMENU and !((runtime.tam.mode == runtime.TM_STORCL or runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or runtime.tam.mode == runtime.TM_SOLVE or runtime.tam.mode == runtime.TM_KEY or runtime.tam.mode == runtime.TM_M_DIM or runtime.tam.mode == runtime.TM_REGISTER or runtime.tam.mode == runtime.TM_CMP) and (item == runtime.CHR_num or item == runtime.CHR_case or item == runtime.ITM_SCR or item == runtime.ITM_USERMODE))) {
+                                    if (runtime.calcMode != runtime.CM_PEM or item != runtime.ITM_NOP) {
+                                        runtime.leaveTamModeIfEnabled();
+                                    }
+                                } else if (runtime.tam.mode == runtime.TM_VALUE and (item == runtime.ITM_TAMMAX or item == runtime.ITM_YY_TRACK or item == runtime.ITM_YY_OFF)) {
+                                    runtime.leaveTamModeIfEnabled();
+                                }
+
+                                if (runtime.lastErrorCode == 0) {
+                                    if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
+                                        runtime.updateMatrixHeightCache();
+                                    }
+                                    runtime.temporaryInformation = runtime.TI_NO_INFO;
+                                    if (runtime.programRunStop == runtime.PGM_WAITING) {
+                                        runtime.programRunStop = runtime.PGM_STOPPED;
+                                    }
+                                    if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0 and item != runtime.ITM_NOP) {
+                                        if (item == runtime.CHR_case) {
+                                            runtime.SetSetting(runtime.JC_UC);
+                                        } else if (item == runtime.CHR_num) {
+                                            runtime.SetSetting(runtime.JC_NL);
+                                        } else if (runtime.tam.alpha) {
+                                            processAimInput(item);
+                                            if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
+                                                runtime.assignLeaveAlpha();
+                                                runtime.assignGetName1();
+                                            }
+                                        } else if (item == runtime.ITM_AIM) {
+                                            runtime.assignEnterAlpha();
+                                            runtime.keyActionProcessed = true;
+                                        } else {
+                                            if (item == runtime.ITM_XEQ and runtime.dynamicMenuItem > -1) {
+                                                const varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+                                                if (runtime.strcmp(varCatalogItem, "XEQ") != 0) {
+                                                    const regist = runtime.findNamedLabel(varCatalogItem);
+                                                    if (regist != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
+                                                        item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
+                                                    } else {
+                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                        if (comptime !runtime.is_dmcp_build) {
+                                                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", varCatalogItem);
+                                                            runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
+                                                        }
+                                                    }
+                                                }
+                                            } else if (item == runtime.ITM_RCL and runtime.dynamicMenuItem > -1) {
+                                                const varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+                                                if (runtime.strcmp(varCatalogItem, "RCL") != 0) {
+                                                    const regist = runtime.findNamedVariable(varCatalogItem);
+                                                    if (regist != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
+                                                        item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
+                                                    } else {
+                                                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                                                        if (comptime !runtime.is_dmcp_build) {
+                                                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", varCatalogItem);
+                                                            runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            runtime.itemToBeAssigned = item;
+                                            if (runtime.previousCalcMode == runtime.CM_AIM and runtime.isAlphaSubmenu(0)) {
+                                                runtime.popSoftmenu();
+                                                runtime.showSoftmenu(-runtime.MNU_MyAlpha);
+                                            }
+                                        }
+                                    } else if (runtime.calcMode == runtime.CM_ASSIGN and runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU and item != runtime.ITM_NOP) {
+                                        processAimInput(item);
+                                        if (runtime.stringGlyphLength(runtime.aimBuffer) > 6) {
+                                            runtime.assignLeaveAlpha();
+                                            runtime.assignGetName2();
+                                        }
+                                    } else {
+                                        runtime.runFunction(item);
+                                        if (runtime.calcMode == runtime.CM_EIM and runtime.tam.mode == 0) {
+                                            if (runtime.isAlphaSubmenu(0)) {
+                                                while (runtime.currentMenu() != -runtime.MNU_EQ_EDIT) {
+                                                    runtime.popSoftmenu();
+                                                }
+                                            }
+                                        } else if (((runtime.calcMode == runtime.CM_PEM and runtime.tam.mode == 0 and runtime.getSystemFlag(runtime.FLAG_ALPHA)) or runtime.calcMode == runtime.CM_AIM) and runtime.itemFuncIsAddItemToBuffer(item)) {
+                                            runtime.popSoftmenu();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // noMoreToDo:
+                        _closeCatalog();
+                        runtime.fnKeyInCatalog = false;
+                    } else if (runtime.calcMode == runtime.CM_CONFIRMATION and (item == runtime.ITM_YES or item == runtime.ITM_NO)) {
+                        runtime.runFunction(item);
+                    }
+                } else if (runtime.calcMode == runtime.CM_CONFIRMATION) {
+                    runtime.temporaryInformation = runtime.TI_ARE_YOU_SURE;
+                }
+            }
+            runtime.refreshScreen(114);
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+        }
+
         // keyboard.c CatalogMenus[] (398-423): menus closed on a real CAT entry.
         const catalog_menus = [_]i16{
             runtime.MNU_ALPHA_OMEGA, runtime.MNU_ALPHAMISC, runtime.MNU_ALPHA,
