@@ -1037,6 +1037,83 @@ pub export fn refreshModeGui() callconv(.c) void {
     }
 }
 
+// keyboardTweak.c fg_processing_jm (266-307): cycle the f/g/fg shift state,
+// with the triple-shift HOME/MyMenu timer activation.
+pub export fn fg_processing_jm() callconv(.c) void {
+    var toExecute = false;
+    if (runtime.getSystemFlag(runtime.FLAG_SHFT_4s) or (runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE) or runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE))) {
+        if ((runtime.getSystemFlag(runtime.FLAG_HOME_TRIPLE) or runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) and !(runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH)) {
+            if (runtime.fnTimerGetStatus(runtime.TO_3S_CTFF) == runtime.TMR_RUNNING) {
+                runtime.JM_SHIFT_HOME_TIMER1 += 1;
+                if (runtime.JM_SHIFT_HOME_TIMER1 >= 3) {
+                    runtime.fnTimerStop(runtime.TO_FG_TIMR);
+                    runtime.fnTimerStop(runtime.TO_3S_CTFF);
+                    runtime.shiftF = false;
+                    runtime.shiftG = true;
+                    runtime.leaveTamModeIfEnabled();
+                    toExecute = true;
+                }
+            }
+            if (runtime.fnTimerGetStatus(runtime.TO_3S_CTFF) == runtime.TMR_STOPPED) {
+                runtime.JM_SHIFT_HOME_TIMER1 = 1;
+                runtime.fnTimerStart(runtime.TO_3S_CTFF, @intCast(runtime.TO_3S_CTFF), runtime.JM_TO_3S_CTFF);
+            }
+        }
+    }
+
+    if (!runtime.shiftF and !runtime.shiftG) {
+        runtime.shiftF = true;
+        runtime.shiftG = false;
+    } else if (runtime.shiftF and !runtime.shiftG) {
+        runtime.shiftF = false;
+        runtime.shiftG = true;
+    } else if (!runtime.shiftF and runtime.shiftG) {
+        runtime.shiftF = false;
+        runtime.shiftG = false;
+    } else if (runtime.shiftF and runtime.shiftG) {
+        runtime.shiftF = false;
+        runtime.shiftG = false;
+    }
+    if (toExecute) {
+        openHOMEorMyM(runtime.keypress_fff);
+    }
+}
+
+// keyboardTweak.c Check_Norm_Key_00_Assigned (310-323): map a key to the
+// assigned Norm-key function, returning the shift override if any.
+pub export fn Check_Norm_Key_00_Assigned(result: [*c]i16, tempkey: i16) callconv(.c) i16 {
+    if (!runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.normKey00Key() != -1) and
+        (runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM or runtime.calcMode == runtime.CM_PEM or runtime.calcMode == runtime.CM_TIMER or runtime.calcMode == runtime.CM_ASSIGN) and
+        !runtime.tam.alpha and runtime.tam.mode != runtime.TM_STORCL and runtime.tam.mode != runtime.TM_LABEL and
+        (runtime.catalog == 0 or (runtime.catalog != 0 and (runtime.Norm_Key_00.func != runtime.ITM_SHIFTg and runtime.Norm_Key_00.func != runtime.ITM_SHIFTf and runtime.Norm_Key_00.func != runtime.KEY_fg))) and
+        (!(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX))) and
+        ((((!runtime.shiftF and !runtime.shiftG) or runtime.isR47FAM()) and (tempkey == runtime.normKey00Key()) and (runtime.kbdStdAt(@intCast(runtime.normKey00Key())).primary == result.*)) or
+            ((runtime.Norm_Key_00.func == runtime.KEY_fg) and (tempkey == runtime.normKey00Key()) and (runtime.kbdStdAt(@intCast(runtime.normKey00Key())).primary == result.*))))
+    {
+        result.* = runtime.Norm_Key_00.func;
+        return if (runtime.Norm_Key_00.func == runtime.ITM_SHIFTg or runtime.Norm_Key_00.func == runtime.ITM_SHIFTf or runtime.Norm_Key_00.func == runtime.KEY_fg) runtime.Norm_Key_00.func else 0;
+    }
+    return 0;
+}
+
+// keyboardTweak.c Setup_MultiPresses (326-341): arm the backspace double-press
+// DROP timer and stop the long-press timers.
+pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
+    runtime.JM_auto_doublepress_autodrop_enabled = 0;
+    var tmp: i16 = 0;
+    if (runtime.calcMode == runtime.CM_NORMAL and result == runtime.ITM_BACKSPACE and runtime.tam.mode == 0 and !runtime.getSystemFlag(runtime.FLAG_CLX_DROP)) {
+        tmp = runtime.ITM_DROP;
+    }
+    if (tmp != 0) {
+        if (runtime.fnTimerGetStatus(runtime.TO_CL_DROP) == runtime.TMR_RUNNING) {
+            runtime.JM_auto_doublepress_autodrop_enabled = tmp;
+        }
+        runtime.fnTimerStart(runtime.TO_CL_DROP, @intCast(runtime.TO_CL_DROP), runtime.JM_CLRDROP_TIMER);
+    }
+    runtime.fnTimerStop(runtime.TO_FG_LONG);
+    runtime.fnTimerStop(runtime.TO_FN_LONG);
+}
+
 // keyboardTweak.c showAlphaModeonGui: refresh the alpha-mode indicator/keyboard.
 pub export fn showAlphaModeonGui() callconv(.c) void {
     // The PC_BUILD jm_show_comment trace is a no-op (PC_BUILD_VERBOSE2 only).
