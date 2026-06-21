@@ -174,6 +174,188 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     }
 }
 
+// keyboard.c btnFnPressed (579-742) for the host lane (the large /* */ block in
+// the C is dead code).  A soft-function-key press; the actual buffering goes
+// through btnFnPressed_StateMachine to pick up long/double-press conditions.
+fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+    if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
+        return;
+    }
+    if (ev.button == 2) {
+        runtime.shiftF = true;
+        runtime.shiftG = false;
+    }
+    if (ev.button == 3) {
+        runtime.shiftF = false;
+        runtime.shiftG = true;
+    }
+
+    const dat: [*c]u8 = @ptrCast(data);
+    if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+        runtime.closeShowMenu();
+    }
+
+    runtime.FN_timed_out_to_NOP_or_Executed = false;
+    runtime.releaseOverride = false;
+    runtime.temporaryInformation = runtime.TI_NO_INFO;
+    runtime.FN_key_pressed = @as(i16, dat[0]) - '0' + 37;
+    runtime.asnKey[0] = dat[0];
+    runtime.asnKey[1] = 0;
+
+    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+        shared.setLastKeyCode((@as(i32, dat[0]) - '0') + 37);
+    } else {
+        runtime.lastKeyCode = 0;
+    }
+
+    if (runtime.programRunStop == runtime.PGM_PAUSED) {
+        runtime.programRunStop = runtime.PGM_KEY_PRESSED_WHILE_PAUSED;
+        return;
+    }
+
+    // Timer menu fast path: activate the primary function on press.
+    if (!runtime.shiftF and runtime.currentMenu() == -runtime.MNU_TIMERF) {
+        const softkeyItem = runtime.softmenu[@intCast(runtime.softmenuStack[0].softmenuId)].softkeyItem;
+        const _item = softkeyItem[@intCast(runtime.asnKey[0] - '1')];
+        runtime.reallyRunFunction(_item, runtime.NOPARAM);
+        runtime.hourGlassIconEnabled = false;
+        if (_item == runtime.ITM_TIMER_R_S) {
+            runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STACK_ONE_TIME;
+        } else {
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+        }
+        runtime.refreshScreen(136);
+        runtime.releaseOverride = true;
+        return;
+    }
+
+    runtime.lastshiftF = runtime.shiftF;
+    runtime.lastshiftG = runtime.shiftG;
+
+    if (runtime.tam.mode == runtime.TM_KEY and !runtime.tam.keyInputFinished) {
+        return;
+    }
+
+    if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and !(runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU)) {
+        var item = shared.determineFunctionKeyItem_C47(dat, runtime.shiftF, runtime.shiftG);
+        switch (-runtime.currentMenu()) {
+            runtime.MNU_MENUS => {
+                if (item <= runtime.ASSIGN_USER_MENU) {
+                    runtime.currentUserMenu = @intCast(@as(i32, runtime.ASSIGN_USER_MENU) - @as(i32, item));
+                    item = -runtime.MNU_DYNAMIC;
+                }
+                runtime.showFunctionNameItem = item; // C falls through to the CAT case
+            },
+            runtime.MNU_CATALOG, runtime.MNU_CHARS, runtime.MNU_PROGS, runtime.MNU_VARS => {
+                runtime.showFunctionNameItem = item;
+            },
+            else => {
+                runtime.updateAssignTamBuffer();
+            },
+        }
+        shared._closeCatalog();
+    } else if (runtime.calcMode != runtime.CM_REGISTER_BROWSER and runtime.calcMode != runtime.CM_FLAG_BROWSER and runtime.calcMode != runtime.CM_ASN_BROWSER and runtime.calcMode != runtime.CM_FONT_BROWSER) {
+        runtime.lastErrorCode = 0;
+        runtime.btnFnPressed_StateMachine(null, data);
+    }
+}
+
+// keyboard.c btnFnReleased (811-917) for the host lane; `event` is unused.  The
+// soft-function-key release: TAM-key digit pairs, the assign-to-menu commit,
+// and otherwise the long/double-press state machine.
+fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    _ = event;
+    const dat: [*c]u8 = @ptrCast(data);
+
+    if (runtime.catalog != 0) {
+        runtime.resetAlphaSelectionBuffer();
+    }
+    if (runtime.programRunStop == runtime.PGM_KEY_PRESSED_WHILE_PAUSED) {
+        runtime.programRunStop = runtime.PGM_RESUMING;
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+        return;
+    }
+
+    if (runtime.calcMode != runtime.CM_REGISTER_BROWSER and runtime.calcMode != runtime.CM_FLAG_BROWSER and runtime.calcMode != runtime.CM_ASN_BROWSER and runtime.calcMode != runtime.CM_FONT_BROWSER) {
+        if (runtime.tam.mode == runtime.TM_KEY and !runtime.tam.keyInputFinished) {
+            if (runtime.tam.digitsSoFar == 0) {
+                // Digit item codes are a mix of u16/i16 in the runtime; alias as u16.
+                const d0: u16 = @intCast(runtime.ITM_0);
+                const d1: u16 = @intCast(runtime.ITM_1);
+                const d2: u16 = @intCast(runtime.ITM_2);
+                const d3: u16 = @intCast(runtime.ITM_3);
+                const d4: u16 = @intCast(runtime.ITM_4);
+                const d5: u16 = @intCast(runtime.ITM_5);
+                const d6: u16 = @intCast(runtime.ITM_6);
+                const d7: u16 = @intCast(runtime.ITM_7);
+                const d8: u16 = @intCast(runtime.ITM_8);
+                const d9: u16 = @intCast(runtime.ITM_9);
+                switch (dat[0]) {
+                    '1' => {
+                        runtime.tamProcessInput(if (runtime.shiftG) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d3 else if (runtime.shiftF) d7 else d1);
+                    },
+                    '2' => {
+                        runtime.tamProcessInput(if (runtime.shiftG) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d4 else if (runtime.shiftF) d8 else d2);
+                    },
+                    '3' => {
+                        runtime.tamProcessInput(if (runtime.shiftG) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d5 else if (runtime.shiftF) d9 else d3);
+                    },
+                    '4' => {
+                        runtime.tamProcessInput(if (runtime.shiftG or runtime.shiftF) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d6 else if (runtime.shiftF) d0 else d4);
+                    },
+                    '5' => {
+                        runtime.tamProcessInput(if (runtime.shiftG or runtime.shiftF) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d7 else if (runtime.shiftF) d1 else d5);
+                    },
+                    '6' => {
+                        runtime.tamProcessInput(if (runtime.shiftG or runtime.shiftF) d1 else d0);
+                        runtime.tamProcessInput(if (runtime.shiftG) d8 else if (runtime.shiftF) d2 else d6);
+                    },
+                    else => {},
+                }
+                runtime.shiftF = false;
+                runtime.shiftG = false;
+                runtime.refreshScreen(107);
+            }
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+            return;
+        }
+
+        if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and !(runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU)) {
+            if (runtime.assignToMenu(dat)) {
+                if (runtime.previousCalcMode == runtime.CM_AIM) {
+                    runtime.showSoftmenu(-runtime.MNU_ALPHA);
+                    runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
+                    runtime.refreshScreen(108);
+                }
+                return;
+            }
+        }
+
+        if (!runtime.releaseOverride) {
+            runtime.btnFnReleased_StateMachine(null, data);
+            runtime.releaseOverride = false;
+        }
+
+        if (runtime.calcMode == runtime.CM_AIM) {
+            runtime.refreshRegisterLine(runtime.REGISTER_T);
+        }
+        if (runtime.tam.alpha) {
+            runtime.displayShiftAndTamBuffer();
+        }
+    }
+    runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+    runtime.fnTimerStop(runtime.TO_3S_CTFF);
+    runtime.fnTimerStop(runtime.TO_CL_LONG);
+}
+
 // Full keyboard.c btnReleased (2032-2306) for the host lane; `event` is unused.
 // The C `goto RELEASE_END` is modeled as a labeled block so the release tail
 // runs on every non-early-return exit.  DMCP keeps the C body.
@@ -394,7 +576,9 @@ comptime {
         @export(&keyDownHost, .{ .name = "fnKeyDown" });
         @export(&keyDotDHost, .{ .name = "fnKeyDotD" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
+        @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
         @export(&btnReleasedHost, .{ .name = "btnReleased" });
+        @export(&btnFnReleasedHost, .{ .name = "btnFnReleased" });
         @export(&btnClickedHost, .{ .name = "btnClicked" });
     } else {
         @export(&btnPressedDmcp, .{ .name = "btnPressed" });
