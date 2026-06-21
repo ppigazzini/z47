@@ -449,14 +449,68 @@ pub extern fn fnPlotStat(unused: u16) void;
 pub extern fn fnUpTimerApp() void;
 pub extern fn fnDownTimerApp() void;
 pub extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
-// menuUp / menuDown are static in keyboard.c — trampoline via the legacy bridge.
-extern fn z47_keyboard_state_menuUp() void;
-extern fn z47_keyboard_state_menuDown() void;
+// menuUp / menuDown / stayInAIM ports (keyboard.c 3296-3373 / 3577-3592).
+pub const ERROR_NONE: u8 = 0;
+pub const CATALOG_NONE: i16 = 0;
+pub const NUMBER_OF_DYNAMIC_SOFTMENUS: i16 = 22;
+pub const MNU_ALPHAMATH: i16 = 1375;
+pub extern fn setCatalogLastPos() void;
+pub extern fn changeToALPHA() void;
+
 pub fn menuUp() void {
-    z47_keyboard_state_menuUp();
+    const menuId: i16 = softmenuStack[0].softmenuId;
+    const sm: i16 = softmenu[@intCast(menuId)].menuItem;
+    screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+    if (temporaryInformation == TI_NO_INFO and lastErrorCode == ERROR_NONE) {
+        screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+    }
+    if ((sm == -MNU_alpha_omega or sm == -MNU_ALPHAintl) and alphaCase == AC_LOWER) {
+        alphaCase = AC_UPPER;
+        showAlphaModeonGui();
+        softmenuStack[0].softmenuId -= 1;
+    } else if ((sm == -MNU_ALPHAMISC or sm == -MNU_ALPHAMATH or sm == -MNU_ALPHA) and alphaCase == AC_LOWER and arrowCasechange) {
+        alphaCase = AC_UPPER;
+        showAlphaModeonGui();
+    } else {
+        const itemShift: i16 = if (catalog == CATALOG_NONE) 18 else 6;
+        const numItems: i16 = if (menuId < NUMBER_OF_DYNAMIC_SOFTMENUS) dynamicSoftmenu[@intCast(menuId)].numItems else softmenu[@intCast(menuId)].numItems;
+        if ((softmenuStack[0].firstItem + itemShift) < numItems) {
+            softmenuStack[0].firstItem += itemShift;
+        } else {
+            softmenuStack[0].firstItem = 0;
+        }
+        setCatalogLastPos();
+    }
+    doRefreshSoftMenu = true;
 }
+
 pub fn menuDown() void {
-    z47_keyboard_state_menuDown();
+    const menuId: i16 = softmenuStack[0].softmenuId;
+    const sm: i16 = softmenu[@intCast(menuId)].menuItem;
+    screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+    if (temporaryInformation == TI_NO_INFO and lastErrorCode == ERROR_NONE) {
+        screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+    }
+    if ((sm == -MNU_ALPHA_OMEGA or sm == -MNU_ALPHAINTL) and alphaCase == AC_UPPER) {
+        alphaCase = AC_LOWER;
+        showAlphaModeonGui();
+        softmenuStack[0].softmenuId += 1;
+    } else if ((sm == -MNU_ALPHAMISC or sm == -MNU_ALPHAMATH or sm == -MNU_ALPHA) and alphaCase == AC_UPPER and arrowCasechange) {
+        alphaCase = AC_LOWER;
+        showAlphaModeonGui();
+    } else {
+        const itemShift: i16 = if (catalog == CATALOG_NONE) 18 else 6;
+        if ((softmenuStack[0].firstItem - itemShift) >= 0) {
+            softmenuStack[0].firstItem -= itemShift;
+        } else if ((softmenuStack[0].firstItem - itemShift) >= -5) {
+            softmenuStack[0].firstItem = 0;
+        } else {
+            const numItems: i16 = if (menuId < NUMBER_OF_DYNAMIC_SOFTMENUS) dynamicSoftmenu[@intCast(menuId)].numItems else softmenu[@intCast(menuId)].numItems;
+            softmenuStack[0].firstItem = @divTrunc(@divTrunc(numItems - 1, 6), @divTrunc(itemShift, 6)) * itemShift;
+        }
+        setCatalogLastPos();
+    }
+    doRefreshSoftMenu = true;
 }
 
 pub inline fn softmenuItemAt(index: i16) i16 {
@@ -613,10 +667,16 @@ pub extern fn isAlphaSubmenu(n: u8) bool_t;
 pub extern fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void;
 // jm_show_calc_state is an empty no-op unless PC_BUILD_TELLTALE; kept for fidelity.
 pub extern fn jm_show_calc_state(comment: [*c]const u8) void;
-// stayInAIM is static in keyboard.c — trampoline via the legacy bridge.
-extern fn z47_keyboard_state_stayInAIM() void;
 pub fn stayInAIM() void {
-    z47_keyboard_state_stayInAIM();
+    if (calcMode == CM_AIM and (currentMenu() != -MNU_ALPHA and currentMenu() != -MNU_MyAlpha)) {
+        changeToALPHA();
+        setSystemFlag(@intCast(FLAG_ALPHA));
+    }
+    if (calcMode != CM_AIM and (currentMenu() == -MNU_ALPHA or menu(1) == -MNU_ALPHA)) {
+        setSystemFlag(@intCast(FLAG_ALPHA));
+        calcMode = CM_AIM;
+    }
+    refreshModeGui();
 }
 // clearScreen(cnt) macro (screen.h, !MONITOR_CLRSCR): full-screen fill + SB update.
 pub fn clearScreen() void {

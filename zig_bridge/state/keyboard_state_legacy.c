@@ -72,13 +72,6 @@ bool_t z47_keyboard_state_assignToMenu(uint8_t *data) {
   return _assignToMenu(data);
 }
 
-// menuUp / menuDown are static in keyboard.c too (used by the Zig fnKeyUp/Down).
-void z47_keyboard_state_menuUp(void)   { menuUp(); }
-void z47_keyboard_state_menuDown(void) { menuDown(); }
-
-// stayInAIM is static in keyboard.c (used by the Zig fnKeyExit).
-void z47_keyboard_state_stayInAIM(void) { stayInAIM(); }
-
 #undef powerMarkerMsF
 #undef keyClick
 #undef _keyClick
