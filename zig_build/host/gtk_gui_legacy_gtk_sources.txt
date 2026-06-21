@@ -1,5 +1,4 @@
 c47-gtk.c
-gtkGui.c
 hal/gui.c
 hal/audio.c
 hal/print_ir.c
