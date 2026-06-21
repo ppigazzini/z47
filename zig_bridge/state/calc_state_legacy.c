@@ -51,3 +51,37 @@ bool_t z47_state_power_check_screen(void) {
 	return false;
 #endif
 }
+
+// --- Save-serialization leaf formatters (z47_calc_state_save_sections owner) ---
+// registerToSaveString / saveMatrixElements / UI64toString and the
+// tmpRegisterString / loadedVersion buffers are file-static inside
+// saveRestoreCalcState.c, so the Zig save_sections owner reaches them through
+// these same-translation-unit trampolines (declared after the #include where
+// the statics are in scope). realToString and the printerState/loadedVersion
+// reads are wrapped here too to keep the macro/enum surface out of Zig. These
+// are the per-element value formatters; the Zig owner frames the sections.
+void z47_css_registerToSaveString(int16_t regist) { registerToSaveString(regist); }
+void z47_css_saveMatrixElements(int16_t regist)   { saveMatrixElements(regist); }
+void z47_css_UI64toString(uint64_t value, char *out) { UI64toString(value, out); }
+char *z47_css_tmpRegisterString(void) { return tmpRegisterString; }
+
+void z47_css_statSumString(uint16_t i) {
+	tmpRegisterString = tmpString + START_REGISTER_VALUE;
+	realToString(statisticalSumsPointer + i, tmpRegisterString);
+}
+
+void z47_css_printerState(uint8_t *print_on, uint8_t *printer_model, uint16_t *delay) {
+	*print_on      = printerState.print_on;
+	*printer_model = printerState.printer_model;
+	*delay         = printerState.delay;
+}
+
+// Post-keyboard-section migration fixup (doSave line ~1867): faithful to the C
+// path. loadedVersion is static; the call has no effect on the saved bytes
+// (KEYBOARD_ASSIGNMENTS is already written) but is preserved for product
+// parity.
+void z47_css_postKeyboardFixup(void) {
+	if(loadedVersion < 10000023) {
+		setLongPressFg(calcModel, -MNU_HOME);
+	}
+}

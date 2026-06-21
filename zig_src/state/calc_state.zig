@@ -2,6 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const load_owned = @import("calc_state_load_owned.zig");
 const runtime = @import("calc_state_runtime.zig");
+const save_owned = @import("calc_state_save_owned.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
@@ -86,7 +87,12 @@ pub export fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16,
 }
 
 pub export fn z47_calc_state_save_sections() void {
-    // Runtime helpers call this symbol; keep it side-effect free to avoid recursive loops.
+    // Host-only: the DMCP firmware saves via the C retained path
+    // (z47_calc_state_legacy_*), so this symbol is never called there. Gating it
+    // keeps the Zig section writer out of firmware (byte-identical flash) while
+    // still resolving the io_owned extern.
+    if (is_dmcp_build) return;
+    save_owned.writeSaveSections();
 }
 
 pub export fn stringToUint8(str: [*:0]const u8) u8 {
