@@ -210,12 +210,7 @@ extern bool z47_check_utf_string(const char *widget_name, const char *what, cons
 //  }
 
 
-  uint32_t CTRL_State = 0;
-  uint32_t SHIFT_State = 0;
-  uint32_t event_keyval = 99999999;
 
-  uint32_t event_command_shift = 0;
-  uint32_t event_key_command = 99999999;
 
   #define AlphaArrowsOffAndUpDn       ((bool_t)( \
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL ||       \
@@ -333,10 +328,6 @@ Jacos Mac, Control works
 
 
   #define event_key_strip_capslock        (( ('A' <= event->keyval && event->keyval <= 'Z') || ('a' <= event->keyval && event->keyval <= 'z')) ? (((event->keyval) & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)))) : event->keyval)
-  uint32_t previousEventStateR = 0;
-  uint32_t previousEventKeyR = 0;
-  uint32_t previousEventStateP = 0;
-  uint32_t previousEventKeyP = 0;
   #define C47SpecialKey_AltGr_Pressed           (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b10100)
   #define C47SpecialKey_Ctrl_Pressed            (swapCtrlCode ? (event->keyval == GDK_KEY_Control_L && !(event->state  & 0b00100)) : (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100))
   //This swapctrlcode control code is used to test Didier's FR

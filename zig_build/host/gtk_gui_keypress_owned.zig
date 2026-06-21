@@ -301,14 +301,16 @@ const USER_R47 = 66;
 const USER_R47bk_fg = 62;
 const USER_R47fg_bk = 63;
 
-// --- C globals shared with the rest of gtkGui.c (definitions remain in C) ---
-extern var CTRL_State: u32;
-extern var SHIFT_State: u32;
-extern var event_keyval: u32;
-extern var event_command_shift: u32;
-extern var event_key_command: u32;
-extern var previousEventStateP: u32;
-extern var previousEventKeyP: u32;
+// Keyboard-event globals (were defined in gtkGui.c). They now live here, the
+// only remaining consumer besides events_owned (which keeps its own prologue
+// copies). Initializers match the original C definitions.
+pub export var CTRL_State: u32 = 0;
+pub export var SHIFT_State: u32 = 0;
+pub export var event_keyval: u32 = 99999999;
+pub export var event_command_shift: u32 = 0;
+pub export var event_key_command: u32 = 99999999;
+pub export var previousEventStateP: u32 = 0;
+pub export var previousEventKeyP: u32 = 0;
 
 extern var calcMode: u8;
 extern var calcModel: u8;
