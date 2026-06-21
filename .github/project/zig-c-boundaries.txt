@@ -25,6 +25,7 @@ zig_build/host/gtk_gui_label_owned.zig
 zig_build/host/gtk_gui_css_owned.zig
 zig_build/host/gtk_gui_display_owned.zig
 zig_build/host/gtk_gui_keypress_owned.zig
+zig_build/host/gtk_gui_setup_ui_owned.zig
 zig_build/host/gtk_gui_widgets.zig
 zig_build/host/gtk_io_runtime.zig
 zig_build/host/gtk_io_owned.zig

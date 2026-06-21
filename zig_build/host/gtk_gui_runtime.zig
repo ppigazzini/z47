@@ -7,6 +7,7 @@ const label_owned = @import("gtk_gui_label_owned.zig");
 const css_owned = @import("gtk_gui_css_owned.zig");
 const display_owned = @import("gtk_gui_display_owned.zig");
 const keypress_owned = @import("gtk_gui_keypress_owned.zig");
+const setup_ui_owned = @import("gtk_gui_setup_ui_owned.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
@@ -14,7 +15,6 @@ comptime {
 }
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
-extern fn setupUI() void;
 extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
@@ -218,6 +218,10 @@ pub export fn z47_keyPressed_impl(widget: ?*anyopaque, event: ?*anyopaque, data:
 
 pub export fn z47_keyPressed_c_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
     return keypress_owned.keyPressedCImpl(widget, event, data);
+}
+
+pub export fn setupUI() callconv(.c) void {
+    setup_ui_owned.setupUI();
 }
 
 pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
