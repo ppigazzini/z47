@@ -1114,6 +1114,145 @@ pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
     runtime.fnTimerStop(runtime.TO_FN_LONG);
 }
 
+// keyboardTweak.c btnFnPressed_StateMachine (729-866): function-key press
+// state machine (longpress / double-g detection). `data` is unused (the C
+// FN_key_pressed assignment is commented out).  DEBUGSFN is true, so the
+// dynmenu-label override is dead but kept for fidelity.
+pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = unused;
+    _ = data;
+    var exexute_double_g: bool = undefined;
+    var double_click_detected: bool = undefined;
+
+    runtime.FN_timed_out_to_RELEASE_EXEC = false;
+
+    if (runtime.FN_state == runtime.ST_2_REL1) {
+        runtime.FN_state = runtime.ST_3_PRESS2;
+    } else {
+        runtime.FN_state = runtime.ST_1_PRESS1;
+    }
+
+    if (runtime.FN_state == runtime.ST_3_PRESS2 and runtime.fnTimerGetStatus(runtime.TO_FN_EXEC) != runtime.TMR_RUNNING) {
+        runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 3);
+        runtime.hideFunctionName();
+        runtime.FN_timeouts_in_progress = false;
+        runtime.FN_state = runtime.ST_1_PRESS1;
+    }
+
+    if (runtime.fnTimerGetStatus(runtime.TO_FN_EXEC) == runtime.TMR_RUNNING) {
+        if (runtime.FN_key_pressed_last != runtime.FN_key_pressed) {
+            runtime.fnTimerExec(runtime.TO_FN_EXEC);
+            runtime.FN_handle_timed_out_to_EXEC = true;
+            exexute_double_g = false;
+        } else {
+            runtime.FN_handle_timed_out_to_EXEC = false;
+            exexute_double_g = true;
+            runtime.fnTimerStop(runtime.TO_FN_EXEC);
+        }
+        if (runtime.menu(0) == -runtime.MNU_EQ_EDIT) {
+            exexute_double_g = false;
+        }
+    } else {
+        runtime.FN_handle_timed_out_to_EXEC = true;
+        exexute_double_g = false;
+    }
+
+    if (runtime.FN_state == runtime.ST_1_PRESS1) {
+        runtime.FN_key_pressed_last = runtime.FN_key_pressed;
+    }
+
+    double_click_detected = false;
+    if (runtime.getSystemFlag(runtime.FLAG_G_DOUBLETAP) and !runtime.blockDoublepressMenu(runtime.currentMenu(), runtime.FN_key_pressed - 38, 0)) {
+        if (exexute_double_g) {
+            if (runtime.FN_key_pressed != 0 and runtime.FN_key_pressed == runtime.FN_key_pressed_last) {
+                runtime.shiftF = false;
+                runtime.shiftG = true;
+                double_click_detected = true;
+                runtime.FN_handle_timed_out_to_EXEC = false;
+            }
+        } else {
+            runtime.FN_timeouts_in_progress = false;
+            runtime.fnTimerStop(runtime.TO_FN_LONG);
+        }
+    }
+
+    if ((runtime.FN_state == runtime.ST_1_PRESS1 or runtime.FN_state == runtime.ST_3_PRESS2) and (!runtime.FN_timeouts_in_progress or double_click_detected) and runtime.FN_key_pressed != 0) {
+        runtime.FN_timeouts_in_progress = true;
+        runtime.fnTimerStart(runtime.TO_FN_LONG, @intCast(runtime.TO_FN_LONG), if (runtime.FN_state == runtime.ST_1_PRESS1) runtime.TIME_FN_12XX_TO_F else runtime.TIME_FN_DOUBLE_G_TO_NOP);
+        runtime.FN_timed_out_to_NOP_or_Executed = false;
+
+        if (!runtime.shiftF and !runtime.shiftG) {
+            var varCatalogItem: [*c]const u8 = "SF:U";
+            const Dyn = nameFunction(runtime.FN_key_pressed - 37, runtime.shiftF, runtime.shiftG);
+            if (runtime.dynamicMenuItem > -1 and !runtime.DEBUGSFN) {
+                varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+            }
+            runtime.showFunctionName(Dyn, 0, varCatalogItem);
+            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 0);
+        } else if (runtime.shiftF and !runtime.shiftG) {
+            var varCatalogItem: [*c]const u8 = "SF:V";
+            const Dyn = nameFunction(runtime.FN_key_pressed - 37, runtime.shiftF, runtime.shiftG);
+            if (runtime.dynamicMenuItem > -1 and !runtime.DEBUGSFN) {
+                varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+            }
+            runtime.showFunctionName(Dyn, 0, varCatalogItem);
+            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 1);
+        } else if (!runtime.shiftF and runtime.shiftG) {
+            var varCatalogItem: [*c]const u8 = "SF:W";
+            const Dyn = nameFunction(runtime.FN_key_pressed - 37, runtime.shiftF, runtime.shiftG);
+            if (runtime.dynamicMenuItem > -1 and !runtime.DEBUGSFN) {
+                varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
+            }
+            runtime.showFunctionName(Dyn, 0, varCatalogItem);
+            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 2);
+        }
+    }
+}
+
+// keyboardTweak.c btnFnReleased_StateMachine (870-957): function-key release
+// state machine; executes the long-press / double-release result.
+pub export fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = data;
+    if (runtime.FN_state == runtime.ST_3_PRESS2) {
+        runtime.FN_state = runtime.ST_4_REL2;
+    } else {
+        runtime.FN_state = runtime.ST_2_REL1;
+    }
+
+    if (runtime.getSystemFlag(runtime.FLAG_G_DOUBLETAP) and !runtime.blockDoublepressMenu(runtime.currentMenu(), runtime.FN_key_pressed - 38, 0) and runtime.FN_state == runtime.ST_2_REL1 and runtime.FN_handle_timed_out_to_EXEC) {
+        var offset: i16 = 0;
+        if (runtime.shiftF and !runtime.shiftG) {
+            offset = 6;
+        } else if (!runtime.shiftF and runtime.shiftG) {
+            offset = 12;
+        }
+        runtime.fnTimerStart(runtime.TO_FN_EXEC, @intCast(runtime.FN_key_pressed + offset), runtime.TIME_FN_DOUBLE_RELEASE);
+    }
+
+    var charKey: [3]u8 = undefined;
+    charKey[0] = 0;
+    const EXEC_pri = runtime.FN_timeouts_in_progress and (runtime.FN_key_pressed != 0);
+    if (runtime.FN_timed_out_to_RELEASE_EXEC or runtime.FN_timed_out_to_NOP_or_Executed or EXEC_pri) {
+        runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 3);
+        charKey[1] = 0;
+        charKey[0] = @intCast(runtime.FN_key_pressed + (-37 + 48));
+        runtime.hideFunctionName();
+        if (!runtime.FN_timed_out_to_NOP_or_Executed and runtime.fnTimerGetStatus(runtime.TO_FN_EXEC) != runtime.TMR_RUNNING) {
+            runtime.btnFnClicked(unused, @ptrCast(&charKey));
+        }
+        const screenUpdatingModeMeM = runtime.screenUpdatingMode;
+        runtime.resetShiftState();
+        runtime.screenUpdatingMode = screenUpdatingModeMeM;
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STATUSBAR;
+        if (!(runtime.calcMode == runtime.CM_REGISTER_BROWSER or runtime.calcMode == runtime.CM_FLAG_BROWSER or runtime.calcMode == runtime.CM_ASN_BROWSER or runtime.calcMode == runtime.CM_FONT_BROWSER or (runtime.calcMode == runtime.CM_PLOT_STAT or runtime.calcMode == runtime.CM_GRAPH) or runtime.calcMode == runtime.CM_LISTXY)) {
+            if ((runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0) or runtime.FN_timed_out_to_NOP_or_Executed) {
+                runtime.showSoftmenuCurrentPart();
+            }
+        }
+        FN_cancel();
+    }
+}
+
 // keyboardTweak.c nameFunction (643-658): the item for a function-key number.
 pub export fn nameFunction(fn_: i16, f_shift: runtime.bool_t, g_shift: runtime.bool_t) callconv(.c) i16 {
     var str: [3]u8 = undefined;
