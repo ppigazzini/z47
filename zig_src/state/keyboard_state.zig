@@ -28,6 +28,13 @@ fn determineItemHost(data: [*c]const u8) callconv(.c) i16 {
     return shared.determineItem(data);
 }
 
+// _closeCatalog / closeAllCatalogMenus are keyboard.c statics; exported under a
+// z47-namespaced name to force compile-analysis until executeFunction (their
+// caller) is ported to call the siblings directly.
+fn closeCatalogHost() callconv(.c) void {
+    shared._closeCatalog();
+}
+
 fn determineFunctionKeyItem_C47Host(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
     return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
 }
@@ -83,6 +90,7 @@ comptime {
         @export(&leavePemHost, .{ .name = "leavePem" });
         @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
         @export(&determineItemHost, .{ .name = "z47_keyboard_state_determineItem_owner" });
+        @export(&closeCatalogHost, .{ .name = "z47_keyboard_state_closeCatalog_owner" });
         @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
