@@ -398,7 +398,7 @@ fn btnFnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
         }
 
         if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and !(runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU)) {
-            if (runtime.assignToMenu(dat)) {
+            if (shared.assignToMenu(dat)) {
                 if (runtime.previousCalcMode == runtime.CM_AIM) {
                     runtime.showSoftmenu(-runtime.MNU_ALPHA);
                     runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_STACK;
