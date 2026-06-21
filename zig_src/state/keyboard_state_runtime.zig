@@ -700,6 +700,9 @@ pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
 pub fn indexOfItemsCatalogName(item: i16) [*c]const u8 {
     return &indexOfItems[@intCast(item)].itemCatalogName;
 }
+pub fn indexOfItemsSoftmenuName(item: i16) [*c]const u8 {
+    return &indexOfItems[@intCast(item)].itemSoftmenuName;
+}
 pub extern var delayCloseNim: bool_t;
 pub extern var userKeyLabel: [*c]u8;
 pub extern fn isAlphabeticSoftmenu() bool_t;
@@ -859,6 +862,40 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// determineItem dependencies (keyboard.c 1511-1734).
+pub const TO_FN_EXEC: u8 = 4;
+pub const ITM_LBL: i16 = 1;
+pub extern var gapItemRadix: u16;
+pub extern fn fnTimerExec(nr: u8) void;
+pub extern fn Check_Norm_Key_00_Assigned(result: [*c]i16, tempkey: i16) i16;
+pub extern fn Setup_MultiPresses(result: i16) void;
+pub extern fn Check_MultiPresses(result: [*c]i16, key_no: i8) void;
+pub extern fn resetKeytimers() void;
+
+// Norm_Key_00_item_in_layout macro (defines.h:556).
+pub fn normKey00ItemInLayout() i16 {
+    return switch (calcModel) {
+        USER_C47 => ITM_SIGMAPLUS,
+        USER_DM42 => ITM_SIGMAPLUS,
+        USER_R47f_g => -1,
+        USER_R47bk_fg => ITM_NULL,
+        USER_R47fg_bk => ITM_NULL,
+        else => -1,
+    };
+}
+// RADIX34_MARK_* macros (defines.h 2195-2196): gapChar1Radix preserves Rx[0] /
+// Rx[1], so map comma + wide-comma ("\xa7\x88") to ',' else '.'.
+pub fn radix34MarkChar() u8 {
+    const rx = indexOfItemsSoftmenuName(@intCast(gapItemRadix));
+    return if (rx[0] == ',' or (rx[0] == 0xa7 and rx[1] == 0x88)) ',' else '.';
+}
+pub fn radix34MarkDecItm() i16 {
+    return if (radix34MarkChar() == '.') ITM_PERIOD else ITM_COMMA;
+}
+pub fn radix34MarkNotDecItm() i16 {
+    return if (radix34MarkChar() == '.') ITM_COMMA else ITM_PERIOD;
+}
+
 // commonShiftProcessing dependencies (keyboard.c 1437-1507).
 pub const JM_TO_FG_LONG: u32 = 580;
 pub const JM_SHIFT_TIMER: u32 = 4000;
