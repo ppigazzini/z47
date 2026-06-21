@@ -20,6 +20,7 @@ zig_build/host/gtk_gui_host_decls.zig
 zig_build/host/gtk_gui_shell_owned.zig
 zig_build/host/gtk_gui_events_owned.zig
 zig_build/host/gtk_gui_shortcut_owned.zig
+zig_build/host/gtk_gui_keymap_owned.zig
 zig_build/host/gtk_io_runtime.zig
 zig_build/host/gtk_io_owned.zig
 zig_build/host/gtk_lcd_runtime.zig
