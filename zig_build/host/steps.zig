@@ -548,6 +548,35 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
+    const saveload_parity_harness = host_builders.addSaveLoadParityHarness(
+        b,
+        context.host_target,
+        "saveLoadParity",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+    );
+    const run_saveload_parity = b.addRunArtifact(saveload_parity_harness);
+    run_saveload_parity.setCwd(b.path("."));
+    run_saveload_parity.addArg("zig_build/tests/calc_state/save_load_golden.sav");
+    const saveload_parity_step = b.step("saveload_parity", "Run the save/load round-trip + golden parity harness");
+    saveload_parity_step.dependOn(&run_saveload_parity.step);
+
+    // Regenerate the golden save file from the current implementation.
+    const gen_saveload_golden = b.addRunArtifact(saveload_parity_harness);
+    gen_saveload_golden.setCwd(b.path("."));
+    gen_saveload_golden.addArg("zig_build/tests/calc_state/save_load_golden.sav");
+    gen_saveload_golden.addArg("--write-golden");
+    const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
+    saveload_golden_step.dependOn(&gen_saveload_golden.step);
+
     const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));

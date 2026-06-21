@@ -135,9 +135,9 @@ pub export fn preventFilenameTimeout() callconv(.c) void {
 pub export fn printStatus(row: u8, line1: [*c]const u8, forced: u8) callconv(.c) void {
     if (comptime !dmcp_build) {
         if (ttt == 0) {
-            ttt = @intCast(g_get_monotonic_time());
+            ttt = @truncate(@as(u64, @bitCast(g_get_monotonic_time())));
         }
-        _ = printf("Status: %10u, %s\n", @as(u32, @intCast(g_get_monotonic_time())) -% ttt, line1);
+        _ = printf("Status: %10u, %s\n", @as(u32, @truncate(@as(u64, @bitCast(g_get_monotonic_time())))) -% ttt, line1);
         _ = fflush(null);
     }
     var line_x: i16 = undefined;
