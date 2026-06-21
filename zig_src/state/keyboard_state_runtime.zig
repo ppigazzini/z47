@@ -874,6 +874,23 @@ pub extern fn fnDigitKeyTimerApp(digit: u16) void;
 pub extern fn fnRegAddLapTimerApp(unused: u16) void;
 pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
+// btnReleased dependencies (keyboard.c 2032-2306).
+pub const SCREENDUMP: i16 = 9875;
+pub const PGM_RESUMING: u8 = 5;
+pub const PGM_SINGLE_STEP: u8 = 6;
+pub const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
+pub const ITM_GTO: i16 = 2;
+pub const ITM_BASEMENU: i16 = 1334;
+pub extern var JM_auto_longpress_enabled: i16;
+pub extern var showFunctionNameArg: [*c]u8;
+pub extern fn hideFunctionName() void;
+pub extern fn insertUserItemInProgram(func: i16, func_param: [*c]u8) void;
+pub extern fn runProgram(single_step: bool_t, menu_label: u16) void;
+pub extern fn showingProbMenu() bool_t; // PROBMENU macro
+// keyboard.c `key[3]` is a PC_BUILD file-static (mouse-coordinate dispatch);
+// reach it through the bridge trampoline so btnReleased can clear key[0].
+pub extern fn z47_keyboard_state_key_static() [*c]u8;
+
 // btnPressed dependencies (keyboard.c 1778-1943).
 pub const PGM_KEY_PRESSED_WHILE_PAUSED: u8 = 4;
 pub const ITM_DENMAX2: i16 = 2551;

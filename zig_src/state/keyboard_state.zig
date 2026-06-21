@@ -174,6 +174,198 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     }
 }
 
+// Full keyboard.c btnReleased (2032-2306) for the host lane; `event` is unused.
+// The C `goto RELEASE_END` is modeled as a labeled block so the release tail
+// runs on every non-early-return exit.  DMCP keeps the C body.
+fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    _ = not_used;
+    _ = event;
+    const dat: [*c]u8 = @ptrCast(data);
+    const keyCode: c_int = (@as(c_int, dat[0]) - '0') * 10 + @as(c_int, dat[1]) - '0';
+
+    if (runtime.showMode() and (runtime.lastItem == runtime.KEY_fg or runtime.lastItem == runtime.ITM_SHIFTf) and runtime.lastItem != runtime.SCREENDUMP) {
+        runtime.fg_processing_jm();
+        runtime.shiftF = true;
+        runtime.shiftG = false;
+        runtime.lastshiftF = runtime.shiftF;
+        runtime.lastshiftG = runtime.shiftG;
+        runtime.lastItem = 0;
+        if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+            runtime.closeShowMenu();
+        }
+        runtime.showShiftState();
+        runtime.refreshModeGui();
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_SHIFT_STATUS;
+    }
+    if (runtime.showMode()) {
+        runtime.lastItem = 0;
+    }
+    if (runtime.temporaryInformation == runtime.TI_SHOWNOTHING) {
+        return;
+    }
+
+    runtime.Shft_timeouts = false;
+    runtime.Shft_LongPress_f_g = false;
+    runtime.JM_auto_longpress_enabled = 0;
+
+    if (runtime.programRunStop == runtime.PGM_KEY_PRESSED_WHILE_PAUSED) {
+        runtime.programRunStop = runtime.PGM_RESUMING;
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+        return;
+    }
+
+    rel: {
+        if (runtime.calcMode == runtime.CM_ASN_BROWSER and runtime.lastItem == runtime.ITM_PERIOD) {
+            runtime.fnAsnDisplayUSER = true;
+            runtime.lastItem = 0;
+            break :rel;
+        }
+        if (runtime.calcMode == runtime.CM_LISTXY) {
+            return;
+        }
+
+        runtime.screenUpdatingMode |= runtime.SCRUPD_MANUAL_MENU;
+        runtime.screenUpdatingMode &= ~runtime.SCRUPD_SKIP_MENU_ONE_TIME;
+
+        if (runtime.calcMode == runtime.CM_NORMAL and runtime.showFunctionNameItem == 0 and runtime.lastKeyItemDetermined == runtime.ITM_RS and !runtime.showMode() and runtime.calcMode != runtime.CM_REGISTER_BROWSER) {
+            runtime.showFunctionNameItem = runtime.ITM_RS;
+            runtime.temporaryInformation = runtime.TI_NO_INFO;
+            runtime.refreshRegisterLine(runtime.REGISTER_T);
+        }
+
+        if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and runtime.tamBuffer[0] == 0) {
+            runtime.assignToKey(dat);
+            if (runtime.previousCalcMode == runtime.CM_AIM) {
+                runtime.showSoftmenu(-runtime.MNU_ALPHA);
+            }
+            runtime.calcMode = runtime.previousCalcMode;
+            runtime.shiftF = false;
+            runtime.shiftG = false;
+            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+            runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+            runtime.refreshScreen(116);
+        } else if (runtime.showFunctionNameItem != 0) {
+            const item = runtime.showFunctionNameItem;
+
+            if (runtime.calcMode == runtime.CM_NIM and runtime.delayCloseNim and item != runtime.ITM_ms and item != runtime.ITM_CC and item != runtime.ITM_op_j and item != runtime.ITM_op_j_pol and item != runtime.ITM_dotD and item != runtime.ITM_HASH_JM and item != runtime.ITM_toINT) {
+                runtime.delayCloseNim = false;
+                runtime.closeNim();
+                runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+            }
+
+            runtime.fnTimerStop(runtime.TO_3S_CTFF);
+            runtime.hideFunctionName();
+
+            const Norm_Key_00_released = !runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.keyStateCode == 0) and (@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX));
+
+            var funcParam: [*c]u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + runtime.keyStateCode));
+            if (runtime.showFunctionNameArg != null) {
+                funcParam = runtime.showFunctionNameArg;
+            }
+
+            if (item < 0) {
+                _ = runtime.setCurrentUserMenu(item, funcParam);
+                runtime.showSoftmenu(item);
+                runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+            } else {
+                if (item == runtime.ITM_RS or item == runtime.ITM_XEQ) {
+                    runtime.z47_keyboard_state_key_static()[0] = 0;
+                }
+
+                if (item != runtime.ITM_NOP and runtime.tam.alpha and !runtime.itemFuncIsAddItemToBuffer(item) and runtime.aimBuffer[0] == 0) {
+                    if (item == runtime.ITM_EXIT1) {
+                        if (runtime.currentMenu() == -runtime.MNU_TAMALPHA) {
+                            runtime.popSoftmenu();
+                            runtime.numberOfTamMenusToPop -= 1;
+                            runtime.tam.alpha = false;
+                        }
+                    } else if (item != runtime.ITM_BACKSPACE) {
+                        runtime.leaveTamModeIfEnabled();
+                    }
+                }
+                if (item == runtime.ITM_EXIT1 and runtime.tam.alpha and runtime.aimBuffer[0] != 0) {
+                    if (runtime.currentMenu() == -runtime.MNU_TAMALPHA) {
+                        runtime.popSoftmenu();
+                        runtime.numberOfTamMenusToPop -= 1;
+                        runtime.aimBuffer[0] = 0;
+                        runtime.tam.alpha = false;
+                    }
+                }
+                if (item == runtime.ITM_RCL and (runtime.getSystemFlag(runtime.FLAG_USER) or Norm_Key_00_released) and funcParam[0] != 0) {
+                    const variable = runtime.findNamedVariable(funcParam);
+                    if (variable != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
+                        if (runtime.calcMode == runtime.CM_PEM) {
+                            runtime.insertUserItemInProgram(item, funcParam);
+                        } else {
+                            runtime.reallyRunFunction(item, @bitCast(variable));
+                        }
+                    } else {
+                        runtime.displayCalcErrorMessage(runtime.ERROR_UNDEF_SOURCE_VAR, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                        if (comptime !runtime.is_dmcp_build) {
+                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", funcParam);
+                            runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
+                        }
+                    }
+                } else if (item == runtime.ITM_XEQ and (runtime.getSystemFlag(runtime.FLAG_USER) or Norm_Key_00_released) and funcParam[0] != 0) {
+                    const label = runtime.findNamedLabel(funcParam);
+                    if (label != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
+                        if (runtime.calcMode == runtime.CM_PEM) {
+                            runtime.insertUserItemInProgram(item, funcParam);
+                        } else {
+                            runtime.reallyRunFunction(item, @bitCast(label));
+                        }
+                    } else {
+                        runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+                        if (comptime !runtime.is_dmcp_build) {
+                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", funcParam);
+                            runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
+                        }
+                    }
+                } else {
+                    if (item == runtime.ITM_SNAP) {
+                        runtime.refreshScreen(137);
+                    }
+                    // The C guards this with the truthy CM_NIM constant (not a
+                    // calcMode test); replicated faithfully.
+                    if (runtime.CM_NIM != 0 and (item == runtime.ITM_AIM or item == runtime.ITM_XEQ or item == runtime.ITM_GTO) and runtime.nimNumberPart == runtime.NP_INT_BASE and runtime.aimBuffer[runtime.strlen(runtime.aimBuffer) - 1] == '#') {
+                        break :rel;
+                    }
+                    if (item == runtime.ITM_BASEMENU) {
+                        runtime.leaveTamModeIfEnabled();
+                    }
+                    runtime.runFunction(item);
+                }
+            }
+        }
+
+        if (runtime.programRunStop == runtime.PGM_SINGLE_STEP) {
+            runtime.programRunStop = runtime.PGM_STOPPED;
+            runtime.runProgram(true, runtime.INVALID_VARIABLE);
+        }
+    }
+
+    // RELEASE_END:
+    switch (runtime.last_CM) {
+        runtime.CM_REGISTER_BROWSER, runtime.CM_FLAG_BROWSER, runtime.CM_ASN_BROWSER, runtime.CM_FONT_BROWSER => {
+            runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
+        },
+        else => {
+            if (runtime.showingProbMenu()) {
+                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_SKIP_STACK_ONE_TIME);
+            }
+            runtime.screenUpdatingMode |= runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+        },
+    }
+
+    const preventRefresh = (!runtime.shiftKeyClearsError and shared.checkKeyShifts(dat)) or ((runtime.lastKeyItemDetermined == runtime.ITM_UP1 or runtime.lastKeyItemDetermined == runtime.ITM_DOWN1) and runtime.calcMode == runtime.CM_GRAPH);
+    if (!preventRefresh) {
+        runtime.refreshScreen(117);
+    }
+    runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
+    runtime.shiftKeyClearsError = false;
+    runtime.fnTimerStop(runtime.TO_CL_LONG);
+}
+
 fn btnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     runtime.btnClickedHostOverlay(not_used, data);
 }
@@ -202,6 +394,7 @@ comptime {
         @export(&keyDownHost, .{ .name = "fnKeyDown" });
         @export(&keyDotDHost, .{ .name = "fnKeyDotD" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
+        @export(&btnReleasedHost, .{ .name = "btnReleased" });
         @export(&btnClickedHost, .{ .name = "btnClicked" });
     } else {
         @export(&btnPressedDmcp, .{ .name = "btnPressed" });
