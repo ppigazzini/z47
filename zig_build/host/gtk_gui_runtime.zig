@@ -5,6 +5,7 @@ const shell_owned = @import("gtk_gui_shell_owned.zig");
 const keymap_owned = @import("gtk_gui_keymap_owned.zig");
 const label_owned = @import("gtk_gui_label_owned.zig");
 const css_owned = @import("gtk_gui_css_owned.zig");
+const display_owned = @import("gtk_gui_display_owned.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
@@ -90,6 +91,10 @@ pub export fn z47_labelCaptionAimFa(key: *const label_owned.calcKey_t, lbl_f: ?*
 
 pub export fn z47_labelCaptionNormal(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_f: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
     label_owned.labelCaptionNormal(key, button, lbl_f, lbl_g, lbl_l);
+}
+
+pub export fn calcModeTamGui() callconv(.c) void {
+    display_owned.calcModeTamGui();
 }
 
 pub export fn z47_labelCaptionAim(key: *const label_owned.calcKey_t, button: ?*anyopaque, lbl_g: ?*anyopaque, lbl_l: ?*anyopaque) callconv(.c) void {
