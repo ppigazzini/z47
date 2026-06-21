@@ -1,1 +1,1 @@
-zig_build/host/gtk_gui_legacy.c
+# (gtk_gui_legacy.c bridge retired — gtkGui.c fully ported to Zig owners)
