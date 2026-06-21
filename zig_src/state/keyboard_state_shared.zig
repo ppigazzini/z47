@@ -121,6 +121,65 @@ pub fn implementation(comptime runtime: type) type {
             }
         }
 
+        pub fn commonShiftProcessing(shiftkey: u16) void {
+            // keyboard.c commonShiftProcessing (1437-1507). VERBOSEKEYS dropped.
+            const sk: i16 = @intCast(shiftkey);
+            if (sk == runtime.KEY_fg) {
+                runtime.Shft_LongPress_f_g = false;
+                runtime.Shft_timeouts = true;
+                runtime.fnTimerStart(runtime.TO_FG_LONG, @intCast(runtime.TO_FG_LONG), runtime.JM_TO_FG_LONG);
+                if (runtime.getSystemFlag(runtime.FLAG_SHFT_4s)) {
+                    runtime.fnTimerStart(runtime.TO_FG_TIMR, @intCast(runtime.TO_FG_TIMR), runtime.JM_SHIFT_TIMER);
+                }
+            } else if (sk == runtime.ITM_SHIFTf or sk == runtime.ITM_SHIFTg) {
+                runtime.Shft_LongPress_f_g = true;
+                if (runtime.Shft_LongPress_f_g and runtime.getSystemFlag(runtime.FLAG_SH_LONGPRESS)) {
+                    runtime.fnTimerStart(runtime.TO_FG_LONG, @intCast(runtime.TO_FG_LONG), @intFromFloat(@as(f64, @floatFromInt(runtime.JM_TO_FG_LONG)) * 1.5));
+                }
+            }
+
+            if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER or runtime.showMode()) {
+                runtime.shiftKeyClearsError = true;
+            }
+            if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
+                runtime.temporaryInformation = runtime.TI_NO_INFO;
+                runtime.updateMatrixHeightCache();
+            }
+            if (runtime.lastErrorCode != 0) {
+                runtime.shiftKeyClearsError = true;
+            }
+            if (runtime.programRunStop == runtime.PGM_WAITING) {
+                runtime.programRunStop = runtime.PGM_STOPPED;
+            }
+            runtime.lastErrorCode = 0;
+
+            if (sk == runtime.KEY_fg) {
+                runtime.fg_processing_jm();
+            } else if (sk == runtime.ITM_SHIFTf) {
+                runtime.shiftF = !runtime.shiftF;
+                runtime.shiftG = false;
+            } else if (sk == runtime.ITM_SHIFTg) {
+                runtime.shiftF = false;
+                runtime.shiftG = !runtime.shiftG;
+            }
+            runtime.lastshiftF = runtime.shiftF;
+            runtime.lastshiftG = runtime.shiftG;
+
+            if (runtime.temporaryInformation != runtime.TI_NO_INFO and !runtime.shiftG and !runtime.shiftF) {
+                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_SHIFT_STATUS | runtime.SCRUPD_MANUAL_STACK);
+                runtime.temporaryInformation = runtime.TI_NO_INFO;
+                runtime.refreshScreen(1201);
+            }
+
+            if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+                runtime.closeShowMenu();
+            }
+
+            runtime.showShiftState();
+            runtime.refreshModeGui();
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_SHIFT_STATUS;
+        }
+
         // determineFunctionKeyItem_C47 default/MNU_EQN-fallthrough case body.
         fn fnKeyItemDefault(menuId: i16, firstItem: i16, itemShift: i16, fn_: i16) i16 {
             var item: i16 = runtime.ITM_NOP;
