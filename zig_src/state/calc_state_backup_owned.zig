@@ -17,7 +17,17 @@ const USER_C47: u16 = 46; const USER_DM42: u16 = 45; const USER_R47: u16 = 66;
 const USER_R47f_g: u16=61; const USER_R47fg_g: u16=64; const USER_R47fg_bk: u16=63; const USER_R47bk_fg: u16=62;
 const FREE_MEM_REGION_SIZE: u32 = 4; const REGISTER_HEADER_SIZE: u32 = 4; const NUMBER_OF_GLOBAL_REGISTERS: u32 = 137;
 
-extern fn z47_css_cursorFontId() i8;
+const Font = opaque {};
+extern const tinyFont: Font;
+extern const standardFont: Font;
+extern const numericFont: Font;
+extern var cursorFont: ?*const Font;
+fn cursorFontId() i8 {
+    if (cursorFont == &tinyFont) return 1;
+    if (cursorFont == &standardFont) return 2;
+    if (cursorFont == &numericFont) return 3;
+    return -1;
+}
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -580,7 +590,7 @@ pub fn saveCalc() void {
     sv(&printerState[0], 1, "printerState.print_on", "bool");
     sv(&printerState[8], 4, "printerState.printer_model", "uint8");
     sv(&printerState[12], 2, "printerState.delay", "uint16");
-    { var cf: i8 = z47_css_cursorFontId(); sv(&cf, 1, "cursorFont", "int8"); }
+    { var cf: i8 = cursorFontId(); sv(&cf, 1, "cursorFont", "int8"); }
     graphVariabl1 = INVALID_VARIABLE; sv(&graphVariabl1, 2, "graphVariabl1", "int16");
     { var v: u32 = c47ptr(allNamedVariables); sv(&v, 4, "allNamedVariables", "c47Ptr"); }
     { var v: u32 = c47ptr(allFormulae); sv(&v, 4, "allFormulae", "c47Ptr"); }
@@ -607,9 +617,146 @@ pub fn saveCalc() void {
 
 // ===================== RESTORE side (Phase A2) =====================
 // labelList/savedStatisticalSumsPointer are pointer globals not declared above.
-extern fn z47_css_restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void;
-extern fn z47_css_backupOpenParse() c_int;
-extern fn z47_css_backupFreeParams() void;
+// --- backup.cfg parser + typed value deserializer (host-only) ---
+extern fn readLine(line: [*c]u8) void;
+extern fn ioEof() c_int;
+extern fn malloc(n: usize) ?*anyopaque;
+extern fn free(p: ?*anyopaque) void;
+extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
+extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal
+extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal34
+extern fn stringToInt64(s: [*c]const u8) i64;
+extern fn stringToUint64(s: [*c]const u8) u64;
+extern fn stringToInt32(s: [*c]const u8) i32;
+extern fn stringToUint32(s: [*c]const u8) u32;
+extern fn stringToInt16(s: [*c]const u8) i16;
+extern fn stringToUint16(s: [*c]const u8) u16;
+extern fn stringToInt8(s: [*c]const u8) i8;
+extern fn stringToUint8(s: [*c]const u8) u8;
+const OpaqueCtx = opaque {};
+extern var ctxtReal34: OpaqueCtx;
+extern var ctxtReal39: OpaqueCtx;
+
+// The config-param list (was the file-static cfgFileParam_t paramHead chain),
+// now Zig-owned. Built from the open backup.cfg, walked by restoreStateValue.
+const CfgParam = extern struct { param: [*c]u8, next: ?*CfgParam };
+var paramHead: ?*CfgParam = null;
+var paramCurrent: ?*CfgParam = null;
+
+fn backupOpenParse() c_int {
+    var oneParam: [200]u8 = undefined;
+    const op: [*c]u8 = &oneParam[0];
+    const ret = ioFileOpen(ioPathBackup, ioModeRead);
+    if (ret != FILE_OK) return ret;
+    readLine(op);
+    paramHead = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+    paramCurrent = paramHead;
+    paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+    _ = strcpy(paramCurrent.?.param, op);
+    paramCurrent.?.next = null;
+    readLine(op);
+    while (ioEof() == 0) {
+        paramCurrent.?.next = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+        paramCurrent = paramCurrent.?.next;
+        paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+        _ = strcpy(paramCurrent.?.param, op);
+        paramCurrent.?.next = null;
+        readLine(op);
+    }
+    ioFileClose();
+    return FILE_OK;
+}
+fn backupFreeParams() void {
+    paramCurrent = paramHead;
+    while (paramHead) |h| {
+        paramHead = h.next;
+        free(h.param);
+        free(h);
+        paramCurrent = paramHead;
+    }
+}
+fn hexNibble(c: u8) u8 {
+    return c - (if (c <= '9') @as(u8, '0') else 'a' - 10);
+}
+// Typed value deserializer (saveRestoreCalcState.c restoreStateValue).
+fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+    _ = size;
+    var value: [200]u8 = undefined;
+    const v: [*c]u8 = &value[0];
+    _ = strcpy(v, name);
+    _ = strcat(v, ":");
+    paramCurrent = paramHead;
+    while (paramCurrent) |pc| {
+        if (strncmp(pc.param, v, strlen(v)) == 0) break;
+        paramCurrent = pc.next;
+    }
+    if (paramCurrent == null) return; // default value kept
+    const param = paramCurrent.?.param;
+    const typePtr = strchr(param, ':');
+    if (typePtr == null) return;
+    const tp = typePtr + 1;
+    const valuePtr = strchr(tp, ':');
+    if (valuePtr == null) return;
+    const vp = valuePtr + 1;
+    // extract the type from the line and verify it matches.
+    var i: usize = 0;
+    var p = tp;
+    while (p[0] != ':') : (p += 1) {
+        value[i] = p[0];
+        i += 1;
+    }
+    value[i] = 0;
+    if (strcmp(type_str, v) != 0) return;
+
+    if (streq(type_str, "int64")) {
+        @as(*i64, @ptrCast(@alignCast(buffer))).* = stringToInt64(vp);
+    } else if (streq(type_str, "uint64")) {
+        @as(*u64, @ptrCast(@alignCast(buffer))).* = stringToUint64(vp);
+    } else if (streq(type_str, "int32")) {
+        @as(*i32, @ptrCast(@alignCast(buffer))).* = stringToInt32(vp);
+    } else if (streq(type_str, "uint32")) {
+        @as(*u32, @ptrCast(@alignCast(buffer))).* = stringToUint32(vp);
+    } else if (streq(type_str, "int16")) {
+        @as(*i16, @ptrCast(@alignCast(buffer))).* = stringToInt16(vp);
+    } else if (streq(type_str, "uint16")) {
+        @as(*u16, @ptrCast(@alignCast(buffer))).* = stringToUint16(vp);
+    } else if (streq(type_str, "int8")) {
+        @as(*i8, @ptrCast(buffer)).* = stringToInt8(vp);
+    } else if (streq(type_str, "uint8")) {
+        @as(*u8, @ptrCast(buffer)).* = stringToUint8(vp);
+    } else if (streq(type_str, "float")) {
+        @as(*f32, @ptrCast(@alignCast(buffer))).* = @floatCast(atof(vp));
+    } else if (streq(type_str, "double")) {
+        @as(*f64, @ptrCast(@alignCast(buffer))).* = atof(vp);
+    } else if (streq(type_str, "real")) {
+        _ = decNumberFromString(@ptrCast(buffer), vp, &ctxtReal39);
+    } else if (streq(type_str, "real34")) {
+        _ = decQuadFromString(@ptrCast(buffer), vp, &ctxtReal34);
+    } else if (streq(type_str, "bool")) {
+        @as(*u8, @ptrCast(buffer)).* = if (stringToInt8(vp) != 0) 1 else 0;
+    } else if (streq(type_str, "c47Ptr")) {
+        @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
+    } else if (streq(type_str, "hexDump")) {
+        const numberOfBytes = stringToUint32(vp);
+        var bufp: [*c]u8 = @ptrCast(buffer);
+        var vv: [*c]const u8 = undefined;
+        var count: u32 = 0;
+        while (count < numberOfBytes) : (count += 1) {
+            if (count % 32 == 0) {
+                paramCurrent = paramCurrent.?.next;
+                vv = paramCurrent.?.param + 7;
+            }
+            const hi = hexNibble(vv[0]);
+            vv += 1;
+            const lo = hexNibble(vv[0]);
+            vv += 2;
+            bufp[0] = (hi << 4) | lo;
+            bufp += 1;
+        }
+    }
+}
+extern fn atof(s: [*c]const u8) f64;
+extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong; // c47Ptr: "%u (0x..)" -> stop at space
 extern fn doFnReset(confirmation: u16, auto_sav: bool) void;
 extern fn scanLabelsAndPrograms() void;
 extern fn defineCurrentProgramFromGlobalStepNumber(global_step: i16) void;
@@ -621,18 +768,18 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 const ioModeRead: c_int = 0; const CONFIRMED: u16 = 9877; const loadAutoSav: bool = true;
 const FLAG_FRACT: c_uint = 32775; const FLAG_IRFRAC: c_uint = 32839; const MNU_HOME: i16 = 1921;
 
-fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { z47_css_restoreStateValue(buffer, size, name, type_str); }
+fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { restoreStateValue(buffer, size, name, type_str); }
 fn toPcmem(blk: u32) [*c]u8 { return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk))); }
 fn rdU16(p: [*c]const u8) u16 { return @as(u16, p[0]) | (@as(u16, p[1]) << 8); }
 fn programStep(idx: u16) i32 { const base = programList + @as(usize, idx) * 16; return @as(*const i32, @ptrCast(@alignCast(base))).*; }
 
 pub fn restoreCalc() void {
     doFnReset(CONFIRMED, loadAutoSav);
-    if (z47_css_backupOpenParse() != FILE_OK) return;
+    if (backupOpenParse() != FILE_OK) return;
     var backupVersion: u32 = 0; rv(&backupVersion, 4, "backupVersion", "uint32");
     var ramSizeInBlocks: u32 = 0; rv(&ramSizeInBlocks, 4, "ramSizeInBlocks", "uint32");
-    if (ramSizeInBlocks != geometry().ram_size_in_blocks) { z47_css_backupFreeParams(); return; }
-    if (backupVersion == 0 or backupVersion < 1011) { z47_css_backupFreeParams(); return; }
+    if (ramSizeInBlocks != geometry().ram_size_in_blocks) { backupFreeParams(); return; }
+    if (backupVersion == 0 or backupVersion < 1011) { backupFreeParams(); return; }
     rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
     rv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
     rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
@@ -867,7 +1014,7 @@ pub fn restoreCalc() void {
     graphVariabl1 = INVALID_VARIABLE; rv(&graphVariabl1, 2, "graphVariabl1", "int16");
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
     if (getSystemFlag(@intCast(FLAG_FRACT))) { setSystemFlag(FLAG_FRACT); } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) { setSystemFlag(FLAG_IRFRAC); }
-    z47_css_backupFreeParams();
+    backupFreeParams();
     scanLabelsAndPrograms();
     {
         const cpn = rdU16(&currentProgramNumber[0]);
