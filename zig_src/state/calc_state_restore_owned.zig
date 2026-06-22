@@ -178,7 +178,6 @@ extern fn setLineDelay(delay: u16) void;
 
 // --- load-parsing trampolines (calc_state_legacy.c) ---
 extern fn z47_css_updateConstantsInEquations() void;
-extern fn z47_css_loadStatSum(str: [*c]const u8, i: u16) void;
 extern fn z47_css_isAtEndOfProgram(step: [*c]const u8) bool;
 extern fn z47_css_normKey00Key() i16;
 extern fn z47_css_kbdStdPrimary(idx: i16) i16;
@@ -400,7 +399,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 readLine(tmpString);
                 if (statisticalSumsPointer != null) {
                     if (load_mode == LM_ALL or load_mode == LM_SUMS) {
-                        z47_css_loadStatSum(tmpString, @intCast(i));
+                        codec.loadStatSum(tmpString, @intCast(i));
                     }
                 }
             }
