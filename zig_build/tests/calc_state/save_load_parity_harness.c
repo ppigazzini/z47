@@ -83,13 +83,45 @@ static long readWholeFile(const char *path, unsigned char *buf, long cap) {
 static void buildState(void) {
   fnReset(CONFIRMED);
 
-  // Put real values into a couple of global (stack) registers so the dynamic
-  // GLOBAL_REGISTERS section exercises the real number formatting paths during
-  // save, rather than only empty defaults.
+  // Populate global (stack) registers with a DIVERSE set of data types so the
+  // GLOBAL_REGISTERS save/restore exercises every value-codec branch of
+  // registerToSaveString / restoreRegister (not just dtReal34): real34 (plain
+  // and angular-tagged), complex34, short integer, long integer, time, date.
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(1234, REGISTER_REAL34_DATA(REGISTER_X));
   reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
   int32ToReal34(-42, REGISTER_REAL34_DATA(REGISTER_Y));
+
+  // real34 with an angular tag -> "Real:DEG"
+  reallocateRegister(REGISTER_Z, dtReal34, 0, amDegree);
+  int32ToReal34(90, REGISTER_REAL34_DATA(REGISTER_Z));
+
+  // complex34 (3 + 4i)
+  reallocateRegister(REGISTER_T, dtComplex34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_T));
+  int32ToReal34(4, REGISTER_IMAG34_DATA(REGISTER_T));
+
+  // short integer (hex base)
+  convertUInt64ToShortIntegerRegister(0, 0xDEADBEEFULL, 16, REGISTER_A);
+
+  // long integer (arbitrary precision)
+  {
+    longInteger_t li;
+    longIntegerInit(li);
+    stringToLongInteger("123456789012345678901234567890", 10, li);
+    convertLongIntegerToLongIntegerRegister(li, REGISTER_B);
+    longIntegerFree(li);
+  }
+
+  // time and date
+  reallocateRegister(REGISTER_C, dtTime, 0, amNone);
+  int32ToReal34(3600, REGISTER_REAL34_DATA(REGISTER_C));
+  reallocateRegister(REGISTER_D, dtDate, 0, amNone);
+  int32ToReal34(20260622, REGISTER_REAL34_DATA(REGISTER_D));
+
+  // A named variable lands in the NAMED_VARIABLES section.
+  allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
+  int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
 
   // A couple of user flags land in the GLOBAL_FLAGS section.
   fnSetFlag(5);
