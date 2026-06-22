@@ -185,7 +185,27 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
 
 // --- load-parsing trampolines (calc_state_legacy.c) ---
-extern fn z47_css_updateConstantsInEquations() void; // dead migration (loadedVersion<10000021); needs the equation parser
+extern fn parseEquation(equation_id: u16, parse_mode: u16, buffer: [*c]u8, mvar_buffer: [*c]u8) void;
+extern var updateOldConstants: bool;
+const EQUATION_PARSER_MVAR: u16 = 0;
+// Pre-10000021 equation-constant migration (was _updateConstantsInEquations).
+fn updateConstantsInEquations() void {
+    var i: u16 = 0;
+    while (i < numberOfFormulae) : (i += 1) {
+        if (allFormulae[i].pointerToFormulaData != C47_NULL) {
+            parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+            if (lastErrorCode == 0) {
+                _ = strcpy(tmpString, toPcmemptr(@as(u32, allFormulae[i].pointerToFormulaData)));
+                updateOldConstants = true;
+                parseEquation(i, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+                updateOldConstants = false;
+                setEquation(i, tmpString);
+            } else {
+                lastErrorCode = 0;
+            }
+        }
+    }
+}
 extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
 extern const kbd_std_C47: [37]calcKey_t;
 extern const kbd_std_DM42: [37]calcKey_t;
@@ -578,7 +598,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 }
             }
             if (loaded_version < 10000021) {
-                z47_css_updateConstantsInEquations();
+                updateConstantsInEquations();
             }
         }
     } else if (cmpName(tmpString, "OTHER_CONFIGURATION_STUFF")) {
