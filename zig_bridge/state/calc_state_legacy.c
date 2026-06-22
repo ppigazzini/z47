@@ -70,53 +70,16 @@ void z47_state_sys_timer_start(int timer_ix, uint32_t ms_value) {
 #endif
 }
 
-// --- c47.sav text-path residual trampolines (ALL lanes) ---
-// These back the Zig section writer / parser / register codec, which run on
-// every lane (host / DMCP5 / DMCP). They wrap the remaining file-static / macro
-// / enum surface the Zig owners can't reach directly, so they must be available
-// on the firmware lanes too.
-
-// Matrix vector-tag predicates (macros over the matrix subsystem) used by the
-// Zig register codec's matrix arms.
-bool_t  z47_css_isRegisterMatrixVector(int16_t regist)      { return isRegisterMatrixVector(regist); }
-uint8_t z47_css_getVectorRegisterAngularMode(int16_t regist){ return getVectorRegisterAngularMode(regist); }
-uint8_t z47_css_getVectorRegisterPolarMode(int16_t regist)  { return getVectorRegisterPolarMode(regist); }
-
-void z47_css_printerState(uint8_t *print_on, uint8_t *printer_model, uint16_t *delay) {
-	*print_on      = printerState.print_on;
-	*printer_model = printerState.printer_model;
-	*delay         = printerState.delay;
-}
-
-// Post-keyboard-section migration fixup (doSave line ~1867): faithful to the C
-// path. loadedVersion is static; the call has no effect on the saved bytes
-// (KEYBOARD_ASSIGNMENTS is already written) but is preserved for product
-// parity.
-void z47_css_postKeyboardFixup(void) {
-	if(loadedVersion < 10000023) {
-		setLongPressFg(calcModel, -MNU_HOME);
-	}
-}
-
-// --- Load-parsing leaf helpers (z47_calc_state_restore_one_section owner) ---
-// The parse primitives (toInt16/toUint8/toUint16/toUint32/next_word/skip_*/
-// toInt16_next_word/strcmp2) and the register/matrix restorers
-// (restoreRegister/restoreMatrixData/skipMatrixData) are file-static; the Zig
-// restoreOneSection owner reaches them through these same-TU trampolines. The
-// remaining wrappers cover macros (stringToReal, Norm_Key_00_key, kbd_std) and a
-// static-inline (isAtEndOfProgram) so that surface stays out of Zig. The Zig
-// port keeps the C statics loadedVersion/savedCalcModel in sync via the setter.
+// --- c47.sav text-path residual trampoline (ALL lanes) ---
+// The only c47.sav residual: _updateConstantsInEquations is a file-static
+// equation-migration helper (run only for pre-10000021 files), so the Zig
+// restoreOneSection owner reaches it here. Everything else the codec/parser
+// needed (the register/matrix/text/stat codecs + the matrix vector-tag macros +
+// printerState + the keyboard model-switches + isAtEndOfProgram) is now Zig.
 void z47_css_updateConstantsInEquations(void) { _updateConstantsInEquations(); }
 
-bool_t z47_css_isAtEndOfProgram(const uint8_t *step) { return isAtEndOfProgram(step); }
-int16_t z47_css_normKey00Key(void) { return Norm_Key_00_key; }
-int16_t z47_css_kbdStdPrimary(int16_t idx) { return kbd_std[idx].primary; }
 
-void z47_css_set_loaded_version(uint32_t v) { loadedVersion = v; }
 
-void z47_css_setPrinterOn(uint8_t v)    { printerState.print_on = v; }
-void z47_css_setPrinterModel(uint8_t v) { printerState.printer_model = v; }
-void z47_css_setPrinterDelay(uint16_t v){ printerState.delay = v; }
 
 // --- backup.cfg trampolines (HOST only) ---
 // The backup owner (saveCalc/restoreCalc) stays on the C retained path on the

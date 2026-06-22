@@ -185,11 +185,34 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
 
 // --- load-parsing trampolines (calc_state_legacy.c) ---
-extern fn z47_css_updateConstantsInEquations() void;
-extern fn z47_css_isAtEndOfProgram(step: [*c]const u8) bool;
-extern fn z47_css_normKey00Key() i16;
-extern fn z47_css_kbdStdPrimary(idx: i16) i16;
-extern fn z47_css_set_loaded_version(v: u32) void;
+extern fn z47_css_updateConstantsInEquations() void; // dead migration (loadedVersion<10000021); needs the equation parser
+extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
+extern const kbd_std_C47: [37]calcKey_t;
+extern const kbd_std_DM42: [37]calcKey_t;
+extern const kbd_std_R47f_g: [37]calcKey_t;
+extern const kbd_std_R47bk_fg: [37]calcKey_t;
+extern const kbd_std_R47fg_bk: [37]calcKey_t;
+extern const kbd_std_R47fg_g: [37]calcKey_t;
+fn isAtEndOfProgram(step: [*c]const u8) bool { return checkOpCodeOfStep(step, @intCast(ITM_END)); }
+fn normKey00Key() i16 {
+    return switch (@as(u16, calcModel)) {
+        USER_C47, USER_DM42 => 0,
+        USER_R47bk_fg => 10,
+        USER_R47fg_bk => 11,
+        else => -1, // USER_R47f_g and others
+    };
+}
+fn kbdStdPrimary(idx: i16) i16 {
+    const std_kbd: *const [37]calcKey_t = switch (@as(u16, calcModel)) {
+        USER_DM42 => &kbd_std_DM42,
+        USER_R47f_g => &kbd_std_R47f_g,
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        else => &kbd_std_C47,
+    };
+    return std_kbd[@intCast(idx)].primary;
+}
 
 // --- core state globals ---
 extern var tmpString: [*c]u8;
@@ -277,9 +300,10 @@ extern var firstDayOfWeek: u8;
 extern var firstWeekOfYearDay: u8;
 
 // printerState fields are enum-typed; set each through an enum-free trampoline.
-extern fn z47_css_setPrinterOn(v: u8) void;
-extern fn z47_css_setPrinterModel(v: u8) void;
-extern fn z47_css_setPrinterDelay(v: u16) void;
+extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
+fn setPrinterOn(v: u8) void { printerState[0] = v; }
+fn setPrinterModel(v: u8) void { printerState[8] = v; }
+fn setPrinterDelay(v: u16) void { @as(*u16, @ptrCast(@alignCast(&printerState[12]))).* = v; }
 
 fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
     return strcmp(line, name) == 0;
@@ -300,7 +324,6 @@ fn toC47memptr(p: [*c]const u8) u16 {
 
 pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
     const loaded_version = runtime.getLoadedVersion();
-    z47_css_set_loaded_version(loaded_version);
     const saved_calc_model = runtime.getSavedCalcModel();
 
     cancelFilename = true;
@@ -644,7 +667,7 @@ fn restoreProgramsSection(load_mode: u16) void {
 
     if (load_mode == LM_PROGRAMS) {
         freeProgramBytes += oldFreeProgramBytes;
-        const at_end = (@intFromPtr(oldFirstFreeProgramByte) >= @intFromPtr(beginOfProgramMemory + 2)) and z47_css_isAtEndOfProgram(oldFirstFreeProgramByte - 2);
+        const at_end = (@intFromPtr(oldFirstFreeProgramByte) >= @intFromPtr(beginOfProgramMemory + 2)) and isAtEndOfProgram(oldFirstFreeProgramByte - 2);
         if (!at_end) {
             if (oldFreeProgramBytes + freeProgramBytes < 2) {
                 const tmpFreeProgramBytes = freeProgramBytes;
@@ -789,9 +812,9 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "BASE_HOME")) {
         if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00_VAR")) {
-        if (z47_css_normKey00Key() != -1) {
+        if (normKey00Key() != -1) {
             Norm_Key_00.func = @bitCast(text.toUint16(tmpString));
-            Norm_Key_00.used = @intFromBool(Norm_Key_00.func != z47_css_kbdStdPrimary(z47_css_normKey00Key()));
+            Norm_Key_00.used = @intFromBool(Norm_Key_00.func != kbdStdPrimary(normKey00Key()));
         } else {
             Norm_Key_00.used = 0;
         }
@@ -865,12 +888,12 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "PLOT_ZMY")) {
         PLOT_ZMY = @bitCast(text.toUint8(tmpString));
     } else if (matchU8("firstDayOfWeek", &firstDayOfWeek)) {} else if (matchU8("firstWeekOfYearDay", &firstWeekOfYearDay)) {} else if (cmpName(ab, "printerOn")) {
-        z47_css_setPrinterOn(text.toUint8(tmpString));
+        setPrinterOn(text.toUint8(tmpString));
     } else if (cmpName(ab, "printerModel")) {
-        z47_css_setPrinterModel(text.toUint8(tmpString));
+        setPrinterModel(text.toUint8(tmpString));
     } else if (cmpName(ab, "printerLineDelay")) {
         const delay = text.toUint16(tmpString);
-        z47_css_setPrinterDelay(delay);
+        setPrinterDelay(delay);
         setLineDelay(delay);
     } else if (cmpName(ab, "jm_LARGELI")) {
         if (loaded_version < 10000012) forceSystemFlag(FLAG_LARGELI, @intFromBool(text.toUint8(tmpString) != 0));
