@@ -66,9 +66,13 @@ bool_t z47_state_power_check_screen(void) {
 // the statics are in scope). realToString and the printerState/loadedVersion
 // reads are wrapped here too to keep the macro/enum surface out of Zig. These
 // are the per-element value formatters; the Zig owner frames the sections.
-void z47_css_registerToSaveString(int16_t regist) { registerToSaveString(regist); }
 void z47_css_saveMatrixElements(int16_t regist)   { saveMatrixElements(regist); }
-char *z47_css_tmpRegisterString(void) { return tmpRegisterString; }
+
+// Matrix vector-tag predicates (macros over the matrix subsystem) used by the
+// Zig register codec's unexercised matrix arms.
+bool_t  z47_css_isRegisterMatrixVector(int16_t regist)      { return isRegisterMatrixVector(regist); }
+uint8_t z47_css_getVectorRegisterAngularMode(int16_t regist){ return getVectorRegisterAngularMode(regist); }
+uint8_t z47_css_getVectorRegisterPolarMode(int16_t regist)  { return getVectorRegisterPolarMode(regist); }
 
 void z47_css_statSumString(uint16_t i) {
 	tmpRegisterString = tmpString + START_REGISTER_VALUE;
