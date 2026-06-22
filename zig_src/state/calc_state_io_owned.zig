@@ -148,7 +148,7 @@ pub fn restoreCalc() void {
         z47_calc_state_runtime_restore_calc();
         return;
     }
-    z47_calc_state_legacy_restoreCalc();
+    backup_owned.restoreCalc();
 }
 
 pub fn checkPower() bool {
