@@ -103,7 +103,6 @@ extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
 // --- save-serialization trampolines (calc_state_legacy.c) ---
-extern fn z47_css_statSumString(i: u16) void;
 extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
 extern fn z47_css_postKeyboardFixup() void;
 
@@ -292,7 +291,7 @@ pub fn writeSaveSections() void {
     {
         var i: u16 = 0;
         while (i < sumsCount) : (i += 1) {
-            z47_css_statSumString(i);
+            codec.statSumToString(i);
             _ = sprintf(b(), "%s\n", codec.regValueBuf());
             save(b());
         }

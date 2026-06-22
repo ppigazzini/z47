@@ -95,8 +95,14 @@ extern fn readLine(line: [*c]u8) void;
 extern fn displayBugScreen(msg: [*c]const u8) void;
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
+extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
+extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
 extern var ctxtReal34: OpaqueCtx;
+extern var ctxtReal75: OpaqueCtx;
+extern var statisticalSumsPointer: ?*anyopaque; // real_t*
 extern var errorMessage: [*c]u8;
+
+const REAL_SIZE_IN_BYTES: usize = 60; // sizeof(real_t)
 
 extern var tmpString: [*c]u8;
 extern var aimBuffer1: [400]u8;
@@ -405,4 +411,18 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
         var i: u32 = 0;
         while (i < count) : (i += 1) readLine(tmpString);
     }
+}
+
+// ===================== statistical sums =====================
+// Each statistical sum is a real_t (75-digit). statisticalSumsPointer is the
+// real_t array base. (Unexercised by the host harness: no stats accumulated.)
+
+pub fn statSumToString(i: u16) void {
+    const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
+    _ = decNumberToString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, regValueBuf());
+}
+
+pub fn loadStatSum(str: [*c]const u8, i: u16) void {
+    const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
+    _ = decNumberFromString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, str, &ctxtReal75);
 }

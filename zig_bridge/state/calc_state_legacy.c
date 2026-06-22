@@ -69,11 +69,6 @@ bool_t  z47_css_isRegisterMatrixVector(int16_t regist)      { return isRegisterM
 uint8_t z47_css_getVectorRegisterAngularMode(int16_t regist){ return getVectorRegisterAngularMode(regist); }
 uint8_t z47_css_getVectorRegisterPolarMode(int16_t regist)  { return getVectorRegisterPolarMode(regist); }
 
-void z47_css_statSumString(uint16_t i) {
-	tmpRegisterString = tmpString + START_REGISTER_VALUE;
-	realToString(statisticalSumsPointer + i, tmpRegisterString);
-}
-
 void z47_css_printerState(uint8_t *print_on, uint8_t *printer_model, uint16_t *delay) {
 	*print_on      = printerState.print_on;
 	*printer_model = printerState.printer_model;
@@ -99,10 +94,6 @@ void z47_css_postKeyboardFixup(void) {
 // static-inline (isAtEndOfProgram) so that surface stays out of Zig. The Zig
 // port keeps the C statics loadedVersion/savedCalcModel in sync via the setter.
 void z47_css_updateConstantsInEquations(void) { _updateConstantsInEquations(); }
-
-void z47_css_loadStatSum(const char *str, uint16_t i) {
-	stringToReal(str, statisticalSumsPointer + i, &ctxtReal75);
-}
 
 bool_t z47_css_isAtEndOfProgram(const uint8_t *step) { return isAtEndOfProgram(step); }
 int16_t z47_css_normKey00Key(void) { return Norm_Key_00_key; }
