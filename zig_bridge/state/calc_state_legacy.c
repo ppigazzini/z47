@@ -58,18 +58,13 @@ bool_t z47_state_power_check_screen(void) {
 // firmware, which loads/saves through the C retained path).
 #if !defined(DMCP_BUILD)
 
-// --- Save-serialization leaf formatters (z47_calc_state_save_sections owner) ---
-// registerToSaveString / saveMatrixElements / UI64toString and the
-// tmpRegisterString / loadedVersion buffers are file-static inside
-// saveRestoreCalcState.c, so the Zig save_sections owner reaches them through
-// these same-translation-unit trampolines (declared after the #include where
-// the statics are in scope). realToString and the printerState/loadedVersion
-// reads are wrapped here too to keep the macro/enum surface out of Zig. These
-// are the per-element value formatters; the Zig owner frames the sections.
-void z47_css_saveMatrixElements(int16_t regist)   { saveMatrixElements(regist); }
+// --- Save-serialization residual trampolines (Zig save owners) ---
+// Most save leaf logic is now Zig (the register codec + section writer); these
+// wrap the remaining file-static / macro / enum surface the Zig owners can't
+// reach directly.
 
 // Matrix vector-tag predicates (macros over the matrix subsystem) used by the
-// Zig register codec's unexercised matrix arms.
+// Zig register codec's matrix arms.
 bool_t  z47_css_isRegisterMatrixVector(int16_t regist)      { return isRegisterMatrixVector(regist); }
 uint8_t z47_css_getVectorRegisterAngularMode(int16_t regist){ return getVectorRegisterAngularMode(regist); }
 uint8_t z47_css_getVectorRegisterPolarMode(int16_t regist)  { return getVectorRegisterPolarMode(regist); }

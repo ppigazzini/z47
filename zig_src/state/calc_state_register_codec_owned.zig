@@ -36,6 +36,8 @@ const START_REGISTER_VALUE: usize = 860;
 const TMP_STR_LENGTH: i32 = 2560;
 const STR_LG_INT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
 const REAL34_SIZE_IN_BYTES: usize = 16;
+const COMPLEX34_SIZE_IN_BYTES: usize = 32;
+const MATRIX_HEADER_SIZE: usize = 4; // sizeof(matrixHeader_t)
 const CONFIG_DESCRIPTOR_SIZE: usize = 840; // sizeof(dtConfigDescriptor_t)
 
 // 32-bit bitfield: rows:12, columns:12, mtag:6, notUsed:2.
@@ -60,6 +62,7 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
+extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
 
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getRegisterDataPointer(regist: i16) [*c]u8;
@@ -186,6 +189,31 @@ fn matrixToSaveString(regist: i16, is_complex: bool) void {
         const tag = getRegisterTag(regist);
         const angle: u8 = if ((tag & amPolar) == 0) amNone else @intCast(tag & amAngleMask);
         textTag(aim(), angle, @intCast(tag & amPolar));
+    }
+}
+
+// Append each matrix element (one real34 per line for a real matrix; "re im"
+// per line for a complex matrix) directly to the open save file.
+pub fn saveMatrixElements(regist: i16) void {
+    const dt = getRegisterDataType(regist);
+    if (dt != dtReal34Matrix and dt != dtComplex34Matrix) return;
+    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const count: u32 = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
+    const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
+    var mbuf: [3000]u8 = undefined;
+    const mb: [*c]u8 = &mbuf[0];
+    var element: u32 = 0;
+    while (element < count) : (element += 1) {
+        if (dt == dtReal34Matrix) {
+            _ = decQuadToString(base + element * REAL34_SIZE_IN_BYTES, mb);
+        } else {
+            const elem = base + element * COMPLEX34_SIZE_IN_BYTES;
+            _ = decQuadToString(elem, mb);
+            _ = strcat(mb, " ");
+            _ = decQuadToString(elem + REAL34_SIZE_IN_BYTES, mb + strlen(mb));
+        }
+        _ = strcat(mb, "\n");
+        ioFileWrite(mb, @intCast(strlen(mb)));
     }
 }
 
