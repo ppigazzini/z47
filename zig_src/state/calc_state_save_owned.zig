@@ -13,6 +13,7 @@
 // harness (`zig build saveload_parity`): the golden file is the C doSave bytes.
 
 const text = @import("calc_state_text_owned.zig");
+const codec = @import("calc_state_register_codec_owned.zig");
 
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_GLOBAL_REGISTER: i16 = 0;
@@ -102,9 +103,7 @@ extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
 // --- save-serialization trampolines (calc_state_legacy.c) ---
-extern fn z47_css_registerToSaveString(regist: i16) void;
 extern fn z47_css_saveMatrixElements(regist: i16) void;
-extern fn z47_css_tmpRegisterString() [*c]u8;
 extern fn z47_css_statSumString(i: u16) void;
 extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
 extern fn z47_css_postKeyboardFixup() void;
@@ -240,8 +239,8 @@ pub fn writeSaveSections() void {
     {
         var regist: i16 = FIRST_GLOBAL_REGISTER;
         while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
-            z47_css_registerToSaveString(regist);
-            _ = sprintf(b(), "R%03d\n%s\n%s\n", ci(regist), &aimBuffer1[0], z47_css_tmpRegisterString());
+            codec.registerToSaveString(regist);
+            _ = sprintf(b(), "R%03d\n%s\n%s\n", ci(regist), &aimBuffer1[0], codec.regValueBuf());
             save(b());
             z47_css_saveMatrixElements(regist);
         }
@@ -259,8 +258,8 @@ pub fn writeSaveSections() void {
     {
         var i: u32 = 0;
         while (i < localRegisterCount) : (i += 1) {
-            z47_css_registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
-            _ = sprintf(b(), "R.%02u\n%s\n%s\n", cu(i), &aimBuffer1[0], z47_css_tmpRegisterString());
+            codec.registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
+            _ = sprintf(b(), "R.%02u\n%s\n%s\n", cu(i), &aimBuffer1[0], codec.regValueBuf());
             save(b());
             z47_css_saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
         }
@@ -278,10 +277,10 @@ pub fn writeSaveSections() void {
     {
         var i: u32 = 0;
         while (i < numberOfNamedVariables) : (i += 1) {
-            z47_css_registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
+            codec.registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
             stringToUtf8(&allNamedVariables[i].variableName[1], b());
             const n = strlen(b());
-            _ = sprintf(b() + n, "\n%s\n%s\n", &aimBuffer1[0], z47_css_tmpRegisterString());
+            _ = sprintf(b() + n, "\n%s\n%s\n", &aimBuffer1[0], codec.regValueBuf());
             save(b());
             z47_css_saveMatrixElements(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
         }
@@ -295,7 +294,7 @@ pub fn writeSaveSections() void {
         var i: u16 = 0;
         while (i < sumsCount) : (i += 1) {
             z47_css_statSumString(i);
-            _ = sprintf(b(), "%s\n", z47_css_tmpRegisterString());
+            _ = sprintf(b(), "%s\n", codec.regValueBuf());
             save(b());
         }
     }
