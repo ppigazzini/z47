@@ -70,14 +70,6 @@ void z47_state_sys_timer_start(int timer_ix, uint32_t ms_value) {
 #endif
 }
 
-// --- c47.sav text-path residual trampoline (ALL lanes) ---
-// The only c47.sav residual: _updateConstantsInEquations is a file-static
-// equation-migration helper (run only for pre-10000021 files), so the Zig
-// restoreOneSection owner reaches it here. Everything else the codec/parser
-// needed (the register/matrix/text/stat codecs + the matrix vector-tag macros +
-// printerState + the keyboard model-switches + isAtEndOfProgram) is now Zig.
-void z47_css_updateConstantsInEquations(void) { _updateConstantsInEquations(); }
-
 
 
 
