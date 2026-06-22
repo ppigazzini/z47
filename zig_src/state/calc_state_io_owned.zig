@@ -106,8 +106,8 @@ extern fn z47_calc_state_save_sections() void;
 // through the C wrapper. The remaining DMCP symbols are referenced only under
 // is_dmcp_build (firmware).
 extern fn z47_state_power_check_screen() bool;
-extern fn sys_timer_disable(timer: c_int) void;
-extern fn sys_timer_start(timer: c_int, time_ms: u32) void;
+extern fn z47_state_sys_timer_disable(timer: c_int) void;
+extern fn z47_state_sys_timer_start(timer: c_int, time_ms: u32) void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
 extern fn z47_calc_state_runtime_check_power() bool;
@@ -262,8 +262,8 @@ pub fn restartPostLoadTimers() void {
         return;
     }
     if (is_dmcp_build) {
-        sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
-        sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
+        z47_state_sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
+        z47_state_sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
         fnTimerStart(@intCast(TO_KB_ACTV), TO_KB_ACTV, TO_KB_ACTV_MEDIUM);
     }
 }
