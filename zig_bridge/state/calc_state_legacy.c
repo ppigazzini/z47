@@ -68,7 +68,6 @@ bool_t z47_state_power_check_screen(void) {
 // are the per-element value formatters; the Zig owner frames the sections.
 void z47_css_registerToSaveString(int16_t regist) { registerToSaveString(regist); }
 void z47_css_saveMatrixElements(int16_t regist)   { saveMatrixElements(regist); }
-void z47_css_UI64toString(uint64_t value, char *out) { UI64toString(value, out); }
 char *z47_css_tmpRegisterString(void) { return tmpRegisterString; }
 
 void z47_css_statSumString(uint16_t i) {
@@ -100,16 +99,6 @@ void z47_css_postKeyboardFixup(void) {
 // remaining wrappers cover macros (stringToReal, Norm_Key_00_key, kbd_std) and a
 // static-inline (isAtEndOfProgram) so that surface stays out of Zig. The Zig
 // port keeps the C statics loadedVersion/savedCalcModel in sync via the setter.
-int16_t  z47_css_toInt16(const char *s)  { return toInt16(s); }
-uint8_t  z47_css_toUint8(const char *s)  { return toUint8(s); }
-uint16_t z47_css_toUint16(const char *s) { return toUint16(s); }
-uint32_t z47_css_toUint32(const char *s) { return toUint32(s); }
-char *z47_css_next_word(char *s)              { return next_word(s); }
-char *z47_css_skip_space(char *s)             { return skip_space(s); }
-char *z47_css_skip_to_space_newline(char *s)  { return skip_to_space_newline(s); }
-char *z47_css_toInt16_next_word(char *s, int16_t *val) { return toInt16_next_word(s, val); }
-uint16_t z47_css_strcmp2(char *a, char *b)    { return strcmp2(a, b); }
-
 void z47_css_restoreRegister(int16_t regist, char *type, char *value) { restoreRegister(regist, type, value); }
 void z47_css_restoreMatrixData(int16_t regist) { restoreMatrixData(regist); }
 void z47_css_skipMatrixData(char *type, char *value) { skipMatrixData(type, value); }

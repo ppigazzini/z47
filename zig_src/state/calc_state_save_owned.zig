@@ -12,6 +12,8 @@
 // Verified byte-for-byte against the current C output by the save/load parity
 // harness (`zig build saveload_parity`): the golden file is the C doSave bytes.
 
+const text = @import("calc_state_text_owned.zig");
+
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_GLOBAL_REGISTER: i16 = 0;
 const LAST_GLOBAL_REGISTER: i16 = 136;
@@ -102,7 +104,6 @@ extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 // --- save-serialization trampolines (calc_state_legacy.c) ---
 extern fn z47_css_registerToSaveString(regist: i16) void;
 extern fn z47_css_saveMatrixElements(regist: i16) void;
-extern fn z47_css_UI64toString(value: u64, out: [*c]u8) void;
 extern fn z47_css_tmpRegisterString() [*c]u8;
 extern fn z47_css_statSumString(i: u16) void;
 extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
@@ -194,8 +195,8 @@ inline fn b() [*c]u8 {
     return &buf[0];
 }
 
-fn save(text: [*c]const u8) void {
-    ioFileWrite(text, @intCast(strlen(text)));
+fn save(bytes: [*c]const u8) void {
+    ioFileWrite(bytes, @intCast(strlen(bytes)));
 }
 
 fn cu(value: anytype) c_uint {
@@ -302,10 +303,10 @@ pub fn writeSaveSections() void {
     // System flags
     var yy1: [35]u8 = undefined;
     var yy2: [35]u8 = undefined;
-    z47_css_UI64toString(systemFlags0, &yy1[0]);
+    text.ui64ToString(systemFlags0, &yy1[0]);
     _ = sprintf(b(), "SYSTEM_FLAGS\n%s\n", &yy1[0]);
     save(b());
-    z47_css_UI64toString(systemFlags1, &yy1[0]);
+    text.ui64ToString(systemFlags1, &yy1[0]);
     _ = sprintf(b(), "SYSTEM_FLAGS1\n%s\n", &yy1[0]);
     save(b());
 
@@ -425,8 +426,8 @@ pub fn writeSaveSections() void {
     saveField("roundingMode", "%u\n", .{cu(roundingMode)});
     saveField("displayStack", "%u\n", .{cu(displayStack)});
 
-    z47_css_UI64toString(pcg32_global.state, &yy1[0]);
-    z47_css_UI64toString(pcg32_global.inc, &yy2[0]);
+    text.ui64ToString(pcg32_global.state, &yy1[0]);
+    text.ui64ToString(pcg32_global.inc, &yy2[0]);
     _ = sprintf(b(), "rngState\n%s %s\n", &yy1[0], &yy2[0]);
     save(b());
 
