@@ -67,6 +67,14 @@ extern void fnLoad(uint16_t loadMode);
 static void doSaveImpl(void)  { fnSave(SM_MANUAL_SAVE); }
 static void doLoadImpl(void)  { fnLoad(LM_ALL); }
 
+// backup.cfg raw-dump path. The canonical saveCalc/restoreCalc are the Zig
+// exports (calc_state.zig), which currently route to the C legacy bodies; this
+// check gates a future Zig port of them.
+extern void saveCalc(void);
+extern void restoreCalc(void);
+static void saveCalcImpl(void)    { saveCalc(); }
+static void restoreCalcImpl(void) { restoreCalc(); }
+
 static long readWholeFile(const char *path, unsigned char *buf, long cap) {
   FILE *f = fopen(path, "rb");
   if(!f) {
@@ -209,6 +217,38 @@ int main(int argc, char *argv[]) {
   }
   else {
     printf("PASS: round-trip save1 == save2 (%ld bytes)\n", n1);
+  }
+
+  // --- Check C: backup.cfg (saveCalc/restoreCalc) state round-trip ---
+  // saveCalc/restoreCalc use the raw RAM-dump backup format (backup.cfg), whose
+  // bytes are non-deterministic (live pointers), so they cannot be byte-compared
+  // directly. Instead, verify they PRESERVE STATE by re-using the deterministic
+  // c47.sav text as the oracle: dump -> wipe -> restore -> re-serialize and
+  // compare against save1. This gates a future Zig port of saveCalc/restoreCalc
+  // (still C today via the bridge) exactly as Checks A/B gate doSave/doLoad.
+  // State at this point == save1's (restored by Check B).
+  saveCalcImpl();          // raw dump -> backup.cfg
+  fnReset(CONFIRMED);      // wipe live state
+  restoreCalcImpl();       // raw restore from backup.cfg
+  doSaveImpl();            // re-serialize to c47.sav
+  long n3 = readWholeFile(SAVE_FILE, save2, MAX_SAVE);
+  if(n3 < 0) {
+    printf("FAIL: could not read %s after backup restore\n", SAVE_FILE);
+    return 1;
+  }
+  if(n3 != n1 || memcmp(save1, save2, (size_t)n1) != 0) {
+    printf("FAIL: backup.cfg round-trip differs (save1=%ld save3=%ld)\n", n1, n3);
+    long lim = n3 < n1 ? n3 : n1;
+    for(long i = 0; i < lim; i++) {
+      if(save1[i] != save2[i]) {
+        printf("  first diff at byte %ld: save1=0x%02x save3=0x%02x\n", i, save1[i], save2[i]);
+        break;
+      }
+    }
+    failed = 1;
+  }
+  else {
+    printf("PASS: backup.cfg round-trip preserves state (%ld bytes)\n", n1);
   }
 
   if(failed) {
