@@ -1,4 +1,5 @@
 const builtin = @import("builtin");
+const backup_owned = @import("calc_state_backup_owned.zig");
 const build_options = @import("calc_state_build_options");
 
 const use_fake_calc_state_harness_surface =
@@ -139,7 +140,7 @@ pub fn saveCalc() void {
         z47_calc_state_runtime_save_calc();
         return;
     }
-    z47_calc_state_legacy_saveCalc();
+    backup_owned.saveCalc();
 }
 
 pub fn restoreCalc() void {

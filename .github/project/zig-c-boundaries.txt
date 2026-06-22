@@ -189,6 +189,7 @@ zig_src/state/calc_state_save_owned.zig
 zig_src/state/calc_state_restore_owned.zig
 zig_src/state/calc_state_text_owned.zig
 zig_src/state/calc_state_register_codec_owned.zig
+zig_src/state/calc_state_backup_owned.zig
 zig_src/state/program_serialization_io_owned.zig
 zig_src/state/program_serialization_runtime.zig
 zig_src/state/register_metadata_clear_sigma_owned.zig
