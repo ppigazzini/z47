@@ -113,8 +113,10 @@ extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
 // --- save-serialization trampolines (calc_state_legacy.c) ---
-extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
-extern fn z47_css_postKeyboardFixup() void;
+const runtime = @import("calc_state_runtime.zig");
+const MNU_HOME: i16 = 1921;
+extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
+extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 
 // --- core state globals ---
 extern var aimBuffer1: [400]u8;
@@ -319,7 +321,7 @@ pub fn writeSaveSections() void {
             save(b());
         }
     }
-    z47_css_postKeyboardFixup();
+    if (runtime.getLoadedVersion() < 10000023) setLongPressFg(calcModel, -MNU_HOME);
 
     // Keyboard arguments
     save("KEYBOARD_ARGUMENTS\n");
@@ -466,12 +468,9 @@ pub fn writeSaveSections() void {
     saveField("firstWeekOfYearDay", "%u\n", .{cu(firstWeekOfYearDay)});
 
     {
-        var pon: u8 = 0;
-        var pmodel: u8 = 0;
-        var pdelay: u16 = 0;
-        z47_css_printerState(&pon, &pmodel, &pdelay);
-        saveField("printerOn", "%u\n", .{cu(pon)});
-        saveField("printerModel", "%u\n", .{cu(pmodel)});
+        const pdelay = @as(*const u16, @ptrCast(@alignCast(&printerState[12]))).*;
+        saveField("printerOn", "%u\n", .{cu(printerState[0])});
+        saveField("printerModel", "%u\n", .{cu(printerState[8])});
         saveField("printerLineDelay", "%u\n", .{cu(pdelay)});
     }
 

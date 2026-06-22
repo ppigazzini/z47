@@ -79,10 +79,48 @@ extern fn __gmpz_clear(li: *MpzStruct) void;
 extern fn convertShortIntegerRegisterToUInt64(regist: i16, sign: *i16, value: *u64) void;
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
 
-// matrix vector-tag predicates (unexercised by the host harness)
-extern fn z47_css_isRegisterMatrixVector(regist: i16) bool;
-extern fn z47_css_getVectorRegisterAngularMode(regist: i16) u8;
-extern fn z47_css_getVectorRegisterPolarMode(regist: i16) u8;
+// matrix vector-tag predicates (registers.h / typeDefinitions.h macros, ported
+// pure: a register is a 2D/3D "vector" matrix by its 1xN / Nx1 dims).
+const amPolarSPH: u8 = 128;
+const amPolarCYL: u8 = 64;
+
+fn matrixRows(regist: i16) u16 {
+    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    return hdr.matrixRows;
+}
+fn matrixCols(regist: i16) u16 {
+    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    return hdr.matrixColumns;
+}
+fn isMatrix2dVector(rows: u16, cols: u16) bool {
+    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
+}
+fn isMatrix3dVector(rows: u16, cols: u16) bool {
+    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
+}
+fn isRegisterMatrixVector(regist: i16) bool {
+    if (getRegisterDataType(regist) != dtReal34Matrix) return false;
+    const r = matrixRows(regist);
+    const c = matrixCols(regist);
+    return isMatrix3dVector(r, c) or isMatrix2dVector(r, c);
+}
+fn getVectorRegisterAngularMode(regist: i16) u8 {
+    if (getRegisterDataType(regist) != dtReal34Matrix) return amNone;
+    return @intCast(getRegisterTag(regist) & amAngleMask);
+}
+fn getVectorRegisterPolarMode(regist: i16) u8 {
+    if (getRegisterDataType(regist) != dtReal34Matrix) return 0;
+    const tag = getRegisterTag(regist);
+    if ((tag & amAngleMask) == @as(u32, amNone)) return 0;
+    const r = matrixRows(regist);
+    const c = matrixCols(regist);
+    if (isMatrix3dVector(r, c)) {
+        return if ((tag & amPolar) == amPolar) amPolarSPH else amPolarCYL;
+    } else if (isMatrix2dVector(r, c)) {
+        return @intCast(tag & amPolar);
+    }
+    return 0;
+}
 
 // restore-side core helpers
 extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u32) void;
@@ -208,9 +246,9 @@ fn matrixToSaveString(regist: i16, is_complex: bool) void {
     _ = sprintf(trs, "%u %u", @as(c_uint, hdr.matrixRows), @as(c_uint, hdr.matrixColumns));
     if (!is_complex) {
         _ = strcpy(aim(), "Rema");
-        const is_vec = z47_css_isRegisterMatrixVector(regist);
-        const angle: u8 = if (is_vec) z47_css_getVectorRegisterAngularMode(regist) else amNone;
-        const pol: u8 = if (is_vec) z47_css_getVectorRegisterPolarMode(regist) else 0;
+        const is_vec = isRegisterMatrixVector(regist);
+        const angle: u8 = if (is_vec) getVectorRegisterAngularMode(regist) else amNone;
+        const pol: u8 = if (is_vec) getVectorRegisterPolarMode(regist) else 0;
         textTag(aim(), angle, pol);
     } else {
         _ = strcpy(aim(), "Cxma");
