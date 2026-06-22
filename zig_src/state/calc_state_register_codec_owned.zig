@@ -58,7 +58,9 @@ const MpzStruct = extern struct {
 };
 comptime {
     std.debug.assert(@sizeOf(matrixHeader_t) == 4);
-    std.debug.assert(@sizeOf(MpzStruct) == 16);
+    // mpz_t = { int, int, mp_limb_t* }: 16 bytes on a 64-bit host, 12 on the
+    // 32-bit ARM firmware target. Keep the assert target-adaptive.
+    std.debug.assert(@sizeOf(MpzStruct) == 2 * @sizeOf(c_int) + @sizeOf(?*anyopaque));
 }
 
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
