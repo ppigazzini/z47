@@ -79,10 +79,6 @@ void z47_state_sys_timer_start(int timer_ix, uint32_t ms_value) {
 // and dead-stripped elsewhere.
 #if !defined(DMCP_BUILD)
 
-// backup.cfg typed value serializer (saveCalc) for the Zig backup owner.
-void z47_css_saveStateValue(const void *buffer, uint32_t size, const char *name, const char *type) {
-	saveStateValue(buffer, size, name, type);
-}
 int8_t z47_css_cursorFontId(void) {
 	if(cursorFont == &tinyFont)     return 1;
 	if(cursorFont == &standardFont) return 2;

@@ -17,8 +17,18 @@ const USER_C47: u16 = 46; const USER_DM42: u16 = 45; const USER_R47: u16 = 66;
 const USER_R47f_g: u16=61; const USER_R47fg_g: u16=64; const USER_R47fg_bk: u16=63; const USER_R47bk_fg: u16=62;
 const FREE_MEM_REGION_SIZE: u32 = 4; const REGISTER_HEADER_SIZE: u32 = 4; const NUMBER_OF_GLOBAL_REGISTERS: u32 = 137;
 
-extern fn z47_css_saveStateValue(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void;
 extern fn z47_css_cursorFontId() i8;
+extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
+extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn strlen(s: [*c]const u8) usize;
+extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
+extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
+extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToString
+extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
+extern fn decQuadIsInfinite(src: [*c]const u8) u32; // real34IsInfinite
+const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int; extern fn ioFileClose() void;
 extern fn refreshScreen(source: u16) void;
 extern var calcModel: u8; extern var calcMode: u8; extern var previousCalcMode: u8;
@@ -237,7 +247,117 @@ extern var firstDisplayedStep: [*c]u8;
 extern var currentStep: [*c]u8;
 
 fn geometry() progmem.Geometry { return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW, .old_hw = state_old_hw }; }
-fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { z47_css_saveStateValue(buffer, size, name, type_str); }
+fn streq(a: [*c]const u8, b: [*c]const u8) bool {
+    return strcmp(a, b) == 0;
+}
+fn rd(comptime T: type, buffer: ?*const anyopaque) T {
+    return @as(*const T, @ptrCast(@alignCast(buffer))).*;
+}
+fn save(bytes: [*c]const u8) void {
+    ioFileWrite(bytes, @intCast(strlen(bytes)));
+}
+// Replace ',' with '.' after the second ':' (locale-independent floats).
+fn changeCommaToPeriod(str: [*c]u8) void {
+    var s = strchr(str, ':') + 1;
+    s = strchr(s, ':') + 1;
+    while (s[0] != 0) : (s += 1) {
+        if (s[0] == ',') s[0] = '.';
+    }
+}
+
+// Typed value serializer (saveRestoreCalcState.c saveStateValue, host-only).
+fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+    var value: [200]u8 = undefined;
+    const v: [*c]u8 = &value[0];
+    const buf: [*c]const u8 = @ptrCast(buffer);
+    if (streq(type_str, "int64")) {
+        _ = sprintf(v, "%s:%s:%ld\n", name, type_str, @as(c_long, @intCast(rd(i64, buffer))));
+        save(v);
+    } else if (streq(type_str, "uint64")) {
+        _ = sprintf(v, "%s:%s:%lu\n", name, type_str, @as(c_ulong, @intCast(rd(u64, buffer))));
+        save(v);
+    } else if (streq(type_str, "int32")) {
+        _ = sprintf(v, "%s:%s:%d\n", name, type_str, @as(c_int, rd(i32, buffer)));
+        save(v);
+    } else if (streq(type_str, "uint32")) {
+        _ = sprintf(v, "%s:%s:%u\n", name, type_str, @as(c_uint, rd(u32, buffer)));
+        save(v);
+    } else if (streq(type_str, "int16")) {
+        _ = sprintf(v, "%s:%s:%d\n", name, type_str, @as(c_int, rd(i16, buffer)));
+        save(v);
+    } else if (streq(type_str, "uint16")) {
+        _ = sprintf(v, "%s:%s:%u\n", name, type_str, @as(c_uint, rd(u16, buffer)));
+        save(v);
+    } else if (streq(type_str, "int8")) {
+        _ = sprintf(v, "%s:%s:%d\n", name, type_str, @as(c_int, rd(i8, buffer)));
+        save(v);
+    } else if (streq(type_str, "uint8")) {
+        _ = sprintf(v, "%s:%s:%u\n", name, type_str, @as(c_uint, rd(u8, buffer)));
+        save(v);
+    } else if (streq(type_str, "float")) {
+        _ = sprintf(v, "%s:%s:%.20e\n", name, type_str, @as(f64, rd(f32, buffer)));
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "double")) {
+        _ = sprintf(v, "%s:%s:%.20e\n", name, type_str, rd(f64, buffer));
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "real")) {
+        _ = sprintf(v, "%s:%s:", name, type_str);
+        if (buf[8] & DECINF != 0) {
+            _ = strcpy(v + strlen(v), if (buf[8] & 0x80 != 0) "-9.9e9999999" else "9.9e9999999");
+        } else {
+            _ = decNumberToString(buf, v + strlen(v));
+        }
+        _ = strcat(v, "\n");
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "real34")) {
+        _ = sprintf(v, "%s:%s:", name, type_str);
+        if (decQuadIsInfinite(buf) != 0) {
+            _ = strcpy(v + strlen(v), if (buf[15] & 0x80 != 0) "-9.9e9999" else "9.9e9999");
+        } else {
+            _ = decQuadToString(buf, v + strlen(v));
+        }
+        _ = strcat(v, "\n");
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "bool")) {
+        _ = sprintf(v, "%s:%s:%u\n", name, type_str, @as(c_uint, rd(u8, buffer)));
+        save(v);
+    } else if (streq(type_str, "c47Ptr")) {
+        const p = rd(u32, buffer);
+        _ = sprintf(v, "%s:%s:%u (0x%05x)\n", name, type_str, @as(c_uint, p), @as(c_uint, 4 * p));
+        save(v);
+    } else if (streq(type_str, "hexDump")) {
+        _ = sprintf(v, "%s:%s:%u\n", name, type_str, @as(c_uint, size));
+        save(v);
+        var addr: u32 = 0;
+        while (addr < size) : (addr += 32) {
+            _ = sprintf(v, "%05x  ", @as(c_uint, addr));
+            var b: u32 = 0;
+            while (b < 32) : (b += 1) {
+                if (addr + b < size) {
+                    _ = sprintf(v + 7 + 3 * b, "%02x ", @as(c_uint, buf[addr + b]));
+                } else {
+                    _ = strcpy(v + 7 + 3 * b, "   ");
+                }
+            }
+            _ = strcpy(v + 103, " '");
+            b = 0;
+            while (b < 32) : (b += 1) {
+                if (addr + b < size) {
+                    const ch = buf[addr + b];
+                    _ = sprintf(v + 105 + b, "%c", @as(c_int, if (ch >= ' ' and ch != 0x7f) ch else ' '));
+                } else {
+                    _ = strcpy(v + 105 + b, " ");
+                }
+            }
+            _ = strcpy(v + 137, "'\n");
+            save(v);
+        }
+    }
+}
 fn c47ptr(p: [*c]const u8) u32 { return progmem.toC47memptr(geometry(), @intFromPtr(p)); }
 fn offWithin(p: [*c]const u8) u32 { return progmem.offsetWithinBlock(geometry(), @intFromPtr(p)); }
 
