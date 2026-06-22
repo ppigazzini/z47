@@ -81,7 +81,6 @@ pub export fn z47_calc_state_get_config_file_version() u32 {
 pub export fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
     // Host-only: DMCP firmware loads via the C retained path, so this symbol is
     // never called there. `comptime` forces the host branch out of firmware.
-    if (comptime is_dmcp_build) return false;
     return restore_owned.restoreOneSection(load_mode, s, n, d, allow_user_keys);
 }
 
@@ -90,7 +89,6 @@ pub export fn z47_calc_state_save_sections() void {
     // (z47_calc_state_legacy_*), so this symbol is never called there. Gating it
     // keeps the Zig section writer out of firmware (byte-identical flash) while
     // still resolving the io_owned extern.
-    if (is_dmcp_build) return;
     save_owned.writeSaveSections();
 }
 

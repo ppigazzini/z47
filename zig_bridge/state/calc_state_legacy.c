@@ -52,16 +52,29 @@ bool_t z47_state_power_check_screen(void) {
 #endif
 }
 
-// The save/restore trampolines below are consumed only by the host-only Zig
-// section writer / parser owners (gated is_dmcp_build); guarding them off the
-// DMCP lane keeps firmware byte-identical (those owners are dead-stripped on
-// firmware, which loads/saves through the C retained path).
-#if !defined(DMCP_BUILD)
+// sys_timer_disable / sys_timer_start are DMCP ROM function-table macros
+// (lft_ifc.h), not linkable symbols, so the Zig io_owned timer restart wraps
+// them here where the macro is in scope. No-ops on host (no DMCP timers).
+void z47_state_sys_timer_disable(int timer_ix) {
+#if defined(DMCP_BUILD)
+	sys_timer_disable(timer_ix);
+#else
+	(void)timer_ix;
+#endif
+}
+void z47_state_sys_timer_start(int timer_ix, uint32_t ms_value) {
+#if defined(DMCP_BUILD)
+	sys_timer_start(timer_ix, ms_value);
+#else
+	(void)timer_ix; (void)ms_value;
+#endif
+}
 
-// --- Save-serialization residual trampolines (Zig save owners) ---
-// Most save leaf logic is now Zig (the register codec + section writer); these
-// wrap the remaining file-static / macro / enum surface the Zig owners can't
-// reach directly.
+// --- c47.sav text-path residual trampolines (ALL lanes) ---
+// These back the Zig section writer / parser / register codec, which run on
+// every lane (host / DMCP5 / DMCP). They wrap the remaining file-static / macro
+// / enum surface the Zig owners can't reach directly, so they must be available
+// on the firmware lanes too.
 
 // Matrix vector-tag predicates (macros over the matrix subsystem) used by the
 // Zig register codec's matrix arms.
@@ -104,6 +117,12 @@ void z47_css_set_loaded_version(uint32_t v) { loadedVersion = v; }
 void z47_css_setPrinterOn(uint8_t v)    { printerState.print_on = v; }
 void z47_css_setPrinterModel(uint8_t v) { printerState.printer_model = v; }
 void z47_css_setPrinterDelay(uint16_t v){ printerState.delay = v; }
+
+// --- backup.cfg trampolines (HOST only) ---
+// The backup owner (saveCalc/restoreCalc) stays on the C retained path on the
+// firmware lanes (OLD_HW has a different memory model), so these are host-only
+// and dead-stripped elsewhere.
+#if !defined(DMCP_BUILD)
 
 // backup.cfg typed value serializer (saveCalc) for the Zig backup owner.
 void z47_css_saveStateValue(const void *buffer, uint32_t size, const char *name, const char *type) {
