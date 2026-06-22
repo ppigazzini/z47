@@ -116,4 +116,41 @@ int8_t z47_css_cursorFontId(void) {
 	return -1;
 }
 
+// backup.cfg restore primitives for the Zig backup owner: the typed value
+// parser (reads the file-static paramHead list) + the linked-list build/free.
+void z47_css_restoreStateValue(void *buffer, uint32_t size, const char *name, const char *type) {
+	restoreStateValue(buffer, size, name, type);
+}
+int z47_css_backupOpenParse(void) {
+	char oneParam[200];
+	int ret = ioFileOpen(ioPathBackup, ioModeRead);
+	if(ret != FILE_OK) return ret;
+	z47_calc_state_legacy_readLine(oneParam);
+	paramHead = malloc(sizeof(cfgFileParam_t));
+	paramCurrent = paramHead;
+	paramCurrent->param = malloc(strlen(oneParam) + 1);
+	strcpy(paramCurrent->param, oneParam);
+	paramCurrent->next = NULL;
+	z47_calc_state_legacy_readLine(oneParam);
+	while(!ioEof()) {
+		paramCurrent->next = malloc(sizeof(cfgFileParam_t));
+		paramCurrent = paramCurrent->next;
+		paramCurrent->param = malloc(strlen(oneParam) + 1);
+		strcpy(paramCurrent->param, oneParam);
+		paramCurrent->next = NULL;
+		z47_calc_state_legacy_readLine(oneParam);
+	}
+	ioFileClose();
+	return FILE_OK;
+}
+void z47_css_backupFreeParams(void) {
+	paramCurrent = paramHead;
+	while(paramHead) {
+		paramHead = paramHead->next;
+		free(paramCurrent->param);
+		free(paramCurrent);
+		paramCurrent = paramHead;
+	}
+}
+
 #endif // !DMCP_BUILD
