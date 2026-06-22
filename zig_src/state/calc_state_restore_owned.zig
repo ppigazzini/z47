@@ -22,6 +22,17 @@
 const std = @import("std");
 const runtime = @import("calc_state_runtime.zig");
 const text = @import("calc_state_text_owned.zig");
+const progmem = @import("calc_state_progmem_owned.zig");
+const build_options = @import("calc_state_build_options");
+
+const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+fn geometry() progmem.Geometry {
+    return .{
+        .ram_base = @intFromPtr(ram),
+        .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW,
+        .old_hw = state_old_hw,
+    };
+}
 const codec = @import("calc_state_register_codec_owned.zig");
 
 // --- Resolved constants (probed from the real headers) ---
@@ -30,9 +41,6 @@ const FIRST_NAMED_VARIABLE: i16 = 256;
 const REGISTER_X: i16 = 100;
 const INVALID_VARIABLE: i16 = 2199;
 const C47_NULL: u16 = 65535;
-const RAM_SIZE_IN_BLOCKS: u32 = 65534;
-const RAM_SIZE_IN_BLOCKS_NEW_HW: u32 = 65534;
-const RAM_SIZE_IN_BLOCKS_OLD_HW: u32 = 16384;
 const TMP_STR_LENGTH: usize = 2560;
 const MAX_DENMAX: u32 = 9999;
 
@@ -281,16 +289,13 @@ fn b2i(x: bool) c_int {
     return @intFromBool(x);
 }
 
-// TO_PCMEMPTR(p): RAM pointer for a block index, or null for C47_NULL.
+// Program-memory pointer arithmetic, delegated to the geometry-parameterized,
+// separately-tested progmem module (`zig build state-progmem-test`).
 fn toPcmemptr(p: u32) [*c]u8 {
-    if (p == C47_NULL) return null;
-    return @ptrFromInt(@intFromPtr(ram) + @as(usize, @intCast(p)) * 4);
+    return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(p)));
 }
-
-// TO_C47MEMPTR(p): block index of a RAM pointer.
 fn toC47memptr(p: [*c]const u8) u16 {
-    if (p == null) return C47_NULL;
-    return @intCast((@intFromPtr(p) - @intFromPtr(ram)) / 4);
+    return progmem.toC47memptr(geometry(), @intFromPtr(p));
 }
 
 pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
@@ -579,7 +584,7 @@ fn parseMenuItem(item: [*c]userMenuItem_t) void {
 }
 
 fn restoreProgramsSection(load_mode: u16) void {
-    const oldSizeInBlocks: u16 = @intCast(RAM_SIZE_IN_BLOCKS - toC47memptr(beginOfProgramMemory));
+    const oldSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
     var oldFirstFreeProgramByte: [*c]u8 = firstFreeProgramByte;
     const oldFreeProgramBytes: u16 = freeProgramBytes;
 
@@ -622,13 +627,19 @@ fn restoreProgramsSection(load_mode: u16) void {
         freeProgramBytes = text.toUint16(tmpString);
     }
 
-    // Host (non-OLD_HW) RAM-size relocation correction.
-    if (@intFromPtr(firstFreeProgramByte + freeProgramBytes) != @intFromPtr(beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
-        const diff = TO_BYTES(RAM_SIZE_IN_BLOCKS_NEW_HW - RAM_SIZE_IN_BLOCKS_OLD_HW);
-        if (@intFromPtr(firstFreeProgramByte + freeProgramBytes) + diff == @intFromPtr(beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
-            currentStep += diff;
-            firstFreeProgramByte += diff;
-        }
+    // Cross-hardware RAM-size relocation correction (sign differs OLD_HW vs
+    // NEW_HW); the geometry-parameterized progmem module covers both lanes and
+    // is verified by `zig build state-progmem-test`.
+    {
+        const reloc = progmem.relocatePrograms(.{
+            .first_free_program_byte = @intFromPtr(firstFreeProgramByte),
+            .free_program_bytes = freeProgramBytes,
+            .begin_of_program_memory = @intFromPtr(beginOfProgramMemory),
+            .number_of_blocks = numberOfBlocks,
+            .current_step = @intFromPtr(currentStep),
+        }, state_old_hw);
+        currentStep = @ptrFromInt(reloc.current_step);
+        firstFreeProgramByte = @ptrFromInt(reloc.first_free_program_byte);
     }
 
     if (load_mode == LM_PROGRAMS) {
