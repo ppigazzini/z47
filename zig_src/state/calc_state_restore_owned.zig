@@ -21,6 +21,7 @@
 
 const std = @import("std");
 const runtime = @import("calc_state_runtime.zig");
+const text = @import("calc_state_text_owned.zig");
 
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_LOCAL_REGISTER: i16 = 7000;
@@ -175,15 +176,6 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
 
 // --- load-parsing trampolines (calc_state_legacy.c) ---
-extern fn z47_css_toInt16(s: [*c]const u8) i16;
-extern fn z47_css_toUint8(s: [*c]const u8) u8;
-extern fn z47_css_toUint16(s: [*c]const u8) u16;
-extern fn z47_css_toUint32(s: [*c]const u8) u32;
-extern fn z47_css_next_word(s: [*c]u8) [*c]u8;
-extern fn z47_css_skip_space(s: [*c]u8) [*c]u8;
-extern fn z47_css_skip_to_space_newline(s: [*c]u8) [*c]u8;
-extern fn z47_css_toInt16_next_word(s: [*c]u8, val: *i16) [*c]u8;
-extern fn z47_css_strcmp2(a: [*c]u8, b: [*c]u8) u16;
 extern fn z47_css_restoreRegister(regist: i16, type_str: [*c]u8, value: [*c]u8) void;
 extern fn z47_css_restoreMatrixData(regist: i16) void;
 extern fn z47_css_skipMatrixData(type_str: [*c]u8, value: [*c]u8) void;
@@ -320,11 +312,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
 
     if (cmpName(tmpString, "GLOBAL_REGISTERS")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(tmpString);
-            regist = z47_css_toInt16(tmpString + 1);
+            regist = text.toInt16(tmpString + 1);
             read2Lines(aimBuffer, tmpString);
             if (load_mode == LM_ALL or
                 (load_mode == LM_REGISTERS and regist < REGISTER_X) or
@@ -343,14 +335,14 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             str = tmpString;
             i = 0;
             while (i < 7) : (i += 1) {
-                globalFlags[@intCast(i)] = z47_css_toUint16(str);
-                str = z47_css_next_word(str);
+                globalFlags[@intCast(i)] = text.toUint16(str);
+                str = text.nextWord(str);
             }
-            globalFlags[@intCast(i)] = z47_css_toUint16(str);
+            globalFlags[@intCast(i)] = text.toUint16(str);
         }
     } else if (cmpName(tmpString, "LOCAL_REGISTERS")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
             allocateLocalRegisters(@intCast(numberOfRegs));
         }
@@ -358,7 +350,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
                 readLine(tmpString);
-                regist = z47_css_toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
+                regist = text.toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
                 read2Lines(aimBuffer, tmpString);
                 if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
                     z47_css_restoreRegister(regist, aimBuffer, tmpString);
@@ -371,11 +363,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
     } else if (cmpName(tmpString, "LOCAL_FLAGS")) {
         readLine(tmpString);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
-            currentLocalFlags.?.* = z47_css_toUint32(tmpString);
+            currentLocalFlags.?.* = text.toUint32(tmpString);
         }
     } else if (cmpName(tmpString, "NAMED_VARIABLES")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(errorMessage);
@@ -401,7 +393,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
     } else if (cmpName(tmpString, "STATISTICAL_SUMS")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         if (numberOfRegs > 0 and (load_mode == LM_ALL or load_mode == LM_SUMS)) {
             initStatisticalSums();
             reLoadStatisticalSums();
@@ -441,26 +433,26 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
     } else if (cmpName(tmpString, "KEYBOARD_ASSIGNMENTS")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(tmpString);
             if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 const k = &kbd_usr[@intCast(i)];
-                str = z47_css_toInt16_next_word(tmpString, &k.keyId);
-                str = z47_css_toInt16_next_word(str, &k.primary);
-                str = z47_css_toInt16_next_word(str, &k.fShifted);
-                str = z47_css_toInt16_next_word(str, &k.gShifted);
-                str = z47_css_toInt16_next_word(str, &k.keyLblAim);
-                str = z47_css_toInt16_next_word(str, &k.primaryAim);
-                str = z47_css_toInt16_next_word(str, &k.fShiftedAim);
-                str = z47_css_toInt16_next_word(str, &k.gShiftedAim);
-                str = z47_css_toInt16_next_word(str, &k.primaryTam);
+                str = text.toInt16NextWord(tmpString, &k.keyId);
+                str = text.toInt16NextWord(str, &k.primary);
+                str = text.toInt16NextWord(str, &k.fShifted);
+                str = text.toInt16NextWord(str, &k.gShifted);
+                str = text.toInt16NextWord(str, &k.keyLblAim);
+                str = text.toInt16NextWord(str, &k.primaryAim);
+                str = text.toInt16NextWord(str, &k.fShiftedAim);
+                str = text.toInt16NextWord(str, &k.gShiftedAim);
+                str = text.toInt16NextWord(str, &k.primaryTam);
             }
         }
     } else if (cmpName(tmpString, "KEYBOARD_ARGUMENTS")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
             freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
             userKeyLabelSize = 37 * 6 * 1 + 1;
@@ -472,11 +464,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             readLine(tmpString);
             if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 str = tmpString;
-                const key = z47_css_toUint16(str);
+                const key = text.toUint16(str);
                 userMenuItems[@intCast(i)].argumentName[0] = 0;
-                str = z47_css_skip_to_space_newline(str);
+                str = text.skipToSpaceNewline(str);
                 if (str[0] == ' ') {
-                    str = z47_css_skip_space(str);
+                    str = text.skipSpace(str);
                     if (str[0] != '\n' and str[0] != 0) {
                         utf8ToString(str, tmpString + TMP_STR_LENGTH / 2);
                         setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
@@ -486,7 +478,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
     } else if (cmpName(tmpString, "MYMENU")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(tmpString);
@@ -496,7 +488,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
     } else if (cmpName(tmpString, "MYALPHA")) {
         readLine(tmpString);
-        numberOfRegs = z47_css_toInt16(tmpString);
+        numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(tmpString);
@@ -506,7 +498,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
     } else if (cmpName(tmpString, "USER_MENUS")) {
         readLine(tmpString);
-        const numberOfMenus = z47_css_toInt16(tmpString);
+        const numberOfMenus = text.toInt16(tmpString);
         var j: i32 = 0;
         while (j < numberOfMenus) : (j += 1) {
             readLine(tmpString);
@@ -525,7 +517,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 }
             }
             readLine(tmpString);
-            numberOfRegs = z47_css_toInt16(tmpString);
+            numberOfRegs = text.toInt16(tmpString);
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
                 readLine(tmpString);
@@ -538,7 +530,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         restoreProgramsSection(load_mode);
     } else if (cmpName(tmpString, "EQUATIONS")) {
         readLine(tmpString);
-        const formulae = z47_css_toUint16(tmpString);
+        const formulae = text.toUint16(tmpString);
         if (formulae > 0 and (load_mode == LM_ALL or load_mode == LM_PROGRAMS)) {
             i = @intCast(numberOfFormulae);
             while (i > 0) : (i -= 1) {
@@ -578,11 +570,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
 // argument name.
 fn parseMenuItem(item: [*c]userMenuItem_t) void {
     var str: [*c]u8 = tmpString;
-    item[0].item = z47_css_toInt16(str);
+    item[0].item = text.toInt16(str);
     item[0].argumentName[0] = 0;
-    str = z47_css_skip_to_space_newline(str);
+    str = text.skipToSpaceNewline(str);
     if (str[0] == ' ') {
-        str = z47_css_skip_space(str);
+        str = text.skipSpace(str);
         if (str[0] != '\n' and str[0] != 0) {
             utf8ToString(str, &item[0].argumentName[0]);
         }
@@ -595,7 +587,7 @@ fn restoreProgramsSection(load_mode: u16) void {
     const oldFreeProgramBytes: u16 = freeProgramBytes;
 
     readLine(tmpString);
-    const numberOfBlocks = z47_css_toUint16(tmpString);
+    const numberOfBlocks = text.toUint16(tmpString);
     if (load_mode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
     } else if (load_mode == LM_PROGRAMS) {
@@ -605,11 +597,11 @@ fn restoreProgramsSection(load_mode: u16) void {
 
     readLine(tmpString); // currentStep block pointer
     if (load_mode == LM_ALL) {
-        currentStep = toPcmemptr(z47_css_toUint32(tmpString));
+        currentStep = toPcmemptr(text.toUint32(tmpString));
     }
     readLine(tmpString); // currentStep offset within block
     if (load_mode == LM_ALL) {
-        currentStep += z47_css_toUint32(tmpString);
+        currentStep += text.toUint32(tmpString);
     } else if (load_mode == LM_PROGRAMS) {
         if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
             currentStep -= TO_BYTES(numberOfBlocks);
@@ -621,16 +613,16 @@ fn restoreProgramsSection(load_mode: u16) void {
 
     readLine(tmpString); // firstFreeProgramByte block pointer
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
-        firstFreeProgramByte = toPcmemptr(z47_css_toUint32(tmpString));
+        firstFreeProgramByte = toPcmemptr(text.toUint32(tmpString));
     }
     readLine(tmpString); // firstFreeProgramByte offset within block
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
-        firstFreeProgramByte += z47_css_toUint32(tmpString);
+        firstFreeProgramByte += text.toUint32(tmpString);
     }
 
     readLine(tmpString); // freeProgramBytes
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
-        freeProgramBytes = z47_css_toUint16(tmpString);
+        freeProgramBytes = text.toUint16(tmpString);
     }
 
     // Host (non-OLD_HW) RAM-size relocation correction.
@@ -670,9 +662,9 @@ fn restoreProgramsSection(load_mode: u16) void {
     while (i < numberOfBlocks) : (i += 1) {
         readLine(tmpString);
         if (load_mode == LM_ALL) {
-            progWords[@intCast(i)] = z47_css_toUint32(tmpString);
+            progWords[@intCast(i)] = text.toUint32(tmpString);
         } else if (load_mode == LM_PROGRAMS) {
-            var tmpBlock: u32 = z47_css_toUint32(tmpString);
+            var tmpBlock: u32 = text.toUint32(tmpString);
             _ = xcopy(oldFirstFreeProgramByte + TO_BYTES(i), &tmpBlock, 4);
         }
     }
@@ -708,7 +700,7 @@ fn restoreOtherConfiguration(load_mode: u16, allow_user_keys: bool, loaded_versi
 
 fn matchU8(name: [*c]const u8, ptr: anytype) bool {
     if (cmpName(aimBuffer, name)) {
-        ptr.* = z47_css_toUint8(tmpString);
+        ptr.* = text.toUint8(tmpString);
         return true;
     }
     return false;
@@ -717,49 +709,49 @@ fn matchU8(name: [*c]const u8, ptr: anytype) bool {
 fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model: u16) void {
     const ab = aimBuffer;
     if (cmpName(ab, "firstGregorianDay")) {
-        firstGregorianDay = z47_css_toUint32(tmpString);
+        firstGregorianDay = text.toUint32(tmpString);
     } else if (cmpName(ab, "denMax")) {
-        denMax = z47_css_toUint32(tmpString);
+        denMax = text.toUint32(tmpString);
         if (denMax == 1 or denMax > MAX_DENMAX) denMax = MAX_DENMAX;
     } else if (cmpName(ab, "lastDenominator")) {
-        lastDenominator = z47_css_toUint32(tmpString);
+        lastDenominator = text.toUint32(tmpString);
         if (lastDenominator < 1 or lastDenominator > MAX_DENMAX) lastDenominator = 4;
     } else if (matchU8("displayFormat", &displayFormat)) {} else if (matchU8("displayFormatDigits", &displayFormatDigits)) {} else if (matchU8("timeDisplayFormatDigits", &timeDisplayFormatDigits)) {} else if (matchU8("shortIntegerWordSize", &shortIntegerWordSize)) {} else if (matchU8("shortIntegerMode", &shortIntegerMode)) {} else if (matchU8("significantDigits", &significantDigits)) {} else if (matchU8("fractionDigits", &fractionDigits)) {} else if (cmpName(ab, "currentAngularMode")) {
-        currentAngularMode = z47_css_toUint8(tmpString);
+        currentAngularMode = text.toUint8(tmpString);
     } else if (cmpName(ab, "groupingGap")) {
         configCommon(CFG_DFLT);
-        grpGroupingLeft = z47_css_toUint8(tmpString);
+        grpGroupingLeft = text.toUint8(tmpString);
         grpGroupingRight = grpGroupingLeft;
-    } else if (z47_css_strcmp2(ab, @constCast("gapItemLeft")) == 0) {
-        gapItemLeft = z47_css_toUint16(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("gapItemRight")) == 0) {
-        gapItemRight = z47_css_toUint16(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("gapItemRadix")) == 0) {
-        gapItemRadix = z47_css_toUint16(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("lastCenturyHighUsed")) == 0) {
-        lastCenturyHighUsed = z47_css_toUint16(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingLeft")) == 0) {
-        grpGroupingLeft = z47_css_toUint8(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingGr1LeftOverflow")) == 0) {
-        grpGroupingGr1LeftOverflow = z47_css_toUint8(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingGr1Left")) == 0) {
-        grpGroupingGr1Left = z47_css_toUint8(tmpString);
-    } else if (z47_css_strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
-        grpGroupingRight = z47_css_toUint8(tmpString);
+    } else if (text.strcmp2(ab, @constCast("gapItemLeft")) == 0) {
+        gapItemLeft = text.toUint16(tmpString);
+    } else if (text.strcmp2(ab, @constCast("gapItemRight")) == 0) {
+        gapItemRight = text.toUint16(tmpString);
+    } else if (text.strcmp2(ab, @constCast("gapItemRadix")) == 0) {
+        gapItemRadix = text.toUint16(tmpString);
+    } else if (text.strcmp2(ab, @constCast("lastCenturyHighUsed")) == 0) {
+        lastCenturyHighUsed = text.toUint16(tmpString);
+    } else if (text.strcmp2(ab, @constCast("grpGroupingLeft")) == 0) {
+        grpGroupingLeft = text.toUint8(tmpString);
+    } else if (text.strcmp2(ab, @constCast("grpGroupingGr1LeftOverflow")) == 0) {
+        grpGroupingGr1LeftOverflow = text.toUint8(tmpString);
+    } else if (text.strcmp2(ab, @constCast("grpGroupingGr1Left")) == 0) {
+        grpGroupingGr1Left = text.toUint8(tmpString);
+    } else if (text.strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
+        grpGroupingRight = text.toUint8(tmpString);
     } else if (matchU8("roundingMode", &roundingMode)) {} else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "rngState")) {
         pcg32_global.state = stringToUint64(tmpString);
-        const w = z47_css_next_word(tmpString);
+        const w = text.nextWord(tmpString);
         pcg32_global.inc = stringToUint64(w);
     } else if (cmpName(ab, "exponentLimit")) {
-        exponentLimit = z47_css_toInt16(tmpString);
+        exponentLimit = text.toInt16(tmpString);
     } else if (cmpName(ab, "exponentHideLimit")) {
-        exponentHideLimit = z47_css_toInt16(tmpString);
+        exponentHideLimit = text.toInt16(tmpString);
     } else if (cmpName(ab, "notBestF")) {
-        lrSelection = z47_css_toUint16(tmpString);
+        lrSelection = text.toUint16(tmpString);
     } else if (cmpName(ab, "bestF")) {
-        lrSelection = z47_css_toUint16(tmpString);
+        lrSelection = text.toUint16(tmpString);
     } else if (cmpName(ab, "fgLN") or cmpName(ab, "jm_FG_LINE")) {
-        const fgLN = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_FGLNOFF);
+        const fgLN = convert001090400T001090500(text.toUint8(tmpString), RBX_FGLNOFF);
         if (fgLN == RBX_FGLNOFF) {
             clearSystemFlag(FLAG_FGLNLIM);
             clearSystemFlag(FLAG_FGLNFUL);
@@ -772,31 +764,31 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         }
     } else if (cmpName(ab, "HOME3")) {
         if (loaded_version < 10000022) {
-            forceSystemFlag(FLAG_HOME_TRIPLE, @intFromBool(z47_css_toUint8(tmpString) != 0));
+            forceSystemFlag(FLAG_HOME_TRIPLE, @intFromBool(text.toUint8(tmpString) != 0));
             setLongPressFg(calcModel, -MNU_HOME);
         }
     } else if (cmpName(ab, "MYM3")) {
         if (loaded_version < 10000022) {
-            forceSystemFlag(FLAG_MYM_TRIPLE, @intFromBool(z47_css_toUint8(tmpString) != 0));
+            forceSystemFlag(FLAG_MYM_TRIPLE, @intFromBool(text.toUint8(tmpString) != 0));
             setLongPressFg(calcModel, -MNU_MyMenu);
         }
     } else if (cmpName(ab, "dispBase")) {
-        dispBase = z47_css_toUint8(tmpString);
+        dispBase = text.toUint8(tmpString);
     } else if (cmpName(ab, "ShiftTimoutMode")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_SHFT_4s, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_SHFT_4s, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "SH_BASE_HOME")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "BASE_HOME")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_HOME, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00_VAR")) {
         if (z47_css_normKey00Key() != -1) {
-            Norm_Key_00.func = @bitCast(z47_css_toUint16(tmpString));
+            Norm_Key_00.func = @bitCast(text.toUint16(tmpString));
             Norm_Key_00.used = @intFromBool(Norm_Key_00.func != z47_css_kbdStdPrimary(z47_css_normKey00Key()));
         } else {
             Norm_Key_00.used = 0;
         }
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.func")) {
-        Norm_Key_00.func = @bitCast(z47_css_toUint16(tmpString));
+        Norm_Key_00.func = @bitCast(text.toUint16(tmpString));
     } else if (cmpName(ab, "Norm_Key_00.funcParam")) {
         if (cmpName(tmpString, "Norm_Key_00.used")) {
             if (allow_user_keys) {
@@ -810,79 +802,79 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
             _ = strcpy(&Norm_Key_00.funcParam[0], tmpString);
         }
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.used")) {
-        Norm_Key_00.used = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        Norm_Key_00.used = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (allow_user_keys and cmpName(ab, "calcModel")) {
-        const calcModelRead = z47_css_toUint16(tmpString);
+        const calcModelRead = text.toUint16(tmpString);
         if (saved_calc_model == USER_R47 and (calcModelRead == USER_R47f_g or calcModelRead == USER_R47fg_g or calcModelRead == USER_R47fg_bk or calcModelRead == USER_R47bk_fg)) {
             calcModel = @intCast(calcModelRead);
         } else if (saved_calc_model == USER_C47 and (calcModelRead == USER_C47 or calcModelRead == USER_DM42)) {
             calcModel = @intCast(calcModelRead);
         }
     } else if (cmpName(ab, "Input_Default")) {
-        Input_Default = z47_css_toUint8(tmpString);
+        Input_Default = text.toUint8(tmpString);
     } else if (cmpName(ab, "jm_BASE_SCREEN")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "BASE_MYM")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "jm_G_DOUBLETAP")) {
-        if (loaded_version < 10000022) forceSystemFlag(FLAG_G_DOUBLETAP, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000022) forceSystemFlag(FLAG_G_DOUBLETAP, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "displayStackSHOIDISP")) {
-        displayStackSHOIDISP = z47_css_toUint8(tmpString);
+        displayStackSHOIDISP = text.toUint8(tmpString);
     } else if (cmpName(ab, "bcdDisplay")) {
-        if (loaded_version < 10000020) forceSystemFlag(FLAG_BCD, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000020) forceSystemFlag(FLAG_BCD, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "topHex")) {
-        if (loaded_version < 10000019) forceSystemFlag(FLAG_TOPHEX, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000019) forceSystemFlag(FLAG_TOPHEX, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "bcdDisplaySign")) {
-        bcdDisplaySign = convert001090400T001090500(z47_css_toUint8(tmpString), BCDu);
+        bcdDisplaySign = convert001090400T001090500(text.toUint8(tmpString), BCDu);
     } else if (matchU8("DRG_Cycling", &DRG_Cycling)) {} else if (matchU8("DM_Cycling", &DM_Cycling)) {} else if (cmpName(ab, "LongPressM")) {
-        LongPressM = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_M14);
+        LongPressM = convert001090400T001090500(text.toUint8(tmpString), RBX_M14);
     } else if (cmpName(ab, "LongPressF")) {
-        LongPressF = convert001090400T001090500(z47_css_toUint8(tmpString), RBX_F14);
+        LongPressF = convert001090400T001090500(text.toUint8(tmpString), RBX_F14);
     } else if (cmpName(ab, "lastIntegerBase")) {
-        lastIntegerBase = z47_css_toUint8(tmpString);
+        lastIntegerBase = text.toUint8(tmpString);
     } else if (cmpName(ab, "amortP1")) {
-        amortP1 = z47_css_toUint16(tmpString);
+        amortP1 = text.toUint16(tmpString);
     } else if (cmpName(ab, "amortP2")) {
-        amortP2 = z47_css_toUint16(tmpString);
+        amortP2 = text.toUint16(tmpString);
     } else if (cmpName(ab, "lrChosen")) {
-        lrChosen = z47_css_toUint16(tmpString);
+        lrChosen = text.toUint16(tmpString);
     } else if (cmpName(ab, "graph_dx")) {
         graph_dx = stringToFloat(tmpString);
     } else if (cmpName(ab, "graph_dy")) {
         graph_dy = stringToFloat(tmpString);
     } else if (cmpName(ab, "roundedTicks")) {
-        roundedTicks = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        roundedTicks = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_INTG")) {
-        PLOT_INTG = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        PLOT_INTG = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_DIFF")) {
-        PLOT_DIFF = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        PLOT_DIFF = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_RMS")) {
-        PLOT_RMS = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        PLOT_RMS = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_SHADE")) {
-        PLOT_SHADE = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        PLOT_SHADE = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_AXIS")) {
-        PLOT_AXIS = @intFromBool(z47_css_toUint8(tmpString) != 0);
+        PLOT_AXIS = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_ZMY")) {
-        PLOT_ZMY = @bitCast(z47_css_toUint8(tmpString));
+        PLOT_ZMY = @bitCast(text.toUint8(tmpString));
     } else if (matchU8("firstDayOfWeek", &firstDayOfWeek)) {} else if (matchU8("firstWeekOfYearDay", &firstWeekOfYearDay)) {} else if (cmpName(ab, "printerOn")) {
-        z47_css_setPrinterOn(z47_css_toUint8(tmpString));
+        z47_css_setPrinterOn(text.toUint8(tmpString));
     } else if (cmpName(ab, "printerModel")) {
-        z47_css_setPrinterModel(z47_css_toUint8(tmpString));
+        z47_css_setPrinterModel(text.toUint8(tmpString));
     } else if (cmpName(ab, "printerLineDelay")) {
-        const delay = z47_css_toUint16(tmpString);
+        const delay = text.toUint16(tmpString);
         z47_css_setPrinterDelay(delay);
         setLineDelay(delay);
     } else if (cmpName(ab, "jm_LARGELI")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_LARGELI, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_LARGELI, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "constantFractions")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRQ, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRQ, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "constantFractionsOn")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRAC, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_IRFRAC, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "eRPN")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_ERPN, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_ERPN, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "CPXMult")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_CPXMULT, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_CPXMULT, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "SI_All")) {
-        if (loaded_version < 10000012) forceSystemFlag(FLAG_PFX_ALL, @intFromBool(z47_css_toUint8(tmpString) != 0));
+        if (loaded_version < 10000012) forceSystemFlag(FLAG_PFX_ALL, @intFromBool(text.toUint8(tmpString) != 0));
     }
 }
