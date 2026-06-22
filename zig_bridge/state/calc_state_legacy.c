@@ -105,4 +105,15 @@ void z47_css_setPrinterOn(uint8_t v)    { printerState.print_on = v; }
 void z47_css_setPrinterModel(uint8_t v) { printerState.printer_model = v; }
 void z47_css_setPrinterDelay(uint16_t v){ printerState.delay = v; }
 
+// backup.cfg typed value serializer (saveCalc) for the Zig backup owner.
+void z47_css_saveStateValue(const void *buffer, uint32_t size, const char *name, const char *type) {
+	saveStateValue(buffer, size, name, type);
+}
+int8_t z47_css_cursorFontId(void) {
+	if(cursorFont == &tinyFont)     return 1;
+	if(cursorFont == &standardFont) return 2;
+	if(cursorFont == &numericFont)  return 3;
+	return -1;
+}
+
 #endif // !DMCP_BUILD
