@@ -127,9 +127,84 @@ static void buildState(void) {
   reallocateRegister(REGISTER_D, dtDate, 0, amNone);
   int32ToReal34(20260622, REGISTER_REAL34_DATA(REGISTER_D));
 
-  // A named variable lands in the NAMED_VARIABLES section.
+  // Every angular tag, so the textTag codec (DEG/DMS/RAD/MULTPI/GRAD + polar)
+  // is fully exercised on save AND restore.
+  reallocateRegister(0, dtReal34, 0, amRadian);
+  int32ToReal34(1, REGISTER_REAL34_DATA(0));
+  reallocateRegister(1, dtReal34, 0, amGrad);
+  int32ToReal34(2, REGISTER_REAL34_DATA(1));
+  reallocateRegister(2, dtReal34, 0, amDMS);
+  int32ToReal34(3, REGISTER_REAL34_DATA(2));
+  reallocateRegister(3, dtReal34, 0, amMultPi);
+  int32ToReal34(4, REGISTER_REAL34_DATA(3));
+
+  // complex34 in polar mode (tag carries amPolar + an angular mode) -> "Cplx:DEGp"
+  reallocateRegister(4, dtComplex34, 0, amPolar | amDegree);
+  int32ToReal34(5, REGISTER_REAL34_DATA(4));
+  int32ToReal34(45, REGISTER_IMAG34_DATA(4));
+
+  // string register
+  {
+    const char *s = "Hello, C47 \"state\"!";
+    reallocateRegister(5, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone);
+    strcpy(REGISTER_STRING_DATA(5), s);
+  }
+
+  // real34 matrix (2x3) with distinct element values
+  initMatrixRegister(6, 2, 3, false);
+  for(int e = 0; e < 6; ++e) {
+    int32ToReal34(e * 10 + 1, REGISTER_REAL34_MATRIX_ELEMENTS(6) + e);
+  }
+
+  // complex34 matrix (2x2) with distinct re/im element values
+  initMatrixRegister(7, 2, 2, true);
+  for(int e = 0; e < 4; ++e) {
+    int32ToReal34(e + 1,   VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(7) + e));
+    int32ToReal34(e + 100, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(7) + e));
+  }
+
+  // Named variables of two types land in the NAMED_VARIABLES section.
   allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
   int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
+  allocateNamedVariable("CPXVAR", dtComplex34, COMPLEX34_SIZE_IN_BLOCKS);
+  {
+    calcRegister_t v = findNamedVariable("CPXVAR");
+    int32ToReal34(11, REGISTER_REAL34_DATA(v));
+    int32ToReal34(22, REGISTER_IMAG34_DATA(v));
+  }
+
+  // Accumulate two-variable statistics so the STATISTICAL_SUMS section (and the
+  // stat-sum value codec) is exercised rather than left empty.
+  {
+    const int32_t xs[] = {2, 5, 11}, ys[] = {3, 7, 13};
+    for(int k = 0; k < 3; ++k) {
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      int32ToReal34(xs[k], REGISTER_REAL34_DATA(REGISTER_X));
+      reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+      int32ToReal34(ys[k], REGISTER_REAL34_DATA(REGISTER_Y));
+      fnSigmaAddRem(1); // Sigma+
+    }
+  }
+
+  // MyMenu / MyAlpha items (the MYMENU / MYALPHA sections) with an argument name.
+  userMenuItems[0].item = ITM_ADD;
+  userMenuItems[1].item = ITM_SUB;
+  strcpy(userAlphaItems[0].argumentName, "Av");
+  userAlphaItems[0].item = 100;
+
+  // A user menu with items (the USER_MENUS section, otherwise empty).
+  createMenu("UMENU");
+  if(numberOfUserMenus > 0) {
+    userMenus[numberOfUserMenus - 1].menuItem[0].item = ITM_ADD;
+    strcpy(userMenus[numberOfUserMenus - 1].menuItem[1].argumentName, "X");
+    userMenus[numberOfUserMenus - 1].menuItem[1].item = 42;
+  }
+
+  // Restore the diverse X/Y values consumed by the statistics accumulation.
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(1234, REGISTER_REAL34_DATA(REGISTER_X));
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(-42, REGISTER_REAL34_DATA(REGISTER_Y));
 
   // A couple of user flags land in the GLOBAL_FLAGS section.
   fnSetFlag(5);
