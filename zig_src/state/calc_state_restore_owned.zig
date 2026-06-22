@@ -22,6 +22,7 @@
 const std = @import("std");
 const runtime = @import("calc_state_runtime.zig");
 const text = @import("calc_state_text_owned.zig");
+const codec = @import("calc_state_register_codec_owned.zig");
 
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_LOCAL_REGISTER: i16 = 7000;
@@ -176,9 +177,6 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
 
 // --- load-parsing trampolines (calc_state_legacy.c) ---
-extern fn z47_css_restoreRegister(regist: i16, type_str: [*c]u8, value: [*c]u8) void;
-extern fn z47_css_restoreMatrixData(regist: i16) void;
-extern fn z47_css_skipMatrixData(type_str: [*c]u8, value: [*c]u8) void;
 extern fn z47_css_updateConstantsInEquations() void;
 extern fn z47_css_loadStatSum(str: [*c]const u8, i: u16) void;
 extern fn z47_css_isAtEndOfProgram(step: [*c]const u8) bool;
@@ -323,10 +321,10 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n)))
             {
                 const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
-                z47_css_restoreRegister(target, aimBuffer, tmpString);
-                z47_css_restoreMatrixData(target);
+                codec.restoreRegister(target, aimBuffer, tmpString, loaded_version);
+                codec.restoreMatrixData(target);
             } else {
-                z47_css_skipMatrixData(aimBuffer, tmpString);
+                codec.skipMatrixData(aimBuffer, tmpString);
             }
         }
     } else if (cmpName(tmpString, "GLOBAL_FLAGS")) {
@@ -353,10 +351,10 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 regist = text.toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
                 read2Lines(aimBuffer, tmpString);
                 if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
-                    z47_css_restoreRegister(regist, aimBuffer, tmpString);
-                    z47_css_restoreMatrixData(regist);
+                    codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
+                    codec.restoreMatrixData(regist);
                 } else {
-                    z47_css_skipMatrixData(aimBuffer, tmpString);
+                    codec.skipMatrixData(aimBuffer, tmpString);
                 }
             }
         }
@@ -382,13 +380,13 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 utf8ToString(errorMessage, varName);
                 regist = findOrAllocateNamedVariable(varName);
                 if (regist != INVALID_VARIABLE) {
-                    z47_css_restoreRegister(regist, aimBuffer, tmpString);
-                    z47_css_restoreMatrixData(regist);
+                    codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
+                    codec.restoreMatrixData(regist);
                 } else {
-                    z47_css_skipMatrixData(aimBuffer, tmpString);
+                    codec.skipMatrixData(aimBuffer, tmpString);
                 }
             } else {
-                z47_css_skipMatrixData(aimBuffer, tmpString);
+                codec.skipMatrixData(aimBuffer, tmpString);
             }
         }
     } else if (cmpName(tmpString, "STATISTICAL_SUMS")) {

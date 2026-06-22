@@ -98,9 +98,6 @@ void z47_css_postKeyboardFixup(void) {
 // remaining wrappers cover macros (stringToReal, Norm_Key_00_key, kbd_std) and a
 // static-inline (isAtEndOfProgram) so that surface stays out of Zig. The Zig
 // port keeps the C statics loadedVersion/savedCalcModel in sync via the setter.
-void z47_css_restoreRegister(int16_t regist, char *type, char *value) { restoreRegister(regist, type, value); }
-void z47_css_restoreMatrixData(int16_t regist) { restoreMatrixData(regist); }
-void z47_css_skipMatrixData(char *type, char *value) { skipMatrixData(type, value); }
 void z47_css_updateConstantsInEquations(void) { _updateConstantsInEquations(); }
 
 void z47_css_loadStatSum(const char *str, uint16_t i) {

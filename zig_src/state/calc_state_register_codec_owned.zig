@@ -41,6 +41,10 @@ const MATRIX_HEADER_SIZE: usize = 4; // sizeof(matrixHeader_t)
 const CONFIG_DESCRIPTOR_SIZE: usize = 840; // sizeof(dtConfigDescriptor_t)
 
 // 32-bit bitfield: rows:12, columns:12, mtag:6, notUsed:2.
+const REAL34_SIZE_IN_BLOCKS: u32 = 4;
+const COMPLEX34_SIZE_IN_BLOCKS: u32 = 8;
+const OpaqueCtx = opaque {};
+
 const matrixHeader_t = packed struct(u32) {
     matrixRows: u12,
     matrixColumns: u12,
@@ -77,6 +81,22 @@ extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
 extern fn z47_css_isRegisterMatrixVector(regist: i16) bool;
 extern fn z47_css_getVectorRegisterAngularMode(regist: i16) u8;
 extern fn z47_css_getVectorRegisterPolarMode(regist: i16) u8;
+
+// restore-side core helpers
+extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u32) void;
+extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
+extern fn convertLongIntegerToLongIntegerRegister(li: *const MpzStruct, regist: i16) void;
+extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
+extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
+extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
+extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
+extern fn stringToUint64(s: [*c]const u8) u64;
+extern fn readLine(line: [*c]u8) void;
+extern fn displayBugScreen(msg: [*c]const u8) void;
+extern fn __gmpz_init(li: *MpzStruct) void;
+extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
+extern var ctxtReal34: OpaqueCtx;
+extern var errorMessage: [*c]u8;
 
 extern var tmpString: [*c]u8;
 extern var aimBuffer1: [400]u8;
@@ -225,4 +245,164 @@ fn configToSaveString(regist: i16) void {
         _ = sprintf(trs + i * 2, "%02X", @as(c_uint, cfg[i]));
     }
     _ = strcpy(aim(), "Conf");
+}
+
+// ===================== RESTORE side =====================
+
+extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
+    return strcmp(a, b) == 0;
+}
+
+fn hexVal(c: u8) u32 {
+    return if (c >= 'A') @as(u32, c - 'A' + 10) else @as(u32, c - '0');
+}
+
+fn setMatrixDims(regist: i16, rows: u16, cols: u16) void {
+    const hdr: *matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    hdr.matrixRows = @intCast(rows);
+    hdr.matrixColumns = @intCast(cols);
+}
+
+// Defaults appended when loading a pre-10000008 (896-byte) config descriptor.
+const config_pre_10000008_defaults = [_]u8{
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
+    0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
+    0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
+// Parse one register value (the inverse of registerToSaveString). `type_str`
+// (the 4-char type tag, possibly with a ":TAG[p]" suffix) and `value` are
+// mutated in place exactly as the C does.
+pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_version: u32) void {
+    var tag: u32 = amNone;
+    var value = value_in;
+
+    if (type_str[4] == ':') {
+        const c5 = type_str[5];
+        if (c5 == 'R') {
+            tag = amRadian;
+        } else if (c5 == 'M') {
+            tag = amMultPi;
+        } else if (c5 == 'G') {
+            tag = amGrad;
+        } else if (c5 == 'D' and type_str[6] == 'E') {
+            tag = amDegree;
+        } else if (c5 == 'D' and type_str[6] == 'M') {
+            tag = amDMS;
+        } else {
+            tag = amNone;
+        }
+        if (type_str[strlen(type_str) - 1] == 'p') tag |= amPolar;
+        type_str[4] = 0;
+    }
+
+    if (strcmpEq(type_str, "Real")) {
+        reallocateRegister(regist, dtReal34, 0, tag);
+        _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+    } else if (strcmpEq(type_str, "Time")) {
+        reallocateRegister(regist, dtTime, 0, amNone);
+        _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+    } else if (strcmpEq(type_str, "Date")) {
+        reallocateRegister(regist, dtDate, 0, amNone);
+        _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+    } else if (strcmpEq(type_str, "LonI")) {
+        var li: MpzStruct = undefined;
+        __gmpz_init(&li);
+        _ = __gmpz_set_str(&li, value, 10);
+        convertLongIntegerToLongIntegerRegister(&li, regist);
+        __gmpz_clear(&li);
+    } else if (strcmpEq(type_str, "Stri")) {
+        utf8ToString(value, errorMessage);
+        const len: i32 = @as(i32, @intCast(strlen(errorMessage))) + 1;
+        reallocateRegister(regist, dtString, @intCast((@as(u32, @intCast(len)) + 3) >> 2), amNone);
+        _ = xcopy(regStringData(regist), errorMessage, @intCast(len));
+    } else if (strcmpEq(type_str, "ShoI")) {
+        const sign: i16 = if (value[0] == '-') 1 else 0;
+        const val = stringToUint64(value + 1);
+        value = text.nextWord(value);
+        const base = text.toUint32(value);
+        convertUInt64ToShortIntegerRegister(sign, val, base, regist);
+    } else if (strcmpEq(type_str, "Cplx")) {
+        reallocateRegister(regist, dtComplex34, 0, tag);
+        var imaginaryPart = text.skipWord(value);
+        imaginaryPart[0] = 0;
+        imaginaryPart += 1;
+        _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+        _ = decQuadFromString(regImag34Data(regist), imaginaryPart, &ctxtReal34);
+    } else if (strcmpEq(type_str, "Rema")) {
+        var numOfCols = text.skipWord(value);
+        numOfCols[0] = 0;
+        numOfCols += 1;
+        const rows = text.toUint16(value);
+        const cols = text.toUint16(numOfCols);
+        reallocateRegister(regist, dtReal34Matrix, @intCast(REAL34_SIZE_IN_BLOCKS * @as(u32, rows) * @as(u32, cols)), tag);
+        setMatrixDims(regist, rows, cols);
+    } else if (strcmpEq(type_str, "Cxma")) {
+        var numOfCols = text.skipWord(value);
+        numOfCols[0] = 0;
+        numOfCols += 1;
+        const rows = text.toUint16(value);
+        const cols = text.toUint16(numOfCols);
+        reallocateRegister(regist, dtComplex34Matrix, @intCast(COMPLEX34_SIZE_IN_BLOCKS * @as(u32, rows) * @as(u32, cols)), tag);
+        setMatrixDims(regist, rows, cols);
+    } else if (strcmpEq(type_str, "Conf")) {
+        reallocateRegister(regist, dtConfig, 0, amNone);
+        var cfg: [*c]u8 = getRegisterDataPointer(regist);
+        const limit: usize = if (loaded_version < 10000008) 896 else CONFIG_DESCRIPTOR_SIZE;
+        var t: usize = 0;
+        while (t < limit) : (t += 1) {
+            cfg[0] = @intCast((hexVal(value[0]) << 4) | hexVal(value[1]));
+            value += 2;
+            cfg += 1;
+        }
+        if (loaded_version < 10000008) {
+            _ = memcpy(cfg, &config_pre_10000008_defaults[0], config_pre_10000008_defaults.len);
+        }
+    } else {
+        _ = sprintf(errorMessage, "In function restoreRegister: Data: Reg %d, type %s, value %s to be coded!", @as(c_int, regist), type_str, value);
+        displayBugScreen(errorMessage);
+    }
+}
+
+pub fn restoreMatrixData(regist: i16) void {
+    const dt = getRegisterDataType(regist);
+    if (dt == dtReal34Matrix) {
+        const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+        const count = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
+        const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
+        var i: u32 = 0;
+        while (i < count) : (i += 1) {
+            readLine(tmpString);
+            _ = decQuadFromString(base + i * REAL34_SIZE_IN_BYTES, tmpString, &ctxtReal34);
+        }
+    } else if (dt == dtComplex34Matrix) {
+        const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+        const count = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
+        const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
+        var i: u32 = 0;
+        while (i < count) : (i += 1) {
+            readLine(tmpString);
+            var imaginaryPart = text.skipWord(tmpString);
+            imaginaryPart[0] = 0;
+            imaginaryPart += 1;
+            const elem = base + i * COMPLEX34_SIZE_IN_BYTES;
+            _ = decQuadFromString(elem, tmpString, &ctxtReal34);
+            _ = decQuadFromString(elem + REAL34_SIZE_IN_BYTES, imaginaryPart, &ctxtReal34);
+        }
+    }
+}
+
+pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
+    if (strcmpEq(type_str, "Rema") or strcmpEq(type_str, "Cxma")) {
+        var numOfCols = text.skipWord(value_in);
+        numOfCols[0] = 0;
+        numOfCols += 1;
+        const rows = text.toUint16(value_in);
+        const cols = text.toUint16(numOfCols);
+        const count = @as(u32, rows) * @as(u32, cols);
+        var i: u32 = 0;
+        while (i < count) : (i += 1) readLine(tmpString);
+    }
 }
