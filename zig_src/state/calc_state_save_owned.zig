@@ -103,7 +103,6 @@ extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
 // --- save-serialization trampolines (calc_state_legacy.c) ---
-extern fn z47_css_saveMatrixElements(regist: i16) void;
 extern fn z47_css_statSumString(i: u16) void;
 extern fn z47_css_printerState(print_on: *u8, printer_model: *u8, delay: *u16) void;
 extern fn z47_css_postKeyboardFixup() void;
@@ -242,7 +241,7 @@ pub fn writeSaveSections() void {
             codec.registerToSaveString(regist);
             _ = sprintf(b(), "R%03d\n%s\n%s\n", ci(regist), &aimBuffer1[0], codec.regValueBuf());
             save(b());
-            z47_css_saveMatrixElements(regist);
+            codec.saveMatrixElements(regist);
         }
     }
 
@@ -261,7 +260,7 @@ pub fn writeSaveSections() void {
             codec.registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
             _ = sprintf(b(), "R.%02u\n%s\n%s\n", cu(i), &aimBuffer1[0], codec.regValueBuf());
             save(b());
-            z47_css_saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
+            codec.saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
         }
     }
 
@@ -282,7 +281,7 @@ pub fn writeSaveSections() void {
             const n = strlen(b());
             _ = sprintf(b() + n, "\n%s\n%s\n", &aimBuffer1[0], codec.regValueBuf());
             save(b());
-            z47_css_saveMatrixElements(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
+            codec.saveMatrixElements(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
         }
     }
 
