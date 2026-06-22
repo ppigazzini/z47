@@ -14,6 +14,17 @@
 
 const text = @import("calc_state_text_owned.zig");
 const codec = @import("calc_state_register_codec_owned.zig");
+const progmem = @import("calc_state_progmem_owned.zig");
+const build_options = @import("calc_state_build_options");
+
+const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+fn geometry() progmem.Geometry {
+    return .{
+        .ram_base = @intFromPtr(ram),
+        .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW,
+        .old_hw = state_old_hw,
+    };
+}
 
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_GLOBAL_REGISTER: i16 = 0;
@@ -21,7 +32,6 @@ const LAST_GLOBAL_REGISTER: i16 = 136;
 const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
-const RAM_SIZE_IN_BLOCKS: u32 = 65534;
 const C47_NULL: u16 = 65535;
 const configFileVersion: u32 = 10000023;
 
@@ -204,24 +214,16 @@ fn ci(value: anytype) c_int {
     return @intCast(value);
 }
 
-// TO_C47MEMPTR(p): block index of a RAM pointer, or C47_NULL for null.
+// Program-memory pointer arithmetic, delegated to the geometry-parameterized,
+// separately-tested progmem module (`zig build state-progmem-test`).
 fn toC47memptr(p: [*c]const u8) u16 {
-    if (p == null) return C47_NULL;
-    const diff = @intFromPtr(p) - @intFromPtr(ram);
-    return @intCast(diff / 4);
+    return progmem.toC47memptr(geometry(), @intFromPtr(p));
 }
-
-// Byte offset of a RAM pointer within its block.
 fn offsetWithinBlock(p: [*c]const u8) u32 {
-    const blk = toC47memptr(p);
-    const base = @intFromPtr(ram) + @as(usize, blk) * 4;
-    return @intCast(@intFromPtr(p) - base);
+    return progmem.offsetWithinBlock(geometry(), @intFromPtr(p));
 }
-
-// TO_PCMEMPTR(p): RAM pointer for a block index, or null for C47_NULL.
 fn toPcmemptr(p: u16) [*c]u8 {
-    if (p == C47_NULL) return null;
-    return @ptrFromInt(@intFromPtr(ram) + @as(usize, p) * 4);
+    return @ptrFromInt(progmem.toPcmemptr(geometry(), p));
 }
 
 pub fn writeSaveSections() void {
@@ -366,7 +368,7 @@ pub fn writeSaveSections() void {
     }
 
     // Programs
-    const currentSizeInBlocks: u16 = @intCast(RAM_SIZE_IN_BLOCKS - toC47memptr(beginOfProgramMemory));
+    const currentSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
     _ = sprintf(b(), "PROGRAMS\n%u\n", cu(currentSizeInBlocks));
     save(b());
     _ = sprintf(b(), "%u\n%u\n", cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)));

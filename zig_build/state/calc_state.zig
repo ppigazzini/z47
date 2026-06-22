@@ -45,6 +45,11 @@ fn addRuntimeObject(
     // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
     // USER_C47 (46). Only allow_user_keys consumes this in the product path.
     build_options.addOption(u16, "calc_model_user_id", if (std.mem.indexOf(u8, name_prefix, "r47") != null) 66 else 46);
+    // OLD_HW (DMCP / original DM42) uses RAM_SIZE_IN_BLOCKS_OLD_HW and the
+    // OLD_HW program-relocation sign; DMCP5 / DM42n / host are NEW_HW. The
+    // firmware names the OLD_HW calc-state object "dmcp"/"dmcpr47" and the NEW_HW
+    // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
+    build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
     module.addOptions("calc_state_build_options", build_options);
 
     return b.addObject(.{
