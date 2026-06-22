@@ -577,6 +577,22 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);
 
+    // Program-memory pointer-math harness: verifies the HW-geometry-dependent
+    // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
+    // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.
+    // The host parity round-trip only covers NEW_HW; this makes the OLD_HW
+    // firmware lane verifiable without a device.
+    const progmem_test = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_src/state/calc_state_progmem_owned.zig"),
+            .target = context.host_target,
+            .optimize = optimize,
+        }),
+    });
+    const run_progmem_test = b.addRunArtifact(progmem_test);
+    const progmem_test_step = b.step("state-progmem-test", "Run the program-memory pointer-math harness (NEW_HW + OLD_HW)");
+    progmem_test_step.dependOn(&run_progmem_test.step);
+
     const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));
