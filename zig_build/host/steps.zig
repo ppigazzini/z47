@@ -593,6 +593,20 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const progmem_test_step = b.step("state-progmem-test", "Run the program-memory pointer-math harness (NEW_HW + OLD_HW)");
     progmem_test_step.dependOn(&run_progmem_test.step);
 
+    // The DMCP key ring buffer is `#if DMCP_BUILD`-only, so the host testSuite
+    // never reaches it; its embedded tests make the buffer mechanics verifiable
+    // without a device before the bridge port wires it onto the firmware lanes.
+    const ringbuffer_test = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_src/state/keyboard_state_ringbuffer_owned.zig"),
+            .target = context.host_target,
+            .optimize = optimize,
+        }),
+    });
+    const run_ringbuffer_test = b.addRunArtifact(ringbuffer_test);
+    const ringbuffer_test_step = b.step("keyboard_ringbuffer_test", "Run the DMCP key ring-buffer mechanics tests");
+    ringbuffer_test_step.dependOn(&run_ringbuffer_test.step);
+
     const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));
