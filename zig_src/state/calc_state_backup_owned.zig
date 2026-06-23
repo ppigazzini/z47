@@ -1,6 +1,6 @@
 // SAVE side of the backup.cfg raw RAM dump (saveRestoreCalcState.c saveCalc,
 // ~403-731). Generated faithful port: drives the ~200-field dump sequence in Zig,
-// calling the C typed value serializer (z47_css_saveStateValue) + the progmem
+// calling the Zig typed value serializer (saveStateValue, below) + the progmem
 // pointer math. Verified by the parity harness Check C (Zig saveCalc -> C
 // restoreCalc -> state preserved). The restore half stays C this phase.
 

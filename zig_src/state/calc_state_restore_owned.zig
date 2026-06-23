@@ -11,7 +11,7 @@
 // loadMode gating; the file-static leaf primitives (toInt16/toUint*/next_word/
 // skip_*/toInt16_next_word/strcmp2 and restoreRegister/restoreMatrixData/
 // skipMatrixData) plus a few macro / static-inline reads are reached through
-// z47_css_* trampolines in calc_state_legacy.c. loadedVersion/savedCalcModel
+// direct externs to the canonical core C symbols. loadedVersion/savedCalcModel
 // come from the Zig header parse (compat shim); the C static loadedVersion is
 // kept in sync so the trampolined restorers see the same value.
 //
@@ -184,7 +184,7 @@ extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern fn setLineDelay(delay: u16) void;
 
-// --- load-parsing trampolines (calc_state_legacy.c) ---
+// --- load-parsing leaf externs (canonical core C symbols) ---
 extern fn parseEquation(equation_id: u16, parse_mode: u16, buffer: [*c]u8, mvar_buffer: [*c]u8) void;
 extern var updateOldConstants: bool;
 const EQUATION_PARSER_MVAR: u16 = 0;

@@ -49,12 +49,8 @@ pub extern fn z47_calc_state_get_saved_calc_model() u16;
 pub extern fn z47_calc_state_set_loaded_version(version: u32) void;
 pub extern fn z47_calc_state_get_loaded_version() u32;
 pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool;
-pub extern fn z47_calc_state_legacy_doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void;
-pub extern fn z47_calc_state_legacy_fnSave(save_mode: u16) void;
-pub extern fn z47_calc_state_legacy_fnLoad(load_mode: u16) void;
 pub extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
 pub extern fn ioEof() c_int;
-pub extern fn z47_calc_state_legacy_fnSaveAuto(unused_but_mandatory_parameter: u16) void;
 
 fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
     var idx: usize = 0;
@@ -189,18 +185,3 @@ pub inline fn restoreCalcBackup() void {
     io_owned.restoreCalc();
 }
 
-pub inline fn doLoadRetained(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
-    z47_calc_state_legacy_doLoad(load_mode, s, n, d, load_type);
-}
-
-pub inline fn saveRetained(save_mode: u16) void {
-    z47_calc_state_legacy_fnSave(save_mode);
-}
-
-pub inline fn loadRetained(load_mode: u16) void {
-    z47_calc_state_legacy_fnLoad(load_mode);
-}
-
-pub inline fn saveAutoRetained(unused_but_mandatory_parameter: u16) void {
-    z47_calc_state_legacy_fnSaveAuto(unused_but_mandatory_parameter);
-}

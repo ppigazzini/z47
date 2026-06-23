@@ -131,6 +131,82 @@ pub export fn readLine(line: [*c]u8) void {
     out[idx] = 0;
 }
 
+// read2Lines (saveRestoreCalcState.c): like readLine but reads two lines,
+// preserving an empty line between registers saved as empty strings — it has to
+// disambiguate CRLF/LFCR pairs from a genuine blank line.
+pub export fn read2Lines(line1: [*c]u8, line2: [*c]u8) void {
+    const l1 = line1 orelse return;
+    const l2 = line2 orelse return;
+    var idx1: usize = 0;
+    if (runtime.ioEof() == 0) {
+        _ = runtime.ioFileRead(&l1[idx1], 1);
+        while ((l1[idx1] == '\n' or l1[idx1] == '\r') and runtime.ioEof() == 0) {
+            _ = runtime.ioFileRead(&l1[idx1], 1);
+        }
+        while (l1[idx1] != '\n' and l1[idx1] != '\r' and runtime.ioEof() == 0) {
+            idx1 += 1;
+            _ = runtime.ioFileRead(&l1[idx1], 1);
+        }
+    }
+    const eol1 = l1[idx1];
+    l1[idx1] = 0;
+
+    var idx2: usize = 0;
+    if (runtime.ioEof() == 0) {
+        _ = runtime.ioFileRead(&l2[idx2], 1);
+        const eol2 = l2[idx2];
+        if ((((eol1 == '\n') and (eol2 == '\n')) or ((eol1 == '\r') and (eol2 == '\r'))) and runtime.ioEof() == 0) {
+            l2[idx2] = 0;
+            return;
+        }
+        if ((((eol1 == '\r') and (eol2 == '\n')) or ((eol1 == '\n') and (eol2 == '\r'))) and runtime.ioEof() == 0) {
+            _ = runtime.ioFileRead(&l2[idx2], 1);
+            if (((l2[idx2] == '\n') or (l2[idx2] == '\r')) and runtime.ioEof() == 0) {
+                l2[idx2] = 0;
+                return;
+            }
+        }
+        while (l2[idx2] != '\n' and l2[idx2] != '\r' and runtime.ioEof() == 0) {
+            idx2 += 1;
+            _ = runtime.ioFileRead(&l2[idx2], 1);
+        }
+    }
+    l2[idx2] = 0;
+}
+
+// Canonical string→number leaf helpers (saveRestoreCalcState.c), base 0 like the
+// C strtol/strtoul/strtoll/strtoull/strtof originals (the int16/int32/uint8/
+// uint32 variants are exported above).
+extern fn strtoll(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_longlong;
+extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
+extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
+extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
+extern fn strtof(s: [*c]const u8, endptr: ?*[*c]u8) f32;
+pub export fn stringToInt64(str: [*:0]const u8) i64 {
+    return @intCast(strtoll(str, null, 0));
+}
+pub export fn stringToUint64(str: [*:0]const u8) u64 {
+    return @intCast(strtoull(str, null, 0));
+}
+pub export fn stringToInt8(str: [*:0]const u8) i8 {
+    return @truncate(strtol(str, null, 0));
+}
+pub export fn stringToUint16(str: [*:0]const u8) u16 {
+    return @truncate(strtoul(str, null, 0));
+}
+pub export fn stringToFloat(str: [*:0]const u8) f32 {
+    return strtof(str, null);
+}
+
+// Pre-001090500 reverse-blue-key parameter migration (saveRestoreCalcState.c).
+pub export fn convert001090400T001090500(parameter: u8, offset: u8) u8 {
+    return if (parameter < 20) parameter +% offset else parameter;
+}
+
+// Scratch buffer shared with the (now Zig) register codec / save owner; was a
+// plain global in saveRestoreCalcState.c.
+pub export var aimBuffer1: [400]u8 = [_]u8{0} ** 400;
+
 pub export fn fnDeleteBackup(confirmation: u16) void {
     _ = confirmation;
 }

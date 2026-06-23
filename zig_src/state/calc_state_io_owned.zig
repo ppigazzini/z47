@@ -98,8 +98,6 @@ extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn refreshScreen(source: u16) void;
 extern fn readLine(line: [*c]u8) void;
-extern fn z47_calc_state_legacy_saveCalc() void;
-extern fn z47_calc_state_legacy_restoreCalc() void;
 extern fn z47_calc_state_save_sections() void;
 
 // power_check_screen is a DMCP function-table macro, not a link symbol; route
