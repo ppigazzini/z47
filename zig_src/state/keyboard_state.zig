@@ -303,17 +303,23 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
 // through btnFnPressed_StateMachine to pick up long/double-press conditions.
 fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
-    const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
-    if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
-        return;
-    }
-    if (ev.button == 2) {
-        runtime.shiftF = true;
-        runtime.shiftG = false;
-    }
-    if (ev.button == 3) {
-        runtime.shiftF = false;
-        runtime.shiftG = true;
+    // event is the GdkEvent on the host lane only; the DMCP btnFnPressed body takes
+    // just the key string and has no double/triple-click or middle/right shift. The
+    // rest of the body is lane-identical (keyboard.c 593-744 has no other #ifdef).
+    if (comptime is_dmcp_build) _ = &event;
+    if (comptime !is_dmcp_build) {
+        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
+            return;
+        }
+        if (ev.button == 2) {
+            runtime.shiftF = true;
+            runtime.shiftG = false;
+        }
+        if (ev.button == 3) {
+            runtime.shiftF = false;
+            runtime.shiftG = true;
+        }
     }
 
     const dat: [*c]u8 = @ptrCast(data);
@@ -733,6 +739,9 @@ fn btnFnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
 fn btnFnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     btnFnClickedHost(unused, data);
 }
+fn btnFnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
+    btnFnPressedHost(null, null, data);
+}
 
 comptime {
     if (!is_dmcp_build) {
@@ -754,6 +763,7 @@ comptime {
         @export(&btnReleasedDmcp, .{ .name = "btnReleased" });
         @export(&btnFnReleasedDmcp, .{ .name = "btnFnReleased" });
         @export(&btnFnClickedDmcp, .{ .name = "btnFnClicked" });
+        @export(&btnFnPressedDmcp, .{ .name = "btnFnPressed" });
     }
 }
 
