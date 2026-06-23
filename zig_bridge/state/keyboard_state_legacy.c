@@ -57,6 +57,8 @@
 #define fullKeyBuffer z47_kb_fullKeyBuffer
 #define emptyKeyBuffer z47_kb_emptyKeyBuffer
 #define clearKeyBuffer z47_kb_clearKeyBuffer
+// keyboard.c execAutoRepeat (#if DMCP_BUILD) -> keyboard_state_dmcp_owned.zig.
+#define execAutoRepeat z47_kb_execAutoRepeat
 
 #if defined(PC_BUILD)
 #define btnFnClicked z47_keyboard_state_btnFnClicked
@@ -137,6 +139,7 @@ extern void btnClicked(void *unused, void *data);
 #undef fullKeyBuffer
 #undef emptyKeyBuffer
 #undef clearKeyBuffer
+#undef execAutoRepeat
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
