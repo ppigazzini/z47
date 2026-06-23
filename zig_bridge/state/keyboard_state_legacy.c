@@ -32,12 +32,14 @@
 // fnKeyDotD: switched to the Zig owner on ALL lanes (M1 leaf — the handler has
 // no DMCP #ifdef divergence, so its rename is unconditional here too).
 #define fnKeyDotD z47_keyboard_state_fnKeyDotD
+// leavePem / checkKeyShifts: switched to the Zig owner on ALL lanes (M1 — both
+// divergence-free, reaching only lane-independent helpers).
+#define leavePem z47_keyboard_state_leavePem
+#define checkKeyShifts z47_keyboard_state_checkKeyShifts
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
 #define processAimInput z47_keyboard_state_processAimInput
-#define leavePem z47_keyboard_state_leavePem
-#define checkKeyShifts z47_keyboard_state_checkKeyShifts
 #define determineFunctionKeyItem_C47 z47_keyboard_state_determineFunctionKeyItem_C47
 #define btnFnClicked z47_keyboard_state_btnFnClicked
 #define btnReleased z47_keyboard_state_btnReleased
@@ -105,6 +107,8 @@ extern void btnClicked(void *unused, void *data);
 #undef caseReplacements
 #undef setLastKeyCode
 #undef fnKeyDotD
+#undef leavePem
+#undef checkKeyShifts
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -117,8 +121,6 @@ extern void btnClicked(void *unused, void *data);
 #undef btnReleased
 #undef btnFnClicked
 #undef determineFunctionKeyItem_C47
-#undef checkKeyShifts
-#undef leavePem
 #undef processAimInput
 #undef fnKeyDown
 #undef fnKeyUp

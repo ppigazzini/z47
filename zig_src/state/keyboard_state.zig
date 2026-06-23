@@ -12,11 +12,14 @@ fn processAimInputHost(item: i16) callconv(.c) void {
     shared.processAimInput(item);
 }
 
-fn leavePemHost() callconv(.c) void {
+// leavePem and checkKeyShifts have no DMCP `#ifdef` divergence (C and shared.*
+// identical across lanes, reaching only lane-independent program-memory / flag
+// helpers), so they are exported for ALL lanes (M1). Host is unchanged.
+pub export fn leavePem() callconv(.c) void {
     shared.leavePem();
 }
 
-fn checkKeyShiftsHost(data: [*c]const u8) callconv(.c) runtime.bool_t {
+pub export fn checkKeyShifts(data: [*c]const u8) callconv(.c) runtime.bool_t {
     return shared.checkKeyShifts(data);
 }
 
@@ -671,8 +674,6 @@ comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&processAimInputHost, .{ .name = "processAimInput" });
-        @export(&leavePemHost, .{ .name = "leavePem" });
-        @export(&checkKeyShiftsHost, .{ .name = "checkKeyShifts" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
         @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
         @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
