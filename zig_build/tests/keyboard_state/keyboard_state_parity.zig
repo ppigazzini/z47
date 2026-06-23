@@ -1,37 +1,13 @@
 const runtime = @import("keyboard_state_parity_runtime.zig");
 const shared = @import("z47_keyboard_state_shared").implementation(runtime);
 
-pub export fn processKeyAction(item: i16) void {
-    shared.processKeyAction(item);
-}
 
-pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) void {
-    shared.keyEnter(unused_but_mandatory_parameter);
-}
 
-pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) void {
-    shared.keyExit(unused_but_mandatory_parameter);
-}
 
-pub export fn fnKeyCC(complex_type: u16) void {
-    shared.keyCC(complex_type);
-}
 
-pub export fn fnKeyBackspace(unused_but_mandatory_parameter: u16) void {
-    shared.keyBackspace(unused_but_mandatory_parameter);
-}
 
-pub export fn fnKeyUp(unused_but_mandatory_parameter: u16) void {
-    shared.keyUp(unused_but_mandatory_parameter);
-}
 
-pub export fn fnKeyDown(unused_but_mandatory_parameter: u16) void {
-    shared.keyDown(unused_but_mandatory_parameter);
-}
 
-pub export fn fnKeyDotD(unused_but_mandatory_parameter: u16) void {
-    shared.keyDotD(unused_but_mandatory_parameter);
-}
 
 pub export fn caseReplacements(id: u8, lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
     _ = id;
