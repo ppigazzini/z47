@@ -8,7 +8,7 @@ fn processKeyActionHost(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
-fn processAimInputHost(item: i16) callconv(.c) void {
+pub export fn processAimInput(item: i16) callconv(.c) void {
     shared.processAimInput(item);
 }
 
@@ -32,14 +32,22 @@ fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void 
     shared.executeFunction(@ptrCast(data), 0);
 }
 
-fn determineFunctionKeyItem_C47Host(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
+// M1 batch: these handlers are all `#ifdef`-free in both the upstream C and
+// shared.* (identical across lanes, reaching only lane-independent calc / display
+// helpers), so they are exported for ALL lanes. keyCC stays host-only below — it
+// carries a DMCP `#ifdef` branch (M2). Host behaviour is unchanged.
+pub export fn determineFunctionKeyItem_C47(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
     return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
 }
 
-fn keyEnterHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyEnter(unused_but_mandatory_parameter);
 }
 
+// keyExit stays host-only: its body reaches clearScreen -> lcd_fill_rect (a DMCP
+// ROM-table macro, not a linkable symbol) and jm_show_calc_state (host-only), so
+// it needs ROM-trampoline support before switching (M5). keyCC stays host-only
+// too (DMCP `#ifdef` divergence → M2).
 fn keyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyExit(unused_but_mandatory_parameter);
 }
@@ -48,15 +56,16 @@ fn keyCCHost(complex_type: u16) callconv(.c) void {
     shared.keyCC(complex_type);
 }
 
+// keyBackspace stays host-only: it calls keyExit (same host-only reach as above).
 fn keyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyBackspace(unused_but_mandatory_parameter);
 }
 
-fn keyUpHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnKeyUp(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyUp(unused_but_mandatory_parameter);
 }
 
-fn keyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnKeyDown(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDown(unused_but_mandatory_parameter);
 }
 
@@ -673,15 +682,10 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
 comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
-        @export(&processAimInputHost, .{ .name = "processAimInput" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
-        @export(&determineFunctionKeyItem_C47Host, .{ .name = "determineFunctionKeyItem_C47" });
-        @export(&keyEnterHost, .{ .name = "fnKeyEnter" });
         @export(&keyExitHost, .{ .name = "fnKeyExit" });
-        @export(&keyCCHost, .{ .name = "fnKeyCC" });
         @export(&keyBackspaceHost, .{ .name = "fnKeyBackspace" });
-        @export(&keyUpHost, .{ .name = "fnKeyUp" });
-        @export(&keyDownHost, .{ .name = "fnKeyDown" });
+        @export(&keyCCHost, .{ .name = "fnKeyCC" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
         @export(&btnReleasedHost, .{ .name = "btnReleased" });
