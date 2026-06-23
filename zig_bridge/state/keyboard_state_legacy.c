@@ -61,10 +61,7 @@
 #define execAutoRepeat z47_kb_execAutoRepeat
 
 #if defined(PC_BUILD)
-#define btnFnClicked z47_keyboard_state_btnFnClicked
-#define btnReleased z47_keyboard_state_btnReleased
 #define btnFnPressed z47_keyboard_state_btnFnPressed
-#define btnFnReleased z47_keyboard_state_btnFnReleased
 #define btnClickedP z47_keyboard_state_btnClickedP
 #define btnClickedR z47_keyboard_state_btnClickedR
 #define btnFnClickedP z47_keyboard_state_btnFnClickedP
@@ -75,6 +72,11 @@
 
 #define btnPressed z47_keyboard_state_btnPressed
 #define btnClicked z47_keyboard_state_btnClicked
+// btnReleased / btnFnReleased / btnFnClicked: Zig owns these on every lane (their
+// host bodies are already lane-aware), so the C copies are renamed on all lanes.
+#define btnReleased z47_keyboard_state_btnReleased
+#define btnFnReleased z47_keyboard_state_btnFnReleased
+#define btnFnClicked z47_keyboard_state_btnFnClicked
 
 #include "../../src/c47/keyboard.c"
 
@@ -140,6 +142,9 @@ extern void btnClicked(void *unused, void *data);
 #undef emptyKeyBuffer
 #undef clearKeyBuffer
 #undef execAutoRepeat
+#undef btnReleased
+#undef btnFnReleased
+#undef btnFnClicked
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -147,8 +152,5 @@ extern void btnClicked(void *unused, void *data);
 #undef btnFnClickedP
 #undef btnClickedR
 #undef btnClickedP
-#undef btnFnReleased
 #undef btnFnPressed
-#undef btnReleased
-#undef btnFnClicked
 #endif

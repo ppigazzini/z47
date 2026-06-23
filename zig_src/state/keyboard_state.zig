@@ -699,6 +699,22 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     runtime.btnClickedDmcpOverlay(unused, data);
 }
 
+// DMCP btn entry wrappers. The firmware bodies take a single `void *data` (the key
+// string) with no GdkEvent. btnReleased/btnFnReleased ignore the event and
+// btnFnClicked just runs the function, and their host bodies are already
+// lane-aware (or divergence-free), so they serve the DMCP lane directly.
+// btnPressed/btnFnPressed are NOT here yet: their host ports are PC-only and lack
+// the DMCP-specific blocks, so they keep their C copies until the lane-merge slice.
+fn btnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
+    btnReleasedHost(null, null, data);
+}
+fn btnFnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
+    btnFnReleasedHost(null, null, data);
+}
+fn btnFnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
+    btnFnClickedHost(unused, data);
+}
+
 comptime {
     if (!is_dmcp_build) {
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
@@ -716,6 +732,9 @@ comptime {
     } else {
         @export(&btnPressedDmcp, .{ .name = "btnPressed" });
         @export(&btnClickedDmcp, .{ .name = "btnClicked" });
+        @export(&btnReleasedDmcp, .{ .name = "btnReleased" });
+        @export(&btnFnReleasedDmcp, .{ .name = "btnFnReleased" });
+        @export(&btnFnClickedDmcp, .{ .name = "btnFnClicked" });
     }
 }
 
