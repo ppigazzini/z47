@@ -9,6 +9,8 @@
 // HAL under src/c47-gtk/hal and src/c47-dmcp*/hal, so this object is
 // testSuite-only and cannot clash with them.
 
+const std = @import("std");
+
 const NOVAL_U16: u16 = @bitCast(@as(i16, -126)); // NOVAL = -126 returned as uint16_t
 
 // ---------------------------------------------------------------------------
@@ -94,7 +96,6 @@ extern fn fclose(stream: ?*FILE) c_int;
 extern fn feof(stream: ?*FILE) c_int;
 extern fn remove(path: [*:0]const u8) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-extern fn @"__errno_location"() *c_int;
 
 const ioPathManualSave: c_int = 0;
 const ioPathPgmFile: c_int = 2;
@@ -158,7 +159,7 @@ pub export fn ioFileRemove(path: c_int, errorNumber: ?*u32) callconv(.c) c_int {
     const filename = ioFileNameFromFilePath(path) orelse return FILE_ERROR;
     const result = remove(filename);
     if (result == -1 and errorNumber != null) {
-        errorNumber.?.* = @intCast(@"__errno_location"().*);
+        errorNumber.?.* = @intCast(std.c._errno().*);
     }
     return if (result != -1) FILE_OK else FILE_ERROR;
 }
