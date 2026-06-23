@@ -4,7 +4,15 @@ const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
-fn processKeyActionHost(item: i16) callconv(.c) void {
+// processKeyAction is exported for ALL lanes. 714 of its 717 lines are
+// lane-independent and exercised by the host testSuite; its 3 DMCP-specific
+// branches are faithful ports of the upstream `#if defined(DMCP_BUILD)` snippets
+// (keyboard.c 2722-2729 key_pop/key_push/wait_for_key_release around
+// addItemToBuffer, and 2795-2799 lcd_refresh), which are pure key-queue / LCD
+// I/O now backed by the runtime ROM trampolines. Verified by faithful-port
+// review + dmcp/dmcp5 link+fit (a calc-state diff harness would not cover these
+// I/O side effects).
+pub export fn processKeyAction(item: i16) callconv(.c) void {
     shared.processKeyAction(item);
 }
 
@@ -684,7 +692,6 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
 
 comptime {
     if (!is_dmcp_build) {
-        @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });

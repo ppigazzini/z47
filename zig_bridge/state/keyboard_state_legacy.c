@@ -45,9 +45,9 @@
 #define fnKeyUp z47_keyboard_state_fnKeyUp
 #define fnKeyDown z47_keyboard_state_fnKeyDown
 #define fnKeyCC z47_keyboard_state_fnKeyCC
+#define processKeyAction z47_keyboard_state_processKeyAction
 
 #if defined(PC_BUILD)
-#define processKeyAction z47_keyboard_state_processKeyAction
 #define btnFnClicked z47_keyboard_state_btnFnClicked
 #define btnReleased z47_keyboard_state_btnReleased
 #define btnFnPressed z47_keyboard_state_btnFnPressed
@@ -118,6 +118,7 @@ extern void btnClicked(void *unused, void *data);
 #undef fnKeyUp
 #undef fnKeyDown
 #undef fnKeyCC
+#undef processKeyAction
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -129,7 +130,6 @@ extern void btnClicked(void *unused, void *data);
 #undef btnFnPressed
 #undef btnReleased
 #undef btnFnClicked
-#undef processKeyAction
 #endif
 
 
