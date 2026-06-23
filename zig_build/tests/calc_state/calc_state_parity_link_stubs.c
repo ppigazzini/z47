@@ -152,3 +152,10 @@ void setUserKeyArgument(int16_t a0, void *a1) {}
 void stringToUtf8(void *a0, void *a1) {}
 void utf8ToString(void *a0, void *a1) {}
 void * xcopy(void *a0, void *a1, int32_t a2) { return 0; }
+
+// gmp stubs — the register codec references these but the header-only fixture
+// never invokes it, so no-ops satisfy the link without a system gmp (which the
+// Windows/macOS CI runners cannot resolve via linkSystemLibrary).
+void __gmpz_init(void *x) { (void)x; }
+int __gmpz_set_str(void *r, const char *s, int b) { (void)r; (void)s; (void)b; return 0; }
+void __gmpz_clear(void *x) { (void)x; }
