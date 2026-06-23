@@ -44,11 +44,11 @@ pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) callconv(.c) void 
     shared.keyEnter(unused_but_mandatory_parameter);
 }
 
-// keyExit stays host-only: its body reaches clearScreen -> lcd_fill_rect (a DMCP
-// ROM-table macro, not a linkable symbol) and jm_show_calc_state (host-only), so
-// it needs ROM-trampoline support before switching (M5). keyCC stays host-only
-// too (DMCP `#ifdef` divergence → M2).
-fn keyExitHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+// keyExit + keyBackspace are now exported for ALL lanes. Both are divergence-free;
+// they reach clearScreen -> lcd_fill_rect and jm_show_calc_state, which are now
+// lane-aware ROM trampolines / no-ops in the runtime, so they link and run on the
+// DMCP lanes. keyCC stays host-only (DMCP `#ifdef` divergence → M2).
+pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyExit(unused_but_mandatory_parameter);
 }
 
@@ -56,8 +56,7 @@ fn keyCCHost(complex_type: u16) callconv(.c) void {
     shared.keyCC(complex_type);
 }
 
-// keyBackspace stays host-only: it calls keyExit (same host-only reach as above).
-fn keyBackspaceHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn fnKeyBackspace(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyBackspace(unused_but_mandatory_parameter);
 }
 
@@ -683,8 +682,6 @@ comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
-        @export(&keyExitHost, .{ .name = "fnKeyExit" });
-        @export(&keyBackspaceHost, .{ .name = "fnKeyBackspace" });
         @export(&keyCCHost, .{ .name = "fnKeyCC" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
