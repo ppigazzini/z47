@@ -176,11 +176,10 @@ fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, dat
     mouse_key[0] = 0;
 }
 
-// Full keyboard.c btnPressed (1778-1943) for the host lane. The C program-stop
-// path clears the status-bar flags with a buggy `&= !(mask)` (logical not);
-// the previous btnPressedHostOverlay patched it afterwards, and that fix is
-// folded in here as the correct `&= ~(mask)`.  DMCP keeps the C body via the
-// btnPressedDmcp overlay.
+// keyboard.c btnPressed (1778-1943), lane-merged: the host body plus the DMCP
+// divergences gated by comptime is_dmcp_build (btnPressedDmcp wraps it for the
+// DMCP signature). The C program-stop path clears the status-bar flags with a
+// buggy `&= !(mask)` (logical not); that fix is folded in here as `&= ~(mask)`.
 fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnPressed body takes
