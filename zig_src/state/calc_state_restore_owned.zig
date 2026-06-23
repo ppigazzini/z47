@@ -350,6 +350,15 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
     hourGlassIconEnabled = true;
     readLine(tmpString);
 
+    // A well-formed save file terminates with OTHER_CONFIGURATION_STUFF (handled
+    // below, which returns false). An empty section-header line means the file
+    // ended early (EOF / truncated): stop instead of spinning the doLoad section
+    // loop forever. Never reached for valid files, so byte-faithful there.
+    if (tmpString[0] == 0) {
+        hourGlassIconEnabled = false;
+        return false;
+    }
+
     var i: i16 = 0;
     var numberOfRegs: i16 = 0;
     var str: [*c]u8 = undefined;

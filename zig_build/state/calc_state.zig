@@ -132,6 +132,11 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/calc_state_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/calc_state_oracle.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/calc_state_parity.c"), .flags = &.{} });
+    // Link stubs for the calc-state owner C deps not provided by the fake
+    // surface (codec leaves, gmp, calc-state globals); unexercised by the
+    // header-only fixture, present only to satisfy the link.
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/calc_state_parity_link_stubs.c"), .flags = &.{} });
+    exe.root_module.linkSystemLibrary("gmp", .{});
     exe.root_module.addObject(runtime_object);
     return exe;
 }
