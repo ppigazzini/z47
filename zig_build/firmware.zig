@@ -313,6 +313,47 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
     });
+    // R47 variants build the keyboard-state object with is_r47 = true so its DMCP
+    // key ring buffer keyBuffer_pop applies convertKeyCode, matching the upstream
+    // `#if CALCMODEL == USER_R47`. Same board config as the C47 object otherwise.
+    const dmcpr47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", .{
+        .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp)),
+        .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp)),
+        .board_macro = "OLD_HW",
+        .decnumber_fastmul = decnumber_fastmul,
+        .generated_headers = .{
+            .version_headers_dir = context.version_headers_dir,
+            .softmenu_catalogs_dir = context.generated.softmenu_catalogs.dirname(),
+            .constant_pointers_h_dir = context.generated.constant_pointers_h.dirname(),
+        },
+    }, .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+        .is_r47 = true,
+    });
+    const dmcp5r47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", .{
+        .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
+        .sdk_include_dir = build_common.upstreamPathString(b, firmwareSdkIncludeDir(.dmcp5)),
+        .board_macro = "NEW_HW",
+        .decnumber_fastmul = decnumber_fastmul,
+        .generated_headers = .{
+            .version_headers_dir = context.version_headers_dir,
+            .softmenu_catalogs_dir = context.generated.softmenu_catalogs.dirname(),
+            .constant_pointers_h_dir = context.generated.constant_pointers_h.dirname(),
+        },
+    }, .{
+        .strip = true,
+        .unwind_tables = .none,
+        .stack_protector = false,
+        .stack_check = false,
+        .omit_frame_pointer = true,
+        .error_tracing = false,
+        .is_r47 = true,
+    });
     const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_memory_options);
     const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_memory_options);
     const dmcp_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_calc_state_options);
@@ -358,7 +399,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcp_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -379,7 +420,7 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
