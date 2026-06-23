@@ -19,12 +19,27 @@
 // risk surface (index wrap, full/empty edges, duplicate suppression) and are
 // covered by the embedded tests (`zig build keyboard_ringbuffer_test`).
 const std = @import("std");
+const builtin = @import("builtin");
+
+const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 // CALCMODEL == USER_R47 for the firmware build this object is linked into. Only
-// keyBuffer_pop's convertKeyCode remap depends on it (a later slice); exposed now
-// so the per-model build-option plumbing is exercised on every lane.
+// keyBuffer_pop's convertKeyCode remap depends on it: the upstream
+// `#if CALCMODEL == USER_R47` is a compile-time model gate, and the keyboard-state
+// object is shared between a board's C47 and R47 builds, so it is threaded as a
+// build option (true for dmcpr47 / dmcp5r47).
 const build_options = @import("keyboard_state_build_options");
 pub const built_for_r47: bool = build_options.is_r47;
+
+// key_pop is a DMCP ROM function-table macro (lft_ifc.h, LIBRARY_FN_BASE + 392);
+// keyBuffer_pop drains it on firmware only. convertKeyCode is the (Zig-owned,
+// frontier-exported) DM42 key remap, applied before buffering on R47 builds.
+const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+fn romKeyPop() c_int {
+    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 392);
+    return f();
+}
+extern fn convertKeyCode(key: c_int) c_int;
 
 // keyboardTweak.h: BUFFER_SIZE 8 (must be 2^n), BUFFER_MASK = BUFFER_SIZE - 1,
 // BUFFER_FAIL = 0, BUFFER_SUCCESS = 1.
@@ -85,24 +100,59 @@ pub const KeyBuffer = struct {
 };
 
 // The single firmware instance (keyboardTweak.c: `kb_buffer_t buffer = {{}, 0, 0}`).
-// The thin `pub fn` wrappers below mirror the upstream symbol names and are the
-// surface the export wiring will bind once the bridge copies are renamed.
+// The single firmware instance (keyboardTweak.c: `kb_buffer_t buffer = {{}, 0, 0}`).
 var buffer: KeyBuffer = .{};
 
-pub fn inKeyBuffer(byte: u8) u8 {
+// C-ABI wrappers matching the keyboardTweak.h prototypes exactly (bool_t = bool;
+// the BUFFER_CLICK_DETECTION-off outKeyBuffer takes a single uint8_t*, and
+// outKeyBufferDoubleClick is the `#else` stub returning 255). @export'd onto the
+// DMCP lanes below; the bridge renames the upstream C copies away so these win.
+fn c_inKeyBuffer(byte: u8) callconv(.c) u8 {
     return buffer.push(byte);
 }
-pub fn outKeyBuffer(p_key: *u8) u8 {
-    return buffer.pop(p_key);
+fn c_outKeyBuffer(p_byte: [*c]u8) callconv(.c) u8 {
+    var k: u8 = undefined;
+    const result = buffer.pop(&k);
+    if (result == BUFFER_SUCCESS) p_byte[0] = k;
+    return result;
 }
-pub fn fullKeyBuffer() bool {
+fn c_outKeyBufferDoubleClick() callconv(.c) u8 {
+    return 255; // BUFFER_CLICK_DETECTION off -> the `#else` stub
+}
+fn c_fullKeyBuffer() callconv(.c) bool {
     return buffer.full();
 }
-pub fn emptyKeyBuffer() bool {
+fn c_emptyKeyBuffer() callconv(.c) bool {
     return buffer.empty();
 }
-pub fn clearKeyBuffer() void {
+fn c_clearKeyBuffer() callconv(.c) void {
     buffer.clear();
+}
+fn c_keyBuffer_pop() callconv(.c) void {
+    var tmp_key: c_int = undefined;
+    while (true) {
+        tmp_key = -1;
+        if (!buffer.full()) {
+            tmp_key = romKeyPop();
+            if (comptime built_for_r47) tmp_key = convertKeyCode(tmp_key);
+            if (tmp_key >= 0) _ = buffer.push(@intCast(tmp_key));
+        }
+        if (tmp_key < 0) break;
+    }
+}
+
+// Export the upstream symbol names on the DMCP lanes only (the buffer is
+// `#if defined(DMCP_BUILD)`; the host sim has no key ring buffer).
+comptime {
+    if (is_dmcp_build) {
+        @export(&c_inKeyBuffer, .{ .name = "inKeyBuffer" });
+        @export(&c_outKeyBuffer, .{ .name = "outKeyBuffer" });
+        @export(&c_outKeyBufferDoubleClick, .{ .name = "outKeyBufferDoubleClick" });
+        @export(&c_fullKeyBuffer, .{ .name = "fullKeyBuffer" });
+        @export(&c_emptyKeyBuffer, .{ .name = "emptyKeyBuffer" });
+        @export(&c_clearKeyBuffer, .{ .name = "clearKeyBuffer" });
+        @export(&c_keyBuffer_pop, .{ .name = "keyBuffer_pop" });
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -193,13 +243,16 @@ test "clear() empties a partially-filled buffer" {
     try std.testing.expectEqual(BUFFER_FAIL, b.pop(&key));
 }
 
-test "module-level wrappers operate on the shared firmware instance" {
-    clearKeyBuffer();
-    try std.testing.expect(emptyKeyBuffer());
-    try std.testing.expectEqual(BUFFER_SUCCESS, inKeyBuffer(77));
-    try std.testing.expect(!emptyKeyBuffer());
+test "module-level C wrappers operate on the shared firmware instance" {
+    // keyBuffer_pop is excluded here: it reaches the ROM key_pop and is firmware
+    // only. The buffer-manipulation wrappers carry the host-testable mechanics.
+    c_clearKeyBuffer();
+    try std.testing.expect(c_emptyKeyBuffer());
+    try std.testing.expectEqual(BUFFER_SUCCESS, c_inKeyBuffer(77));
+    try std.testing.expect(!c_emptyKeyBuffer());
     var key: u8 = 0;
-    try std.testing.expectEqual(BUFFER_SUCCESS, outKeyBuffer(&key));
+    try std.testing.expectEqual(BUFFER_SUCCESS, c_outKeyBuffer(&key));
     try std.testing.expectEqual(@as(u8, 77), key);
-    try std.testing.expect(emptyKeyBuffer());
+    try std.testing.expect(c_emptyKeyBuffer());
+    try std.testing.expectEqual(@as(u8, 255), c_outKeyBufferDoubleClick());
 }

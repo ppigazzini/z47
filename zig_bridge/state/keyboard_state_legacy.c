@@ -46,6 +46,17 @@
 #define fnKeyDown z47_keyboard_state_fnKeyDown
 #define fnKeyCC z47_keyboard_state_fnKeyCC
 #define processKeyAction z47_keyboard_state_processKeyAction
+// DMCP key ring buffer (keyboardTweak.c #if DMCP_BUILD) -> Zig owner
+// keyboard_state_ringbuffer_owned.zig. Rename the C copies on every lane so they
+// dead-strip; the Zig exports win. (Host has no ring buffer, so these are no-ops
+// there.) The C `buffer` global stays C but is unreferenced once these go.
+#define keyBuffer_pop z47_kb_keyBuffer_pop
+#define inKeyBuffer z47_kb_inKeyBuffer
+#define outKeyBuffer z47_kb_outKeyBuffer
+#define outKeyBufferDoubleClick z47_kb_outKeyBufferDoubleClick
+#define fullKeyBuffer z47_kb_fullKeyBuffer
+#define emptyKeyBuffer z47_kb_emptyKeyBuffer
+#define clearKeyBuffer z47_kb_clearKeyBuffer
 
 #if defined(PC_BUILD)
 #define btnFnClicked z47_keyboard_state_btnFnClicked
@@ -119,6 +130,13 @@ extern void btnClicked(void *unused, void *data);
 #undef fnKeyDown
 #undef fnKeyCC
 #undef processKeyAction
+#undef keyBuffer_pop
+#undef inKeyBuffer
+#undef outKeyBuffer
+#undef outKeyBufferDoubleClick
+#undef fullKeyBuffer
+#undef emptyKeyBuffer
+#undef clearKeyBuffer
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
