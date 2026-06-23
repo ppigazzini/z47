@@ -99,7 +99,9 @@ extern fn z47_program_serialization_runtime_go_to_last_program() void;
 extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
 extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
 
-extern fn z47_state_power_check_screen() bool;
+// power_check_screen is a DMCP function-table macro, not a link symbol; the Zig
+// ROM-HAL trampoline (no-op on host) replaces the retired C bridge shim.
+const rom = @import("state_dmcp_rom_owned.zig");
 
 fn cStringLength(text: [*c]const u8) usize {
     var len: usize = 0;
@@ -118,7 +120,7 @@ pub fn checkPower() bool {
     if (use_fake_program_serialization_harness_surface) {
         return z47_program_serialization_runtime_check_power();
     }
-    return z47_state_power_check_screen();
+    return rom.power_check_screen();
 }
 
 pub fn selectProgram(label: u16) bool {

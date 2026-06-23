@@ -100,12 +100,9 @@ extern fn refreshScreen(source: u16) void;
 extern fn readLine(line: [*c]u8) void;
 extern fn z47_calc_state_save_sections() void;
 
-// power_check_screen is a DMCP function-table macro, not a link symbol; route
-// through the C wrapper. The remaining DMCP symbols are referenced only under
-// is_dmcp_build (firmware).
-extern fn z47_state_power_check_screen() bool;
-extern fn z47_state_sys_timer_disable(timer: c_int) void;
-extern fn z47_state_sys_timer_start(timer: c_int, time_ms: u32) void;
+// power_check_screen / sys_timer_* are DMCP function-table macros, not link
+// symbols; route through the Zig ROM-HAL trampolines (no-op on host).
+const rom = @import("state_dmcp_rom_owned.zig");
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
 extern fn z47_calc_state_runtime_check_power() bool;
@@ -153,7 +150,7 @@ pub fn checkPower() bool {
     if (use_fake_calc_state_harness_surface) {
         return z47_calc_state_runtime_check_power();
     }
-    return z47_state_power_check_screen();
+    return rom.power_check_screen();
 }
 
 pub fn openSave(save_type: u16) c_int {
@@ -260,8 +257,8 @@ pub fn restartPostLoadTimers() void {
         return;
     }
     if (is_dmcp_build) {
-        z47_state_sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
-        z47_state_sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
+        rom.sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
+        rom.sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
         fnTimerStart(@intCast(TO_KB_ACTV), TO_KB_ACTV, TO_KB_ACTV_MEDIUM);
     }
 }

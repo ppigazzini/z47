@@ -131,35 +131,3 @@ extern void btnClicked(void *unused, void *data);
 #undef btnReleased
 #undef btnFnClicked
 #endif
-
-
-// --- shared firmware state-HAL ROM-macro shims ---
-// power_check_screen / sys_timer_disable / sys_timer_start are DMCP library
-// function-table macros (lft_ifc.h), not linkable symbols, so a Zig extern
-// cannot resolve them on firmware. They are wrapped here in C — where the macro
-// is in scope via the keyboard.c include chain — for the Zig state/io owners
-// (calc_state_io_owned, program_serialization_io_owned). They live in this
-// already-compiled firmware bridge rather than a dedicated file so retiring the
-// calc-state save/restore C did not leave behind a new first-party C unit.
-// Host builds have no power button / DMCP timers, so these are trivial there.
-bool_t z47_state_power_check_screen(void) {
-#if defined(DMCP_BUILD)
-	return power_check_screen();
-#else
-	return false;
-#endif
-}
-void z47_state_sys_timer_disable(int timer_ix) {
-#if defined(DMCP_BUILD)
-	sys_timer_disable(timer_ix);
-#else
-	(void)timer_ix;
-#endif
-}
-void z47_state_sys_timer_start(int timer_ix, uint32_t ms_value) {
-#if defined(DMCP_BUILD)
-	sys_timer_start(timer_ix, ms_value);
-#else
-	(void)timer_ix; (void)ms_value;
-#endif
-}
