@@ -183,7 +183,9 @@ fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, dat
 // btnPressedDmcp overlay.
 fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
-    const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+    // event is the GdkEvent on the host lane only; the DMCP btnPressed body takes
+    // just the key string and has no double/triple-click or middle/right shift.
+    if (comptime is_dmcp_build) _ = &event;
     const dat: [*c]u8 = @ptrCast(data);
 
     runtime.reDraw = false;
@@ -197,21 +199,28 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     runtime.asnKey[2] = 0;
 
     if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
-        shared.setLastKeyCode(keyCode + 1);
+        if (comptime is_dmcp_build) {
+            runtime.lastKeyCode = @intCast(keyCode);
+        } else {
+            shared.setLastKeyCode(keyCode + 1);
+        }
     } else {
         runtime.lastKeyCode = 0;
     }
 
-    if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
-        return;
-    }
-    if (ev.button == 2) {
-        runtime.shiftF = true;
-        runtime.shiftG = false;
-    }
-    if (ev.button == 3) {
-        runtime.shiftF = false;
-        runtime.shiftG = true;
+    if (comptime !is_dmcp_build) {
+        const ev: *const GdkEventButton = @ptrCast(@alignCast(event));
+        if (ev.type == GDK_DOUBLE_BUTTON_PRESS or ev.type == GDK_TRIPLE_BUTTON_PRESS) {
+            return;
+        }
+        if (ev.button == 2) {
+            runtime.shiftF = true;
+            runtime.shiftG = false;
+        }
+        if (ev.button == 3) {
+            runtime.shiftF = false;
+            runtime.shiftG = true;
+        }
     }
 
     const f = runtime.shiftF;
@@ -224,18 +233,28 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     const item = shared.determineItem(dat);
     runtime.lastKeyItemDetermined = item;
 
-    if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
-        if ((item == runtime.ITM_RS or item == runtime.ITM_EXIT1) and !runtime.getSystemFlag(runtime.FLAG_INTING) and !runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
-            runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME);
-            runtime.programRunStop = runtime.PGM_WAITING;
-            runtime.showFunctionNameItem = 0;
-            // IR_PRINTING (defined on host): trace the STOP.
-            runtime.refreshStatusBar();
-            runtime.printTrace(runtime.ITM_STOP, runtime.NOPARAM);
-        } else if (runtime.programRunStop == runtime.PGM_PAUSED) {
-            runtime.programRunStop = runtime.PGM_KEY_PRESSED_WHILE_PAUSED;
+    // Host: a key during a running/paused program stops or interrupts it (early
+    // return). DMCP has no such block here; instead it restores the f/g shift on a
+    // PEM SST/BST (keyboard.c 1864-1869) and falls through.
+    if (comptime !is_dmcp_build) {
+        if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
+            if ((item == runtime.ITM_RS or item == runtime.ITM_EXIT1) and !runtime.getSystemFlag(runtime.FLAG_INTING) and !runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
+                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+                runtime.programRunStop = runtime.PGM_WAITING;
+                runtime.showFunctionNameItem = 0;
+                // IR_PRINTING (defined on host): trace the STOP.
+                runtime.refreshStatusBar();
+                runtime.printTrace(runtime.ITM_STOP, runtime.NOPARAM);
+            } else if (runtime.programRunStop == runtime.PGM_PAUSED) {
+                runtime.programRunStop = runtime.PGM_KEY_PRESSED_WHILE_PAUSED;
+            }
+            return;
         }
-        return;
+    } else {
+        if (runtime.calcMode == runtime.CM_PEM and (item == runtime.ITM_SST or item == runtime.ITM_BST)) {
+            runtime.shiftF = f;
+            runtime.shiftG = g;
+        }
     }
 
     var funcParam: [*c]const u8 = "";
@@ -692,7 +711,7 @@ fn btnFnClickedRHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void
 }
 
 fn btnPressedDmcp(data: ?*anyopaque) callconv(.c) void {
-    runtime.btnPressedDmcpOverlay(data);
+    btnPressedHost(null, null, data);
 }
 
 fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {

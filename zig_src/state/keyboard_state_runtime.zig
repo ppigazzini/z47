@@ -221,7 +221,7 @@ pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
 }
 
 pub fn btnPressedDmcpOverlay(data: ?*anyopaque) void {
-    legacy_dmcp.@"z47_keyboard_state_btnPressed"(data);
+    btnPressed(data);
 }
 
 pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
@@ -231,6 +231,8 @@ pub fn btnClickedDmcpOverlay(unused: ?*anyopaque, data: ?*anyopaque) void {
 }
 
 extern fn btnReleased(data: ?*anyopaque) void;
+// Resolves to the Zig DMCP btnPressed export (keyboard_state.zig btnPressedDmcp).
+extern fn btnPressed(data: ?*anyopaque) void;
 
 // --- fnKeyCC dependencies ---------------------------------------------------
 pub const REGISTER_X: i16 = 100;
@@ -1397,6 +1399,3 @@ const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
 };
 
-const legacy_dmcp = struct {
-    extern fn @"z47_keyboard_state_btnPressed"(data: ?*anyopaque) void;
-};
