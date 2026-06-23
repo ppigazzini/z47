@@ -77,6 +77,11 @@
 #define btnFnReleased z47_keyboard_state_btnFnReleased
 #define btnFnClicked z47_keyboard_state_btnFnClicked
 #define btnFnPressed z47_keyboard_state_btnFnPressed
+// keyboard state globals now owned by keyboard_state_runtime.zig.
+#define asnKey z47_kb_asnKey
+#define nimWhenButtonPressed z47_kb_nimWhenButtonPressed
+#define releaseOverride z47_kb_releaseOverride
+#define shiftKeyClearsError z47_kb_shiftKeyClearsError
 
 #include "../../src/c47/keyboard.c"
 
@@ -146,6 +151,10 @@ extern void btnClicked(void *unused, void *data);
 #undef btnFnReleased
 #undef btnFnClicked
 #undef btnFnPressed
+#undef asnKey
+#undef nimWhenButtonPressed
+#undef releaseOverride
+#undef shiftKeyClearsError
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed

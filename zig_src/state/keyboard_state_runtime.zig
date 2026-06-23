@@ -318,7 +318,9 @@ pub extern var currentStep: [*c]u8;
 pub extern var currentLocalStepNumber: u16;
 pub extern var programListEnd: bool_t;
 pub extern var pemCursorIsZerothStep: bool_t;
-pub extern var asnKey: [4]u8;
+// Defined here (was keyboard.c) so the bridge can retire; the now-Zig button
+// handlers + other owners extern these. Initialisers match keyboard.c.
+pub export var asnKey: [4]u8 = .{ 0, 0, 0, 0 };
 // standardFont is a `const font_t`; we only need its address for showString().
 pub const standardFont = @extern(*const anyopaque, .{ .name = "standardFont" });
 
@@ -557,7 +559,7 @@ pub const CM_ERROR_MESSAGE: u8 = 9;
 const STRLGINT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
 pub const C47_NULL: u16 = 65535;
 
-pub extern var nimWhenButtonPressed: bool_t;
+pub export var nimWhenButtonPressed: bool_t = false;
 pub extern var ram: [*c]u32;
 pub extern var allFormulae: [*c]formulaHeader_t;
 pub extern var tmpString: [*c]u8;
@@ -995,7 +997,7 @@ pub extern fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque)
 pub extern fn displayShiftAndTamBuffer() void;
 
 // btnFnPressed dependencies (keyboard.c 579-742).
-pub extern var releaseOverride: bool_t;
+pub export var releaseOverride: bool_t = false;
 pub extern var FN_key_pressed: i16;
 pub extern fn updateAssignTamBuffer() void;
 pub extern fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;
@@ -1222,7 +1224,7 @@ pub const FLAG_SH_LONGPRESS: i32 = 32830;
 pub const MNU_SHOW: i16 = 2315;
 pub extern var Shft_LongPress_f_g: bool_t;
 pub extern var Shft_timeouts: bool_t;
-pub extern var shiftKeyClearsError: bool_t;
+pub export var shiftKeyClearsError: bool_t = false;
 pub extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 pub extern fn fg_processing_jm() void;
 // keyboardTweak.c owners exported from keyboard_state.zig; reach their C names.
