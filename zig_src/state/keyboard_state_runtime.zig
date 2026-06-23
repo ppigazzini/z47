@@ -204,21 +204,16 @@ fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updati
     }
 }
 
-pub fn btnPressedHostOverlay(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void {
-    const previous_program_run_stop = programRunStop;
-    const previous_screen_updating_mode = screenUpdatingMode;
-
-    legacy_host.@"z47_keyboard_state_btnPressed"(not_used, event, data);
-    repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
-}
-
 pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
     const previous_program_run_stop = programRunStop;
     const previous_screen_updating_mode = screenUpdatingMode;
 
-    legacy_host.@"z47_keyboard_state_btnClicked"(not_used, data);
+    // Resolves to the Zig host btnClicked export (keyboard_state.zig btnClickedHost),
+    // which itself runs btnPressed + btnReleased on a synthetic left-click event.
+    btnClicked(not_used, data);
     repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
 }
+extern fn btnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
 
 pub fn btnPressedDmcpOverlay(data: ?*anyopaque) void {
     btnPressed(data);
@@ -1396,8 +1391,4 @@ pub inline fn wait_for_key_release(tout: c_int) void {
     } else c_wait_for_key_release(tout);
 }
 
-const legacy_host = struct {
-    extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
-    extern fn @"z47_keyboard_state_btnClicked"(not_used: ?*anyopaque, data: ?*anyopaque) void;
-};
 
