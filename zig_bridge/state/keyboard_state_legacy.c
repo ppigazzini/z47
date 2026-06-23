@@ -29,6 +29,9 @@
 #define _keyClick z47_keyboard_state_keyClickImpl
 #define keyClick z47_keyboard_state_keyClick
 #define powerMarkerMsF z47_keyboard_state_powerMarkerMsF
+// fnKeyDotD: switched to the Zig owner on ALL lanes (M1 leaf — the handler has
+// no DMCP #ifdef divergence, so its rename is unconditional here too).
+#define fnKeyDotD z47_keyboard_state_fnKeyDotD
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
@@ -52,7 +55,6 @@
 #define fnKeyBackspace z47_keyboard_state_fnKeyBackspace
 #define fnKeyUp z47_keyboard_state_fnKeyUp
 #define fnKeyDown z47_keyboard_state_fnKeyDown
-#define fnKeyDotD z47_keyboard_state_fnKeyDotD
 #endif
 
 #define btnPressed z47_keyboard_state_btnPressed
@@ -102,6 +104,7 @@ extern void btnClicked(void *unused, void *data);
 #undef keyReplacements
 #undef caseReplacements
 #undef setLastKeyCode
+#undef fnKeyDotD
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -117,7 +120,6 @@ extern void btnClicked(void *unused, void *data);
 #undef checkKeyShifts
 #undef leavePem
 #undef processAimInput
-#undef fnKeyDotD
 #undef fnKeyDown
 #undef fnKeyUp
 #undef fnKeyBackspace

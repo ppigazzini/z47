@@ -57,7 +57,11 @@ fn keyDownHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDown(unused_but_mandatory_parameter);
 }
 
-fn keyDotDHost(unused_but_mandatory_parameter: u16) callconv(.c) void {
+// fnKeyDotD has no DMCP `#ifdef` divergence: the C handler and shared.keyDotD are
+// identical across lanes and reach only lane-independent calc functions, so it is
+// exported for ALL lanes — the first keyboard handler taken off the C on firmware
+// (M1 leaf). Host behaviour is unchanged (it already used this Zig owner).
+pub export fn fnKeyDotD(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDotD(unused_but_mandatory_parameter);
 }
 
@@ -677,7 +681,6 @@ comptime {
         @export(&keyBackspaceHost, .{ .name = "fnKeyBackspace" });
         @export(&keyUpHost, .{ .name = "fnKeyUp" });
         @export(&keyDownHost, .{ .name = "fnKeyDown" });
-        @export(&keyDotDHost, .{ .name = "fnKeyDotD" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
         @export(&btnReleasedHost, .{ .name = "btnReleased" });
