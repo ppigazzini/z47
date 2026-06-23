@@ -1,5 +1,7 @@
+const std = @import("std");
+const builtin = @import("builtin");
 pub const bool_t = bool;
-pub const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
+pub const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 pub const calcKey_t = extern struct {
     keyId: i16,
@@ -664,9 +666,32 @@ pub extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 pub extern fn restoreStats() void;
 pub extern fn forceSBupdate() void;
 pub extern fn isAlphaSubmenu(n: u8) bool_t;
-pub extern fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void;
-// jm_show_calc_state is an empty no-op unless PC_BUILD_TELLTALE; kept for fidelity.
-pub extern fn jm_show_calc_state(comment: [*c]const u8) void;
+// lcd_fill_rect is a DMCP ROM function-table macro on firmware (lft_ifc.h:61,
+// LIBRARY_FN_BASE + 60) and a real GTK-layer symbol on host. jm_show_calc_state is
+// a host-only telltale (no-op unless PC_BUILD_TELLTALE) -> no-op on firmware. Both
+// are reconstructed lane-aware here so handlers that reach clearScreen / the
+// telltale (keyExit, keyBackspace) can run on the DMCP lanes. This mirrors the
+// established, build/link-verified frontier ROM-trampoline pattern (cf.
+// frontier_status_bar_owned.zig, same +60 offset and LIBRARY_FN_BASE).
+const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
+const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
+const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};
+pub inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
+    if (comptime is_dmcp_build) {
+        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
+        f(x, y, dx, dy, val);
+    } else {
+        c_lcd_fill_rect(x, y, dx, dy, val);
+    }
+}
+const JmShowCalcStateFn = *const fn (comment: [*c]const u8) callconv(.c) void;
+fn jmShowCalcStateNoop(comment: [*c]const u8) callconv(.c) void {
+    _ = comment; // host-only telltale; no-op on firmware
+}
+const jm_show_calc_state_impl: JmShowCalcStateFn = if (is_dmcp_build) &jmShowCalcStateNoop else @extern(JmShowCalcStateFn, .{ .name = "jm_show_calc_state" });
+pub inline fn jm_show_calc_state(comment: [*c]const u8) void {
+    jm_show_calc_state_impl(comment);
+}
 pub fn stayInAIM() void {
     if (calcMode == CM_AIM and (currentMenu() != -MNU_ALPHA and currentMenu() != -MNU_MyAlpha)) {
         changeToALPHA();
