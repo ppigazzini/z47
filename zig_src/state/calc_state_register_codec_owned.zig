@@ -4,7 +4,7 @@
 // (longInteger, string, shortInteger, real34, complex34, time, date) are Zig and
 // exercised by the enriched parity harness; the matrix vector-tag predicates
 // (isRegisterMatrixVector / getVectorRegister{Angular,Polar}Mode — macros over
-// the matrix subsystem) stay C via small z47_css_* trampolines. The C statics
+// the matrix subsystem) are reached as direct externs to the canonical core C symbols. The C statics
 // remain for the DMCP retained path.
 
 const std = @import("std");

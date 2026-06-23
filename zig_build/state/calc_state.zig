@@ -4,7 +4,6 @@ pub const RuntimeObjects = struct {
     calc_state: *std.Build.Step.Compile,
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addArg("zig_bridge/state/" ++ "calc_state_legacy.c");
         cmd.addFileArg(self.calc_state.getEmittedBin());
     }
 };
@@ -105,10 +104,11 @@ pub fn addToModule(
 ) void {
     const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
 
-    // calc_state_legacy.c still provides the real save/restore/load entrypoints
-    // (z47_calc_state_legacy_*) that the Zig owner delegates to; restoreCalc runs
-    // doFnReset, which allocates globalRegister at startup.
-    module.addCSourceFile(.{ .file = b.path("zig_bridge/state/" ++ "calc_state_legacy.c"), .flags = c_flags });
+    // The calc-state save/restore/load path is now fully Zig-owned; the former
+    // calc_state_legacy.c bridge is gone. The only irreducible C it still needed
+    // (the DMCP ROM-macro shims power_check_screen / sys_timer) now lives in the
+    // keyboard_state_legacy.c firmware bridge, which every lane already links.
+    _ = c_flags;
     module.addObject(runtime_object);
 }
 

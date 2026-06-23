@@ -6,7 +6,7 @@
 // open/close/status orchestration and calls writeSaveSections() -> this. The
 // per-element value formatters (registerToSaveString / saveMatrixElements /
 // UI64toString / realToString) and the few file-static / enum-typed reads stay
-// in C, reached through z47_css_* trampolines in calc_state_legacy.c; this owner
+// in C, reached as direct externs to the canonical core symbols; this owner
 // frames every section and selects the fields.
 //
 // Verified byte-for-byte against the current C output by the save/load parity
@@ -112,7 +112,7 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
-// --- save-serialization trampolines (calc_state_legacy.c) ---
+// --- save-serialization leaf externs (canonical core C symbols) ---
 const runtime = @import("calc_state_runtime.zig");
 const MNU_HOME: i16 = 1921;
 extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
