@@ -61,7 +61,6 @@
 #define execAutoRepeat z47_kb_execAutoRepeat
 
 #if defined(PC_BUILD)
-#define btnFnPressed z47_keyboard_state_btnFnPressed
 #define btnClickedP z47_keyboard_state_btnClickedP
 #define btnClickedR z47_keyboard_state_btnClickedR
 #define btnFnClickedP z47_keyboard_state_btnFnClickedP
@@ -77,6 +76,7 @@
 #define btnReleased z47_keyboard_state_btnReleased
 #define btnFnReleased z47_keyboard_state_btnFnReleased
 #define btnFnClicked z47_keyboard_state_btnFnClicked
+#define btnFnPressed z47_keyboard_state_btnFnPressed
 
 #include "../../src/c47/keyboard.c"
 
@@ -145,6 +145,7 @@ extern void btnClicked(void *unused, void *data);
 #undef btnReleased
 #undef btnFnReleased
 #undef btnFnClicked
+#undef btnFnPressed
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -152,5 +153,4 @@ extern void btnClicked(void *unused, void *data);
 #undef btnFnClickedP
 #undef btnClickedR
 #undef btnClickedP
-#undef btnFnPressed
 #endif
