@@ -1,1 +1,4 @@
-zig_bridge/state/keyboard_state_legacy.c
+# State subsystem C bridges compiled into the host sim (one path per line).
+# Empty: the keyboard-state bridge (keyboard_state_legacy.c) was retired once
+# every keyboard handler, the ring buffer and the keyboard globals moved to Zig
+# (zig_src/state/keyboard_state*.zig). No first-party state C bridge remains.

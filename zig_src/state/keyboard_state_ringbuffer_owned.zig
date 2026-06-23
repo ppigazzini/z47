@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // DMCP internal key ring buffer — Zig owner for the `#if defined(DMCP_BUILD)`
-// ring buffer in src/c47/c47Extensions/keyboardTweak.c (1073-1403). This is the
-// last firmware-only keyboard subsystem still served by the keyboard_state_legacy.c
-// bridge; porting it (plus keyBuffer_pop and the btn entry handlers) clears the
-// bridge for deletion (product first-party C 1 -> 0).
+// ring buffer in src/c47/c47Extensions/keyboardTweak.c (1073-1403). Porting it
+// (plus keyBuffer_pop and the btn entry handlers) was part of retiring the
+// keyboard_state_legacy.c bridge, which brought product first-party C to 0.
 //
 // The compiled buffer is the SIMPLE variant: the upstream BUFFER_CLICK_DETECTION
 // and BUFFER_KEY_COUNT options are `#define`d then immediately `#undef`d
