@@ -52,7 +52,11 @@ pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyExit(unused_but_mandatory_parameter);
 }
 
-fn keyCCHost(complex_type: u16) callconv(.c) void {
+// keyCC's only DMCP divergence is the host-only EXTRA_INFO_ON_CALC_ERROR console
+// block (off on firmware, where the macro is 0 — defines.h:2351), so the firmware
+// path carries no active DMCP-specific behaviour and its calc logic is the
+// host-tested one. Exported for ALL lanes.
+pub export fn fnKeyCC(complex_type: u16) callconv(.c) void {
     shared.keyCC(complex_type);
 }
 
@@ -682,7 +686,6 @@ comptime {
     if (!is_dmcp_build) {
         @export(&processKeyActionHost, .{ .name = "processKeyAction" });
         @export(&btnFnClickedHost, .{ .name = "btnFnClicked" });
-        @export(&keyCCHost, .{ .name = "fnKeyCC" });
         @export(&btnPressedHost, .{ .name = "btnPressed" });
         @export(&btnFnPressedHost, .{ .name = "btnFnPressed" });
         @export(&btnReleasedHost, .{ .name = "btnReleased" });
