@@ -738,8 +738,19 @@ pub extern fn findOffset() void;
 pub const SCRUPD_SKIP_MENU_ONE_TIME: u8 = 64;
 pub extern fn showHideAlphaMode() void;
 // calcMode*Gui are real functions only on host (empty macros on the DMCP lane).
-pub extern fn calcModeAimGui() void;
-pub extern fn calcModeNormalGui() void;
+// calcModeAimGui / calcModeNormalGui are host GUI-mode functions but no-op macros
+// on firmware (hal/gui.h: `#define calcModeAimGui()` under DMCP_BUILD), so make
+// them lane-aware: a real extern on host, an empty no-op on DMCP.
+const CalcModeGuiFn = *const fn () callconv(.c) void;
+fn calcModeGuiNoop() callconv(.c) void {}
+const calcModeAimGui_impl: CalcModeGuiFn = if (is_dmcp_build) &calcModeGuiNoop else @extern(CalcModeGuiFn, .{ .name = "calcModeAimGui" });
+pub inline fn calcModeAimGui() void {
+    calcModeAimGui_impl();
+}
+const calcModeNormalGui_impl: CalcModeGuiFn = if (is_dmcp_build) &calcModeGuiNoop else @extern(CalcModeGuiFn, .{ .name = "calcModeNormalGui" });
+pub inline fn calcModeNormalGui() void {
+    calcModeNormalGui_impl();
+}
 
 // --- keyboardTweak.c shift-state helpers ------------------------------------
 pub const SCRUPD_MANUAL_SHIFT_STATUS: u8 = 8;
@@ -1344,10 +1355,42 @@ pub extern fn showAlphaModeonGui() void;
 // is_dmcp_build branches of host-exported (PC_BUILD-only) owners, so on the
 // dmcp lane the referencing code is dead-stripped before link — same pattern
 // as lcd_fill_rect above.
-pub extern fn lcd_refresh() void;
-pub extern fn key_pop() c_int;
-pub extern fn key_push(k1: c_int) c_int;
-pub extern fn wait_for_key_release(tout: c_int) void;
+// DMCP key-queue + LCD-refresh ROM function-table macros (lft_ifc.h): lane-aware
+// trampolines so the firmware processKeyAction key-buffering path links and runs.
+// Offsets verified against lft_ifc.h (lcd_refresh+48, key_push+384, key_pop+392,
+// wait_for_key_release+420); host keeps the real externs.
+const LcdRefreshFn = *const fn () callconv(.c) void;
+const c_lcd_refresh = if (!is_dmcp_build) @extern(LcdRefreshFn, .{ .name = "lcd_refresh" }) else {};
+pub inline fn lcd_refresh() void {
+    if (comptime is_dmcp_build) {
+        const f: LcdRefreshFn = @ptrFromInt(LIBRARY_FN_BASE + 48);
+        f();
+    } else c_lcd_refresh();
+}
+const KeyPopFn = *const fn () callconv(.c) c_int;
+const c_key_pop = if (!is_dmcp_build) @extern(KeyPopFn, .{ .name = "key_pop" }) else {};
+pub inline fn key_pop() c_int {
+    if (comptime is_dmcp_build) {
+        const f: KeyPopFn = @ptrFromInt(LIBRARY_FN_BASE + 392);
+        return f();
+    } else return c_key_pop();
+}
+const KeyPushFn = *const fn (k1: c_int) callconv(.c) c_int;
+const c_key_push = if (!is_dmcp_build) @extern(KeyPushFn, .{ .name = "key_push" }) else {};
+pub inline fn key_push(k1: c_int) c_int {
+    if (comptime is_dmcp_build) {
+        const f: KeyPushFn = @ptrFromInt(LIBRARY_FN_BASE + 384);
+        return f(k1);
+    } else return c_key_push(k1);
+}
+const WaitForKeyReleaseFn = *const fn (tout: c_int) callconv(.c) void;
+const c_wait_for_key_release = if (!is_dmcp_build) @extern(WaitForKeyReleaseFn, .{ .name = "wait_for_key_release" }) else {};
+pub inline fn wait_for_key_release(tout: c_int) void {
+    if (comptime is_dmcp_build) {
+        const f: WaitForKeyReleaseFn = @ptrFromInt(LIBRARY_FN_BASE + 420);
+        f(tout);
+    } else c_wait_for_key_release(tout);
+}
 
 const legacy_host = struct {
     extern fn @"z47_keyboard_state_btnPressed"(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
