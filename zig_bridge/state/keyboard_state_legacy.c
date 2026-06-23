@@ -36,11 +36,17 @@
 // divergence-free, reaching only lane-independent helpers).
 #define leavePem z47_keyboard_state_leavePem
 #define checkKeyShifts z47_keyboard_state_checkKeyShifts
+// M1 batch: divergence-free handlers switched to the Zig owner on ALL lanes.
+#define processAimInput z47_keyboard_state_processAimInput
+#define determineFunctionKeyItem_C47 z47_keyboard_state_determineFunctionKeyItem_C47
+#define fnKeyEnter z47_keyboard_state_fnKeyEnter
+#define fnKeyUp z47_keyboard_state_fnKeyUp
+#define fnKeyDown z47_keyboard_state_fnKeyDown
 
 #if defined(PC_BUILD)
 #define processKeyAction z47_keyboard_state_processKeyAction
-#define processAimInput z47_keyboard_state_processAimInput
-#define determineFunctionKeyItem_C47 z47_keyboard_state_determineFunctionKeyItem_C47
+#define fnKeyExit z47_keyboard_state_fnKeyExit
+#define fnKeyBackspace z47_keyboard_state_fnKeyBackspace
 #define btnFnClicked z47_keyboard_state_btnFnClicked
 #define btnReleased z47_keyboard_state_btnReleased
 #define btnFnPressed z47_keyboard_state_btnFnPressed
@@ -51,12 +57,7 @@
 #define btnFnClickedR z47_keyboard_state_btnFnClickedR
 #define frmCalcMouseButtonPressed z47_keyboard_state_frmCalcMouseButtonPressed
 #define frmCalcMouseButtonReleased z47_keyboard_state_frmCalcMouseButtonReleased
-#define fnKeyEnter z47_keyboard_state_fnKeyEnter
-#define fnKeyExit z47_keyboard_state_fnKeyExit
 #define fnKeyCC z47_keyboard_state_fnKeyCC
-#define fnKeyBackspace z47_keyboard_state_fnKeyBackspace
-#define fnKeyUp z47_keyboard_state_fnKeyUp
-#define fnKeyDown z47_keyboard_state_fnKeyDown
 #endif
 
 #define btnPressed z47_keyboard_state_btnPressed
@@ -109,6 +110,11 @@ extern void btnClicked(void *unused, void *data);
 #undef fnKeyDotD
 #undef leavePem
 #undef checkKeyShifts
+#undef processAimInput
+#undef determineFunctionKeyItem_C47
+#undef fnKeyEnter
+#undef fnKeyUp
+#undef fnKeyDown
 #if defined(PC_BUILD)
 #undef frmCalcMouseButtonReleased
 #undef frmCalcMouseButtonPressed
@@ -120,14 +126,9 @@ extern void btnClicked(void *unused, void *data);
 #undef btnFnPressed
 #undef btnReleased
 #undef btnFnClicked
-#undef determineFunctionKeyItem_C47
-#undef processAimInput
-#undef fnKeyDown
-#undef fnKeyUp
+#undef fnKeyExit
 #undef fnKeyBackspace
 #undef fnKeyCC
-#undef fnKeyExit
-#undef fnKeyEnter
 #undef processKeyAction
 #endif
 
