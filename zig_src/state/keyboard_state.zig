@@ -2,6 +2,14 @@ const builtin = @import("builtin");
 const runtime = @import("keyboard_state_runtime.zig");
 const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
+// Force-compile the DMCP key ring-buffer owner into this object. It currently
+// exports nothing (the bridge still owns the C copies), so this only validates
+// that the module and its per-model build option compile on every lane ahead of
+// the wiring slice that renames the C copies and exports the Zig ones.
+comptime {
+    _ = @import("keyboard_state_ringbuffer_owned.zig");
+}
+
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 // processKeyAction is exported for ALL lanes. 714 of its 717 lines are

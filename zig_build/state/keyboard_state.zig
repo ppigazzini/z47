@@ -21,6 +21,11 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // CALCMODEL == USER_R47 for the R47 firmware variants (dmcpr47 / dmcp5r47).
+    // The DMCP key ring buffer's keyBuffer_pop applies convertKeyCode only under
+    // that compile-time model, and the keyboard-state object is shared between a
+    // HW's C47 and R47 builds, so the distinction is threaded as a build option.
+    is_r47: bool = false,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -71,6 +76,10 @@ fn addRuntimeObjectWithIncludeDir(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
+
+    const kb_build_options = b.addOptions();
+    kb_build_options.addOption(bool, "is_r47", options.is_r47);
+    module.addOptions("keyboard_state_build_options", kb_build_options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-keyboard-state", .{name_prefix}),

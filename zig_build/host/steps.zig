@@ -596,13 +596,15 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // The DMCP key ring buffer is `#if DMCP_BUILD`-only, so the host testSuite
     // never reaches it; its embedded tests make the buffer mechanics verifiable
     // without a device before the bridge port wires it onto the firmware lanes.
-    const ringbuffer_test = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/state/keyboard_state_ringbuffer_owned.zig"),
-            .target = context.host_target,
-            .optimize = optimize,
-        }),
+    const ringbuffer_test_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/state/keyboard_state_ringbuffer_owned.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
     });
+    const ringbuffer_build_options = b.addOptions();
+    ringbuffer_build_options.addOption(bool, "is_r47", false);
+    ringbuffer_test_module.addOptions("keyboard_state_build_options", ringbuffer_build_options);
+    const ringbuffer_test = b.addTest(.{ .root_module = ringbuffer_test_module });
     const run_ringbuffer_test = b.addRunArtifact(ringbuffer_test);
     const ringbuffer_test_step = b.step("keyboard_ringbuffer_test", "Run the DMCP key ring-buffer mechanics tests");
     ringbuffer_test_step.dependOn(&run_ringbuffer_test.step);

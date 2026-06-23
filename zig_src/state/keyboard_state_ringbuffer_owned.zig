@@ -20,6 +20,12 @@
 // covered by the embedded tests (`zig build keyboard_ringbuffer_test`).
 const std = @import("std");
 
+// CALCMODEL == USER_R47 for the firmware build this object is linked into. Only
+// keyBuffer_pop's convertKeyCode remap depends on it (a later slice); exposed now
+// so the per-model build-option plumbing is exercised on every lane.
+const build_options = @import("keyboard_state_build_options");
+pub const built_for_r47: bool = build_options.is_r47;
+
 // keyboardTweak.h: BUFFER_SIZE 8 (must be 2^n), BUFFER_MASK = BUFFER_SIZE - 1,
 // BUFFER_FAIL = 0, BUFFER_SUCCESS = 1.
 const BUFFER_SIZE: u8 = 8;
