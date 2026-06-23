@@ -17,6 +17,8 @@ comptime {
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;
 extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
+// c47-gtk.c global: set for the headless `--writeexportall` lane.
+extern var writeExportAll: u8;
 extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn gtk_events_pending() c_int;
@@ -229,6 +231,12 @@ pub export fn z47_keyReleased_impl(widget: ?*anyopaque, event: ?*anyopaque, data
 }
 
 pub export fn z47_drawScreen_wrapper(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) callconv(.c) c_int {
+    // The headless `--writeexportall` lane runs the GTK startup with no visible
+    // window; a "draw" can then fire against a not-fully-realized destination and
+    // cairo/pixman compositing reads an unmapped region (intermittent SEGV that
+    // broke the dist `make-testpgms` packaging step). There is nothing to paint
+    // when exporting headlessly, so skip it.
+    if (writeExportAll != 0) return 0; // FALSE
     return drawScreen(widget, cr, data);
 }
 
