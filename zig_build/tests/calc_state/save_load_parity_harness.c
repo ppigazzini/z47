@@ -229,6 +229,7 @@ static void buildState(void) {
   roundingMode = RM_HALF_UP;
   timeDisplayFormatDigits = 4;
   displayStack = 2;
+  setSystemFlag(FLAG_FRACT); // exercise the SYSTEM_FLAGS section
 }
 
 int main(int argc, char *argv[]) {
