@@ -194,6 +194,14 @@ static void buildState(void) {
     reallocateRegister(av, dtReal34, 0, amDegree);
     int32ToReal34(45, REGISTER_REAL34_DATA(av));
   }
+  {
+    // A named date variable, so the NAMED_VARIABLES section covers the dtDate
+    // value type for a named entry (not only the stack date register).
+    allocateNamedVariable("DATEVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
+    calcRegister_t dv = findNamedVariable("DATEVAR");
+    reallocateRegister(dv, dtDate, 0, amNone);
+    int32ToReal34(20240229, REGISTER_REAL34_DATA(dv));
+  }
   allocateNamedVariable("CPXVAR", dtComplex34, COMPLEX34_SIZE_IN_BLOCKS);
   {
     calcRegister_t v = findNamedVariable("CPXVAR");
