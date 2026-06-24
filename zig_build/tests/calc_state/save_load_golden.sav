@@ -5628,7 +5628,7 @@ displayFormat
 displayFormatDigits
 6
 timeDisplayFormatDigits
-0
+4
 shortIntegerWordSize
 64
 shortIntegerMode
