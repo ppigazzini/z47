@@ -687,6 +687,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     distribution_owners_options.addOption(bool, "strip_17b", false);
     distribution_owners_options.addOption(bool, "strip_17c", false);
     distribution_owners_options.addOption(bool, "extra_info_on_calc_error", true);
+    // frontier_distribution_runtime derives code_section from these; the harness is
+    // a host link, so both are false (code_section resolves to .text / __TEXT).
+    distribution_owners_options.addOption(bool, "dmcp_build", false);
+    distribution_owners_options.addOption(bool, "old_hw", false);
     distribution_owners_module.addOptions("frontier_build_options", distribution_owners_options);
     const distribution_parity = b.addExecutable(.{
         .name = "distribution-parity",
