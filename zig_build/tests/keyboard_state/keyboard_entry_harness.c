@@ -210,8 +210,24 @@ int main(void) {
     }
   }
 
+  // Scenario 6: a UNARY function key. Preset X=3, click CHS (index 14, ITM_CHS);
+  // X must become -3. Exercises a single-operand function via the entry path.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"14"); // CHS
+  {
+    char xb[64];
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xb);
+    if(strcmp(xb, "-3") != 0) {
+      printf("FAIL: CHS on X=3: got X=\"%s\", expected \"-3\"\n", xb);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
-         "compute; f-shift cycles f -> g; x<>y swaps the stack)\n");
+         "compute; f-shift cycles f -> g; x<>y swaps; CHS negates X)\n");
   return 0;
 }
