@@ -43,6 +43,37 @@ typedef struct {
   const char *name;
 } keyStep_t;
 
+// Drive one binary operator key against a preset stack and check the result.
+// Resets to a realistic config, presets Y and X, clicks the operator key
+// (kbd_std index string), and asserts X equals `expect`. RPN operand order:
+// "-" computes Y-X, "/" computes Y/X. Returns 1 on pass, 0 on failure.
+static int checkOperator(const char *opIndex, const char *opName,
+                         int32_t y, int32_t x, const char *expect) {
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(y, REGISTER_REAL34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(x, REGISTER_REAL34_DATA(REGISTER_X));
+
+  btnClicked(NULL, (gpointer)opIndex);
+
+  if(getRegisterDataType(REGISTER_X) != dtReal34) {
+    printf("FAIL: %s on (Y=%d, X=%d): X type = %u, expected dtReal34 (%u)\n",
+           opName, y, x, (unsigned)getRegisterDataType(REGISTER_X),
+           (unsigned)dtReal34);
+    return 0;
+  }
+  char xbuf[64];
+  decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xbuf);
+  if(strcmp(xbuf, expect) != 0) {
+    printf("FAIL: %s on (Y=%d, X=%d): X = \"%s\", expected \"%s\"\n",
+           opName, y, x, xbuf, expect);
+    return 0;
+  }
+  return 1;
+}
+
 int main(void) {
   // The number-input path commits via the calc memory allocator; without this
   // the NIM number silently fails to materialise in X (the GMP allocators must
@@ -130,37 +161,19 @@ int main(void) {
     }
   }
 
-  // Scenario 3: an OPERATOR key EXECUTES its function on the stack and produces
-  // a concrete arithmetic result. Preset Y=12, X=3, then click "+" (index 36):
-  // btnClicked -> btnPressed -> determineItem(ITM_ADD) -> processKeyAction ->
-  // the addition runs, leaving X=15. This proves the entry path actually drives
-  // computation, not just dispatch -- using preset registers to avoid the NIM
-  // number-commit, which needs more startup state than fnReset installs.
-  fnReset(CONFIRMED);
-  resetOtherConfigurationStuff(true);
-  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
-  int32ToReal34(12, REGISTER_REAL34_DATA(REGISTER_Y));
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
-  btnClicked(NULL, (gpointer)"36"); // +
-  {
-    char xbuf[64];
-    if(getRegisterDataType(REGISTER_X) != dtReal34) {
-      printf("FAIL: after preset 12, 3 then '+', X type = %u, expected dtReal34"
-             " (%u)\n", (unsigned)getRegisterDataType(REGISTER_X),
-             (unsigned)dtReal34);
-      return 1;
-    }
-    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xbuf);
-    if(strcmp(xbuf, "15") != 0) {
-      printf("FAIL: after preset 12, 3 then '+', X = \"%s\", expected \"15\"\n",
-             xbuf);
-      return 1;
-    }
-  }
+  // Scenario 3: every binary OPERATOR key EXECUTES its function on the stack and
+  // produces the correct arithmetic result. For each, preset Y=12 X=3, click the
+  // operator key, assert X. This drives btnClicked -> determineItem(ITM_*) ->
+  // processKeyAction -> the operation, verifying the entry path computes (not
+  // just dispatches). Preset registers sidestep the NIM number-commit. Indices
+  // are from src/c47/assign.c kbd_std_C47.
+  if(!checkOperator("36", "+", 12, 3, "15")) return 1; // ITM_ADD : Y + X
+  if(!checkOperator("31", "-", 12, 3, "9"))  return 1; // ITM_SUB : Y - X
+  if(!checkOperator("26", "*", 12, 3, "36")) return 1; // ITM_MULT: Y * X
+  if(!checkOperator("21", "/", 12, 3, "4"))  return 1; // ITM_DIV : Y / X
 
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
-         "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; the '+' "
-         "key computes 12 + 3 = 15 on the stack)\n");
+         "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; the + - * "
+         "/ keys each compute 12 (op) 3 on the stack)\n");
   return 0;
 }
