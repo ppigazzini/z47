@@ -186,6 +186,14 @@ static void buildState(void) {
     convertLongIntegerToLongIntegerRegister(li, findNamedVariable("LIVAR"));
     longIntegerFree(li);
   }
+  {
+    // A named real variable carrying an angular tag, so the NAMED_VARIABLES
+    // textTag codec is exercised on a named entry (not only on stack registers).
+    allocateNamedVariable("ANGVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
+    calcRegister_t av = findNamedVariable("ANGVAR");
+    reallocateRegister(av, dtReal34, 0, amDegree);
+    int32ToReal34(45, REGISTER_REAL34_DATA(av));
+  }
   allocateNamedVariable("CPXVAR", dtComplex34, COMPLEX34_SIZE_IN_BLOCKS);
   {
     calcRegister_t v = findNamedVariable("CPXVAR");
