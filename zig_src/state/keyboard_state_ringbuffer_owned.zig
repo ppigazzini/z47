@@ -126,17 +126,34 @@ fn c_emptyKeyBuffer() callconv(.c) bool {
 fn c_clearKeyBuffer() callconv(.c) void {
     buffer.clear();
 }
-fn c_keyBuffer_pop() callconv(.c) void {
+// The keyBuffer_pop drain loop, factored out of c_keyBuffer_pop so it can be
+// EXECUTED and asserted on host: the firmware path (romKeyPop via the DMCP ROM
+// table) is otherwise never run anywhere. popFn and convertFn are comptime
+// parameters, so each instantiation inlines them directly -- the firmware
+// instantiation (romKeyPop + the R47 convertKeyCode) is byte-identical to the
+// previous inline loop, while the tests below instantiate it over a scripted
+// key source. Drains popFn into buf until it returns < 0 OR buf is full,
+// applying convertFn (the R47 key remap) first when non-null, and dropping a
+// key equal to the previous one (the KeyBuffer.push duplicate suppression).
+fn drainKeys(
+    buf: *KeyBuffer,
+    comptime popFn: fn () c_int,
+    comptime convertFn: ?fn (c_int) callconv(.c) c_int,
+) void {
     var tmp_key: c_int = undefined;
     while (true) {
         tmp_key = -1;
-        if (!buffer.full()) {
-            tmp_key = romKeyPop();
-            if (comptime built_for_r47) tmp_key = convertKeyCode(tmp_key);
-            if (tmp_key >= 0) _ = buffer.push(@intCast(tmp_key));
+        if (!buf.full()) {
+            tmp_key = popFn();
+            if (convertFn) |cf| tmp_key = cf(tmp_key);
+            if (tmp_key >= 0) _ = buf.push(@intCast(tmp_key));
         }
         if (tmp_key < 0) break;
     }
+}
+
+fn c_keyBuffer_pop() callconv(.c) void {
+    drainKeys(&buffer, romKeyPop, if (built_for_r47) convertKeyCode else null);
 }
 
 // Export the upstream symbol names on the DMCP lanes only (the buffer is
@@ -239,6 +256,72 @@ test "clear() empties a partially-filled buffer" {
     try std.testing.expect(b.empty());
     var key: u8 = 0;
     try std.testing.expectEqual(BUFFER_FAIL, b.pop(&key));
+}
+
+// A scripted stand-in for the DMCP ROM key_pop: yields the next queued code,
+// then -1 (no more keys) -- exactly the ROM contract keyBuffer_pop drains.
+const ScriptedRom = struct {
+    var queue: []const c_int = &.{};
+    var idx: usize = 0;
+    fn load(codes: []const c_int) void {
+        queue = codes;
+        idx = 0;
+    }
+    fn pop() c_int {
+        if (idx >= queue.len) return -1;
+        defer idx += 1;
+        return queue[idx];
+    }
+};
+
+fn plusOne(key: c_int) callconv(.c) c_int {
+    // Stand-in for the R47 convertKeyCode remap. It MUST pass negatives through
+    // unchanged: the real convertKeyCode only switches on specific positive key
+    // codes (else-> unchanged), so the key_pop() "no key" sentinel (-1) survives
+    // the remap and still terminates the drain. A remap that mapped -1 to a
+    // non-negative value would make both the firmware and this loop spin forever.
+    return if (key < 0) key else key + 1;
+}
+
+test "drainKeys: ROM keys buffered, consecutive duplicate suppressed, -1 ends" {
+    ScriptedRom.load(&.{ 5, 5, 6, -1 });
+    var b: KeyBuffer = .{};
+    drainKeys(&b, ScriptedRom.pop, null);
+    var k: u8 = 0;
+    try std.testing.expectEqual(BUFFER_SUCCESS, b.pop(&k));
+    try std.testing.expectEqual(@as(u8, 5), k);
+    try std.testing.expectEqual(BUFFER_SUCCESS, b.pop(&k));
+    try std.testing.expectEqual(@as(u8, 6), k); // the second 5 was dup-suppressed
+    try std.testing.expect(b.empty());
+}
+
+test "drainKeys: convertFn (R47 remap) is applied before buffering" {
+    ScriptedRom.load(&.{ 10, 20, -1 });
+    var b: KeyBuffer = .{};
+    drainKeys(&b, ScriptedRom.pop, plusOne);
+    var k: u8 = 0;
+    try std.testing.expectEqual(BUFFER_SUCCESS, b.pop(&k));
+    try std.testing.expectEqual(@as(u8, 11), k);
+    try std.testing.expectEqual(BUFFER_SUCCESS, b.pop(&k));
+    try std.testing.expectEqual(@as(u8, 21), k);
+    try std.testing.expect(b.empty());
+}
+
+test "drainKeys: stops at buffer-full (capacity 7), leaving excess keys in ROM" {
+    // 10 distinct keys, never -1: the drain fills 7 then the full-guard breaks,
+    // holding 8/9/10 in the ROM (the firmware "keep key in DM42 buffer" path).
+    ScriptedRom.load(&.{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+    var b: KeyBuffer = .{};
+    drainKeys(&b, ScriptedRom.pop, null);
+    try std.testing.expect(b.full());
+    try std.testing.expectEqual(@as(usize, 7), ScriptedRom.idx); // only 7 popped
+    var expected: u8 = 1;
+    while (expected <= 7) : (expected += 1) {
+        var k: u8 = 0;
+        try std.testing.expectEqual(BUFFER_SUCCESS, b.pop(&k));
+        try std.testing.expectEqual(expected, k);
+    }
+    try std.testing.expect(b.empty());
 }
 
 test "module-level C wrappers operate on the shared firmware instance" {
