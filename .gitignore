@@ -188,3 +188,6 @@ build.ninja
 compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
+
+# A0 coverage harness artifact
+cov_pcs.txt

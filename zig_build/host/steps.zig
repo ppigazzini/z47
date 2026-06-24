@@ -602,6 +602,43 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const keyboard_entry_step = b.step("keyboard_entry_parity", "Run the keyboard entry-layer (btnClicked) parity harness");
     keyboard_entry_step.dependOn(&run_keyboard_entry.step);
 
+    // Annex A0: a coverage build of the keyboard harness -- the same full core,
+    // but instrumented with sancov trace-pc-guard (LLVM backend) plus a
+    // PC-recording runtime, so report-zig-coverage.sh can measure which
+    // Zig-owner source lines the host harness actually executes. kcov is not
+    // available in this environment and Zig 0.16 has no -fprofile-instr path, so
+    // this is the coverage mechanism. Measurement-only: the sancov flag and the
+    // handler are compiled ONLY into this dedicated binary, never a product or
+    // normal-test one. (Owners linked as prebuilt objects -- keyboard_state,
+    // shortint, stack_state -- are compiled without the flag and so do not show
+    // up; the frontier owners compiled into the harness module do.)
+    const coverage_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "keyboardEntryCov",
+        "zig_build/tests/keyboard_state/keyboard_entry_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+    );
+    coverage_harness.use_llvm = true;
+    coverage_harness.sanitize_coverage_trace_pc_guard = true;
+    coverage_harness.root_module.addCSourceFile(.{
+        .file = b.path("zig_build/tests/coverage/sancov_handler.c"),
+        .flags = &.{},
+    });
+    const run_coverage = b.addRunArtifact(coverage_harness);
+    run_coverage.setCwd(b.path("."));
+    const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh (Annex A0)");
+    coverage_step.dependOn(&run_coverage.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.
