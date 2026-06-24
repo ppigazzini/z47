@@ -20,6 +20,7 @@
 #include <c47.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 // addFullCoreHarness replaces testSuite.c, so define the screen/keyboard globals
 // it normally provides (inert here).
@@ -30,23 +31,51 @@ int16_t         screenStride;
 uint32_t       *screenData;
 bool_t          screenChange;
 
-// The pinned upstream C oracle (generated from src/c47/charString.c).
+// The pinned upstream C oracles (generated from src/c47/charString.c). The Zig
+// owner exports (stringGlyphLength, stringNextGlyph, ...) come from c47.h.
 int32_t oracle_stringGlyphLength(const char *str);
+int16_t oracle_stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos);
+int16_t oracle_stringNextGlyph(const char *str, int16_t pos);
+int16_t oracle_stringPrevGlyph(const char *str, int16_t pos);
+int16_t oracle_stringLastGlyph(const char *str);
 
 static long checked;
 
-// Compare the Zig owner export against the pinned-C oracle on one input.
+static void print_bytes(const char *s) {
+  for(const unsigned char *p = (const unsigned char *)s; *p; ++p)
+    printf("%02x ", *p);
+}
+
+#define DIFF(expr_zig, expr_oracle, name, s, pos)                            \
+  do {                                                                       \
+    long g = (long)(expr_zig), w = (long)(expr_oracle);                      \
+    checked++;                                                               \
+    if(g != w) {                                                             \
+      printf("FAIL: %s diverges (pos=%d): Zig=%ld oracle=%ld on bytes [",    \
+             name, (int)(pos), g, w);                                        \
+      print_bytes(s);                                                        \
+      printf("]\n");                                                         \
+      return 1;                                                              \
+    }                                                                        \
+  } while(0)
+
+// Diff every cluster function on one input string (and over its glyph positions
+// for the position-taking members).
 static int diff_one(const char *s) {
-  int32_t got = stringGlyphLength(s);
-  int32_t want = oracle_stringGlyphLength(s);
-  checked++;
-  if(got != want) {
-    printf("FAIL: stringGlyphLength diverges: Zig=%d oracle=%d on bytes [", got,
-           want);
-    for(const unsigned char *p = (const unsigned char *)s; *p; ++p)
-      printf("%02x ", *p);
-    printf("]\n");
-    return 1;
+  DIFF(stringGlyphLength(s), oracle_stringGlyphLength(s), "stringGlyphLength",
+       s, -1);
+  DIFF(stringLastGlyph(s), oracle_stringLastGlyph(s), "stringLastGlyph", s, -1);
+  int len = (int)strlen(s);
+  for(int pos = 0; pos <= len + 1; ++pos) {
+    DIFF(stringNextGlyph(s, (int16_t)pos), oracle_stringNextGlyph(s, (int16_t)pos),
+         "stringNextGlyph", s, pos);
+    DIFF(stringPrevGlyph(s, (int16_t)pos), oracle_stringPrevGlyph(s, (int16_t)pos),
+         "stringPrevGlyph", s, pos);
+    // NoEndCheck reads without a terminator guard, so only feed in-range pos.
+    if(pos < len)
+      DIFF(stringNextGlyphNoEndCheck_JM(s, (int16_t)pos),
+           oracle_stringNextGlyphNoEndCheck_JM(s, (int16_t)pos),
+           "stringNextGlyphNoEndCheck_JM", s, pos);
   }
   return 0;
 }
@@ -92,7 +121,8 @@ int main(void) {
     if(diff_one(buf)) return 1;
   }
 
-  printf("CHARSTRING DIFFERENTIAL: OK (stringGlyphLength agrees with the pinned "
-         "C oracle over %ld enumerated inputs)\n", checked);
+  printf("CHARSTRING DIFFERENTIAL: OK (glyph cluster -- stringGlyphLength, "
+         "stringNextGlyph[NoEndCheck], stringPrevGlyph, stringLastGlyph -- agrees "
+         "with the pinned C oracle over %ld comparisons)\n", checked);
   return 0;
 }
