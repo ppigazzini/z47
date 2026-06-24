@@ -200,6 +200,17 @@ static void buildState(void) {
     userMenus[numberOfUserMenus - 1].menuItem[1].item = 42;
   }
 
+  // Local registers: allocate a subroutine frame with a few registers so the
+  // LOCAL_REGISTERS section -- and, on restore, the Zig parser for a non-empty
+  // local frame -- is exercised by the round-trip instead of staying at count 0.
+  // Mix value types so the local-section codec path is covered, not just dtReal34.
+  allocateLocalRegisters(3);
+  reallocateRegister(FIRST_LOCAL_REGISTER + 0, dtReal34, 0, amNone);
+  int32ToReal34(111, REGISTER_REAL34_DATA(FIRST_LOCAL_REGISTER + 0));
+  reallocateRegister(FIRST_LOCAL_REGISTER + 1, dtReal34, 0, amDegree);
+  int32ToReal34(222, REGISTER_REAL34_DATA(FIRST_LOCAL_REGISTER + 1));
+  convertUInt64ToShortIntegerRegister(0, 0xABCDULL, 16, FIRST_LOCAL_REGISTER + 2);
+
   // Restore the diverse X/Y values consumed by the statistics accumulation.
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(1234, REGISTER_REAL34_DATA(REGISTER_X));
