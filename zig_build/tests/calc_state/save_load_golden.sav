@@ -39,8 +39,17 @@ Cxma
 3 102
 4 103
 R008
-Real
-0
+Rema
+3 3
+2
+9
+16
+23
+30
+37
+44
+51
+58
 R009
 Real
 0
@@ -459,7 +468,7 @@ Real
 777
 STRVAR
 Stri
-named string帀
+named string
 CPXVAR
 Cplx
 11 22

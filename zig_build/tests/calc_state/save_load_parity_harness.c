@@ -163,6 +163,13 @@ static void buildState(void) {
     int32ToReal34(e + 100, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(7) + e));
   }
 
+  // 3x3 real matrix (a square dimension distinct from the 2x3/2x2 above), so
+  // the matrix save/restore covers a different rows*cols geometry.
+  initMatrixRegister(8, 3, 3, false);
+  for(int e = 0; e < 9; ++e) {
+    int32ToReal34(e * 7 + 2, REGISTER_REAL34_MATRIX_ELEMENTS(8) + e);
+  }
+
   // Named variables of two types land in the NAMED_VARIABLES section.
   allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
   int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
