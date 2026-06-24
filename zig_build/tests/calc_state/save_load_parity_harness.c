@@ -231,6 +231,7 @@ static void buildState(void) {
   displayStack = 2;
   setSystemFlag(FLAG_FRACT); // exercise the SYSTEM_FLAGS section
   significantDigits = 16;
+  exponentLimit = 42;
 }
 
 int main(int argc, char *argv[]) {
