@@ -639,6 +639,37 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh (Annex A0)");
     coverage_step.dependOn(&run_coverage.step);
 
+    // Annex A5: C-vs-Zig differential. The same full core, plus the pinned
+    // upstream C oracle (extract_oracle.sh -> charstring_diff_oracle.c) linked
+    // beside the Zig owner export, so the harness can byte-compare the two over
+    // an enumerated input space. This is the catch the parity suites cannot give
+    // for the replaced (compiled-out) owners -- on an M10 pin bump the oracle
+    // tracks the new upstream C, so a Zig owner not re-ported to match goes RED.
+    const charstring_diff_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "charstringDiff",
+        "zig_build/tests/charstring_diff/charstring_diff_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+    );
+    charstring_diff_harness.root_module.addCSourceFile(.{
+        .file = b.path("zig_build/tests/charstring_diff/charstring_diff_oracle.c"),
+        .flags = &.{},
+    });
+    const run_charstring_diff = b.addRunArtifact(charstring_diff_harness);
+    run_charstring_diff.setCwd(b.path("."));
+    const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle) (Annex A5)");
+    charstring_diff_step.dependOn(&run_charstring_diff.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.
