@@ -108,6 +108,37 @@ int main(void) {
   // in X. Install them as the sim does.
   resetOtherConfigurationStuff(true);
 
+  // Annex A2: EXHAUSTIVE keyboard-layout guard. The keyboard Zig owners have no
+  // compiled C oracle (the bridge was deleted), so an upstream change to the
+  // kbd_std_C47 layout -- the most common keyboard change -- would otherwise be
+  // caught by nothing. Checksum every field of all 37 key entries: any change to
+  // any item assignment (primary / f / g / AIM / TAM) on any key flips this. The
+  // sampled dispatch scenarios below separately verify the determineItem LOGIC.
+  // To refresh after an intended upstream layout change: run, read the printed
+  // actual, and update KBD_LAYOUT_FNV1A.
+  {
+    const uint64_t KBD_LAYOUT_FNV1A = 11650128536674693018ULL;
+    uint64_t h = 1469598103934665603ULL;
+    for(int i = 0; i < 37; ++i) {
+      const int16_t f[8] = {
+        kbd_std_C47[i].keyId,      kbd_std_C47[i].primary,
+        kbd_std_C47[i].fShifted,   kbd_std_C47[i].gShifted,
+        kbd_std_C47[i].primaryAim, kbd_std_C47[i].fShiftedAim,
+        kbd_std_C47[i].gShiftedAim, kbd_std_C47[i].primaryTam,
+      };
+      for(int k = 0; k < 8; ++k) {
+        h ^= (uint16_t)f[k];
+        h *= 1099511628211ULL;
+      }
+    }
+    if(h != KBD_LAYOUT_FNV1A) {
+      printf("FAIL: kbd_std_C47 layout checksum %llu != expected %llu "
+             "(set KBD_LAYOUT_FNV1A to the actual if the change is intended)\n",
+             (unsigned long long)h, (unsigned long long)KBD_LAYOUT_FNV1A);
+      return 1;
+    }
+  }
+
   const keyStep_t seq[] = {
     {"28", ITM_1,     CM_NIM,    "1"},
     {"29", ITM_2,     CM_NIM,    "2"},
