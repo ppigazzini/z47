@@ -232,6 +232,7 @@ static void buildState(void) {
   setSystemFlag(FLAG_FRACT); // exercise the SYSTEM_FLAGS section
   significantDigits = 16;
   exponentLimit = 42;
+  firstGregorianDay = 2299161; // non-default (a uint32 config field)
 }
 
 int main(int argc, char *argv[]) {
