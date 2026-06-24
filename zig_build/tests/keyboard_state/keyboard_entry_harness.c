@@ -49,6 +49,11 @@ int main(void) {
   // be installed exactly as the sim/testSuite do at startup).
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
   fnReset(CONFIRMED);
+  // fnReset does NOT install the configuration defaults (Input_Default,
+  // displayFormat, roundingMode, ...); the sim does this at startup. Without it
+  // closeNim cannot route the NIM integer to a real34 and the number never lands
+  // in X. Install them as the sim does.
+  resetOtherConfigurationStuff(true);
 
   const keyStep_t seq[] = {
     {"28", ITM_1,     CM_NIM,    "1"},
@@ -125,7 +130,37 @@ int main(void) {
     }
   }
 
+  // Scenario 3: an OPERATOR key EXECUTES its function on the stack and produces
+  // a concrete arithmetic result. Preset Y=12, X=3, then click "+" (index 36):
+  // btnClicked -> btnPressed -> determineItem(ITM_ADD) -> processKeyAction ->
+  // the addition runs, leaving X=15. This proves the entry path actually drives
+  // computation, not just dispatch -- using preset registers to avoid the NIM
+  // number-commit, which needs more startup state than fnReset installs.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(12, REGISTER_REAL34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"36"); // +
+  {
+    char xbuf[64];
+    if(getRegisterDataType(REGISTER_X) != dtReal34) {
+      printf("FAIL: after preset 12, 3 then '+', X type = %u, expected dtReal34"
+             " (%u)\n", (unsigned)getRegisterDataType(REGISTER_X),
+             (unsigned)dtReal34);
+      return 1;
+    }
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xbuf);
+    if(strcmp(xbuf, "15") != 0) {
+      printf("FAIL: after preset 12, 3 then '+', X = \"%s\", expected \"15\"\n",
+             xbuf);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
-         "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch)\n");
+         "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; the '+' "
+         "key computes 12 + 3 = 15 on the stack)\n");
   return 0;
 }
