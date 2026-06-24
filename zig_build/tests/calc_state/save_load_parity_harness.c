@@ -230,6 +230,7 @@ static void buildState(void) {
   timeDisplayFormatDigits = 4;
   displayStack = 2;
   setSystemFlag(FLAG_FRACT); // exercise the SYSTEM_FLAGS section
+  significantDigits = 16;
 }
 
 int main(int argc, char *argv[]) {
