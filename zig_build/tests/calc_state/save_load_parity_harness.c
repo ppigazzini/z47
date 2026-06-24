@@ -228,6 +228,7 @@ static void buildState(void) {
   displayFormatDigits = 6;
   roundingMode = RM_HALF_UP;
   timeDisplayFormatDigits = 4;
+  displayStack = 2;
 }
 
 int main(int argc, char *argv[]) {
