@@ -18,7 +18,9 @@
 // startup state this bare harness does not set up, and is a follow-up slice.
 
 #include <c47.h>
+#include <decQuad.h>
 #include <stdio.h>
+#include <string.h>
 
 // The 6 screen/keyboard globals testSuite.c normally provides; this harness
 // replaces testSuite.c, so it must define them itself (the GTK/HAL surface is
@@ -42,6 +44,10 @@ typedef struct {
 } keyStep_t;
 
 int main(void) {
+  // The number-input path commits via the calc memory allocator; without this
+  // the NIM number silently fails to materialise in X (the GMP allocators must
+  // be installed exactly as the sim/testSuite do at startup).
+  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
   fnReset(CONFIRMED);
 
   const keyStep_t seq[] = {
@@ -68,6 +74,28 @@ int main(void) {
              (unsigned)seq[i].expectMode);
       return 1;
     }
+  }
+
+  // Scenario 1b: NIM digit ACCUMULATION through the entry path. Typing 1 2 3
+  // must build the number "+123" in the NIM buffer (aimBuffer), proving the keys
+  // flow btnClicked -> processKeyAction -> addItemToNimBuffer end to end, not just
+  // that the first digit is dispatched. (Committing the NIM number to X with a
+  // real arithmetic result additionally needs the calculator config state --
+  // Input_Default and friends -- that the sim installs at startup beyond
+  // fnReset; asserting the computed value is a follow-up slice.)
+  fnReset(CONFIRMED);
+  btnClicked(NULL, (gpointer)"28"); // 1
+  btnClicked(NULL, (gpointer)"29"); // 2
+  btnClicked(NULL, (gpointer)"30"); // 3
+  if(calcMode != CM_NIM) {
+    printf("FAIL: after digits 1 2 3, calcMode = %u, expected CM_NIM (%u)\n",
+           (unsigned)calcMode, (unsigned)CM_NIM);
+    return 1;
+  }
+  if(strcmp(aimBuffer, "+123") != 0) {
+    printf("FAIL: after digits 1 2 3, NIM buffer = \"%s\", expected \"+123\"\n",
+           aimBuffer);
+    return 1;
   }
 
   // Scenario 2: the full numeric keypad. Every digit key must dispatch to the
@@ -97,7 +125,7 @@ int main(void) {
     }
   }
 
-  printf("KEYBOARD ENTRY PARITY: OK (dispatch + mode for 1 2 ENTER 3 + and the "
-         "full 0-9 digit row)\n");
+  printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
+         "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch)\n");
   return 0;
 }
