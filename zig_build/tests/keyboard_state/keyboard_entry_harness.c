@@ -193,6 +193,9 @@ int main(void) {
   if(!checkOperator("31", "-", 12, 3, "9"))  return 1; // ITM_SUB : Y - X
   if(!checkOperator("26", "*", 12, 3, "36")) return 1; // ITM_MULT: Y * X
   if(!checkOperator("21", "/", 12, 3, "4"))  return 1; // ITM_DIV : Y / X
+  // Operand variations: a negative result and a larger exact quotient.
+  if(!checkOperator("31", "-", 3, 12, "-9")) return 1;  // Y < X -> -9
+  if(!checkOperator("21", "/", 100, 4, "25")) return 1; // 100 / 4 = 25
 
   // Scenario 4: the f-shift key drives the shift state machine. Clicking KEY_fg
   // (index 27) must set shiftF; clicking it again must move to the g shift.
