@@ -5634,7 +5634,7 @@ shortIntegerWordSize
 shortIntegerMode
 2
 significantDigits
-0
+16
 fractionDigits
 0
 currentAngularMode
