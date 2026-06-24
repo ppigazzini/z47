@@ -30,3 +30,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --max-first-party 0
+      - name: Self-test the live-link product C isolation checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Guards the checker logic itself. The full graph check
+          # (verify-product-c-link-isolation.py --target sim) requires a built
+          # toolchain and runs in the build lane / locally; this step keeps the
+          # literal-scan-independent verifier honest without a build.
+          python3 .github/project/verify-product-c-link-isolation.py --self-test
