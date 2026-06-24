@@ -178,6 +178,14 @@ static void buildState(void) {
     allocateNamedVariable("STRVAR", dtString, TO_BLOCKS((int)strlen(sv) + 1));
     strcpy(REGISTER_STRING_DATA(findNamedVariable("STRVAR")), sv);
   }
+  {
+    longInteger_t li;
+    longIntegerInit(li);
+    stringToLongInteger("9999999999999999999999", 10, li);
+    allocateNamedVariable("LIVAR", dtLongInteger, 1);
+    convertLongIntegerToLongIntegerRegister(li, findNamedVariable("LIVAR"));
+    longIntegerFree(li);
+  }
   allocateNamedVariable("CPXVAR", dtComplex34, COMPLEX34_SIZE_IN_BLOCKS);
   {
     calcRegister_t v = findNamedVariable("CPXVAR");
