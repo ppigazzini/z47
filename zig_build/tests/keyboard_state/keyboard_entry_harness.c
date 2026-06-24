@@ -302,6 +302,30 @@ int main(void) {
     }
   }
 
+  // Scenario 9: a COMPLEX operand through a unary key. Preset X = 3 + 4i, click
+  // CHS (index 14) -> -3 - 4i. Verifies the entry path handles a complex34 value
+  // (both components negated), not only real scalars.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  int32ToReal34(4, REGISTER_IMAG34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"14"); // CHS
+  {
+    if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+      printf("FAIL: complex CHS: X type = %u, expected dtComplex34 (%u)\n",
+             (unsigned)getRegisterDataType(REGISTER_X), (unsigned)dtComplex34);
+      return 1;
+    }
+    char rb[64], ib[64];
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), rb);
+    decQuadToString((decQuad *)REGISTER_IMAG34_DATA(REGISTER_X), ib);
+    if(strcmp(rb, "-3") != 0 || strcmp(ib, "-4") != 0) {
+      printf("FAIL: CHS of 3+4i: got %s, %si, expected -3, -4i\n", rb, ib);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
          "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
