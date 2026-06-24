@@ -70,7 +70,34 @@ int main(void) {
     }
   }
 
-  printf("KEYBOARD ENTRY PARITY: OK (btnClicked dispatch + mode transitions "
-         "for 1 2 ENTER 3 +)\n");
+  // Scenario 2: the full numeric keypad. Every digit key must dispatch to the
+  // matching ITM_<n> and put the calculator in number-input mode -- a regression
+  // guard on the kbd_std_C47 layout-index lookup across the whole digit row.
+  fnReset(CONFIRMED);
+  const keyStep_t digits[] = {
+    {"33", ITM_0, CM_NIM, "0"}, {"28", ITM_1, CM_NIM, "1"},
+    {"29", ITM_2, CM_NIM, "2"}, {"30", ITM_3, CM_NIM, "3"},
+    {"23", ITM_4, CM_NIM, "4"}, {"24", ITM_5, CM_NIM, "5"},
+    {"25", ITM_6, CM_NIM, "6"}, {"18", ITM_7, CM_NIM, "7"},
+    {"19", ITM_8, CM_NIM, "8"}, {"20", ITM_9, CM_NIM, "9"},
+  };
+  const int digitCount = (int)(sizeof(digits) / sizeof(digits[0]));
+  for(int i = 0; i < digitCount; ++i) {
+    btnClicked(NULL, (gpointer)digits[i].index);
+    if(lastKeyItemDetermined != digits[i].expectItem) {
+      printf("FAIL: digit key '%s' (%s) dispatched item %d, expected %d\n",
+             digits[i].index, digits[i].name, (int)lastKeyItemDetermined,
+             (int)digits[i].expectItem);
+      return 1;
+    }
+    if(calcMode != digits[i].expectMode) {
+      printf("FAIL: after digit '%s' calcMode = %u, expected CM_NIM (%u)\n",
+             digits[i].index, (unsigned)calcMode, (unsigned)CM_NIM);
+      return 1;
+    }
+  }
+
+  printf("KEYBOARD ENTRY PARITY: OK (dispatch + mode for 1 2 ENTER 3 + and the "
+         "full 0-9 digit row)\n");
   return 0;
 }
