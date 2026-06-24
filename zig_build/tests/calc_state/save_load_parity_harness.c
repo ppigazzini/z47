@@ -166,6 +166,11 @@ static void buildState(void) {
   // Named variables of two types land in the NAMED_VARIABLES section.
   allocateNamedVariable("TESTVAR", dtReal34, REAL34_SIZE_IN_BLOCKS);
   int32ToReal34(777, REGISTER_REAL34_DATA(findNamedVariable("TESTVAR")));
+  {
+    const char *sv = "named string!";
+    allocateNamedVariable("STRVAR", dtString, TO_BLOCKS((int)strlen(sv) + 1));
+    strcpy(REGISTER_STRING_DATA(findNamedVariable("STRVAR")), sv);
+  }
   allocateNamedVariable("CPXVAR", dtComplex34, COMPLEX34_SIZE_IN_BLOCKS);
   {
     calcRegister_t v = findNamedVariable("CPXVAR");
