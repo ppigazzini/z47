@@ -220,6 +220,12 @@ static void buildState(void) {
   // A couple of user flags land in the GLOBAL_FLAGS section.
   fnSetFlag(5);
   fnSetFlag(42);
+
+  // Non-default display configuration so the OTHER_CONFIGURATION_STUFF codec is
+  // exercised on save AND restore, not just the reset defaults. The round-trip
+  // (Zig load then re-save) catches a mis-encoded or mis-parsed config field.
+  displayFormat = DF_SCI;
+  displayFormatDigits = 6;
 }
 
 int main(int argc, char *argv[]) {

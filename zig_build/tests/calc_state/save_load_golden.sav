@@ -5624,9 +5624,9 @@ denMax
 lastDenominator
 4
 displayFormat
-0
+2
 displayFormatDigits
-3
+6
 timeDisplayFormatDigits
 0
 shortIntegerWordSize
