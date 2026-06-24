@@ -1,0 +1,20 @@
+# Coverage ratchet baseline (Annex A6). Monotonic floors -- these numbers may
+# only go UP. Raise them in the same commit that adds coverage; never lower them
+# without an explicit, reviewed justification in the commit message.
+#
+# Why these metrics: the A7 dry-run proved the host suites are blind to upstream
+# changes in the replaced owners, so the real M10 protection is the C-vs-Zig
+# differential (A5) and the full-core parity harnesses, NOT raw line coverage of
+# vendored deps. The ratchet therefore guards the count of owner functions under
+# differential and the number of full-core parity harnesses -- the gains that
+# actually catch a bad re-port -- so a future change cannot quietly delete them.
+#
+# (When A0's owner-object instrumentation lands -- see report-zig-coverage.sh --
+# add a zig_src covered-line floor here too.)
+
+# Owner functions under the C-vs-Zig differential (extract_oracle.sh FUNCS).
+differential_functions=5
+
+# Full-core parity/differential harness steps (saveload, keyboard_entry,
+# charstring_diff, distribution_parity, ...) that link the real core.
+fullcore_harness_steps=4
