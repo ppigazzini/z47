@@ -326,6 +326,33 @@ int main(void) {
     }
   }
 
+  // Scenario 10: COMPLEX arithmetic via the keyboard. Preset Y = 1 + 2i,
+  // X = 3 + 4i, click + (index 36) -> 4 + 6i. Verifies a binary operator over
+  // complex operands through the entry path.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
+  int32ToReal34(1, REGISTER_REAL34_DATA(REGISTER_Y));
+  int32ToReal34(2, REGISTER_IMAG34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  int32ToReal34(4, REGISTER_IMAG34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"36"); // +
+  {
+    if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+      printf("FAIL: complex +: X type = %u, expected dtComplex34\n",
+             (unsigned)getRegisterDataType(REGISTER_X));
+      return 1;
+    }
+    char rb[64], ib[64];
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), rb);
+    decQuadToString((decQuad *)REGISTER_IMAG34_DATA(REGISTER_X), ib);
+    if(strcmp(rb, "4") != 0 || strcmp(ib, "6") != 0) {
+      printf("FAIL: (1+2i)+(3+4i): got %s, %si, expected 4, 6i\n", rb, ib);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
          "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
