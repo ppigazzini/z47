@@ -226,6 +226,7 @@ static void buildState(void) {
   // (Zig load then re-save) catches a mis-encoded or mis-parsed config field.
   displayFormat = DF_SCI;
   displayFormatDigits = 6;
+  roundingMode = RM_HALF_UP;
 }
 
 int main(int argc, char *argv[]) {
