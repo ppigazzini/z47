@@ -253,6 +253,30 @@ int main(void) {
   if(!checkUnary("01", "1/x",  4, "0.25")) return 1; // ITM_1ONX
   if(!checkUnary("02", "sqrt", 9, "3"))    return 1; // ITM_SQUAREROOTX
 
+  // Scenario 7b: an f-SHIFTED function executes. Click f (KEY_fg, index 27),
+  // then the 1/x key (index 01) whose f-shifted item is y^x (ITM_YX). With
+  // Y=2, X=3 this computes 2^3 = 8 -- exercising the shift dispatch
+  // (determineFunctionKeyItem reads the shift state) plus the function.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(2, REGISTER_REAL34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"27"); // f
+  btnClicked(NULL, (gpointer)"01"); // f-shifted 1/x key = y^x
+  {
+    char xb[64];
+    // y^x (power) returns a full-precision decQuad (trailing zeros), so the
+    // string is 8 followed by 33 zeros; the value 8 confirms the f-shifted
+    // function executed.
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xb);
+    if(strcmp(xb, "8.000000000000000000000000000000000") != 0) {
+      printf("FAIL: f then y^x on (Y=2, X=3): X = \"%s\", expected 8\n", xb);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
          "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
