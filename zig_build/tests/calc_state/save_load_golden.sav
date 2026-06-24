@@ -441,7 +441,7 @@ ShoI
 LOCAL_FLAGS
 0
 NAMED_VARIABLES
-6
+7
 Mat_A
 Rema
 1 1
@@ -457,6 +457,9 @@ Rema
 TESTVAR
 Real
 777
+STRVAR
+Stri
+named string帀
 CPXVAR
 Cplx
 11 22
