@@ -172,8 +172,25 @@ int main(void) {
   if(!checkOperator("26", "*", 12, 3, "36")) return 1; // ITM_MULT: Y * X
   if(!checkOperator("21", "/", 12, 3, "4"))  return 1; // ITM_DIV : Y / X
 
+  // Scenario 4: the f-shift key drives the shift state machine. Clicking KEY_fg
+  // (index 27) must set shiftF; clicking it again must move to the g shift.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  btnClicked(NULL, (gpointer)"27"); // KEY_fg -> f
+  if(!shiftF || shiftG) {
+    printf("FAIL: after one f-shift click, shiftF=%d shiftG=%d, expected f=1 g=0\n",
+           (int)shiftF, (int)shiftG);
+    return 1;
+  }
+  btnClicked(NULL, (gpointer)"27"); // KEY_fg again -> g
+  if(shiftF || !shiftG) {
+    printf("FAIL: after a second f-shift click, shiftF=%d shiftG=%d, expected "
+           "f=0 g=1\n", (int)shiftF, (int)shiftG);
+    return 1;
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; the + - * "
-         "/ keys each compute 12 (op) 3 on the stack)\n");
+         "/ keys each compute 12 (op) 3; the f-shift key cycles f -> g)\n");
   return 0;
 }
