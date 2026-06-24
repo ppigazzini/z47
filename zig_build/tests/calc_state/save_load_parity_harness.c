@@ -230,6 +230,7 @@ static void buildState(void) {
   timeDisplayFormatDigits = 4;
   displayStack = 2;
   setSystemFlag(FLAG_FRACT); // exercise the SYSTEM_FLAGS section
+  setSystemFlag(FLAG_POLAR);
   significantDigits = 16;
   exponentLimit = 42;
   firstGregorianDay = 2299161; // non-default (a uint32 config field)
