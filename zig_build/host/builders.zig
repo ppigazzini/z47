@@ -251,10 +251,11 @@ pub fn addTestSuite(
 // (the real calculator core + calc_state) but swaps testSuite.c's main for the
 // save_load_parity_harness.c driver, so it exercises the ACTUAL save/restore
 // serialization. Used to verify a Zig port of the save/restore bodies.
-pub fn addSaveLoadParityHarness(
+pub fn addFullCoreHarness(
     b: *std.Build,
     host_target: std.Build.ResolvedTarget,
     name: []const u8,
+    harness_source: []const u8,
     optimize: std.builtin.OptimizeMode,
     core_sources: []const []const u8,
     test_sources: []const []const u8,
@@ -295,7 +296,7 @@ pub fn addSaveLoadParityHarness(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     std.debug.assert(core_sources.len == 0);
     _ = test_sources;
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/calc_state/save_load_parity_harness.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path(harness_source), .flags = core_c_flags });
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
