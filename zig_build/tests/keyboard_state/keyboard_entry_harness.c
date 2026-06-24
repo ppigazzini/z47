@@ -74,6 +74,28 @@ static int checkOperator(const char *opIndex, const char *opName,
   return 1;
 }
 
+// Drive one unary function key against a preset X and check the result.
+static int checkUnary(const char *idx, const char *name, int32_t x,
+                      const char *expect) {
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(x, REGISTER_REAL34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)idx);
+  if(getRegisterDataType(REGISTER_X) != dtReal34) {
+    printf("FAIL: %s on X=%d: X type = %u, expected dtReal34\n", name, x,
+           (unsigned)getRegisterDataType(REGISTER_X));
+    return 0;
+  }
+  char xb[64];
+  decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xb);
+  if(strcmp(xb, expect) != 0) {
+    printf("FAIL: %s on X=%d: X = \"%s\", expected \"%s\"\n", name, x, xb, expect);
+    return 0;
+  }
+  return 1;
+}
+
 int main(void) {
   // The number-input path commits via the calc memory allocator; without this
   // the NIM number silently fails to materialise in X (the GMP allocators must
@@ -226,8 +248,14 @@ int main(void) {
     }
   }
 
+  // Scenario 7: unary FUNCTION keys compute exact results on X.
+  // (the key string is always two digits -- the kbd_std index zero-padded.)
+  if(!checkUnary("01", "1/x",  4, "0.25")) return 1; // ITM_1ONX
+  if(!checkUnary("02", "sqrt", 9, "3"))    return 1; // ITM_SQUAREROOTX
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
-         "compute; f-shift cycles f -> g; x<>y swaps; CHS negates X)\n");
+         "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
+         "compute)\n");
   return 0;
 }
