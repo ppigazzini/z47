@@ -548,10 +548,11 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
-    const saveload_parity_harness = host_builders.addSaveLoadParityHarness(
+    const saveload_parity_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,
         "saveLoadParity",
+        "zig_build/tests/calc_state/save_load_parity_harness.c",
         optimize,
         context.core_sources,
         context.test_sources,
@@ -576,6 +577,30 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     gen_saveload_golden.addArg("--write-golden");
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);
+
+    // Keyboard ENTRY-layer harness: drives the host btnClicked entry path
+    // (btnClicked -> btnPressed/Released -> processKeyAction -> NIM/exec), which
+    // the main testSuite never reaches (it calls funcToTest directly).
+    const keyboard_entry_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "keyboardEntry",
+        "zig_build/tests/keyboard_state/keyboard_entry_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+    );
+    const run_keyboard_entry = b.addRunArtifact(keyboard_entry_harness);
+    run_keyboard_entry.setCwd(b.path("."));
+    const keyboard_entry_step = b.step("keyboard_entry_parity", "Run the keyboard entry-layer (btnClicked) parity harness");
+    keyboard_entry_step.dependOn(&run_keyboard_entry.step);
 
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
