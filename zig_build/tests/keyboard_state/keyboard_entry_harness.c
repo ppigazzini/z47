@@ -380,6 +380,33 @@ int main(void) {
     }
   }
 
+  // Scenario 12: COMPLEX division via the keyboard. Y = -5 + 10i, X = 1 + 2i,
+  // click / (index 21) -> Y/X = (-5+10i)(1-2i)/5 = 3 + 4i. Exercises the
+  // conjugate-and-divide complex path through the entry layer.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
+  int32ToReal34(-5, REGISTER_REAL34_DATA(REGISTER_Y));
+  int32ToReal34(10, REGISTER_IMAG34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+  int32ToReal34(1, REGISTER_REAL34_DATA(REGISTER_X));
+  int32ToReal34(2, REGISTER_IMAG34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"21"); // /
+  {
+    if(getRegisterDataType(REGISTER_X) != dtComplex34) {
+      printf("FAIL: complex /: X type = %u, expected dtComplex34\n",
+             (unsigned)getRegisterDataType(REGISTER_X));
+      return 1;
+    }
+    char rb[64], ib[64];
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), rb);
+    decQuadToString((decQuad *)REGISTER_IMAG34_DATA(REGISTER_X), ib);
+    if(strcmp(rb, "3") != 0 || strcmp(ib, "4") != 0) {
+      printf("FAIL: (-5+10i)/(1+2i): got %s, %si, expected 3, 4i\n", rb, ib);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
          "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
