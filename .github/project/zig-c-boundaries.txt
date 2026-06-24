@@ -184,6 +184,8 @@ zig_src/state/calc_state.zig
 zig_build/tests/keyboard_state/keyboard_state_parity_runtime.zig
 zig_src/state/flags_runtime.zig
 zig_src/state/keyboard_state_runtime.zig
+zig_src/state/keyboard_state_dmcp_owned.zig
+zig_src/state/keyboard_state_ringbuffer_owned.zig
 zig_src/state/memory_runtime.zig
 zig_src/state/calc_state_io_owned.zig
 zig_src/state/calc_state_save_owned.zig
