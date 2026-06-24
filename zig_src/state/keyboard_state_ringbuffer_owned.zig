@@ -99,7 +99,6 @@ pub const KeyBuffer = struct {
 };
 
 // The single firmware instance (keyboardTweak.c: `kb_buffer_t buffer = {{}, 0, 0}`).
-// The single firmware instance (keyboardTweak.c: `kb_buffer_t buffer = {{}, 0, 0}`).
 var buffer: KeyBuffer = .{};
 
 // C-ABI wrappers matching the keyboardTweak.h prototypes exactly (bool_t = bool;
