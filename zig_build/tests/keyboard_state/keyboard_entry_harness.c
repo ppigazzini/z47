@@ -280,6 +280,28 @@ int main(void) {
     }
   }
 
+  // Scenario 8: CHAINED operators across the stack. Z=2, Y=3, X=4; click x (mult)
+  // -> X=12 (3*4) and the stack drops so old Z=2 falls to Y; click + -> X=14
+  // (2+12). Exercises multi-step stack flow and the post-operation stack drop.
+  fnReset(CONFIRMED);
+  resetOtherConfigurationStuff(true);
+  reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
+  int32ToReal34(2, REGISTER_REAL34_DATA(REGISTER_Z));
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_Y));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(4, REGISTER_REAL34_DATA(REGISTER_X));
+  btnClicked(NULL, (gpointer)"26"); // *  -> X = 3*4 = 12, Y <- old Z = 2
+  btnClicked(NULL, (gpointer)"36"); // +  -> X = 2 + 12 = 14
+  {
+    char xb[64];
+    decQuadToString((decQuad *)REGISTER_REAL34_DATA(REGISTER_X), xb);
+    if(strcmp(xb, "14") != 0) {
+      printf("FAIL: chained 2 3 4 * + : X = \"%s\", expected \"14\"\n", xb);
+      return 1;
+    }
+  }
+
   printf("KEYBOARD ENTRY PARITY: OK (dispatch + modes for 1 2 ENTER 3 +; NIM "
          "accumulation 1 2 3 -> \"+123\"; full 0-9 digit-row dispatch; + - * / "
          "compute; f-shift cycles f -> g; x<>y swaps; CHS negates; 1/x and sqrt "
