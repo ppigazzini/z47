@@ -1345,7 +1345,7 @@ pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
     if (comptime extra_info) {
         const name = getRegisterDataTypeName(reg, true, false);
-        const slice = std.fmt.bufPrintZ(errorMessageBuf(), "cannot convert Register {d} from {s}", .{ reg, std.mem.span(name) }) catch return;
+        const slice = bufPrintZ(errorMessageBuf(), "cannot convert Register {d} from {s}", .{ reg, std.mem.span(name) }) catch return;
         c_moreInfoOnError("In function badTypeError:", slice.ptr, null, null);
     }
 }
@@ -1899,4 +1899,12 @@ pub export fn processIntRealComplexDyadicFunction(realf: Fn0, complexf: Fn0, sho
         return;
     }
     adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
+
+// bufPrintZ compat (std.fmt.bufPrintZ was removed upstream): removed in Zig 0.17 master; this form works in both
+// pinned 0.16 and master (std.fmt.bufPrint + an explicit sentinel byte).
+fn bufPrintZ(buf: []u8, comptime fmt: []const u8, args: anytype) ![:0]u8 {
+    const s = try std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args);
+    buf[s.len] = 0;
+    return buf[0..s.len :0];
 }

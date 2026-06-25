@@ -1,3 +1,4 @@
+const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/error.c: the error-display core. displayCalcErrorMessage
@@ -192,12 +193,12 @@ inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
 // Each C string is copied into a zero-filled fixed-width row.
 // ---------------------------------------------------------------------------
 fn bugRow(comptime s: []const u8) [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8 {
-    var row = [_]u8{0} ** SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
+    var row = std.mem.zeroes([SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8);
     @memcpy(row[0..s.len], s);
     return row;
 }
 fn errRow(comptime s: []const u8) [SIZE_OF_EACH_ERROR_MESSAGE]u8 {
-    var row = [_]u8{0} ** SIZE_OF_EACH_ERROR_MESSAGE;
+    var row = std.mem.zeroes([SIZE_OF_EACH_ERROR_MESSAGE]u8);
     @memcpy(row[0..s.len], s);
     return row;
 }

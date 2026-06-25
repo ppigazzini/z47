@@ -1,3 +1,4 @@
+const std = @import("std");
 const register_runtime = @import("register_metadata_runtime.zig");
 const reg_param_product = @import("stack_runtime_reg_param_product_owned.zig");
 const product_real = @import("stack_runtime_product_real_owned.zig");
@@ -98,7 +99,7 @@ fn desc(comptime text: []const u8) reserved_variable_desc_t {
         if (text.len >= 28) @compileError("reserved variable description too long");
     }
 
-    var out: [28]u8 = [_]u8{0} ** 28;
+    var out: [28]u8 = std.mem.zeroes([28]u8);
     inline for (text, 0..) |ch, i| {
         out[i] = ch;
     }

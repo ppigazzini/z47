@@ -1,3 +1,4 @@
+const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/printing/print.c: the HP-82240 / Martel infrared
@@ -806,7 +807,7 @@ const STD_SUP_x = "\xa1\x78";
 const STD_SUP_2 = "\xa1\x62";
 
 fn alias(comptime item: u16, comptime name: []const u8) nameAlias_t {
-    var row = nameAlias_t{ .item = item, .name = [_]u8{0} ** 16 };
+    var row = nameAlias_t{ .item = item, .name = std.mem.zeroes([16]u8) };
     @memcpy(row.name[0..name.len], name);
     return row;
 }
@@ -2309,7 +2310,7 @@ extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regi
 const summationRegisterName = blk: {
     const SS = struct {
         fn row(comptime s: []const u8) summationRegisterName_t {
-            var r = summationRegisterName_t{ .name = [_]u8{0} ** 16 };
+            var r = summationRegisterName_t{ .name = std.mem.zeroes([16]u8) };
             @memcpy(r.name[0..s.len], s);
             return r;
         }

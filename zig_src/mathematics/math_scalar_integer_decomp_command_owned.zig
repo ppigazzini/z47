@@ -6,7 +6,7 @@ const no_register = @as(runtime.calcRegister_t, -1);
 fn decompError() void {
     var message_buffer: [96]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = std.fmt.bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name}) catch "cannot calculate Decomp";
+    const message = runtime.bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name}) catch "cannot calculate Decomp";
 
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);

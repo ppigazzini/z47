@@ -113,7 +113,7 @@ fn doTaylorIterations(
     var end_cos = cos_out == null;
 
     if (do_epsilon) {
-        const epsilon_text = std.fmt.bufPrintZ(&epsilon_buffer, "1E-{d}", .{epsilon_digits}) catch unreachable;
+        const epsilon_text = runtime.bufPrintZ(&epsilon_buffer, "1E-{d}", .{epsilon_digits}) catch unreachable;
         _ = runtime.decNumberFromString(epsilon_or_compare, epsilon_text, real_context);
     }
 

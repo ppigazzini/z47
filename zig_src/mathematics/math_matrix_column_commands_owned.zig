@@ -88,7 +88,7 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (runtime.extra_info_on_calc_error) {
             var buf: [64]u8 = undefined;
-            const m = std.fmt.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ i, j }) catch "out of range";
+            const m = runtime.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ i, j }) catch "out of range";
             runtime.moreInfoOnError("In function columnMinMaxReal:", m, null, null);
         }
         return false;
@@ -108,7 +108,7 @@ fn columnMinMaxComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
-        const m = std.fmt.bufPrintZ(&buf, "Cannot apply this function to {s}", .{tn}) catch "wrong type";
+        const m = runtime.bufPrintZ(&buf, "Cannot apply this function to {s}", .{tn}) catch "wrong type";
         runtime.moreInfoOnError("In function columnMinMaxComplex:", m, null, null);
     }
     return false;

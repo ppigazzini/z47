@@ -1,3 +1,4 @@
+const std = @import("std");
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =
@@ -54,7 +55,7 @@ pub fn realContext39() *ProductRealContext {
 
 pub fn productReal34ToReal(source: *const ProductReal34, destination: *ProductReal) void {
     if (use_fake_stack_state_harness_surface) {
-        destination.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = [_]u16{0} ** 25 };
+        destination.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = std.mem.zeroes([25]u16) };
         return;
     }
 
@@ -63,7 +64,7 @@ pub fn productReal34ToReal(source: *const ProductReal34, destination: *ProductRe
 
 pub fn productUInt32ToReal(source: u32, destination: *ProductReal) void {
     if (use_fake_stack_state_harness_surface) {
-        destination.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = [_]u16{0} ** 25 };
+        destination.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = std.mem.zeroes([25]u16) };
         return;
     }
 
@@ -80,7 +81,7 @@ pub fn productRealSetPositiveSign(value: *ProductReal) void {
 
 pub fn productRealSubtract(lhs: *const ProductReal, rhs: *const ProductReal, result: *ProductReal, real_context: *ProductRealContext) void {
     if (use_fake_stack_state_harness_surface) {
-        result.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = [_]u16{0} ** 25 };
+        result.* = .{ .digits = 0, .exponent = 0, .bits = 0, .lsu = std.mem.zeroes([25]u16) };
         return;
     }
 
