@@ -15,6 +15,10 @@
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
+// trimLeadingSpace (stringFuncs owner) — master fd83b4a4 strips the leading
+// FRONTSPACE from a formatted number before appending it to a string.
+extern fn trimLeadingSpace(stringToTrim: [*c]u8) void;
+
 const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 const CellFn = *const fn () callconv(.c) void;
 
@@ -460,6 +464,7 @@ pub export fn addStriReal() callconv(.c) void {
             FRONTSPACE,
             FULLIRFRAC,
         );
+        trimLeadingSpace(runtime.tmpString);
     }
     addString(runtime.tmpString);
 }
@@ -478,6 +483,7 @@ pub export fn addStriCplx() callconv(.c) void {
         @intCast(runtime.currentAngularMode),
         runtime.getSystemFlag(FLAG_POLAR),
     );
+    trimLeadingSpace(runtime.tmpString);
     addString(runtime.tmpString);
 }
 
