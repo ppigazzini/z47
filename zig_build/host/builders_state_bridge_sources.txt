@@ -2,3 +2,9 @@
 # Empty: the keyboard-state bridge (keyboard_state_legacy.c) was retired once
 # every keyboard handler, the ring buffer and the keyboard globals moved to Zig
 # (zig_src/state/keyboard_state*.zig). No first-party state C bridge remains.
+
+# Newly-imported upstream master file not yet ported to a Zig owner (pin-advance
+# fd83b4a4): the elec (delta-star / symmetrical-components / triple-phase)
+# command surface. Compiled as plain upstream C; items.c dispatch wiring extends
+# the Zig items table separately.
+src/c47/mathematics/elec.c

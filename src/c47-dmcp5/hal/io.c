@@ -34,6 +34,14 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       //getTimeStampString(filename + strlen(filename));
       //strcat(filename, ".tsv");
       return FILE_OK;
+    case ioPathRegExport:
+      check_create_dir(DATA_DIR);
+      ret = file_selection_screen("Export Register File", DATA_DIR, DATA_EXT, save_datafile, 1, 1, filename);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
+    case ioPathRegImport:
+      check_create_dir(DATA_DIR);
+      ret = file_selection_screen("Import Register File", DATA_DIR, DATA_EXT, load_datafile, 0, 0, filename);
+      return (ret == MRET_EXIT ? FILE_CANCEL : FILE_OK);
     case ioPathSaveStateFile:
       check_create_dir(STATE_DIR);
       ret = file_selection_screen("Save Calculator State", STATE_DIR, STATE_EXT, save_statefile, 1, 1, filename);
@@ -248,6 +256,29 @@ int save_programfile(const char * fpath, const char * fname, void * data) {
 }
 
 int load_programfile(const char * fpath, const char * fname, void * data) {
+  lcd_putsRAt(t24, 6, "  Loading ...");
+  lcd_refresh_wait();
+
+  // Store the program file name
+  strcpy(data, fpath);
+
+  // Exit with appropriate code to load state file
+  return MRET_LOADSTATE;
+}
+
+int save_datafile(const char * fpath, const char * fname, void * data) {
+  lcd_puts(t24, "Saving register(s) ...");
+  lcd_puts(t24, fname);
+  lcd_refresh();
+
+  // Store the program file name
+  strcpy(data, fpath);
+
+  // Exit with appropriate code to save state file save
+  return MRET_SAVESTATE;
+}
+
+int load_datafile(const char * fpath, const char * fname, void * data) {
   lcd_putsRAt(t24, 6, "  Loading ...");
   lcd_refresh_wait();
 

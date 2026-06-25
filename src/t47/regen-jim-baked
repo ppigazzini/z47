@@ -1,0 +1,48 @@
+#!/bin/sh
+# Regenerate baked Jim Tcl artifacts under src/t47/ after bumping dep/jimtcl.
+# Requires: tclsh, Jim configure (autosetup), make (optional, for verification).
+set -eu
+
+root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+jim=$root/dep/jimtcl
+out=$root/src/t47
+gen=$out/jimgen
+tclsh=${TCLSH:-tclsh}
+
+exts="package readdir aio array clock exec file glob pack regexp signal stdlib tclcompat"
+exts_win="package readdir aio array clock exec file glob pack regexp stdlib tclcompat"
+configure_exts="package,readdir,aio,array,clock,exec,file,glob,pack,regexp,signal,stdlib,tclcompat"
+
+probe=$(mktemp -d)
+trap 'rm -rf "$probe"' EXIT
+
+mkdir -p "$gen"
+
+echo "Generating jimgen/ from Jim Tcl scripts..."
+$tclsh "$jim/make-load-static-exts.tcl" $exts > "$gen/jim-load-static-exts.c"
+$tclsh "$jim/make-load-static-exts.tcl" $exts_win > "$gen/jim-load-static-exts-win32.c"
+for t in glob stdlib tclcompat; do
+  $tclsh "$jim/make-c-ext.tcl" "$jim/$t.tcl" > "$gen/_${t}.c"
+done
+$tclsh "$jim/parse-unidata.tcl" "$jim/UnicodeData.txt" "$jim/EastAsianWidth.txt" \
+  > "$gen/_unicode_mapping.c"
+
+echo "Running Jim configure for jimautoconf-posix.h..."
+(
+  cd "$probe"
+  "$jim/configure" --enable-utf8 --minimal --without-ext=default \
+    --with-ext="$configure_exts" CFLAGS=-w >/dev/null
+  cp jimautoconf.h "$out/jimautoconf-posix.h"
+  cp jim-config.h "$out/jim-config.h"
+)
+
+gitver=$(
+  git -C "$jim" describe --dirty 2>/dev/null || git -C "$jim" rev-parse --short HEAD
+)
+for f in "$out/jim-config.h" "$out/jimautoconf-posix.h"; do
+  sed "s/#define JIM_GITVERSION \"[^\"]*\"/#define JIM_GITVERSION \"$gitver\"/" "$f" > "$f.tmp"
+  mv "$f.tmp" "$f"
+done
+
+echo "Done. Review jimautoconf-win32.h manually if Windows feature macros changed."
+echo "Generated: $gen/ and $out/jim-config.h, $out/jimautoconf-posix.h"

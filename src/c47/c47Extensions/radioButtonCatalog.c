@@ -19,12 +19,12 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_DMY,              DF_DMY,                 RB_DF},  //fnSetDateFormat
   {ITM_MDY,              DF_MDY,                 RB_DF},  //fnSetDateFormat
   {ITM_YMD,              DF_YMD,                 RB_DF},  //fnSetDateFormat
-//  {ITM_ALL,              DF_ALL,                 RB_DI},  //fnDisplayFormatAll
-//  {ITM_ENG,              DF_ENG,                 RB_DI},  //fnDisplayFormatEng
-//  {ITM_FIX,              DF_FIX,                 RB_DI},  //fnDisplayFormatFix
-//  {ITM_SCI,              DF_SCI,                 RB_DI},  //fnDisplayFormatSci
-//  {ITM_SIGFIG,           DF_SF,                  RB_DI},  //fnDisplayFormatSigFig
-//  {ITM_UNIT,             DF_UN,                  RB_DI},  //fnDisplayFormatUnit
+  {ITM_ALL,              DF_ALL,                 RB_DI},  //fnDisplayFormatAll
+  {ITM_ENG,              DF_ENG,                 RB_DI},  //fnDisplayFormatEng
+  {ITM_FIX,              DF_FIX,                 RB_DI},  //fnDisplayFormatFix
+  {ITM_SCI,              DF_SCI,                 RB_DI},  //fnDisplayFormatSci
+  {ITM_SIGFIG,           DF_SF,                  RB_DI},  //fnDisplayFormatSigFig
+  {ITM_UNIT,             DF_UN,                  RB_DI},  //fnDisplayFormatUnit
   {ITM_INP_DEF_43S,      ID_43S,                 RB_ID},  //fnInDefault
   {ITM_INP_DEF_CPXDP,    ID_CPXDP,               RB_ID},  //fnInDefault
   {ITM_INP_DEF_DP,       ID_DP,                  RB_ID},  //fnInDefault
@@ -120,6 +120,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_MNUp1 ,           FLAG_MNUp1  ,           CB_JC},
   {ITM_HPBASE,           FLAG_HPBASE ,           CB_JC},
   {ITM_AMORT_HP12C,      FLAG_AMORT_HP12C,       CB_JC},
+  {ITM_BOLD,             FLAG_BOLD,              CB_JC},
+  {ITM_SIGZEROS,         FLAG_SIGZEROS,          CB_JC},
   {ITM_2TO10,            FLAG_2TO10  ,           CB_JC},
   {ITM_DENANY,           FLAG_DENANY ,           CB_JC},
   {ITM_DENFIX,           FLAG_DENFIX ,           CB_JC},
@@ -257,6 +259,8 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_MNUp1,
   FLAG_HPBASE,
   FLAG_AMORT_HP12C,
+  FLAG_BOLD,
+  FLAG_SIGZEROS,
   FLAG_2TO10,
   FLAG_DENANY,
   FLAG_DENFIX,
@@ -564,7 +568,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_DSPCYCLE:  result = 32700 + displayFormat;                             break;
     case ITM_SCR:       result = (scrLock & 0x03) | (nextChar & 0x03);              break;
     case ITM_DSP:       result = displayFormatDigits;                               break;
-//    case ITM_GET_ADM:    
+//    case ITM_GET_ADM:
     case ITM_SET_ADM:   result = currentAngularMode;                                break;
 //    case ITM_GET_ISM:
     case ITM_SET_ISM:   result = shortIntegerModeValue();                           break;

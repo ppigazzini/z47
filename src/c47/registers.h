@@ -237,6 +237,7 @@
   void           fnToReal                        (uint16_t unusedButMandatoryParameter);
 
   void           printStringToConsole            (const char *str, const char *before, const char *after);
+  void           printC47ShortStringToConsole    (const char *s, const char *prefix, const char *suffix);
   void           printReal34ToConsole            (const real34_t *value, const char *before, const char *after);
   void           printRealToConsole              (const real_t *value, const char *before, const char *after);
   void           printRealInfoToConsole          (const real_t *value, const char *name);

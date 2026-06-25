@@ -29,6 +29,14 @@ void fnInput(uint16_t regist) {
 
 void fnVarMnu(uint16_t label) {
   currentMvarLabel = label;
+  varMenu42 = false;
+  showSoftmenu(-MNU_MVAR);
+}
+
+
+void fn42VarMnu(uint16_t label) {
+  currentMvarLabel = label;
+  varMenu42 = true;
   showSoftmenu(-MNU_MVAR);
 }
 
@@ -304,8 +312,10 @@ void fnKey(uint16_t regist) {
   if(lastKeyCode == 0) {
     temporaryInformation = TI_TRUE;
     #if defined(PC_BUILD)
-      while(gtk_events_pending()) {
-        gtk_main_iteration();
+      if(!headlessMode) {
+        while(gtk_events_pending()) {
+          gtk_main_iteration();
+        }
       }
     #elif defined(DMCP_BUILD)
       dmcpResetAutoOff(); //prevent auto off occurring within a GTO loop with KEY?, which causes an unrecoverable sleep and impossibility to switch calculator back on
@@ -363,7 +373,7 @@ void fnKeyType(uint16_t regist) {
       #else
         uInt32ToLongInteger(12u, kt); break;
       #endif
-      
+
     case 71:
       #if (CALCMODEL == USER_R47)
         uInt32ToLongInteger(12u, kt); break;

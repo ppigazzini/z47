@@ -42,6 +42,18 @@ uint8_t *lcd_line_addr(int row) {
 }
 
 
+bool_t lcd_buffer_pixel_on(uint32_t x, uint32_t y) {
+  if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
+    return false;
+  }
+  const uint8_t *line_buf = lcd_buffer + 52 * y;
+  const uint32_t bitIndex = SCREEN_WIDTH - 1 - x;
+  const uint32_t byte_i = bitIndex >> 3;
+  const uint32_t bit_j = bitIndex & 7u;
+  return (line_buf[2 + byte_i] >> bit_j) & 1u;
+}
+
+
 void LCD_write_line(uint8_t *line_buf) {
   if(line_buf[1] >= SCREEN_HEIGHT) {
     char tmp[1000];
@@ -60,7 +72,9 @@ void LCD_write_line(uint8_t *line_buf) {
     }
   }
   line_buf[0] = 0u; // Mark updated
-  gtk_widget_queue_draw_area(screen, 0, SCREEN_HEIGHT - row - 1, 400, 1);
+  if(!headlessMode && screen != NULL) {
+    gtk_widget_queue_draw_area(screen, 0, SCREEN_HEIGHT - row - 1, 400, 1);
+  }
 }
 
 
@@ -196,6 +210,7 @@ void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
 gboolean ui_is_active = FALSE;
 
 void refresh_gui(void) {
+  if(headlessMode) return;
   while(gtk_events_pending()) {
     if(ui_is_active) {
       break;  // Exit if UI active - original W32 issue, but safer on all OS

@@ -9,14 +9,20 @@
 #include "version.h"
 
 #if defined(PC_BUILD)
+  #include "../t47/dsl.h"
   #include "gtkGui.h"
 
-  extern void z47_startup_init_ui(int *argc, char ***argv);
-  extern void z47_startup_enter_mainloop(void);
+  #ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <io.h>
+  #endif
+
 
   char                modelString[50];
   bool_t              mockup = false;
   uint16_t            dumpMenus = 0;
+  bool_t              dumpMenusAll = false;
   bool_t              writeExportAll = false;
   uint8_t             config = 0;
   bool_t              enableFunctionKeysDisplay;
@@ -31,6 +37,10 @@
   int                 currentBezel; // 0=normal, 1=AIM, 2=TAM
   bool_t              resetKeys = false;
   uint8_t             calcModelNew = 255;
+  char               *scriptFile = NULL;
+  char               *menuDumpPath = NULL;
+  char               *scriptCommand = NULL;
+  bool_t              dumpDslCmds = false;
 
   #if defined(EXPORT_ITEMS)
     int sortItems(void const *a, void const *b) {
@@ -38,11 +48,36 @@
     }
   #endif // EXPORT_ITEMS
 
+  #ifdef _WIN32
+    static bool consoleAttached = false;
+  #endif
+
+  void readyToExit(void) {
+    #ifdef _WIN32
+      if(consoleAttached) {
+        printf("\nYou may need to press ENTER to return to the command prompt\n");
+      }
+      fflush(stdout);
+      fflush(stderr);
+      FreeConsole();
+    #endif //_WIN32
+  }
+
+
   int main(int argc, char* argv[]) {
+    //for debugging, force terminal output to be sequential
+    //setvbuf(stdout, NULL, _IONBF, 0);
+    //setvbuf(stderr, NULL, _IONBF, 0);
+
     #if defined(__APPLE__)
       // we take the directory where the application is as the root for this application.
       // in argv[0] is the application itself. We strip the name of the app by searching for the last '/':
-      if(argc>=1) {
+      // Headless t47 keeps the shell cwd so script-relative paths resolve correctly.
+      char *argv0Basename = NULL;
+      if(argc >= 1 && argv[0] != NULL) {
+        argv0Basename = g_path_get_basename(argv[0]);
+      }
+      if((argv0Basename == NULL || strcmp(argv0Basename, "t47") != 0) && argc >= 1) {
         char *curdir = malloc(1000);
         // find last /:
         char *s = strrchr(argv[0], '/');
@@ -53,6 +88,7 @@
           free(curdir);
         }
       }
+      g_free(argv0Basename);
     #endif // __APPLE__
 
     c47MemInBlocks = 0;
@@ -175,6 +211,33 @@
       if(strcmp(argv[arg], "--writeexportall") == 0) {
         printf("Activated: %s\n", argv[arg]);
         writeExportAll = true;
+        loadTestPrograms = true;
+        // headlessMode = true; //this needs to be made headless. Needs testing and tweaking. Later.
+      }
+      if(strcmp(argv[arg], "--script") == 0) {
+        printf("Activated: %s\n", argv[arg]);
+        if(arg+1<argc && (strcmp(argv[arg+1], "-") == 0 || argv[arg+1][0] != '-')) {
+          scriptFile = argv[++arg];
+          printf("File name: %s\n", scriptFile);
+        } else {
+            // If no script filename is provided, use stdin.
+            scriptFile = "-";
+        }
+      }
+      if(strcmp(argv[arg], "--dslcommands") == 0) {
+        dumpDslCmds = true;
+        headlessMode = true;
+        printf("Activated: --dslcommands\n");
+      }
+      if(strcmp(argv[arg], "--exec") == 0 || strcmp(argv[arg], "--e") == 0 || strcmp(argv[arg], "-e") == 0) {
+        printf("Activated: %s\n", argv[arg]);
+        if(arg+1 < argc) {
+          scriptCommand = argv[++arg];
+        }
+      }
+      if(strcmp(argv[arg], "--headless") == 0) {
+          headlessMode = true;
+          printf("Activated: --headless\n");
       }
       if(strcmp(argv[arg], "--mockup") == 0) {
         printf("Activated: %s\n", argv[arg]);
@@ -183,10 +246,50 @@
       if(strcmp(argv[arg], "--dumpMenus1") == 0) {
         printf("Activated: %s\n", argv[arg]);
         dumpMenus = 1;
+        headlessMode = true;
+        if(arg+1<argc && (argv[arg+1])[0] != '-') {
+          menuDumpPath = argv[++arg];
+          if(menuDumpPath[0] == '\0' || strlen(menuDumpPath) >= 500) {
+            printf("Error: implausible --dumpMenus1 path. No work done.\n");
+            return 1;
+          }
+          printf("  menuDump path: %s\n", menuDumpPath);
+        }
       }
       if(strcmp(argv[arg], "--dumpMenus2") == 0) {
         printf("Activated: %s\n", argv[arg]);
         dumpMenus = 2;
+        headlessMode = true;
+        if(arg+1<argc && (argv[arg+1])[0] != '-') {
+          menuDumpPath = argv[++arg];
+          if(menuDumpPath[0] == '\0' || strlen(menuDumpPath) >= 500) {
+            printf("Error: implausible --dumpMenus2 path. No work done.\n");
+            return 1;
+          }
+          printf("  menuDump path: %s\n", menuDumpPath);
+        }
+      }
+      if(strcmp(argv[arg], "--dumpMenusAll") == 0) {
+        printf("Activated: %s\n", argv[arg]);
+        dumpMenus = 2;            // use new filename format
+        dumpMenusAll = true;
+        headlessMode = true;
+        if(arg+1<argc && (argv[arg+1])[0] != '-') {
+          menuDumpPath = argv[++arg];
+          if(menuDumpPath[0] == '\0' || strlen(menuDumpPath) >= 500) {
+            printf("Error: implausible --dumpMenusAll path. No work done.\n");
+            return 1;
+          }
+          printf("  menuDump path: %s\n", menuDumpPath);
+        }
+      }
+      if(strcmp(argv[arg], "--testPgms") == 0) {
+        loadTestPrograms = true;
+        printf("Activated: %s\n", argv[arg]);
+      }
+      if(strcmp(argv[arg], "--testData") == 0) {
+        loadTestData = true;
+        printf("Activated: %s\n", argv[arg]);
       }
 
       if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0 || strcmp(argv[arg], "-h") == 0) {
@@ -208,39 +311,77 @@
         printf("C47/R47 license GPL3, details on 47calc.com\n");
         printf("\n%s", sss);
         printf("Activated: %s\n\n", argv[arg]);
-        printf("%s47 --background     : specify background picture\n", cc);
-        printf("%s47 --functionkeys   : display function key labels\n\n", cc);
-        printf("%s47 --landscape      : landscape orientation\n", cc);
-        printf("%s47 --portrait       : portrait orientation\n", cc);
-        printf("%s47 --auto           : automatic orientation\n\n", cc);
-        printf("%s47 --c47            : C47\n", cc);
-        printf("%s47 --r47            : R47v0 layout (f g)\n", cc);
-        printf("%s47 --r47v0          : R47v0 layout (f g)\n", cc);
-        printf("%s47 --r47v1          : R47v1 layout (fg bk)\n", cc);
-        printf("%s47 --r47v2          : R47v2 layout (fg g)\n", cc);
-        printf("%s47 --r47v3          : R47v3 layout (bk fg) \n", cc);
-        printf("%s47 --dm42           : DM42 layout\n", cc);
-        printf("%s47 --e47            : E47 layout (SIM only) (sunsetting)\n", cc);
-        printf("%s47 --n47            : N47 layout (SIM only) (sunsetting)\n", cc);
-        printf("%s47 --v47            : V47 layout (SIM only) (sunsetting)\n", cc);
-        printf("%s47 --d47            : D47 layout (SIM only) (sunsetting)\n\n", cc);
-        printf("%s47 --jm             : Setting profile: Jaco preferences\n", cc);
-        printf("%s47 --rj             : Setting profile: RJvM preferences\n", cc);
-        printf("%s47 --hp35           : Setting profile: HP-35 tribute\n\n", cc);
-        printf("%s47 --deadkeys       : typewriter style dead keys\n", cc);
-        printf("%s47 --swapctrlcode   : ctrl fix for Swiss keyboards\n", cc);
-        printf("%s47 --mockup         : output demo status bar layout\n", cc);
-        printf("%s47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n", cc);
-        printf("%s47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n", cc);
-        printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
-        printf("%s47 --help           : list all SIM switches\n", cc);
-        printf("%s47 --h              : see --help\n", cc);
+        printf("%s47 --background          : specify background picture\n", cc);
+        printf("%s47 --functionkeys        : display function key labels\n\n", cc);
+        printf("%s47 --landscape           : landscape orientation\n", cc);
+        printf("%s47 --portrait            : portrait orientation\n", cc);
+        printf("%s47 --auto                : automatic orientation\n\n", cc);
+        printf("%s47 --c47                 : C47\n", cc);
+        printf("%s47 --r47                 : R47v0 layout (f g)\n", cc);
+        printf("%s47 --r47v0               : R47v0 layout (f g)\n", cc);
+        printf("%s47 --r47v1               : R47v1 layout (fg bk)\n", cc);
+        printf("%s47 --r47v2               : R47v2 layout (fg g)\n", cc);
+        printf("%s47 --r47v3               : R47v3 layout (bk fg) \n", cc);
+        printf("%s47 --dm42                : DM42 layout\n", cc);
+        printf("%s47 --e47                 : E47 layout (SIM only) (retired, historical info only)\n", cc);
+        printf("%s47 --n47                 : N47 layout (SIM only) (retired, historical info only)\n", cc);
+        printf("%s47 --v47                 : V47 layout (SIM only) (retired, historical info only)\n", cc);
+        printf("%s47 --d47                 : D47 layout (SIM only) (retired, historical info only)\n\n", cc);
+        printf("%s47 --jm                  : Setting profile: Jaco preferences\n", cc);
+        printf("%s47 --rj                  : Setting profile: RJvM preferences\n", cc);
+        printf("%s47 --hp35                : Setting profile: HP-35 tribute\n\n", cc);
+        printf("%s47 --deadkeys            : typewriter style dead keys\n", cc);
+        printf("%s47 --swapctrlcode        : ctrl fix for Swiss keyboards\n", cc);
+        printf("%s47 --testPgms            : load the test programs testPgms.bin if present; reset calculator with testPgms and create new backup.cfg when exit\n", cc);
+        printf("%s47 --testData            : load the test data in Reg 10 to Reg 38\n", cc);
+        printf("%s47 --help                : list all SIM switches\n", cc);
+        printf("%s47 --h, %s47 -h           : see --help\n\n", cc, cc);
+        printf("Dev and Automation\n%s47 --mockup              : output demo status bar layout\n", cc);
+        printf("%s47 --dumpMenus1 [path]   : output all static menus to drive; old file name format 'Menu_140_p1_RIBBONS.bmp'; default folder 'menuDump' (auto headless mode)\n", cc);
+        printf("%s47 --dumpMenus2 [path]   : output all static menus to drive; new file name format 'RIBBONS.1.bmp';           default folder 'menuDump' (auto headless mode)\n", cc);
+        printf("%s47 --dumpMenusAll [path] : RefDB47 superset: every static menu incl. 1stDeriv/2ndDeriv/Sf/Solver/Grapher/SHOW; new file name format; default folder 'menuDump' (auto headless mode)\n", cc);
+        printf("%s47 --writeexportall      : output all PROGs (internal use)\n", cc);
+        printf("%s47 --script <file>       : execute DSL script from file or - for stdin\n", cc);
+        printf("%s47 --exec <commands>     : execute DSL commands inline, ┬ e.g. ./t47 --exec 'nim 123; x!'\n", cc);
+        printf("%s47 --e, %s47 -e <commands>: see --exec,                  ┴ e.g. ./t47 --exec 'nim 3; nim -4; xeq yˣ'\n", cc, cc);
+        printf("%s47 --headless            : suppress GTK interface startup\n", cc);
+        printf("%s47 --dslcommands         : produce T47 ops table in %s\n", cc, dslOpsFileName);
+        #if defined(_WIN32)
+          printf("\nExample for command line operation: \n  %s47.exe --headless --script res/SCRIPTS/example.t47\n", cc);
+          printf(  "Cmd returns the prompt before output ends. Run via 'start /wait %s47.exe ...' or pipe '| more' to prevent that.\n\n", cc);
+        #else
+          printf("\nExample: ./%s47 --headless --script ./res/SCRIPTS/example.t47\n\n", cc);
+        #endif
         return 0;
       }
     }
 
+
+    if(!headlessMode) { //already we know it is headless, no need to check further
+      char *argv0Basename = NULL;
+      if(argc >= 1 && argv[0] != NULL) {
+        argv0Basename = g_path_get_basename(argv[0]);
+      }
+      if(argv0Basename != NULL && (strcmp(argv0Basename, "t47") == 0 || strcmp(argv0Basename, "t47.exe") == 0)) { //if not explicit, then set headless if t47 is used
+        headlessMode = true;
+      }
+      g_free(argv0Basename);
+    }
+
+
+    #ifdef _WIN32
+      if(headlessMode && AttachConsole(ATTACH_PARENT_PROCESS)) {
+        if(_fileno(stdout) < 0 || GetFileType((HANDLE)_get_osfhandle(_fileno(stdout))) == FILE_TYPE_UNKNOWN) {
+          freopen("CONOUT$", "w", stdout);
+          freopen("CONOUT$", "w", stderr);
+          consoleAttached = true;
+        }
+      }
+    #endif
+
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
       printf("The last item (%u)of indexOfItems[] is not \"Last item\", but is %s\n", LAST_ITEM, indexOfItems[LAST_ITEM].itemSoftmenuName);
+      readyToExit();
       exit(1);
     }
 
@@ -260,6 +401,7 @@
         stringToUtf8(name[i], (uint8_t *)nameUtf8);
         printf("%s\n", nameUtf8);
       }
+      readyToExit();
       exit(0);
     #endif // EXPORT_ITEMS
 
@@ -272,7 +414,22 @@
       printf("calcModel A re-set to %d\n", calcModelNew);
     }
 
-    z47_startup_init_ui(&argc, &argv);
+    gtk_init(&argc, &argv);
+    setupUI();
+
+    if(!headlessMode) {
+      // Without the following 8 lines of code
+      // the f- and g-shifted labels are
+      // miss aligned! I dont know why!
+      calcModeAimGui();
+      while(gtk_events_pending()) {
+        gtk_main_iteration();
+      }
+      calcModeNormalGui();
+      while(gtk_events_pending()) {
+        gtk_main_iteration();
+      }
+    }
 
     restoreCalc();
 
@@ -321,6 +478,7 @@
     if(writeExportAll) {
       fnReset(CONFIRMED);
       fnSaveAllPrograms(NOPARAM);
+      readyToExit();
       return 0;
     }
 
@@ -336,18 +494,43 @@
       timeInfo = localtime(&rawTime);
       strftime(bmpFileName, 22, "%Y%m%d-%H%M****.bmp", timeInfo);
       printf("\n\nOutput file saved to: %s.\n\n", bmpFileName);
+      readyToExit();
       return 0;
     }
 
     if(dumpMenus > 0) {
       fnReset(CONFIRMED);
       clearScreen(121);
-      fnDumpMenus(dumpMenus);
+      if(dumpMenusAll) {
+        fnDumpMenusAll(dumpMenus, menuDumpPath);
+      } else {
+        fnDumpMenus(dumpMenus, menuDumpPath);
+      }
       printf("\n\nOutput menus saved.\n");
+      readyToExit();
       return 0;
     }
 
-
+    // Run --exec command if given, before any script handling.
+    if(scriptCommand != NULL) {
+      initDSL();
+      int ret = executeCommand(scriptCommand);
+      cleanupDSL();
+      readyToExit();
+      return ret;
+    }
+    // Run scripts only after normal post-restore normalization.
+    if(headlessMode || scriptFile != NULL) {
+      // In headless mode with no script specified, use stdin.
+      if(scriptFile == NULL) {
+        scriptFile = "-";
+      }
+      initDSL();
+      int ret = executeScript(scriptFile);
+      cleanupDSL();
+      readyToExit();
+      return ret;
+    }
     refreshScreen(190);
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
@@ -374,8 +557,9 @@
       refreshScreen(191);
     }
 
-    z47_startup_enter_mainloop();
+    gtk_main();
 
+    readyToExit();
     return 0;
   }
 #endif // PC_BUILD

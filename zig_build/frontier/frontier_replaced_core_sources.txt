@@ -70,3 +70,5 @@ timer.c
 ui/matrixEditor.c
 ui/tam.c
 error.c
+mathematics/elec.c
+saveRestoreBackup.c

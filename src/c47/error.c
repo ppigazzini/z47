@@ -86,7 +86,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 61 */  "Reserved variable name",
 /* 62 */  "Invalid register type/angle",
 /* 63 */  "Printing Is Disabled",
-/* 64 */  "",
+/* 64 */  "No string in alpha register",
 /* 65 */  "",
 /* 66 */  "",
 /* 67 */  "",
@@ -150,11 +150,13 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 121 */  "All user programs deleted",
 /* 122 */  "All user menus deleted",
 /* 123 */  "All user variables deleted",
+/* 124 */  "Data file loaded",
+/* 125 */  "Data file saved",
 
 //ERROR & TI Messages combined, used by either
-/* 124 */  "Not available on the simulator",
-/* 125 */  "Only available on the simulator",
-/* 126 */  "Undo failed: likely no memory",
+/* 126 */  "Not available on the simulator",
+/* 127 */  "Only available on the simulator",
+/* 128 */  "Undo failed: likely no memory",
 
 /* 189 */
 

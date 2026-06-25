@@ -17,5 +17,6 @@
   #endif
 
   extern GtkWidget *frmCalc;
+  gboolean scriptInjectGtkKey(uint32_t keyval);
 
 #endif // !C47_GTK_H

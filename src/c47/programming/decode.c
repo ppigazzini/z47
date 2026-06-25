@@ -804,12 +804,12 @@ static void decodeLiteral(uint8_t *literalAddress) {
 }
 
 
-static void decodeRem(uint8_t *literalAddress) {
+static void decodeRem(uint8_t *literalAddress, uint16_t op) {
   if(*(uint8_t *)(literalAddress++) == STRING_LABEL_VARIABLE) {
     char *str = tmpString;
     getStringLabelOrVariableName(literalAddress);
-    str = stringCopy(str, "REM ");
-    str = stringCopy(str, STD_LEFT_SINGLE_QUOTE);
+    str = stringCopy(str, indexOfItems[op].itemCatalogName);
+    str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
     str = stringCopy(str, tmpStringLabelOrVariableName);
     str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
   }
@@ -861,8 +861,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
             strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
           }
         }
-        if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) {
-          expandConversionName(nameOp);
+        if(isItemConversion(op)) {
+          fullConvSoftMenuItemNameInclHPCONV(op, nameOp); //Display only the standard display partner, as a program cannot contain a custom conversion
+          // expandConversionName(nameOp);
         }
         sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
@@ -881,7 +882,7 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
       }
 
       case PTP_REM: {
-        decodeRem(step);
+        decodeRem(step, op);
         break;
       }
 

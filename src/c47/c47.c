@@ -6,11 +6,7 @@
 #include "c47Extensions/addons.h"
 #include "longIntegerType.h"
 #include "saveRestoreCalcState.h"
-// z47 import adaptation: saveRestoreBackup.{h,c} is a large new-master feature not
-// yet imported; c47.c only #includes the header (no symbol use here), and c47.c is
-// compiled out of the product (Zig owns it) -- only generateTestPgms compiles it,
-// and the missing header breaks that tool. Drop the include until the feature is
-// ported / the pin advances with the full tree.
+#include "saveRestoreBackup.h"
 #include "statusBar.h"
 
 //#define JMSHOWCODES

@@ -7,6 +7,8 @@
 
 static FILE *_ioFileHandle = NULL;
 
+char _ioFileNameOverride[C47_PATH_MAX] = {0};
+
 const char *_ioFileNameFromFilePath(ioFilePath_t path) {
   switch(path) {
     case ioPathManualSave: return "c47.sav";

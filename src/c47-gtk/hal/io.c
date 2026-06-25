@@ -6,11 +6,11 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#define FILENAME_BUFFER_LENGTH 400  //allow for longer paths on pc systems
-
 static FILE *_ioFileHandle = NULL;
 
-static int create_dir(char * dir) {
+char _ioFileNameOverride[C47_PATH_MAX] = {0};
+
+int create_dir(char * dir) {
   int ret;
   #if defined(WIN32)
     ret = mkdir( dir );
@@ -82,9 +82,16 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
 
 
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
-  static char base_dir[FILENAME_BUFFER_LENGTH]; // at least exceed the 256 limit
+  static char base_dir[C47_PATH_MAX]; // at least exceed the 256 limit
   char * current_dir;
   int ret = 0;
+
+  if(_ioFileNameOverride[0] != '\0') {
+    strncpy(filename, _ioFileNameOverride, C47_PATH_MAX - 1);
+    filename[C47_PATH_MAX - 1] = '\0';
+    memset(_ioFileNameOverride, 0, C47_PATH_MAX);
+    return FILE_OK;
+  }
 
   switch(path) {
     case ioPathManualSave:
@@ -117,6 +124,23 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       //getTimeStampString(filename + strlen(filename));
       //strcat(filename, ".tsv");
       return FILE_OK;
+
+    case ioPathRegExport:
+    case ioPathRegImport:
+      current_dir = g_get_current_dir();
+      strcpy(base_dir, current_dir);
+      if(create_dir("./" DATA_DIR) != 0) {
+        return FILE_ERROR;
+      }
+      strcat(base_dir, "/" DATA_DIR);
+      if(path == ioPathRegExport) {
+        ret = file_selection_screen("Export Register File", base_dir, "*"DATA_EXT, 1, 1, filename);
+      }
+      else if(path == ioPathRegImport) {
+        ret = file_selection_screen("Import Register File", base_dir, "*"DATA_EXT, 0, 0, filename);
+      }
+      g_free(current_dir);
+      return ret;
 
     case ioPathSaveStateFile:
     case ioPathLoadStateFile:
@@ -175,7 +199,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       stringToASCII(tmpStringLabelOrVariableName, filename);
       //strcpy(filename, tmpStringLabelOrVariableName);
 
-      char filename1[FILENAME_BUFFER_LENGTH];
+      char filename1[C47_PATH_MAX];
       filename1[0] = 0;
       stringCopy(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
       stringCopy(filename1 + stringByteLength(filename1), filename);
@@ -194,7 +218,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   assert(_ioFileHandle == NULL);
   const char *filemode;
-  static char filename[FILENAME_BUFFER_LENGTH];
+  static char filename[C47_PATH_MAX];
   strcpy(filename, "untitled");
   fileNameSelected[0]=0;
   int ret = _ioFileNameFromFilePath(path, filename);
@@ -263,7 +287,7 @@ int ioEof(void) {
 
 int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
   assert(_ioFileHandle == NULL);
-  static char filename[FILENAME_BUFFER_LENGTH];
+  static char filename[C47_PATH_MAX];
   int ret = _ioFileNameFromFilePath(path, filename);
   if(ret != FILE_OK) {
     return ret;

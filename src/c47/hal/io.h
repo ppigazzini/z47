@@ -11,6 +11,9 @@
 #define STATE_DIR      "STATE"
 #define STATE_EXT      ".s47"
 
+#define DATA_DIR      "DATA"
+#define DATA_EXT      ".d47"
+
 #define PROGRAMS_DIR       "PROGRAMS"
 #define ALLPROGRAMS_SUBDIR "ALLPGMS"
 
@@ -59,6 +62,8 @@
     ioPathLoadProgram           = 11, ///< program file used in READP function
     ioPathSaveAllPrograms      = 12, ///< program file used in write all programs
     ioPathExportRTFAllPrograms = 13, ///< program file used in export all programs, target RTF
+    ioPathRegImport            = 14, ///< register data import aka aparse
+    ioPathRegExport            = 15, ///< register data export
   } ioFilePath_t;
 
   /**
@@ -85,6 +90,7 @@
    * \return FILE_OK if file opened successfully, FILE_CANCEL if file selcetion cancelled or FILE_ERROR
    */
   int ioFileOpen(ioFilePath_t path, ioFileMode_t mode);
+  int create_dir(char * dir);
 
   /**
    * Write to the open file.
@@ -183,6 +189,30 @@
   int load_programfile(const char * fpath, const char * fname, void * data);
 
    /**
+   * Callback function for Save Data File selected file.
+   * Called from the DMCP file_selection_screen() dialog.
+   *
+   * \param[in] path file selected
+   * \param[in] file name selected
+   * \param[in] data - unsused
+   * \param[out] set tmpFileName with the path file selected
+   * \return MRET_SAVESTATE
+   */
+  int save_datafile(const char * fpath, const char * fname, void * data);
+
+   /**
+   * Callback function for Load Data File selected file.
+   * Called from the DMCP file_selection_screen() dialog.
+   *
+   * \param[in] path file selected
+   * \param[in] file name selected
+   * \param[in] data - unsused
+   * \param[out] set tmpFileName with the path file selected
+   * \return MRET_LOADSTATE
+   */
+  int load_datafile(const char * fpath, const char * fname, void * data);
+
+   /**
    * Warning dialog.
    * Called to display a warning dialog, for ex. for version check differences.
    *
@@ -195,5 +225,12 @@
    * Only relevant for the DMCP version, not used for the simulator
    */
   void fnDiskInfo(uint16_t unusedButMandatoryParameter);
+
+   /**
+    * Override filename for file operations.
+    * When set, this filename will be used instead of the default path-based filename.
+    * This allows DSL commands to specify custom file locations.
+    */
+   extern char _ioFileNameOverride[];
 
 #endif // IO_H

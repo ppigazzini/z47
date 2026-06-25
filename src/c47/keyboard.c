@@ -1139,7 +1139,9 @@ endReturnTrue:
                 processAimInput(item); // sets keyActionProcessed
                 if(tam.mode) {
                   //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
+                  //This section to auto-drop out of a catalog
                   popSoftmenu();
+                  numberOfTamMenusToPop--;
                 }
               }
               else {
@@ -1281,7 +1283,7 @@ endReturnTrue:
               }
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
-              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
+              !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || tam.mode == TM_KEY || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP || tam.mode == TM_STRING)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
@@ -1377,6 +1379,25 @@ endReturnTrue:
                     #endif //VERBOSEKEYS
 
                 runFunction(item);
+
+
+                // Double execution when a custom conversion: additional to the runfunction which operated the 'normal' conversion
+                if(!(programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) && calcMode != CM_PEM && item > 0 && isItemConversion(item)) {
+                  int16_t itemNrPair;
+                  executionConversionPartner(item, &itemNrPair, NULL);
+                  if(itemNrPair != 0) {                                                                                                            // non-zero = custom non-standard pair needing the round-trip via SI
+                    if(!getSystemFlag(FLAG_HPCONV)) { //normal CONV_HP clear
+                      runConversionToSI(item);
+                      runConversionFromSI(itemNrPair);
+                    } else { //flipped CONV_HP set
+                      runFunction(conversionPartner(item, NULL, NULL, NULL));
+                      runConversionToSI(itemNrPair);
+                      runConversionFromSI(conversionPartner(item, NULL, NULL, NULL));
+                    }
+                    temporaryInformation = TI_CONV_MENU_STR;
+                  }
+                }
+
 
                 if(calcMode == CM_EIM && !tam.mode) {
                   if(isAlphaSubmenu(0)) {
@@ -1850,8 +1871,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
             #if defined(IR_PRINTING)
-              printf("**[DL]** STOP program\n");
-              fflush(stdout);
+              #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
+                printf("**[DL]** STOP program\n");
+                fflush(stdout);
+              #endif //MONITOR_IRPRINT
               refreshStatusBar();
               printTrace(ITM_STOP, NOPARAM);   // STOP program
             #endif //IR_PRINTING
@@ -3432,7 +3455,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
           #if defined(IR_PRINTING)
-            #if defined(PC_BUILD)
+            #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
               printf("**[DL]** fnKeyEnter printTraceX\n");
               fflush(stdout);
             #endif //PC_BUILD
@@ -4329,10 +4352,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
         }
         if(getSystemFlag(FLAG_ALPHA)) {
           pemAlpha(ITM_BACKSPACE);
-          if(aimBuffer[0] == 0 && getSystemFlag(FLAG_ALPHA)) {
-            // close if no characters left
-            pemAlpha(ITM_BACKSPACE);
-          }
           if(aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) {
             if(currentLocalStepNumber > 1) {
               --currentLocalStepNumber;
@@ -4803,7 +4822,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_FONT_BROWSER: {
-        if(currentFntScr < numScreensNumericFont + numScreensStandardFont + numScreensTinyFont) {
+        if(currentFntScr < numScreensNumericFont + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) {
           currentFntScr++;
         }
         break;

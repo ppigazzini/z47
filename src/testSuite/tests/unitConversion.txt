@@ -1305,3 +1305,545 @@ Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.000000393700787401575"
 Func: fnUnitConvert(32843)
 In:  FL_ASLIFT=0 RX=Real:"1"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2539999.999999998730000000000000635"
+
+; L100Tokml forward (constFactorL100Tokml=80)
+Func: fnUnitConvert(80)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100"
+
+; L100Tokml reverse (constFactorL100Tokml=80 | 0x8000)
+Func: fnUnitConvert(32848)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01"
+
+; K100Ktokmk forward (constFactorK100Ktokmk=82)
+Func: fnUnitConvert(82)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100"
+
+; K100Ktokmk reverse (constFactorK100Ktokmk=82 | 0x8000)
+Func: fnUnitConvert(32850)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01"
+
+; K100Mtomik forward (constFactorK100Mtomik=88)
+Func: fnUnitConvert(88)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"100"
+
+; K100Mtomik reverse (constFactorK100Mtomik=88 | 0x8000)
+Func: fnUnitConvert(32856)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01"
+
+; CupcFzus forward (constFactorCupcFzus=89)
+Func: fnUnitConvert(89)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"8"
+
+; CupcFzus reverse (constFactorCupcFzus=89 | 0x8000)
+Func: fnUnitConvert(32857)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.125"
+
+; CupcMl forward (constFactorCupcMl=90)
+Func: fnUnitConvert(90)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"236.5882365"
+
+; CupcMl reverse (constFactorCupcMl=90 | 0x8000)
+Func: fnUnitConvert(32858)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0042267528377303746460783987457466"
+
+; CupukFzuk forward (constFactorCupukFzuk=91)
+Func: fnUnitConvert(91)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10"
+
+; CupukFzuk reverse (constFactorCupukFzuk=91 | 0x8000)
+Func: fnUnitConvert(32859)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1"
+
+; MlCupuk forward (constFactorMlCupuk=100)
+Func: fnUnitConvert(100)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"284.130625"
+
+; MlCupuk reverse (constFactorMlCupuk=100 | 0x8000)
+Func: fnUnitConvert(32868)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.003519507972785404600436858927121988"
+
+; PintlqMl forward (constFactorPintlqMl=109)
+Func: fnUnitConvert(109)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"473.176473"
+
+; PintlqMl reverse (constFactorPintlqMl=109 | 0x8000)
+Func: fnUnitConvert(32877)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0021133764188651873230391993728733"
+
+; PintukMl forward (constFactorPintukMl=110)
+Func: fnUnitConvert(110)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"568.26125"
+
+; PintukMl reverse (constFactorPintukMl=110 | 0x8000)
+Func: fnUnitConvert(32878)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001759753986392702300218429463560994"
+
+; QtMl forward (constFactorQtMl=111)
+Func: fnUnitConvert(111)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1136.5225"
+
+; QtMl reverse (constFactorQtMl=111 | 0x8000)
+Func: fnUnitConvert(32879)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0008798769931963511501092147317804971"
+
+; QtusMl forward (constFactorQtusMl=112)
+Func: fnUnitConvert(112)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"946.352946"
+
+; QtusMl reverse (constFactorQtusMl=112 | 0x8000)
+Func: fnUnitConvert(32880)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00105668820943259366151959968643665"
+
+; TbspcFzus forward (constFactorTbspcFzus=113)
+Func: fnUnitConvert(113)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2"
+
+; TbspcFzus reverse (constFactorTbspcFzus=113 | 0x8000)
+Func: fnUnitConvert(32881)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5"
+
+; TbspcMl forward (constFactorTbspcMl=114)
+Func: fnUnitConvert(114)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"14.78676478125"
+
+; TbspcMl reverse (constFactorTbspcMl=114 | 0x8000)
+Func: fnUnitConvert(32882)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0676280454036859943372543799319456"
+
+; TbspukFzuk forward (constFactorTbspukFzuk=115)
+Func: fnUnitConvert(115)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.6"
+
+; TbspukFzuk reverse (constFactorTbspukFzuk=115 | 0x8000)
+Func: fnUnitConvert(32883)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.625"
+
+; TbspukMl forward (constFactorTbspukMl=116)
+Func: fnUnitConvert(116)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"17.7581640625"
+
+; TbspukMl reverse (constFactorTbspukMl=116 | 0x8000)
+Func: fnUnitConvert(32884)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.05631212756456647360698974283395181"
+
+; TspcFzus forward (constFactorTspcFzus=117)
+Func: fnUnitConvert(117)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6"
+
+; TspcFzus reverse (constFactorTspcFzus=117 | 0x8000)
+Func: fnUnitConvert(32885)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1666666666666666666666666666666667"
+
+; TspcMl forward (constFactorTspcMl=118)
+Func: fnUnitConvert(118)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.92892159375"
+
+; TspcMl reverse (constFactorTspcMl=118 | 0x8000)
+Func: fnUnitConvert(32886)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2028841362110579830117631397958368"
+
+; TspukFzuk forward (constFactorTspukFzuk=119)
+Func: fnUnitConvert(119)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"4.8"
+
+; TspukFzuk reverse (constFactorTspukFzuk=119 | 0x8000)
+Func: fnUnitConvert(32887)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.2083333333333333333333333333333333"
+
+; TspukMl forward (constFactorTspukMl=120)
+Func: fnUnitConvert(120)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"5.919388020833333333333333333333333333333333333333333333"
+
+; TspukMl reverse (constFactorTspukMl=120 | 0x8000)
+Func: fnUnitConvert(32888)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1689363826936994208209692285018554"
+
+; MlIn3 forward (constFactorMlIn3=121)
+Func: fnUnitConvert(121)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"16.387064"
+
+; MlIn3 reverse (constFactorMlIn3=121 | 0x8000)
+Func: fnUnitConvert(32889)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.06102374409473228395275688189171654"
+
+; mmBanana forward (constFactormmBanana=135)
+Func: fnUnitConvert(135)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"178"
+
+; mmBanana reverse (constFactormmBanana=135 | 0x8000)
+Func: fnUnitConvert(32903)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.005617977528089887640449438202247191"
+
+; InchBanana forward (constFactorInchBanana=137)
+Func: fnUnitConvert(137)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"7.007874015748031496062992125984251968503937007874015748"
+
+; InchBanana reverse (constFactorInchBanana=137 | 0x8000)
+Func: fnUnitConvert(32905)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1426966292134831460674157303370787"
+
+; KnotMps forward (constFactorKnotMps=141)
+Func: fnUnitConvert(141)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5144444444444444444444444444444444444444444444444444444"
+
+; KnotMps reverse (constFactorKnotMps=141 | 0x8000)
+Func: fnUnitConvert(32909)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.943844492440604751619870410367171"
+
+; 180onPi forward (constFactor180onPi=142)
+Func: fnUnitConvert(142)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"57.295779513082320876798154814105170332405472466564321549160243903292371332864049"
+
+; 180onPi reverse (constFactor180onPi=142 | 0x8000)
+Func: fnUnitConvert(32910)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01745329251994329576923690768488613"
+
+; SlugKg forward (constFactorSlugKg=143)
+Func: fnUnitConvert(143)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"14.59390293720636482939632545931758530183727034120734908"
+
+; SlugKg reverse (constFactorSlugKg=143 | 0x8000)
+Func: fnUnitConvert(32911)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.06852176585679175519098001320528849"
+
+; SlinchKg forward (constFactorSlinchKg=144)
+Func: fnUnitConvert(144)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"175.1268352464763779527559055118110236220472440944881890"
+
+; SlinchKg reverse (constFactorSlinchKg=144 | 0x8000)
+Func: fnUnitConvert(32912)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.005710147154732646265915001100440708"
+
+; BlobKg forward (constFactorBlobKg=145)
+Func: fnUnitConvert(145)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"175.1268352464763779527559055118110236220472440944881890"
+
+; BlobKg reverse (constFactorBlobKg=145 | 0x8000)
+Func: fnUnitConvert(32913)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.005710147154732646265915001100440708"
+
+; TonneKg forward (constFactorTonneKg=146)
+Func: fnUnitConvert(146)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1000"
+
+; TonneKg reverse (constFactorTonneKg=146 | 0x8000)
+Func: fnUnitConvert(32914)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.001"
+
+; Lbsft2Pa forward (constFactorLbsft2Pa=147)
+Func: fnUnitConvert(147)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"47.88025898033584261612967670379785204014852474149392743"
+
+; Lbsft2Pa reverse (constFactorLbsft2Pa=147 | 0x8000)
+Func: fnUnitConvert(32915)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.02088543423315012698221070802497193"
+
+; InlbsNm forward (constFactorInlbsNm=148)
+Func: fnUnitConvert(148)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.11298482902761670"
+
+; InlbsNm reverse (constFactorInlbsNm=148 | 0x8000)
+Func: fnUnitConvert(32916)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"8.850745791327184366536984779652656"
+
+; LbsftNpm forward (constFactorLbsftNpm=149)
+Func: fnUnitConvert(149)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"14.59390293720636482939632545931758530183727034120734908"
+
+; LbsftNpm reverse (constFactorLbsftNpm=149 | 0x8000)
+Func: fnUnitConvert(32917)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.06852176585679175519098001320528849"
+
+; KgfN forward (constFactorKgfN=150)
+Func: fnUnitConvert(150)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.80665"
+
+; KgfN reverse (constFactorKgfN=150 | 0x8000)
+Func: fnUnitConvert(32918)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.101971621297792824257009274318957"
+
+; KsiMpa forward (constFactorKsiMpa=151)
+Func: fnUnitConvert(151)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.894757293168361336722673445346890693781387562775125550"
+
+; KsiMpa reverse (constFactorKsiMpa=151 | 0x8000)
+Func: fnUnitConvert(32919)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.145037737730209215154241027951194"
+
+; LbsBlob forward (constFactorLbsBlob=152)
+Func: fnUnitConvert(152)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"386.08858267716535433070866141732283464566929133858267716535"
+
+; LbsBlob reverse (constFactorLbsBlob=152 | 0x8000)
+Func: fnUnitConvert(32920)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.002590079180963937736128035567701509"
+
+; Lbsin3Tmm3 forward (constFactorLbsin3Tmm3=153)
+Func: fnUnitConvert(153)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.767990471020312119364396209107378844678949200418085876e-08"
+
+; Lbsin3Tmm3 reverse (constFactorLbsin3Tmm3=153 | 0x8000)
+Func: fnUnitConvert(32921)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"36127292.00008368747472537952964244"
+
+; Lbsin3Kgm3 forward (constFactorLbsin3Kgm3=154)
+Func: fnUnitConvert(154)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"27679.90471020312119364396209107378844678949200418085876"
+
+; Lbsin3Kgm3 reverse (constFactorLbsin3Kgm3=154 | 0x8000)
+Func: fnUnitConvert(32922)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.612729200008368747472537952964244e-05"
+
+; Kgm3Blobin3 forward (constFactorKgm3Blobin3=155)
+Func: fnUnitConvert(155)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.357254687402177724891014159299230600834745152076364992e-08"
+
+; Kgm3Blobin3 reverse (constFactorKgm3Blobin3=155 | 0x8000)
+Func: fnUnitConvert(32923)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"10686895.17820131647455309294647357"
+
+; Kgm3Tmm3 forward (constFactorKgm3Tmm3=156)
+Func: fnUnitConvert(156)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1e-12"
+
+; Kgm3Tmm3 reverse (constFactorKgm3Tmm3=156 | 0x8000)
+Func: fnUnitConvert(32924)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1000000000000"
+
+; LbsftKgm forward (constFactorLbsftKgm=157)
+Func: fnUnitConvert(157)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.488163943569553805774278215223097112860892388451443570"
+
+; LbsftKgm reverse (constFactorLbsftKgm=157 | 0x8000)
+Func: fnUnitConvert(32925)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.6719689751395068660436241464996424"
+
+; In3Mm3 forward (constFactorIn3Mm3=158)
+Func: fnUnitConvert(158)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"16387.064"
+
+; In3Mm3 reverse (constFactorIn3Mm3=158 | 0x8000)
+Func: fnUnitConvert(32926)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.102374409473228395275688189171654e-05"
+
+; In2Mm2 forward (constFactorIn2Mm2=159)
+Func: fnUnitConvert(159)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"645.16"
+
+; In2Mm2 reverse (constFactorIn2Mm2=159 | 0x8000)
+Func: fnUnitConvert(32927)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0015500031000062000124000248000496"
+
+; In4Mm4 forward (constFactorIn4Mm4=160)
+Func: fnUnitConvert(160)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"416231.4256"
+
+; In4Mm4 reverse (constFactorIn4Mm4=160 | 0x8000)
+Func: fnUnitConvert(32928)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.402509610028830076880192200461281e-06"
+
+; In6Mm6 forward (constFactorIn6Mm6=161)
+Func: fnUnitConvert(161)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"268535866.540096"
+
+; In6Mm6 reverse (constFactorIn6Mm6=161 | 0x8000)
+Func: fnUnitConvert(32929)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"3.723897343339373297910893732502451e-09"
+
+; KgmNpm forward (constFactorKgmNpm=162)
+Func: fnUnitConvert(162)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"9.80665"
+
+; KgmNpm reverse (constFactorKgmNpm=162 | 0x8000)
+Func: fnUnitConvert(32930)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.101971621297792824257009274318957"
+
+; InchM forward (constFactorInchM=163)
+Func: fnUnitConvert(163)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0254"
+
+; InchM reverse (constFactorInchM=163 | 0x8000)
+Func: fnUnitConvert(32931)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"39.37007874015748031496062992125984"
+
+; --- items with only the missing direction added ---
+
+; Ft3Gluk reverse (constFactorFt3Gluk=123 | 0x8000)
+Func: fnUnitConvert(32891)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.1605436532358920652516137344902278"
+
+; GlukFt3 forward (constFactorGlukFt3=124)
+Func: fnUnitConvert(124)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.228835459042825812951349401353691"
+
+; LFt3 forward (constFactorLFt3=125)
+Func: fnUnitConvert(125)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"28.316846592"
+
+; Ft3L reverse (constFactorFt3L=126 | 0x8000)
+Func: fnUnitConvert(32894)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.03531466672148859025043801035400263"
+
+; LQtus reverse (constFactorLQtus=127 | 0x8000)
+Func: fnUnitConvert(32895)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9463529460000032791979971657389227"
+
+; QtusL forward (constFactorQtusL=128)
+Func: fnUnitConvert(128)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.05668820943259"
+
+; GlukFzuk reverse (constFactorGlukFzuk=129 | 0x8000)
+Func: fnUnitConvert(32897)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00625"
+
+; FzukGluk forward (constFactorFzukGluk=130)
+Func: fnUnitConvert(130)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"160"
+
+; GlusFzus reverse (constFactorGlusFzus=131 | 0x8000)
+Func: fnUnitConvert(32899)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0078125"
+
+; FzusGlus forward (constFactorFzusGlus=132)
+Func: fnUnitConvert(132)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"128"
+
+; eVJ forward (constFactoreVJ=133)
+Func: fnUnitConvert(133)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"1.602176634e-19"
+
+; JeV reverse (constFactorJeV=134 | 0x8000)
+Func: fnUnitConvert(32902)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"6.241509074460762607776240980930446e+18"
+
+; LbfKgf forward (constFactorLbfKgf=164)
+Func: fnUnitConvert(164)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.45359237"
+
+; LbfKgf reverse (constFactorLbfKgf=164 | 0x8000)
+Func: fnUnitConvert(32932)
+In:  FL_ASLIFT=0 RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2.2046226218487758072297380134504296573564453125"
+
+;=============================================================
+; COVERAGE MAP ABOVE UP TO No 164
+;=============================================================
+; Addressing scheme:
+;   fnUnitConvert(ord)          = forward; returns the bare conversionFactors[ord] factor (multiply).
+;   fnUnitConvert(ord | 0x8000) = reverse; returns 1 / factor (divide).
+;                                          0x8000 = 32768, so a reverse call number is 32768 + ord.
+;
+; The convertPairs exponent is NOT applied by fnUnitConvert: the raw scalar factor is returned. 
+;   e.g. ord 0 (Ft2->Ha, exp +4) returns 9.290304e-06, and ord 151 (ksi->MPa, exp +6) returns 6.894757..., with no 10^exp scaling.
+;
+; Scalar coverage: constFactor ordinals 0..164, BOTH directions, are tested. This block adds ordinal 164 (LbfKgf), the last scalar factor;
+;   with it the scalar table is fully covered.
+;
+; NOT factor-testable here (NULL conversionFactors entry; nonlinear reciprocal handler; UT_FUELECON / UT_EVECON):
+;   81 Kmletok100K, 83 L100Tomgus, 84 Mgeustok100M,
+;   86 L100Tomguk, 87 Mgeuktok100M
+; A 1 -> factor probe does not model these; they need dedicated reciprocal tests with their own chosen inputs and expected outputs.
+;=============================================================

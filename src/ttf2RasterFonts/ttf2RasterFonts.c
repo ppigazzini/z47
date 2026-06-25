@@ -394,7 +394,8 @@ void processFiles(const char *fontsPath, const char *outputFile) {
   // Generate the C arrays //
   ///////////////////////////
   exportCStructure(fontsPath, "C47__NumericFont.ttf");
-  exportCStructure(fontsPath, "C47__StandardFont.ttf");    //JM ^^
+  exportCStructure(fontsPath, "C47__NumericFontBold.ttf");
+  exportCStructure(fontsPath, "C47__StandardFont.ttf");
   exportCStructure(fontsPath, "C47__TinyFont.ttf");
 
   fclose(cFile);
