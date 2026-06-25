@@ -872,6 +872,7 @@ static void doFnEvPFacts (uint16_t param) {
     longIntegerFree(z);
     longIntegerFree(y);
     longIntegerFree(x);
+    realMatrixFree(&xx);
   }
   else {
     /* process M_SIGMA_0, M_SIGMA_1, M_SIGMA_k */
@@ -1877,7 +1878,6 @@ static void printTitles(longInteger_t input) {
 // All error reporting happens inside this function
 static bool_t performPrimeFactorization(bool_t doSaveLastX) {
   iterations = true;
-  addFactorsToTSV = false;
   loopp = 0;
   currentKeyCode = 255;
   real34_t lastAdded;

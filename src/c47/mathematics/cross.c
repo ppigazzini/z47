@@ -66,6 +66,7 @@ static void crossRemaRema(void) {
   else {
     crossRealVectors(&y, &x, &res);
     convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
+    realMatrixFree(&res);
   }
 }
 
@@ -93,6 +94,7 @@ static void crossCpmaCpma(void) {
   else {
     crossComplexVectors(&y, &x, &res);
     convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+    complexMatrixFree(&res);
   }
 }
 
@@ -104,6 +106,9 @@ static void crossCpmaCpma(void) {
  ***********************************************/
 static void crossCpmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   crossCpmaCpma();
 }
 
@@ -115,6 +120,9 @@ static void crossCpmaRema(void) {
  ***********************************************/
 static void crossRemaCpma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   crossCpmaCpma();
 }
 

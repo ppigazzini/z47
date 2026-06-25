@@ -43,6 +43,9 @@ pub fn tryDotMatrices() bool {
     } else if (matrix_kinds.y_is_real_matrix) {
         runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
     }
+    if (runtime.lastErrorCode != 0) { // OOM during the real->complex promote (dotCpmaRema/dotRemaCpma)
+        return true;
+    }
 
     var x_matrix: runtime.complex34Matrix_t = undefined;
     var y_matrix: runtime.complex34Matrix_t = undefined;
