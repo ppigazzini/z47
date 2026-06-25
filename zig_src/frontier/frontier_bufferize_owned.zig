@@ -840,7 +840,7 @@ extern var asmBuffer: [5]u8;
 const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
 const const_0: *const real_t = @ptrCast(@alignCast(constants + 1708));
 const const39_pi: *const real_t = @ptrCast(@alignCast(constants + 1848));
-const const34_0: *const real34_t = @ptrCast(constants + 15692);
+const const34_0: *const real34_t = @ptrCast(constants + 16200);
 
 // scalar globals
 // Owned global (bufferize.c defined it). Other C units reference it.

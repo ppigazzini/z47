@@ -27,11 +27,11 @@ extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) callconv(.c) vo
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 
-// const_1e_37 is "#define const_1e_37 ((real_t *)(constants + 3960))" in the
+// const_1e_37 is "#define const_1e_37 ((real_t *)(constants + 4436))" in the
 // generated constantPointers.h; hand out the same pointer into the blob.
 const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 3960));
+    return @ptrCast(@alignCast(constants_blob + 4436));
 }
 
 inline fn constRealElems(matrix: anytype) [*]const real34_t {
