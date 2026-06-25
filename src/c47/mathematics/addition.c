@@ -556,6 +556,7 @@ void addStriReal(void) {
   }
   else {
     real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, FULLIRFRAC);
+    trimLeadingSpace(tmpString);
   }
   _addString(tmpString);
 }
@@ -570,6 +571,7 @@ void addStriReal(void) {
  ***********************************************/
 void addStriCplx(void) {
   complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, FULLIRFRAC, currentAngularMode, getSystemFlag(FLAG_POLAR));
+  trimLeadingSpace(tmpString);
   _addString(tmpString);
 }
 
@@ -645,6 +647,9 @@ void addRemaRema(void) {
 
   linkToRealMatrixRegister(REGISTER_Y, &y);
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+  if(lastErrorCode != 0) {
+    return;
+  }
 
   addRealMatrices(&y, &x, &x);
   if(x.matrixElements) {
@@ -673,6 +678,9 @@ void addRemaRema(void) {
  ***********************************************/
 void addRemaCxma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   addCxmaCxma();
 }
 
@@ -686,6 +694,9 @@ void addRemaCxma(void) {
  ***********************************************/
 void addCxmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   addCxmaCxma();
 }
 
@@ -813,6 +824,9 @@ void addRealRema(void) {
  ***********************************************/
 void addRemaCplx(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   addCxmaCplx();
 }
 
@@ -826,6 +840,9 @@ void addRemaCplx(void) {
  ***********************************************/
 void addCplxRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   addCplxCxma();
 }
 
@@ -901,6 +918,9 @@ void addCxmaCxma(void) {
 
   linkToComplexMatrixRegister(REGISTER_Y, &y);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
+  if(lastErrorCode != 0) {
+    return;
+  }
 
   addComplexMatrices(&y, &x, &x);
   if(x.matrixElements) {

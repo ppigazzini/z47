@@ -531,6 +531,9 @@ pub export fn addRemaRema() callconv(.c) void {
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y);
     runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &x);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
 
     runtime.addRealMatrices(&y, &x, &x);
     if (x.matrixElements != null) {
@@ -552,12 +555,18 @@ pub export fn addRemaRema() callconv(.c) void {
 /// Y(real34 matrix) + X(complex34 matrix) ==> X(complex34 matrix)
 pub export fn addRemaCxma() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     addCxmaCxma();
 }
 
 /// Y(complex34 matrix) + X(real34 matrix) ==> X(complex34 matrix)
 pub export fn addCxmaRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     addCxmaCxma();
 }
 
@@ -644,12 +653,18 @@ pub export fn addRealRema() callconv(.c) void {
 /// Y(real34 matrix) + X(complex34) ==> X(complex34 matrix)
 pub export fn addRemaCplx() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     addCxmaCplx();
 }
 
 /// Y(complex34) + X(real34 matrix) ==> X(complex34 matrix)
 pub export fn addCplxRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     addCplxCxma();
 }
 
@@ -703,6 +718,9 @@ pub export fn addCxmaCxma() callconv(.c) void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &x);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
 
     runtime.addComplexMatrices(&y, &x, &x);
     if (x.matrixElements != null) {
