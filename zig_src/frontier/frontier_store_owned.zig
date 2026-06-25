@@ -189,6 +189,7 @@ const dtComplex34: u32 = 2;
 const dtReal34Matrix: u32 = 6;
 const dtShortInteger: u32 = 8;
 const dtConfig: u32 = 9;
+const dtString: u32 = 5;
 
 const amNone: u32 = 5;
 
@@ -199,6 +200,7 @@ const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 const ERROR_WRITE_PROTECTED_VAR: u8 = 37;
 const ERROR_NO_MATRIX_INDEXED: u8 = 38;
+const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
@@ -244,6 +246,7 @@ const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 // Globals
 // ---------------------------------------------------------------------------
 extern var errorMessage: [*c]u8;
+extern var alphaRegister: u16;
 extern var lastErrorCode: u8;
 extern var programRunStop: u8;
 extern var shortIntegerMask: u64;
@@ -1051,6 +1054,37 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         var rows: u16 = 1;
         if (matrixIndex >= FIRST_NAMED_VARIABLE and isStatsMatrixN(&rows, @intCast(matrixIndex)) and @as(calcRegister_t, @intCast(matrixIndex)) == findNamedVariable("STATS")) {
             calcSigma(0);
+        }
+    }
+}
+
+// ===========================================================================
+// fn42AlphaStore (42S ASTO) — NEW upstream op (master fd83b4a4). Additive/
+// unreached: no items.c dispatch wiring yet. Stores up to 6 bytes of the alpha
+// register as a string into `regist`.
+// ===========================================================================
+inline fn regStringData(reg: calcRegister_t) [*c]u8 {
+    // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
+    return @as([*c]u8, @ptrCast(getRegisterDataPointer(reg))) + 4;
+}
+
+pub export fn fn42AlphaStore(regist: u16) callconv(.c) void {
+    if (regInRange(regist)) {
+        if (getRegisterDataType(@intCast(alphaRegister)) == dtString) {
+            var source: [*c]u8 = regStringData(@intCast(alphaRegister));
+            reallocateRegister(@intCast(regist), dtString, 7, amNone);
+            var dest: [*c]u8 = regStringData(@intCast(regist));
+            var i: u16 = 0;
+            while (i < 6) : (i += 1) {
+                if (source[0] != 0) {
+                    dest[0] = source[0];
+                    dest += 1;
+                    source += 1;
+                }
+            }
+            dest[0] = 0;
+        } else {
+            displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         }
     }
 }
