@@ -803,8 +803,8 @@ inline fn constR34(comptime off: usize) *const real34_t {
 }
 const const_1000 = constR(5380);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(15580);
-const const34_1e6 = constR34(16236);
+const const34_0 = constR34(16200);
+const const34_1e6 = constR34(16856);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).

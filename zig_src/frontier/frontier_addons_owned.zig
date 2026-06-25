@@ -573,12 +573,12 @@ const const_1e_16 = constR(4484);
 const const_1e_24 = constR(4472);
 const const_10p9__1 = constR(5600);
 const const39_pi = constR(1848);
-const const34_10 = constR34(15916);
-const const34_60 = constR34(16028);
-const const34_100 = constR34(16044);
-const const34_3600 = constR34(16172);
-const const34_0 = constR34(15692);
-const const34_24 = constR34(15964);
+const const34_10 = constR34(16424);
+const const34_60 = constR34(16536);
+const const34_100 = constR34(16552);
+const const34_3600 = constR34(16680);
+const const34_0 = constR34(16200);
+const const34_24 = constR34(16472);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).
