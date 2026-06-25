@@ -288,7 +288,7 @@ pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODE
     errRow("Reserved variable name"),
     errRow("Invalid register type/angle"),
     errRow("Printing Is Disabled"),
-    errRow(""), // 64
+    errRow("No string in alpha register"), // 64  ERROR_NO_STRING_IN_ALPHA_REGISTER (42S alpha ops)
     errRow(""), // 65
     errRow(""), // 66
     errRow(""), // 67
