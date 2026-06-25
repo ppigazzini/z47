@@ -108,15 +108,21 @@ pub export fn realSetOne(r: *real_t) callconv(.c) void {
 
 pub export fn realSetNaN(r: *real_t) callconv(.c) void {
     r.bits = DECNAN;
+    r.exponent = 0;
     r.digits = 1;
+    r.lsu[0] = 0;
 }
 
 pub export fn realSetPlusInfinity(r: *real_t) callconv(.c) void {
     r.bits = DECINF;
+    r.exponent = 0;
     r.digits = 1;
+    r.lsu[0] = 0;
 }
 
 pub export fn realSetMinusInfinity(r: *real_t) callconv(.c) void {
     r.bits = DECINF | DECNEG;
+    r.exponent = 0;
     r.digits = 1;
+    r.lsu[0] = 0;
 }
