@@ -21,7 +21,7 @@ extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t)
 
 const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 3960));
+    return @ptrCast(@alignCast(constants_blob + 4436));
 }
 
 inline fn realElems(matrix: anytype) [*]real34_t {

@@ -24,10 +24,10 @@ extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t)
 extern fn WP34S_Log10(x: *const real_t, res: *real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 extern var displayFormatDigits: u8;
 
-// const_1e_37 == ((real_t *)(constants + 3960)) in constantPointers.h.
+// const_1e_37 == ((real_t *)(constants + 4436)) in constantPointers.h.
 const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 3960));
+    return @ptrCast(@alignCast(constants_blob + 4436));
 }
 
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
