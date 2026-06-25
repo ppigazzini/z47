@@ -370,6 +370,9 @@ pub export fn subRemaRema() callconv(.c) void {
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y);
     runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &x);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
 
     runtime.subtractRealMatrices(&y, &x, &x);
     if (x.matrixElements != null) {
@@ -391,12 +394,18 @@ pub export fn subRemaRema() callconv(.c) void {
 /// Y(real34 matrix) - X(complex34 matrix) ==> X(complex34 matrix)
 pub export fn subRemaCxma() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     subCxmaCxma();
 }
 
 /// Y(complex34 matrix) - X(real34 matrix) ==> X(complex34 matrix)
 pub export fn subCxmaRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     subCxmaCxma();
 }
 
@@ -483,12 +492,18 @@ pub export fn subRealRema() callconv(.c) void {
 /// Y(real34 matrix) - X(complex34) ==> X(complex34 matrix)
 pub export fn subRemaCplx() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_Y, runtime.REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     subCxmaCplx();
 }
 
 /// Y(complex34) - X(real34 matrix) ==> X(complex34 matrix)
 pub export fn subCplxRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     subCplxCxma();
 }
 
@@ -543,6 +558,9 @@ pub export fn subCxmaCxma() callconv(.c) void {
 
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y);
     runtime.convertComplex34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &x);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
 
     runtime.subtractComplexMatrices(&y, &x, &x);
     if (x.matrixElements != null) {
