@@ -564,14 +564,14 @@ inline fn constR34(comptime off: usize) *const real34_t {
     return @ptrCast(constants + off);
 }
 const const_0 = constR(1708);
-const const_1 = constR(4368);
-const const_1on2 = constR(4092);
-const const_1on4 = constR(4044);
-const const39_root3on2 = constR(4284);
-const const39_rt3 = constR(5212);
-const const_1e_16 = constR(4020);
-const const_1e_24 = constR(3996);
-const const_10p9__1 = constR(5112);
+const const_1 = constR(4856);
+const const_1on2 = constR(4580);
+const const_1on4 = constR(4532);
+const const39_root3on2 = constR(4772);
+const const39_rt3 = constR(5720);
+const const_1e_16 = constR(4484);
+const const_1e_24 = constR(4472);
+const const_10p9__1 = constR(5600);
 const const39_pi = constR(1848);
 const const34_10 = constR34(15916);
 const const34_60 = constR34(16028);
