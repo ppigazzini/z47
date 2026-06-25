@@ -350,6 +350,14 @@ pub export fn fnXToAlpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     (regString(REGISTER_X) + 2)[0] = 0;
 }
 
+// fnXToAlphaOld (deprecated x→α, items opcode XtoALPHA_OLD=1645) —
+// master fd83b4a4 kept the old behaviour under this name (identical to the
+// historical fnXToAlpha body above). The NEW master fnXToAlpha (ATOX) is a
+// separate deferred port; until then opcode 2785 also runs the old logic.
+pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void {
+    fnXToAlpha(unusedButMandatoryParameter);
+}
+
 // ===========================================================================
 // fnAlphaPos
 // ===========================================================================
