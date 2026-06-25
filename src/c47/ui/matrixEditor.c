@@ -456,11 +456,11 @@ void showMatrixEditor() {
 
   if(wrapIJ(colVector ? cols : rows, colVector ? 1 : cols)) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, rows, !addFlag);
+      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, rows, addFlag); // addFlag: append at true end (rows is swapped to 1 for colVector)
       convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, matrixIndex);
     }
     else {
-      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, rows, !addFlag);
+      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, rows, addFlag); // addFlag: append at true end (rows is swapped to 1 for colVector)
       convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, matrixIndex);
     }
   }

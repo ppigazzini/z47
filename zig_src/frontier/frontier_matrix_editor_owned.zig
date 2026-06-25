@@ -1641,7 +1641,7 @@ fn decIReal(matrix: *real34Matrix_t) bool_t {
 fn incJReal(matrix: *real34Matrix_t) bool_t {
     setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_J) + 1, REGISTER_J);
     if (wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns)) {
-        insRowRealMatrix(matrix, matrix.header.matrixRows, !addFlag);
+        insRowRealMatrix(matrix, matrix.header.matrixRows, addFlag); // addFlag: append at the true end (rows is swapped to 1 for colVector)
         return true;
     }
     return false;
@@ -1654,7 +1654,7 @@ fn decJReal(matrix: *real34Matrix_t) bool_t {
 fn incJComplex(matrix: *complex34Matrix_t) bool_t {
     setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_J) + 1, REGISTER_J);
     if (wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns)) {
-        insRowComplexMatrix(matrix, matrix.header.matrixRows, !addFlag);
+        insRowComplexMatrix(matrix, matrix.header.matrixRows, addFlag); // addFlag: append at the true end (rows is swapped to 1 for colVector)
         return true;
     }
     return false;

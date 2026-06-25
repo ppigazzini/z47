@@ -1583,20 +1583,20 @@ pub export fn graph_plotmem() callconv(.c) void {
                         const yNintg: i16 = screen_window_y(y_min, inty, y_max);
                         const xAvg: i16 = @intCast((@as(i32, xN0) + @as(i32, xN1)) >> 1);
 
-                        // C: abs((int16_t)(xN1-xN0)>=6) — the >= is INSIDE abs(); abs of a
-                        // bool (0/1) is the bool itself, so this branch fires iff xN1-xN0 >= 6.
-                        if ((@as(i32, xN1) - @as(i32, xN0)) >= 6) {
+                        // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6
+                        // (absolute pixel gap), not the old (xN1-xN0) >= 6.
+                        if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                             plotint(xAvg, yNintg);
                         } else {
                             plotrect(xAvg - 1, yNintg - 1, xAvg + 1, yNintg + 1);
                         }
 
-                        // C: abs((int16_t)(xN1-xN0) >= 6) — the >= is INSIDE abs;
-                        // abs(0/1) is identity, so the test is just (xN1-xN0) >= 6.
-                        if ((@as(i32, xN1) - @as(i32, xN0)) >= 6) {
+                        // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6/4
+                        // (absolute pixel gap), not the old (xN1-xN0) >= 6/4.
+                        if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                             plotline1(xN1, yNintg, xAvg + 2, yNintg);
                             plotline1(xAvg - 2, yNintg, xN0, yNintg);
-                        } else if ((@as(i32, xN1) - @as(i32, xN0)) >= 4) {
+                        } else if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 4) {
                             plotline1(xN1, yNintg, xAvg + 2, yNintg);
                             plotline1(xAvg - 2, yNintg, xN0, yNintg);
                         }
@@ -1605,7 +1605,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                             const yNoff: i16 = screen_window_y(y_min, 0, y_max);
                             plotrect(xN0, yN0, xN1, yN1);
                             plotrect(xN0, yNoff, xN1, yN0);
-                            if ((@as(i32, xN1) - @as(i32, xN0)) >= 6) {
+                            if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                                 plotline1(xN0, yN0, xN1, yN1);
                             }
                         }
