@@ -11,12 +11,16 @@ static void conjRema(void) {
   complex34Matrix_t cMat;
 
   convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
+  if(lastErrorCode != 0) {
+    return;
+  }
   if(getSystemFlag(FLAG_SPCRES)) {
     for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
       real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
     }
   }
   convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
+  complexMatrixFree(&cMat);
 }
 
 static void conjCxma(void) {
