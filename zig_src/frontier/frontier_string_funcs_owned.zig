@@ -798,3 +798,43 @@ pub export fn fn42Xtoa(unusedButMandatoryParameter: u16) callconv(.c) void {
     fnXToAlpha(alphaRegister);
     truncateAlphaRegisterTo44Char();
 }
+
+inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
+    return lg._mp_size < 0;
+}
+
+// 42AROT: rotate the alpha register by X glyphs; the sign of X picks the direction.
+pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
+        displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "cannot use 42AROT on %s", getRegisterDataTypeName(@intCast(alphaRegister), true, false));
+            moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
+        }
+        return;
+    }
+
+    var lgInt: longInteger_t = undefined;
+    longIntegerInit(&lgInt[0]);
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtLongInteger => convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
+        dtReal34 => convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN),
+        dtShortInteger => convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
+        else => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "cannot 42AROT when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
+            }
+            longIntegerFree(&lgInt[0]);
+            return;
+        },
+    }
+    if (longIntegerIsNegative(&lgInt[0])) {
+        fnAlphaRR(alphaRegister);
+    } else {
+        fnAlphaRL(alphaRegister);
+    }
+    longIntegerFree(&lgInt[0]);
+}
