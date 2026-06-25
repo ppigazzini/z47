@@ -1018,37 +1018,41 @@ pub export fn fnYYDflt(tmp: u16) linksection(code_section) callconv(.c) void {
     }
 }
 
-pub export fn fnXToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section) callconv(.c) void {
     if (!saveLastX()) {
         return;
     }
 
-    switch (getRegisterDataType(REGISTER_X)) {
+    switch (getRegisterDataType(regist)) {
         dtDate => {
             // already in date: do nothing
         },
         dtReal34 => {
-            if (getRegisterAngularMode(REGISTER_X) == amNone) {
-                convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, false); //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
-                checkDateRange(reg34(REGISTER_X));
+            if (getRegisterAngularMode(regist) == amNone) {
+                convertReal34RegisterToDateRegister(regist, regist, false); //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
+                checkDateRange(reg34(regist));
                 temporaryInformation = TI_DAY_OF_WEEK;
                 if (lastErrorCode != 0) {
                     undo();
                 }
             } else {
                 // fallthrough
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
                 moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
                 return;
             }
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
             moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
             return;
         },
     }
+}
+
+pub export fn fnXToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnXToDateRegister(REGISTER_X);
 }
 
 pub export fn fnYear(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
