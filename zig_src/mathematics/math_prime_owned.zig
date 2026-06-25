@@ -968,6 +968,7 @@ fn doFnEvPFacts(param: u16) void {
         longIntegerFree(&z);
         longIntegerFree(&y);
         longIntegerFree(&x);
+        realMatrixFree(&xxmat);
     } else {
         _doFnEvPFacts(param);
     }
@@ -1804,7 +1805,6 @@ const multipliers_square = [_]u32{ 1, 3, 5, 7, 11, 15, 21, 33, 35, 55, 65, 77, 9
 // ===========================================================================
 fn performPrimeFactorization(doSaveLastX: bool) bool {
     iterations = true;
-    addFactorsToTSV = false;
     loopp = 0;
     currentKeyCode = 255;
     var lastAdded: real34_t = undefined;
