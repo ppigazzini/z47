@@ -357,8 +357,8 @@ const const39_1oneEsq = constR(6032);
 const const_plusInfinity = constR(1696);
 const const_minusInfinity = constR(1684);
 const const_1e_24 = constR(4472);
-const const34_1e_24 = constR34(15740);
-const const34_2p32 = constR34(16380);
+const const34_1e_24 = constR34(16248);
+const const34_2p32 = constR34(16888);
 
 // ---------------------------------------------------------------------------
 // font tables: real extern const structs (taken by &name).
