@@ -1079,9 +1079,7 @@ void stringToASCII(const char *str, char *ascii) {
 }
 
 
-// distinctQuotes == 0 preserves the legacy mapping `"` -> `'` (used by --dumpMenus1/2). distinctQuotes == 1 maps `"` -> `''` so 
-// that MNU_1STDERIV ("f'") and MNU_2NDDERIV ("f\"") yield distinct filenames `f'` and `f''` under --dumpMenusAll (RefDB47 superset).
-void stringToFileNameChars(const char *str, char *ascii, uint8_t distinctQuotes) {
+void stringToFileNameChars(const char *str, char *ascii) {
   int16_t len;
   len = stringGlyphLength(str);
 
@@ -1109,12 +1107,8 @@ void stringToFileNameChars(const char *str, char *ascii, uint8_t distinctQuotes)
     }
     else if(*str == '\"') {
       *ascii = '\'';
-      ascii++;
-      if(distinctQuotes) {
-        *ascii = '\'';
-        ascii++;
-      }
       str++;
+      ascii++;
     }
     else {
       *ascii = *str;

@@ -1330,7 +1330,7 @@ pub export fn stringToASCII(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) v
 // ---------------------------------------------------------------------------
 // stringToFileNameChars
 // ---------------------------------------------------------------------------
-pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distinctQuotes: u8) callconv(.c) void {
+pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) void {
     var str = strIn;
     var ascii = asciiIn;
     const len: i16 = @intCast(stringGlyphLength(str));
@@ -1357,12 +1357,8 @@ pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distin
             ascii += 1;
         } else if (str[0] == '"') {
             ascii[0] = '\'';
-            ascii += 1;
-            if (distinctQuotes != 0) {
-                ascii[0] = '\'';
-                ascii += 1;
-            }
             str += 1;
+            ascii += 1;
         } else {
             ascii[0] = str[0];
             str += 1;

@@ -3381,7 +3381,7 @@ void showSoftmenuCurrentPart(void) {
         return false;
       }
     }
-    #if defined(PC_BUILD) && defined (VERBOSE_MINIMUM)
+    #if defined(PC_BUILD)
       printf("----------- ############################ CREATING HOME #########################\n");
     #endif // PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
@@ -3411,7 +3411,7 @@ void showSoftmenuCurrentPart(void) {
         return false;
       }
     }
-    #if defined(PC_BUILD) && defined (VERBOSE_MINIMUM)
+    #if defined(PC_BUILD)
       printf("----------- ############################ CREATING PFN #########################\n");
     #endif // PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
@@ -3853,16 +3853,8 @@ void fnExitAllMenus(uint16_t unusedButMandatoryParameter) {
 
 
 
-// distinctQuotes is propagated to stringToFileNameChars(): 0 keeps the legacy `"` -> `'` mapping (--dumpMenus1/2); 1 maps `"` -> `''` so the
-// "f'" / "f\"" derivative menus get distinct filenames under --dumpMenusAll.
-void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const char *pathIn, uint8_t distinctQuotes) {          //JMvv procedure to dump all menus. First page only. To mod todump all pages
+void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat) {                              //JMvv procedure to dump all menus. First page only. To mod todump all pages
 #if defined(PC_BUILD)
-  char menuDumpPath[512] = "menuDump";  // default; TODO: make definable from command line
-
-  if(pathIn != NULL && pathIn[0] != '\0' && strlen(pathIn) < sizeof(menuDumpPath)) {
-    strcpy(menuDumpPath, pathIn);
-  }
-
   doRefreshSoftMenu = true;
   showSoftmenu(softmenu[menu].menuItem);
   softmenuStack[0].firstItem += item;
@@ -3875,11 +3867,10 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const 
   uint16_t uint16;
   uint8_t  uint8;
 
-  if(create_dir(menuDumpPath) != 0) {
-    printf(">>> menuDump: cannot create folder %s\n", menuDumpPath);
-    return;
+  gtk_widget_queue_draw(screen);
+  while(gtk_events_pending()) {
+    gtk_main_iteration();
   }
-  printf(">>> menuDump: output folder is %s\n", menuDumpPath);
 
   //printf(">>> %s\n",indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName);
   char asciiString[448];
@@ -3887,19 +3878,22 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const 
 
   if(newFilenameformat == 2) {
     stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
-    stringToFileNameChars(asciiMenuName, asciiString, distinctQuotes);
-    sprintf(bmpFileName, "%s/%s.%d.bmp", menuDumpPath, asciiString, (int)(item/18)+1);
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName, "%s.%d.bmp", asciiString, (int)(item/18)+1);
+    printf(">>> filename:%s|\n", bmpFileName);
   } else   if(newFilenameformat == 1) {
     stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
-    stringToFileNameChars(asciiMenuName, asciiString, distinctQuotes);
-    sprintf(bmpFileName, "%s/Menu_%03d_p%d_%s.bmp", menuDumpPath, menu, (int)(item/18)+1, asciiString);
+    //printf(">>> Menustring:%s|",asciiMenuName);
+    stringToFileNameChars(asciiMenuName, asciiString);
+    //printf(">>> Menustring:%s|",asciiString);
+    sprintf(bmpFileName, "Menu_%03d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
+    printf(">>> filename:%s|\n", bmpFileName);
   }
 
+
   bmp = fopen(bmpFileName, "wb");
-  if(bmp == NULL) {
-    printf(">>> menuDump: cannot open %s for writing\n", bmpFileName);
-    return;
-  }
 
   fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
 
@@ -3930,7 +3924,7 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const 
   uint32 = 0;
   fwrite(&uint32, 1, 4, bmp);     // Offset 0x1e 30  Compression
 
-  uint32 = (SCREEN_WIDTH/8 + 2) * (SCREEN_HEIGHT-171);
+  uint32 = 0x000030c0;
   fwrite(&uint32, 1, 4, bmp);     // Offset 0x22 34  Size of bitmap data (including padding)
 
   uint32 = 0x00001a7c; // 6780 pixels/m
@@ -3982,7 +3976,7 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const 
   for(y=SCREEN_HEIGHT-1; y>=171; y--) {
     for(x=0; x<SCREEN_WIDTH; x++) {
       uint8 <<= 1;
-      if(lcd_buffer_pixel_on((uint32_t)x, (uint32_t)y)) {
+      if(*(screenData + y*screenStride + x) == ON_PIXEL) {
         uint8 |= 1;
       }
 
@@ -3996,13 +3990,12 @@ void fnMenuDump(uint16_t menu, uint16_t item, uint16_t newFilenameformat, const 
 
 
   fclose(bmp);
-  printf(">>> menuDump: wrote %s\n", bmpFileName);
   popSoftmenu();
 #endif // PC_BUILD
 }
 
 
-void fnDumpMenus(uint16_t newFilenameformat, const char *path) {
+void fnDumpMenus(uint16_t newFilenameformat) {                      //JM
 #if defined(PC_BUILD)
   int cc = currentSolverStatus;
   currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
@@ -4022,7 +4015,7 @@ void fnDumpMenus(uint16_t newFilenameformat, const char *path) {
           case MNU_SHOW     :
             break;
           default:
-           fnMenuDump(m, n, newFilenameformat, path, 0);
+           fnMenuDump(m, n, newFilenameformat);
          }
         n += 18;
       }
@@ -4030,40 +4023,6 @@ void fnDumpMenus(uint16_t newFilenameformat, const char *path) {
     }
   currentSolverStatus = cc;
 #endif // PC_BUILD
-}
+}                                                                            //JM^^
 
 
-void fnDumpMenusWrapper(uint16_t newFilenameformat) {
-  fnDumpMenus(newFilenameformat, NULL);
-}
-
-
-// Superset of fnDumpMenus(). Keeps the six menus fnDumpMenus() drops: 1stDeriv, 2ndDeriv, Sf, Solver, Grapher, SHOW.
-// RefDB47 ingest needs a BMP for every static softmenu the engine declares. The five solver-aware menus carry
-// NULL-only data arrays. They render as blank softkey rows. That blank state is exactly what RefDB47 wants.
-// MNU_SHOW is empty (numItems == 0), so the inner loop skips it. Dynamic softmenus skip too: no static content.
-// currentSolverStatus is masked just as fnDumpMenus() masks it. Result: both functions emit byte-identical BMPs.
-void fnDumpMenusAll(uint16_t newFilenameformat, const char *path) {
-#if defined(PC_BUILD)
-  int cc = currentSolverStatus;
-  currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
-  printf("Dumping all menus (RefDB47 superset, no skip)\n");
-  int16_t m, n;
-  m = 0;
-  while(softmenu[m].menuItem != 0) {
-    n = 0;
-    while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
-      printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n", m, n, m, softmenu[m].numItems, indexOfItems[m].itemCatalogName, n%18);
-      fnMenuDump(m, n, newFilenameformat, path, 1);
-      n += 18;
-    }
-    m++;
-  }
-  currentSolverStatus = cc;
-#endif // PC_BUILD
-}
-
-
-void fnDumpMenusAllWrapper(uint16_t newFilenameformat) {
-  fnDumpMenusAll(newFilenameformat, NULL);
-}

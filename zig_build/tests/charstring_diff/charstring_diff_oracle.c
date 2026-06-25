@@ -11,7 +11,7 @@ int16_t oracle_stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos);
 int16_t oracle_stringNextGlyph(const char *str, int16_t pos);
 int16_t oracle_stringPrevGlyph(const char *str, int16_t pos);
 int16_t oracle_stringLastGlyph(const char *str);
-void oracle_stringToFileNameChars(const char *str, char *ascii, uint8_t distinctQuotes);
+void oracle_stringToFileNameChars(const char *str, char *ascii);
 
 int32_t oracle_stringGlyphLength(const char *str) {
   int32_t len = 0;
@@ -122,7 +122,7 @@ int16_t oracle_stringLastGlyph(const char *str) {
   return lastGlyph;
 }
 
-void oracle_stringToFileNameChars(const char *str, char *ascii, uint8_t distinctQuotes) {
+void oracle_stringToFileNameChars(const char *str, char *ascii) {
   int16_t len;
   len = oracle_stringGlyphLength(str);
 
@@ -150,12 +150,8 @@ void oracle_stringToFileNameChars(const char *str, char *ascii, uint8_t distinct
     }
     else if(*str == '\"') {
       *ascii = '\'';
-      ascii++;
-      if(distinctQuotes) {
-        *ascii = '\'';
-        ascii++;
-      }
       str++;
+      ascii++;
     }
     else {
       *ascii = *str;

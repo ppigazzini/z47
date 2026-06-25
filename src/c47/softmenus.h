@@ -12,10 +12,7 @@ void      fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
 void      fnOpenMenu             (uint16_t menu);
 void      fnGetMenu              (uint16_t unusedButMandatoryParameter);
 void      fnBaseMenu             (uint16_t unusedButMandatoryParameter);
-void      fnDumpMenus            (uint16_t newFilenameformat, const char *path);
-void      fnDumpMenusWrapper     (uint16_t newFilenameformat);
-void      fnDumpMenusAll         (uint16_t newFilenameformat, const char *path);
-void      fnDumpMenusAllWrapper  (uint16_t newFilenameformat);
+void      fnDumpMenus            (uint16_t unusedButMandatoryParameter);
 void      fnPseudoMenu           (uint16_t target);
 
 /**

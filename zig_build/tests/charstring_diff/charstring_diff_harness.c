@@ -38,7 +38,7 @@ int16_t oracle_stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos);
 int16_t oracle_stringNextGlyph(const char *str, int16_t pos);
 int16_t oracle_stringPrevGlyph(const char *str, int16_t pos);
 int16_t oracle_stringLastGlyph(const char *str);
-void oracle_stringToFileNameChars(const char *str, char *ascii, uint8_t distinctQuotes);
+void oracle_stringToFileNameChars(const char *str, char *ascii);
 
 static long checked;
 
@@ -84,16 +84,16 @@ static int diff_one(const char *s) {
   // changes upstream (a new distinctQuotes parameter), so the oracle will flip
   // RED against the Zig owner the moment the imported C is refreshed (M10.2)
   // until the owner is re-ported to match.
-  for(uint8_t dq = 0; dq <= 1; ++dq) {
-    char a_zig[320], a_oracle[320];
+  {
+    char a_zig[160], a_oracle[160];
     memset(a_zig, 0x7f, sizeof(a_zig));
     memset(a_oracle, 0x7f, sizeof(a_oracle));
-    stringToFileNameChars(s, a_zig, dq);
-    oracle_stringToFileNameChars(s, a_oracle, dq);
+    stringToFileNameChars(s, a_zig);
+    oracle_stringToFileNameChars(s, a_oracle);
     checked++;
     if(memcmp(a_zig, a_oracle, sizeof(a_zig)) != 0) {
-      printf("FAIL: stringToFileNameChars(dq=%u) diverges: Zig=[%s] oracle=[%s] "
-             "on [", dq, a_zig, a_oracle);
+      printf("FAIL: stringToFileNameChars diverges: Zig=[%s] oracle=[%s] on [",
+             a_zig, a_oracle);
       print_bytes(s);
       printf("]\n");
       return 1;
