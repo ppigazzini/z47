@@ -105,10 +105,10 @@ const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
 }
-const OFF_const_1: u32 = 4368;
-const OFF_const_3: u32 = 4524;
-const OFF_const_100: u32 = 7024;
-const OFF_const_1on2: u32 = 4092;
+const OFF_const_1: u32 = 4856;
+const OFF_const_3: u32 = 5012;
+const OFF_const_100: u32 = 7532;
+const OFF_const_1on2: u32 = 4580;
 inline fn const_1() *const real_t {
     return cstR(OFF_const_1);
 }

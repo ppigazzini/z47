@@ -132,8 +132,8 @@ inline fn cst34(comptime off: u32) *align(1) const real34_t {
     return @ptrCast(constants + off);
 }
 const OFF_const_0: u32 = 1708;
-const OFF_const_1: u32 = 4368;
-const OFF_const34_0: u32 = 15692;
+const OFF_const_1: u32 = 4856;
+const OFF_const34_0: u32 = 16200;
 
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);

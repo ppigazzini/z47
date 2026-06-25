@@ -76,7 +76,7 @@ const DEC_ROUND_DOWN: c_int = 5;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1e6 = 16348;
+const OFF_const34_1e6 = 16856;
 
 inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);

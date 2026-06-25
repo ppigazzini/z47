@@ -94,8 +94,8 @@ const STAT_PGM_END: u32 = 1 << 9;
 const STAT_CLK_WKUP_FLAG: u32 = 1 << 12;
 
 // constant blob offsets (constantPointers.h).
-const OFF_const34_1: u32 = 15804;
-const OFF_const34_65535: u32 = 16284;
+const OFF_const34_1: u32 = 16312;
+const OFF_const34_65535: u32 = 16792;
 
 // ---------------------------------------------------------------------------
 // Globals

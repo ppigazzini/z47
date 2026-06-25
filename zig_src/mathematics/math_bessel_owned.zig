@@ -103,21 +103,21 @@ const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
 }
-const OFF_const__1: u32 = 3900;
-const OFF_const_1on4: u32 = 4044;
-const OFF_const_1on2: u32 = 4092;
-const OFF_const_3: u32 = 4524;
-const OFF_const_4: u32 = 4536;
-const OFF_const_5: u32 = 4584;
-const OFF_const_8: u32 = 4620;
-const OFF_const_24: u32 = 4680;
-const OFF_const_90: u32 = 7036;
+const OFF_const__1: u32 = 4376;
+const OFF_const_1on4: u32 = 4532;
+const OFF_const_1on2: u32 = 4580;
+const OFF_const_3: u32 = 5012;
+const OFF_const_4: u32 = 5024;
+const OFF_const_5: u32 = 5072;
+const OFF_const_8: u32 = 5108;
+const OFF_const_24: u32 = 5168;
+const OFF_const_90: u32 = 7544;
 const OFF_const39_pi: u32 = 1848;
-const OFF_const39_piOn4: u32 = 4248;
-const OFF_const75_piOn2: u32 = 6964;
-const OFF_const75_2pi: u32 = 7132;
+const OFF_const39_piOn4: u32 = 4736;
+const OFF_const75_piOn2: u32 = 7472;
+const OFF_const75_2pi: u32 = 7640;
 const OFF_const39_gammaEM: u32 = 1256;
-const OFF_const39_egamma: u32 = 4104;
+const OFF_const39_egamma: u32 = 4592;
 inline fn const__1() *align(1) const real_t {
     return cstR(OFF_const__1);
 }

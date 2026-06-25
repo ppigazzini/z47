@@ -289,8 +289,8 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const_NaN: u32 = 812;
-const OFF_const34_0: u32 = 15692;
-const OFF_const34_1: u32 = 15804;
+const OFF_const34_0: u32 = 16200;
+const OFF_const34_1: u32 = 16312;
 inline fn const_NaN() *align(1) const real_t {
     return @ptrCast(constants + OFF_const_NaN);
 }

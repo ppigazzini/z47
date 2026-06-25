@@ -156,10 +156,10 @@ const DEC_ROUND_CEILING: c_int = 0;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1 = 4368;
-const OFF_const_3 = 4524;
-const OFF_const34_1 = 15804;
-const OFF_const_1on2 = 4092;
+const OFF_const_1 = 4856;
+const OFF_const_3 = 5012;
+const OFF_const34_1 = 16312;
+const OFF_const_1on2 = 4580;
 
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);

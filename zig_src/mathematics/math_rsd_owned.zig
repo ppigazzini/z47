@@ -94,11 +94,11 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
 }
 const OFF_const_0: u32 = 1708;
-const OFF_const_1on10: u32 = 4032;
-const OFF_const_1: u32 = 4368;
-const OFF_const_10: u32 = 4644;
-const OFF_const_60: u32 = 4808;
-const OFF_const_100: u32 = 7024;
+const OFF_const_1on10: u32 = 4520;
+const OFF_const_1: u32 = 4856;
+const OFF_const_10: u32 = 5132;
+const OFF_const_60: u32 = 5296;
+const OFF_const_100: u32 = 7532;
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);
 }

@@ -217,7 +217,7 @@ const DISPLAY_VALUE_LEN: usize = 80;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_2 = 4440;
+const OFF_const_2 = 4928;
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
@@ -1830,7 +1830,7 @@ inline fn softmenuMenuItem0() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
 
-const OFF_const_1 = 4368;
+const OFF_const_1 = 4856;
 
 // ===========================================================================
 // fnPlotCloseSmi

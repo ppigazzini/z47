@@ -118,8 +118,8 @@ const Y_POSITION_OF_REGISTER_Z_LINE: u32 = 60;
 const vmNormal: c_int = 0;
 
 // constant blob offsets (constantPointers.h).
-const OFF_const_3600: u32 = 4960;
-const OFF_const34_1: u32 = 15804;
+const OFF_const_3600: u32 = 5448;
+const OFF_const34_1: u32 = 16312;
 
 // ---------------------------------------------------------------------------
 // softmenu / softmenuStack structs (typeDefinitions.h)

@@ -303,7 +303,7 @@ inline fn cstReal(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
 const OFF_const39_pi: u32 = 1848;
-const OFF_const39_piOn2: u32 = 4392;
+const OFF_const39_piOn2: u32 = 4880;
 const OFF_const_0: u32 = 1708;
 const const39_pi = cstReal(OFF_const39_pi);
 const const39_piOn2 = cstReal(OFF_const39_piOn2);

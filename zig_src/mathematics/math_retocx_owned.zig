@@ -48,7 +48,7 @@ inline fn const_0() *const real_t {
 }
 const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const39_pi: u32 = 1848;
-const OFF_const34_0: u32 = 15692;
+const OFF_const34_0: u32 = 16200;
 inline fn const39_pi() *align(1) const real_t {
     return @ptrCast(constants + OFF_const39_pi);
 }

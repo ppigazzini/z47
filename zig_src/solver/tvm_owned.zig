@@ -161,12 +161,12 @@ inline fn cst34(comptime off: u32) *align(1) const real34_t {
     return @ptrCast(constants + off);
 }
 const OFF_const_0: u32 = 1708;
-const OFF_const__1: u32 = 3900;
-const OFF_const_1e_37: u32 = 3960;
-const OFF_const_1on10: u32 = 4032;
-const OFF_const_1on2: u32 = 4092;
-const OFF_const_1: u32 = 4368;
-const OFF_const_100: u32 = 7024;
+const OFF_const__1: u32 = 4376;
+const OFF_const_1e_37: u32 = 4436;
+const OFF_const_1on10: u32 = 4520;
+const OFF_const_1on2: u32 = 4580;
+const OFF_const_1: u32 = 4856;
+const OFF_const_100: u32 = 7532;
 
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);
@@ -190,16 +190,16 @@ inline fn const_100() *align(1) const real_t {
     return cstR(OFF_const_100);
 }
 
-const OFF_const34_0: u32 = 15692;
-const OFF_const34_1e_4: u32 = 15756;
-const OFF_const34_1on10: u32 = 15772;
-const OFF_const34_1on2: u32 = 15788;
-const OFF_const34_1: u32 = 15804;
-const OFF_const34_2: u32 = 15820;
-const OFF_const34_3: u32 = 15836;
-const OFF_const34_7: u32 = 15884;
-const OFF_const34_9: u32 = 15900;
-const OFF_const34_24: u32 = 15964;
+const OFF_const34_0: u32 = 16200;
+const OFF_const34_1e_4: u32 = 16264;
+const OFF_const34_1on10: u32 = 16280;
+const OFF_const34_1on2: u32 = 16296;
+const OFF_const34_1: u32 = 16312;
+const OFF_const34_2: u32 = 16328;
+const OFF_const34_3: u32 = 16344;
+const OFF_const34_7: u32 = 16392;
+const OFF_const34_9: u32 = 16408;
+const OFF_const34_24: u32 = 16472;
 
 inline fn const34_0() *align(1) const real34_t {
     return cst34(OFF_const34_0);
