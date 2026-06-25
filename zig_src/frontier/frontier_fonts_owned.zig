@@ -61,7 +61,9 @@ const hexaFont: [64]u8 linksection(hexa_font_section) = .{
     0xf8, 0x8e, 0x88, 0x80, // F
 };
 
-pub export fn findGlyph(font: *const font_t, charCode: u16) callconv(.c) i16 {
+// The single binary-search core: exact charCode match, returns the index or -1
+// on a miss (no id-based fallback, so a miss is never mistaken for index 0).
+pub export fn findGlyphExact(font: *const font_t, charCode: u16) callconv(.c) i16 {
     const glyphs: [*]const glyph_t = @ptrCast(&font.glyphs);
 
     var first: i16 = 0;
@@ -82,6 +84,15 @@ pub export fn findGlyph(font: *const font_t, charCode: u16) callconv(.c) i16 {
     }
     if (glyphs[@intCast(last)].charCode == charCode) {
         return last;
+    }
+    return -1;
+}
+
+// Public wrapper: index on a hit, else the original id-based not-found codes.
+pub export fn findGlyph(font: *const font_t, charCode: u16) callconv(.c) i16 {
+    const id = findGlyphExact(font, charCode);
+    if (id >= 0) {
+        return id;
     }
     if (font.id == 1) {
         return -1;
