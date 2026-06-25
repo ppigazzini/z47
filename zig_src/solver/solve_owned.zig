@@ -133,6 +133,8 @@ const solverTvmZer: i32 = solverTvmTol + 1;
 // Globals
 // ---------------------------------------------------------------------------
 extern var lastErrorCode: u8;
+extern var varMenu42: bool; // c47.c globals (42S MVAR alpha-register routing)
+extern var alphaRegister: u16;
 extern var temporaryInformation: u8;
 extern var programRunStop: u8;
 extern var currentKeyCode: u8;
@@ -538,9 +540,10 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
                 currentSolverVariable = regist;
                 reallyRunFunction(ITM_STO, regist);
                 temporaryInformation = TI_SOLVER_VARIABLE;
-            } else { // store the variable name in K and continue program execution
-                reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength), amNone);
-                _ = xcopy(registerStringPtr(REGISTER_K), variable_str, nameLength);
+            } else { // store the variable name in the alpha register (42S) or K, and continue program execution
+                const alpha_register: calcRegister_t = if (varMenu42) @intCast(alphaRegister) else REGISTER_K;
+                reallocateRegister(alpha_register, dtString, TO_BLOCKS(nameLength), amNone);
+                _ = xcopy(registerStringPtr(alpha_register), variable_str, nameLength);
                 dynamicMenuItem = -1;
                 runProgram(false, INVALID_VARIABLE);
             }
