@@ -93,6 +93,9 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
 
     linkToRealMatrixRegister(REGISTER_Y, &rMat);
     convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &iMat);
+    if(lastErrorCode != 0) {
+      return;
+    }
 
     if(rMat.header.matrixRows == iMat.header.matrixRows && rMat.header.matrixColumns == iMat.header.matrixColumns) {
       if(complexMatrixInit(&cMat, rMat.header.matrixRows, rMat.header.matrixColumns)) {

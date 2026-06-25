@@ -670,6 +670,9 @@ void mulRemaRema(void) {
  ***********************************************/
 void mulRemaCxma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   mulCxmaCxma();
 }
 
@@ -683,6 +686,9 @@ void mulRemaCxma(void) {
  ***********************************************/
 void mulCxmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   mulCxmaCxma();
 }
 
@@ -774,6 +780,9 @@ void mulRealRema(void) {
  ***********************************************/
 void mulRemaCplx(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   mulCxmaCplx();
 }
 
@@ -787,6 +796,9 @@ void mulRemaCplx(void) {
  ***********************************************/
 void mulCplxRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   mulCplxCxma();
 }
 
