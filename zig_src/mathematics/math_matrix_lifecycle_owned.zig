@@ -157,6 +157,12 @@ pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16
     matrix.matrixElements = @ptrCast(@alignCast(allocC47Blocks(needed_size)));
     matrix.header.matrixColumns = @intCast(cols);
     matrix.header.matrixRows = @intCast(rows);
+    if (matrix.matrixElements == null) { // alloc can fail even when isMemoryBlockAvailable said yes
+        matrix.header.matrixColumns = 0;
+        matrix.header.matrixRows = 0;
+        reportRamFullInfo("In function complexMatrixInit:");
+        return false;
+    }
 
     const elems = complexElems(matrix);
     const count = @as(usize, rows) * @as(usize, cols);

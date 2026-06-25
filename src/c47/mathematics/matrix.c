@@ -1679,6 +1679,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       linkToRealMatrixRegister(REGISTER_Y, &x);
       ires.header.matrixRows = ires.header.matrixColumns = 0;
       ires.matrixElements = NULL;
+      res.matrixElements = NULL;
       realEigenvalues(&x, &res, &ires);
       if(lastErrorCode == ERROR_NONE || lastErrorCode == ERROR_SOLVER_ABORT) {
         if(ires.matrixElements) {
@@ -1695,11 +1696,13 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
             //provide additional matrix for the eigenvalue outputs in a vector
             complex34Matrix_t cresRow;
             extractDiagonalToRowComplex34Matrix(&cres, &cresRow);
-            setSystemFlag(FLAG_ASLIFT);
-            liftStack();
-            convertComplex34MatrixToComplex34MatrixRegister(&cresRow, REGISTER_X);
-            adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-            complexMatrixFree(&cresRow);
+            if(cresRow.matrixElements) {
+              setSystemFlag(FLAG_ASLIFT);
+              liftStack();
+              convertComplex34MatrixToComplex34MatrixRegister(&cresRow, REGISTER_X);
+              adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+              complexMatrixFree(&cresRow);
+            }
 
             realMatrixFree(&ires);
             complexMatrixFree(&cres);
@@ -1720,14 +1723,24 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
           //provide additional matrix for the eigenvalue outputs in a vector
           real34Matrix_t resRow;
           extractDiagonalToRowReal34Matrix(&res, &resRow);
-          setSystemFlag(FLAG_ASLIFT);
-          liftStack();
-          convertReal34MatrixToReal34MatrixRegister(&resRow, REGISTER_X);
-          adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-          realMatrixFree(&resRow);
+          if(resRow.matrixElements) {
+            setSystemFlag(FLAG_ASLIFT);
+            liftStack();
+            convertReal34MatrixToReal34MatrixRegister(&resRow, REGISTER_X);
+            adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+            realMatrixFree(&resRow);
+          }
 
         }
         realMatrixFree(&res);
+      }
+      // When the solver leaves an error code other than ERROR_NONE or ERROR_SOLVER_ABORT (e.g. complex eigenvalues with FL_CPXRES clear), the
+      // block above is skipped, but realEigenvalues already allocated res and ires. Release them here; on the handled paths they are already freed and NULL, so these are no-ops.
+      if(res.matrixElements)  {
+        realMatrixFree(&res);
+      }
+      if(ires.matrixElements) {
+        realMatrixFree(&ires);
       }
     }
     goto Success;
@@ -1756,21 +1769,26 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     else {
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
+      res.matrixElements = NULL;
       complexEigenvalues(&x, &res);
-      convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
-      adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
-      doneAdjusting = true;
+      if(res.matrixElements) {
+        convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+        doneAdjusting = true;
 
-      //provide additional matrix for the eigenvalue outputs in a vector
-      complex34Matrix_t resRow;
-      extractDiagonalToRowComplex34Matrix(&res, &resRow);
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
-      convertComplex34MatrixToComplex34MatrixRegister(&resRow, REGISTER_X);
-      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-      complexMatrixFree(&resRow);
+        //provide additional matrix for the eigenvalue outputs in a vector
+        complex34Matrix_t resRow;
+        extractDiagonalToRowComplex34Matrix(&res, &resRow);
+        if(resRow.matrixElements) {
+          setSystemFlag(FLAG_ASLIFT);
+          liftStack();
+          convertComplex34MatrixToComplex34MatrixRegister(&resRow, REGISTER_X);
+          adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+          complexMatrixFree(&resRow);
+        }
 
-      complexMatrixFree(&res);
+        complexMatrixFree(&res);
+      }
     }
     goto Success;
   }
@@ -1812,11 +1830,15 @@ static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns, bool_t is
       return 255;
     }
     if(isComplex) {
+      // consume incoming X = [n+mi]
+      fnDrop(NOPARAM);
       linkToComplexMatrixRegister(REGISTER_X, &cmatrix);
       realToReal34(const_1, VARIABLE_REAL34_DATA(cmatrix.matrixElements));
       real34SetZero(VARIABLE_IMAG34_DATA(cmatrix.matrixElements));
     }
     else {
+      // consume incoming X = [n]
+      fnDrop(NOPARAM);
       linkToRealMatrixRegister(REGISTER_X,  &rmatrix);
       realToReal34(const_1, rmatrix.matrixElements);
     }
@@ -1858,9 +1880,10 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       ires.matrixElements = NULL;
       realEigenvectors(&x, &res, &ires);
       if(res.matrixElements) {
-        // Success: lift the stack and install the result.
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
+        // Success: lift the stack (removed)
+        //        setSystemFlag(FLAG_ASLIFT);
+        //        liftStack();
+        // Install the result.
         if(ires.matrixElements) {
           complex34Matrix_t cres;
           if(complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
@@ -1873,6 +1896,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
             complexMatrixFree(&cres);
           }
           else {
+            realMatrixFree(&ires);
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Ram full");
@@ -1920,9 +1944,10 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       default:
       complexEigenvectors(&x, &res);
       if(res.matrixElements) {
-        // Success: lift the stack and install the result.
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
+        // Success: lift the stack (removed)
+        //        setSystemFlag(FLAG_ASLIFT);
+        //        liftStack();
+        // Install the result.
         convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
         complexMatrixFree(&res);
       }
@@ -2072,12 +2097,20 @@ bool_t complexMatrixInit(complex34Matrix_t *matrix, uint16_t rows, uint16_t cols
     matrix->header.matrixColumns = matrix->header.matrixRows = 0;
     matrix->matrixElements = NULL;
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "Ram full");
+              sprintf(errorMessage, "Ram full 01");
               moreInfoOnError("In function complexMatrixInit:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return false;
   }
   matrix->matrixElements = allocC47Blocks(neededSize);
+  if(matrix->matrixElements == NULL) {
+    matrix->header.matrixColumns = matrix->header.matrixRows = 0;
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "Ram full 02");
+              moreInfoOnError("In function complexMatrixInit:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
 
   matrix->header.matrixColumns = cols;
   matrix->header.matrixRows = rows;
@@ -2839,8 +2872,7 @@ static void addSubRealMatrices(const real34Matrix_t *y, const real34Matrix_t *x,
   int32_t i;
 
   if((y->header.matrixColumns != x->header.matrixColumns) || (y->header.matrixRows != x->header.matrixRows)) {
-    res->matrixElements = NULL; // Matrix mismatch
-    res->header.matrixRows = res->header.matrixColumns = 0;
+    realMatrixFree(res); // Matrix mismatch: res aliases an owned operand, so free it (this also clears matrixElements and the dimensions)
     return;
   }
 
@@ -2881,8 +2913,7 @@ static void addSubComplexMatrices(const complex34Matrix_t *y, const complex34Mat
   int32_t i;
 
   if((y->header.matrixColumns != x->header.matrixColumns) || (y->header.matrixRows != x->header.matrixRows)) {
-    res->matrixElements = NULL; // Matrix mismatch
-    res->header.matrixRows = res->header.matrixColumns = 0;
+    complexMatrixFree(res); // Matrix mismatch: res aliases an owned operand, so free it (this also clears matrixElements and the dimensions)
     return;
   }
 
@@ -3432,6 +3463,7 @@ void WP34S_LU_decomposition(const real34Matrix_t *matrix, real34Matrix_t *lu, ui
         realCopy(&tmpMat[k * n + k], &t);
         if(realIsZero(&t)) {
           realMatrixFree(lu);
+          freeC47Blocks(tmpMat, m * n * REAL_SIZE_IN_BLOCKS(75));
           return;
         }
 
@@ -8202,8 +8234,10 @@ static void elementwiseRemaGetResult(bool_t *complex, real34Matrix_t *x, complex
         *complex = true;
       }
     }
-    realToReal34(&a, VARIABLE_REAL34_DATA(xc->matrixElements + i));
-    realToReal34(&b, VARIABLE_IMAG34_DATA(xc->matrixElements + i));
+    if(*complex) { // promotion may have failed with RAM_FULL; only write xc when it actually exists
+      realToReal34(&a, VARIABLE_REAL34_DATA(xc->matrixElements + i));
+      realToReal34(&b, VARIABLE_IMAG34_DATA(xc->matrixElements + i));
+    }
   }
   else {
     realToReal34(&a, x->matrixElements + i);

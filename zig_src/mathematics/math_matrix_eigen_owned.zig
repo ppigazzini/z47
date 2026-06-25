@@ -2233,12 +2233,16 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) u8 {
             return 255;
         }
         if (isComplex) {
+            // consume incoming X = [n+mi]
+            runtime.fnDrop(runtime.NOPARAM);
             var cmatrix: complex34Matrix_t = undefined;
             runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &cmatrix);
             const ce: [*]runtime.complex34_t = @ptrCast(cmatrix.matrixElements);
             runtime.realToReal34(@alignCast(const_1()), &ce[0].real);
             runtime.real34SetZero(&ce[0].imag);
         } else {
+            // consume incoming X = [n]
+            runtime.fnDrop(runtime.NOPARAM);
             var rmatrix: real34Matrix_t = undefined;
             runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &rmatrix);
             const re: [*]real34_t = @ptrCast(rmatrix.matrixElements);
@@ -2281,8 +2285,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
                 ires.matrixElements = null;
                 realEigenvectors(&x, &res, &ires);
                 if (res.matrixElements != null) {
-                    runtime.setSystemFlag(FLAG_ASLIFT);
-                    runtime.liftStack();
+                    // Success: lift the stack removed upstream; install the result.
                     if (ires.matrixElements != null) {
                         var cres: complex34Matrix_t = undefined;
                         if (runtime.complexMatrixInit(&cres, res.header.matrixRows, res.header.matrixColumns)) {
@@ -2299,6 +2302,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
                             runtime.realMatrixFree(&ires);
                             runtime.complexMatrixFree(&cres);
                         } else {
+                            runtime.realMatrixFree(&ires);
                             ramFull("In function fnEigenvectors:", "Ram full");
                         }
                     } else {
@@ -2334,8 +2338,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
                 var res: complex34Matrix_t = undefined;
                 complexEigenvectors(&x, &res);
                 if (res.matrixElements != null) {
-                    runtime.setSystemFlag(FLAG_ASLIFT);
-                    runtime.liftStack();
+                    // Success: lift the stack removed upstream; install the result.
                     runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
                     runtime.complexMatrixFree(&res);
                 } else {
