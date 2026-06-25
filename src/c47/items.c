@@ -402,7 +402,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       #if defined(IR_PRINTING)
         printTraceTI();
         if(getSystemFlag(FLAG_TRACE) && (indexOfItems[func].status & RESULT_IN_X)){  // Trace X if function returns result in X
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
             printf("**[DL]** reallyRunFunction printTraceX func %d\n", func);
             fflush(stdout);
           #endif //PC_BUILD
@@ -1469,7 +1469,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnByteShortcutsU           (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
   void fnClrMod                   (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
   void fnShoiXRepeats             (uint16_t unusedButMandatoryParameter) {}  //JM SHOIDISP
-  void fnDumpMenus                (uint16_t unusedButMandatoryParameter) {}  //JM
+  void fnDumpMenusWrapper         (uint16_t unusedButMandatoryParameter) {}  //JM
   void fnCFGsettings              (uint16_t unusedButMandatoryParameter) {}
   void fnPline                    (uint16_t unusedButMandatoryParameter) {}
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
@@ -3649,7 +3649,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1867 */  { fnDisplayFormatUnit,             TM_VALUE,                    "UNIT",                                        "UNIT",                                        (0 << TAM_MAX_BITS) |DSP_MAX, CAT_FNCT| SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         },//JM UNIT
 /* 1868 */  { fnRound,                         NOPARAM,                     "ROUND",                                       "ROUND",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1869 */  { fnRoundi,                        NOPARAM,                     "ROUNDI",                                      "ROUNDI",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
-/* 1870 */  { fnDumpMenus,                     NOPARAM,                     "DUMPMNU",                                     "DUMPMNU",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1870 */  { fnDumpMenusWrapper,              NOPARAM,                     "DUMPMNU",                                     "DUMPMNU",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1871 */  { fnJM_2SI,                        NOPARAM,                     STD_RIGHT_ARROW "I",                           STD_RIGHT_ARROW "I",                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1872 */  { fnChangeBaseMNU,                 TM_VALUE_CHB,                STD_RIGHT_ARROW "INT",                         "#",                                           (2 << TAM_MAX_BITS) |    16, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     | HG_ENABLED         | RESULT_IN_X },
 /* 1873 */  { fnDRG,                           NOPARAM,                     "DRG",                                         "DRG",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_DISABLED        | RESULT_IN_X },

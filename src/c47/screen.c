@@ -6162,6 +6162,8 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     printf("fnSNAP!\n");
   #endif // PC_BUILD
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  screenUpdatingMode = SCRUPD_AUTO;
+  temporaryInformation = TI_NO_INFO;
   refreshScreen(80);
 
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
@@ -6181,14 +6183,12 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_All_Regs(PRN_STK); //print stack
   }
   xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
-
-
-  screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
 
 void fnScreenDump(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
+    extern char _ioFileNameOverride[];
     FILE *bmp;
     char bmpFileName[22];
     time_t rawTime;
@@ -6201,7 +6201,14 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     time(&rawTime);
     timeInfo = localtime(&rawTime);
 
-    strftime(bmpFileName, 22, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+    if(_ioFileNameOverride[0] != '\0') {
+      strncpy(bmpFileName, _ioFileNameOverride, sizeof(bmpFileName) - 1);
+      bmpFileName[sizeof(bmpFileName) - 1] = '\0';
+      _ioFileNameOverride[0] = '\0';
+    }
+    else {
+      strftime(bmpFileName, sizeof(bmpFileName), "%Y%m%d-%H%M%S00.bmp", timeInfo);
+    }
     bmp = fopen(bmpFileName, "wb");
 
     fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
@@ -6285,7 +6292,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     for(y=SCREEN_HEIGHT-1; y>=0; y--) {
       for(x=0; x<SCREEN_WIDTH; x++) {
         uint8 <<= 1;
-        if(*(screenData + y*screenStride + x) == ON_PIXEL) {
+        if(lcd_buffer_pixel_on((uint32_t)x, (uint32_t)y)) {
           uint8 |= 1;
         }
 
@@ -6299,7 +6306,6 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
 
     fclose(bmp);
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
   #endif // PC_BUILD
 }
 
