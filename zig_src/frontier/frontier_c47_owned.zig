@@ -346,6 +346,15 @@ pub export var alphaCase: u8 = 0;
 pub export var numLinesNumericFont: u8 = 0;
 pub export var numLinesStandardFont: u8 = 0;
 pub export var numLinesTinyFont: u8 = 0;
+// New upstream (real master) globals: headless/--dumpMenus + test-load flags,
+// bold numeric-font metrics, the alpha register and the 42S var-menu flag.
+pub export var headlessMode: bool_t = false;
+pub export var loadTestPrograms: bool_t = false;
+pub export var loadTestData: bool_t = false;
+pub export var numScreensNumericFontBold: u8 = 0;
+pub export var numLinesNumericFontBold: u8 = 0;
+pub export var alphaRegister: u16 = 0;
+pub export var varMenu42: bool_t = false;
 pub export var cursorEnabled: u8 = 0;
 pub export var nimNumberPart: u8 = 0;
 pub export var nimRealPart: u8 = 0;
