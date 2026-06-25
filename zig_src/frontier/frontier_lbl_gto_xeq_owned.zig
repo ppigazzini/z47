@@ -268,8 +268,8 @@ extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
-const LAST_ITEM: u32 = 2791;
-extern const indexOfItems: [LAST_ITEM]item_t;
+const LAST_ITEM: u32 = 2850;
+extern const indexOfItems: [LAST_ITEM + 1]item_t;
 const SOFTMENU_STACK_SIZE: usize = 8;
 // softmenu[] and softmenuStack[] are real C arrays: the linker symbol address is
 // the array base, so declare them as array types (NOT pointers — a [*c] extern

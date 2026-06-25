@@ -103,6 +103,7 @@ const OFF_const34_65535: u32 = 16284;
 extern var programRunStop: u8;
 extern var currentInputVariable: u16;
 extern var currentMvarLabel: u16;
+extern var varMenu42: bool;
 extern var temporaryInformation: u8;
 extern var lastKeyCode: u8;
 extern var lastItem: i16;
@@ -294,6 +295,14 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnVarMnu(label: u16) callconv(.c) void {
     currentMvarLabel = label;
+    varMenu42 = false;
+    showSoftmenu(-MNU_MVAR);
+}
+
+// fn42VarMnu (42S variable menu) — NEW upstream op (master fd83b4a4).
+pub export fn fn42VarMnu(label: u16) callconv(.c) void {
+    currentMvarLabel = label;
+    varMenu42 = true;
     showSoftmenu(-MNU_MVAR);
 }
 

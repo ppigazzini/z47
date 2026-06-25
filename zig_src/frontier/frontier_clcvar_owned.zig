@@ -123,7 +123,7 @@ const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
 const LAST_LOCAL_REGISTER_IN_KS_CODE_I: i16 = 210;
 const FIRST_LOCAL_REGISTER: i16 = 7000;
 
-const LAST_ITEM: u32 = 2791;
+const LAST_ITEM: u32 = 2850;
 
 // ---------------------------------------------------------------------------
 // Constant blob
@@ -141,7 +141,7 @@ inline fn cst34(offset: u32) *align(1) const real34_t {
 extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern var beginOfCurrentProgram: [*c]u8;
-extern const indexOfItems: [LAST_ITEM]item_t;
+extern const indexOfItems: [LAST_ITEM + 1]item_t;
 
 // ---------------------------------------------------------------------------
 // Function externs

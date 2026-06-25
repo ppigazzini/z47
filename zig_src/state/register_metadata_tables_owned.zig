@@ -17,7 +17,7 @@ const REGISTER_X: calcRegister_t = 100;
 const INVALID_VARIABLE: calcRegister_t = 2199;
 const C47_NULL: u32 = 65535;
 const CMP_NAME: i32 = 3;
-const LAST_ITEM: u32 = 2791;
+const LAST_ITEM: u32 = 2850;
 const CAT_STATUS: u16 = 0x00f0;
 const CAT_MENU: u16 = 2 << 4;
 const NAMED_VARIABLE_NAME_LENGTH: usize = 16;
@@ -51,7 +51,7 @@ const item_t = extern struct {
 extern var allNamedVariables: ?[*]named_variable_header_t;
 extern var numberOfNamedVariables: u16;
 extern const allReservedVariables: [NUMBER_OF_RESERVED_VARIABLES]reserved_variable_header_t;
-extern const indexOfItems: [LAST_ITEM]item_t;
+extern const indexOfItems: [LAST_ITEM + 1]item_t;
 extern var ram: [*c]u32;
 
 extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;

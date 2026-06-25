@@ -134,7 +134,7 @@ const REAL34_SIZE_IN_BYTES: usize = 16;
 
 const FIRST_CONSTANT: u32 = 128; // CST_01
 const LAST_CONSTANT: u32 = 212; // CST_84
-const LAST_ITEM: u32 = 2791;
+const LAST_ITEM: u32 = 2850;
 const EIM_STATUS: u16 = 0x0100;
 const EIM_ENABLED: u16 = 1 << 8;
 
