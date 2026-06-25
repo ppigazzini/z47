@@ -69,8 +69,10 @@ fn elementwiseRemaGetResult(complex: *bool, x: *real34Matrix_t, xc: *complex34Ma
                 complex.* = true;
             }
         }
-        runtime.realToReal34(&a, &cmEl(xc, i).real);
-        runtime.realToReal34(&b, &cmEl(xc, i).imag);
+        if (complex.*) { // promotion may have failed with RAM_FULL; only write xc when it actually exists
+            runtime.realToReal34(&a, &cmEl(xc, i).real);
+            runtime.realToReal34(&b, &cmEl(xc, i).imag);
+        }
     } else {
         runtime.realToReal34(&a, rmEl(x, i));
     }
