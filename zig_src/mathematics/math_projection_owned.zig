@@ -189,6 +189,9 @@ fn argRealMatrix() void {
     var matrix: runtime.real34Matrix_t = undefined;
 
     runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &matrix);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     defer runtime.realMatrixFree(&matrix);
 
     const count = realMatrixElementCount(&matrix);
@@ -340,6 +343,9 @@ fn conjugateRealMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
     runtime.convertReal34MatrixRegisterToComplex34Matrix(runtime.REGISTER_X, &complex_matrix);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         const count = complexMatrixElementCount(&complex_matrix);
 
@@ -350,6 +356,7 @@ fn conjugateRealMatrix() void {
     }
 
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
+    runtime.complexMatrixFree(&complex_matrix);
 }
 
 fn conjugateComplexMatrix() void {
