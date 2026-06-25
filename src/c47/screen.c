@@ -102,6 +102,7 @@ TO_QSPI static const char *nameOfWday_pt[8] = {"dia inv" STD_a_ACUTE "lido da se
 
 #if defined(PC_BUILD)
   gboolean drawScreen(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    if(headlessMode) return FALSE;
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
@@ -1127,7 +1128,8 @@ return res;
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
     int32_t  glyphId;
-    int8_t   byte, *data;
+    uint8_t  byte;
+    int8_t   *data;
     const glyph_t *glyph;
 
     if(charCode == STD_NOCHAR) {
@@ -1157,20 +1159,31 @@ return res;
       }
     #endif //GENERATE_CATALOGS
 
-    glyphId = findGlyph(font, charCode);
-    if(glyphId >= 0) {
-      glyph = (font->glyphs) + glyphId;
+    glyph = NULL;
+
+    if(getSystemFlag(FLAG_BOLD) && font == &numericFont) {                             // bold is offered for the numeric font only; standardFont and every other caller path are completely unaffected
+      int16_t boldId = findGlyphExact(&numericFontBold, charCode);     // exact probe into the separate bold font; a miss returns -1 so it can never alias glyph index 0
+      if(boldId >= 0) {
+        glyph = (numericFontBold.glyphs) + boldId;                     // draw from the bold font but keep font == &numericFont so the numDouble / HP logic below reads the right identity
+      }
     }
-    else if(glyphId == -1) {
-      generateNotFoundGlyph(-1, charCode);
-      glyph = &glyphNotFound;
-    }
-    else if(glyphId == -2) {
-      generateNotFoundGlyph(-2, charCode);
-      glyph = &glyphNotFound;
-    }
-    else {
-      glyph = NULL;
+
+    if(glyph == NULL) {                                                // no bold variant for this code, or bold disabled: the original lookup runs exactly as before
+      glyphId = findGlyph(font, charCode);
+      if(glyphId >= 0) {
+        glyph = (font->glyphs) + glyphId;
+      }
+      else if(glyphId == -1) {
+        generateNotFoundGlyph(-1, charCode);
+        glyph = &glyphNotFound;
+      }
+      else if(glyphId == -2) {
+        generateNotFoundGlyph(-2, charCode);
+        glyph = &glyphNotFound;
+      }
+      else {
+        glyph = NULL;
+      }
     }
 
     if(glyph == NULL) {
@@ -1454,6 +1467,8 @@ return res;
     return x;
   }
 
+
+  // stringAfterPixelsC47: returns pointer to first glyph in string that would exceed `width` px when rendered. Write 0 there to truncate string
   char *stringAfterPixelsC47(const char *string, int mode, int comp, uint32_t width, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
     int combinationFontsM = combinationFonts;
     char *resStr = (char *)string;
@@ -1885,8 +1900,10 @@ return res;
 
   bool_t checkHalfSec(void) {
     #if defined(PC_BUILD)
-      while(gtk_events_pending()) {
-        gtk_main_iteration();
+      if(!headlessMode) {
+        while(gtk_events_pending()) {
+          gtk_main_iteration();
+        }
       }
     #endif //PC_BUILD
     if(!getSystemFlag(FLAG_MONIT)) {
@@ -2012,9 +2029,9 @@ return res;
 //#define DEBUG_SHOWNAME
   void showFunctionName(int16_t itm, int16_t delayInMs, const char *arg) {
     int16_t item = (int16_t)itm;
-    //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=-\n", itm, (int16_t)itm, item, arg );
+    //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=- L=%d\n", itm, (int16_t)itm, item, arg , stringByteLength(arg));
     char functionName[64];
-    char padding[25];          //(2+0)+(15+0)+(7+0)+1 = 25
+    char padding[64];
     functionName[0] = 0;
     showFunctionNameArg = NULL;
 
@@ -2053,6 +2070,10 @@ return res;
       }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringCopy(functionName, pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
+      }
+      else if(isItemConversion(item)) {
+        executionConversionPartner(item, NULL, functionName);
+        expandAbbreviations(functionName);
       }
       else if(item < LAST_ITEM && item != MNU_DYNAMIC) {
         stringCopy(functionName, pickValidItemFromItems(item, PRIORITY_itemCatalogName));
@@ -3435,6 +3456,16 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         displayTemporaryInformationOnX(prefix);
       }
 
+      else if(temporaryInformation == TI_DATA_SAVED && regist == REGISTER_X) {
+        sprintf(prefix, "%s", errorMessages[TI_Data_file_saved]);
+        displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_DATA_LOADED && regist == REGISTER_X) {
+        sprintf(prefix, "%s", errorMessages[TI_Data_file_loaded]);
+        displayTemporaryInformationOnX(prefix);
+      }
+
       else if(temporaryInformation == TI_UNDO_DISABLED && regist == REGISTER_X) {
         showString(errorMessages[ERROR_TI_UNDO_FAILED], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
@@ -3500,7 +3531,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         prefixWidth = 0;
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((restoreRegisterT == RESTORE_T) ? 0 : ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0)));
                                         #if defined(PC_BUILD)
-                                        if(baseY < 0) {
+                                        if(baseY < 0 && lastErrorCode != 0) {
+                                          // do not report position error if an error is bein displayed, as no line prining is done then
                                           printf("ILLEGAL BASE VALUE baseY<0 : baseY=%i regist=%u regist-REGISTER_X=%u cachedDisplayStack=%u displayStack=%u\n",  baseY, regist, regist-REGISTER_X, cachedDisplayStack, displayStack);
                                           #if defined(ANALYSE_REFRESH)
                                             print_caller(NULL);
@@ -3667,6 +3699,13 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           fnDisplayStack(3);
         }
 
+
+
+
+
+        // printf("=================================\n\ntemporaryInformation=%d \n",temporaryInformation);
+        // printf("   regist=%d getRegisterDataType(regist)=%d dtReal34=%d\n",regist, getRegisterDataType(regist), dtReal34);
+        // printf("   errorMessage=%s\n", errorMessage);
 
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
@@ -5080,8 +5119,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
                 w = stringWidth(tmpString, getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true);
                 int16_t tlen =stringByteLength(tmpString);
                 uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
-                displayFormatDigits = 20;
-                displayFormat = DF_SCI;
+                displayFormatDigits = 42; // fill the screen with LI, with no seps
+                displayFormat = DF_ALL;
                 longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
                 displayFormat = savedDisplayFormat;
                 displayFormatDigits = savedDisplayFormatDigits;
@@ -5510,7 +5549,7 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         lcd_fill_rect(45+20, tamOverPemYPos, 168, 20, LCD_SET_VALUE);
         showString(tamBuffer, &standardFont, 75+20, tamOverPemYPos, vmNormal,  false, false);
       }
-      else { // Fixed line to display TAM informations
+      else { // Fixed line to display TAM informations, and ASSIGN preview information
         clearTamBuffer();
         showString(tamBuffer, &standardFont, funcNameOffset_x, Y_POSITION_OF_TAM_LINE + 6, vmNormal, true, true);
       }
@@ -6162,6 +6201,8 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     printf("fnSNAP!\n");
   #endif // PC_BUILD
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  screenUpdatingMode = SCRUPD_AUTO;
+  temporaryInformation = TI_NO_INFO;
   refreshScreen(80);
 
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
@@ -6181,14 +6222,12 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_All_Regs(PRN_STK); //print stack
   }
   xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
-
-
-  screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
 
 void fnScreenDump(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
+    extern char _ioFileNameOverride[];
     FILE *bmp;
     char bmpFileName[22];
     time_t rawTime;
@@ -6201,7 +6240,14 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     time(&rawTime);
     timeInfo = localtime(&rawTime);
 
-    strftime(bmpFileName, 22, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+    if(_ioFileNameOverride[0] != '\0') {
+      strncpy(bmpFileName, _ioFileNameOverride, sizeof(bmpFileName) - 1);
+      bmpFileName[sizeof(bmpFileName) - 1] = '\0';
+      _ioFileNameOverride[0] = '\0';
+    }
+    else {
+      strftime(bmpFileName, sizeof(bmpFileName), "%Y%m%d-%H%M%S00.bmp", timeInfo);
+    }
     bmp = fopen(bmpFileName, "wb");
 
     fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
@@ -6285,7 +6331,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     for(y=SCREEN_HEIGHT-1; y>=0; y--) {
       for(x=0; x<SCREEN_WIDTH; x++) {
         uint8 <<= 1;
-        if(*(screenData + y*screenStride + x) == ON_PIXEL) {
+        if(lcd_buffer_pixel_on((uint32_t)x, (uint32_t)y)) {
           uint8 |= 1;
         }
 
@@ -6299,7 +6345,6 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
 
     fclose(bmp);
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
   #endif // PC_BUILD
 }
 
@@ -6358,9 +6403,15 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     *y = _getPositionFromRegister(REGISTER_Y, SCREEN_HEIGHT);
   }
 
-void fnClLcd(uint16_t unusedButMandatoryParameter) {
+void fnClLcd(uint16_t clear_mode) {
     int32_t x, y;
-    getPixelPos(&x, &y);
+    if(clear_mode == CLLCD_XY) {
+      getPixelPos(&x, &y);
+    }
+    else {
+      x = 0;
+      y = 0;
+    }
     if(lastErrorCode == ERROR_NONE) {
       screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
       lcd_fill_rect(x, 0, SCREEN_WIDTH - x, SCREEN_HEIGHT - y, LCD_SET_VALUE);
@@ -6368,6 +6419,15 @@ void fnClLcd(uint16_t unusedButMandatoryParameter) {
     #if defined(REFRESH_ON_SCREEN_MONITOR)
       print_linestr("Start Refresh monitoring", true);
     #endif //DMCP_REFRESH
+}
+
+
+void fnClDisplay(uint16_t unusedButMandatoryParameter) {  // same the 42S CLD
+  temporaryInformation = TI_NO_INFO;
+  if(programRunStop == PGM_RUNNING) {
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+    refreshScreen(151);
+  }
 }
 
 

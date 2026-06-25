@@ -1922,7 +1922,7 @@ const msg2 = [_]nstr2{
 // addTestPrograms (file-local). SAVE_SPACE_DM42_14 never defined here.
 // ===========================================================================
 fn addTestPrograms() void {
-    const numberOfBytesForTheTestPrograms: u32 = toBytes(toBlocks(20000));
+    const numberOfBytesForTheTestPrograms: u32 = toBytes(toBlocks(22000));
     var numberOfBytesUsed: u32 = 0;
 
     resizeProgramMemory(@intCast(toBlocks(numberOfBytesForTheTestPrograms)));

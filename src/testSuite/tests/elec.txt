@@ -1,0 +1,387 @@
+;*************************************************************
+;**                       Elec tests                       **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=1 SD=0 RMODE=0 IM=2compl SS=8 WS=64 CM=RECT
+
+
+Func: fnDeltaToStar
+;=======================================
+; fnDeltaToStar(3 x Real) --> 3 x Real ; delta ZYX=(2,1,1) -> star
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"0.5" RY=Real:"0.25" RX=Real:"0.5" RL=Real:"1.0"
+
+
+Func: fnStarToDelta
+;=======================================
+; fnStarToDelta(3 x Real) --> 3 x Real ; star ZYX=(2,1,1) -> delta
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"5.0" RY=Real:"5.0" RX=Real:"2.5" RL=Real:"1.0"
+
+
+Func: fnSymToAbc
+;=======================================
+; fnSymToAbc(A2,A1,A0) --> (Vc,Vb,Va) ; pure positive seq A0=0,A1=1,A2=0
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"0" RY=LonI:"1" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Cplx:"-0.5 i -0.8660254037844386467637231707529362" RX=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RL=Real:"0.0"
+
+
+Func: fnAbcToSym
+;=======================================
+; fnAbcToSym(Vc,Vb,Va) --> (A2,A1,A0) ; balanced pos-seq Va=1,Vb=a^2,Vc=a => A1=1, A0=A2=0
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RY=Cplx:"-0.5 i -0.8660254037844386467637231707529362" RZ=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"0.0" RY=Real:"1.0" RX=Real:"0.0" RL=Cplx:"-0.5 i +0.8660254037844386467637231707529362"
+
+
+Func: fnCopyXtoAbc
+;=======================================
+; fnCopyXtoAbc(Long Integer) --> 3 x Complex
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RX=Cplx:"-0.5 i -0.8660254037844386467637231707529362"
+
+
+Func: fnTripleZfromVI
+;=======================================
+; fnTripleZfromVI : Z=V/I ; V1..3=(4,6,8) I1..3=(2,2,2) -> Z1..3=(2,3,4) ; stack X=Z1
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R90=LonI:"4" R91=LonI:"6" R92=LonI:"8" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R96=Real:"2.0" R97=Real:"3.0" R98=Real:"4.0" RX=Real:"2.0" RY=Real:"3.0" RZ=Real:"4.0"
+
+
+Func: fnTripleVfromIZ
+;=======================================
+; fnTripleVfromIZ : V=I*Z ; I1..3=(2,2,2) Z1..3=(3,4,5) -> V1..3=(6,8,10) ; stack X=V1
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" R96=LonI:"3" R97=LonI:"4" R98=LonI:"5" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R90=Real:"6.0" R91=Real:"8.0" R92=Real:"10.0" RX=Real:"6.0" RY=Real:"8.0" RZ=Real:"10.0"
+
+
+Func: fnTripleIfromVZ
+;=======================================
+; fnTripleIfromVZ : I=V/Z ; V1..3=(6,8,10) Z1..3=(2,2,2) -> I1..3=(3,4,5) ; stack X=I1
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R90=LonI:"6" R91=LonI:"8" R92=LonI:"10" R96=LonI:"2" R97=LonI:"2" R98=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R93=Real:"3.0" R94=Real:"4.0" R95=Real:"5.0" RX=Real:"3.0" RY=Real:"4.0" RZ=Real:"5.0"
+
+
+
+
+;------------------------------------------------------------
+; COMPLEX INPUT SET: complex input forces CPXRES latch, result accepted
+; full-precision imags so the harness checks rounding to 34 digits
+;------------------------------------------------------------
+
+
+Func: fnDeltaToStar
+;=======================================
+; corner: COMPLEX input forces CPXRES ; delta X=1+1j, Y=2, Z=2 (real-only RX, RY, RZ would be all real, here X is complex)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"1 i +1" RY=LonI:"2" RZ=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.4615384615384615384615384615384615385 i +0.3076923076923076923076923076923076923" RY=Cplx:"0.4615384615384615384615384615384615385 i +0.3076923076923076923076923076923076923" RZ=Cplx:"0.7692307692307692307692307692307692308 i -0.1538461538461538461538461538461538462" RL=Cplx:"1 i +1"
+
+
+Func: fnStarToDelta
+;=======================================
+; corner: COMPLEX input forces CPXRES ; star X=1+1j, Y=2, Z=2
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"1 i +1" RY=LonI:"2" RZ=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"4 i +2" RY=Cplx:"6 i -2" RZ=Cplx:"4 i +2" RL=Cplx:"1 i +1"
+
+
+Func: fnSymToAbc
+;=======================================
+; corner: pure negative-sequence A2=1, A1=0, A0=0 -> Va=1, Vb=a, Vc=a^2 (real inputs, complex out, CPXRES already set)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RX=Cplx:"-0.5 i -0.8660254037844386467637231707529362" RL=Real:"1.0"
+
+
+Func: fnAbcToSym
+;=======================================
+; corner: balanced zero-sequence Va=Vb=Vc=1 -> A0=1, A1=0, A2=0 (rounding probe on the cancelling sequences)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Real:"0.0" RX=Real:"0.0" RL=Real:"1.0"
+
+
+Func: fnCopyXtoAbc
+;=======================================
+; corner: COMPLEX input x=1+1j forces CPXRES ; Z=x, Y=a*x, X=a^2*x
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"1 i +1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Cplx:"1 i +1" RY=Cplx:"-1.366025403784438646763723170752936183 i +0.3660254037844386467637231707529361835" RX=Cplx:"0.3660254037844386467637231707529361835 i -1.366025403784438646763723170752936183"
+
+
+Func: fnTripleZfromVI
+;=======================================
+; corner: COMPLEX V1=3+4j, rest real ; Z1=V1/I1=3+4j with I1=1
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R90=Cplx:"3 i +4" R91=LonI:"2" R92=LonI:"2" R93=LonI:"1" R94=LonI:"1" R95=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R96=Cplx:"3 i +4" R97=Real:"2.0" R98=Real:"2.0" RX=Cplx:"3 i +4" RY=Real:"2.0" RZ=Real:"2.0"
+
+
+Func: fnTripleVfromIZ
+;=======================================
+; corner: COMPLEX I1=1+1j ; V1=I1*Z1=2+2j with Z1=2
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R93=Cplx:"1 i +1" R94=LonI:"1" R95=LonI:"1" R96=LonI:"2" R97=LonI:"1" R98=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R90=Cplx:"2 i +2" R91=Real:"1.0" R92=Real:"1.0" RX=Cplx:"2 i +2" RY=Real:"1.0" RZ=Real:"1.0"
+
+
+Func: fnTripleIfromVZ
+;=======================================
+; corner: COMPLEX V1=2+2j ; I1=V1/Z1=1+1j with Z1=2
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 R90=Cplx:"2 i +2" R91=LonI:"1" R92=LonI:"1" R96=LonI:"2" R97=LonI:"1" R98=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 R93=Cplx:"1 i +1" R94=Real:"1.0" R95=Real:"1.0" RX=Cplx:"1 i +1" RY=Real:"1.0" RZ=Real:"1.0"
+
+
+
+
+
+;------------------------------------------------------------
+; REFUSAL PATH SET: real input, CPXRES clear, complex/NaN result refused
+; SPCRES=1 -> real NaN ; SPCRES=0 -> error EC=1 (ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN), stack untouched
+;------------------------------------------------------------
+
+
+Func: fnSymToAbc
+;=======================================
+; refuse: real seq input manufactures complex Vb/Vc, CPXRES clear, SPCRES set -> real NaN
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=0 FL_SPCRES=1 RZ=Real:"NaN" RY=Real:"NaN" RX=Real:"NaN"
+
+;=======================================
+; refuse: same input, SPCRES clear -> error, stack and CPXRES untouched
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0"
+
+
+Func: fnAbcToSym
+;=======================================
+; refuse: real unbalanced phases manufacture complex A1/A2, CPXRES clear, SPCRES set -> real NaN
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"3" CM=RECT
+Out: EC=0 FL_CPXRES=0 FL_SPCRES=1 RZ=Real:"NaN" RY=Real:"NaN" RX=Real:"NaN"
+
+;=======================================
+; refuse: same input, SPCRES clear -> error, stack and CPXRES untouched
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"3" CM=RECT
+Out: EC=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"3"
+
+
+Func: fnCopyXtoAbc
+;=======================================
+; refuse: real x manufactures complex a*x, a^2*x, CPXRES clear, SPCRES set -> real NaN
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=0 FL_SPCRES=1 RZ=Real:"NaN" RY=Real:"NaN" RX=Real:"NaN"
+
+;=======================================
+; refuse: same input, SPCRES clear -> error, stack and CPXRES untouched (x stays in X, drop not reached)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0"
+
+
+Func: fnStarToDelta
+;=======================================
+; refuse via NaN: real star with Z=0 divisor (X=p/z), CPXRES clear, SPCRES set -> real NaN (all three phases poisoned to NaN by design)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=0 FL_SPCRES=1 RZ=Real:"NaN" RY=Real:"NaN" RX=Real:"NaN"
+
+;=======================================
+; refuse via NaN: same input, SPCRES clear -> error, stack untouched
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"0" CM=RECT
+Out: EC=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"2" RZ=LonI:"0"
+
+
+
+;------------------------------------------------------------
+; DUST FILTER BOUNDARY SET (ELEC_DUST_FILTER=true, ELEC_DUST_LIMIT=const_1e_37)
+; fnAbcToSym with balanced input Va=Vb=Vc: A0=input, A1=A2=0 analytically.
+; A1/A2 compute via a-operator multiplies + /3, leaving sub-dust imaginary residue.
+; The dust filter must treat that residue as real so a real-only user is not blocked.
+;------------------------------------------------------------
+
+
+Func: fnAbcToSym
+;=======================================
+; dust: balanced real input, CPXRES set -> residue collapses, clean real A0=1, A1=A2=0
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Real:"0.0" RX=Real:"0.0" RL=Real:"1.0"
+
+;=======================================
+; dust: same balanced real input, CPXRES clear, SPCRES clear -> sub-dust residue treated as REAL, NOT refused, EC=0
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=0 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"1" CM=RECT
+Out: EC=0 FL_CPXRES=0 FL_SPCRES=0 RZ=Real:"1.0" RY=Real:"0.0" RX=Real:"0.0"
+
+
+
+
+
+;------------------------------------------------------------
+; STACK LIFT SET: FL_ASLIFT=0 on entry (SS=8). Triple ops use honour-first-then-force
+; lift, so ASLIFT=0 means phase1 overwrites X and only the next two push (2-deep),
+; vs ASLIFT=1 which pushes 3-deep. Markers in X,Y,Z,T verify which old value survives.
+; NOTE: rolled survivors keep their original LonI type; only computed results are real34.
+;------------------------------------------------------------
+
+
+Func: fnTripleZfromVI
+;=======================================
+; ASLIFT=1 baseline: 3-deep push, oldX(100) survives into T ; V=4,6,8 I=2,2,2 -> Z=2,3,4
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R90=LonI:"4" R91=LonI:"6" R92=LonI:"8" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"2.0" RY=Real:"3.0" RZ=Real:"4.0" RT=LonI:"100" RA=LonI:"200" RB=LonI:"300" RC=LonI:"400" R96=Real:"2.0" R97=Real:"3.0" R98=Real:"4.0"
+
+;=======================================
+; ASLIFT=0: 2-deep push, oldX(100) swallowed, oldY(200) lands in T
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R90=LonI:"4" R91=LonI:"6" R92=LonI:"8" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"2.0" RY=Real:"3.0" RZ=Real:"4.0" RT=LonI:"200" RA=LonI:"300" RB=LonI:"400" R96=Real:"2.0" R97=Real:"3.0" R98=Real:"4.0"
+
+
+Func: fnTripleVfromIZ
+;=======================================
+; ASLIFT=0: I=2,2,2 Z=3,4,5 -> V=6,8,10 ; oldY(200)->T
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" R96=LonI:"3" R97=LonI:"4" R98=LonI:"5" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"6.0" RY=Real:"8.0" RZ=Real:"10.0" RT=LonI:"200" RA=LonI:"300" RB=LonI:"400" R90=Real:"6.0" R91=Real:"8.0" R92=Real:"10.0"
+
+
+Func: fnTripleIfromVZ
+;=======================================
+; ASLIFT=0: V=6,8,10 Z=2,2,2 -> I=3,4,5 ; oldY(200)->T
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R90=LonI:"6" R91=LonI:"8" R92=LonI:"10" R96=LonI:"2" R97=LonI:"2" R98=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"3.0" RY=Real:"4.0" RZ=Real:"5.0" RT=LonI:"200" RA=LonI:"300" RB=LonI:"400" R93=Real:"3.0" R94=Real:"4.0" R95=Real:"5.0"
+
+
+Func: fnCopyXtoAbc
+;=======================================
+; ASLIFT=0: x=1 in X ; X,Y,Z,L construction-fixed regardless of ASLIFT.
+; Deep stack (T and below) not asserted: fnDrop interaction makes it observation-only.
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RX=Cplx:"-0.5 i -0.8660254037844386467637231707529362" RL=Real:"1.0"
+
+
+;------------------------------------------------------------
+; LAST-X / SURVIVOR SET: the 3-in/3-out transforms store in place (no lift), so
+; T and below are untouched and L gets the original X. Marker T=777 survives as LonI.
+;------------------------------------------------------------
+
+
+Func: fnDeltaToStar
+;=======================================
+; in-place store: L=oldX=1, T marker 777 unchanged (still LonI)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"2" RT=LonI:"777" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"0.5" RY=Real:"0.25" RX=Real:"0.5" RL=Real:"1.0" RT=LonI:"777"
+
+
+Func: fnStarToDelta
+;=======================================
+; in-place store: L=oldX=1, T marker 777 unchanged (still LonI)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"2" RT=LonI:"777" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"5.0" RY=Real:"5.0" RX=Real:"2.5" RL=Real:"1.0" RT=LonI:"777"
+
+
+Func: fnSymToAbc
+;=======================================
+; in-place store: pure negative seq A2=1 -> Vb=a, Vc=a^2 ; L=oldX=1, T=777 unchanged (still LonI)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"0" RZ=LonI:"0" RT=LonI:"777" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Cplx:"-0.5 i +0.8660254037844386467637231707529362" RX=Cplx:"-0.5 i -0.8660254037844386467637231707529362" RL=Real:"1.0" RT=LonI:"777"
+
+
+Func: fnAbcToSym
+;=======================================
+; in-place store: balanced Va=Vb=Vc=1 -> A0=1, A1=A2=0 ; L=oldX=1, T=777 unchanged (still LonI)
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"1" RY=LonI:"1" RZ=LonI:"1" RT=LonI:"777" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Real:"1.0" RY=Real:"0.0" RX=Real:"0.0" RL=Real:"1.0" RT=LonI:"777"
+
+
+;------------------------------------------------------------
+; POLAR DISPLAY SET: CM=POLAR is display only; the Cplx literal stays rectangular.
+; Confirms display mode does not corrupt the rectangular math. Complex in/out so
+; nothing collapses to real (avoids the real-under-polar angle-tag question).
+;------------------------------------------------------------
+
+
+Func: fnCopyXtoAbc
+;=======================================
+; polar display, complex x=1+1j : Z=x, Y=a*x, X=a^2*x ; same numbers as RECT
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"1 i +1" RY=LonI:"0" RZ=LonI:"0" CM=POLAR AM=DEG
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RZ=Cplx:"1 i +1" RY=Cplx:"-1.366025403784438646763723170752936183 i +0.3660254037844386467637231707529361835" RX=Cplx:"0.3660254037844386467637231707529361835 i -1.366025403784438646763723170752936183"
+
+
+Func: fnStarToDelta
+;=======================================
+; polar display, complex star X=1+1j, Y=2, Z=2 : all-complex result, same as RECT
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"1 i +1" RY=LonI:"2" RZ=LonI:"2" CM=POLAR AM=DEG
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"4 i +2" RY=Cplx:"6 i -2" RZ=Cplx:"4 i +2" RL=Cplx:"1 i +1"
+
+
+
+
+;------------------------------------------------------------
+; STACK SIZE 4 SET: SS=4 (X,Y,Z,T only, no A/B/C). Triple op 3-deep push:
+; results fill X,Y,Z, old X rolls to T, old Y/Z/T fall off the top.
+; Survivor T keeps its original LonI type.
+;------------------------------------------------------------
+In: SS=4
+
+
+Func: fnTripleZfromVI
+;=======================================
+; SS=4, ASLIFT=1: 3-deep push ; V=4,6,8 I=2,2,2 -> Z=2,3,4 ; old X(100) rolls to T
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R90=LonI:"4" R91=LonI:"6" R92=LonI:"8" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"2.0" RY=Real:"3.0" RZ=Real:"4.0" RT=LonI:"100" R96=Real:"2.0" R97=Real:"3.0" R98=Real:"4.0"
+
+;=======================================
+; SS=4, ASLIFT=0: 2-deep push ; old X(100) swallowed, old Y(200) rolls to T
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"100" RY=LonI:"200" RZ=LonI:"300" RT=LonI:"400" R90=LonI:"4" R91=LonI:"6" R92=LonI:"8" R93=LonI:"2" R94=LonI:"2" R95=LonI:"2" CM=RECT
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"2.0" RY=Real:"3.0" RZ=Real:"4.0" RT=LonI:"200" R96=Real:"2.0" R97=Real:"3.0" R98=Real:"4.0"
+
+
+;------------------------------------------------------------
+; FLIP-POLAR ROUND-TRIP SET: back to SS=8. Two applications of fnTripleFlipPolar
+; return the original value (rect -> polar -> rect identity). Complex inputs so
+; the round-trip is observable on all of X,Y,Z.
+;------------------------------------------------------------
+In: SS=8
+
+
+Func: fnTripleFlipPolar
+;=======================================
+; first application: toggles each register's own polar/rect mode; stored values preserved, global CM unchanged
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2" CM=RECT
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2"
+
+
+Func: fnTripleFlipPolar
+;=======================================
+; second application: toggles back, values return to original
+;=======================================
+In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2" CM=RECT
+Out: EC=0 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2"

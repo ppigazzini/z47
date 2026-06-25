@@ -693,7 +693,7 @@ bool_t validateName(const char *name) {
   if(                                          compareChar(name, STD_DIVIDE              ) ==0) {
     return false;
   }
-  if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {     //   \x81\x7e   \x83\x90 
+  if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {     //   \x81\x7e   \x83\x90
     return false;
   }
   if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0) {
@@ -1816,6 +1816,48 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     printf("%s", after);
   }
 
+
+  // A single byte less than 0x80 is a single ASCII character. A byte of 0x80 or more is the first of a 2-byte character: 
+  //   Mask off the high bit and the two bytes give the Unicode code point as 16-bit value. Example: 0xA1 0x92 -> 0x21 0x92 -> U+2192 (right arrow).
+  void printC47ShortStringToConsole(const char *s, const char *prefix, const char *suffix) {
+    #if defined(PC_BUILD)
+      const uint8_t *p = (const uint8_t *)s;
+      int cp = 0;
+      int n;
+      char text[80];
+      char hex[256];
+      int tx = 0;
+      int hx = 0;
+
+      // Readable representation: printable ASCII as-is, anything else as '.'
+      text[tx++] = '"';
+      while(*p && cp < 30) {
+        uint8_t b = *p;
+        n = (b & 0x80) ? 2 : 1;
+        if(n == 2 && p[1] == 0) {
+          n = 1;
+        }
+        text[tx++] = (n == 1 && b >= 0x20 && b < 0x7F) ? (char)b : '.';
+        for(int j = 0; j < n; j++) {
+          hx += sprintf(hex + hx, "%02X", p[j]);
+        }
+        hex[hx++] = ' ';
+        p += n;
+        cp++;
+      }
+      text[tx++] = '"';
+      text[tx] = 0;
+      hex[hx] = 0;
+
+      if(prefix) {
+        printf("%s", prefix);
+      }
+      printf("%-20s  %-60s  (%2d cp, %2d bytes)", text, hex, cp, (int)((const char *)p - s));
+      if(suffix) {
+        printf("%s", suffix);
+      }
+    #endif // PC_BUILD
+  }
 
 
   void printReal34ToConsole(const real34_t *value, const char *before, const char *after) {

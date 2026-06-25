@@ -4,3 +4,4 @@ hal/audio.c
 hal/print_ir.c
 hal/io.c
 hal/lcd.c
+gtkGui.c
