@@ -13,7 +13,7 @@
 # add a zig_src covered-line floor here too.)
 
 # Owner functions under the C-vs-Zig differential (extract_oracle.sh FUNCS).
-differential_functions=5
+differential_functions=6
 
 # Full-core parity/differential harness steps (saveload, keyboard_entry,
 # charstring_diff, distribution_parity, ...) that link the real core.
