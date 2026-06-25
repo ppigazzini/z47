@@ -276,11 +276,6 @@ pub export fn create_filename(fn_arg: [*c]const u8) callconv(.c) void {
         mem__32 = tmp__32;
         cancelFilename = false;
     } else {
-        // Upstream master: a filename already ending ".T47.TSV" is managed by the
-        // DSL; leave it unchanged.
-        if (stringByteLength(&filename_csv) > 9 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 8)], ".T47.TSV", CMP_NAME) == 0) {
-            return;
-        }
         const tmp__32: u32 = getUptimeMs();
         if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
             var rawTime: time_t = undefined;

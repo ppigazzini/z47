@@ -279,9 +279,6 @@
 
 
 //Testing and debugging
-  #define    MONITOR_IRPRINT
-//#undef     MONITOR_IRPRINT
-
   #define    REFRESH_ON_SCREEN_MONITOR  //refresh debug on actual screen. Shows the refresh source number. Works on hardware and sim.
   #undef     REFRESH_ON_SCREEN_MONITOR
 
@@ -392,46 +389,6 @@
 #undef INLINE_TEST                    //^^
 
 
-#if defined(T47)
-  #undef  MONITOR_IRPRINT
-  #undef  REFRESH_ON_SCREEN_MONITOR
-  #undef  DM42_KEYCLICK
-  #undef  DM42_POWERMARKS
-  #undef  DM42_POWERMARK_KEYPRESS
-  #undef  CLICK_REFRESHSCR
-  #undef  BATTERYTEST
-  #undef  MONITOR_VOLTAGE_INTEGRATOR
-  #undef  DEBUG_SHOWNAME
-  #undef  DEBUGSFN
-  #define DEBUGSFN false
-  #undef  FN_TIME_DEBUG1
-  #undef  VERBOSE_MINIMUM
-  #undef  VERBOSEKEYS
-  #undef  VERBOSEKEYS_BUFFERED
-  #undef  VERBOSEKEYS_AUTOCASE
-  #undef  MONITOR_CLRSCR
-  #undef  ANALYSE_REFRESH
-  #undef  PC_BUILD_TELLTALE
-  #undef  VERBOSE_DETERMINEITEM
-  #undef  VERBOSE_REGISTERS
-  #undef  GRAPHDEBUG
-  #undef  DEBUG_STAT
-  #define DEBUG_STAT 0
-  #undef  STATDEBUG
-  #undef  STATDEBUG_VERBOSE
-  #undef  DEBUGUNDO
-  #undef  DEBUG_EXECUTE
-  #undef  DEBUG_PGM
-  #undef  PAIMDEBUG
-  #undef  VERBOSE_LEVEL
-  #define VERBOSE_LEVEL -1
-  #undef  VERBOSE_COUNTER
-  #undef  PC_BUILD_VERBOSE0
-  #undef  PC_BUILD_VERBOSE1
-  #undef  PC_BUILD_VERBOSE2
-  #undef  VERBOSE_SCREEN
-  #undef  INLINE_TEST
-#endif // T47
 
 
 #define NOMATRIXCURSORS             //JM allow matrix editing to be navigated by up down keys
