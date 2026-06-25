@@ -4759,7 +4759,6 @@ pub export const indexOfItems linksection(code_data_section) = [2851]item_t{
 // (if any) will fail until ported; everything else validates the items table.
 // ===========================================================================
 pub export fn fnXToAlphaOld(p: u16) callconv(.c) void { _ = p; }
-pub export fn fnClDisplay(p: u16) callconv(.c) void { _ = p; }
 pub export fn fnSaveRegister(p: u16) callconv(.c) void { _ = p; }
 pub export fn fnSaveNRegisters(p: u16) callconv(.c) void { _ = p; }
 pub export fn fnSaveLetteredRegisters(p: u16) callconv(.c) void { _ = p; }

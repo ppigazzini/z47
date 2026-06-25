@@ -6444,3 +6444,15 @@ pub export fn insertAlphaCursor(startAt: u16) callconv(.c) void {
         strPtr += if (strPtr[0] & 0x80 != 0) @as(usize, 2) else 1;
     }
 }
+
+// ===========================================================================
+// fnClDisplay (42S CLD) — clear the temporary display info. Master fd83b4a4.
+// ===========================================================================
+pub export fn fnClDisplay(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    temporaryInformation = TI_NO_INFO;
+    if (programRunStop == PGM_RUNNING) {
+        screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+        refreshScreen(151);
+    }
+}
