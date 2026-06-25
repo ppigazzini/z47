@@ -206,6 +206,9 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
 
         runtime.linkToRealMatrixRegister(REGISTER_Y, &rMat);
         runtime.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &iMat);
+        if (runtime.lastErrorCode != 0) {
+            return;
+        }
 
         if (rMat.header.matrixRows == iMat.header.matrixRows and rMat.header.matrixColumns == iMat.header.matrixColumns) {
             if (runtime.complexMatrixInit(&cMat, rMat.header.matrixRows, rMat.header.matrixColumns)) {

@@ -491,11 +491,17 @@ pub export fn mulRemaRema() callconv(.c) void {
 
 pub export fn mulRemaCxma() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     mulCxmaCxma();
 }
 
 pub export fn mulCxmaRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     mulCxmaCxma();
 }
 
@@ -549,11 +555,17 @@ pub export fn mulRealRema() callconv(.c) void {
 
 pub export fn mulRemaCplx() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     mulCxmaCplx();
 }
 
 pub export fn mulCplxRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     mulCplxCxma();
 }
 
