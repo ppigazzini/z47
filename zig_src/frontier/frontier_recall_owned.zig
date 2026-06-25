@@ -175,6 +175,7 @@ const dtLongInteger: u32 = 0;
 const dtReal34Matrix: u32 = 6;
 const dtComplex34Matrix: u32 = 7;
 const dtShortInteger: u32 = 8;
+const dtString: u32 = 5;
 const dtConfig: u32 = 9;
 
 const amNone: u32 = 5;
@@ -194,7 +195,9 @@ const REGISTER_L: calcRegister_t = 108;
 const REGISTER_I: calcRegister_t = 109;
 const REGISTER_J: calcRegister_t = 110;
 const REGISTER_W: calcRegister_t = 125;
+const SAVED_REGISTER_X: calcRegister_t = 126;
 const SAVED_REGISTER_Y: calcRegister_t = 127;
+const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 const SAVED_REGISTER_L: calcRegister_t = 134;
 const TEMP_REGISTER_1: calcRegister_t = 135;
 const FIRST_RESERVED_VARIABLE: u16 = 2000;
@@ -218,6 +221,7 @@ const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 // Globals
 // ---------------------------------------------------------------------------
 extern var errorMessage: [*c]u8;
+extern var alphaRegister: u16;
 extern var lastErrorCode: u8;
 extern var programRunStop: u8;
 extern var shortIntegerMask: u64;
@@ -284,6 +288,7 @@ const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const 
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn regInRange(regist: u16) bool;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
+extern fn truncateAlphaRegisterTo44Char() void;
 extern fn liftStack() void;
 extern fn saveLastX() bool;
 extern fn fnRollUp(unusedButMandatoryParameter: u16) void;
@@ -820,6 +825,7 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         @"__gmpz_init"(&zero[0]); // longIntegerInit
 
         if (!saveLastX()) {
+            @"__gmpz_clear"(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
             return;
         }
 
@@ -851,5 +857,38 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
 
         @"__gmpz_clear"(&zero[0]); // longIntegerFree
+    }
+}
+
+// ===========================================================================
+// fn42AlphaRecall (42S ARCL) — NEW upstream op (master fd83b4a4). Additive/
+// unreached: no items.c dispatch wiring yet. Appends `regist` to the alpha
+// register via the type-dispatched addition[][] table, then restores X/Y.
+// ===========================================================================
+pub export fn fn42AlphaRecall(regist: u16) callconv(.c) void {
+    if (regInRange(regist)) {
+        if (getRegisterDataType(@intCast(alphaRegister)) == dtString) {
+            if (programRunStop == PGM_RUNNING) {
+                copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
+                copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
+            }
+
+            copySourceRegisterToDestRegister(@intCast(regist), REGISTER_X);
+            copySourceRegisterToDestRegister(@intCast(alphaRegister), REGISTER_Y);
+
+            if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
+                regShortInt(REGISTER_X).* &= shortIntegerMask;
+            }
+
+            addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
+
+            copySourceRegisterToDestRegister(REGISTER_X, @intCast(alphaRegister));
+            truncateAlphaRegisterTo44Char();
+
+            copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+            copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+        } else {
+            displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+        }
     }
 }
