@@ -125,6 +125,9 @@ static void dotCpmaCpma(void) {
  ***********************************************/
 static void dotCpmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   dotCpmaCpma();
 }
 
@@ -136,6 +139,9 @@ static void dotCpmaRema(void) {
  ***********************************************/
 static void dotRemaCpma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   dotCpmaCpma();
 }
 
