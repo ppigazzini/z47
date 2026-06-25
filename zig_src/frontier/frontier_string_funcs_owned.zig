@@ -728,3 +728,41 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
         _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
     }
 }
+
+// ===========================================================================
+// HP-42S alpha-register operations (real master). These run against the
+// dedicated alphaRegister (c47.c global) and, for now, are additive exports
+// that the pinned testSuite never reaches (no items.c dispatch yet).
+// ===========================================================================
+extern var alphaRegister: u16;
+
+// Truncate the alpha register's string to the 42S 44-glyph maximum.
+pub export fn truncateAlphaRegisterTo44Char() callconv(.c) void {
+    const ptr = regString(@intCast(alphaRegister));
+    const stringGlyphLen = stringGlyphLength(ptr);
+    if (stringGlyphLen <= 44) {
+        return;
+    }
+    var steps: i16 = @intCast(stringGlyphLen - 44);
+    var glyphPointer: i16 = 0;
+    while (steps > 0) : (steps -= 1) {
+        glyphPointer = stringNextGlyph(ptr, glyphPointer);
+    }
+    _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
+}
+
+// 42S thin wrappers over the existing 47-native alpha operations.
+pub export fn fn42Aleng(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnAlphaLeng(alphaRegister);
+}
+
+pub export fn fn42Atox(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnAlphaToX(alphaRegister);
+}
+
+pub export fn fn42Posa(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnAlphaPos(alphaRegister);
+}
