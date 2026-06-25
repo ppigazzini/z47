@@ -584,7 +584,7 @@ fn dispatchIndexedElement(real_f: RealMatrixCallback, complex_f: ComplexMatrixCa
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, REGISTER_X);
         if (runtime.extra_info_on_calc_error) {
             var buf: [80]u8 = undefined;
-            const m = std.fmt.bufPrintZ(&buf, "Cannot execute: destination register is out of range: {d}", .{runtime.matrixIndex}) catch "out of range";
+            const m = runtime.bufPrintZ(&buf, "Cannot execute: destination register is out of range: {d}", .{runtime.matrixIndex}) catch "out of range";
             runtime.moreInfoOnError(fnName, m, null, null);
         }
     } else if (runtime.getRegisterDataType(mi) == dtReal34Matrix) {
@@ -614,7 +614,7 @@ fn dispatchIndexedElement(real_f: RealMatrixCallback, complex_f: ComplexMatrixCa
         if (runtime.extra_info_on_calc_error) {
             var buf: [96]u8 = undefined;
             const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
-            const m = std.fmt.bufPrintZ(&buf, "Cannot execute: something other than a matrix is indexed {s}", .{tn}) catch "not a matrix";
+            const m = runtime.bufPrintZ(&buf, "Cannot execute: something other than a matrix is indexed {s}", .{tn}) catch "not a matrix";
             runtime.moreInfoOnError(fnName, m, null, null);
         }
     }
@@ -624,7 +624,7 @@ fn outOfRangeElement(i: i16, j: i16, fnName: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        const m = std.fmt.bufPrintZ(&buf, "Cannot execute: element ({d}, {d}) out of range", .{ i + 1, j + 1 }) catch "out of range";
+        const m = runtime.bufPrintZ(&buf, "Cannot execute: element ({d}, {d}) out of range", .{ i + 1, j + 1 }) catch "out of range";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }

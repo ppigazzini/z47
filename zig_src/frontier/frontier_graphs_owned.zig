@@ -1,3 +1,4 @@
+const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/c47Extensions/graphs.c: the C47 graphing module. This
@@ -194,7 +195,7 @@ pub export var y_max: f32 = 1;
 pub export var PLOT_ZMY: i8 = 0;
 
 // function-local statics (preserve across calls)
-var gt_outstr: [bufLen]u8 = [_]u8{0} ** bufLen; // graph_text's static char outstr[bufLen]
+var gt_outstr: [bufLen]u8 = std.mem.zeroes([bufLen]u8); // graph_text's static char outstr[bufLen]
 var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_unclipped
 
 // ---------------------------------------------------------------------------

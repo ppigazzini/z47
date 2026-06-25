@@ -205,7 +205,7 @@ pub export fn convert001090400T001090500(parameter: u8, offset: u8) u8 {
 
 // Scratch buffer shared with the (now Zig) register codec / save owner; was a
 // plain global in saveRestoreCalcState.c.
-pub export var aimBuffer1: [400]u8 = [_]u8{0} ** 400;
+pub export var aimBuffer1: [400]u8 = std.mem.zeroes([400]u8);
 
 pub export fn fnDeleteBackup(confirmation: u16) void {
     _ = confirmation;

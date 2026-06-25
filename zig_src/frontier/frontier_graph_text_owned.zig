@@ -1,3 +1,4 @@
+const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/c47Extensions/graphText.c: preventFilenameTimeout, the
@@ -600,7 +601,7 @@ fn lcd_refresh_wait() void {
 // IOMsgs[] (DMCP-only TO_QSPI table). Only .itemName is read; .count is unused.
 const IOMsgsT = extern struct { count: u8, itemName: [40]u8 };
 fn ioRow(comptime c: u8, comptime s: []const u8) IOMsgsT {
-    var row = IOMsgsT{ .count = c, .itemName = [_]u8{0} ** 40 };
+    var row = IOMsgsT{ .count = c, .itemName = std.mem.zeroes([40]u8) };
     @memcpy(row.itemName[0..s.len], s);
     return row;
 }

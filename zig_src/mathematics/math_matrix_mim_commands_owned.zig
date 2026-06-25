@@ -77,7 +77,7 @@ fn getArg(regist: calcRegister_t, arg: *real_t) bool {
         if (runtime.extra_info_on_calc_error) {
             var buf: [80]u8 = undefined;
             const tn = runtime.getRegisterDataTypeName(regist, true, false);
-            const m = std.fmt.bufPrintZ(&buf, "cannot accept {s} as the argument", .{tn}) catch "bad arg";
+            const m = runtime.bufPrintZ(&buf, "cannot accept {s} as the argument", .{tn}) catch "bad arg";
             runtime.moreInfoOnError("In function getArg:", m, null, null);
         }
         return false;
@@ -137,7 +137,7 @@ fn swapOutOfRange(isRow: bool, a: u16, b: u16, fnName: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [64]u8 = undefined;
-        const m = std.fmt.bufPrintZ(&buf, "{s} {d} and/or {d} out of range", .{ if (isRow) "rows" else "columns", a, b }) catch "out of range";
+        const m = runtime.bufPrintZ(&buf, "{s} {d} and/or {d} out of range", .{ if (isRow) "rows" else "columns", a, b }) catch "out of range";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
@@ -290,7 +290,7 @@ fn getPutOutOfRange(a: u16, b: u16, fnName: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [64]u8 = undefined;
-        const m = std.fmt.bufPrintZ(&buf, "{d} \xc3\x97 {d} out of range", .{ a, b }) catch "out of range";
+        const m = runtime.bufPrintZ(&buf, "{d} \xc3\x97 {d} out of range", .{ a, b }) catch "out of range";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
@@ -299,7 +299,7 @@ fn putWrongType(fnName: [*:0]const u8, suffix: []const u8) void {
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
         const tn = runtime.getRegisterDataTypeName(REGISTER_X, true, false);
-        const m = std.fmt.bufPrintZ(&buf, "{s} {s}", .{ tn, suffix }) catch "wrong type";
+        const m = runtime.bufPrintZ(&buf, "{s} {s}", .{ tn, suffix }) catch "wrong type";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
@@ -386,7 +386,7 @@ pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
-            const m = std.fmt.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
+            const m = runtime.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
             runtime.moreInfoOnError("In function fnRowColSum:", m, "is not a matrix.", "");
         }
     }
@@ -510,7 +510,7 @@ fn normNotMatrix() void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [48]u8 = undefined;
-        const m = std.fmt.bufPrintZ(&buf, "DataType {d}", .{runtime.getRegisterDataType(REGISTER_X)}) catch "DataType";
+        const m = runtime.bufPrintZ(&buf, "DataType {d}", .{runtime.getRegisterDataType(REGISTER_X)}) catch "DataType";
         runtime.moreInfoOnError("In function _row_columnNorm:", m, "is not a matrix.", "");
     }
 }
@@ -549,7 +549,7 @@ pub export fn getMatrixFromRegister(regist: u16) callconv(.c) void {
     } else {
         if (runtime.extra_info_on_calc_error) {
             var buf: [48]u8 = undefined;
-            const m = std.fmt.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
+            const m = runtime.bufPrintZ(&buf, "DataType {d}", .{dt}) catch "DataType";
             runtime.moreInfoOnError("In function getMatrixFromRegister:", m, "is not dataType dtRealMatrix.", "");
         }
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
