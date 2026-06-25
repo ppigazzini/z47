@@ -557,11 +557,8 @@ fn AddtoDrawMx() void {
     var cols: u16 = undefined;
     var regStats: calcRegister_t = regStatsXY;
     if (!isStatsMatrixN(&rows, regStats)) {
-        regStats = allocateNamedMatrix(&plotStatMx, 1, 2);
+        regStats = allocateNamedMatrix(&plotStatMx, 1, 2); // already preps the 1x2; the old linked-copy realMatrixInit was never stored back nor freed
         regStatsXY = regStats;
-        var stats: real34Matrix_t = undefined;
-        linkToRealMatrixRegister(regStats, &stats);
-        _ = realMatrixInit(&stats, 1, 2);
     } else {
         if (appendRowAtMatrixRegister(regStats)) {} else {
             regStats = INVALID_VARIABLE;
@@ -1263,13 +1260,8 @@ inline fn check2RealZeroTol(a: *const real_t, b: *const real_t, tol: *const real
     return checkRealZeroTol(a, tol) and checkRealZeroTol(b, tol);
 }
 
-fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void {
-    var b: real_t = undefined;
-    if (real34IsZero(regImag34(regist))) {
-        real34ToReal(reg34(regist), &b);
-        convertRealToResultRegister(&b, regist, amNone);
-    }
-}
+// Now provided by registerValueConversions (shared, real master); use that one.
+extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void;
 
 fn divFunctionComplex(a_re: *const real_t, a_im: *const real_t, b_re: *const real_t, b_im: *const real_t, res_re: *real_t, res_im: *real_t) void {
     if ((realIsZero(a_re) and realIsZero(a_im)) or realIsNaN(a_re) or realIsNaN(a_im) or realIsNaN(b_re) or realIsNaN(b_im)) {
