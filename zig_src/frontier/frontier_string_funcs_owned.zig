@@ -878,3 +878,35 @@ pub export fn fn42Prompt(unusedButMandatoryParameter: u16) callconv(.c) void {
     lastFunc = ITM_PROMPT;
     fnPrompt(alphaRegister);
 }
+
+// Cross-owner deps for fn42Alpha/fn42Append (program state, alpha source buffers, store).
+extern var programRunStop: u8;
+const PGM_RUNNING: u8 = 1;
+extern var aimBuffer: [*c]u8;
+extern var tmpStringLabelOrVariableName: [*c]u8;
+extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
+extern fn fnStoreAdd(regist: u16) void;
+const LAST_TEMP_REGISTER: calcRegister_t = 136;
+inline fn TO_BLOCKS(n: u32) u16 {
+    return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK = 4
+}
+
+// 42ALPHA: store the alpha entry/label string into the alpha register.
+pub export fn fn42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
+    reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
+    _ = xcopy(regString(@intCast(alphaRegister)), alphaString, @intCast(stringByteLength(alphaString) + 1));
+}
+
+// 42APPEND: append the alpha entry string to the alpha register (clamped to 44).
+pub export fn fn42Append(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
+    copySourceRegisterToDestRegister(REGISTER_X, LAST_TEMP_REGISTER);
+    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
+    _ = xcopy(regString(REGISTER_X), alphaString, @intCast(stringByteLength(alphaString) + 1));
+    fnStoreAdd(alphaRegister);
+    truncateAlphaRegisterTo44Char();
+    copySourceRegisterToDestRegister(LAST_TEMP_REGISTER, REGISTER_X);
+}
