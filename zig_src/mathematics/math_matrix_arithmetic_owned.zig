@@ -54,9 +54,7 @@ fn addSubRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, subtra
     const cols = y.header.matrixColumns;
 
     if (y.header.matrixColumns != x.header.matrixColumns or y.header.matrixRows != x.header.matrixRows) {
-        res.matrixElements = null; // Matrix mismatch
-        res.header.matrixRows = 0;
-        res.header.matrixColumns = 0;
+        runtime.realMatrixFree(res); // Matrix mismatch: res aliases an owned operand, so free it (clears matrixElements and dims)
         return;
     }
 
@@ -94,9 +92,7 @@ fn addSubComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_
     const cols = y.header.matrixColumns;
 
     if (y.header.matrixColumns != x.header.matrixColumns or y.header.matrixRows != x.header.matrixRows) {
-        res.matrixElements = null; // Matrix mismatch
-        res.header.matrixRows = 0;
-        res.header.matrixColumns = 0;
+        runtime.complexMatrixFree(res); // Matrix mismatch: res aliases an owned operand, so free it (clears matrixElements and dims)
         return;
     }
 
