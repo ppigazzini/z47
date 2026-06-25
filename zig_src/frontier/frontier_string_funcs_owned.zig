@@ -197,6 +197,16 @@ inline fn realSetPositiveSign(v: *real_t) void {
 }
 
 // ===========================================================================
+// trimLeadingSpace (new in real master): drop a single leading space in place.
+// Used by addition's addStri{Real,Cplx} display formatting.
+pub export fn trimLeadingSpace(stringToTrim: [*c]u8) callconv(.c) void {
+    if (stringToTrim[0] == ' ') {
+        const len: i32 = stringByteLength(stringToTrim);
+        _ = xcopy(stringToTrim, stringToTrim + 1, @intCast(len));
+    }
+}
+
+// ===========================================================================
 // fnAlphaLeng
 // ===========================================================================
 pub export fn fnAlphaLeng(regist: u16) callconv(.c) void {
