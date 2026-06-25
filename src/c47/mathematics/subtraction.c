@@ -449,6 +449,9 @@ void subRemaRema(void) {
 
   linkToRealMatrixRegister(REGISTER_Y, &y);
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+  if(lastErrorCode != 0) {
+    return;
+  }
 
   subtractRealMatrices(&y, &x, &x);
   if(x.matrixElements) {
@@ -477,6 +480,9 @@ void subRemaRema(void) {
  ***********************************************/
 void subRemaCxma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   subCxmaCxma();
 }
 
@@ -490,6 +496,9 @@ void subRemaCxma(void) {
  ***********************************************/
 void subCxmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   subCxmaCxma();
 }
 
@@ -617,6 +626,9 @@ void subRealRema(void) {
  ***********************************************/
 void subRemaCplx(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   subCxmaCplx();
 }
 
@@ -630,6 +642,9 @@ void subRemaCplx(void) {
  ***********************************************/
 void subCplxRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   subCplxCxma();
 }
 
@@ -706,6 +721,9 @@ void subCxmaCxma(void) {
 
   linkToComplexMatrixRegister(REGISTER_Y, &y);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
+  if(lastErrorCode != 0) {
+    return;
+  }
 
   subtractComplexMatrices(&y, &x, &x);
   if(x.matrixElements) {

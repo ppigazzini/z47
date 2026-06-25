@@ -850,6 +850,9 @@ void divRemaRema(void) {
  ***********************************************/
 void divRemaCxma(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   divCxmaCxma();
 }
 
@@ -1001,6 +1004,9 @@ void divRealRema(void) {
  ***********************************************/
 void divRemaCplx(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+  if(lastErrorCode != 0) {
+    return;
+  }
   divCxmaCplx();
 }
 
@@ -1014,6 +1020,9 @@ void divRemaCplx(void) {
  ***********************************************/
 void divCplxRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   divCplxCxma();
 }
 
@@ -1069,6 +1078,9 @@ void divLonICxma(void) {
  ***********************************************/
 void divCxmaRema(void) {
   convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  if(lastErrorCode != 0) {
+    return;
+  }
   divCxmaCxma();
 }
 

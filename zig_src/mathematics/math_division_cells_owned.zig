@@ -695,6 +695,9 @@ pub export fn divRemaRema() callconv(.c) void {
 
 pub export fn divRemaCxma() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     divCxmaCxma();
 }
 
@@ -772,11 +775,17 @@ pub export fn divRealRema() callconv(.c) void {
 
 pub export fn divRemaCplx() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     divCxmaCplx();
 }
 
 pub export fn divCplxRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     divCplxCxma();
 }
 
@@ -808,6 +817,9 @@ pub export fn divLonICxma() callconv(.c) void {
 
 pub export fn divCxmaRema() callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+    if (runtime.lastErrorCode != 0) {
+        return;
+    }
     divCxmaCxma();
 }
 
