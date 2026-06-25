@@ -17,7 +17,7 @@ current upstream pin are already clear.
 - The GitLab path still uses the historical `c43` repository name even though
   the project identifies itself as C47.
 - The repo root currently carries the imported upstream working tree pinned at
-  commit `bb439ccd84c5779469d62675e3b186e396780c30`.
+  commit `fd83b4a4ee4295543a398b19df9b00175dfcedca`.
 - `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
   current imported baseline still lives at repo root.
 - `../.github/project/report-upstream-refresh.py` turns the pinned baseline
@@ -77,10 +77,10 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `bb439ccd84c5779469d62675e3b186e396780c30` |
+| `UPSTREAM_COMMIT` | `fd83b4a4ee4295543a398b19df9b00175dfcedca` |
 | `UPSTREAM_ROOT` | `.` |
 | `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-05-29` |
+| `UPSTREAM_PIN_UPDATED` | `2026-06-25` |
 
 The current `UPSTREAM_ROOT=.` value means the imported upstream tree is mounted
 at repo root today. That is the current baseline contract, not a promise that a
