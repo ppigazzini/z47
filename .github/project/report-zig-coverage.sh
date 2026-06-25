@@ -10,14 +10,13 @@
 # the coverage mechanism; the toy proof that Zig code IS instrumentable this way
 # is in the commit that introduced the handler.
 #
-# SCOPE (important, honest): the harness links the Zig OWNERS as precompiled
-# objects (frontier/keyboard_state/shortint/stack_state/math/solve via
-# b.addObject), built WITHOUT the coverage flag, so they do not yet appear here --
-# the current report measures the compiled-in C surface (dep/decNumberICU, the
-# harness, generated C). To extend to Zig-owner line coverage, set
-# `sanitize_coverage_trace_pc_guard = true` (and `use_llvm = true`) on each
-# owner's `b.addObject(...)` under a coverage option; the mechanism then resolves
-# zig_src/*.zig lines exactly as it resolves the C today.
+# SCOPE: the FRONTIER owner object is now instrumented (frontier.addToModule
+# threads a `coverage` flag onto its b.addObject when the coverage harness is
+# built), so the report resolves the frontier zig_src/*.zig owners directly
+# (~1.5k lines) alongside the compiled-in C. The remaining owner groups
+# (keyboard_state / shortint / stack_state / math_command_wrappers / solve) are
+# still linked as objects built WITHOUT the flag; extend them the same way --
+# add a `coverage` field to each group's addObject path -- to cover those lines.
 #
 # Usage: report-zig-coverage.sh   (run `zig build coverage` first)
 set -euo pipefail

@@ -563,6 +563,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.keyboard_state_objects,
         context.stack_state_objects,
         null,
+        false,
     );
     const run_saveload_parity = b.addRunArtifact(saveload_parity_harness);
     run_saveload_parity.setCwd(b.path("."));
@@ -596,6 +597,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.keyboard_state_objects,
         context.stack_state_objects,
         null,
+        false,
     );
     const run_keyboard_entry = b.addRunArtifact(keyboard_entry_harness);
     run_keyboard_entry.setCwd(b.path("."));
@@ -627,6 +629,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.keyboard_state_objects,
         context.stack_state_objects,
         null,
+        true,
     );
     coverage_harness.use_llvm = true;
     coverage_harness.sanitize_coverage_trace_pc_guard = true;
@@ -660,6 +663,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.keyboard_state_objects,
         context.stack_state_objects,
         null,
+        false,
     );
     charstring_diff_harness.root_module.addCSourceFile(.{
         .file = b.path("zig_build/tests/charstring_diff/charstring_diff_oracle.c"),

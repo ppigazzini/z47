@@ -27,6 +27,12 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // Annex A0: instrument the frontier owner object with SanitizerCoverage
+    // trace-pc-guard (requires the LLVM backend) so report-zig-coverage.sh can
+    // measure which zig_src owner lines a host harness executes. Only the
+    // dedicated `coverage` harness sets this; every product/test build keeps it
+    // false, so the owner object is unchanged there.
+    coverage: bool = false,
     // Distribution clusters to compile out of the frontier object, matching the
     // upstream SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/exponential) and
     // SAVE_SPACE_DM42_17C (pareto/uniform) guards for flash-limited packages.
@@ -149,10 +155,15 @@ fn addRuntimeObject(
 
     root_module.addOptions("frontier_build_options", build_options);
 
-    return b.addObject(.{
+    const runtime_obj = b.addObject(.{
         .name = b.fmt("{s}-frontier-root", .{name_prefix}),
         .root_module = root_module,
     });
+    if (options.coverage) {
+        runtime_obj.use_llvm = true;
+        runtime_obj.sanitize_coverage_trace_pc_guard = true;
+    }
+    return runtime_obj;
 }
 
 pub fn addRuntimeObjects(
@@ -198,6 +209,7 @@ pub fn addToModule(
     name_prefix: []const u8,
     c_flags: []const []const u8,
     calcmodel: u8,
+    coverage: bool,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -207,6 +219,6 @@ pub fn addToModule(
         }
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage });
     module.addObject(runtime_object);
 }
