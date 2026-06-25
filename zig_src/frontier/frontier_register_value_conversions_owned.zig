@@ -1449,6 +1449,14 @@ pub export fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callc
     return true;
 }
 
+pub export fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) callconv(.c) void {
+    var b: real_t = undefined;
+    if (real34IsZero(regImag34(regist))) {
+        real34ToReal(reg34(regist), &b);
+        convertRealToResultRegister(&b, regist, amNone);
+    }
+}
+
 inline fn real34IsZero(v: *align(1) const real34_t) bool {
     return decQuadIsZero(v) != 0;
 }
