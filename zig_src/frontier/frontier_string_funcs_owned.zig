@@ -850,3 +850,31 @@ pub export fn fn42Cla(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnClearAlpha(alphaRegister);
 }
+
+// Cross-owner callees for the remaining 42S wrappers (display/print/items globals).
+extern fn fnAview(regist: u16) void;
+extern fn fnP_Alpha(register_no: u16) void;
+extern fn fnPrompt(regist: u16) void;
+extern var lastFunc: i16;
+const ITM_AVIEW: i16 = 2018;
+const ITM_PROMPT: i16 = 2020;
+
+// 42AVIEW: view the alpha register.
+pub export fn fn42Aview(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    lastFunc = ITM_AVIEW;
+    fnAview(alphaRegister);
+}
+
+// 42PRA: print the alpha register.
+pub export fn fn42Pra(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnP_Alpha(alphaRegister);
+}
+
+// 42PROMPT: prompt with the alpha register.
+pub export fn fn42Prompt(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    lastFunc = ITM_PROMPT;
+    fnPrompt(alphaRegister);
+}
