@@ -163,7 +163,7 @@ const NOIRFRAC: c_int = 0; // irfracOption_t
 const multiply_param: u16 = 0; // typeDefinitions.h: multiply = 0
 const divide_param: u16 = 0x8000; // typeDefinitions.h: divide = 0x8000
 
-const LAST_ITEM: u32 = 2791;
+const LAST_ITEM: u32 = 2850;
 
 // STD_* glyph strings (fonts.h).
 const STD_RIGHT_ARROW = "\xa1\x92";
@@ -223,7 +223,7 @@ extern var gapItemRight: u16;
 extern var gapItemRadix: u16;
 extern var grpGroupingLeft: u8;
 extern var grpGroupingRight: u8;
-extern const indexOfItems: [LAST_ITEM]item_t;
+extern const indexOfItems: [LAST_ITEM + 1]item_t;
 extern const registerFlagLetters: [27]u8;
 extern var ctxtReal34: realContext_t;
 extern const standardFont: font_t;

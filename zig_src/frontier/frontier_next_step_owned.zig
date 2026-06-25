@@ -144,7 +144,7 @@ const vmNormal: c_int = 0;
 
 const STD_ELLIPSIS = "\xa0\x26";
 
-const LAST_ITEM: u32 = 2791;
+const LAST_ITEM: u32 = 2850;
 
 // ---------------------------------------------------------------------------
 // Constant blob
@@ -165,7 +165,7 @@ extern var beginOfProgramMemory: [*c]u8;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
-extern const indexOfItems: [LAST_ITEM]item_t;
+extern const indexOfItems: [LAST_ITEM + 1]item_t;
 
 extern var currentStep: [*c]u8;
 extern var currentLocalStepNumber: u16;
