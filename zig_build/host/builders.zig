@@ -108,7 +108,7 @@ pub fn addSimulator(
     // R47 sim boots isR47FAM()=true (correct window title + keyboard layout) at
     // startup, matching upstream's -DCALCMODEL static init of calcModel.
     const frontier_calcmodel: u8 = if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46;
-    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, frontier_calcmodel);
+    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, frontier_calcmodel, false);
     constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     tone.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
@@ -232,7 +232,7 @@ pub fn addTestSuite(
     flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     solve.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // testSuite is the C47 model
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46, false); // testSuite is the C47 model
     constants.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     tone.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
@@ -266,6 +266,7 @@ pub fn addFullCoreHarness(
     keyboard_state_objects: host_types.KeyboardStateObjects,
     stack_state_objects: host_types.StackStateObjects,
     sanitize_c: ?std.zig.SanitizeC,
+    coverage: bool,
 ) *std.Build.Step.Compile {
     const core_c_flags = if (host_target.result.os.tag == .windows)
         build_common.common_c_flags_windows
@@ -306,7 +307,7 @@ pub fn addFullCoreHarness(
     flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     solve.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // C47 model
+    frontier.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46, coverage); // C47 model
     constants.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     tone.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
