@@ -910,3 +910,78 @@ pub export fn fn42Append(unusedButMandatoryParameter: u16) callconv(.c) void {
     truncateAlphaRegisterTo44Char();
     copySourceRegisterToDestRegister(LAST_TEMP_REGISTER, REGISTER_X);
 }
+
+// Deps for fnAlphaIP (the alpha integer-part helper).
+const REGISTER_Y: calcRegister_t = 101;
+const REGISTER_L: calcRegister_t = 108;
+const SAVED_REGISTER_X: calcRegister_t = 126;
+const SAVED_REGISTER_Y: calcRegister_t = 127;
+const SAVED_REGISTER_L: calcRegister_t = 134;
+const ERROR_NONE: u8 = 0;
+const NOPARAM: u16 = 9876;
+const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
+const Fn0 = ?*const fn () callconv(.c) void;
+extern var lastErrorCode: u8;
+extern var grpGroupingLeft: u8;
+extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0;
+extern fn fnJM_2SI(unusedButMandatoryParameter: u16) void;
+extern fn integerPartReal(mode: c_int) void;
+extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
+
+// fnAlphaIP (new in real master): append the integer part of X to a register as a string.
+pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
+    const regC: calcRegister_t = @intCast(regist);
+
+    if (programRunStop == PGM_RUNNING) {
+        copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
+        copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
+        copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
+    }
+
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtShortInteger => convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X),
+        dtReal34 => {
+            integerPartReal(DEC_ROUND_DOWN);
+            fnJM_2SI(NOPARAM);
+        },
+        dtLongInteger => {},
+        else => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "cannot \x83\xb1IP when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                moreInfoOnError("In function fnAlphaIP:", errorMessage);
+            }
+            return;
+        },
+    }
+
+    fnClearAlpha(@intCast(REGISTER_Y));
+
+    const grpGroupingLeftOld = grpGroupingLeft;
+    grpGroupingLeft = 0; // remove IP separators
+    addition[@intCast(getRegisterDataType(REGISTER_X))][@intCast(getRegisterDataType(REGISTER_Y))].?();
+    grpGroupingLeft = grpGroupingLeftOld; // restore IP separators
+
+    if (lastErrorCode == ERROR_NONE) {
+        if (regC != REGISTER_Y) {
+            copySourceRegisterToDestRegister(regC, REGISTER_Y);
+        } else {
+            copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+        }
+        addition[@intCast(getRegisterDataType(REGISTER_X))][@intCast(getRegisterDataType(REGISTER_Y))].?();
+        copySourceRegisterToDestRegister(REGISTER_X, regC);
+    }
+
+    if (regC != REGISTER_Y or lastErrorCode != ERROR_NONE) {
+        copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+    }
+    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+    copySourceRegisterToDestRegister(SAVED_REGISTER_L, REGISTER_L);
+}
+
+// 42AIP: append the integer part of X to the alpha register (clamped to 44).
+pub export fn fn42Aip(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnAlphaIP(alphaRegister);
+    truncateAlphaRegisterTo44Char();
+}
