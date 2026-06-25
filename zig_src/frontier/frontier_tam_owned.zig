@@ -354,8 +354,8 @@ const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);
 }
-const const34_0 = cst34(15692);
-const const34_1 = cst34(15804);
+const const34_0 = cst34(16200);
+const const34_1 = cst34(16312);
 
 // ---------------------------------------------------------------------------
 // Globals (extern var/const)
