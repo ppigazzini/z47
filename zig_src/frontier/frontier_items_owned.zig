@@ -4750,3 +4750,19 @@ pub export const indexOfItems linksection(code_data_section) = [2851]item_t{
     .{ .func = &itemToBeCoded, .param = 9876, .itemCatalogName = [16]u8{ 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x3a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, .itemSoftmenuName = [16]u8{ 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x3a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, .tamMinMax = 0, .status = 7722 },
     .{ .func = &itemToBeCoded, .param = 9876, .itemCatalogName = [16]u8{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, .itemSoftmenuName = [16]u8{ 0x4c, 0x61, 0x73, 0x74, 0x20, 0x69, 0x74, 0x65, 0x6d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, .tamMinMax = 0, .status = 7688 },
 };
+
+// ===========================================================================
+// TEMPORARY pin-advance stubs (TODO M10.4): unported master functions so the
+// build links and the full master testSuite can run for scoping. Replace with
+// real ports — fnXToAlphaOld (stringFuncs.c), fnClDisplay (screen.c), and the
+// XFN save/load family from the saveRestoreCalcState.c rewrite. Their tests
+// (if any) will fail until ported; everything else validates the items table.
+// ===========================================================================
+pub export fn fnXToAlphaOld(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnClDisplay(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnSaveRegister(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnSaveNRegisters(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnSaveLetteredRegisters(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnSaveStackRegisters(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnSaveXFNRegister(p: u16) callconv(.c) void { _ = p; }
+pub export fn fnLoadRegisters(p: u16) callconv(.c) void { _ = p; }
