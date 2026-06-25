@@ -1403,7 +1403,7 @@ void printTraceErrorFunction(int16_t func, char *errorString) {
     printJustified(tmpString);
     leaveTamModeIfEnabled();
 
-    #if defined(PC_BUILD)
+    #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
       printf("**[DL]** Trace: %s\n", tmpString);
       fflush(stdout);
     #endif // PC_BUILD
@@ -1417,7 +1417,7 @@ void printTraceError(char *errorString) {
   if(getSystemFlag(FLAG_TRACE) && getSystemFlag(FLAG_PRTACT)) {   // Trace mode and printer active
     printLine(errorString, 1);
 
-    #if defined(PC_BUILD)
+    #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
       printf("**[DL]** Trace: %s\n", errorString);
       fflush(stdout);
     #endif // PC_BUILD
@@ -1437,7 +1437,7 @@ void printTraceX(uint16_t where) {
       printReg(REGISTER_X, NULL, false, where, false);  // Print register X without name header
     }
 
-    #if defined(PC_BUILD)
+    #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
       printf("**[DL]** Trace: %s\n", tmpString);
       fflush(stdout);
     #endif // PC_BUILD
@@ -1468,7 +1468,7 @@ void printTraceMatElement(uint16_t where) {
     }
     printReg(TEMP_REGISTER_1, NULL, false, where, false);  // Print temporary register 1 without name header
 
-    #if defined(PC_BUILD)
+    #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
       printf("**[DL]** printTraceMatElement where %d Trace: %s\n", where, tmpString);
       fflush(stdout);
     #endif // PC_BUILD
@@ -1486,7 +1486,7 @@ void printTraceString(char *string, uint16_t where) {
     xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), string, lenInBytes);
     printReg(TEMP_REGISTER_1, NULL, false, where, false);  // Print register X without name header
 
-    #if defined(PC_BUILD)
+    #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
       printf("**[DL]** printTraceString Trace: %s\n", tmpString);
       fflush(stdout);
     #endif // PC_BUILD
@@ -1514,7 +1514,7 @@ void printTraceTI() {
       }
       if(tmpString[0] != 0) {
         printLine(tmpString, 1);
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1552,7 +1552,7 @@ void printInputPrompt(uint16_t func, uint16_t regist) {
       if(func == ITM_PROMPT) {
         printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
         print_lf();
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1566,7 +1566,7 @@ void printInputPrompt(uint16_t func, uint16_t regist) {
         label[len] = 0;
         printReg(regist, label, false, LINE_ASIS, false);  // Print register left justified with name header
         print_lf();
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1587,7 +1587,7 @@ void printViewAview(uint16_t func, uint16_t regist) {
         _getRegisterLabel(regist, label);
         printReg(regist, label, true, LINE_ASIS, false);  // Print register left justified with name header
         print_lf();
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s=%s\n", label, tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1595,7 +1595,7 @@ void printViewAview(uint16_t func, uint16_t regist) {
       else {  // ITM_AVIEW
         printReg(regist, NULL, false, LINE_ASIS, false);  // Print register left justified without name header
         print_lf();
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1626,14 +1626,14 @@ void printTrace(int16_t func, uint16_t param) {
       if(func < 0) {   // Menu
         if(func == -MNU_DYNAMIC) {
           printJustified(userMenus[currentUserMenu].menuName);    // User Menu
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
             printf("**[DL]** Trace: %s\n", userMenus[currentUserMenu].menuName);
             fflush(stdout);
           #endif // PC_BUILD
         }
         else {
           printJustified(indexOfItems[-func].itemSoftmenuName);   // Predefined Menu
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
             printf("**[DL]** Trace: %s\n", indexOfItems[-func].itemSoftmenuName);
             fflush(stdout);
           #endif // PC_BUILD
@@ -1778,7 +1778,7 @@ void printTrace(int16_t func, uint16_t param) {
         }
         printJustified(tmpString);
 
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD
@@ -1792,14 +1792,14 @@ void printTrace(int16_t func, uint16_t param) {
         strcat(traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
         strcat(traceBuffer, tmpString);
         printJustified(traceBuffer);     // Current step & step number
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", traceBuffer);
           fflush(stdout);
         #endif // PC_BUILD
       }
       else if (func >= 0) {  // Don't trace menu names during program execution
         printJustified(tmpString);    // Current step
-        #if defined(PC_BUILD)
+        #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** Trace: %s\n", tmpString);
           fflush(stdout);
         #endif // PC_BUILD

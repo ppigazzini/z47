@@ -3538,7 +3538,7 @@ extern fn fclose(f: ?*FILE) c_int;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, n: usize, f: ?*FILE) usize;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
-extern fn stringToFileNameChars(str: [*c]const u8, ascii: [*c]u8) void;
+extern fn stringToFileNameChars(str: [*c]const u8, ascii: [*c]u8, distinctQuotes: u8) void;
 const c_gtk_widget_queue_draw = if (!dmcp_build) @extern(*const fn (?*anyopaque) callconv(.c) void, .{ .name = "gtk_widget_queue_draw" }) else {};
 const c_gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
 const c_gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_main_iteration" }) else {};
@@ -3576,12 +3576,12 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
 
         if (newFilenameformat == 2) {
             stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            stringToFileNameChars(&asciiMenuName, &asciiString);
+            stringToFileNameChars(&asciiMenuName, &asciiString, 0);
             _ = sprintf(&bmpFileName, "%s.%d.bmp", &asciiString, @as(c_int, @intCast(@divTrunc(item, 18) + 1)));
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         } else if (newFilenameformat == 1) {
             stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            stringToFileNameChars(&asciiMenuName, &asciiString);
+            stringToFileNameChars(&asciiMenuName, &asciiString, 0);
             _ = sprintf(&bmpFileName, "Menu_%03d_p%d_%s.bmp", @as(c_int, menu_arg), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), &asciiString);
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         }
