@@ -19,7 +19,7 @@
 set -euo pipefail
 
 # Functions to lift (the closure must be complete: every cross-call target listed).
-FUNCS=(stringGlyphLength stringNextGlyphNoEndCheck_JM stringNextGlyph stringPrevGlyph stringLastGlyph)
+FUNCS=(stringGlyphLength stringNextGlyphNoEndCheck_JM stringNextGlyph stringPrevGlyph stringLastGlyph stringToFileNameChars)
 
 repo_root="$(cd "$(dirname "$0")/../../.." && pwd)"
 src="$repo_root/src/c47/charString.c"
@@ -28,7 +28,7 @@ out="$(dirname "$0")/charstring_diff_oracle.c"
 # Brace-match one function out of the pinned source (K&R: close brace in col 0).
 extract() {
   awk -v f="$1" '
-    $0 ~ "^(int16_t|int32_t|uint32_t|int) "f"\\(" { c=1 }
+    $0 ~ "^(int16_t|int32_t|uint32_t|int|void) "f"\\(" { c=1 }
     c { print }
     c && /^\}/ { exit }
   ' "$src"
