@@ -266,6 +266,9 @@ pub export fn print_Register_line(regist: calcRegister_t, before: [*c]u8, after:
 // create_filename (distinct DMCP / PC bodies)
 // ===========================================================================
 pub export fn create_filename(fn_arg: [*c]const u8) callconv(.c) void {
+    if (stringByteLength(&filename_csv) > 9 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 8)], ".T47.TSV", CMP_NAME) == 0) {
+        return; // already a .T47.TSV name; file management is done in the DSL
+    }
     if (comptime dmcp_build) {
         const tmp__32: u32 = getUptimeMs();
         if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
