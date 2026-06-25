@@ -195,13 +195,13 @@ inline fn cst34(comptime off: u32) *align(1) const real34_t {
 const OFF_const_NaN: u32 = 812;
 const OFF_const_minusInfinity: u32 = 1684;
 const OFF_const_plusInfinity: u32 = 1696;
-const OFF_const_1on2: u32 = 4092;
-const OFF_const_1: u32 = 4368;
-const OFF_const_2: u32 = 4440;
-const OFF_const_1e_16: u32 = 4020;
-const OFF_const_1e_32: u32 = 5200;
-const OFF_const_100: u32 = 7024;
-const OFF_const34_153: u32 = 16060;
+const OFF_const_1on2: u32 = 4580;
+const OFF_const_1: u32 = 4856;
+const OFF_const_2: u32 = 4928;
+const OFF_const_1e_16: u32 = 4484;
+const OFF_const_1e_32: u32 = 5708;
+const OFF_const_100: u32 = 7532;
+const OFF_const34_153: u32 = 16568;
 
 inline fn const_NaN() *align(1) const real_t {
     return cstR(OFF_const_NaN);

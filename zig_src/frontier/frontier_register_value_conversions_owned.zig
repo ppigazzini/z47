@@ -144,17 +144,17 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN; // 0x70
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const_0 = 1708;
-const OFF_const_2p32 = 5060;
-const OFF_const_2p63 = 5128;
-const OFF_const_2p64 = 5152;
-const OFF_const6147_2pi = 11584;
-const OFF_const34_1e_4 = 15756;
-const OFF_const34_100 = 16044;
-const OFF_const34_3600 = 16172;
-const OFF_const34_43200 = 16268;
-const OFF_const34_86400 = 16300;
-const OFF_const34_1e6 = 16348;
-const OFF_const34_2p32 = 16380;
+const OFF_const_2p32 = 5548;
+const OFF_const_2p63 = 5636;
+const OFF_const_2p64 = 5660;
+const OFF_const6147_2pi = 12092;
+const OFF_const34_1e_4 = 16264;
+const OFF_const34_100 = 16552;
+const OFF_const34_3600 = 16680;
+const OFF_const34_43200 = 16776;
+const OFF_const34_86400 = 16808;
+const OFF_const34_1e6 = 16856;
+const OFF_const34_2p32 = 16888;
 
 inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);

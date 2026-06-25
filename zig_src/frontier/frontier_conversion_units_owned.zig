@@ -105,22 +105,22 @@ inline fn setRegisterAngularMode(reg: i16, am: u32) void {
 const OFF_const_minusInfinity = 1684;
 const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
-const OFF_const_1 = 4368;
-const OFF_const_9on5 = 4428;
-const OFF_const_32 = 4736;
-const OFF_const_273p15 = 3808;
-const OFF_const_459p67 = 3824;
-const OFF_const39_kBeVK = 3840;
-const OFF_const_9on10 = 4320;
-const OFF_const39_180onPi = 4772;
-const OFF_const39_200onPi = 4820;
-const OFF_const_GaluseqE = 5320;
-const OFF_const_100 = 7024;
+const OFF_const_1 = 4856;
+const OFF_const_9on5 = 4916;
+const OFF_const_32 = 5224;
+const OFF_const_273p15 = 3916;
+const OFF_const_459p67 = 3932;
+const OFF_const39_kBeVK = 3948;
+const OFF_const_9on10 = 4808;
+const OFF_const39_180onPi = 5260;
+const OFF_const39_200onPi = 5308;
+const OFF_const_GaluseqE = 5828;
+const OFF_const_100 = 7532;
 const OFF_const_GalusToL = 2628;
 const OFF_const_MiToKm = 2048;
 const OFF_const_GalukToL = 2648;
-const OFF_const_10 = 4644;
-const OFF_const_20 = 4668;
+const OFF_const_10 = 5132;
+const OFF_const_20 = 5156;
 
 // conversionFactors[constFactorEND]: offset into `constants`, or null.
 const conversionFactorOffsets = [_]?u32{

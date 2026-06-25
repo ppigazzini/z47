@@ -207,12 +207,12 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const_0 = 1708;
-const OFF_const_1e_6 = 4008;
-const OFF_const_1on10 = 4032;
-const OFF_const39_1on3 = 4056;
-const OFF_const_1on2 = 4092;
-const OFF_const_1 = 4368;
-const OFF_const_1e32 = 5080;
+const OFF_const_1e_6 = 4508;
+const OFF_const_1on10 = 4520;
+const OFF_const39_1on3 = 4544;
+const OFF_const_1on2 = 4580;
+const OFF_const_1 = 4856;
+const OFF_const_1e32 = 5568;
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }

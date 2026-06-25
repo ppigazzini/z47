@@ -150,8 +150,8 @@ const LAST_ITEM: u32 = 2850;
 // Constant blob
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1 = 15804;
-const OFF_const34_65535 = 16284;
+const OFF_const34_1 = 16312;
+const OFF_const34_65535 = 16792;
 inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);
 }

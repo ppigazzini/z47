@@ -101,7 +101,7 @@ const DEC_ROUND_DOWN: c_int = 5;
 // Constant blob (shared `constants` symbol by byte offset).
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1 = 15804;
+const OFF_const34_1 = 16312;
 inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);
 }

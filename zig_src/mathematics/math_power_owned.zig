@@ -70,8 +70,8 @@ const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
 }
-const OFF_const_4: u32 = 4536;
-const OFF_const_8: u32 = 4620;
+const OFF_const_4: u32 = 5024;
+const OFF_const_8: u32 = 5108;
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;

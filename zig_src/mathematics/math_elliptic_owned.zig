@@ -117,17 +117,17 @@ const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
 }
-const OFF_const__4: u32 = 3888;
-const OFF_const_1on4: u32 = 4044;
-const OFF_const39_1on3: u32 = 4056;
-const OFF_const_1on2: u32 = 4092;
+const OFF_const__4: u32 = 4364;
+const OFF_const_1on4: u32 = 4532;
+const OFF_const39_1on3: u32 = 4544;
+const OFF_const_1on2: u32 = 4580;
 const OFF_const39_pi: u32 = 1848;
-const OFF_const39_piOn2: u32 = 4392;
-const OFF_const39_piOn4: u32 = 4248;
-const OFF_const75_2pi: u32 = 7132;
-const OFF_const_1e_32: u32 = 5200;
-const OFF_const_1e_37: u32 = 3960;
-const OFF_const_1e_49: u32 = 3948;
+const OFF_const39_piOn2: u32 = 4880;
+const OFF_const39_piOn4: u32 = 4736;
+const OFF_const75_2pi: u32 = 7640;
+const OFF_const_1e_32: u32 = 5708;
+const OFF_const_1e_37: u32 = 4436;
+const OFF_const_1e_49: u32 = 4424;
 inline fn const__4() *align(1) const real_t {
     return cstR(OFF_const__4);
 }
@@ -750,7 +750,7 @@ fn _ellipticFE_lambda_mu(phi: *const real_t, psi: *const real_t, m: *const real_
     }
 }
 
-const OFF_const__1: u32 = 3900;
+const OFF_const__1: u32 = 4376;
 inline fn const__1Off() *align(1) const real_t {
     return cstR(OFF_const__1);
 }
@@ -835,7 +835,7 @@ fn carlsonRD(x0: *const real_t, y0: *const real_t, z0: *const real_t, res: *real
     realFMA(const_3Off(), &sum, res, res, realContext);
 }
 
-const OFF_const_3: u32 = 4524;
+const OFF_const_3: u32 = 5012;
 inline fn const_3Off() *align(1) const real_t {
     return cstR(OFF_const_3);
 }

@@ -84,8 +84,8 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
 }
 const OFF_const_0: u32 = 1708;
-const OFF_const__1: u32 = 3900;
-const OFF_const_1: u32 = 4368;
+const OFF_const__1: u32 = 4376;
+const OFF_const_1: u32 = 4856;
 inline fn const_0() *align(1) const real_t {
     return cstR(OFF_const_0);
 }

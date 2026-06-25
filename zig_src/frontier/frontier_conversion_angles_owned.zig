@@ -20,21 +20,21 @@ const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1 = 4368;
-const OFF_const_60 = 4808;
-const OFF_const_90 = 7036;
-const OFF_const_100 = 7024;
-const OFF_const_180 = 6952;
-const OFF_const_200 = 6940;
-const OFF_const_3600 = 4960;
-const OFF_const_9on10 = 4320;
+const OFF_const_1 = 4856;
+const OFF_const_60 = 5296;
+const OFF_const_90 = 7544;
+const OFF_const_100 = 7532;
+const OFF_const_180 = 7460;
+const OFF_const_200 = 7448;
+const OFF_const_3600 = 5448;
+const OFF_const_9on10 = 4808;
 const OFF_const39_pi = 1848;
-const OFF_const75_pi = 6880;
-const OFF_const1071_pi = 9424;
-const OFF_const75_piOn2 = 6964;
-const OFF_const1071_piOn2 = 8700;
-const OFF_const39_200onPi = 4820;
-const OFF_const39_180onPi = 4772;
+const OFF_const75_pi = 7388;
+const OFF_const1071_pi = 9932;
+const OFF_const75_piOn2 = 7472;
+const OFF_const1071_piOn2 = 9208;
+const OFF_const39_200onPi = 5308;
+const OFF_const39_180onPi = 5260;
 
 const DECNUMUNITS = 25;
 const real_t = extern struct {

@@ -70,11 +70,11 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
 const OFF_const_NaN: u32 = 812;
 const OFF_const39_2pi: u32 = 1812;
 const OFF_const39_pi: u32 = 1848;
-const OFF_const39_ln2piOn2: u32 = 4332;
-const OFF_const_12: u32 = 4656;
-const OFF_const_360: u32 = 4868;
-const OFF_const_1260: u32 = 4920;
-const OFF_const_1680: u32 = 4932;
+const OFF_const39_ln2piOn2: u32 = 4820;
+const OFF_const_12: u32 = 5144;
+const OFF_const_360: u32 = 5356;
+const OFF_const_1260: u32 = 5408;
+const OFF_const_1680: u32 = 5420;
 inline fn const_NaN() *align(1) const real_t {
     return cstR(OFF_const_NaN);
 }

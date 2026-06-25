@@ -126,10 +126,10 @@ const SUM_X4 = 23;
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const_0 = 1708;
-const OFF_const__4 = 3888;
-const OFF_const_1on2 = 4092;
-const OFF_const_1 = 4368;
-const OFF_const_2 = 4440;
+const OFF_const__4 = 4364;
+const OFF_const_1on2 = 4580;
+const OFF_const_1 = 4856;
+const OFF_const_2 = 4928;
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
