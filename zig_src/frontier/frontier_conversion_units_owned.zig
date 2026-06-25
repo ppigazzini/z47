@@ -156,7 +156,7 @@ const conversionFactorOffsets = [_]?u32{
     2780, // 29 constFactorShortcwtKg = const_ShortcwtToKg
     2764, // 30 constFactorStoneKg = const_StoneToKg
     2816, // 31 constFactorShorttonKg = const_ShorttonToKg
-    2832, // 32 constFactorTonKg = const_TonToKg
+    2832, // 32 constFactorTonKg = const_LongtonToKg
     5156, // 33 constFactorLiangKg = const_20
     2732, // 34 constFactorTrozG = const_TrozToG
     3032, // 35 constFactorLbfN = const_LbfToN
@@ -205,13 +205,13 @@ const conversionFactorOffsets = [_]?u32{
     3440, // 78 constFactorFpstokph = const_fpsToKph
     3456, // 79 constFactorFpstomps = const_fpsToMps
     7532, // 80 constFactorL100Tokml = const_100
-    null, // 81 constFactorKmletok100K
+    null, // 81 constFactorKmletok100K (no factor)
     7532, // 82 constFactorK100Ktokmk = const_100
-    null, // 83 constFactorL100Tomgus
-    null, // 84 constFactorMgeustok100M
+    null, // 83 constFactorL100Tomgus (no factor)
+    null, // 84 constFactorMgeustok100M (no factor)
     2048, // 85 constFactorK100Ktok100M = const_MiToKm
-    null, // 86 constFactorL100Tomguk
-    null, // 87 constFactorMgeuktok100M
+    null, // 86 constFactorL100Tomguk (no factor)
+    null, // 87 constFactorMgeuktok100M (no factor)
     7532, // 88 constFactorK100Mtomik = const_100
     3472, // 89 constFactorCupcFzus = const_CupcFzus
     3484, // 90 constFactorCupcMl = const_CupcMl
@@ -265,6 +265,30 @@ const conversionFactorOffsets = [_]?u32{
     3868, // 138 constFactorBananaInch = const39_bananaInch
     3008, // 139 constFactorErgJ = const_ErgToJ
     3020, // 140 constFactorFoeJ = const_FoeToJ
+    2852, // 141 constFactorKnotMps = const39_KnotToMps
+    5260, // 142 constFactor180onPi = const39_180onPi
+    2888, // 143 constFactorSlugKg = const39_SlugToKg
+    2924, // 144 constFactorSlinchKg = const39_SlinchToKg
+    2924, // 145 constFactorBlobKg = const39_SlinchToKg
+    5380, // 146 constFactorTonneKg = const_1000
+    4060, // 147 constFactorLbsft2Pa = const39_Lbsft2ToPa
+    4036, // 148 constFactorInlbsNm = const_InlbsToNm
+    2888, // 149 constFactorLbsftNpm = const39_SlugToKg
+    436, // 150 constFactorKgfN = const_gEarth
+    4096, // 151 constFactorKsiMpa = const39_KsiToMpa
+    4000, // 152 constFactorLbsBlob = const39_BlobInLbs
+    4132, // 153 constFactorLbsin3Tmm3 = const39_Lbsin3ToTmm3
+    4168, // 154 constFactorLbsin3Kgm3 = const39_Lbsin3ToKgm3
+    4204, // 155 constFactorKgm3Blobin3 = const39_Kgm3ToBlobin3
+    4496, // 156 constFactorKgm3Tmm3 = const_1e_12
+    4240, // 157 constFactorLbsftKgm = const39_LbsftToKgm
+    4276, // 158 constFactorIn3Mm3 = const_In3ToMm3
+    4292, // 159 constFactorIn2Mm2 = const_In2ToMm2
+    4308, // 160 constFactorIn4Mm4 = const_In4ToMm4
+    4328, // 161 constFactorIn6Mm6 = const_In6ToMm6
+    436, // 162 constFactorKgmNpm = const_gEarth
+    3984, // 163 constFactorInchM = const_InchToM
+    2748, // 164 constFactorLbfKgf = const_LbToKg
 };
 
 // (x - B) / C * D + E temperature-conversion coefficient offsets (see cvtTempConsts).
