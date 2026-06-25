@@ -838,3 +838,15 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     }
     longIntegerFree(&lgInt[0]);
 }
+
+// fnClearAlpha (new in real master): reset a register to an empty string.
+pub export fn fnClearAlpha(regist: u16) callconv(.c) void {
+    reallocateRegister(@intCast(regist), dtString, 1, amNone);
+    regString(@intCast(regist))[0] = 0;
+}
+
+// 42CLA: clear the alpha register.
+pub export fn fn42Cla(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnClearAlpha(alphaRegister);
+}
