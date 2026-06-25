@@ -360,6 +360,15 @@ fn compareMatrices(regist: u16, mode: u8, type_x: u32, type_r: u32) void {
     } else {
         runtime.convertReal34MatrixRegisterToComplex34Matrix(asRegister(regist), &r);
     }
+    if (runtime.lastErrorCode != 0) { // a convert ran out of RAM; free what was allocated and return
+        if (type_x == runtime.dtReal34Matrix) {
+            runtime.complexMatrixFree(&x);
+        }
+        if (type_r == runtime.dtReal34Matrix) {
+            runtime.complexMatrixFree(&r);
+        }
+        return;
+    }
     if (x.header.matrixRows == r.header.matrixRows and x.header.matrixColumns == r.header.matrixColumns) {
         runtime.temporaryInformation = TI_TRUE;
         const x_elements: [*]runtime.complex34_t = x.matrixElements;
@@ -551,6 +560,11 @@ fn almostEqualMatrix(regist: u16) void {
         var r: runtime.real34Matrix_t = undefined;
         runtime.convertReal34MatrixRegisterToReal34Matrix(runtime.REGISTER_X, &x);
         runtime.convertReal34MatrixRegisterToReal34Matrix(asRegister(regist), &r);
+        if (runtime.lastErrorCode != 0) { // a convert ran out of RAM; free locals and return before rounding
+            runtime.realMatrixFree(&x);
+            runtime.realMatrixFree(&r);
+            return;
+        }
         roundRema();
         fnSwapX(regist);
         roundRema();
@@ -578,6 +592,14 @@ fn almostEqualMatrix(regist: u16) void {
         } else {
             runtime.convertReal34MatrixRegisterToComplex34Matrix(asRegister(regist), &r);
             runtime.convertReal34MatrixRegisterToReal34Matrix(asRegister(regist), &m);
+        }
+        if (runtime.lastErrorCode != 0) { // a convert ran out of RAM; free locals and return before rounding
+            runtime.complexMatrixFree(&x);
+            runtime.complexMatrixFree(&r);
+            if (!x_is_cxma or !r_is_cxma) {
+                runtime.realMatrixFree(&m);
+            }
+            return;
         }
 
         if (x_is_cxma) {
