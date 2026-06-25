@@ -146,6 +146,15 @@ static void compareMatrices(uint16_t regist, uint8_t mode, uint32_t typeX, uint3
   else {
     convertReal34MatrixRegisterToComplex34Matrix(regist, &r);
   }
+  if(lastErrorCode != 0) { // a convert ran out of RAM; free what was allocated and return
+    if(typeX == dtReal34Matrix) {
+      complexMatrixFree(&x);
+    }
+    if(typeR == dtReal34Matrix) {
+      complexMatrixFree(&r);
+    }
+    return;
+  }
   if(x.header.matrixRows == r.header.matrixRows && x.header.matrixColumns == r.header.matrixColumns) {
     temporaryInformation = TI_TRUE;
     for(int i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
@@ -466,6 +475,11 @@ static void almostEqualMatrix(uint16_t regist) {
       real34Matrix_t x, r;
       convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
       convertReal34MatrixRegisterToReal34Matrix(regist, &r);
+      if(lastErrorCode != 0) { // a convert ran out of RAM; free locals and return before rounding
+        realMatrixFree(&x);
+        realMatrixFree(&r);
+        return;
+      }
       roundRema();
       fnSwapX(regist);
       roundRema();
@@ -495,6 +509,15 @@ static void almostEqualMatrix(uint16_t regist) {
       else {
         convertReal34MatrixRegisterToComplex34Matrix(regist, &r);
         convertReal34MatrixRegisterToReal34Matrix(regist, &m);
+      }
+
+      if(lastErrorCode != 0) { // a convert ran out of RAM; free locals and return before rounding
+        complexMatrixFree(&x);
+        complexMatrixFree(&r);
+        if(!xIsCxma || !rIsCxma) {
+          realMatrixFree(&m);
+        }
+        return;
       }
 
       if(xIsCxma) {
