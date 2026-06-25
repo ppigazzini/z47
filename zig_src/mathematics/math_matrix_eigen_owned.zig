@@ -1672,6 +1672,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
             ires.header.matrixRows = 0;
             ires.header.matrixColumns = 0;
             ires.matrixElements = null;
+            res.matrixElements = null;
             realEigenvalues(&x, &res, &ires);
             if (runtime.lastErrorCode == runtime.ERROR_NONE or runtime.lastErrorCode == ERROR_SOLVER_ABORT) {
                 if (ires.matrixElements != null) {
@@ -1691,11 +1692,13 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
                         doneAdjusting = true;
                         var cresRow: complex34Matrix_t = undefined;
                         extractDiagonalToRowComplex34Matrix(&cres, &cresRow);
-                        runtime.setSystemFlag(FLAG_ASLIFT);
-                        runtime.liftStack();
-                        runtime.convertComplex34MatrixToComplex34MatrixRegister(&cresRow, runtime.REGISTER_X);
-                        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
-                        runtime.complexMatrixFree(&cresRow);
+                        if (cresRow.matrixElements != null) {
+                            runtime.setSystemFlag(FLAG_ASLIFT);
+                            runtime.liftStack();
+                            runtime.convertComplex34MatrixToComplex34MatrixRegister(&cresRow, runtime.REGISTER_X);
+                            runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+                            runtime.complexMatrixFree(&cresRow);
+                        }
                         runtime.realMatrixFree(&ires);
                         runtime.complexMatrixFree(&cres);
                     } else {
@@ -1707,13 +1710,24 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
                     doneAdjusting = true;
                     var resRow: real34Matrix_t = undefined;
                     extractDiagonalToRowReal34Matrix(&res, &resRow);
-                    runtime.setSystemFlag(FLAG_ASLIFT);
-                    runtime.liftStack();
-                    runtime.convertReal34MatrixToReal34MatrixRegister(&resRow, runtime.REGISTER_X);
-                    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
-                    runtime.realMatrixFree(&resRow);
+                    if (resRow.matrixElements != null) {
+                        runtime.setSystemFlag(FLAG_ASLIFT);
+                        runtime.liftStack();
+                        runtime.convertReal34MatrixToReal34MatrixRegister(&resRow, runtime.REGISTER_X);
+                        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+                        runtime.realMatrixFree(&resRow);
+                    }
                 }
                 runtime.realMatrixFree(&res);
+            }
+            // Unhandled error code (e.g. complex eigenvalues with FL_CPXRES clear)
+            // skips the block above; realEigenvalues already allocated res/ires.
+            // On the handled paths these are already freed and NULL -> no-ops.
+            if (res.matrixElements != null) {
+                runtime.realMatrixFree(&res);
+            }
+            if (ires.matrixElements != null) {
+                runtime.realMatrixFree(&ires);
             }
         }
         if (!doneAdjusting) runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
@@ -1737,18 +1751,23 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
             runtime.setSystemFlag(FLAG_ASLIFT);
             runtime.liftStack();
             var res: complex34Matrix_t = undefined;
+            res.matrixElements = null;
             complexEigenvalues(&x, &res);
-            runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
-            runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
-            doneAdjusting = true;
-            var resRow: complex34Matrix_t = undefined;
-            extractDiagonalToRowComplex34Matrix(&res, &resRow);
-            runtime.setSystemFlag(FLAG_ASLIFT);
-            runtime.liftStack();
-            runtime.convertComplex34MatrixToComplex34MatrixRegister(&resRow, runtime.REGISTER_X);
-            runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
-            runtime.complexMatrixFree(&resRow);
-            runtime.complexMatrixFree(&res);
+            if (res.matrixElements != null) {
+                runtime.convertComplex34MatrixToComplex34MatrixRegister(&res, runtime.REGISTER_X);
+                runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
+                doneAdjusting = true;
+                var resRow: complex34Matrix_t = undefined;
+                extractDiagonalToRowComplex34Matrix(&res, &resRow);
+                if (resRow.matrixElements != null) {
+                    runtime.setSystemFlag(FLAG_ASLIFT);
+                    runtime.liftStack();
+                    runtime.convertComplex34MatrixToComplex34MatrixRegister(&resRow, runtime.REGISTER_X);
+                    runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+                    runtime.complexMatrixFree(&resRow);
+                }
+                runtime.complexMatrixFree(&res);
+            }
         }
         if (!doneAdjusting) runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, -1, -1);
         return;
