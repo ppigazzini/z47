@@ -11,6 +11,7 @@ int16_t oracle_stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos);
 int16_t oracle_stringNextGlyph(const char *str, int16_t pos);
 int16_t oracle_stringPrevGlyph(const char *str, int16_t pos);
 int16_t oracle_stringLastGlyph(const char *str);
+void oracle_stringToFileNameChars(const char *str, char *ascii);
 
 int32_t oracle_stringGlyphLength(const char *str) {
   int32_t len = 0;
@@ -119,5 +120,45 @@ int16_t oracle_stringLastGlyph(const char *str) {
     }
   }
   return lastGlyph;
+}
+
+void oracle_stringToFileNameChars(const char *str, char *ascii) {
+  int16_t len;
+  len = oracle_stringGlyphLength(str);
+
+  if(len == 0) {
+    *ascii = 0;
+    return;
+  }
+
+  for(int16_t i=0; i<len; i++) {
+    if(((uint8_t)(*str) & 0x80) != 0) {
+      *ascii = '_';
+      str++;
+      str++;
+      ascii++;
+    }
+    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') {
+      *ascii = '_';
+      str++;
+      ascii++;
+    }
+    else if(*str == '|' || *str == '?' || *str == '*' || *str == ':' || *str == '<' || *str == '>') {
+      *ascii = '-';
+      str++;
+      ascii++;
+    }
+    else if(*str == '\"') {
+      *ascii = '\'';
+      str++;
+      ascii++;
+    }
+    else {
+      *ascii = *str;
+      str++;
+       ascii++;
+    }
+    *ascii = 0;
+  }
 }
 

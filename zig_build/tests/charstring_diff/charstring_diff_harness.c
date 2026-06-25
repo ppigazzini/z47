@@ -38,6 +38,7 @@ int16_t oracle_stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos);
 int16_t oracle_stringNextGlyph(const char *str, int16_t pos);
 int16_t oracle_stringPrevGlyph(const char *str, int16_t pos);
 int16_t oracle_stringLastGlyph(const char *str);
+void oracle_stringToFileNameChars(const char *str, char *ascii);
 
 static long checked;
 
@@ -76,6 +77,27 @@ static int diff_one(const char *s) {
       DIFF(stringNextGlyphNoEndCheck_JM(s, (int16_t)pos),
            oracle_stringNextGlyphNoEndCheck_JM(s, (int16_t)pos),
            "stringNextGlyphNoEndCheck_JM", s, pos);
+  }
+
+  // stringToFileNameChars writes a sanitized filename into an output buffer;
+  // compare the two outputs byte-for-byte. This is the function the M10 delta
+  // changes upstream (a new distinctQuotes parameter), so the oracle will flip
+  // RED against the Zig owner the moment the imported C is refreshed (M10.2)
+  // until the owner is re-ported to match.
+  {
+    char a_zig[160], a_oracle[160];
+    memset(a_zig, 0x7f, sizeof(a_zig));
+    memset(a_oracle, 0x7f, sizeof(a_oracle));
+    stringToFileNameChars(s, a_zig);
+    oracle_stringToFileNameChars(s, a_oracle);
+    checked++;
+    if(memcmp(a_zig, a_oracle, sizeof(a_zig)) != 0) {
+      printf("FAIL: stringToFileNameChars diverges: Zig=[%s] oracle=[%s] on [",
+             a_zig, a_oracle);
+      print_bytes(s);
+      printf("]\n");
+      return 1;
+    }
   }
   return 0;
 }
@@ -121,8 +143,7 @@ int main(void) {
     if(diff_one(buf)) return 1;
   }
 
-  printf("CHARSTRING DIFFERENTIAL: OK (glyph cluster -- stringGlyphLength, "
-         "stringNextGlyph[NoEndCheck], stringPrevGlyph, stringLastGlyph -- agrees "
-         "with the pinned C oracle over %ld comparisons)\n", checked);
+  printf("CHARSTRING DIFFERENTIAL: OK (glyph cluster + stringToFileNameChars "
+         "agree with the pinned C oracle over %ld comparisons)\n", checked);
   return 0;
 }
