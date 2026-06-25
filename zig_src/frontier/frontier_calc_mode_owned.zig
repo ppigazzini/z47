@@ -253,6 +253,7 @@ extern fn realMatrixFree(matrix: *real34Matrix_t) void;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
 extern fn saveCalc() void;
 extern fn gtk_main_quit() void;
+extern var headlessMode: bool; // c47.c global; in --dumpMenus there is no GTK loop to quit
 
 extern var shiftF: bool_t;
 extern var shiftG: bool_t;
@@ -299,7 +300,9 @@ pub export fn fnOff(unusedParamButMandatory: u16) callconv(.c) void {
             }
         }
         saveCalc();
-        gtk_main_quit();
+        if (!headlessMode) {
+            gtk_main_quit();
+        }
     } else { // DMCP_BUILD
         setStatPgmEnd();
     }
