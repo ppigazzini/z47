@@ -766,3 +766,35 @@ pub export fn fn42Posa(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnAlphaPos(alphaRegister);
 }
+
+// Raised by the 42S alpha ops when the alpha register holds no string (slot 64).
+const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
+
+// 42ASHF: shift the alpha register left by up to 6 glyphs.
+pub export fn fn42AlphaShift(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
+        displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "cannot use 42ASHF on %s", getRegisterDataTypeName(@intCast(alphaRegister), true, false));
+            moreInfoOnError("In function fn42AlphaShift:", errorMessage);
+        }
+        return;
+    }
+
+    const ptr = regString(@intCast(alphaRegister));
+    const stringGlyphLen = stringGlyphLength(ptr);
+    var steps: i16 = if (stringGlyphLen < 6) @intCast(stringGlyphLen) else 6;
+    var glyphPointer: i16 = 0;
+    while (steps > 0) : (steps -= 1) {
+        glyphPointer = stringNextGlyph(ptr, glyphPointer);
+    }
+    _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
+}
+
+// 42XTOA: X -> alpha register (clamped to 44 glyphs).
+pub export fn fn42Xtoa(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnXToAlpha(alphaRegister);
+    truncateAlphaRegisterTo44Char();
+}
