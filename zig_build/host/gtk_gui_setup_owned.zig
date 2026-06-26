@@ -46,6 +46,7 @@ const NARROW_SCREEN: bool = false;
 const CAIRO_FORMAT_RGB24: c_int = 1;
 const SCREEN_WIDTH: c_int = 400;
 const SCREEN_HEIGHT: c_int = 240;
+const OFF_PIXEL: u32 = 0xe0e0e0; // LCD background (matches gtk_lcd_runtime)
 const ITM_SHIFTf: i16 = 1731;
 const ITM_SHIFTg: i16 = 1732;
 const DELTA_KEYS_X: c_int = 78;
@@ -206,5 +207,11 @@ pub fn setupScreenBuffer() void {
         exit(1);
     }
     screenData = @ptrCast(@alignCast(raw.?));
+    // Initialize to the LCD "off" colour. screenData is malloc'd (uninitialised)
+    // and the first "draw" can fire before the calculator's startup screen
+    // render has run LCD_write_line over every row, so any not-yet-written
+    // pixels would otherwise show raw heap garbage. C gets away without this on
+    // most setups; on WSLg/Wayland the first paint is reliably uninitialised.
+    @memset(screenData[0 .. @as(usize, @intCast(screenStride)) * SCREEN_HEIGHT], OFF_PIXEL);
     _ = g_signal_connect_data(screen, "draw", @ptrCast(&z47_drawScreen_wrapper), null, null, 0);
 }
