@@ -57,11 +57,17 @@ src/c47-gtk/hal/print_ir.c
 src/c47/distributions/uniform.c
 src/c47/distributions/uniform.h
 src/c47/hal/print_ir.h
+src/c47/mathematics/elec.c
+src/c47/mathematics/elec.h
 src/c47/printing
 src/c47/reservedRegisterLookup.h
 src/c47/reservedRegisterLookupGenerator.c
+src/c47/saveRestoreBackup.c
+src/c47/saveRestoreBackup.h
+src/t47
 src/testSuite/hal/print_ir.c
 src/testSuite/tests/constants.txt
+src/testSuite/tests/elec.txt
 src/testSuite/tests/jacobi_audit.txt
 src/testSuite/tests/prime.txt
 src/testSuite/tests/tempConv.txt
