@@ -2114,15 +2114,25 @@ pub export fn fnFrom_ymd(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnFrom_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnFrom_msRegisterImpl(REGISTER_X);
+}
+
+// Register-parametrized form of fnFrom_ms; used by the data-file serializer to
+// convert a dtTime register to its HHMMSS-coded real (master fnFrom_msRegister).
+pub export fn fnFrom_msRegister(regist: i16) callconv(.c) void {
+    fnFrom_msRegisterImpl(regist);
+}
+
+fn fnFrom_msRegisterImpl(regist: i16) void {
     var tmpString100: [100]u8 = undefined;
     var tmpString100_OUT: [100]u8 = undefined;
     tmpString100[0] = 0;
     tmpString100_OUT[0] = 0;
 
-    if (getRegisterDataType(REGISTER_X) == dtTime) {
+    if (getRegisterDataType(regist) == dtTime) {
         temporaryInformation = TI_FROM_MS_TIME;
-    } else if (getRegisterDataType(REGISTER_X) == dtReal34 and getRegisterAngularMode(REGISTER_X) != amNone) {
-        if (getRegisterAngularMode(REGISTER_X) != amDMS) {
+    } else if (getRegisterDataType(regist) == dtReal34 and getRegisterAngularMode(regist) != amNone) {
+        if (getRegisterAngularMode(regist) != amDMS) {
             fnAngularModeJM(amDMS);
         }
         temporaryInformation = TI_FROM_MS_DEG;
@@ -2132,11 +2142,11 @@ pub export fn fnFrom_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     if (temporaryInformation != TI_NO_INFO) {
         if (temporaryInformation == TI_FROM_MS_TIME) {
-            copyRegisterToClipboardString2(REGISTER_X, &tmpString100);
+            copyRegisterToClipboardString2(regist, &tmpString100);
         }
         if (temporaryInformation == TI_FROM_MS_DEG) {
             // !LIMITEXP=0, FRONTSPACE=1, NOIRFRAC=0
-            real34ToDisplayString(reg34(REGISTER_X), getRegisterAngularMode(REGISTER_X), &tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, 1, 0);
+            real34ToDisplayString(reg34(regist), getRegisterAngularMode(regist), &tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, 1, 0);
             var tmp_i: i16 = 0;
             while (tmpString100[@intCast(tmp_i)] != 0 and tmpString100[@intCast(tmp_i + 1)] != 0) : (tmp_i += 1) {
                 if (tmpString100[@intCast(tmp_i)] == 128 and tmpString100[@intCast(tmp_i + 1)] == 176) {
@@ -2179,8 +2189,8 @@ pub export fn fnFrom_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
 
         if (tmpString100_OUT[0] != 0) {
-            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-            stringToReal34(&tmpString100_OUT, reg34(REGISTER_X));
+            reallocateRegister(regist, dtReal34, 0, amNone);
+            stringToReal34(&tmpString100_OUT, reg34(regist));
         }
     }
 }

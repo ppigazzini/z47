@@ -101,6 +101,8 @@ const ioPathManualSave: c_int = 0;
 const ioPathPgmFile: c_int = 2;
 const ioPathTestPgms: c_int = 3;
 const ioPathBackup: c_int = 4;
+const ioPathRegImport: c_int = 14;
+const ioPathRegExport: c_int = 15;
 const ioModeRead: c_int = 0;
 const ioModeWrite: c_int = 1;
 const ioModeUpdate: c_int = 2;
@@ -118,6 +120,10 @@ fn ioFileNameFromFilePath(path: c_int) ?[*:0]const u8 {
         ioPathPgmFile => "c47.dat",
         ioPathTestPgms => "res/testPgms/testPgms.bin",
         ioPathBackup => "backup.cfg",
+        // Register data-file (DATA_FILE) import/export. Both map to one headless
+        // file so the save/load parity harness can round-trip; the real HAL would
+        // resolve these to a user-chosen path via a file dialog.
+        ioPathRegImport, ioPathRegExport => "c47.regs",
         else => null,
     };
 }

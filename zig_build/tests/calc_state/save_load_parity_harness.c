@@ -387,6 +387,74 @@ int main(int argc, char *argv[]) {
     printf("PASS: backup.cfg round-trip preserves state (%ld bytes)\n", n1);
   }
 
+  // --- Check D: register data-file (DATA_FILE format) save/load round-trip ---
+  // Exercises the NEW M10.4 XFN save/load family: fnSaveLetteredRegisters ->
+  // doSaveDataFile -> fnSaveDataRegisters (the dataFileMode codec forms: lettered
+  // "RX" names, compact complex "(re+im i)", short-int '#base'), and the load
+  // path fnLoadRegisters -> doLoadDataFile -> restoreOneSection -> restoreRegister
+  // (stringToRegisterNumber + the inverse parsers). The host HAL maps
+  // ioPathRegExport/ioPathRegImport to "c47.regs".
+  //
+  // The data file is a *human-readable export*: Time/Date are stored as display
+  // forms (THMS/DYMD) and complex registers are coerced to the live polar mode
+  // when FLAG_POLAR is set -- both faithful to the C, both lossy vs the exact
+  // c47.sav form. So we verify the round-trip on a clean slate (fnReset clears
+  // FLAG_POLAR) over the LOSSLESSLY-representable scalar types: a real, a short
+  // integer, a long integer, a string, and an (unset-polar) complex. Save ->
+  // perturb every lettered register -> load -> re-save the data file, and require
+  // the two data files to be byte-identical (a no-op load cannot pass because the
+  // perturbation rewrites every register first).
+  fnReset(CONFIRMED);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(12345, REGISTER_REAL34_DATA(REGISTER_X));
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amDegree);          // tagged real -> "Real:DEG"
+  int32ToReal34(90, REGISTER_REAL34_DATA(REGISTER_Y));
+  convertUInt64ToShortIntegerRegister(0, 0xCAFEBABEULL, 16, REGISTER_Z); // ShoI '#16'
+  {
+    longInteger_t li;
+    longIntegerInit(li);
+    stringToLongInteger("98765432109876543210", 10, li);
+    convertLongIntegerToLongIntegerRegister(li, REGISTER_T);
+    longIntegerFree(li);
+  }
+  reallocateRegister(REGISTER_A, dtComplex34, 0, amNone);         // FLAG_POLAR clear -> stays amNone
+  int32ToReal34(7,  REGISTER_REAL34_DATA(REGISTER_A));
+  int32ToReal34(-8, REGISTER_IMAG34_DATA(REGISTER_A));
+  {
+    const char *s = "data-file str!";
+    reallocateRegister(REGISTER_B, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone);
+    strcpy(REGISTER_STRING_DATA(REGISTER_B), s);
+  }
+
+  static unsigned char regs1[MAX_SAVE], regs2[MAX_SAVE];
+  fnSaveLetteredRegisters(NOPARAM);                 // -> c47.regs (dataFileMode forms)
+  long nr1 = readWholeFile("c47.regs", regs1, MAX_SAVE);
+  for(int r = REGISTER_X; r <= REGISTER_W; ++r) {   // perturb every lettered register
+    reallocateRegister(r, dtReal34, 0, amNone);
+    int32ToReal34(-99999, REGISTER_REAL34_DATA(r));
+  }
+  fnLoadRegisters(NOPARAM);                          // <- c47.regs
+  fnSaveLetteredRegisters(NOPARAM);                 // re-export
+  long nr2 = readWholeFile("c47.regs", regs2, MAX_SAVE);
+  if(nr1 < 0 || nr2 < 0) {
+    printf("FAIL: could not read c47.regs data file\n");
+    return 1;
+  }
+  if(nr1 != nr2 || memcmp(regs1, regs2, (size_t)nr1) != 0) {
+    printf("FAIL: data-file round-trip differs (regs1=%ld regs2=%ld)\n", nr1, nr2);
+    long lim = nr2 < nr1 ? nr2 : nr1;
+    for(long i = 0; i < lim; i++) {
+      if(regs1[i] != regs2[i]) {
+        printf("  first diff at byte %ld: regs1=0x%02x regs2=0x%02x\n", i, regs1[i], regs2[i]);
+        break;
+      }
+    }
+    failed = 1;
+  }
+  else {
+    printf("PASS: data-file (DATA_FILE) save/load round-trip is byte-identical (%ld bytes)\n", nr1);
+  }
+
   if(failed) {
     printf("SAVE/LOAD PARITY: FAILED\n");
     return 1;
