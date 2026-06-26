@@ -79,6 +79,7 @@ comptime {
     _ = @import("frontier_screen_owned.zig");
     _ = @import("frontier_screen_snap_owned.zig");
     _ = @import("frontier_addons_owned.zig");
+    _ = @import("frontier_elec_owned.zig");
     _ = @import("frontier_items_owned.zig");
     _ = @import("frontier_softmenus_owned.zig");
     _ = @import("frontier_display_owned.zig");

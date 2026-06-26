@@ -7,4 +7,3 @@
 # fd83b4a4): the elec (delta-star / symmetrical-components / triple-phase)
 # command surface. Compiled as plain upstream C; items.c dispatch wiring extends
 # the Zig items table separately.
-src/c47/mathematics/elec.c
