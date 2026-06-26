@@ -159,3 +159,22 @@ void * xcopy(void *a0, void *a1, int32_t a2) { return 0; }
 void __gmpz_init(void *x) { (void)x; }
 int __gmpz_set_str(void *r, const char *s, int b) { (void)r; (void)s; (void)b; return 0; }
 void __gmpz_clear(void *x) { (void)x; }
+
+// --- XFN register data-file save/load family (M10.4) externs ---
+// Referenced by the calc-state save/codec/io-flow owners but never invoked by
+// the header-only parity fixture; ABI-matched no-ops to satisfy the link.
+int8_t registerFMAOutputPlainString(int16_t a0, void *a1, void *a2) { (void)a0; (void)a1; (void)a2; return 0; }
+int8_t getAngleModeForRegister3r(int16_t a0, void *a1) { (void)a0; (void)a1; return 0; }
+void copySourceRegisterToDestRegister(int16_t a0, int16_t a1) { (void)a0; (void)a1; }
+void fnFrom_msRegister(int16_t a0) { (void)a0; }
+void convertDateRegisterToReal34Register(int16_t a0, int16_t a1) { (void)a0; (void)a1; }
+void convertReal34RegisterToDateRegister(int16_t a0, int16_t a1, int8_t a2) { (void)a0; (void)a1; (void)a2; }
+void hmmssInRegisterToSeconds(int16_t a0) { (void)a0; }
+int ioFileOpen(int a0, int a1) { (void)a0; (void)a1; return 0; }
+void ioFileClose(void) {}
+void liftStack(void) {}
+void show_warning(void *a0) { (void)a0; }
+void refreshScreen(uint16_t a0) { (void)a0; }
+void displayCalcErrorMessage(uint8_t a0, int16_t a1, int16_t a2) { (void)a0; (void)a1; (void)a2; }
+void showHideHourGlass(void) {}
+int16_t findNamedVariable(void *a0) { (void)a0; return 0; }
