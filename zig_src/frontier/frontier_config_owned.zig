@@ -191,11 +191,11 @@ const CFG_UK: u16 = 5;
 const CFG_USA: u16 = 6;
 
 const ITM_SETDFLT: u16 = 1596;
-const ITM_SETCHN: u16 = 1597;
-const ITM_SETEUR: u16 = 1598;
+const ITM_SETCHN: u16 = 1591;
+const ITM_SETEUR: u16 = 1593;
 const ITM_SETIND: u16 = 1594;
 const ITM_SETJPN: u16 = 1595;
-const ITM_SETUK: u16 = 1593;
+const ITM_SETUK: u16 = 1598;
 const ITM_SETUSA: u16 = 1599;
 
 const FLAG_TDM24: c_uint = 32768;
