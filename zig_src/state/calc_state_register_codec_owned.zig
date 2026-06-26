@@ -185,8 +185,42 @@ pub fn textTag(str: [*c]u8, angle: u8, polmode: u8) void {
     }
 }
 
-pub fn registerToSaveString(regist: i16) void {
+// When true, registerToSaveString / saveMatrixElements emit the compact,
+// human-readable data-file forms (set by doSaveDataFile / doLoadDataFile).
+// When false the legacy full-state ("re im") forms are produced, byte-identical
+// to the pre-data-file behavior — that path stays covered by the state tests.
+pub var dataFileMode: bool = false;
+
+const TEMP_REGISTER_1: i16 = 135;
+const FLAG_YMD: c_int = 0xc001;
+const FLAG_MDY: c_int = 0xc003;
+
+extern fn copySourceRegisterToDestRegister(rSource: i16, rDest: i16) void;
+extern fn fnFrom_msRegister(regist: i16) void;
+extern fn convertDateRegisterToReal34Register(source: i16, destination: i16) void;
+extern fn getSystemFlag(sf: c_int) bool;
+extern fn registerFMAOutputPlainString(regist: i16, prefix: [*c]const u8, displayString: [*c]u8) bool;
+extern fn getAngleModeForRegister3r(registerNo: i16, angleMode: *c_int) bool;
+
+pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
     const trs = regValueBuf();
+
+    // XFN 1000-digit registers: emit the full-precision plain value via the
+    // FMA output helper (OPTION_XFN_1000 path); other types fall through below.
+    if (isXFNRegister) {
+        if (registerFMAOutputPlainString(regist, "", trs)) {
+            _ = strcpy(aim(), "RXFN");
+            var am: c_int = 0;
+            if (getAngleModeForRegister3r(regist, &am)) {
+                textTag(aim(), @intCast(am), 0);
+            }
+        } else {
+            aim()[0] = 0;
+            trs[0] = 0;
+        }
+        return;
+    }
+
     switch (getRegisterDataType(regist)) {
         dtLongInteger => {
             var lg: MpzStruct = undefined;
@@ -206,7 +240,8 @@ pub fn registerToSaveString(regist: i16) void {
             const base = getRegisterTag(regist);
             var yy: [25]u8 = undefined;
             text.ui64ToString(value, &yy[0]);
-            _ = sprintf(trs, "%c%s %u", @as(c_int, if (sign != 0) '-' else '+'), &yy[0], @as(c_uint, base));
+            const sep: u8 = if (dataFileMode) '#' else ' '; // data-file packs base after '#'
+            _ = sprintf(trs, "%c%s%c%u", @as(c_int, if (sign != 0) '-' else '+'), &yy[0], @as(c_int, sep), @as(c_uint, base));
             _ = strcpy(aim(), "ShoI");
         },
         dtReal34 => {
@@ -215,20 +250,59 @@ pub fn registerToSaveString(regist: i16) void {
             textTag(aim(), @intCast(getRegisterTag(regist) & amAngleMask), 0);
         },
         dtComplex34 => {
-            _ = decQuadToString(regReal34Data(regist), trs);
-            _ = strcat(trs, " ");
-            _ = decQuadToString(regImag34Data(regist), trs + strlen(trs));
+            if (dataFileMode) {
+                // compact form: real 3, imag -4 -> "(3-i4)"
+                var reStr: [100]u8 = undefined;
+                var imStr: [100]u8 = undefined;
+                _ = decQuadToString(regReal34Data(regist), &reStr[0]);
+                _ = decQuadToString(regImag34Data(regist), &imStr[0]);
+                var imValue: [*c]u8 = &imStr[0];
+                var imSign: u8 = '+';
+                if (imStr[0] == '-') { // sign sits between real part and 'i', strip it from the value
+                    imSign = '-';
+                    imValue += 1;
+                } else if (imStr[0] == '+') {
+                    imValue += 1;
+                }
+                _ = sprintf(trs, "(%s%ci%s)", &reStr[0], @as(c_int, imSign), imValue);
+            } else {
+                _ = decQuadToString(regReal34Data(regist), trs);
+                _ = strcat(trs, " ");
+                _ = decQuadToString(regImag34Data(regist), trs + strlen(trs));
+            }
             _ = strcpy(aim(), "Cplx");
             const tag = getRegisterTag(regist);
             textTag(aim(), @intCast(tag & amAngleMask), @intCast(tag & amPolar));
         },
         dtTime => {
-            _ = decQuadToString(regReal34Data(regist), trs);
-            _ = strcpy(aim(), "Time");
+            if (dataFileMode) {
+                // dtTime -> HHMMSS-coded real in a temp register, so the live one is untouched
+                copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
+                fnFrom_msRegister(TEMP_REGISTER_1);
+                _ = decQuadToString(regReal34Data(TEMP_REGISTER_1), trs);
+                _ = strcpy(aim(), "THMS");
+            } else {
+                _ = decQuadToString(regReal34Data(regist), trs);
+                _ = strcpy(aim(), "Time");
+            }
         },
         dtDate => {
-            _ = decQuadToString(regReal34Data(regist), trs);
-            _ = strcpy(aim(), "Date");
+            if (dataFileMode) {
+                // dtDate -> real in the current date-format field order; record that order
+                copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
+                convertDateRegisterToReal34Register(TEMP_REGISTER_1, TEMP_REGISTER_1);
+                _ = decQuadToString(regReal34Data(TEMP_REGISTER_1), trs);
+                if (getSystemFlag(FLAG_YMD)) {
+                    _ = strcpy(aim(), "DYMD");
+                } else if (getSystemFlag(FLAG_MDY)) {
+                    _ = strcpy(aim(), "DMDY");
+                } else {
+                    _ = strcpy(aim(), "DDMY");
+                }
+            } else {
+                _ = decQuadToString(regReal34Data(regist), trs);
+                _ = strcpy(aim(), "Date");
+            }
         },
         dtReal34Matrix => matrixToSaveString(regist, false),
         dtComplex34Matrix => matrixToSaveString(regist, true),
@@ -264,7 +338,8 @@ pub fn saveMatrixElements(regist: i16) void {
     const dt = getRegisterDataType(regist);
     if (dt != dtReal34Matrix and dt != dtComplex34Matrix) return;
     const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
-    const count: u32 = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
+    const cols: u32 = hdr.matrixColumns;
+    const count: u32 = @as(u32, hdr.matrixRows) * cols;
     const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
     var mbuf: [3000]u8 = undefined;
     const mb: [*c]u8 = &mbuf[0];
@@ -278,7 +353,12 @@ pub fn saveMatrixElements(regist: i16) void {
             _ = strcat(mb, " ");
             _ = decQuadToString(elem + REAL34_SIZE_IN_BYTES, mb + strlen(mb));
         }
-        _ = strcat(mb, "\n");
+        if (dataFileMode) {
+            // one matrix row per line; tab-separate elements within a row
+            _ = strcat(mb, if ((element % cols) == (cols - 1)) "\n" else "\t");
+        } else {
+            _ = strcat(mb, "\n");
+        }
         ioFileWrite(mb, @intCast(strlen(mb)));
     }
 }
@@ -318,6 +398,69 @@ const config_pre_10000008_defaults = [_]u8{
     0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
+// Data-file restore helpers (inverse of the dataFileMode save forms).
+extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
+extern fn hmmssInRegisterToSeconds(regist: i16) void;
+extern fn convertReal34RegisterToDateRegister(source: i16, destination: i16, handleYY: bool) void;
+extern fn setSystemFlag(sf: c_uint) void;
+extern fn clearSystemFlag(sf: c_uint) void;
+const FLAG_DMY: c_int = 0xc002;
+
+// Data files may localize the decimal separator; normalize ',' -> '.' in place.
+fn dataFileCommaToPeriod(str: [*c]u8) void {
+    var p = str;
+    while (p[0] != 0) : (p += 1) {
+        if (p[0] == ',') p[0] = '.';
+    }
+}
+
+// Normalize any accepted complex form -- "(3-i4)", "+3+i4", "i4", stock "3 -4" --
+// into the stock "re im" form the parser below expects. Faithful port of
+// saveRestoreCalcState.c standardiseComplex.
+fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
+    var work: [200]u8 = undefined;
+    var w: usize = 0;
+    var src = src_in;
+    const isIform = strchr(src, 'i') != null;
+    while (src[0] != 0) : (src += 1) {
+        const ch = src[0];
+        if (ch == '(' or ch == ')') continue;
+        if (isIform and (ch == ' ' or ch == '\t' or ch == '\n' or ch == '\r')) continue;
+        work[w] = ch;
+        w += 1;
+    }
+    work[w] = 0;
+
+    if (!isIform) {
+        var start: usize = 0;
+        while (work[start] == ' ' or work[start] == '\t' or work[start] == '\n' or work[start] == '\r') start += 1;
+        while (w > start and (work[w - 1] == ' ' or work[w - 1] == '\t' or work[w - 1] == '\n' or work[w - 1] == '\r')) {
+            w -= 1;
+            work[w] = 0;
+        }
+        _ = strcpy(dest, &work[start]); // already the stock "re im" form
+        return;
+    }
+
+    var ip: usize = 0;
+    while (work[ip] != 'i') : (ip += 1) {} // guaranteed present (isIform)
+    if (ip == 0) {
+        _ = sprintf(dest, "0 +%s", &work[1]); // leading 'i' (e.g. "i4" == 0+i4)
+        return;
+    }
+    var imSign: u8 = work[ip - 1]; // sign sits right before 'i'
+    const imMag: [*c]u8 = &work[ip + 1];
+    var realLen: usize = ip - 1;
+    if (imSign != '+' and imSign != '-') { // malformed: treat that char as real, assume '+'
+        imSign = '+';
+        realLen = ip;
+    }
+    var realStr: [200]u8 = undefined;
+    _ = xcopy(&realStr[0], &work[0], @intCast(realLen));
+    realStr[realLen] = 0;
+    _ = sprintf(dest, "%s %c%s", &realStr[0], @as(c_int, imSign), imMag);
+}
+
 // Parse one register value (the inverse of registerToSaveString). `type_str`
 // (the 4-char type tag, possibly with a ":TAG[p]" suffix) and `value` are
 // mutated in place exactly as the C does.
@@ -346,6 +489,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
 
     if (strcmpEq(type_str, "Real")) {
         reallocateRegister(regist, dtReal34, 0, tag);
+        if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
     } else if (strcmpEq(type_str, "Time")) {
         reallocateRegister(regist, dtTime, 0, amNone);
@@ -353,6 +497,40 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
     } else if (strcmpEq(type_str, "Date")) {
         reallocateRegister(regist, dtDate, 0, amNone);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+    } else if (strcmpEq(type_str, "THMS")) {
+        // data-file time: HHMMSS-coded real -> seconds, in a temp register
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+        if (dataFileMode) dataFileCommaToPeriod(value);
+        _ = decQuadFromString(regReal34Data(TEMP_REGISTER_1), value, &ctxtReal34);
+        hmmssInRegisterToSeconds(TEMP_REGISTER_1);
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, regist);
+    } else if (strcmpEq(type_str, "DYMD") or strcmpEq(type_str, "DDMY") or strcmpEq(type_str, "DMDY")) {
+        // data-file date: the type code gives the field order; force the matching
+        // flag for the conversion, then restore the user's date flags.
+        const savedYMD = getSystemFlag(FLAG_YMD);
+        const savedMDY = getSystemFlag(FLAG_MDY);
+        const savedDMY = getSystemFlag(FLAG_DMY);
+        clearSystemFlag(@intCast(FLAG_YMD));
+        clearSystemFlag(@intCast(FLAG_MDY));
+        clearSystemFlag(@intCast(FLAG_DMY));
+        if (strcmpEq(type_str, "DYMD")) {
+            setSystemFlag(@intCast(FLAG_YMD));
+        } else if (strcmpEq(type_str, "DMDY")) {
+            setSystemFlag(@intCast(FLAG_MDY));
+        } else {
+            setSystemFlag(@intCast(FLAG_DMY));
+        }
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+        if (dataFileMode) dataFileCommaToPeriod(value);
+        _ = decQuadFromString(regReal34Data(TEMP_REGISTER_1), value, &ctxtReal34);
+        convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, regist);
+        clearSystemFlag(@intCast(FLAG_YMD));
+        clearSystemFlag(@intCast(FLAG_MDY));
+        clearSystemFlag(@intCast(FLAG_DMY));
+        if (savedYMD) setSystemFlag(@intCast(FLAG_YMD));
+        if (savedMDY) setSystemFlag(@intCast(FLAG_MDY));
+        if (savedDMY) setSystemFlag(@intCast(FLAG_DMY));
     } else if (strcmpEq(type_str, "LonI")) {
         var li: MpzStruct = undefined;
         __gmpz_init(&li);
@@ -367,11 +545,19 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
     } else if (strcmpEq(type_str, "ShoI")) {
         const sign: i16 = if (value[0] == '-') 1 else 0;
         const val = stringToUint64(value + 1);
-        value = text.nextWord(value);
+        const hash = strchr(value, '#'); // accept "+255#16" or the old "+255 16"
+        value = if (hash != null) hash + 1 else text.nextWord(value);
         const base = text.toUint32(value);
         convertUInt64ToShortIntegerRegister(sign, val, base, regist);
     } else if (strcmpEq(type_str, "Cplx")) {
         reallocateRegister(regist, dtComplex34, 0, tag);
+        var stdTmp: [200]u8 = undefined;
+        if (dataFileMode) {
+            // accept (3-i4) / 3-i4 / +3+i4 / stock "re im"; emit the stock form
+            standardiseComplex(value, &stdTmp[0]);
+            dataFileCommaToPeriod(&stdTmp[0]);
+            value = &stdTmp[0];
+        }
         var imaginaryPart = text.skipWord(value);
         imaginaryPart[0] = 0;
         imaginaryPart += 1;

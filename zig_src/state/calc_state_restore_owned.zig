@@ -38,8 +38,27 @@ const codec = @import("calc_state_register_codec_owned.zig");
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
-const REGISTER_X: i16 = 100;
+const REGISTER_X: i16 = 100; // == FIRST_LETTERED_REGISTER
 const INVALID_VARIABLE: i16 = 2199;
+
+// Lettered-register names for registers 100..125, in register-number order.
+const registerLetters = "XYZTABCDLIJKMNPQRSEFGHOUVW";
+
+// Map a saved register-name field to its number. "RX".."RW" (a leading 'R'
+// followed by a non-digit) decode to the lettered registers 100..125; anything
+// else (e.g. "R000") is read as the decimal number, so existing "Rnnn" files
+// stay fully compatible. Faithful port of master stringToRegisterNumber.
+fn stringToRegisterNumber(name: [*c]const u8) i16 {
+    if (name[0] == 'R' and name[1] != 0 and (name[1] < '0' or name[1] > '9')) {
+        var k: usize = 0;
+        while (registerLetters[k] != 0) : (k += 1) {
+            if (registerLetters[k] == name[1]) {
+                return REGISTER_X + @as(i16, @intCast(k));
+            }
+        }
+    }
+    return text.toInt16(name + 1);
+}
 const C47_NULL: u16 = 65535;
 const TMP_STR_LENGTH: usize = 2560;
 const MAX_DENMAX: u32 = 9999;
@@ -370,7 +389,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLine(tmpString);
-            regist = text.toInt16(tmpString + 1);
+            regist = stringToRegisterNumber(tmpString); // "RX".."RW" or "Rnnn"
             read2Lines(aimBuffer, tmpString);
             if (load_mode == LM_ALL or
                 (load_mode == LM_REGISTERS and regist < REGISTER_X) or

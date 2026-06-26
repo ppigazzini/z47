@@ -241,7 +241,7 @@ pub fn writeSaveSections() void {
     {
         var regist: i16 = FIRST_GLOBAL_REGISTER;
         while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
-            codec.registerToSaveString(regist);
+            codec.registerToSaveString(regist, false);
             _ = sprintf(b(), "R%03d\n%s\n%s\n", ci(regist), &aimBuffer1[0], codec.regValueBuf());
             save(b());
             codec.saveMatrixElements(regist);
@@ -260,7 +260,7 @@ pub fn writeSaveSections() void {
     {
         var i: u32 = 0;
         while (i < localRegisterCount) : (i += 1) {
-            codec.registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
+            codec.registerToSaveString(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))), false);
             _ = sprintf(b(), "R.%02u\n%s\n%s\n", cu(i), &aimBuffer1[0], codec.regValueBuf());
             save(b());
             codec.saveMatrixElements(@intCast(FIRST_LOCAL_REGISTER + @as(i32, @intCast(i))));
@@ -279,7 +279,7 @@ pub fn writeSaveSections() void {
     {
         var i: u32 = 0;
         while (i < numberOfNamedVariables) : (i += 1) {
-            codec.registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))));
+            codec.registerToSaveString(@intCast(FIRST_NAMED_VARIABLE + @as(i32, @intCast(i))), false);
             stringToUtf8(&allNamedVariables[i].variableName[1], b());
             const n = strlen(b());
             _ = sprintf(b() + n, "\n%s\n%s\n", &aimBuffer1[0], codec.regValueBuf());
@@ -498,5 +498,170 @@ fn saveUserMenuBlock(items: [*c]const userMenuItem_t) void {
         }
         _ = strcat(b(), "\n");
         save(b());
+    }
+}
+
+// ===========================================================================
+// Data-file register export (DATA_FILE format).
+//
+// Faithful port of saveRestoreCalcState.c's fnSaveDataRegisters / doSaveDataFile
+// and the five fnSave* item entry points. These write a register-only file (via
+// ioPathRegExport) with codec.dataFileMode = true so the compact human-readable
+// value forms are emitted. EXTRA_INFO_ON_CALC_ERROR is 0 in TESTSUITE_BUILD, so
+// the moreInfoOnError branches are intentionally omitted (they don't compile in
+// the reference build either). Round-trip verified by the save/load parity test.
+// ===========================================================================
+
+const FIRST_LETTERED_REGISTER: i16 = 100;
+const LAST_SPARE_REGISTER: u16 = 125;
+const REGISTER_X_REG: u16 = 100;
+const REGISTER_W_REG: u16 = 125;
+const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
+const REGISTER_X_LINE: i16 = 100;
+const INVALID_VARIABLE: i16 = 2199;
+const FLAG_SSIZE8: c_int = 0x8018;
+const TI_DATA_SAVED: u16 = 143;
+const ERROR_CANNOT_WRITE_FILE: u8 = 55;
+const ERROR_OUT_OF_RANGE: u8 = 8;
+const SCRUPD_AUTO_MODE: u8 = 0x00;
+const FILE_OK_RC: c_int = 1;
+const FILE_CANCEL_RC: c_int = 2;
+const ioModeWrite_MODE: c_int = 1;
+const ioPathRegExport_PATH: c_int = 15;
+const isXFN: bool = true; // master's `#define isXFN true`
+
+const registerLetters = "XYZTABCDLIJKMNPQRSEFGHOUVW";
+
+extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
+extern fn ioFileClose() void;
+extern fn refreshScreen(caller: u16) void;
+extern fn showHideHourGlass() void;
+extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+extern fn findNamedVariable(variableName: [*c]const u8) i16;
+extern fn getSystemFlag(sf: c_int) bool;
+extern var screenUpdatingMode: u8;
+extern var temporaryInformation: u16;
+extern var hourGlassIconEnabled: bool;
+
+fn registerNumberToString(regist: i16, name: [*c]u8) void {
+    if (regist >= FIRST_LETTERED_REGISTER and regist <= @as(i16, @intCast(LAST_SPARE_REGISTER))) {
+        _ = sprintf(name, "R%c", @as(c_int, registerLetters[@intCast(regist - FIRST_LETTERED_REGISTER)]));
+    } else {
+        _ = sprintf(name, "R%03d", ci(regist));
+    }
+}
+
+// Appends a register section to the already-open file: header, count, then one
+// id/type/value (+ matrix element) block per register. registerName != null
+// saves that single named variable; otherwise the range *beginR..*endR.
+pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]const u8, isXFNRegister: bool) bool {
+    if (registerName != null) {
+        const regist = findNamedVariable(registerName); // read-only lookup: must not allocate
+        if (regist == INVALID_VARIABLE) return false;
+        _ = sprintf(b(), "NAMED_VARIABLES\n%u\n", cu(@as(u16, 1)));
+        save(b());
+        codec.registerToSaveString(regist, !isXFN);
+        _ = sprintf(b(), "%s\n%s\n%s\n", registerName, &aimBuffer1[0], codec.regValueBuf());
+        save(b());
+        codec.saveMatrixElements(regist);
+        return true;
+    }
+
+    if (beginR == null or endR == null or endR.?.* < beginR.?.*) return false;
+
+    _ = sprintf(b(), "GLOBAL_REGISTERS\n%u\n", cu(@as(u16, @intCast(endR.?.* - beginR.?.* + 1))));
+    save(b());
+    var regName: [16]u8 = undefined;
+    var regist: i16 = @intCast(beginR.?.*);
+    while (regist <= @as(i16, @intCast(endR.?.*))) : (regist += 1) {
+        codec.registerToSaveString(regist, isXFNRegister);
+        registerNumberToString(regist, &regName[0]);
+        _ = sprintf(b(), "%s\n%s\n%s\n", &regName[0], &aimBuffer1[0], codec.regValueBuf());
+        save(b());
+        codec.saveMatrixElements(regist); // only emits when the register really is a matrix
+    }
+    return true;
+}
+
+fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]const u8, isXFNRegister: bool) void {
+    const ret = ioFileOpen(ioPathRegExport_PATH, ioModeWrite_MODE);
+    if (ret != FILE_OK_RC) {
+        if (ret == FILE_CANCEL_RC) {
+            screenUpdatingMode = SCRUPD_AUTO_MODE;
+            refreshScreen(2996);
+            return;
+        } else {
+            displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+            return;
+        }
+    }
+
+    hourGlassIconEnabled = true;
+    showHideHourGlass();
+
+    codec.dataFileMode = true; // compact human-readable value forms for this file
+    _ = sprintf(b(), "DATA_FILE_REVISION\n%u\n", cu(@as(u8, 0)));
+    save(b());
+
+    _ = fnSaveDataRegisters(beginR, endR, registerName, isXFNRegister);
+
+    codec.dataFileMode = false;
+    ioFileClose();
+    temporaryInformation = TI_DATA_SAVED;
+
+    screenUpdatingMode = SCRUPD_AUTO_MODE;
+    refreshScreen(2997);
+}
+
+pub export fn fnSaveStackRegisters(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    var beginR: u16 = REGISTER_X_REG;
+    var endR: u16 = REGISTER_X_REG + @as(u16, if (getSystemFlag(FLAG_SSIZE8)) 7 else 3);
+    doSaveDataFile(&beginR, &endR, null, !isXFN);
+}
+
+pub export fn fnSaveLetteredRegisters(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    var beginR: u16 = REGISTER_X_REG;
+    var endR: u16 = REGISTER_W_REG;
+    doSaveDataFile(&beginR, &endR, null, !isXFN);
+}
+
+pub export fn fnSaveNRegisters(N: u16) callconv(.c) void {
+    if (N <= 125) {
+        var beginR: u16 = 0;
+        var endR: u16 = N - 1;
+        doSaveDataFile(&beginR, &endR, null, !isXFN);
+    } else {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+    }
+}
+
+pub export fn fnSaveRegister(regist: u16) callconv(.c) void {
+    if (@as(i32, regist) >= @as(i32, FIRST_NAMED_VARIABLE) and
+        @as(i32, regist) < @as(i32, FIRST_NAMED_VARIABLE) + @as(i32, numberOfNamedVariables))
+    {
+        var varName: [16]u8 = undefined;
+        const idx: usize = @as(usize, regist) - @as(usize, @intCast(FIRST_NAMED_VARIABLE));
+        stringToUtf8(&allNamedVariables[idx].variableName[1], &varName[0]); // named variable: save by name
+        doSaveDataFile(null, null, &varName[0], !isXFN);
+    } else if (regist < LAST_SPARE_REGISTER) {
+        var beginR: u16 = regist;
+        var endR: u16 = regist;
+        doSaveDataFile(&beginR, &endR, null, !isXFN); // numbered or lettered register: save by number
+    } else {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
+    }
+}
+
+pub export fn fnSaveXFNRegister(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    const regist: u16 = REGISTER_X_REG;
+    if (regist < LAST_SPARE_REGISTER - 2) {
+        var beginR: u16 = regist;
+        var endR: u16 = regist;
+        doSaveDataFile(&beginR, &endR, null, isXFN);
+    } else {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
     }
 }

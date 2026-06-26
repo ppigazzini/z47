@@ -173,6 +173,22 @@ extern fn decNumberToIntegralExact(res: *align(1) real_t, rhs: *align(1) const r
 extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberToString(source: *align(1) const real_t, destination: [*]u8) [*]u8;
 extern fn realSetNaN(value: *align(1) real_t) void;
+extern fn decNumberReduce(res: *align(1) real_t, source: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
+extern fn sprintf(str: [*]u8, format: [*:0]const u8, ...) c_int;
+
+// realIsNaN / realIsInfinite / realIsZero (decNumber.h bit-test macros, inlined).
+const DEC_INF: u8 = 0x40;
+const DEC_NAN_BITS: u8 = 0x20 | 0x10; // DECNAN | DECSNAN
+const DEC_SPECIAL: u8 = 0x40 | 0x20 | 0x10;
+inline fn realIsInfinite(s: *align(1) const real_t) bool {
+    return (s.bits & DEC_INF) != 0;
+}
+inline fn realIsNaN(s: *align(1) const real_t) bool {
+    return (s.bits & DEC_NAN_BITS) != 0;
+}
+inline fn realIsZero(s: *align(1) const real_t) bool {
+    return s.lsu[0] == 0 and s.digits == 1 and (s.bits & DEC_SPECIAL) == 0;
+}
 
 inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
@@ -511,7 +527,7 @@ fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *align(1
 // ===========================================================================
 // getAngleModeForRegister3r / getAngleModeForArithmetic3r
 // ===========================================================================
-fn getAngleModeForRegister3r(registerNo: calcRegister_t, angleMode: *angularMode_t) linksection(runtime.code_section) bool {
+pub export fn getAngleModeForRegister3r(registerNo: calcRegister_t, angleMode: *angularMode_t) linksection(runtime.code_section) callconv(.c) bool {
     if (isXFNregisterValid3r(registerNo)) {
         if (getRegisterDataType(registerNo) == dtLongInteger) {
             angleMode.* = amNone;
@@ -629,6 +645,35 @@ pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const
     if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
         _ = strcpy(displayString, prefix);
         realToSci(tmp1, displayString + strlen(@ptrCast(displayString)));
+        return true;
+    }
+    return false;
+}
+
+// registerFMAOutputPlainString: like registerFMAOutputString but emits the value
+// in a plain mantissa+"E±exp" form (trailing zeros dropped) for data-file export.
+// Faithful port of saveRestoreCalcState.c's helper of the same name.
+pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]const u8, displayString: [*]u8) linksection(runtime.code_section) callconv(.c) bool {
+    var angle: angularMode_t = undefined;
+    var tmp1_b = BigReal(1071){};
+    var tmp2_b = BigReal(1071){};
+    const tmp1 = tmp1_b.ptr();
+    const tmp2 = tmp2_b.ptr();
+    var c: realContext_t = runtime.ctxtReal75;
+    c.digits = 1034;
+    c.round = DEC_ROUND_HALF_UP;
+    if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
+        _ = strcpy(displayString, prefix);
+        if (realIsNaN(tmp1) or realIsInfinite(tmp1) or realIsZero(tmp1)) {
+            // zero / infinity / NaN have no coefficient/exponent split: print untouched
+            realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
+        } else {
+            _ = decNumberReduce(tmp1, tmp1, &c); // drop trailing zeros: significant digits only
+            const sciExp: i32 = tmp1.exponent + tmp1.digits - 1; // power of the leading digit
+            tmp1.exponent = 1 - tmp1.digits; // one digit . rest, so decNumber prints it plainly
+            realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
+            _ = sprintf(displayString + strlen(@ptrCast(displayString)), "E%+ld", @as(c_long, sciExp));
+        }
         return true;
     }
     return false;
