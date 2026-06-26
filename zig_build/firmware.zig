@@ -743,13 +743,6 @@ fn addFirmwareElfBuild(
     shortint_objects.addToCommand(cmd);
     stack_state_objects.addToCommand(cmd);
     for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(build_common.upstreamPathString(b, source));
-    // elec.c is new upstream C (M10.4 pin-advance) not yet ported to Zig. The
-    // host links it via the state bridge; the firmware has no such bridge, so
-    // add it directly here. defines.h gates OPTION_ELEC per package (real bodies
-    // where enabled, empty no-ops elsewhere), so the items table's elec symbols
-    // resolve in every package without pulling the full feature into tight-flash
-    // builds.
-    cmd.addArg(build_common.upstreamPathString(b, "src/c47/mathematics/elec.c"));
     cmd.addFileArg(generated.raster_fonts_data);
     cmd.addFileArg(generated.constant_pointers_c);
     cmd.addFileArg(generated.constant_pointers2_c);

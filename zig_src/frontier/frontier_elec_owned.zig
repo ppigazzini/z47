@@ -1,0 +1,613 @@
+// SPDX-License-Identifier: GPL-3.0-only
+//
+// Zig owner for src/c47/mathematics/elec.c: the electrical-engineering
+// transforms -- delta<->star, symmetrical-components<->ABC, three-phase Z=V/I,
+// V=I*Z, I=V/Z, X->ABC balanced set, and triple flip-polar. Faithful
+// line-by-line port preserving the exact ctxtReal39 complex-math operation
+// order and the CPXRES / SPCRES / ASLIFT gating.
+//
+// Gated on OPTION_ELEC exactly as elec.c: every entry point is always exported
+// (the items table references them unconditionally), but the body only compiles
+// where option_elec is set -- the host and DMCP package 3. On every other build
+// (DMCP packages 1/2/4 and DMCP5) the bodies are comptime-elided to empty
+// no-ops, mirroring elec.c's `#if defined(OPTION_ELEC)` empty stubs, so the
+// symbols still resolve at link without pulling the feature into tight flash.
+//
+// Verified on the host by src/testSuite/tests/elec.txt; built green on every
+// DMCP package and DMCP5 variant.
+
+const frontier_build_options = @import("frontier_build_options");
+const option_elec: bool = frontier_build_options.option_elec;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+const DECNUMUNITS = 25;
+const real_t = extern struct {
+    digits: i32,
+    exponent: i32,
+    bits: u8,
+    lsu: [DECNUMUNITS]u16,
+};
+const real34_t = extern struct { bytes: [16]u8 };
+const realContext_t = extern struct {
+    digits: i32,
+    emax: i32,
+    emin: i32,
+    round: c_int,
+    traps: u32,
+    status: u32,
+    clamp: u8,
+};
+const calcRegister_t = i16;
+const cplx_t = extern struct { Real: real_t, Imag: real_t };
+
+// ---------------------------------------------------------------------------
+// Constants / enum values (verified against defines.h / typeDefinitions.h)
+// ---------------------------------------------------------------------------
+const REGISTER_X: calcRegister_t = 100;
+const REGISTER_Y: calcRegister_t = 101;
+const REGISTER_Z: calcRegister_t = 102;
+const REGISTER_L: calcRegister_t = 108;
+const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+
+const dtComplex34: u32 = 2;
+const amPolar: u32 = 16;
+const amAngleMask: u32 = 15;
+const amNone: u32 = 5;
+
+const FLAG_CPXRES = 0x8004;
+const FLAG_SPCRES = 0x8017;
+const FLAG_ASLIFT = 0xc023;
+
+const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
+const TI_ABC: u16 = 72;
+const TI_ABBCCA: u16 = 73;
+const TI_012: u16 = 74;
+const NOPARAM: u16 = 9876;
+const REAL34_SIZE_IN_BYTES: usize = 16;
+
+// decNumber bit flags (realType.h macros, inlined below).
+const DECNEG: u8 = 0x80;
+const DECINF: u8 = 0x40;
+const DECNAN: u8 = 0x20;
+const DECSNAN: u8 = 0x10;
+const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
+
+// Three-phase named-register ids (elec.c defines).
+const TripleRegZ1_96: calcRegister_t = 96;
+const TripleRegV1_90: calcRegister_t = 90;
+const TripleRegI1_93: calcRegister_t = 93;
+const TripleRegV2_91: calcRegister_t = 91;
+const TripleRegV3_92: calcRegister_t = 92;
+const TripleRegI2_94: calcRegister_t = 94;
+const TripleRegI3_95: calcRegister_t = 95;
+const TripleRegZ2_97: calcRegister_t = 97;
+const TripleRegZ3_98: calcRegister_t = 98;
+
+// ---------------------------------------------------------------------------
+// Constant blob. elec compiles its body only under option_elec, which is set on
+// exactly two variants -- the host and DMCP package 3 -- and the post-pin-advance
+// generated constantPointers.h gives both the SAME blob layout, so a single set
+// of offsets is correct for every build that actually runs this code. Verified
+// against the host generateConstants output (and pkg-3 build parity); the host
+// values are additionally pinned by src/testSuite/tests/elec.txt.
+// ---------------------------------------------------------------------------
+const constants = @extern([*]const u8, .{ .name = "constants" });
+const OFF_const_1on2: u32 = 4580;
+const OFF_const_3: u32 = 5012;
+const OFF_const39_root3on2: u32 = 4772;
+const OFF_const_1e_37: u32 = 4436;
+inline fn cstR(comptime off: u32) *align(1) const real_t {
+    return @ptrCast(constants + off);
+}
+inline fn const_1on2() *align(1) const real_t {
+    return cstR(OFF_const_1on2);
+}
+inline fn const_3() *align(1) const real_t {
+    return cstR(OFF_const_3);
+}
+inline fn const39_root3on2() *align(1) const real_t {
+    return cstR(OFF_const39_root3on2);
+}
+inline fn const_1e_37() *align(1) const real_t {
+    return cstR(OFF_const_1e_37);
+}
+
+// ---------------------------------------------------------------------------
+// Globals and function externs
+// ---------------------------------------------------------------------------
+extern var ctxtReal39: realContext_t;
+extern var temporaryInformation: u16;
+
+extern fn getRegisterDataType(regist: calcRegister_t) u32;
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterTag(regist: calcRegister_t) u32;
+extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
+extern fn getSystemFlag(flag: c_int) bool;
+extern fn setSystemFlag(flag: c_uint) void;
+extern fn saveForUndo() void;
+extern fn liftStack() void;
+extern fn fnDrop(unusedButMandatoryParameter: u16) void;
+extern fn fnSwapX(regist: u16) void;
+extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
+extern fn copySourceRegisterToDestRegister(src: calcRegister_t, dst: calcRegister_t) void;
+extern fn displayCalcErrorMessage(code: u8, errMsgRegLine: calcRegister_t, errRegLine: calcRegister_t) void;
+extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
+extern fn convertComplexToResultRegister(real: *align(1) const real_t, imag: *align(1) const real_t, dest: calcRegister_t) void;
+extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void;
+extern fn addComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *real_t, ri: *real_t, ctx: *realContext_t) void;
+extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *real_t, pi: *real_t, ctx: *realContext_t) void;
+extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *real_t, qi: *real_t, ctx: *realContext_t) void;
+extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realSetNaN(value: *real_t) void;
+extern fn realSetZero(value: *real_t) void;
+extern fn decQuadIsZero(x: *align(1) const real34_t) u32;
+
+// ---------------------------------------------------------------------------
+// Real-number helper macros (realType.h), inlined.
+// ---------------------------------------------------------------------------
+inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+    _ = decNumberCopy(dst, src);
+}
+inline fn realChangeSign(x: *real_t) void {
+    x.bits ^= DECNEG;
+}
+inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberDivide(res, a, b, ctx);
+}
+inline fn realIsZero(x: *align(1) const real_t) bool {
+    return x.lsu[0] == 0 and x.digits == 1 and (x.bits & DECSPECIAL) == 0;
+}
+inline fn realIsNaN(x: *align(1) const real_t) bool {
+    return (x.bits & (DECNAN | DECSNAN)) != 0;
+}
+inline fn real34IsZero(x: *align(1) const real34_t) bool {
+    return decQuadIsZero(x) != 0;
+}
+inline fn registerImag34Data(reg: calcRegister_t) *align(1) const real34_t {
+    const p: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(p + REAL34_SIZE_IN_BYTES);
+}
+inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg) & amPolar;
+}
+inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
+    const angle = if ((pm & amPolar) != 0) (getRegisterTag(reg) & amAngleMask) else amNone;
+    setRegisterTag(reg, angle | (pm & amPolar));
+}
+
+// cplx_t helpers (the C CPLX(x) macro passes &x.Real, &x.Imag).
+inline fn addCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
+    addComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
+}
+inline fn mulCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
+    mulComplexComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
+}
+inline fn divCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
+    divComplexComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
+}
+inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
+    _ = getRegisterAsComplex(reg, &c.Real, &c.Imag);
+}
+inline fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
+    convertComplexToResultRegister(&c.Real, &c.Imag, reg);
+}
+
+// ---------------------------------------------------------------------------
+// Static helpers (elec.c)
+// ---------------------------------------------------------------------------
+fn elecImagIsDust(im: *align(1) const real_t) bool {
+    if (realIsZero(im)) {
+        return true;
+    }
+    return realCompareAbsLessThan(im, const_1e_37()); // ELEC_DUST_FILTER == true
+}
+
+fn elecInputIsComplex(regs: []const calcRegister_t) bool {
+    for (regs) |r| {
+        if (getRegisterDataType(r) == dtComplex34 and !real34IsZero(registerImag34Data(r))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn elecResultsOk(results: []const *cplx_t) bool {
+    if (getSystemFlag(FLAG_CPXRES)) {
+        return true;
+    }
+    var bad = false;
+    for (results) |res| {
+        if (!elecImagIsDust(&res.Imag) or realIsNaN(&res.Real) or realIsNaN(&res.Imag)) {
+            bad = true;
+            break;
+        }
+    }
+    if (!bad) {
+        return true;
+    }
+    if (getSystemFlag(FLAG_SPCRES)) {
+        for (results) |res| {
+            realSetNaN(&res.Real);
+            realSetZero(&res.Imag);
+        }
+        return true;
+    }
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    return false;
+}
+
+fn elecGetXYZ(x: *cplx_t, y: *cplx_t, z: *cplx_t) void {
+    getRegCplx(REGISTER_X, x);
+    getRegCplx(REGISTER_Y, y);
+    getRegCplx(REGISTER_Z, z);
+}
+
+fn elecPutResults(l: *const cplx_t, x: *const cplx_t, y: *const cplx_t, z: *const cplx_t) void {
+    putRegCplx(l, REGISTER_L);
+    putRegCplx(x, REGISTER_X);
+    putRegCplx(y, REGISTER_Y);
+    putRegCplx(z, REGISTER_Z);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_L);
+}
+
+fn elecSetAOperators(aOp: *cplx_t, aaOp: *cplx_t) void {
+    // a = 1 angle 120deg = -1/2 + j*root3/2 ; a^2 = conjugate of a
+    realCopy(const_1on2(), &aOp.Real);
+    realChangeSign(&aOp.Real);
+    realCopy(const39_root3on2(), &aOp.Imag);
+    realCopy(&aOp.Real, &aaOp.Real);
+    realCopy(&aOp.Imag, &aaOp.Imag);
+    realChangeSign(&aaOp.Imag);
+}
+
+fn flipPolar(regist: calcRegister_t) void {
+    const notX = (regist != REGISTER_X);
+    if (notX) {
+        fnSwapX(@intCast(regist));
+    }
+    {
+        var zReal: real_t = undefined;
+        var zImag: real_t = undefined;
+        if (getRegisterDataType(REGISTER_X) != dtComplex34) {
+            if (getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+                convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+            }
+        } else if (getComplexRegisterPolarMode(REGISTER_X) != amPolar) {
+            setComplexRegisterPolarMode(REGISTER_X, amPolar);
+        } else {
+            fnToRect2(NOPARAM);
+        }
+    }
+    if (notX) {
+        fnSwapX(@intCast(regist));
+    }
+}
+
+fn elecGetTriple(base: calcRegister_t, r1: *cplx_t, r2: *cplx_t, r3: *cplx_t) void {
+    getRegCplx(base, r1);
+    getRegCplx(base + 1, r2);
+    getRegCplx(base + 2, r3);
+}
+
+fn elecStoreTriple(base: calcRegister_t, r1: *const cplx_t, r2: *const cplx_t, r3: *const cplx_t) void {
+    liftStack();
+    putRegCplx(r3, REGISTER_X); // phase 3 (deepest) into X
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    putRegCplx(r2, REGISTER_X); // phase 2 into X, phase 3 rolls to Y
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    putRegCplx(r1, REGISTER_X); // phase 1 into X, phase 2 -> Y, phase 3 -> Z
+    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    setSystemFlag(FLAG_ASLIFT);
+    copySourceRegisterToDestRegister(REGISTER_X, base + 0);
+    copySourceRegisterToDestRegister(REGISTER_Y, base + 1);
+    copySourceRegisterToDestRegister(REGISTER_Z, base + 2);
+}
+
+// ---------------------------------------------------------------------------
+// Public item entry points
+// ---------------------------------------------------------------------------
+pub export fn fnDeltaToStar(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var x: cplx_t = undefined;
+        var y: cplx_t = undefined;
+        var z: cplx_t = undefined;
+        var s: cplx_t = undefined;
+        var xy: cplx_t = undefined;
+        var yz: cplx_t = undefined;
+        var zx: cplx_t = undefined;
+        var rx: cplx_t = undefined;
+        var ry: cplx_t = undefined;
+        var rz: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+        const results = [_]*cplx_t{ &rx, &ry, &rz };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetXYZ(&x, &y, &z);
+        addCplx(&x, &y, &s); // s = x + y + z
+        addCplx(&s, &z, &s);
+        mulCplx(&z, &x, &zx); // pairwise products
+        mulCplx(&x, &y, &xy);
+        mulCplx(&y, &z, &yz);
+        divCplx(&zx, &s, &rx); // X = (z*x) / s
+        divCplx(&xy, &s, &ry); // Y = (x*y) / s
+        divCplx(&yz, &s, &rz); // Z = (y*z) / s
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        setSystemFlag(FLAG_ASLIFT);
+        elecPutResults(&x, &rx, &ry, &rz); // L = original X
+        temporaryInformation = TI_ABC;
+    }
+}
+
+pub export fn fnStarToDelta(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var x: cplx_t = undefined;
+        var y: cplx_t = undefined;
+        var z: cplx_t = undefined;
+        var p: cplx_t = undefined;
+        var t: cplx_t = undefined;
+        var rx: cplx_t = undefined;
+        var ry: cplx_t = undefined;
+        var rz: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+        const results = [_]*cplx_t{ &rx, &ry, &rz };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetXYZ(&x, &y, &z);
+        mulCplx(&x, &y, &p); // p = x*y + y*z + z*x
+        mulCplx(&y, &z, &t);
+        addCplx(&p, &t, &p);
+        mulCplx(&z, &x, &t);
+        addCplx(&p, &t, &p);
+        divCplx(&p, &z, &rx); // X = p / z
+        divCplx(&p, &x, &ry); // Y = p / x
+        divCplx(&p, &y, &rz); // Z = p / y
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        setSystemFlag(FLAG_ASLIFT);
+        elecPutResults(&x, &rx, &ry, &rz); // L = original X
+        temporaryInformation = TI_ABBCCA;
+    }
+}
+
+pub export fn fnSymToAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var a2: cplx_t = undefined;
+        var a1: cplx_t = undefined;
+        var a0: cplx_t = undefined;
+        var va: cplx_t = undefined;
+        var vb: cplx_t = undefined;
+        var vc: cplx_t = undefined;
+        var aOp: cplx_t = undefined;
+        var aaOp: cplx_t = undefined;
+        var t: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+        const results = [_]*cplx_t{ &vc, &vb, &va };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetXYZ(&a2, &a1, &a0); // X = A2, Y = A1, Z = A0
+        elecSetAOperators(&aOp, &aaOp);
+        addCplx(&a0, &a1, &va); // Va = A0 + A1 + A2
+        addCplx(&va, &a2, &va);
+        mulCplx(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
+        mulCplx(&aOp, &a2, &t);
+        addCplx(&vb, &t, &vb);
+        addCplx(&vb, &a0, &vb);
+        mulCplx(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
+        mulCplx(&aaOp, &a2, &t);
+        addCplx(&vc, &t, &vc);
+        addCplx(&vc, &a0, &vc);
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        setSystemFlag(FLAG_ASLIFT);
+        elecPutResults(&a2, &vc, &vb, &va); // L = original X (A2)
+        temporaryInformation = TI_ABC;
+    }
+}
+
+pub export fn fnAbcToSym(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var vc: cplx_t = undefined;
+        var vb: cplx_t = undefined;
+        var va: cplx_t = undefined;
+        var s0: cplx_t = undefined;
+        var s1: cplx_t = undefined;
+        var s2: cplx_t = undefined;
+        var aOp: cplx_t = undefined;
+        var aaOp: cplx_t = undefined;
+        var t: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+        const results = [_]*cplx_t{ &s2, &s1, &s0 };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetXYZ(&vc, &vb, &va); // X = Vc, Y = Vb, Z = Va
+        elecSetAOperators(&aOp, &aaOp);
+        addCplx(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
+        addCplx(&s0, &vc, &s0);
+        realDivide(&s0.Real, const_3(), &s0.Real, &ctxtReal39);
+        realDivide(&s0.Imag, const_3(), &s0.Imag, &ctxtReal39);
+        mulCplx(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
+        mulCplx(&aaOp, &vc, &t);
+        addCplx(&s1, &t, &s1);
+        addCplx(&s1, &va, &s1);
+        realDivide(&s1.Real, const_3(), &s1.Real, &ctxtReal39);
+        realDivide(&s1.Imag, const_3(), &s1.Imag, &ctxtReal39);
+        mulCplx(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
+        mulCplx(&aOp, &vc, &t);
+        addCplx(&s2, &t, &s2);
+        addCplx(&s2, &va, &s2);
+        realDivide(&s2.Real, const_3(), &s2.Real, &ctxtReal39);
+        realDivide(&s2.Imag, const_3(), &s2.Imag, &ctxtReal39);
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        setSystemFlag(FLAG_ASLIFT);
+        elecPutResults(&vc, &s2, &s1, &s0); // L = original X (Vc)
+        temporaryInformation = TI_012;
+    }
+}
+
+pub export fn fnTripleZfromVI(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var v1: cplx_t = undefined;
+        var v2: cplx_t = undefined;
+        var v3: cplx_t = undefined;
+        var ii1: cplx_t = undefined;
+        var ii2: cplx_t = undefined;
+        var ii3: cplx_t = undefined;
+        var z1: cplx_t = undefined;
+        var z2: cplx_t = undefined;
+        var z3: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegI1_93, TripleRegI2_94, TripleRegI3_95 };
+        const results = [_]*cplx_t{ &z1, &z2, &z3 };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
+        elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
+        divCplx(&v1, &ii1, &z1); // Z1 = V1 / I1
+        divCplx(&v2, &ii2, &z2);
+        divCplx(&v3, &ii3, &z3);
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        elecStoreTriple(TripleRegZ1_96, &z1, &z2, &z3);
+    }
+}
+
+pub export fn fnTripleVfromIZ(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var ii1: cplx_t = undefined;
+        var ii2: cplx_t = undefined;
+        var ii3: cplx_t = undefined;
+        var z1: cplx_t = undefined;
+        var z2: cplx_t = undefined;
+        var z3: cplx_t = undefined;
+        var v1: cplx_t = undefined;
+        var v2: cplx_t = undefined;
+        var v3: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ TripleRegI1_93, TripleRegI2_94, TripleRegI3_95, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
+        const results = [_]*cplx_t{ &v1, &v2, &v3 };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
+        elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
+        mulCplx(&ii1, &z1, &v1); // V1 = I1 * Z1
+        mulCplx(&ii2, &z2, &v2);
+        mulCplx(&ii3, &z3, &v3);
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        elecStoreTriple(TripleRegV1_90, &v1, &v2, &v3);
+    }
+}
+
+pub export fn fnTripleIfromVZ(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var v1: cplx_t = undefined;
+        var v2: cplx_t = undefined;
+        var v3: cplx_t = undefined;
+        var z1: cplx_t = undefined;
+        var z2: cplx_t = undefined;
+        var z3: cplx_t = undefined;
+        var ii1: cplx_t = undefined;
+        var ii2: cplx_t = undefined;
+        var ii3: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
+        const results = [_]*cplx_t{ &ii1, &ii2, &ii3 };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
+        elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
+        divCplx(&v1, &z1, &ii1); // I1 = V1 / Z1
+        divCplx(&v2, &z2, &ii2);
+        divCplx(&v3, &z3, &ii3);
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        elecStoreTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
+    }
+}
+
+pub export fn fnTripleFlipPolar(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        saveForUndo();
+        flipPolar(REGISTER_X);
+        flipPolar(REGISTER_Y);
+        flipPolar(REGISTER_Z);
+    }
+}
+
+pub export fn fnCopyXtoAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (option_elec) {
+        var x: cplx_t = undefined;
+        var rx: cplx_t = undefined;
+        var ry: cplx_t = undefined;
+        var aOp: cplx_t = undefined;
+        var aaOp: cplx_t = undefined;
+        const inRegs = [_]calcRegister_t{REGISTER_X};
+        const results = [_]*cplx_t{ &rx, &ry, &x };
+        if (elecInputIsComplex(&inRegs)) {
+            setSystemFlag(FLAG_CPXRES);
+        }
+        getRegCplx(REGISTER_X, &x); // x = source phasor
+        elecSetAOperators(&aOp, &aaOp);
+        mulCplx(&aOp, &x, &ry); // a*x   -> Y
+        mulCplx(&aaOp, &x, &rx); // a^2*x -> X
+        if (!elecResultsOk(&results)) {
+            return;
+        }
+        saveForUndo();
+        fnDrop(NOPARAM); // consume the input
+        putRegCplx(&x, REGISTER_L); // L = original x
+        liftStack();
+        putRegCplx(&x, REGISTER_X); // x is the base of the set
+        setSystemFlag(FLAG_ASLIFT);
+        liftStack();
+        putRegCplx(&ry, REGISTER_X); // a*x into X, x rolls to Y
+        setSystemFlag(FLAG_ASLIFT);
+        liftStack();
+        putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x -> Y, x -> Z
+        convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+        convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+        convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+        convertComplexRegisterToRealIfZeroImag(REGISTER_L);
+        temporaryInformation = TI_ABC;
+    }
+}
