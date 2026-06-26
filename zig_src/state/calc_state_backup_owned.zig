@@ -49,10 +49,17 @@ extern var numberOfFreeMemoryRegions: i32; extern var numberOfAllocatedMemoryReg
 extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
 extern var globalFlags: [16]u8;
-extern var errorMessage: [512]u8;
-extern var aimBuffer: [1024]u8;
-extern var nimBufferDisplay: [200]u8;
-extern var tamBuffer: [32]u8;
+// These four are `char *` POINTERS in c47.h (errorMessage/aimBuffer/nimBufferDisplay/
+// tamBuffer), not arrays. They must be declared as pointers so that `&X[0]` in the
+// sv()/rv() calls resolves to the pointer VALUE (the heap buffer C dumps/restores),
+// exactly as C passes the bare pointer. Declaring them as `[N]u8` arrays made `&X[0]`
+// the address of the pointer slot itself, so a 512-byte errorMessage restore wrote
+// across adjacent globals (incl. labelList) and crashed startup. asmBuffer stays an
+// array because c47.h declares `char asmBuffer[5]`.
+extern var errorMessage: [*c]u8;
+extern var aimBuffer: [*c]u8;
+extern var nimBufferDisplay: [*c]u8;
+extern var tamBuffer: [*c]u8;
 extern var asmBuffer: [5]u8;
 extern var oldTime: [8]u8;
 extern var dateTimeString: [12]u8;
