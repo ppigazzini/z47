@@ -132,6 +132,7 @@ extern fn reallocGmp(ptr: ?*anyopaque, old_size: usize, new_size: usize) callcon
 extern fn freeGmp(ptr: ?*anyopaque, size: usize) callconv(.c) void;
 extern fn printf(format: [*:0]const u8, ...) c_int;
 extern fn chdir(path: [*:0]const u8) c_int;
+extern fn access(path: [*:0]const u8, mode: c_int) c_int;
 
 // isR47FAM (defines.h macro): the R47 family of layouts.
 inline fn isR47FAM() bool {
@@ -179,21 +180,45 @@ fn printHelp() void {
     _ = printf("%s47 --h              : see --help\n", cc);
 }
 
-pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
-    if (builtin.os.tag == .macos) {
-        // The macOS app bundle sets the working directory to the executable dir.
-        if (argc >= 1) {
-            const a0 = std.mem.span(argv[0]);
-            if (std.mem.lastIndexOfScalar(u8, a0, '/')) |idx| {
-                var buf: [1024]u8 = undefined;
-                if (idx < buf.len) {
-                    @memcpy(buf[0..idx], a0[0..idx]);
-                    buf[idx] = 0;
-                    _ = chdir(@ptrCast(&buf));
-                }
-            }
+// Resources (res/c47_pre.css, res/<model>.png backgrounds, fonts) are opened
+// through cwd-relative "res/..." paths, so the simulator only works when the
+// working directory contains res/. That breaks the common case of running the
+// installed binary directly (e.g. `./zig-out/bin/c47` from zig-out/bin), where
+// the CSS/background fail to load and the LCD area shows uninitialised memory.
+// Relocate the cwd to the directory that actually holds res/: start at the real
+// executable directory and walk up (covers both the dev layout — exe in
+// zig-out/bin, res/ at the repo root — and a packaged layout with res/ next to
+// the exe). No-op if res/ isn't found near the exe, leaving cwd untouched so an
+// explicit run-from-a-res-dir still works. Subsumes the old macOS-bundle chdir.
+fn relocateToResourceDir(argv0: [*:0]const u8) void {
+    var exe_buf: [4096]u8 = undefined;
+    var dir: []const u8 = undefined;
+    if (builtin.os.tag == .linux) {
+        const rc = std.os.linux.readlink("/proc/self/exe", &exe_buf, exe_buf.len);
+        if (rc == 0 or rc > exe_buf.len) {
+            dir = std.fs.path.dirname(std.mem.span(argv0)) orelse return;
+        } else {
+            dir = std.fs.path.dirname(exe_buf[0..rc]) orelse return;
         }
+    } else {
+        dir = std.fs.path.dirname(std.mem.span(argv0)) orelse return;
     }
+    var level: u8 = 0;
+    while (level < 8) : (level += 1) {
+        var probe_buf: [4096]u8 = undefined;
+        const probe = std.fmt.bufPrintZ(&probe_buf, "{s}/res/c47_pre.css", .{dir}) catch return;
+        if (access(probe.ptr, 0) == 0) { // F_OK
+            var cd_buf: [4096]u8 = undefined;
+            const cd = std.fmt.bufPrintZ(&cd_buf, "{s}", .{dir}) catch return;
+            _ = chdir(cd.ptr);
+            return;
+        }
+        dir = std.fs.path.dirname(dir) orelse return;
+    }
+}
+
+pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
+    relocateToResourceDir(argv[0]);
 
     c47MemInBlocks = 0;
     gmpMemInBytes = 0;
