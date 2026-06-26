@@ -475,8 +475,17 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 // ===========================================================================
 // Host-only GTK clipboard / cairo helpers (PC_BUILD). Dead on firmware.
 // ===========================================================================
-const screenData = if (!dmcp_build) @extern([*c]u32, .{ .name = "screenData" }) else {};
+// screenData is a `u32 *` global (the malloc'd LCD framebuffer). @extern returns
+// a pointer TO the symbol, so to read the stored buffer pointer we need
+// @extern(*[*c]u32) and a `.*` — mirroring screenStride just below. Declaring it
+// as @extern([*c]u32) (missing one level) yielded &screenData instead, so
+// drawScreen handed cairo the data-segment address and pixman ran off it into an
+// unmapped page (SIGSEGV) while also rendering garbage. See drawScreen.
+const screenDataPtr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
 const screenStride = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
+inline fn screenData() [*c]u32 {
+    return screenDataPtr.*;
+}
 
 extern fn cairo_image_surface_create_for_data(data: [*c]u8, format: c_int, width: c_int, height: c_int, stride: c_int) ?*anyopaque;
 extern fn cairo_set_source_surface(cr: ?*anyopaque, surface: ?*anyopaque, x: f64, y: f64) void;
@@ -505,7 +514,7 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
     // On firmware this UI helper is dead; reference cr (no discard, which the
     // lint would conflict with its host use below) and return FALSE.
     if (comptime dmcp_build) return @intFromBool(cr != cr);
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
+    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
     cairo_paint(cr);
@@ -516,14 +525,14 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
 pub export fn copyScreenToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
     const clipboard = clipboardForClear();
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
+    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
 }
 
 pub export fn copyMenuToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;
     const clipboard = clipboardForClear();
-    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT - 170, stride4());
+    const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT - 170, stride4());
     gtk_clipboard_set_image(clipboard, gdk_pixbuf_get_from_surface(imageSurface, 0, 170, SCREEN_WIDTH, SCREEN_HEIGHT - 170));
 }
 
