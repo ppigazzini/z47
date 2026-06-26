@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <stdint.h>
+#include <string.h>
+
+// addition.c (addStriReal/addStriCplx) trims a leading space from its result.
+// Faithful definition (master uses stringByteLength/xcopy; memmove/strlen are
+// equivalent here) so the oracle matches the Zig port if that path is hit.
+void trimLeadingSpace(char *stringToTrim) {
+    if (stringToTrim[0] == ' ') {
+        memmove(stringToTrim, stringToTrim + 1, strlen(stringToTrim));
+    }
+}
 
 void z47_math_wrappers_legacy_fnAdd(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnSubtract(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }

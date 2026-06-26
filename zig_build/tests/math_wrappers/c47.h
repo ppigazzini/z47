@@ -11,6 +11,12 @@
 #include <stdint.h>
 #include <string.h>
 
+// Master addition.c null-checks `matrixHeader_t.matrixElements`, a pointer in
+// the real ABI. This mock declares it as an inline array (below) so the oracle
+// has matrix storage to index, which makes that null-check statically always
+// true. The branch is harmless for the oracle, so silence the diagnostic.
+#pragma clang diagnostic ignored "-Wpointer-bool-conversion"
+
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
 typedef int32_t angularMode_t;
@@ -145,6 +151,7 @@ enum {
 #define ERR_REGISTER_LINE REGISTER_Z
 #define ERROR_NONE 0
 void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegister_t dest_register);
+void trimLeadingSpace(char *stringToTrim);
 real34_t *decQuadAdd(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
 real34_t *decQuadDivide(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
 real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
