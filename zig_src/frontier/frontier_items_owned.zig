@@ -154,7 +154,7 @@ const SOLVER_STATUS_READY_TO_EXECUTE: u16 = 1;
 const SOLVER_STATUS_TVM_APPLICATION: u16 = 4096;
 
 const TM_VALUE: i16 = 10001;
-const TM_CMP: i16 = 10021;
+const TM_CMP: i16 = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
 const TM_FLAGR: i16 = 10004;
 const TM_FLAGW: i16 = 10005;
 const TM_STORCL: i16 = 10006;

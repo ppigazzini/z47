@@ -223,7 +223,7 @@ const SCRUPD_MANUAL_MENU: u8 = 4;
 const CM_PEM: u8 = 3;
 
 const TM_VALUE: u16 = 10001;
-const TM_CMP: u16 = 10021;
+const TM_CMP: u16 = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
 const TM_FLAGR: u16 = 10004;
 const TM_FLAGW: u16 = 10005;
 const TM_LABEL: u16 = 10009;
