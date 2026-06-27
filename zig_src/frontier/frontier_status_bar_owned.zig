@@ -473,8 +473,10 @@ pub export var SBlastIntegerBaseShown: u8 = 0xFF;
 pub export var SBAlphaModeLastShown: u16 = 0xFFFF;
 pub export var SBhourglassShown: [2]u8 = undefined;
 pub export var alphaOutput: [3]u8 = undefined;
-pub export var reInstateIntegerModeDisplay: bool_t = undefined;
-pub export var reInstateOCModeDisplay: bool_t = undefined;
+// C file-scope .bss globals -> zero-initialized (false). `= undefined` left a
+// garbage bool that could read true before the first write.
+pub export var reInstateIntegerModeDisplay: bool_t = false;
+pub export var reInstateOCModeDisplay: bool_t = false;
 
 // ===========================================================================
 // forceSBupdate
