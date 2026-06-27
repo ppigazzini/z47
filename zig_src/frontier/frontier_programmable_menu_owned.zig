@@ -128,8 +128,10 @@ extern var dynamicMenuItem: i16;
 extern var errorMessage: [*c]u8;
 extern var programmableMenu: programmableMenu_t;
 extern var tam: tamState_t;
-extern const softmenu: [*]const softmenu_t;
-extern var softmenuStack: [*]softmenuStack_t;
+// C `softmenu[]` / `softmenuStack[N]` are ARRAYS: bind the address (gotcha #1).
+// The `[*]` pointer form loaded array bytes as the pointer -> wild deref.
+const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
+const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 extern const standardFont: font_t;
 extern const numericFont: font_t;

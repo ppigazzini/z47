@@ -277,10 +277,15 @@ extern var displayFormatDigits: u8;
 extern var updateOldConstants: bool;
 extern var ram: [*c]u32;
 
-extern const indexOfItems: [*]const item_t;
+// C `item_t indexOfItems[]` is an ARRAY: bind the address (gotcha #1). The `[*]`
+// pointer form loaded the array's first bytes as the pointer -> wild deref in the
+// EIM equation-catalog search.
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 extern const standardFont: font_t;
-extern var dynamicSoftmenu: [*]dynamicSoftmenu_t;
-extern var softmenuStack: [*]softmenuStack_t;
+// C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
+// form would crash dynamicSoftmenu[...] accesses like fnSolveVar/fnIntegrateVar.
+const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 extern var ctxtReal34: realContext_t;
 
