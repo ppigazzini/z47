@@ -116,6 +116,7 @@ const ITM_SOLVE: i16 = 1608;
 
 const REAL_SOLVER: usize = 106;
 const SIZE_OF_EACH_ERROR_MESSAGE: usize = 64;
+const NUMBER_OF_ERROR_CODES: usize = 129;
 
 const SCRUPD_MANUAL_MENU: u8 = 0x04;
 
@@ -164,8 +165,13 @@ inline fn ctxtSolverHi() *realContext_t {
     return &ctxtReal39;
 }
 
-// errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]
-extern const errorMessages: [*]const [SIZE_OF_EACH_ERROR_MESSAGE]u8;
+// C `const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]`
+// is a 2D ARRAY: the symbol address IS the data. Binding it as `[*]const [M]u8`
+// (a pointer type) made Zig load the array's first 8 bytes AS the pointer value
+// (gotcha #1), so errorMessages[REAL_SOLVER] dereferenced garbage -> printStatus's
+// `printf("%s", line1)` strlen-faulted when graphing/solving (the "crashes when
+// selecting graph" report). Use the array form like the sibling owners.
+extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
 
 // softmenu globals
 const dynamicSoftmenu_t = extern struct {
@@ -179,8 +185,13 @@ const softmenuStack_t = extern struct {
     userMenuId: i16,
     calcMode: u8,
 };
-extern var dynamicSoftmenu: [*]dynamicSoftmenu_t;
-extern var softmenuStack: [*]softmenuStack_t;
+// C `dynamicSoftmenu[N]` / `softmenuStack[N]` are ARRAYS: the symbol address IS
+// the data. `extern var x: [*]T` loads the array's first 8 bytes AS the pointer
+// (gotcha #1) -> dynamicSoftmenu[softmenuStack[0].softmenuId] dereferenced garbage
+// and crashed in fnSolveVar (the grapher/solver variable path). Bind the array
+// address like the frontier owners.
+const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 // ---------------------------------------------------------------------------
 // Constants blob accessors (offsets verified vs generated constantPointers.h)

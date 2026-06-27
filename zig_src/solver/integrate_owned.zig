@@ -139,8 +139,10 @@ const softmenuStack_t = extern struct {
     userMenuId: i16,
     calcMode: u8,
 };
-extern var dynamicSoftmenu: [*]dynamicSoftmenu_t;
-extern var softmenuStack: [*]softmenuStack_t;
+// C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
+// form crashed fnIntegrateVar's dynamicSoftmenu[...] access like fnSolveVar.
+const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 // ---------------------------------------------------------------------------
 // Constants blob accessors (offsets verified vs generated constantPointers.h)

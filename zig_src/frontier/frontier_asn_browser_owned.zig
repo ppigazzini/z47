@@ -146,7 +146,9 @@ extern const kbd_std_D47: [37]calcKey_t;
 extern const kbd_std_V47: [37]calcKey_t;
 extern const kbd_std_N47: [37]calcKey_t;
 
-extern const indexOfItems: [*]const item_t;
+// C `item_t indexOfItems[]` is an ARRAY: bind the address (gotcha #1). The `[*]`
+// pointer form loaded the array's first bytes as the pointer -> wild deref.
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
 // ---------------------------------------------------------------------------
 // Function externs
