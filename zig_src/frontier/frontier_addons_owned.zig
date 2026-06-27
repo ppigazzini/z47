@@ -733,7 +733,7 @@ inline fn regKStoC(regKS: u16) u16 {
 extern fn scrollPemBackwards() void;
 
 // nim / aim / display string helpers
-extern fn nimBufferToDisplayBuffer(nimBuffer: [*c]const u8, displayBuffer: [*c]u8) [*c]u8;
+extern fn nimBufferToDisplayBuffer(nimBuffer: [*c]const u8, displayBuffer: [*c]u8) void;
 extern fn addItemToNimBuffer(item: i16) void;
 extern fn addItemToBuffer(item: i16) void;
 extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, nonFancyTimeFormat: bool_t) void;
@@ -894,7 +894,7 @@ inline fn setWhitePixel(x: u32, y: u32) void {
 extern fn placePixel(x: u32, y: u32) void;
 extern fn _Buzz(a: i32, b: i32) void;
 extern fn force_refresh(mode: u8) void;
-extern fn getBeepVolume() i32;
+extern fn getBeepVolume() u16;
 extern fn fnSetVolume(volume: u16) void;
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
@@ -1381,7 +1381,7 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
         nimNumberPart = NP_REAL_FLOAT_PART;
     }
     _ = strcpy(nimDisplay, STD_SPACE_HAIR);
-    _ = nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
+    nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
     i = @intCast(stringByteLength(nimDisplay) - 1);
     while (i > 0) : (i -%= 1) {
         if (nimDisplay[i] == 0xab) { // token
@@ -1579,7 +1579,7 @@ fn editReal34(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) vo
         if (lessEqualGreater == 0) { // display fraction
             nimNumberPart = NP_FRACTION_DENOMINATOR;
             _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-            _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
             _ = strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
             index.* = 2;
             while (aimBuffer[@intCast(index.*)] != ' ') : (index.* += 1) {}
@@ -1645,7 +1645,7 @@ fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
     }
 
     _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-    _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+    nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
     i = @intCast(stringByteLength(nimBufferDisplay) - 1);
     while (i > 0) : (i -%= 1) {
         if (nimBufferDisplay[i] == 0xab) { // token
@@ -3099,7 +3099,7 @@ pub export fn fnChangeBaseJM(BASE: u16) callconv(.c) void {
         }
     }
 
-    _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+    nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
 }
 
 pub export fn fnChangeBaseMNU(BASE: u16) callconv(.c) void {
@@ -3122,19 +3122,19 @@ pub export fn fnChangeBaseMNU(BASE: u16) callconv(.c) void {
 
     if (BASE > 1 and BASE <= 16) {
         fnChangeBaseJM(BASE);
-        _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 
     if (aimBuffer[0] == 0 and calcMode == CM_NORMAL and BASE == NOPARAM) {
         runFunction(ITM_toINT);
-        _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 
     if (aimBuffer[0] != 0 and calcMode == CM_NIM) {
         addItemToNimBuffer(ITM_toINT);
-        _ = nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 }
