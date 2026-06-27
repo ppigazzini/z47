@@ -354,7 +354,7 @@ pub const TEMP_REGISTER_2_SAVED_STATS: calcRegister_t = 136;
 pub const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 // TO_BLOCKS(sizeof(complex34_t)) = (32 + 3) >> 2 = 8 (BYTES_PER_BLOCK = 4).
 pub const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
-pub const ERROR_TI_UNDO_FAILED: u8 = 126;
+pub const ERROR_TI_UNDO_FAILED: u8 = 128; // defines.h 128
 pub extern fn decQuadFromInt32(result: *real34_t, source: i32) *real34_t;
 pub inline fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
@@ -1046,8 +1046,8 @@ pub fn setRegisterLongIntegerSign(reg: calcRegister_t, sign: u32) void {
     setRegisterTag(reg, sign);
 }
 
-pub const TI_PERC: u8 = 2;
-pub const TI_PERCD: u8 = 3;
+pub const TI_PERC: u8 = 68; // defines.h 68; display checks temporaryInformation==TI_PERC(68), so set must match
+pub const TI_PERCD: u8 = 69; // defines.h 69
 
 pub fn real34SetPositiveSign(value: *real34_t) void {
     value.bytes[15] &= 0x7f;

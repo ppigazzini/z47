@@ -208,7 +208,7 @@ const TI_CONV_MENU_STR: u8 = 67;
 const TI_NOT_AVAILABLE: u8 = 117;
 const TI_UNDO_DISABLED: u8 = 49;
 // notAvail: PC_BUILD -> TI_Not_on_simulator (124); DMCP -> TI_Only_on_simulator (125)
-const notAvail: i16 = if (dmcp_build) 125 else 124;
+const notAvail: i16 = if (dmcp_build) 127 else 126; // TI_Only_on_simulator(127)/TI_Not_on_simulator(126) errorMessages indices
 
 const dtReal34Matrix: dataType_t = 6;
 const dtComplex34Matrix: dataType_t = 7;
