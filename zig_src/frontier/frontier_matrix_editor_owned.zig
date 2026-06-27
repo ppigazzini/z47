@@ -257,7 +257,13 @@ const FLAG_CPXj: c_int = 0x8005;
 // ===========================================================================
 // These are mutable RAM globals (matrixEditor.c file-scope, normal .data/.bss);
 // they must NOT go into .qspi (read-only XIP flash). Default section.
-pub export var openMatrixMIMPointer: AnyMatrix = undefined;
+// C's `any34Matrix_t openMatrixMIMPointer;` is a file-scope global -> .bss
+// ZERO-initialized, so .realMatrix.matrixElements starts NULL. `= undefined`
+// would leave garbage: getMatrixFromRegister's `matrixElements != null` guard
+// then passes on the first edit and frees a wild pointer (freeC47Blocks ->
+// toC47MemPtr @intCast panic in Debug / heap corruption in ReleaseFast). Match
+// C's zero-init.
+pub export var openMatrixMIMPointer: AnyMatrix = std.mem.zeroes(AnyMatrix);
 pub export var matEditMode: bool_t = false;
 pub export var scrollRow: u16 = 0;
 pub export var scrollColumn: u16 = 0;
