@@ -167,7 +167,7 @@ const SOLVER_RESULT_OTHER_FAILURE: f64 = 5;
 const SOLVER_RESULT_CONJUGATES: f64 = 200;
 
 const COMPLEX_SOLVER: usize = 103;
-const NUMBER_OF_ERROR_CODES = 127;
+const NUMBER_OF_ERROR_CODES = 129; // defines.h: 129 (errorMessages row count)
 const SIZE_OF_EACH_ERROR_MESSAGE = 48;
 
 const EQUATION_PARSER_XEQ: u16 = 1;
