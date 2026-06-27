@@ -42,6 +42,8 @@ pub fn edit(regist: u16) void {
     setJRegisterAsInt(true, 0);
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
+    scrollRow = 0;
+    scrollColumn = 0;
 
     showMatrixEditor();
     refreshScreen(MATRIX_EDITOR_REFRESH_SOURCE);
@@ -72,6 +74,8 @@ extern var calcMode: u8;
 extern var matrixIndex: u16;
 extern var aimBuffer: [*]u8;
 extern var nimBufferDisplay: [*]u8;
+extern var scrollRow: u16;
+extern var scrollColumn: u16;
 
 extern fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool;
 extern fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16;
