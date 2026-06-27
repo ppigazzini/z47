@@ -1198,7 +1198,10 @@ pub export fn drawBattery(voltage: u16) callconv(.c) void {
     const vf: f32 = @as(f32, @floatFromInt(minI(maxI(@as(i32, voltage) - 2000, 0), 3100))) / ((@as(f32, 3100) - 2000.0) / @as(f32, @floatFromInt(DY_BATTERY)));
     const vv: u16 = @intFromFloat(vf);
     {
-        var ii: u16 = @intCast(minI(@as(i32, vv) - 1, DY_BATTERY - 1));
+        // C assigns min(vv-1, ...) to a uint16_t: when vv==0, vv-1 is -1 and
+        // truncates to 65535 (the loop then simply doesn't run). @intCast would
+        // panic on the negative in safety-on builds, so truncate like C.
+        var ii: u16 = @truncate(@as(u32, @bitCast(minI(@as(i32, vv) - 1, DY_BATTERY - 1))));
         while (ii <= DY_BATTERY - 1) : (ii += 1) {
             if (ii % 2 == 0) {
                 setBlackPixel(@intCast(if (ii < DY_BATTERY - 3) X_BATTERY + 0 else X_BATTERY + 2), @intCast((DY_BATTERY - 1) - @as(i32, ii)));
