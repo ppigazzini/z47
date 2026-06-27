@@ -35,13 +35,14 @@ pub fn goToColumn(col: u16) void {
     }
 
     const row = tmpRow;
-    if (!validateBounds(row, col)) {
-        return;
+    // C fnGoToColumn calls calcModeNormalGui() after BOTH the out-of-range
+    // error branch and the success branch (it dismisses the GOTO input overlay
+    // either way); only the register commit is gated on the bounds check.
+    if (validateBounds(row, col)) {
+        z47_frontier_matrix_commit_open_to_register();
+        setIRegisterAsInt(false, @as(i16, @intCast(row)));
+        setJRegisterAsInt(false, @as(i16, @intCast(col)));
     }
-
-    z47_frontier_matrix_commit_open_to_register();
-    setIRegisterAsInt(false, @as(i16, @intCast(row)));
-    setJRegisterAsInt(false, @as(i16, @intCast(col)));
     z47_frontier_matrix_calc_mode_normal_gui();
 }
 
