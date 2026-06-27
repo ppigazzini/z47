@@ -2737,10 +2737,13 @@ pub fn implementation(comptime runtime: type) type {
                 },
 
                 runtime.CM_MIM => {
-                    // NOMATRIXCURSORS defined: arrows navigate the matrix unless a
-                    // non-TAMSTO/TAMRCL softmenu (or any catalog) is scrolling.
-                    if (runtime.currentSoftmenuScrolls() and (runtime.catalog != 0 or (runtime.currentMenu() != -runtime.MNU_TAMSTO and runtime.currentMenu() != -runtime.MNU_TAMRCL))) {
+                    // Default (!NOMATRIXCURSORS, see defines.h #define/#undef):
+                    // arrows navigate the matrix. keyActionProcessed=false lets the
+                    // ITM_UP1 handler add ITM_UP_ARROW (moves the cell cursor up).
+                    if (runtime.currentSoftmenuScrolls() and runtime.catalog != 0) {
                         runtime.menuUp();
+                    } else {
+                        runtime.keyActionProcessed = false;
                     }
                 },
 
@@ -2904,8 +2907,16 @@ pub fn implementation(comptime runtime: type) type {
                 },
 
                 runtime.CM_MIM => {
-                    if (runtime.currentSoftmenuScrolls() and (runtime.catalog != 0 or (runtime.currentMenu() != -runtime.MNU_TAMSTO and runtime.currentMenu() != -runtime.MNU_TAMRCL))) {
+                    // NOMATRIXCURSORS is #define'd then immediately #undef'd in
+                    // defines.h, so the default (!NOMATRIXCURSORS) branch is live:
+                    // arrows navigate the matrix. Leaving keyActionProcessed=false
+                    // lets the ITM_DOWN1 handler add ITM_DOWN_ARROW (moves the cell
+                    // cursor down). The port previously copied the NOMATRIXCURSORS
+                    // branch, so up/down keys did nothing in the matrix editor.
+                    if (runtime.currentSoftmenuScrolls() and runtime.catalog != 0) {
                         runtime.menuDown();
+                    } else {
+                        runtime.keyActionProcessed = false;
                     }
                 },
 
