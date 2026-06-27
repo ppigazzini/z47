@@ -819,7 +819,11 @@ const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
-const allNamedVariables = @extern([*c]const namedVariableHeader_t, .{ .name = "allNamedVariables" });
+// `namedVariableHeader_t *allNamedVariables` is a POINTER global (dynamically
+// alloc'd array), not an array symbol: the `extern var` form loads the pointer
+// VALUE; @extern([*c]...) would load &allNamedVariables (gotcha #6b). Matches the
+// 13 sibling owners that bind it as `extern var`.
+extern var allNamedVariables: [*c]const namedVariableHeader_t;
 // C: `const int KEY_X[7] = {-1, 66, ...}` -- signed 4-byte ints (KEY_X[0] is
 // -1). It must be c_int: a u16 view both mis-sizes the elements and turns -1
 // into 65535 (KEY_X[0]+1 then overflows u16).
@@ -835,8 +839,15 @@ const errorMessages = @extern([*c]const [SIZE_OF_EACH_ERROR_MESSAGE]u8, .{ .name
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const kbd_usr = @extern([*c]const calcKey_t, .{ .name = "kbd_usr" });
-// lcd_buffer is a C47-side uint8_t* global (NOT ROM).
-const lcd_buffer = @extern([*c]u8, .{ .name = "lcd_buffer" });
+// lcd_buffer is a C47-side `uint8_t *lcd_buffer` POINTER global (NOT ROM): the
+// symbol's storage holds the pointer to the malloc'd framebuffer. Binding it
+// `@extern([*c]u8)` yields &lcd_buffer (a .data address), so indexing it ran off
+// the data segment -> SIGSEGV on the R47 f/g underline path (gotcha #6b, same
+// class as screenData). Bind the pointer's storage and deref.
+const lcd_bufferPtr = @extern(*[*c]u8, .{ .name = "lcd_buffer" });
+inline fn lcd_buffer() [*c]u8 {
+    return lcd_bufferPtr.*;
+}
 
 const bugMsgValueReturnedByFindGlyph: usize = 0;
 
@@ -1030,7 +1041,9 @@ extern var current_cursor_x: u16;
 extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
 // host-only screen buffer (referenced only under !dmcp_build in fnScreenDump).
-const screenData = if (!dmcp_build) @extern([*c]u32, .{ .name = "screenData" }) else {};
+// `uint32_t *screenData` is a POINTER global: bind its storage and deref, else
+// @extern([*c]u32) yields &screenData -> off-segment read (gotcha #6b).
+const screenData_ptr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
 const screenStride = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
 
 const SIGMA_N = struct {
@@ -1756,12 +1769,12 @@ pub export fn underline_softkey(xSoftkeyMask_in: u16, ySoftkey: u16) callconv(.c
     xIndex = 0;
     while (xIndex < 6) : (xIndex += 1) {
         buff_bit = getLine_buffer_bit(@as(i32, KEY_X[xIndex]) + 1);
-        xBg[xIndex] = (lcd_buffer[52 * (@as(usize, maxLine) + 1) + buff_bit / 8] >> @intCast(mod(buff_bit, 8))) & 1;
+        xBg[xIndex] = (lcd_buffer()[52 * (@as(usize, maxLine) + 1) + buff_bit / 8] >> @intCast(mod(buff_bit, 8))) & 1;
     }
     // Draw shade pattern without changing lcd_buffer
     line = maxLine - lineCount + 1;
     while (line <= maxLine) : (line += 1) {
-        @memcpy(temp_line[0..LCD_LINE_BUF_SIZE], (lcd_buffer + 52 * @as(usize, line))[0..LCD_LINE_BUF_SIZE]);
+        @memcpy(temp_line[0..LCD_LINE_BUF_SIZE], (lcd_buffer() + 52 * @as(usize, line))[0..LCD_LINE_BUF_SIZE]);
         xIndex = 0;
         while (xIndex < 6) : (xIndex += 1) {
             if ((xSoftkeyMask >> @intCast(xIndex)) & 1 != 0) {
@@ -6248,7 +6261,7 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
             var x: i32 = 0;
             while (x < SCREEN_WIDTH) : (x += 1) {
                 uint8 = @bitCast(@as(u8, @bitCast(uint8)) << 1);
-                if (screenData[@intCast(y * screenStride.* + x)] == ON_PIXEL) {
+                if (screenData_ptr.*[@intCast(y * screenStride.* + x)] == ON_PIXEL) {
                     uint8 |= 1;
                 }
                 if (@rem(x, 8) == 7) {
