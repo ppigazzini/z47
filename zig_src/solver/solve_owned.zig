@@ -115,7 +115,7 @@ const ITM_STO: i16 = 44;
 const ITM_SOLVE: i16 = 1608;
 
 const REAL_SOLVER: usize = 106;
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 64;
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48; // defines.h 48 (errorMessages row width); 64 gave a wrong stride
 const NUMBER_OF_ERROR_CODES: usize = 129;
 
 const SCRUPD_MANUAL_MENU: u8 = 0x04;
