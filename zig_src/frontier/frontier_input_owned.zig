@@ -106,6 +106,7 @@ extern var currentMvarLabel: u16;
 extern var varMenu42: bool;
 extern var temporaryInformation: u8;
 extern var lastKeyCode: u8;
+extern var headlessMode: bool; // c47.c global; in --dumpMenus there is no GTK loop to pump
 extern var lastItem: i16;
 extern var entryStatus: u8;
 extern var screenUpdatingMode: u8;
@@ -513,8 +514,10 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
     if (lastKeyCode == 0) {
         temporaryInformation = TI_TRUE;
         if (comptime !dmcp_build) {
-            while (gtk_events_pending() != 0) {
-                _ = gtk_main_iteration();
+            if (!headlessMode) { // C guards the GTK pump with !headlessMode; --dumpMenus has no main loop
+                while (gtk_events_pending() != 0) {
+                    _ = gtk_main_iteration();
+                }
             }
         } else {
             dmcpResetAutoOff();
