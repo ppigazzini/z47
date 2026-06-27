@@ -3602,7 +3602,11 @@ fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no
     _ = regist;
     var noo: [32]u8 = undefined;
     var t: real_t = undefined;
-    const variableNo: u16 = currentSolverVariable - FIRST_RESERVED_VARIABLE;
+    // C `uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;`
+    // wraps mod 2^16 when currentSolverVariable < FIRST_RESERVED_VARIABLE (the
+    // value is only used under the `>=` guard below). Zig `-` would panic on the
+    // underflow (gotcha #0b); reproduce the C truncation.
+    const variableNo: u16 = @truncate(@as(u32, @bitCast(@as(i32, currentSolverVariable) - @as(i32, FIRST_RESERVED_VARIABLE))));
     switch (no) {
         2 => {
             _ = strcpy(&noo, STD_SUB_p ++ STD_SUB_r ++ STD_SUB_e ++ STD_SUB_v ++ " =");
