@@ -1061,7 +1061,11 @@ pub export fn smallE(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
 fn checkWidthWithPrefix(itemName: [*c]const u8, numStr: [*c]const u8, max_width: u32) c_int {
     var test_buffer: [128]u8 = undefined;
     _ = snprintf(&test_buffer, @sizeOf(@TypeOf(test_buffer)), "%s%s", itemName, numStr);
-    return @intFromBool(stringWidthC47(&test_buffer, stdNoEnlarge, ~nocompress, false, false) < max_width);
+    // C passes `!nocompress` (LOGICAL not -> 1), not `~nocompress` (BITWISE not
+    // -> -1). The bitwise value made stringWidthC47 mis-measure every graph tick/
+    // coordinate number so checkWidthWithPrefix never fit -> formatDoubleWidth fell
+    // through to "??" (the "left panel shows ? instead of numbers" report).
+    return @intFromBool(stringWidthC47(&test_buffer, stdNoEnlarge, @intFromBool(nocompress == 0), false, false) < max_width);
 }
 
 // ===========================================================================
