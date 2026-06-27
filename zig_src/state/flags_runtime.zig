@@ -151,7 +151,10 @@ pub extern var nextChar: u8;
 pub extern var globalFlags: [8]u16;
 pub extern var currentLocalFlags: [*c]u32;
 pub extern var calcMode: u8;
-pub extern var softmenu: [*c]const softmenu_t;
+// C `softmenu_t softmenu[]` is an ARRAY: bind the address (gotcha #1), like the
+// 9 sibling owners. `extern var softmenu: [*c]…` loaded the array's first bytes
+// AS the pointer -> softmenu[id] (leaveAlphaMode in CM_EIM) read a wild pointer.
+pub const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 pub extern var softmenuStack: [8]softmenuStack_t;
 pub extern var allFormulae: [*c]formulaHeader_t;
 pub extern var currentFormula: u16;
