@@ -86,4 +86,4 @@ extern fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
 extern fn showMatrixEditor() void;
 extern fn refreshScreen(source: u16) void;
 extern fn printTraceMatElement(where: u16) void;
-extern fn displayCalcErrorMessage(error_code: u16, line1: u16, line2: u16) void;
+extern fn displayCalcErrorMessage(error_code: u8, line1: i16, line2: i16) void;
