@@ -22,6 +22,7 @@
 // timer.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -338,7 +339,11 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // ---------------------------------------------------------------------------
 // Globals defined by timer.c
 // ---------------------------------------------------------------------------
-pub export var timer: [TMR_NUMBER]kb_timer_t = undefined;
+// C `kb_timer_t timer[TMR_NUMBER]` is a .bss global -> ZERO-initialized, so every
+// slot starts state=TMR_UNUSED(0). `= undefined` left garbage: refreshTimerPc
+// calls timer[i].func.?(…) whenever state==TMR_RUNNING(2), so a garbage state of 2
+// would invoke a garbage func pointer (heap-layout-dependent crash). Match C.
+pub export var timer: [TMR_NUMBER]kb_timer_t = std.mem.zeroes([TMR_NUMBER]kb_timer_t);
 pub export var timerLastCalled: if (dmcp_build) u32 else i64 = 0;
 
 comptime {
