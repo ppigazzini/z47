@@ -312,7 +312,7 @@ const SCRUPD_SKIP_STACK_ONE_TIME = 32;
 const TAM_MAX_BITS = 14;
 const TAM_MAX_MASK = 16383;
 const TEMP_REGISTER_1 = 135;
-const TM_CMP = 10021;
+const TM_CMP = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
 const TM_DELITM = 10014;
 const TM_FLAGR = 10004;
 const TM_FLAGW = 10005;

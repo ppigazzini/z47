@@ -282,7 +282,7 @@ const TM_LABEL: u16 = 10009;
 const TM_LBLONLY: u16 = 10018;
 const TM_FLAGR: u16 = 10004;
 const TM_FLAGW: u16 = 10005;
-const TM_CMP: u16 = 10021;
+const TM_CMP: u16 = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
 
 const TAM_MAX_MASK: u16 = 0x3fff;
 const PTP_STATUS: u16 = 0x1e00;
