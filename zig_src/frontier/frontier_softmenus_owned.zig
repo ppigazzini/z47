@@ -318,6 +318,7 @@ const ITM_MENU = 1520;
 const ITM_MODANG_XFN = 2578;
 const ITM_MOD_XFN = 2577;
 const ITM_MVAR = 1524;
+const ITM_REM = 1554;
 const ITM_MZOOMY = 2034;
 const ITM_M_EDI = 1529;
 const ITM_M_EDIN = 1530;
@@ -1691,7 +1692,15 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
 
 fn _dynmenuConstructMVarsFromPgm(label: u16, numberOfBytes: *u16, numberOfVars: *u16) void {
     var step: [*c]u8 = labelList[label].instructionPointer;
-    while ((numberOfVars.* < 18) and checkOpCodeOfStep(step, ITM_MVAR) != 0 and step[2] == STRING_LABEL_VARIABLE) {
+    while (numberOfVars.* < 18) {
+        // Skip any user REM so a REM before an MVAR is transparent to the MVAR
+        // count (matches C); a non-REM non-MVAR step (or .END) ends the count.
+        while (checkOpCodeOfStep(step, ITM_REM) != 0) {
+            step = findNextStep(step);
+        }
+        if (!(checkOpCodeOfStep(step, ITM_MVAR) != 0 and step[2] == STRING_LABEL_VARIABLE)) {
+            break;
+        }
         _ = xcopy(&tmpString[numberOfBytes.*], step + 4, step[3]);
         _ = findOrAllocateNamedVariable(&tmpString[numberOfBytes.*]);
         numberOfBytes.* += @as(u16, step[3]) + 1;
@@ -3083,7 +3092,7 @@ pub export fn popSoftmenu() callconv(.c) void {
         softmenuStack[0].softmenuId = 0;
     }
     if (softmenuStack[0].softmenuId == 0 and getSystemFlag(FLAG_BASE_HOME) != 0 and calcMode != CM_AIM) {
-        changeToHOME();
+        showSoftmenu(-%@as(i16, MNU_HOME)); // must PUSH HOME to base here; not changeToHOME() which only re-points
     } else if (softmenuStack[0].softmenuId == 0 and getSystemFlag(FLAG_BASE_MYM) != 0 and calcMode != CM_AIM) {
         // already 0
     } else if (softmenuStack[0].softmenuId == 1 and calcMode == CM_AIM) {
@@ -3232,7 +3241,7 @@ pub export fn removeUserMenuFromStack(userMenuId: i16) callconv(.c) void {
         }
     }
     if (softmenuStack[0].softmenuId == 0 and getSystemFlag(FLAG_BASE_HOME) != 0 and calcMode != CM_AIM) {
-        changeToHOME();
+        showSoftmenu(-%@as(i16, MNU_HOME)); // must PUSH HOME to base here; not changeToHOME() which only re-points
     }
 }
 
