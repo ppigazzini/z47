@@ -628,7 +628,7 @@ pub export fn fnSaveLetteredRegisters(unusedButMandatoryParameter: u16) callconv
 }
 
 pub export fn fnSaveNRegisters(N: u16) callconv(.c) void {
-    if (N <= 125) {
+    if (N >= 1 and N <= LAST_SPARE_REGISTER + 1) { // N registers = 0..N-1; max is all 126 (0..125, i.e. up to RW)
         var beginR: u16 = 0;
         var endR: u16 = N - 1;
         doSaveDataFile(&beginR, &endR, null, !isXFN);
@@ -645,10 +645,10 @@ pub export fn fnSaveRegister(regist: u16) callconv(.c) void {
         const idx: usize = @as(usize, regist) - @as(usize, @intCast(FIRST_NAMED_VARIABLE));
         stringToUtf8(&allNamedVariables[idx].variableName[1], &varName[0]); // named variable: save by name
         doSaveDataFile(null, null, &varName[0], !isXFN);
-    } else if (regist < LAST_SPARE_REGISTER) {
+    } else if (regist <= LAST_SPARE_REGISTER) {
         var beginR: u16 = regist;
         var endR: u16 = regist;
-        doSaveDataFile(&beginR, &endR, null, !isXFN); // numbered or lettered register: save by number
+        doSaveDataFile(&beginR, &endR, null, !isXFN); // numbered or lettered register: save by number (through RW = LAST_SPARE_REGISTER)
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X_LINE);
     }

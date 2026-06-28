@@ -97,7 +97,7 @@ extern fn getDateString(date_string: [*c]u8) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn refreshScreen(source: u16) void;
-extern fn readLine(line: [*c]u8) void;
+extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn z47_calc_state_save_sections() void;
 
 // power_check_screen / sys_timer_* are DMCP function-table macros, not link
@@ -215,12 +215,12 @@ pub fn unwindAllSubroutines() void {
     }
 }
 
-pub fn readLineInto(buffer: [*c]u8) void {
+pub fn readLineInto(buffer: [*c]u8, maxLen: usize) void {
     if (use_fake_calc_state_harness_surface) {
         z47_calc_state_runtime_read_line(buffer);
         return;
     }
-    readLine(buffer);
+    readLine(buffer, maxLen);
 }
 
 pub fn allowUserKeys(saved_calc_model: u16) bool {

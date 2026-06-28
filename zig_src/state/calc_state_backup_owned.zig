@@ -625,7 +625,7 @@ pub fn saveCalc() void {
 // ===================== RESTORE side (Phase A2) =====================
 // labelList/savedStatisticalSumsPointer are pointer globals not declared above.
 // --- backup.cfg parser + typed value deserializer (host-only) ---
-extern fn readLine(line: [*c]u8) void;
+extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn ioEof() c_int;
 extern fn malloc(n: usize) ?*anyopaque;
 extern fn free(p: ?*anyopaque) void;
@@ -655,20 +655,20 @@ fn backupOpenParse() c_int {
     const op: [*c]u8 = &oneParam[0];
     const ret = ioFileOpen(ioPathBackup, ioModeRead);
     if (ret != FILE_OK) return ret;
-    readLine(op);
+    readLine(op, oneParam.len);
     paramHead = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
     paramCurrent = paramHead;
     paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
     _ = strcpy(paramCurrent.?.param, op);
     paramCurrent.?.next = null;
-    readLine(op);
+    readLine(op, oneParam.len);
     while (ioEof() == 0) {
         paramCurrent.?.next = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
         paramCurrent = paramCurrent.?.next;
         paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
         _ = strcpy(paramCurrent.?.param, op);
         paramCurrent.?.next = null;
-        readLine(op);
+        readLine(op, oneParam.len);
     }
     ioFileClose();
     return FILE_OK;

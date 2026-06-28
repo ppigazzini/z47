@@ -97,7 +97,7 @@ pub inline fn writeU8Line(value: u8) void {
 }
 
 pub inline fn readLine(buffer: []u8) void {
-    io_owned.readLineInto(buffer.ptr);
+    io_owned.readLineInto(buffer.ptr, buffer.len);
 }
 
 pub inline fn closeFile() void {
