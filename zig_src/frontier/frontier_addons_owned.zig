@@ -1415,7 +1415,7 @@ pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
     var index: i16 = 0;
     var grpGroupingLeftOld: u8 = 0;
     var grpGroupingRightOld: u8 = 0;
-    var varOrLblName: [8]u8 = undefined;
+    var varOrLblName: [32]u8 = undefined; // C: char varOrLblName[32]; a name's byte length (opParam2) can exceed 7 with multi-byte glyphs
 
     if (tam.mode != 0) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -1670,7 +1670,7 @@ fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
 }
 
 // CM_PEM arm of fnEdit (the program-step editor).
-fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOrLblName: *[8]u8) void {
+fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOrLblName: *[32]u8) void {
     if ((pemCursorIsZerothStep != 0) or isAtEndOfProgram(currentStep) != 0 or isAtEndOfPrograms(currentStep) != 0) {
         return; // Don't try to edit step 000 or END or .END.
     }
@@ -1850,7 +1850,7 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
     pemAddNumber(ITM_NOP, 1); // to insert the resulting number in program
 }
 
-fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8, ip: *i16, index: *i16, varOrLblName: *[8]u8) void {
+fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8, ip: *i16, index: *i16, varOrLblName: *[32]u8) void {
     var func = func_in;
     var opParam = opParam_in;
     var opParam2 = opParam2_in;
@@ -3260,17 +3260,16 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
     real34Copy(reg34(regist), &real34);
     sign = @intFromBool(real34IsNegative(&real34));
 
-    // Pre-rounding. NOTE: the original C reads `h34` here before it is assigned
-    // (technically UB). On the reference C build the leftover stack value is < 10
-    // so the magnitude loop breaks immediately (bDigits == 0); the value is then
-    // scaled up by 10^16, rounded to an integral value, and scaled back down,
-    // which preserves the full fractional part. Reproduce that deterministic
-    // behaviour by zeroing h34 so the first comparison breaks at bDigits == 0.
-    real34SetZero(&h34);
+    // Pre-rounding: scale by the input's integer-digit magnitude, round to an
+    // integral value, then scale back — to strip floating-point noise before the
+    // H/M/S split. C compares the input value `real34` (addons.c:2531); an
+    // earlier port misread it as a different (zeroed) variable, which forced
+    // bDigits to 0 and always scaled by 10^16, changing the rounding for any
+    // value >= 10. Compare `real34`, matching current C.
     int32ToReal34(10, &value34);
     bDigits = 0;
     while (bDigits < (if (isValid12hTime) @as(u32, 14) else 16)) : (bDigits += 1) {
-        if (real34CompareAbsLessThan(&h34, &value34) != 0) {
+        if (real34CompareAbsLessThan(&real34, &value34) != 0) {
             break;
         }
         real34Multiply(&value34, const34_10, &value34);
