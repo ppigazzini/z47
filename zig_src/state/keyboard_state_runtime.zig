@@ -1200,9 +1200,9 @@ pub fn longpressExit1() i16 {
 // (keyboardTweak.c 266-341).
 pub const TMR_RUNNING: u8 = 2;
 pub const TMR_STOPPED: u8 = 1;
-pub const JM_TO_3S_CTFF: u32 = 600;
+pub const JM_TO_3S_CTFF: u32 = if (is_dmcp_build) 900 else 600; // defines.h: DMCP 900 / host 600
 pub const TO_CL_DROP: u8 = 6;
-pub const JM_CLRDROP_TIMER: u32 = 500;
+pub const JM_CLRDROP_TIMER: u32 = if (is_dmcp_build) 900 else 500; // defines.h: DMCP 900 / host 500
 pub extern var JM_SHIFT_HOME_TIMER1: u8;
 pub extern var JM_auto_doublepress_autodrop_enabled: i16;
 pub extern fn fnTimerGetStatus(nr: u8) u8;

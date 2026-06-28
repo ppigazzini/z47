@@ -1844,9 +1844,11 @@ pub export fn FN_handler_StepToNOP() callconv(.c) void {
     fnTimerStop(TO_FN_LONG);
 }
 
-// IS_BASEBLANK_(softmenuId) used in FN_handler: softmenu[id].menuItem == -MNU_BASE
-inline fn IS_BASEBLANK_(softmenuId: i16) bool {
-    return softmenu[@intCast(softmenuId)].menuItem == -MNU_BASE;
+// IS_BASEBLANK_(menuId) (defines.h:2341): menuId==0 && !FLAG_BASE_MYM && !FLAG_BASE_HOME.
+// (NOT softmenu[id].menuItem==-MNU_BASE — that is the BASEMODEACTIVE idiom; an earlier
+// port misread the macro, mis-gating FN_handler's longpress shift cycle.)
+inline fn IS_BASEBLANK_(menuId: i16) bool {
+    return menuId == 0 and getSystemFlag(FLAG_BASE_MYM) == 0 and getSystemFlag(FLAG_BASE_HOME) == 0;
 }
 
 pub export fn FN_handler() callconv(.c) void {
