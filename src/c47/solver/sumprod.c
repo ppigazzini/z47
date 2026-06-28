@@ -74,7 +74,7 @@
     if(!real34IsZero(&loopStep)) {
       real34Divide(&rLoop, &loopStep, &rLoop);
     }
-    longIntegerInit(iLoop);
+    // convertReal34ToLongInteger initialises iLoop; do not pre-init it (leak).
     convertReal34ToLongInteger(&rLoop, iLoop, DEC_ROUND_DOWN);
     loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
     longIntegerFree(iLoop);

@@ -110,6 +110,7 @@ const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 const ITM_LBL: u16 = 1;
 const ITM_END: u16 = 1458;
 const ITM_KEY: u16 = 1497;
+const ITM_42KEY: u16 = 2794; // HP-42S KEY step (upstream added KEY/42KEY dual handling)
 
 const CM_PEM: u8 = 3;
 const NP_INT_BASE: u8 = 3;
@@ -427,7 +428,7 @@ pub export fn findNextStep(step: [*c]u8) callconv(.c) [*c]u8 {
         // !DMCP_BUILD printf diagnostic dropped.
         return null;
     }
-    if (checkOpCodeOfStep(step, ITM_KEY)) {
+    if (checkOpCodeOfStep(step, ITM_KEY) or checkOpCodeOfStep(step, ITM_42KEY)) {
         const afterFirst: [*c]u8 = findKey2ndParam(step);
         if (afterFirst == null) {
             return null;

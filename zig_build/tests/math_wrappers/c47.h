@@ -300,6 +300,7 @@ extern uint64_t systemFlags1;
 #define const_2 ((real_t *)z47_math_wrappers_const_2())
 #define const_5 ((real_t *)z47_math_wrappers_const_5())
 #define const_100 ((real_t *)z47_math_wrappers_const_100())
+#define const_3600 ((real_t *)z47_math_wrappers_const_3600())
 #define const_180 ((real_t *)z47_math_wrappers_const_180())
 #define const_1on2 ((real_t *)z47_math_wrappers_const_1on2())
 #define const39_1on3 ((real_t *)z47_math_wrappers_const_1on3())
@@ -622,6 +623,7 @@ const real_t *z47_math_wrappers_const_minus_1(void);
 const real_t *z47_math_wrappers_const_2(void);
 const real_t *z47_math_wrappers_const_5(void);
 const real_t *z47_math_wrappers_const_100(void);
+const real_t *z47_math_wrappers_const_3600(void);
 const real_t *z47_math_wrappers_const_180(void);
 const real_t *z47_math_wrappers_const_1on2(void);
 const real_t *z47_math_wrappers_const_1on3(void);

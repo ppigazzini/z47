@@ -2306,12 +2306,15 @@ void oracle_curtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #define incDecReal oracle_incDecReal
 #define incDecCplx oracle_incDecCplx
 #define incDecShoI oracle_incDecShoI
+#define incDecTime oracle_incDecTime
 void oracle_incDecError(uint16_t regist, uint8_t flag);
 void oracle_incDecLonI(uint16_t regist, uint8_t flag);
 void oracle_incDecReal(uint16_t regist, uint8_t flag);
 void oracle_incDecCplx(uint16_t regist, uint8_t flag);
 void oracle_incDecShoI(uint16_t regist, uint8_t flag);
+void oracle_incDecTime(uint16_t regist, uint8_t flag);
 #include "../../../src/c47/mathematics/incDec.c"
+#undef incDecTime
 #undef incDecShoI
 #undef incDecCplx
 #undef incDecReal

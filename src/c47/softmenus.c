@@ -642,7 +642,7 @@ TO_QSPI const int16_t menu_CONV_PLoad[]     = {
 
 TO_QSPI const int16_t menu_alphaFN[]     = { ITM_FBR,                       ITM_ALPHAtoX,                 ITM_XtoALPHA,                 ITM_ALPHALENG,                ITM_ALPHAPOS,                ITM_XPARSE,
                                              ITM_ALPHASL,                   ITM_ALPHASR,                  ITM_ALPHARL,                  ITM_ALPHARR,                  ITM_ALPHALOWER,              ITM_ALPHAUPPER,
-                                             ITM_ALPHALTRIM,                ITM_ALPHARTRIM,               ITM_ALPHAIP,                  ITM_ALPHAMID,                 ITM_ALPHALEFT,               ITM_ALPHARIGHT                };
+                                             ITM_ALPHATRIM,                 ITM_ALPHAREV,                 ITM_ALPHAIP,                  ITM_ALPHAMID,                 ITM_ALPHALEFT,               ITM_ALPHARIGHT                };
 
 
 

@@ -993,3 +993,671 @@ pub export fn fn42Aip(unusedButMandatoryParameter: u16) callconv(.c) void {
     fnAlphaIP(alphaRegister);
     truncateAlphaRegisterTo44Char();
 }
+
+// ===========================================================================
+// HP-42S-style string case/slice/reverse/trim ops (new in real master).
+// Faithful port of stringFuncs.c. stringFuncs.c is fully owned here, so the
+// pre-existing static helpers _doXToAlpha and _readDestinationRegister (used
+// only by fnAlphaTrim) are ported as file-local fns too.
+// ===========================================================================
+
+// defines.h string-function selectors.
+const SF_TO_UPPER_CASE: bool = true;
+const SF_TO_LOWER_CASE: bool = false;
+const SF_LEFT: u8 = 1;
+const SF_MID: u8 = 2;
+const SF_RIGHT: u8 = 3;
+
+const TMP_STR_LENGTH: i32 = 2560;
+const MAX_NUMBER_OF_GLYPHS_IN_STRING: i32 = 508;
+const SCREEN_WIDTH: i16 = 400;
+const NUMBER_OF_DISPLAY_DIGITS: i16 = 20;
+const ERROR_STRING_WOULD_BE_TOO_LONG: u8 = 33;
+const ERROR_INPUT_TOO_LONG: u8 = 10;
+const noBaseOverride: u8 = 0;
+const amAngleMask: u32 = 15;
+const amPolar: u32 = 16;
+// STD_SPACE_PUNCTUATION = "\xa0\x08": a non-null char* literal. The C display
+// calls pass it where bool_t frontSpace is expected, so it decays to true.
+const STD_SPACE_PUNCTUATION_AS_BOOL: bool = true;
+
+// Extra data-type enum values reached by the display dispatch.
+const dtComplex34: u32 = 2;
+const dtTime: u32 = 3;
+const dtDate: u32 = 4;
+const dtReal34Matrix: u32 = 6;
+const dtComplex34Matrix: u32 = 7;
+
+// upperLower_t: char upper[3]; char lower[3];
+const upperLower_t = extern struct {
+    upper: [3]u8,
+    lower: [3]u8,
+};
+
+// complex34_t == two real34_t (32 bytes).
+const complex34_t = extern struct { bytes: [32]u8 };
+
+// Cross-owner runtime callees for the new ops.
+extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
+extern fn fnDropY(unusedButMandatoryParameter: u16) void;
+extern fn badTypeError(reg: calcRegister_t) void;
+extern fn stringLastGlyph(str: [*c]const u8) i16;
+extern fn stringPrevGlyph(str: [*c]const u8, pos: i16) i16;
+extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn memmove(dst: *anyopaque, src: *const anyopaque, n: usize) *anyopaque;
+
+extern fn getRegisterTag(regist: calcRegister_t) u32;
+
+// Font globals (only the address is needed).
+extern const standardFont: anyopaque;
+extern const numericFont: anyopaque;
+
+// display.c converters reached by _readDestinationRegister.
+extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, maxExp: i16, allowLARGELI: bool) void;
+extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, ignoreTDisp: bool) void;
+extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
+extern fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
+extern fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
+extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool, baseOverride: u8) void;
+extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
+extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool) void;
+
+inline fn reg34c(reg: calcRegister_t) *align(1) complex34_t {
+    return @ptrCast(getRegisterDataPointer(reg));
+}
+inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg) & amAngleMask;
+}
+inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg) & amAngleMask;
+}
+inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg) & amPolar;
+}
+
+// _getGlyphCode: read a 1- or 2-byte glyph code from the string head.
+fn _getGlyphCode(ptrString: [*c]const u8) u16 {
+    var glyph: u16 = @as(u16, ptrString[0]) & 0xff;
+    if ((glyph & 0x80) != 0) {
+        glyph = (glyph << 8) | (@as(u16, ptrString[1]) & 0xff);
+    }
+    return glyph;
+}
+
+// _isSameGlyph: does the glyph code match the glyph at ptrString?
+fn _isSameGlyph(glyph: u16, ptrString: [*c]const u8) bool {
+    var p: [*c]const u8 = ptrString;
+    if ((glyph & 0x8000) != 0) {
+        if ((glyph >> 8) != (@as(u16, p[0]) & 0xff)) {
+            return false;
+        }
+        p += 1;
+    }
+    return (glyph & 0xff) == (@as(u16, p[0]) & 0xff);
+}
+
+// _toUpperOrLowerCase: in-place case conversion using upperLowerTable.
+fn _toUpperOrLowerCase(ptrString: [*c]u8, toUpper: bool) void {
+    const lgString: i16 = @intCast(stringGlyphLength(ptrString));
+    var pos: i16 = 0;
+
+    var i: i16 = 1;
+    while (i <= lgString) : (i += 1) {
+        const glyph: u16 = _getGlyphCode(ptrString + @as(usize, @intCast(pos)));
+        var j: usize = 0;
+        while (upperLowerTable[j].upper[0] != 0) {
+            const currentGlyph: u16 = if (toUpper)
+                _getGlyphCode(@ptrCast(&upperLowerTable[j].lower))
+            else
+                _getGlyphCode(@ptrCast(&upperLowerTable[j].upper));
+            if (glyph == currentGlyph) {
+                const newGlyph: u16 = if (toUpper)
+                    _getGlyphCode(@ptrCast(&upperLowerTable[j].upper))
+                else
+                    _getGlyphCode(@ptrCast(&upperLowerTable[j].lower));
+                if ((glyph & 0x8000) != 0) {
+                    ptrString[@intCast(pos)] = @truncate(newGlyph >> 8);
+                    ptrString[@intCast(pos + 1)] = @truncate(newGlyph & 0xff);
+                } else {
+                    ptrString[@intCast(pos)] = @truncate(newGlyph);
+                }
+                break;
+            }
+            j += 1;
+        }
+        pos += if ((glyph & 0x8000) != 0) 2 else 1;
+    }
+}
+
+pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "cannot convert %s to Lower Case", getRegisterDataTypeName(@intCast(regist), true, false));
+            moreInfoOnError("In function fnAlphaLower:", errorMessage);
+        }
+        return;
+    }
+
+    const ptrString: [*c]u8 = regString(@intCast(regist));
+    _toUpperOrLowerCase(ptrString, SF_TO_LOWER_CASE);
+}
+
+pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "cannot convert %s to Upper Case", getRegisterDataTypeName(@intCast(regist), true, false));
+            moreInfoOnError("In function fnAlphaUpper:", errorMessage);
+        }
+        return;
+    }
+
+    const ptrString: [*c]u8 = regString(@intCast(regist));
+    _toUpperOrLowerCase(ptrString, SF_TO_UPPER_CASE);
+}
+
+// _alphaMid: copy len glyphs of ptrString starting at 1-based `start` into X.
+fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
+    var start: i32 = start_arg;
+    var len: i32 = len_arg;
+    const lgString: i32 = stringGlyphLength(ptrString);
+    if (start == 0) {
+        len = 0;
+    }
+    if (start > lgString) {
+        start = lgString;
+        len = 0;
+    } else if (start + len - 1 > lgString) {
+        len = lgString - start + 1;
+    }
+    var pos1: i16 = 0;
+    if (start > 1) {
+        var i: i32 = 1;
+        while (i < start) : (i += 1) {
+            pos1 = stringNextGlyph(ptrString, pos1);
+        }
+    }
+    var pos2: i16 = 0;
+    var i: i32 = 0;
+    while (i < len) : (i += 1) {
+        if ((ptrString[@intCast(pos1)] & 0x80) != 0) {
+            tmpString[@intCast(pos2)] = ptrString[@intCast(pos1)];
+            pos2 += 1;
+            pos1 += 1;
+        }
+        tmpString[@intCast(pos2)] = ptrString[@intCast(pos1)];
+        pos2 += 1;
+        pos1 += 1;
+    }
+    tmpString[@intCast(pos2)] = 0;
+    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(tmpString) + 1)), amNone);
+    _ = xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
+}
+
+fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
+    var lgInt: longInteger_t = undefined;
+
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        badTypeError(REGISTER_X);
+        return;
+    }
+
+    const ptrString: [*c]u8 = regString(@intCast(regist));
+    const lgString: i32 = stringGlyphLength(ptrString);
+
+    if (!getRegisterAsLongInt(REGISTER_X, &lgInt[0], null)) {
+        longIntegerFree(&lgInt[0]);
+        return;
+    }
+    var len: i32 = @intCast(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+    if (len < 0) {
+        len = 0;
+    } else if (len > lgString) {
+        len = lgString;
+    }
+
+    var start: i32 = 0;
+    if (sf_type == SF_MID) {
+        longIntegerFree(&lgInt[0]);
+        if (!getRegisterAsLongInt(REGISTER_Y, &lgInt[0], null)) {
+            longIntegerFree(&lgInt[0]);
+            return;
+        }
+        start = @intCast(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+        if (start < 0) {
+            start = 0;
+        }
+    }
+
+    if (!saveLastX()) {
+        longIntegerFree(&lgInt[0]);
+        return;
+    }
+
+    switch (sf_type) {
+        SF_LEFT => {
+            _alphaMid(ptrString, 1, len);
+        },
+        SF_MID => {
+            _alphaMid(ptrString, start, len);
+            fnDropY(NOPARAM);
+        },
+        SF_RIGHT => {
+            _alphaMid(ptrString, lgString - len + 1, len);
+        },
+        else => {},
+    }
+    longIntegerFree(&lgInt[0]);
+}
+
+pub export fn fnAlphaLeft(regist: u16) callconv(.c) void {
+    _alphaLeftMidRight(regist, SF_LEFT);
+}
+
+pub export fn fnAlphaMid(regist: u16) callconv(.c) void {
+    _alphaLeftMidRight(regist, SF_MID);
+}
+
+pub export fn fnAlphaRight(regist: u16) callconv(.c) void {
+    _alphaLeftMidRight(regist, SF_RIGHT);
+}
+
+pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        badTypeError(REGISTER_X);
+        return;
+    }
+
+    const ptrString: [*c]u8 = regString(@intCast(regist));
+    const lgString: i32 = stringGlyphLength(ptrString);
+
+    if (strlen(ptrString) > @as(usize, @intCast(TMP_STR_LENGTH))) {
+        displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "string in regist %d is too long, size %d bytes doesn't fit in tmpString (%d bytes max)", @as(c_int, @intCast(regist)), @as(c_uint, @truncate(strlen(ptrString))), @as(c_int, TMP_STR_LENGTH));
+            moreInfoOnError("In function fnAlphaRev:", errorMessage);
+        }
+        return;
+    }
+
+    var ptrTmp: [*c]u8 = tmpString;
+    var pos: i16 = stringLastGlyph(ptrString);
+
+    var i: i16 = 1;
+    while (i <= lgString) : (i += 1) {
+        const glyph: u16 = _getGlyphCode(ptrString + @as(usize, @intCast(pos)));
+        if ((glyph & 0x8000) != 0) {
+            ptrTmp[0] = @truncate(glyph >> 8);
+            ptrTmp += 1;
+        }
+        ptrTmp[0] = @truncate(glyph & 0xff);
+        ptrTmp += 1;
+        pos = stringPrevGlyph(ptrString, pos);
+    }
+    ptrTmp[0] = 0;
+    _ = strcpy(ptrString, tmpString);
+    tmpString[0] = 0; // clear tmpString
+}
+
+// _readDestinationRegister: render a register to tmpString as a display string.
+fn _readDestinationRegister(regist: u16) void {
+    switch (getRegisterDataType(@intCast(regist))) {
+        dtLongInteger => {
+            longIntegerRegisterToDisplayString(@intCast(regist), tmpString, TMP_STR_LENGTH, SCREEN_WIDTH, 50, STD_SPACE_PUNCTUATION_AS_BOOL);
+        },
+        dtTime => {
+            timeToDisplayString(@intCast(regist), tmpString, false);
+        },
+        dtDate => {
+            dateToDisplayString(@intCast(regist), tmpString);
+        },
+        dtString => {
+            _ = xcopy(tmpString, regString(@intCast(regist)), @intCast(stringByteLength(regString(@intCast(regist))) + 1));
+        },
+        dtReal34Matrix => {
+            real34MatrixToDisplayString(@intCast(regist), tmpString);
+        },
+        dtComplex34Matrix => {
+            complex34MatrixToDisplayString(@intCast(regist), tmpString);
+        },
+        dtShortInteger => {
+            shortIntegerToDisplayString(@intCast(regist), tmpString, false, noBaseOverride);
+        },
+        dtReal34 => {
+            real34ToDisplayString(reg34(@intCast(regist)), getRegisterAngularMode(@intCast(regist)), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, STD_SPACE_PUNCTUATION_AS_BOOL, 1);
+            trimLeadingSpace(tmpString);
+        },
+        dtComplex34 => {
+            complex34ToDisplayString(reg34c(@intCast(regist)), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, STD_SPACE_PUNCTUATION_AS_BOOL, 1, @truncate(getComplexRegisterAngularMode(@intCast(regist))), getComplexRegisterPolarMode(@intCast(regist)) != 0);
+            trimLeadingSpace(tmpString);
+        },
+        else => {
+            tmpString[0] = 0;
+        },
+    }
+}
+
+// _doXToAlpha: append the alpha char encoded by X's numeric value to `regist`.
+fn _doXToAlpha(regist: u16) void {
+    var lgInt: longInteger_t = undefined;
+    var char1: u8 = undefined;
+    var char2: u8 = undefined;
+
+    longIntegerInit(&lgInt[0]);
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtLongInteger => {
+            longIntegerFree(&lgInt[0]);
+            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        },
+        dtReal34 => {
+            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), cst34(OFF_const34_1e6))) {
+                uInt32ToLongInteger(1000000, &lgInt[0]);
+            } else {
+                longIntegerFree(&lgInt[0]);
+                convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+            }
+        },
+        dtShortInteger => {
+            longIntegerFree(&lgInt[0]);
+            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        },
+        dtReal34Matrix => {
+            longIntegerFree(&lgInt[0]);
+            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        },
+        else => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "cannot x\xa1\x92\x83\xb1 when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                moreInfoOnError("In function _doXToAlpha:", errorMessage);
+            }
+            longIntegerFree(&lgInt[0]);
+            return;
+        },
+    }
+
+    longIntegerSetPositiveSign(&lgInt[0]);
+    if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = %u", @as(u32, @truncate(lgInt[0]._mp_d[0]))); // OK for 32 and 64 bit limbs
+            moreInfoOnError("In function _doXToAlpha:", errorMessage);
+        }
+        longIntegerFree(&lgInt[0]);
+        return;
+    }
+
+    if (longIntegerIsZero(&lgInt[0])) {
+        char1 = 0;
+        char2 = 0;
+    } else if (lgInt[0]._mp_d[0] < 0x0080) { // OK for 32 and 64 bit limbs
+        char1 = @truncate(lgInt[0]._mp_d[0]); // OK for 32 and 64 bit limbs
+        char2 = 0;
+    } else {
+        char1 = @truncate((lgInt[0]._mp_d[0] >> 8) | 0x80); // OK for 32 and 64 bit limbs
+        char2 = @truncate(lgInt[0]._mp_d[0] & 0x00ff); // OK for 32 and 64 bit limbs
+    }
+
+    longIntegerFree(&lgInt[0]);
+
+    if (regist != @as(u16, @intCast(REGISTER_X))) {
+        _readDestinationRegister(regist);
+    } else {
+        tmpString[0] = 0; // If destination register is X just return the alpha character from the character code
+    }
+
+    if (stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+        displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "the resulting string would be %d characters long. Maximum is %d", stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING);
+            moreInfoOnError("In function _doXToAlpha:", errorMessage);
+        }
+    } else {
+        var l: i32 = stringByteLength(tmpString);
+        tmpString[@intCast(l)] = char1;
+        tmpString[@intCast(l + 1)] = char2;
+        if (char2 != 0) {
+            tmpString[@intCast(l + 2)] = 0;
+            l += 1;
+        }
+        l += 1;
+
+        reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
+        _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
+    }
+}
+
+pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
+    if (getRegisterDataType(@intCast(regist)) != dtString) {
+        badTypeError(REGISTER_X);
+        return;
+    }
+
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtLongInteger, dtReal34, dtShortInteger => {
+            _doXToAlpha(@intCast(REGISTER_X)); // convert X to a single character
+        },
+        dtString => {},
+        else => {
+            badTypeError(REGISTER_X);
+            return;
+        },
+    }
+    var ptrString: [*c]u8 = regString(REGISTER_X);
+    var lgString: i32 = stringGlyphLength(ptrString);
+    if (lgString != 1) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "for \x83\xb1TRIM, X must be a single character. Here X = %s", ptrString);
+            moreInfoOnError("In function fnAlphaTrim:", errorMessage);
+        }
+        copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // Restore register X
+        copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L); // Save register L
+        return;
+    }
+
+    const glyph: u16 = _getGlyphCode(ptrString);
+    ptrString = regString(@intCast(regist));
+    lgString = stringGlyphLength(ptrString);
+
+    // Trim character at the beginning of the string
+    var pos: i16 = 0;
+    while (_isSameGlyph(glyph, ptrString + @as(usize, @intCast(pos)))) {
+        pos = stringNextGlyph(ptrString, pos);
+    }
+    _ = memmove(ptrString, ptrString + @as(usize, @intCast(pos)), strlen(ptrString + @as(usize, @intCast(pos))) + 1);
+
+    // Trim character at the end of the string
+    pos = stringLastGlyph(ptrString);
+    while (_isSameGlyph(glyph, ptrString + @as(usize, @intCast(pos)))) {
+        ptrString[@intCast(pos)] = 0;
+        pos = stringLastGlyph(ptrString);
+    }
+
+    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // Restore register X
+    copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L); // Save register L
+}
+
+// upper<->lower case map (TO_QSPI const upperLowerTable[] in C).
+const upperLowerTable = [_]upperLower_t{
+    .{ .upper = [3]u8{ 0x41, 0x00, 0x00 }, .lower = [3]u8{ 0x61, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x42, 0x00, 0x00 }, .lower = [3]u8{ 0x62, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x43, 0x00, 0x00 }, .lower = [3]u8{ 0x63, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x44, 0x00, 0x00 }, .lower = [3]u8{ 0x64, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x45, 0x00, 0x00 }, .lower = [3]u8{ 0x65, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x46, 0x00, 0x00 }, .lower = [3]u8{ 0x66, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x47, 0x00, 0x00 }, .lower = [3]u8{ 0x67, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x48, 0x00, 0x00 }, .lower = [3]u8{ 0x68, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x49, 0x00, 0x00 }, .lower = [3]u8{ 0x69, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4a, 0x00, 0x00 }, .lower = [3]u8{ 0x6a, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4b, 0x00, 0x00 }, .lower = [3]u8{ 0x6b, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4c, 0x00, 0x00 }, .lower = [3]u8{ 0x6c, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4d, 0x00, 0x00 }, .lower = [3]u8{ 0x6d, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4e, 0x00, 0x00 }, .lower = [3]u8{ 0x6e, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x4f, 0x00, 0x00 }, .lower = [3]u8{ 0x6f, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x50, 0x00, 0x00 }, .lower = [3]u8{ 0x70, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x51, 0x00, 0x00 }, .lower = [3]u8{ 0x71, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x52, 0x00, 0x00 }, .lower = [3]u8{ 0x72, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x53, 0x00, 0x00 }, .lower = [3]u8{ 0x73, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x54, 0x00, 0x00 }, .lower = [3]u8{ 0x74, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x55, 0x00, 0x00 }, .lower = [3]u8{ 0x75, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x56, 0x00, 0x00 }, .lower = [3]u8{ 0x76, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x57, 0x00, 0x00 }, .lower = [3]u8{ 0x77, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x58, 0x00, 0x00 }, .lower = [3]u8{ 0x78, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x59, 0x00, 0x00 }, .lower = [3]u8{ 0x79, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x5a, 0x00, 0x00 }, .lower = [3]u8{ 0x7a, 0x00, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x91, 0x00 }, .lower = [3]u8{ 0x83, 0xb1, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x92, 0x00 }, .lower = [3]u8{ 0x83, 0xb2, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x93, 0x00 }, .lower = [3]u8{ 0x83, 0xb3, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x94, 0x00 }, .lower = [3]u8{ 0x83, 0xb4, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x95, 0x00 }, .lower = [3]u8{ 0x83, 0xb5, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x96, 0x00 }, .lower = [3]u8{ 0x83, 0xb6, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x97, 0x00 }, .lower = [3]u8{ 0x83, 0xb7, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x98, 0x00 }, .lower = [3]u8{ 0x83, 0xb8, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x99, 0x00 }, .lower = [3]u8{ 0x83, 0xb9, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9a, 0x00 }, .lower = [3]u8{ 0x83, 0xba, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9b, 0x00 }, .lower = [3]u8{ 0x83, 0xbb, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9c, 0x00 }, .lower = [3]u8{ 0x83, 0xbc, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9d, 0x00 }, .lower = [3]u8{ 0x83, 0xbd, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9e, 0x00 }, .lower = [3]u8{ 0x83, 0xbe, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0x9f, 0x00 }, .lower = [3]u8{ 0x83, 0xbf, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa0, 0x00 }, .lower = [3]u8{ 0x83, 0xc0, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa1, 0x00 }, .lower = [3]u8{ 0x83, 0xc1, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa3, 0x00 }, .lower = [3]u8{ 0x83, 0xc3, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa4, 0x00 }, .lower = [3]u8{ 0x83, 0xc4, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa5, 0x00 }, .lower = [3]u8{ 0x83, 0xc5, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa6, 0x00 }, .lower = [3]u8{ 0x83, 0xc6, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa7, 0x00 }, .lower = [3]u8{ 0x83, 0xc7, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa8, 0x00 }, .lower = [3]u8{ 0x83, 0xc8, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xa9, 0x00 }, .lower = [3]u8{ 0x83, 0xc9, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xaa, 0x00 }, .lower = [3]u8{ 0x83, 0xca, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xab, 0x00 }, .lower = [3]u8{ 0x83, 0xcb, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc0, 0x00 }, .lower = [3]u8{ 0x80, 0xe0, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc1, 0x00 }, .lower = [3]u8{ 0x80, 0xe1, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc2, 0x00 }, .lower = [3]u8{ 0x80, 0xe2, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc3, 0x00 }, .lower = [3]u8{ 0x80, 0xe3, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc4, 0x00 }, .lower = [3]u8{ 0x80, 0xe4, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc5, 0x00 }, .lower = [3]u8{ 0x80, 0xe5, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc6, 0x00 }, .lower = [3]u8{ 0x80, 0xe6, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc7, 0x00 }, .lower = [3]u8{ 0x80, 0xe7, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc8, 0x00 }, .lower = [3]u8{ 0x80, 0xe8, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xc9, 0x00 }, .lower = [3]u8{ 0x80, 0xe9, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xca, 0x00 }, .lower = [3]u8{ 0x80, 0xea, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xcb, 0x00 }, .lower = [3]u8{ 0x80, 0xeb, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xcc, 0x00 }, .lower = [3]u8{ 0x80, 0xec, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xcd, 0x00 }, .lower = [3]u8{ 0x80, 0xed, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xce, 0x00 }, .lower = [3]u8{ 0x80, 0xee, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xcf, 0x00 }, .lower = [3]u8{ 0x80, 0xef, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd0, 0x00 }, .lower = [3]u8{ 0x80, 0xf0, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd1, 0x00 }, .lower = [3]u8{ 0x80, 0xf1, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd2, 0x00 }, .lower = [3]u8{ 0x80, 0xf2, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd3, 0x00 }, .lower = [3]u8{ 0x80, 0xf3, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd4, 0x00 }, .lower = [3]u8{ 0x80, 0xf4, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd5, 0x00 }, .lower = [3]u8{ 0x80, 0xf5, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd6, 0x00 }, .lower = [3]u8{ 0x80, 0xf6, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd7, 0x00 }, .lower = [3]u8{ 0x80, 0xf7, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd8, 0x00 }, .lower = [3]u8{ 0x80, 0xf8, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xd9, 0x00 }, .lower = [3]u8{ 0x80, 0xf9, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xda, 0x00 }, .lower = [3]u8{ 0x80, 0xfa, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xdb, 0x00 }, .lower = [3]u8{ 0x80, 0xfb, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xdc, 0x00 }, .lower = [3]u8{ 0x80, 0xfc, 0x00 } },
+    .{ .upper = [3]u8{ 0x80, 0xdd, 0x00 }, .lower = [3]u8{ 0x80, 0xfd, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x78, 0x00 }, .lower = [3]u8{ 0x80, 0xff, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x7f, 0x00 }, .lower = [3]u8{ 0x81, 0x01, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x02, 0x00 }, .lower = [3]u8{ 0x81, 0x03, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x04, 0x00 }, .lower = [3]u8{ 0x81, 0x05, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x06, 0x00 }, .lower = [3]u8{ 0x81, 0x07, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x0c, 0x00 }, .lower = [3]u8{ 0x81, 0x0d, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x10, 0x00 }, .lower = [3]u8{ 0x81, 0x11, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x12, 0x00 }, .lower = [3]u8{ 0x81, 0x13, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x14, 0x00 }, .lower = [3]u8{ 0x81, 0x15, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x16, 0x00 }, .lower = [3]u8{ 0x81, 0x17, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x18, 0x00 }, .lower = [3]u8{ 0x81, 0x19, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x1a, 0x00 }, .lower = [3]u8{ 0x81, 0x1b, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x1e, 0x00 }, .lower = [3]u8{ 0x81, 0x1f, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x2a, 0x00 }, .lower = [3]u8{ 0x81, 0x2b, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x2c, 0x00 }, .lower = [3]u8{ 0x81, 0x2d, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x2e, 0x00 }, .lower = [3]u8{ 0x81, 0x2f, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x39, 0x00 }, .lower = [3]u8{ 0x81, 0x3a, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x3d, 0x00 }, .lower = [3]u8{ 0x81, 0x3e, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x41, 0x00 }, .lower = [3]u8{ 0x81, 0x42, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x43, 0x00 }, .lower = [3]u8{ 0x81, 0x44, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x47, 0x00 }, .lower = [3]u8{ 0x81, 0x48, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x4c, 0x00 }, .lower = [3]u8{ 0x81, 0x4d, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x4e, 0x00 }, .lower = [3]u8{ 0x81, 0x4f, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x52, 0x00 }, .lower = [3]u8{ 0x81, 0x53, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x54, 0x00 }, .lower = [3]u8{ 0x81, 0x55, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x58, 0x00 }, .lower = [3]u8{ 0x81, 0x59, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x5a, 0x00 }, .lower = [3]u8{ 0x81, 0x5b, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x5e, 0x00 }, .lower = [3]u8{ 0x81, 0x5f, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x60, 0x00 }, .lower = [3]u8{ 0x81, 0x61, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x62, 0x00 }, .lower = [3]u8{ 0x81, 0x63, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x64, 0x00 }, .lower = [3]u8{ 0x81, 0x65, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x68, 0x00 }, .lower = [3]u8{ 0x81, 0x69, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x6a, 0x00 }, .lower = [3]u8{ 0x81, 0x6b, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x6c, 0x00 }, .lower = [3]u8{ 0x81, 0x6d, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x6e, 0x00 }, .lower = [3]u8{ 0x81, 0x6f, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x72, 0x00 }, .lower = [3]u8{ 0x81, 0x73, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x74, 0x00 }, .lower = [3]u8{ 0x81, 0x75, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x76, 0x00 }, .lower = [3]u8{ 0x81, 0x77, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x79, 0x00 }, .lower = [3]u8{ 0x81, 0x7a, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x7b, 0x00 }, .lower = [3]u8{ 0x81, 0x7c, 0x00 } },
+    .{ .upper = [3]u8{ 0x81, 0x7d, 0x00 }, .lower = [3]u8{ 0x81, 0x7e, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xd8, 0x00 }, .lower = [3]u8{ 0x83, 0xd9, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xdc, 0x00 }, .lower = [3]u8{ 0x83, 0xdd, 0x00 } },
+    .{ .upper = [3]u8{ 0x83, 0xe0, 0x00 }, .lower = [3]u8{ 0x83, 0xe1, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xb6, 0x00 }, .lower = [3]u8{ 0xa4, 0x82, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xb7, 0x00 }, .lower = [3]u8{ 0xa4, 0x83, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xb8, 0x00 }, .lower = [3]u8{ 0xa4, 0x84, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xb9, 0x00 }, .lower = [3]u8{ 0xa4, 0x85, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xba, 0x00 }, .lower = [3]u8{ 0xa4, 0x86, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xbb, 0x00 }, .lower = [3]u8{ 0xa4, 0x87, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xbc, 0x00 }, .lower = [3]u8{ 0xa4, 0x88, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xbd, 0x00 }, .lower = [3]u8{ 0xa4, 0x89, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xbe, 0x00 }, .lower = [3]u8{ 0xa4, 0x8a, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xbf, 0x00 }, .lower = [3]u8{ 0xa4, 0x8b, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc0, 0x00 }, .lower = [3]u8{ 0xa4, 0x8c, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc1, 0x00 }, .lower = [3]u8{ 0xa4, 0x8d, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc2, 0x00 }, .lower = [3]u8{ 0xa4, 0x8e, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc3, 0x00 }, .lower = [3]u8{ 0xa4, 0x8f, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc4, 0x00 }, .lower = [3]u8{ 0xa4, 0x90, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc5, 0x00 }, .lower = [3]u8{ 0xa4, 0x91, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc6, 0x00 }, .lower = [3]u8{ 0xa4, 0x92, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc7, 0x00 }, .lower = [3]u8{ 0xa4, 0x93, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc8, 0x00 }, .lower = [3]u8{ 0xa4, 0x94, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xc9, 0x00 }, .lower = [3]u8{ 0xa4, 0x95, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xca, 0x00 }, .lower = [3]u8{ 0xa4, 0x96, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xcb, 0x00 }, .lower = [3]u8{ 0xa4, 0x97, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xcc, 0x00 }, .lower = [3]u8{ 0xa4, 0x98, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xcd, 0x00 }, .lower = [3]u8{ 0xa4, 0x99, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xce, 0x00 }, .lower = [3]u8{ 0xa4, 0x9a, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xcf, 0x00 }, .lower = [3]u8{ 0xa4, 0x9b, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd0, 0x00 }, .lower = [3]u8{ 0xa4, 0x9c, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd1, 0x00 }, .lower = [3]u8{ 0xa4, 0x9d, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd2, 0x00 }, .lower = [3]u8{ 0xa4, 0x9e, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd3, 0x00 }, .lower = [3]u8{ 0xa4, 0x9f, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd4, 0x00 }, .lower = [3]u8{ 0xa4, 0xa0, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd5, 0x00 }, .lower = [3]u8{ 0xa4, 0xa1, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd6, 0x00 }, .lower = [3]u8{ 0xa4, 0xa2, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd7, 0x00 }, .lower = [3]u8{ 0xa4, 0xa3, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd8, 0x00 }, .lower = [3]u8{ 0xa4, 0xa4, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xd9, 0x00 }, .lower = [3]u8{ 0xa4, 0xa5, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xda, 0x00 }, .lower = [3]u8{ 0xa4, 0xa6, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xdb, 0x00 }, .lower = [3]u8{ 0xa4, 0xa7, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xdc, 0x00 }, .lower = [3]u8{ 0xa4, 0xa8, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xdd, 0x00 }, .lower = [3]u8{ 0xa4, 0xa9, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xde, 0x00 }, .lower = [3]u8{ 0xa4, 0xaa, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xdf, 0x00 }, .lower = [3]u8{ 0xa4, 0xab, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe0, 0x00 }, .lower = [3]u8{ 0xa4, 0xac, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe1, 0x00 }, .lower = [3]u8{ 0xa4, 0xad, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe2, 0x00 }, .lower = [3]u8{ 0xa4, 0xae, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe3, 0x00 }, .lower = [3]u8{ 0xa4, 0xaf, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe4, 0x00 }, .lower = [3]u8{ 0xa4, 0xb0, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe5, 0x00 }, .lower = [3]u8{ 0xa4, 0xb1, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe6, 0x00 }, .lower = [3]u8{ 0xa4, 0xb2, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe7, 0x00 }, .lower = [3]u8{ 0xa4, 0xb3, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe8, 0x00 }, .lower = [3]u8{ 0xa4, 0xb4, 0x00 } },
+    .{ .upper = [3]u8{ 0xa4, 0xe9, 0x00 }, .lower = [3]u8{ 0xa4, 0xb5, 0x00 } },
+    .{ .upper = [3]u8{ 0x00, 0x00, 0x00 }, .lower = [3]u8{ 0x00, 0x00, 0x00 } },
+};

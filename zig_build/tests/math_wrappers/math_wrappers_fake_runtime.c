@@ -119,6 +119,7 @@ uint64_t systemFlags1 = 0;
 static real_t fake_const_nan_value;
 static real_t fake_const_one_value;
 static real_t fake_const_100_value;
+static real_t fake_const_3600_value;
 static real_t fake_const_180_value;
 static real_t fake_const_pi_on4_value;
 static real_t fake_const_3pi_on4_value;
@@ -597,6 +598,7 @@ void mathWrappersReset(void) {
   setFakeReal(&fake_const_nan_value, 0, 0x20);
   setFakeReal(&fake_const_one_value, 1, 0);
   setFakeReal(&fake_const_100_value, 100, 0);
+  setFakeReal(&fake_const_3600_value, 3600, 0);
   setFakeReal(&fake_const_180_value, 180, 0);
   setFakeReal(&fake_const_plus_infinity_value, 0, 0x40);
   setFakeReal(&fake_const_minus_infinity_value, 0, 0xc0);
@@ -3634,6 +3636,10 @@ const real34_t *z47_math_wrappers_const34_86400(void) {
 
 const real_t *z47_math_wrappers_const_100(void) {
   return &fake_const_100_value;
+}
+
+const real_t *z47_math_wrappers_const_3600(void) {
+  return &fake_const_3600_value;
 }
 
 const real_t *z47_math_wrappers_const_180(void) {

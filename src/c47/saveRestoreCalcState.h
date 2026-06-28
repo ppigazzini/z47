@@ -32,8 +32,8 @@
 
   int32_t  toInt32 (const char *str);
 
-  void     readLine      (char *line);
-  void     read2Lines    (char *line1, char *line2);
+  void     readLine      (char *line, size_t maxLen);
+  void     read2Lines    (char *line1, size_t maxLen1, char *line2, size_t maxLen2);
 
   void     doLoad        (uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType);
 

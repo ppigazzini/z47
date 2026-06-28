@@ -258,7 +258,10 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
 
 
-void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
+  // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577 ("Fixed blank X register"), which removed the
+  // errorRegisterLine global and its refreshRegisterLine use. Its 100..103 validation was removed too; param can be
+  // dropped, but not dropped here due to 924 call sites!
   if(errorCode >= NUMBER_OF_ERROR_CODES || errorCode == 0) {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errorCode, "errorCode");
     displayBugScreen(errorMessage);
@@ -266,12 +269,6 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
 
   else if(errMessageRegisterLine > REGISTER_T || errMessageRegisterLine < REGISTER_X) {
     sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errMessageRegisterLine, "errMessageRegisterLine");
-    sprintf(errorMessage + strlen(errorMessage), "Must be from 100 (register X) to 103 (register T)");
-    displayBugScreen(errorMessage);
-  }
-
-  else if(errRegisterLine > REGISTER_T || errRegisterLine < REGISTER_X) {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "displayCalcErrorMessage", errRegisterLine, "errRegisterLine");
     sprintf(errorMessage + strlen(errorMessage), "Must be from 100 (register X) to 103 (register T)");
     displayBugScreen(errorMessage);
   }
@@ -297,12 +294,12 @@ void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegiste
 }
 
 
-void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t errRegisterLine) {
+void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
   const int running = programRunStop == PGM_RUNNING;
   const int spcres = getSystemFlag(FLAG_SPCRES);
 
   if(!spcres || !running) {
-    displayCalcErrorMessage(errorCode, errMessageRegisterLine, errRegisterLine);
+    displayCalcErrorMessage(errorCode, errMessageRegisterLine, disUsedCanBeRemoved);
   }
   if(spcres) {
     convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
