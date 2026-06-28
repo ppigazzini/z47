@@ -498,6 +498,7 @@ const FLAG_3DXYZ: c_int = 0x8066;
 const FLAG_3DPHYS: c_int = 0x8065;
 const FLAG_DMY: c_int = 0xc002;
 const FLAG_MDY: c_int = 0xc003;
+const FLAG_BOLD: c_int = 0x8069;
 const FLAG_BASE_MYM: c_int = 0x805c;
 const FLAG_BASE_HOME: c_int = 0x805e;
 const FLAG_CPXj: c_int = 0x8005;
@@ -811,6 +812,7 @@ const const34_1e6 = constR34(16856);
 // ---------------------------------------------------------------------------
 extern const standardFont: font_t;
 extern const numericFont: font_t;
+extern const numericFontBold: font_t; // FLAG_BOLD bold numeric font (rasterFontsData)
 extern const tinyFont: font_t;
 const glyphNotFound = @extern(*const glyph_t, .{ .name = "glyphNotFound" });
 
@@ -1281,6 +1283,7 @@ extern fn dynmenuGetLabel(menuitem: i16) [*c]u8;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 extern fn charCodeFromString(ch: [*c]const u8, offset: ?*u16) u16;
 extern fn findGlyph(font: *const font_t, charCode: u16) i16;
+extern fn findGlyphExact(font: *const font_t, charCode: u16) i16;
 extern fn generateNotFoundGlyph(font: i16, charCode: u16) void;
 extern fn charCodeHPReplacement(charCode: *u16) void;
 extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
@@ -2191,17 +2194,30 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
         charCodeHPReplacement(&charCode);
     }
 
-    glyphId = findGlyph(font, charCode);
-    if (glyphId >= 0) {
-        glyph = &font.glyphsPtr()[@intCast(glyphId)];
-    } else if (glyphId == -1) {
-        generateNotFoundGlyph(-1, charCode);
-        glyph = glyphNotFound;
-    } else if (glyphId == -2) {
-        generateNotFoundGlyph(-2, charCode);
-        glyph = glyphNotFound;
-    } else {
-        glyph = null;
+    glyph = null;
+    // FLAG_BOLD: probe the separate bold numeric font first (numeric font only).
+    // A miss returns -1 so it never aliases glyph 0, and font stays == numericFont
+    // so the numDouble/HP identity logic below is unaffected. (C screen.c:1164)
+    if (getSystemFlag(FLAG_BOLD) != 0 and font == &numericFont) {
+        const boldId = findGlyphExact(&numericFontBold, charCode);
+        if (boldId >= 0) {
+            glyph = &numericFontBold.glyphsPtr()[@intCast(boldId)];
+        }
+    }
+
+    if (glyph == null) {
+        glyphId = findGlyph(font, charCode);
+        if (glyphId >= 0) {
+            glyph = &font.glyphsPtr()[@intCast(glyphId)];
+        } else if (glyphId == -1) {
+            generateNotFoundGlyph(-1, charCode);
+            glyph = glyphNotFound;
+        } else if (glyphId == -2) {
+            generateNotFoundGlyph(-2, charCode);
+            glyph = glyphNotFound;
+        } else {
+            glyph = null;
+        }
     }
 
     if (glyph == null) {

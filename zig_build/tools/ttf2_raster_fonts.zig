@@ -30,6 +30,10 @@ const FontSpec = struct {
 
 const fonts = [_]FontSpec{
     .{ .file_name = "C47__NumericFont.ttf", .symbol_name = "numericFont", .id = 0, .uses_ranks = false },
+    // Bold numeric font (FLAG_BOLD): C ttf2RasterFonts emits it from
+    // C47__NumericFontBold.ttf with id 0 (name[0]=='n') and no ranks (only the
+    // standard font uses ranks).
+    .{ .file_name = "C47__NumericFontBold.ttf", .symbol_name = "numericFontBold", .id = 0, .uses_ranks = false },
     .{ .file_name = "C47__StandardFont.ttf", .symbol_name = "standardFont", .id = 1, .uses_ranks = true },
     .{ .file_name = "C47__TinyFont.ttf", .symbol_name = "tinyFont", .id = 2, .uses_ranks = false },
 };
