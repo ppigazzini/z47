@@ -845,7 +845,7 @@ pub export fn fnClP(label: u16) callconv(.c) void {
 pub export fn _getProgramSize() callconv(.c) u32 {
     if (currentProgramNumber == numberOfPrograms) {
         var step: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
-        while (!isAtEndOfPrograms(step)) { // .END.
+        while (!(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
             step = findNextStep(step);
         }
         return @intCast((@intFromPtr(step) - @intFromPtr(programList[currentProgramNumber - 1].instructionPointer)) + 2);
@@ -2317,7 +2317,7 @@ pub export fn getNumberOfSteps() callconv(.c) u16 {
     if (currentProgramNumber == numberOfPrograms) {
         var numberOfSteps: u16 = 1;
         var step: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
-        while (!isAtEndOfPrograms(step)) { // .END.
+        while (!(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
             numberOfSteps += 1;
             step = findNextStep(step);
         }
