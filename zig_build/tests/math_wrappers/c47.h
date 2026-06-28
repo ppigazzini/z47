@@ -236,8 +236,8 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define TI_TRUE 1
 #define TI_RADIUS_THETA 1
 #define TI_RADIUS_THETA_SWAPPED 2
-#define TI_PERC 2
-#define TI_PERCD 3
+#define TI_PERC 68
+#define TI_PERCD 69
 #define TI_X_Y 4
 #define TI_X_Y_SWAPPED 5
 #define SET_TI_TRUE_FALSE(condition) do { temporaryInformation = ((condition) ? TI_TRUE : TI_FALSE); } while(0)
