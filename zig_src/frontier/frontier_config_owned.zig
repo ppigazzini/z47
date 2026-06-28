@@ -324,6 +324,7 @@ const RBX_F124: u8 = 222;
 
 const ITM_SQUARE: i16 = 58;
 const ITM_VERS: i16 = 1631;
+const REGISTER_K: u16 = 111;
 const ITM_DREAL: i16 = 1899;
 const ITM_op_j_pol: i16 = 1795;
 const ITM_END: u16 = 1458;
@@ -932,6 +933,8 @@ extern fn getDateString(dateString: [*c]u8) void;
 extern fn assignToMyMenu(position: u16) void;
 extern fn addItemToBuffer(item: u16) void;
 extern fn runFunction(func: i16) void;
+extern var alphaRegister: u16;
+extern var varMenu42: bool;
 extern fn liftStack() void;
 extern fn getFreeRamMemory() u32;
 extern fn scanLabelsAndPrograms() void;
@@ -2362,6 +2365,10 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         printerState_delay(getLineDelay());
 
         runFunction(ITM_VERS);
+
+        // Initialize default alpha register (C: alphaRegister = REGISTER_K; varMenu42 = false;)
+        alphaRegister = REGISTER_K;
+        varMenu42 = false;
 
         if (comptime dmcp_build) {
             if (autoSav == loadAutoSav) {
