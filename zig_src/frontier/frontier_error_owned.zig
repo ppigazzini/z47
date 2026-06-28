@@ -458,17 +458,16 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // ---------------------------------------------------------------------------
 // displayCalcErrorMessage
 // ---------------------------------------------------------------------------
-pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) callconv(.c) void {
+pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
+    // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577 ("Fixed blank X register"); its
+    // 100..103 validation was removed too. Param kept (not dropped) due to ~924 call sites.
+    _ = disUsedCanBeRemoved;
     const bugFmt: [*:0]const u8 = @ptrCast(&commonBugScreenMessages[bugMsgValueFor]);
     if (errorCode >= NUMBER_OF_ERROR_CODES or errorCode == 0) {
         _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errorCode), "errorCode");
         displayBugScreen(@ptrCast(errorMessage));
     } else if (errMessageRegisterLine > REGISTER_T or errMessageRegisterLine < REGISTER_X) {
         _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine");
-        _ = sprintf(errorMessage + strlen(errorMessage), "Must be from 100 (register X) to 103 (register T)");
-        displayBugScreen(@ptrCast(errorMessage));
-    } else if (errRegisterLine > REGISTER_T or errRegisterLine < REGISTER_X) {
-        _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errRegisterLine), "errRegisterLine");
         _ = sprintf(errorMessage + strlen(errorMessage), "Must be from 100 (register X) to 103 (register T)");
         displayBugScreen(@ptrCast(errorMessage));
     } else {
@@ -482,12 +481,12 @@ pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: cal
 // ---------------------------------------------------------------------------
 // displayDomainErrorMessage
 // ---------------------------------------------------------------------------
-pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) callconv(.c) void {
+pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
     const running: bool = programRunStop == PGM_RUNNING;
     const spcres: bool = getSystemFlag(FLAG_SPCRES);
 
     if (!spcres or !running) {
-        displayCalcErrorMessage(errorCode, errMessageRegisterLine, errRegisterLine);
+        displayCalcErrorMessage(errorCode, errMessageRegisterLine, disUsedCanBeRemoved);
     }
     if (spcres) {
         convertRealToResultRegister(const_NaN, REGISTER_X, amNone);

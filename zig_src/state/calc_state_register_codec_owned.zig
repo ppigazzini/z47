@@ -131,7 +131,7 @@ extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
 extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn stringToUint64(s: [*c]const u8) u64;
-extern fn readLine(line: [*c]u8) void;
+extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn displayBugScreen(msg: [*c]const u8) void;
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
@@ -606,7 +606,7 @@ pub fn restoreMatrixData(regist: i16) void {
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;
         while (i < count) : (i += 1) {
-            readLine(tmpString);
+            readLine(tmpString, @intCast(TMP_STR_LENGTH));
             _ = decQuadFromString(base + i * REAL34_SIZE_IN_BYTES, tmpString, &ctxtReal34);
         }
     } else if (dt == dtComplex34Matrix) {
@@ -615,7 +615,7 @@ pub fn restoreMatrixData(regist: i16) void {
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;
         while (i < count) : (i += 1) {
-            readLine(tmpString);
+            readLine(tmpString, @intCast(TMP_STR_LENGTH));
             var imaginaryPart = text.skipWord(tmpString);
             imaginaryPart[0] = 0;
             imaginaryPart += 1;
@@ -635,7 +635,7 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
         const cols = text.toUint16(numOfCols);
         const count = @as(u32, rows) * @as(u32, cols);
         var i: u32 = 0;
-        while (i < count) : (i += 1) readLine(tmpString);
+        while (i < count) : (i += 1) readLine(tmpString, @intCast(TMP_STR_LENGTH));
     }
 }
 

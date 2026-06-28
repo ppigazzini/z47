@@ -51,6 +51,13 @@ const mpz_struct = extern struct {
 };
 const longInteger_t = [1]mpz_struct;
 
+const labelList_t = extern struct {
+    program: i16,
+    step: i32,
+    labelPointer: [*c]u8,
+    instructionPointer: [*c]u8,
+};
+
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified via C probe)
 // ---------------------------------------------------------------------------
@@ -76,6 +83,10 @@ const SCREENDUMP: i16 = 9875;
 
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERROR_NO_MVAR_FOUND: u8 = 25;
+const ITM_MVAR: u16 = 1524;
+const ITM_REM: u16 = 1554;
+const FIRST_LABEL: u16 = 2200;
 const ERR_REGISTER_LINE: calcRegister_t = 102; // REGISTER_Z
 const REGISTER_X: calcRegister_t = 100;
 const amNone: u32 = 5;
@@ -147,6 +158,9 @@ extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination
 extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
 extern fn liftStack() void;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
+extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool_t;
+extern fn findNextStep(step: [*c]u8) [*c]u8;
+extern var labelList: [*c]align(4) labelList_t;
 
 // GMP.
 extern fn @"__gmpz_init"(p: *mpz_struct) void;
@@ -294,17 +308,41 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
 // ===========================================================================
 // fnVarMnu
 // ===========================================================================
+fn _isVarMenu(label: u16) bool_t {
+    var step: [*c]u8 = labelList[@as(usize, label - FIRST_LABEL)].instructionPointer;
+    while (checkOpCodeOfStep(step, ITM_REM)) {
+        step = findNextStep(step);
+    }
+    return checkOpCodeOfStep(step, ITM_MVAR);
+}
+
 pub export fn fnVarMnu(label: u16) callconv(.c) void {
-    currentMvarLabel = label;
-    varMenu42 = false;
-    showSoftmenu(-MNU_MVAR);
+    if (!_isVarMenu(label)) {
+        displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "No MVAR menu variable instruction after the label");
+            moreInfoOnErr("In function fnVarMnu:", errorMessage);
+        }
+    } else {
+        currentMvarLabel = label;
+        varMenu42 = false;
+        showSoftmenu(-MNU_MVAR);
+    }
 }
 
 // fn42VarMnu (42S variable menu) — NEW upstream op (master fd83b4a4).
 pub export fn fn42VarMnu(label: u16) callconv(.c) void {
-    currentMvarLabel = label;
-    varMenu42 = true;
-    showSoftmenu(-MNU_MVAR);
+    if (!_isVarMenu(label)) {
+        displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "No MVAR menu variable instruction after the label");
+            moreInfoOnErr("In function fn42VarMnu:", errorMessage);
+        }
+    } else {
+        currentMvarLabel = label;
+        varMenu42 = true;
+        showSoftmenu(-MNU_MVAR);
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -112,8 +112,12 @@ pub export fn toInt32(str: [*:0]const u8) i32 {
     return stringToInt32(str);
 }
 
-pub export fn readLine(line: [*c]u8) void {
+pub export fn readLine(line: [*c]u8, maxLen: usize) void {
     const out = line orelse return;
+    if (maxLen == 0) {
+        return;
+    }
+    const end = maxLen - 1; // last writable slot; reserve one byte for '\0'
     var idx: usize = 0;
 
     if (runtime.ioEof() == 0) {
@@ -122,8 +126,12 @@ pub export fn readLine(line: [*c]u8) void {
             _ = runtime.ioFileRead(&out[idx], 1);
         }
 
-        while (out[idx] != '\n' and out[idx] != '\r' and runtime.ioEof() == 0) {
+        while (idx < end and out[idx] != '\n' and out[idx] != '\r' and runtime.ioEof() == 0) {
             idx += 1;
+            _ = runtime.ioFileRead(&out[idx], 1);
+        }
+        // line longer than buffer: drain to EOL so the next read resyncs
+        while (out[idx] != '\n' and out[idx] != '\r' and runtime.ioEof() == 0) {
             _ = runtime.ioFileRead(&out[idx], 1);
         }
     }
@@ -134,17 +142,24 @@ pub export fn readLine(line: [*c]u8) void {
 // read2Lines (saveRestoreCalcState.c): like readLine but reads two lines,
 // preserving an empty line between registers saved as empty strings — it has to
 // disambiguate CRLF/LFCR pairs from a genuine blank line.
-pub export fn read2Lines(line1: [*c]u8, line2: [*c]u8) void {
+pub export fn read2Lines(line1: [*c]u8, maxLen1: usize, line2: [*c]u8, maxLen2: usize) void {
     const l1 = line1 orelse return;
     const l2 = line2 orelse return;
+    // last writable slot in each buffer (one byte reserved for '\0')
+    const end1: usize = if (maxLen1 == 0) 0 else maxLen1 - 1;
+    const end2: usize = if (maxLen2 == 0) 0 else maxLen2 - 1;
     var idx1: usize = 0;
     if (runtime.ioEof() == 0) {
         _ = runtime.ioFileRead(&l1[idx1], 1);
         while ((l1[idx1] == '\n' or l1[idx1] == '\r') and runtime.ioEof() == 0) {
             _ = runtime.ioFileRead(&l1[idx1], 1);
         }
-        while (l1[idx1] != '\n' and l1[idx1] != '\r' and runtime.ioEof() == 0) {
+        while (idx1 < end1 and l1[idx1] != '\n' and l1[idx1] != '\r' and runtime.ioEof() == 0) {
             idx1 += 1;
+            _ = runtime.ioFileRead(&l1[idx1], 1);
+        }
+        // overflow: drain to EOL so eol1 and the file position stay correct
+        while (l1[idx1] != '\n' and l1[idx1] != '\r' and runtime.ioEof() == 0) {
             _ = runtime.ioFileRead(&l1[idx1], 1);
         }
     }
@@ -166,8 +181,12 @@ pub export fn read2Lines(line1: [*c]u8, line2: [*c]u8) void {
                 return;
             }
         }
-        while (l2[idx2] != '\n' and l2[idx2] != '\r' and runtime.ioEof() == 0) {
+        while (idx2 < end2 and l2[idx2] != '\n' and l2[idx2] != '\r' and runtime.ioEof() == 0) {
             idx2 += 1;
+            _ = runtime.ioFileRead(&l2[idx2], 1);
+        }
+        // overflow: drain to EOL so the next read resyncs
+        while (l2[idx2] != '\n' and l2[idx2] != '\r' and runtime.ioEof() == 0) {
             _ = runtime.ioFileRead(&l2[idx2], 1);
         }
     }

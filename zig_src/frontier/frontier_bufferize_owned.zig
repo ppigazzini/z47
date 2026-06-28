@@ -2915,6 +2915,9 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
 fn nimExitCloseFromGoto() bool {
     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
     closeNim();
+    if (lastErrorCode != 0) {
+        return true; // closeNim rejected buffer; skip display rebuild (caller must return)
+    }
     if (calcMode != CM_NIM and lastErrorCode == 0) {
         printTrace(ITM_ENTER, NOPARAM);
         setSystemFlag(FLAG_ASLIFT);
@@ -3445,6 +3448,9 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 done = true;
                 screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
                 closeNim();
+                if (lastErrorCode != 0) {
+                    return; // closeNim rejected buffer; skip display rebuild
+                }
                 if (calcMode != CM_NIM and lastErrorCode == 0) {
                     // IR_PRINTING: Close NIM ended with entering the value on the stack
                     printTrace(ITM_ENTER, NOPARAM);

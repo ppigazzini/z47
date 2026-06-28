@@ -134,7 +134,7 @@ pub inline fn unwindAllSubroutines() void {
 }
 
 pub inline fn readLine(buffer: []u8) void {
-    io_owned.readLineInto(buffer.ptr);
+    io_owned.readLineInto(buffer.ptr, buffer.len);
 }
 
 pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {

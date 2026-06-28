@@ -80,7 +80,7 @@ extern fn goToGlobalStep(step: i32) void;
 extern fn fnGoto(label: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn readLine(line: [*c]u8) void;
+extern fn readLine(line: [*c]u8, maxLen: usize) void;
 
 extern fn z47_program_serialization_runtime_check_power() bool;
 extern fn z47_program_serialization_runtime_select_program(label: u16) bool;
@@ -221,12 +221,12 @@ pub fn writeU8Line(value: u8) void {
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 
-pub fn readLineInto(buffer: [*c]u8) void {
+pub fn readLineInto(buffer: [*c]u8, maxLen: usize) void {
     if (use_fake_program_serialization_harness_surface) {
         z47_program_serialization_runtime_read_line(buffer);
         return;
     }
-    readLine(buffer);
+    readLine(buffer, maxLen);
 }
 
 pub fn closeFile() void {
