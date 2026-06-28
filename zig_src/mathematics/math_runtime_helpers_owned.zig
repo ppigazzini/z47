@@ -98,6 +98,7 @@ const offset_const39_3piOn2 = 5036; // const39_3piOn2
 const offset_const75_pi = 7388; // const75_pi
 const offset_const75_piOn2 = 7472; // const75_piOn2
 const offset_const75_piOn4 = 7556; // const75_piOn4
+const offset_const_3600 = 5448; // const_3600
 
 // Constants the retired C file synthesized locally (lazily initialized statics
 // built via z47_math_wrappers_init_constant; here they are comptime values
@@ -212,6 +213,10 @@ pub export fn z47_math_wrappers_const75_piOn2() linksection(runtime.code_section
 
 pub export fn z47_math_wrappers_const75_piOn4() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
     return constantPointer(offset_const75_piOn4);
+}
+
+pub export fn z47_math_wrappers_const_3600() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
+    return constantPointer(offset_const_3600);
 }
 
 pub export fn z47_math_wrappers_const_plus_infinity() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {

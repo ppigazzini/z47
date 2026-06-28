@@ -162,6 +162,14 @@ pub export fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res:
         if (!getRegisterAsAnyRealQuiet(regist1, &real1) or !getRegisterAsAnyRealQuiet(regist2, &real2)) {
             return false;
         }
+        // Time stored in seconds; normalize to hours to compare against a plain
+        // number similar to =? / <? / >? (see compareRegisters also).
+        if (runtime.getRegisterDataType(regist1) == runtime.dtTime) {
+            runtime.realDivide(&real1, runtime.z47_math_wrappers_const_3600(), &real1, &runtime.ctxtReal39);
+        }
+        if (runtime.getRegisterDataType(regist2) == runtime.dtTime) {
+            runtime.realDivide(&real2, runtime.z47_math_wrappers_const_3600(), &real2, &runtime.ctxtReal39);
+        }
         realCompare(&real1, &real2, &rcmp, &runtime.ctxtReal39);
         res.* = if (runtime.realIsZero(&rcmp)) 0 else if (realIsPositive(&rcmp)) 1 else -1;
     }
@@ -518,6 +526,36 @@ fn compareRegisters(regist: u16, mode: u8) void {
             }
         },
 
+        // (time, real, shoI, longI) x (time, real, shoI, longI)
+        // short & long integers will be casted as real, see above
+        typePair(runtime.dtReal34, runtime.dtTime),
+        typePair(runtime.dtTime, runtime.dtReal34),
+        typePair(runtime.dtLongInteger, runtime.dtTime),
+        typePair(runtime.dtShortInteger, runtime.dtTime),
+        typePair(runtime.dtTime, runtime.dtLongInteger),
+        typePair(runtime.dtTime, runtime.dtShortInteger),
+        typePair(runtime.dtTime, runtime.dtTime),
+        => {
+            var cannot_be_complex = false;
+            if (!getRegisterAsComplexOrAnyReal(runtime.REGISTER_X, &x_real, &x_imag, &cannot_be_complex)) {
+                compareTypeError(runtime.REGISTER_X);
+                return;
+            }
+            if (!getRegisterAsComplexOrAnyReal(asRegister(regist), &r_real, &r_imag, &cannot_be_complex)) {
+                compareTypeError(asRegister(regist));
+                return;
+            }
+
+            if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {
+                runtime.realDivide(&x_real, runtime.z47_math_wrappers_const_3600(), &x_real, &runtime.ctxtReal39);
+            }
+            if (runtime.getRegisterDataType(asRegister(regist)) == runtime.dtTime) {
+                runtime.realDivide(&r_real, runtime.z47_math_wrappers_const_3600(), &r_real, &runtime.ctxtReal39);
+            }
+
+            compareRealsToTemporaryInformation(&x_real, &r_real, mode);
+        },
+
         // Unsupported combinations
         else => {
             compareTypeError(asRegister(regist));
@@ -869,6 +907,21 @@ fn incDecCplx(regist: u16, flag: u8) void {
     runtime.realToReal34(&r_real, @ptrCast(runtime.registerReal34Ptr(asRegister(regist))));
 }
 
+pub export fn incDecTime(regist: u16, flag: u8) callconv(.c) void {
+    var r: runtime.real_t = undefined;
+
+    // "count hours", value in seconds; step by 1 h = 3600 s to match DSZ/ISZ.
+    runtime.real34ToReal(@ptrCast(runtime.registerReal34Ptr(asRegister(regist))), &r);
+
+    if (flag == INC_FLAG) {
+        runtime.realAdd(&r, runtime.z47_math_wrappers_const_3600(), &r, &runtime.ctxtReal39);
+    } else {
+        runtime.realSubtract(&r, runtime.z47_math_wrappers_const_3600(), &r, &runtime.ctxtReal39);
+    }
+
+    runtime.realToReal34(&r, @ptrCast(runtime.registerReal34Ptr(asRegister(regist))));
+}
+
 pub export fn incDecShoI(regist: u16, flag: u8) callconv(.c) void {
     var r_sign: i16 = undefined;
     var r_value: u64 = undefined;
@@ -898,6 +951,7 @@ fn incDecDispatch(regist: u16, flag: u8) void {
         runtime.dtLongInteger => incDecLonI(regist, flag),
         runtime.dtReal34 => incDecReal(regist, flag),
         runtime.dtComplex34 => incDecCplx(regist, flag),
+        runtime.dtTime => incDecTime(regist, flag),
         runtime.dtShortInteger => incDecShoI(regist, flag),
         else => incDecError(regist, flag),
     }

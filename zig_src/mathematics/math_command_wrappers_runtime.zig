@@ -766,6 +766,7 @@ pub extern fn z47_math_wrappers_const_2() *const real_t;
 pub extern fn z47_math_wrappers_const_3() *const real_t;
 pub extern fn z47_math_wrappers_const_5() *const real_t;
 pub extern fn z47_math_wrappers_const_100() *const real_t;
+pub extern fn z47_math_wrappers_const_3600() *const real_t;
 pub extern fn z47_math_wrappers_const_1on2() *const real_t;
 pub extern fn z47_math_wrappers_const_1on3() *const real_t;
 pub extern fn z47_math_wrappers_const_phi() *const real_t;

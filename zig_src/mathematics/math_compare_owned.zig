@@ -39,7 +39,13 @@ fn callLegacyCompare(mode: Mode, parameter: u16) void {
 
 fn runCompare(parameter: u16, mode: Mode) void {
     const regist = registFromParameter(parameter);
-    if (!isOwnedStackRegister(regist)) {
+    // The owned fast path only covers integer/real/complex scalars. Anything
+    // else (e.g. dtTime, which the legacy compareRegisters normalizes by
+    // dividing seconds by const_3600) must defer to the legacy machinery.
+    if (!isOwnedStackRegister(regist) or
+        !isOwnedCompareType(runtime.getRegisterDataType(runtime.REGISTER_X)) or
+        !isOwnedCompareType(runtime.getRegisterDataType(regist)))
+    {
         callLegacyCompare(mode, parameter);
         return;
     }
