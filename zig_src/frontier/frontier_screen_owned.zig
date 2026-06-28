@@ -239,7 +239,7 @@ const stdnumEnlarge: c_int = 2;
 const numSmall: c_int = 3;
 const numHalf: c_int = 4;
 const combinationFontsDefault: u8 = 2;
-const DOUBLING: u16 = 6;
+const DOUBLING_A: u16 = 15; // REPLACEFONT defined; C: DOUBLING = (checkHP ? DOUBLING_A : 6)
 const DOUBLINGBASEX: u16 = 8;
 const REDUCT_A: c_int = 3;
 const REDUCT_B: c_int = 4;
@@ -2234,7 +2234,10 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     endingCols = if (showEndingCols != 0) g.colsAfterGlyph else 0;
 
     const numDouble: bool = font == &numericFont and checkHP() and temporaryInformation == TI_NO_INFO;
-    const doubling: u16 = if (numDouble) DOUBLING else DOUBLINGBASEX;
+    // C: DOUBLING = (checkHP ? DOUBLING_A : 6). numDouble already implies checkHP(),
+    // so this resolves to DOUBLING_A(15) here — matching the width owner (char_string),
+    // which was using 15 while rendering used 6 (glyphs rendered at ~0.75x vs ~1.875x).
+    const doubling: u16 = if (numDouble) (if (checkHP()) DOUBLING_A else 6) else DOUBLINGBASEX;
 
     const rep_enlarge: bool = numDouble or (enlarge != 0 and combinationFonts != 0);
     const yNewMaxDx: u32 = @intCast((if (rep_enlarge) @as(i32, 2) else 1) * ((@as(i32, @intCast(@as(u32, g.rowsAboveGlyph) + g.rowsGlyph + g.rowsBelowGlyph)) >> @intCast(miniC)) - (if (rep_enlarge) @as(i32, 4) else 0)));
