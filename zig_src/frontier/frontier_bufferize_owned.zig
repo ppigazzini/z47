@@ -2902,6 +2902,27 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
     }
 }
 
+// C `goto addItemToNimBuffer_exit` jumps to the label at the START of the
+// ITM_EXIT1 case body. It is reached only from the integer base-entry shortcuts
+// (item is a base digit/key, never ITM_EXIT1), so the item==ITM_EXIT1-guarded
+// saveForUndo paths are skipped. This runs the same close/commit the label runs;
+// returns true if the caller must return immediately (NIM closed and left
+// CM_NIM), false to fall through to the shared post-switch display processing
+// (the `break :sw` path, same as ITM_PERIOD). The earlier port mistranslated the
+// goto as `break :addItemToNimBuffer_exit`, which exited the function and skipped
+// closeNim() — so base-entry shortcuts (B/D/H/I/OCT, base-digit completion) never
+// committed the number to X.
+fn nimExitCloseFromGoto() bool {
+    screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
+    closeNim();
+    if (calcMode != CM_NIM and lastErrorCode == 0) {
+        printTrace(ITM_ENTER, NOPARAM);
+        setSystemFlag(FLAG_ASLIFT);
+        return true;
+    }
+    return false;
+}
+
 // ---------------------------------------------------------------------------
 // addItemToNimBuffer
 // ---------------------------------------------------------------------------
@@ -2970,7 +2991,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
     done = false;
 
-    addItemToNimBuffer_exit: {
+    {
         sw: switch (item) {
             ITM_0, ITM_1, ITM_2, ITM_3, ITM_4, ITM_5, ITM_6, ITM_7, ITM_8, ITM_9 => {
                 done = true;
@@ -3076,7 +3097,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                         if (atoi(strBase) > 16) {
                             strBase[1] = 0;
                         } else if (atoi(strBase) >= 2) {
-                            break :addItemToNimBuffer_exit;
+                            {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                         }
                     },
                     else => {
@@ -3161,7 +3186,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             ITM_EXPONENT => {
                 if (integerShortcuts() and nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     _ = strcat(aimBuffer, "8");
-                    break :addItemToNimBuffer_exit;
+                    {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                 }
                 done = true;
                 if (aimBuffer[strlen(aimBuffer) - 1] == 'i') {
@@ -3445,7 +3474,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     keyActionProcessed = 0;
                 } else if (integerShortcuts() and nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     _ = strcat(aimBuffer, "2");
-                    break :addItemToNimBuffer_exit;
+                    {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                 } else {
                     keyActionProcessed = 0;
                 }
@@ -3456,7 +3489,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     keyActionProcessed = 0;
                 } else if (integerShortcuts() and nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     _ = strcat(aimBuffer, "10");
-                    break :addItemToNimBuffer_exit;
+                    {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                 } else {
                     keyActionProcessed = 0;
                 }
@@ -3465,7 +3502,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             ITM_RCL => { // H for hexadecimal base
                 if (integerShortcuts() and nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     _ = strcat(aimBuffer, "16");
-                    break :addItemToNimBuffer_exit;
+                    {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                 } else {
                     keyActionProcessed = 0;
                 }
@@ -3475,7 +3516,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (integerShortcuts() and nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     aimBuffer[strlen(aimBuffer) - 1] = 0;
                     nimNumberPart = NP_INT_10;
-                    break :addItemToNimBuffer_exit;
+                    {
+                        done = true;
+                        if (nimExitCloseFromGoto()) return;
+                        break :sw;
+                    }
                 } else {
                     keyActionProcessed = 0;
                 }
