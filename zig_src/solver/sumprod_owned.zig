@@ -303,7 +303,7 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
     if (!real34IsZero(&loopStep)) {
         real34Divide(&rLoop, &loopStep, &rLoop);
     }
-    longIntegerInit(&iLoop[0]);
+    // iLoop is initialised by convertReal34ToLongInteger; do not double-init (leak).
     convertReal34ToLongInteger(&rLoop, &iLoop[0], DEC_ROUND_DOWN);
     loop = @bitCast(longIntegerModuloUInt(&iLoop[0], @bitCast(@as(i32, 0x7FFFFFFF))));
     longIntegerFree(&iLoop[0]);

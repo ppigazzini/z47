@@ -1765,7 +1765,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         longIntegerFree(&lgInt[0]);
     } else if (getRegisterDataType(regist) == dtShortInteger) {
         var lgInt: longInteger_t = undefined;
-        longIntegerInit(&lgInt[0]);
+        // convertShortIntegerRegisterToLongInteger initialises lgInt; do not double-init (leak).
         convertShortIntegerRegisterToLongInteger(regist, &lgInt[0]);
         value = @bitCast(longIntegerToUInt32(&lgInt[0]));
         longIntegerFree(&lgInt[0]);
