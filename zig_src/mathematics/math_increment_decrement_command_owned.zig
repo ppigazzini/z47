@@ -65,6 +65,19 @@ fn incDecCplx(regist: runtime.calcRegister_t, operation: Operation) void {
     runtime.realToReal34(&value, real34DataPointer(regist));
 }
 
+fn incDecTime(regist: runtime.calcRegister_t, operation: Operation) void {
+    var value: runtime.real_t = undefined;
+
+    // "count hours", value in seconds; step by 1 h = 3600 s to match DSZ/ISZ.
+    runtime.real34ToReal(real34DataPointer(regist), &value);
+    if (operation == .inc) {
+        runtime.realAdd(&value, runtime.z47_math_wrappers_const_3600(), &value, &runtime.ctxtReal39);
+    } else {
+        runtime.realSubtract(&value, runtime.z47_math_wrappers_const_3600(), &value, &runtime.ctxtReal39);
+    }
+    runtime.realToReal34(&value, real34DataPointer(regist));
+}
+
 fn incDecShoI(regist: runtime.calcRegister_t, operation: Operation) void {
     var sign: i16 = 0;
     var value: u64 = 0;
@@ -91,6 +104,7 @@ fn incDecRegister(regist: runtime.calcRegister_t, operation: Operation) void {
         runtime.dtLongInteger => incDecLonI(regist, operation),
         runtime.dtReal34 => incDecReal(regist, operation),
         runtime.dtComplex34 => incDecCplx(regist, operation),
+        runtime.dtTime => incDecTime(regist, operation),
         runtime.dtShortInteger => incDecShoI(regist, operation),
         else => incDecError(regist),
     }
