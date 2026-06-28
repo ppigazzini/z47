@@ -539,9 +539,15 @@ fn itemStr(gapItem: u16) [*c]const u8 {
     if (gapItem == 0) return lit_11;
     return &indexOfItems[gapItem].itemSoftmenuName;
 }
-fn gapChar1LR(gapItem: u16) [*c]const u8 {
+fn gapChar1LR(gapItem: u16, isRight: bool) [*c]const u8 {
     const s = itemStr(gapItem);
-    if (s[0] != 0 and s[1] == 0 and s[2] == 0) {
+    // C gapChar1Left guard is strict 1-byte (s[1]==0 && s[2]==0); gapChar1Right is
+    // more permissive — s[1]==0 || (s[1]!=0 && s[2]==0), i.e. also a 2-byte separator.
+    const match = if (isRight)
+        (s[0] != 0 and (s[1] == 0 or s[2] == 0))
+    else
+        (s[0] != 0 and s[1] == 0 and s[2] == 0);
+    if (match) {
         return switch (s[0]) {
             ',' => lit_comma1,
             '.' => lit_dot1,
@@ -553,10 +559,10 @@ fn gapChar1LR(gapItem: u16) [*c]const u8 {
     return s;
 }
 inline fn SEPARATOR_LEFT() [*c]const u8 {
-    return gapChar1LR(gapItemLeft);
+    return gapChar1LR(gapItemLeft, false);
 }
 inline fn SEPARATOR_RIGHT() [*c]const u8 {
-    return gapChar1LR(gapItemRight);
+    return gapChar1LR(gapItemRight, true);
 }
 
 // ===========================================================================
@@ -2002,9 +2008,16 @@ const KeyPopFn = *const fn () callconv(.c) c_int;
 const KeyPopAllFn = *const fn () callconv(.c) void;
 const WaitForKeyReleaseFn = *const fn (c_int) callconv(.c) c_int;
 
+const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
-    const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
-    f(x, y, dx, dy, val);
+    // On firmware this is a ROM trampoline; on host the linkable symbol exists
+    // (see frontier_status_bar_owned), so the CB background-clear works on PC too.
+    if (comptime dmcp_build) {
+        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
+        f(x, y, dx, dy, val);
+    } else {
+        c_lcd_fill_rect(x, y, dx, dy, val);
+    }
 }
 inline fn create_screenshot(a: c_int) c_int {
     const f: CreateScreenshotFn = @ptrFromInt(LIBRARY_FN_BASE + 376);
@@ -4147,9 +4160,7 @@ const cbCheckedWhite linksection(code_section) = [_][2]u8{
 };
 
 pub export fn CB_CHECKED(xx: u32, yy: u32) callconv(.c) void {
-    if (comptime dmcp_build) {
-        lcd_fill_rect(xx, yy - 1, 10, 11, 0);
-    }
+    lcd_fill_rect(xx, yy - 1, 10, 11, 0); // Clear background area (C: unconditional)
     drawPixelArray(xx, yy, &cbCheckedBlack, cbCheckedBlack.len, false);
     drawPixelArray(xx, yy, &cbCheckedWhite, cbCheckedWhite.len, true);
 }
@@ -4179,9 +4190,7 @@ const cbUncheckedWhite linksection(code_section) = [_][2]u8{
 };
 
 pub export fn CB_UNCHECKED(xx: u32, yy: u32) callconv(.c) void {
-    if (comptime dmcp_build) {
-        lcd_fill_rect(xx, yy - 1, 10, 11, 0);
-    }
+    lcd_fill_rect(xx, yy - 1, 10, 11, 0); // Clear background area (C: unconditional)
     drawPixelArray(xx, yy, &cbUncheckedBlack, cbUncheckedBlack.len, false);
     drawPixelArray(xx, yy, &cbUncheckedWhite, cbUncheckedWhite.len, true);
 }
