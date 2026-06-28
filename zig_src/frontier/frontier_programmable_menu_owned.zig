@@ -88,6 +88,7 @@ const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 
 const FLAG_IGN1ER: c_uint = 0x8024;
 
+const ITM_KEY: i16 = 1497;
 const ITM_XEQ: i16 = 3;
 const ITM_RCL: i16 = 51;
 const ITM_MENU: i16 = 1520;
@@ -154,6 +155,9 @@ extern fn showSoftmenu(id: i16) void;
 extern fn popSoftmenu() void;
 extern fn runProgram(singleStep: bool, menuLabel: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
+extern fn lastFuncNo() i16;
+extern var lastFunc: i16;
+extern var alphaRegister: u16;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
@@ -366,33 +370,34 @@ pub export fn fnClearMenu(unusedButMandatoryParameter: u16) callconv(.c) void {
 fn _setCaption(keyNum: u16) void {
     if (1 <= keyNum and keyNum <= 18) {
         var ts: [*c]u8 = tmpString;
-        switch (getRegisterDataType(REGISTER_X)) {
+        const stringRegister: calcRegister_t = if (lastFuncNo() == ITM_KEY) REGISTER_X else @intCast(alphaRegister);
+        switch (getRegisterDataType(stringRegister)) {
             dtString => {
-                copyRegisterStringTo(tmpString, REGISTER_X);
+                copyRegisterStringTo(tmpString, stringRegister);
             },
             dtLongInteger => {
-                longIntegerRegisterToDisplayString(REGISTER_X, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH, 50, false); // JM added last parameter: Allow LARGELI
+                longIntegerRegisterToDisplayString(stringRegister, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH, 50, false); // JM added last parameter: Allow LARGELI
             },
             dtTime => {
-                timeToDisplayString(REGISTER_X, tmpString, false);
+                timeToDisplayString(stringRegister, tmpString, false);
             },
             dtDate => {
-                dateToDisplayString(REGISTER_X, tmpString);
+                dateToDisplayString(stringRegister, tmpString);
             },
             dtReal34Matrix => {
-                real34MatrixToDisplayString(REGISTER_X, tmpString);
+                real34MatrixToDisplayString(stringRegister, tmpString);
             },
             dtComplex34Matrix => {
-                complex34MatrixToDisplayString(REGISTER_X, tmpString);
+                complex34MatrixToDisplayString(stringRegister, tmpString);
             },
             dtShortInteger => {
-                shortIntegerToDisplayString(REGISTER_X, tmpString, false, noBaseOverride);
+                shortIntegerToDisplayString(stringRegister, tmpString, false, noBaseOverride);
             },
             dtReal34 => {
-                real34ToDisplayString(regReal34(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+                real34ToDisplayString(regReal34(stringRegister), getRegisterAngularMode(stringRegister), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC);
             },
             dtComplex34 => {
-                complex34ToDisplayString(regComplex34(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), getComplexRegisterPolarMode(REGISTER_X) != 0);
+                complex34ToDisplayString(regComplex34(stringRegister), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, !LIMITEXP, FRONTSPACE, NOIRFRAC, @intCast(getComplexRegisterAngularMode(stringRegister)), getComplexRegisterPolarMode(stringRegister) != 0);
             },
             dtConfig => {
                 _ = xcopy(tmpString, "Configu", 8);
@@ -402,7 +407,9 @@ fn _setCaption(keyNum: u16) void {
             },
         }
 
-        fnDrop(NOPARAM);
+        if (lastFunc == ITM_KEY) { // Drop for ITM_KEY, not for ITM_42KEY
+            fnDrop(NOPARAM);
+        }
 
         var i: usize = 0;
         while (i < 7 and ts[0] != 0) : (i += 1) {
