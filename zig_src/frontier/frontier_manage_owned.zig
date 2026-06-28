@@ -288,6 +288,8 @@ const ITM_KEYX: u16 = 1499;
 const ITM_42KEY: u16 = 2794;
 const ITM_42KEYG: u16 = 2795;
 const ITM_42KEYX: u16 = 2796;
+const ITM_42STRING: u16 = 2775;
+const ITM_42APPEND: u16 = 2776;
 const ITM_REM: u16 = 1554;
 const ITM_toINT: u16 = 1687;
 const ITM_HMStoTM: u16 = 1688;
@@ -359,6 +361,8 @@ const STD_RIGHT_SINGLE_QUOTE = "\xa0\x19";
 const STD_UP_ARROW = "\xa1\x91";
 const STD_DOWN_ARROW = "\xa1\x93";
 const STD_CURSOR = "\xa4\x27";
+const STD_alpha = "\x83\xb1";
+const STD_RIGHT_TACK = "\xa2\xa2";
 
 // ---------------------------------------------------------------------------
 // Globals: GENUINE C pointer/scalar variables -> extern var (declared `T *name;`
@@ -1082,7 +1086,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                 if (getSystemFlag(FLAG_ALPHA)) {
                     const tmpChar = tmpString[4];
                     tmpString[4] = 0;
-                    const cursorInString: i16 = if (strcmp(tmpString, "REM ") == 0) T_cursorPos + 4 else T_cursorPos;
+                    const cursorInString: i16 = if (strcmp(tmpString, "REM ") == 0) T_cursorPos + 4 else if (strcmp(tmpString, "42" ++ STD_alpha) == 0 or strcmp(tmpString, "42" ++ STD_RIGHT_TACK) == 0) T_cursorPos + 5 else T_cursorPos;
                     tmpString[4] = tmpChar;
                     _ = xcopy(tmpString + 2 + @as(usize, @intCast(cursorInString)) + 2, tmpString + 2 + @as(usize, @intCast(cursorInString)), @intCast(stringByteLength(tmpString + 2 + @as(usize, @intCast(cursorInString))) + 1));
                     tmpString[2 + @as(usize, @intCast(cursorInString))] = STD_CURSOR[0];
@@ -1929,6 +1933,15 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
         tam.function = @intCast(ITM_REM);
         pemAlpha(func);
         pemCursorIsZerothStep = false;
+        return;
+    } else if (@as(u16, @bitCast(func)) == ITM_42STRING or @as(u16, @bitCast(func)) == ITM_42APPEND) {
+        tmpString[0] = @intCast((@as(u16, @bitCast(func)) >> 8) | 0x80);
+        tmpString[1] = @truncate(@as(u16, @bitCast(func)) & 0xff);
+        tmpString[2] = @intCast(STRING_LABEL_VARIABLE);
+        tmpString[3] = @intCast(stringByteLength(aimBuffer));
+        _ = xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
+        _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 4));
+        aimBuffer[0] = 0;
         return;
     }
 

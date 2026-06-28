@@ -316,6 +316,7 @@ const ITM_CHS: u16 = 97;
 const ITM_CC: u16 = 1730;
 const ITM_EXPONENT: u16 = 990;
 const ITM_NOP: u16 = 1542;
+const ITM_42STRING: u16 = 2775;
 const ITM_alpha: u16 = 628;
 const ITM_INDIRECTION: u16 = 539;
 const ITM_GTO: u8 = 2;
@@ -386,6 +387,7 @@ const PARAM_SKIP_BACK: u16 = 9;
 const PARAM_NUMBER_8_16: u16 = 10;
 const PARAM_SHUFFLE: u16 = 11;
 const PARAM_MENU: u16 = 12;
+const PARAM_REM: u16 = 14;
 const PTP_STATUS: u16 = 7680;
 
 const SYSTEM_FLAG_NUMBER: u16 = 250;
@@ -722,6 +724,8 @@ extern fn isAtEndOfPrograms(step: [*c]const u8) bool_t;
 extern fn isFunctionOldParam16(func: i16) bool_t;
 extern fn tamEnterMode(func: i16) void;
 extern fn tamProcessInput(item: i16) void;
+extern fn stringGlyphLength(str: [*c]const u8) i32;
+extern fn stringLastGlyph(str: [*c]const u8) i16;
 // regKStoC is a static inline (registers.h).
 const FIRST_STAT_REGISTER_IN_KS_CODE: u16 = 211;
 const NUMBER_OF_LOCAL_REGISTERS: u16 = 99;
@@ -1968,6 +1972,20 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             if ((opParam3 == INDIRECT_REGISTER) or (opParam3 == INDIRECT_VARIABLE)) {
                 tamProcessInput(ITM_INDIRECTION);
             }
+        },
+        PARAM_REM => {
+            _ = memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
+            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            if (pemCursorIsZerothStep == 0) {
+                fnBst(NOPARAM);
+            }
+            tamEnterMode(func);
+            if (stringGlyphLength(varOrLblName) == (if (@as(u16, @bitCast(func)) == ITM_42STRING) @as(i32, 15) else @as(i32, 14))) {
+                varOrLblName[@intCast(stringLastGlyph(varOrLblName))] = 0; // Ensure name is 14 (42STRING) or 13 (42APPEND) characters maximum
+            }
+            _ = strcpy(aimBuffer, varOrLblName);
+            alphaCursor = @intCast(stringGlyphLength(varOrLblName));
+            tamProcessInput(ITM_NOP); // to insert the resulting string in program
         },
         else => {},
     }
