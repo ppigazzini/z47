@@ -145,6 +145,7 @@ const INVALID_MENU: i16 = 2791;
 const TEMP_REGISTER_1: calcRegister_t = 135;
 const NOPARAM: u16 = 9876;
 const REGISTER_X: calcRegister_t = 100;
+const REGISTER_T: calcRegister_t = 103;
 
 const PARAM_DECLARE_LABEL: u16 = 1;
 const PARAM_LABEL: u16 = 2;
@@ -193,6 +194,8 @@ const ITM_LBLQ: u16 = 1503;
 const ITM_RTNP1: u16 = 1579;
 const ITM_SKIP: u16 = 1603;
 const ITM_SOLVE: u16 = 1608;
+const ITM_42STRING: u16 = 2775;
+const ITM_42APPEND: u16 = 2776;
 
 const SFL_TDM24: u16 = 463;
 const SFL_MONIT: u16 = 2251;
@@ -227,6 +230,7 @@ const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 const ERROR_NON_PROGRAMMABLE_COMMAND: u8 = 50;
 const ERROR_UNDEF_MENU: u8 = 59;
 const ERROR_SOLVER_ABORT: u8 = 60;
+const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 
 const PGM_STOPPED: u8 = 0;
 const PGM_RUNNING: u8 = 1;
@@ -281,6 +285,7 @@ extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern var currentProgramNumber: u16;
 extern var currentLocalStepNumber: u16;
 extern var currentStep: [*c]u8;
+extern var alphaRegister: u16;
 extern var beginOfCurrentProgram: [*c]u8;
 extern var firstDisplayedStep: [*c]u8;
 extern var firstDisplayedLocalStepNumber: u16;
@@ -322,6 +327,8 @@ extern fn fnStore(r: u16) void;
 
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn runFunction(func: i16) void;
+extern fn fn42Alpha(unusedButMandatoryParameter: u16) void;
+extern fn fn42Append(unusedButMandatoryParameter: u16) void;
 
 extern fn indirectAddressing(regist: calcRegister_t, parameterType: u16, minValue: i16, maxValue: i16, tryAllocate: bool_t) i16;
 extern fn indirectionType(func: u16) u16;
@@ -1198,7 +1205,28 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                 },
 
                 PTP_REM => {
-                    // just ignore it
+                    if (op == ITM_42STRING) {
+                        const marker = step[0];
+                        step += 1;
+                        if (marker == STRING_LABEL_VARIABLE) {
+                            _getStringLabelOrVariableName(step);
+                            fn42Alpha(NOPARAM);
+                        }
+                    } else if (op == ITM_42APPEND) {
+                        const marker = step[0];
+                        step += 1;
+                        if (marker == STRING_LABEL_VARIABLE) {
+                            if (getRegisterDataType(@bitCast(alphaRegister)) != dtString) {
+                                displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+                                moreInfoOnError("In function executeOneStep:", "cannot use 42append: alpha register is not a string");
+                                return 0;
+                            }
+                            _getStringLabelOrVariableName(step);
+                            fn42Append(NOPARAM);
+                        }
+                    } else {
+                        // REM: just ignore it
+                    }
                     return 1;
                 },
 
