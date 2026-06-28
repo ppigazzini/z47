@@ -173,6 +173,10 @@ const ITM_INDIRECTION = 539;
 const ITM_INFINITY = 924;
 const ITM_IP = 93;
 const ITM_KEYX = 1499;
+const ITM_42STRING = 2775; // items.h:2880
+const ITM_42APPEND = 2776; // items.h:2881
+const ITM_42KEYG = 2795; // items.h:2900
+const ITM_42KEYX = 2796; // items.h:2901
 const ITM_LBL = 1;
 const ITM_LBLQ = 1503;
 const ITM_MULT = 98;
@@ -326,6 +330,7 @@ const TM_REGISTER = 10003;
 const TM_SHUFFLE = 10008;
 const TM_SOLVE = 10010;
 const TM_STORCL = 10006;
+const TM_STRING = 10021; // defines.h:1697
 const TM_VALUE = 10001;
 const TM_VALUE_CHB = 10002;
 const TM_VALUE_MAX = 10015;
@@ -622,7 +627,11 @@ fn _tamUpdateBuffer() void {
     }
 
     if (tam.mode == TM_KEY) {
-        tbPtr = stringCopy(tbPtr, "KEY ");
+        if (tam.function == ITM_42KEYG or tam.function == ITM_42KEYX) {
+            tbPtr = stringCopy(tbPtr, " 42KEY ");
+        } else {
+            tbPtr = stringCopy(tbPtr, "KEY ");
+        }
         if (tam.keyInputFinished) {
             if (tam.keyIndirect) {
                 tbPtr = stringCopy(tbPtr, STD_RIGHT_ARROW);
@@ -643,7 +652,7 @@ fn _tamUpdateBuffer() void {
                 }
                 tbPtr += 2;
             }
-            if (tam.function == ITM_KEYX) {
+            if (tam.function == ITM_KEYX or tam.function == ITM_42KEYX) {
                 tbPtr = stringCopy(tbPtr, " XEQ ");
             } else {
                 tbPtr = stringCopy(tbPtr, " GTO ");
@@ -812,7 +821,7 @@ fn _tamProcessInput(item: u16) void {
     dupNum = 0;
     const itm: i16 = @bitCast(item);
 
-    if ((item == ITM_ENTER and !(tam.function == ITM_toINT or tam.function == ITM_HASH_JM)) or (tam.alpha and stringGlyphLength(aimBuffer) > (if (tam.mode != TM_MENU) @as(i32, 6) else @as(i32, 8)))) {
+    if ((item == ITM_ENTER and !(tam.function == ITM_toINT or tam.function == ITM_HASH_JM)) or (tam.alpha and stringGlyphLength(aimBuffer) > (if (tam.mode == TM_MENU) @as(i32, 8) else if (tam.mode == TM_STRING) (if (tam.function == ITM_42STRING) @as(i32, 14) else @as(i32, 13)) else @as(i32, 6)))) {
         forceTry = true;
         if (tam.alpha and calcMode == CM_ASSIGN) {
             assignLeaveAlpha();
@@ -868,6 +877,9 @@ fn _tamProcessInput(item: u16) void {
                 if (calcMode == CM_ASSIGN) {
                     leaveTamModeIfEnabled();
                     if (comptime !dmcp_build) calcModeNormalGui();
+                } else if (tam.mode == TM_STRING) {
+                    leaveTamModeIfEnabled();
+                    scrollPemBackwards();
                 } else {
                     if (comptime !dmcp_build) calcModeTamGui();
                 }
@@ -1328,7 +1340,7 @@ fn _tamProcessInput(item: u16) void {
         const tryAllocate: bool_t = isFunctionAllowingNewVariable(@bitCast(tam.function));
         var value: i16 = undefined;
         var value2: i16 = undefined;
-        if (tam.mode == TM_NEWMENU) {
+        if (tam.mode == TM_NEWMENU or tam.mode == TM_STRING) {
             value = 1;
         } else if (tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or (tam.mode == TM_KEY and tam.keyInputFinished) or (tam.mode == TM_DELITM and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PROGS)) {
             if (!tam.indirect) {
@@ -1441,7 +1453,7 @@ fn _tamProcessInput(item: u16) void {
         if (calcMode == CM_PEM and tam.function != ITM_DELP and lastErrorCode == 0) {
             addStepInProgram(tamOperation());
         }
-        if (tam.mode != TM_NEWMENU) {
+        if (tam.mode != TM_NEWMENU and tam.mode != TM_STRING) {
             aimBuffer[0] = 0;
         }
         if (tam.indirect and value != INVALID_VARIABLE and calcMode != CM_PEM) {
@@ -1624,6 +1636,15 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
         },
         TM_DELITM => {
             showSoftmenu(-ITM_DELITM);
+        },
+        TM_STRING => {
+            tam.alpha = true;
+            setSystemFlag(FLAG_ALPHA);
+            aimBuffer[0] = 0;
+            alphaCursor = 0;
+            calcModeAim(NOPARAM);
+            showSoftmenu(-MNU_TAMALPHA);
+            screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         },
         else => {
             _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
