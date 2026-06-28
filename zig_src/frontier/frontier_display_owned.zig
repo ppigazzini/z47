@@ -241,6 +241,7 @@ const DEC_ROUND_HALF_UP: c_int = 2;
 const DEC_ROUND_DOWN: c_int = 5;
 
 // System flags (defines.h hex codes).
+const FLAG_SIGZEROS: c_int = 0x806a;
 const FLAG_TDM24: c_int = 0x8000;
 const FLAG_DMY: c_int = 0xc002;
 const FLAG_MDY: c_int = 0xc003;
@@ -1251,6 +1252,9 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
     // real34 is passed const but the 2TO10/UN path mutates *real34 then restores it.
     const real34: *align(1) real34_t = @constCast(real34_in);
     const exponentUNlimit1024max: i32 = if (getSystemFlag(FLAG_PFX_ALL) != 0) 7 else 5;
+    // SIG0: when set, DF_SF keeps trailing significant zeros (and rounds at the
+    // sig boundary); when clear, no trailing zeros are emitted. (defines.h FLAG_SIGZEROS)
+    const forceSigZeroes: bool = getSystemFlag(FLAG_SIGZEROS) != 0;
 
     var charIndex: u8 = undefined;
     var valueIndex: u8 = undefined;
@@ -1362,7 +1366,9 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             real34ToReal(real34, &tmp1);
             var c: realContext_t = ctxtReal39;
             c.digits = if (showmode()) 39 else nbrDispRealCtxDigits();
-            roundToSignificantDigits(&tmp1, &tmp1, @as(u16, displayFormatDigits) + 1, &c);
+            if (forceSigZeroes) {
+                roundToSignificantDigits(&tmp1, &tmp1, @as(u16, displayFormatDigits) + 1, &c);
+            }
             realToReal34(&tmp1, &reduced);
             real34Reduce(&reduced, &reduced);
             real34ToString(&reduced, &tmpString100);
@@ -1703,7 +1709,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             numDigits -= digitsToTruncate;
             lastDigit -= digitsToTruncate;
 
-            if (displayFormat == DF_SF and firstDigit + @as(i16, displayFormatDigits) <= 34) {
+            if (displayFormat == DF_SF and firstDigit + @as(i16, displayFormatDigits) <= 34 and forceSigZeroes) {
                 digitToRound = firstDigit + @as(i16, displayFormatDigits);
             } else {
                 digitToRound = lastDigit;
@@ -1720,7 +1726,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 }
                 bcd[@intCast(digitToRound)] += 1;
             }
-            if (displayFormat == DF_SF) {
+            if (displayFormat == DF_SF and forceSigZeroes) {
                 lastDigit = digitToRound;
             }
             if (digitToRound < firstDigit) {
@@ -1733,7 +1739,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 exponent += 1;
             }
 
-            if (displayFormat == DF_SF) {
+            if (displayFormat == DF_SF and forceSigZeroes) {
                 if ((@as(i32, displayFormatDigits) + 1) - exponent - 1 < 0) {
                     digitCount = firstDigit + @as(i16, displayFormatDigits) + 1;
                     while (digitCount <= 34) : (digitCount += 1) {
@@ -1812,8 +1818,12 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     }
                 }
 
+                var zerosAfter: i32 = @as(i32, displayFormatDigits_Active) + exponent + 1 - numDigits;
+                if (displayFormat == DF_SF and !forceSigZeroes) {
+                    zerosAfter = 0; // no-zero: emit no trailing fractional zeros
+                }
                 i = 1;
-                while (i <= @as(i32, displayFormatDigits_Active) + exponent + 1 - numDigits) : ({
+                while (i <= zerosAfter) : ({
                     i += 1;
                     digitCount -= 1;
                 }) {
@@ -1833,7 +1843,12 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             } else {
                 digitCount = exponent;
                 digitPointer = firstDigit;
-                while (digitPointer <= firstDigit + exponent + @as(i16, displayFormatDigits_Active)) : ({
+                var fixLoopEnd: i16 = firstDigit + exponent + @as(i16, displayFormatDigits_Active);
+                if (displayFormat == DF_SF and !forceSigZeroes) {
+                    // no-zero: stop at the last significant digit, never before the integer part
+                    fixLoopEnd = @intCast(minI(fixLoopEnd, maxI(lastDigit, firstDigit + exponent)));
+                }
+                while (digitPointer <= fixLoopEnd) : ({
                     digitPointer += 1;
                     digitCount -= 1;
                 }) {
