@@ -20,6 +20,7 @@
 #include <c47.h>
 #include <decQuad.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // The 6 screen/keyboard globals testSuite.c normally provides; this harness
@@ -107,6 +108,16 @@ int main(void) {
   // closeNim cannot route the NIM integer to a real34 and the number never lands
   // in X. Install them as the sim does.
   resetOtherConfigurationStuff(true);
+
+  // Scenario 4 below clicks the f/g shift key, which drives showShiftState ->
+  // show_f_jm -> underline_softkey. That render reads/writes the LCD framebuffer
+  // (52-byte stride = SCREEN_WIDTH/8 + 2, 240 rows, +2 head offset, per
+  // defines.h). The sim/testSuite allocate lcd_buffer at startup; this harness
+  // replaces testSuite.c so it must too, else the shift render dereferences a
+  // NULL lcd_buffer and SEGVs. (Before the lcd_buffer pointer-binding fix the
+  // wrong binding read &lcd_buffer instead, masking this gap.)
+  extern uint8_t *lcd_buffer;
+  lcd_buffer = (uint8_t *)calloc((size_t)240 * (400 / 8 + 2) + 4, 1) + 2;
 
   // Annex A2: EXHAUSTIVE keyboard-layout guard. The keyboard Zig owners have no
   // compiled C oracle (the bridge was deleted), so an upstream change to the
