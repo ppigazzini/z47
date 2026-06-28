@@ -745,20 +745,20 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     // Reading all the configuration parameters
-    readLine(oneParam);
+    readLine(oneParam, sizeof(oneParam));
     paramHead = malloc(sizeof(cfgFileParam_t));
     paramCurrent = paramHead;
     paramCurrent->param = malloc(strlen(oneParam) + 1);
     strcpy(paramCurrent->param, oneParam);
     paramCurrent->next = NULL;
-    readLine(oneParam);
+    readLine(oneParam, sizeof(oneParam));
     while(!ioEof()) {
       paramCurrent->next = malloc(sizeof(cfgFileParam_t));
       paramCurrent = paramCurrent->next;
       paramCurrent->param = malloc(strlen(oneParam) + 1);
       strcpy(paramCurrent->param, oneParam);
       paramCurrent->next = NULL;
-      readLine(oneParam);
+      readLine(oneParam, sizeof(oneParam));
     }
     ioFileClose();
 

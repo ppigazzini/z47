@@ -74,7 +74,18 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
         real34Add(REGISTER_REAL34_DATA(regist), &fp, REGISTER_REAL34_DATA(regist));
         break;
       }
-    /* fallthrough */
+      __attribute__((fallthrough));
+    }
+    case dtTime: {
+      if((mode & 2) == 2) {  // DSZ / ISZ : count by whole hours (similar /3600 used by MAX/MIN and compares =?)
+        real_t v;
+        real34ToReal(REGISTER_REAL34_DATA(regist), &v);                                                                     // seconds
+        (mode >> 2) == DEC_FLAG ? realSubtract(&v, const_3600, &v, &ctxtReal39) : realAdd(&v, const_3600, &v, &ctxtReal39); // step = 1 hour = 3600 s
+        realToReal34(&v, REGISTER_REAL34_DATA(regist));
+        compared = realCompareAbsLessThan(&v, const_3600) ? 0 : 1;                                                          // |time| < 1h -> treat as zero
+        break;
+      }
+      goto invalidType;      // ISG/DSE/ISE/DSL ccccccc.fffii counter format has no meaning for Time
     }
     default: {
       goto invalidType;

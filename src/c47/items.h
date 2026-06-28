@@ -2611,8 +2611,8 @@
 #define ITM_SI_Gi                   2535
 #define ITM_SI_Ti                   2536
 #define ITM_SI_Pi                   2537
-#define ITM_ALPHALTRIM              2538
-#define ITM_ALPHARTRIM              2539
+#define ITM_ALPHATRIM               2538
+#define ITM_ALPHAREV                2539
 #define ITM_ALPHAMID                2540
 #define ITM_ALPHALEFT               2541
 #define ITM_ALPHARIGHT              2542

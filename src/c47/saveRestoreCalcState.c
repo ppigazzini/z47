@@ -506,7 +506,7 @@ void fnSaveLetteredRegisters(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnSaveNRegisters(uint16_t N) {
-  if(N <= 125) {
+  if(N >= 1 && N <= LAST_SPARE_REGISTER + 1) {   // N registers = 0..N-1; max is all 126 (0..125, i.e. up to RW)
     uint16_t beginR = 0;
     uint16_t endR   = N - 1;
     doSaveDataFile(&beginR, &endR, NULL, !isXFN);
@@ -524,10 +524,10 @@ void fnSaveRegister(uint16_t regist) {
     char varName[16];
     stringToUtf8((char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName + 1, (uint8_t *)varName);
     doSaveDataFile(NULL, NULL, varName, !isXFN);                                    // named variable: save by name
-  } else if(regist < LAST_SPARE_REGISTER) {
+  } else if(regist <= LAST_SPARE_REGISTER) {
     uint16_t beginR = regist;
     uint16_t endR   = regist;
-    doSaveDataFile(&beginR, &endR, NULL, !isXFN);                                   // numbererd or lettered register: save by number
+    doSaveDataFile(&beginR, &endR, NULL, !isXFN);                                   // numbererd or lettered register: save by number (through RW = LAST_SPARE_REGISTER)
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -890,23 +890,32 @@ void doSave(uint16_t saveType) {
 
 
 
-void readLine(char *line) {
+void readLine(char *line, size_t maxLen) {
+  if(maxLen == 0) {
+    return;
+  }
+  char *const end = line + maxLen - 1; // last writable slot; reserve one byte for '\0'
   if(!ioEof()) {
     restore(line, 1);
     while((*line == '\n' || *line == '\r') && !ioEof()) {
       restore(line, 1);
     }
 
-    while(*line != '\n' && *line != '\r' && !ioEof()) {
+    while(line < end && *line != '\n' && *line != '\r' && !ioEof()) {
       restore(++line, 1);
+    }
+    while(*line != '\n' && *line != '\r' && !ioEof()) { // line longer than buffer: drain to EOL so the next read resyncs
+      restore(line, 1);
     }
   }
 
   *line = 0;
 }
 
-void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines due to empty strings saved from registers
+void read2Lines(char *line1, size_t maxLen1, char *line2, size_t maxLen2) {  // Needed to capture empty lines due to empty strings saved from registers
   char eol1, eol2;
+  char *const end1 = (maxLen1 == 0) ? line1 : line1 + maxLen1 - 1; // last writable slot in each buffer
+  char *const end2 = (maxLen2 == 0) ? line2 : line2 + maxLen2 - 1;
 
   if(!ioEof()) {
     restore(line1, 1);
@@ -914,8 +923,11 @@ void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines du
       restore(line1, 1);
     }
 
-    while(*line1 != '\n' && *line1 != '\r' && !ioEof()) {
+    while(line1 < end1 && *line1 != '\n' && *line1 != '\r' && !ioEof()) {
       restore(++line1, 1);
+    }
+    while(*line1 != '\n' && *line1 != '\r' && !ioEof()) { // overflow: drain to EOL so eol1 and the file position stay correct
+      restore(line1, 1);
     }
   }
   eol1 = *line1;
@@ -936,8 +948,11 @@ void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines du
       }
     }
 
-    while(*line2 != '\n' && *line2 != '\r' && !ioEof()) {
+    while(line2 < end2 && *line2 != '\n' && *line2 != '\r' && !ioEof()) {
       restore(++line2, 1);
+    }
+    while(*line2 != '\n' && *line2 != '\r' && !ioEof()) { // overflow: drain to EOL so the next read resyncs
+      restore(line2, 1);
     }
   }
 
@@ -1276,9 +1291,14 @@ int64_t stringToInt64(const char *str) {
         value = stdTmp;
       }
       imaginaryPart = skip_word(value);
-      *(imaginaryPart++) = 0;
+      if(*imaginaryPart != 0) {                                                  // separator present (every valid complex form yields "re im"); split into real | imaginary
+        *(imaginaryPart++) = 0;
+        stringToReal34(imaginaryPart, REGISTER_IMAG34_DATA(regist));
+      }
+      else {                                                                     // no imaginary token (bare/degenerate input): imaginary part is zero, and never step past '\0'
+        real34SetZero(REGISTER_IMAG34_DATA(regist));
+      }
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
-      stringToReal34(imaginaryPart, REGISTER_IMAG34_DATA(regist));
     }
 
     else if(strcmp(type, "Rema") == 0) {
@@ -1349,7 +1369,7 @@ int64_t stringToInt64(const char *str) {
           dataFileCommaToPeriod(tmpString);
         }
         else {
-          readLine(tmpString);
+          readLine(tmpString, TMP_STR_LENGTH);
         }
         stringToReal34(tmpString, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
       }
@@ -1371,12 +1391,17 @@ int64_t stringToInt64(const char *str) {
           strcpy(tmpString, stdTmp);
         }
         else {
-          readLine(tmpString);
+          readLine(tmpString, TMP_STR_LENGTH);
         }
         imaginaryPart = skip_word(tmpString);
-        *(imaginaryPart++) = 0;
-        stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
-        stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
+        if(*imaginaryPart != 0) {                                              // separator present (every valid complex form yields "re im"); split into real | imaginary
+          *(imaginaryPart++) = 0;
+          stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
+        }
+        else {                                                                 // no imaginary token (bare/degenerate input): imaginary part is zero, and never step past '\0'
+          real34SetZero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
+        }
+        stringToReal34(tmpString, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
       }
     }
   }
@@ -1403,7 +1428,7 @@ int64_t stringToInt64(const char *str) {
           }
         }
         else {
-          readLine(tmpString);
+          readLine(tmpString, TMP_STR_LENGTH);
         }
       }
     }
@@ -1446,11 +1471,11 @@ int64_t stringToInt64(const char *str) {
   // Datafile: Reads the next line, first skipping any comment blocks: a "Cmnt" line followed by one line of comment text, repeated.
   // Used where a register id or variable name is expected, so comments can sit between entries without
   // affecting the entry count.
-  static void readLineSkippingComments(char *line) {
-    readLine(line);
+  static void readLineSkippingComments(char *line, size_t maxLen) {
+    readLine(line, maxLen);
     while(strcmp(line, "Cmnt") == 0) {
-      readLine(line);                           // drop the comment text line
-      readLine(line);                           // next line: another Cmnt, or the real id / name
+      readLine(line, maxLen);                   // drop the comment text line
+      readLine(line, maxLen);                   // next line: another Cmnt, or the real id / name
     }
   }
 
@@ -1466,19 +1491,19 @@ int64_t stringToInt64(const char *str) {
     cancelFilename = true;
     hourGlassIconEnabled = true;
     showHideHourGlass();
-    readLine(tmpString);
+    readLine(tmpString, TMP_STR_LENGTH);
     #if defined(LOADDEBUG)
       sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
       debugPrintf(0, "-", line);
     #endif //LOADDEBUG
 
     if(strcmp(tmpString, "GLOBAL_REGISTERS") == 0) {
-      readLine(tmpString); // Number of global registers
+      readLine(tmpString, TMP_STR_LENGTH); // Number of global registers
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
-        readLineSkippingComments(tmpString); // Register number, skipping any comments
+        readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
         regist = stringToRegisterNumber(tmpString);
-        read2Lines(aimBuffer, tmpString); // Register data type & Register value
+        read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
         if(loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n))) {
           #if defined(LOADDEBUG)
@@ -1495,7 +1520,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "GLOBAL_FLAGS") == 0) {
-      readLine(tmpString); // Global flags
+      readLine(tmpString, TMP_STR_LENGTH); // Global flags
       if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
         #if defined(LOADDEBUG)
           sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1511,7 +1536,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "LOCAL_REGISTERS") == 0) {
-      readLine(tmpString); // Number of local registers
+      readLine(tmpString, TMP_STR_LENGTH); // Number of local registers
       numberOfRegs = toInt16(tmpString);
       if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
         #if defined(LOADDEBUG)
@@ -1527,9 +1552,9 @@ int64_t stringToInt64(const char *str) {
           debugPrintf(3, "B", tmpString);
         #endif //LOADDEBUG
         for(i=0; i<numberOfRegs; i++) {
-          readLine(tmpString); // Register number
+          readLine(tmpString, TMP_STR_LENGTH); // Register number
           regist = toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
-          read2Lines(aimBuffer, tmpString); // Register data type & Register value
+          read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
           if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
             #if defined(LOADDEBUG)
@@ -1551,7 +1576,7 @@ int64_t stringToInt64(const char *str) {
         sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
         debugPrintf(4, "A", tmpString);
       #endif //LOADDEBUG
-      readLine(tmpString); // LOCAL_FLAGS
+      readLine(tmpString, TMP_STR_LENGTH); // LOCAL_FLAGS
       if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
         #if defined(LOADDEBUG)
           sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1566,11 +1591,11 @@ int64_t stringToInt64(const char *str) {
         sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
         debugPrintf(20, "A", tmpString);
       #endif //LOADDEBUG
-      readLine(tmpString); // Number of named variables
+      readLine(tmpString, TMP_STR_LENGTH); // Number of named variables
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
-        readLine(errorMessage); // Variable name
-        read2Lines(aimBuffer, tmpString); // Variable data type & Variable value
+        readLine(errorMessage, ERROR_MESSAGE_LENGTH); // Variable name
+        read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Variable data type & Variable value
 
         if(( loadMode == LM_ALL ||
              loadMode == LM_NAMED_VARIABLES ||
@@ -1601,12 +1626,12 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "Cmnt") == 0) {
-      readLine(tmpString);                      // discard the single comment line that follows
+      readLine(tmpString, TMP_STR_LENGTH);                      // discard the single comment line that follows
       return true;
     }
 
     else if(strcmp(tmpString, "STATISTICAL_SUMS") == 0) {
-      readLine(tmpString); // Number of statistical sums
+      readLine(tmpString, TMP_STR_LENGTH); // Number of statistical sums
       numberOfRegs = toInt16(tmpString);
       if(numberOfRegs > 0 && (loadMode == LM_ALL || loadMode == LM_SUMS)) {
         #if defined(LOADDEBUG)
@@ -1618,7 +1643,7 @@ int64_t stringToInt64(const char *str) {
         reLoadStatisticalSums();
 
         for(i=0; i<numberOfRegs; i++) {
-          readLine(tmpString); // statistical sum
+          readLine(tmpString, TMP_STR_LENGTH); // statistical sum
           if(statisticalSumsPointer) { // likely
             if(loadMode == LM_ALL || loadMode == LM_SUMS) {
               #if defined(LOADDEBUG)
@@ -1633,7 +1658,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "SYSTEM_FLAGS") == 0) {
-      readLine(tmpString); // Global flags
+      readLine(tmpString, TMP_STR_LENGTH); // Global flags
       if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
         #if defined(LOADDEBUG)
           sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1651,7 +1676,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "SYSTEM_FLAGS1") == 0) {
-      readLine(tmpString); // Global flags
+      readLine(tmpString, TMP_STR_LENGTH); // Global flags
       if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
         #if defined(LOADDEBUG)
           sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1683,10 +1708,10 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "KEYBOARD_ASSIGNMENTS") == 0) {
-      readLine(tmpString); // Number of keys
+      readLine(tmpString, TMP_STR_LENGTH); // Number of keys
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
-        readLine(tmpString); // key
+        readLine(tmpString, TMP_STR_LENGTH); // key
         if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) { // Restore Keyboard Assignments only if they were save on the same calc model (C47->C47 or R47->R47)
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1706,7 +1731,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "KEYBOARD_ARGUMENTS") == 0) {
-      readLine(tmpString); // Number of keys
+      readLine(tmpString, TMP_STR_LENGTH); // Number of keys
       numberOfRegs = toInt16(tmpString);
       if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
         #if defined(LOADDEBUG)
@@ -1720,7 +1745,7 @@ int64_t stringToInt64(const char *str) {
       }
 
       for(i=0; i<numberOfRegs; i++) {
-        readLine(tmpString); // key
+        readLine(tmpString, TMP_STR_LENGTH); // key
         // Restore Keyboard Arguments only if they were save on the same calc model (C47->C47 or R47->R47)
         if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
           #if defined(LOADDEBUG)
@@ -1744,10 +1769,10 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "MYMENU") == 0) {
-      readLine(tmpString); // Number of keys
+      readLine(tmpString, TMP_STR_LENGTH); // Number of keys
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
-        readLine(tmpString); // key
+        readLine(tmpString, TMP_STR_LENGTH); // key
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1769,10 +1794,10 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "MYALPHA") == 0) {
-      readLine(tmpString); // Number of keys
+      readLine(tmpString, TMP_STR_LENGTH); // Number of keys
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
-        readLine(tmpString); // key
+        readLine(tmpString, TMP_STR_LENGTH); // key
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1794,10 +1819,10 @@ int64_t stringToInt64(const char *str) {
     }
 
     else if(strcmp(tmpString, "USER_MENUS") == 0) {
-      readLine(tmpString); // Number of keys
+      readLine(tmpString, TMP_STR_LENGTH); // Number of keys
       int16_t numberOfMenus = toInt16(tmpString);
       for(int32_t j=0; j<numberOfMenus; j++) {
-        readLine(tmpString);
+        readLine(tmpString, TMP_STR_LENGTH);
         int16_t target = -1;
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
@@ -1816,10 +1841,10 @@ int64_t stringToInt64(const char *str) {
           }
         }
 
-        readLine(tmpString);
+        readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = toInt16(tmpString);
         for(i=0; i<numberOfRegs; i++) {
-          readLine(tmpString); // key
+          readLine(tmpString, TMP_STR_LENGTH); // key
           if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
             #if defined(LOADDEBUG)
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1853,7 +1878,7 @@ int64_t stringToInt64(const char *str) {
       uint8_t *oldFirstFreeProgramByte = firstFreeProgramByte;
       uint16_t oldFreeProgramBytes = freeProgramBytes;
 
-      readLine(tmpString); // Number of blocks
+      readLine(tmpString, TMP_STR_LENGTH); // Number of blocks
       numberOfBlocks = toUint16(tmpString);
       if(loadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
@@ -1863,11 +1888,11 @@ int64_t stringToInt64(const char *str) {
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
       }
 
-      readLine(tmpString); // currentStep (pointer to block)
+      readLine(tmpString, TMP_STR_LENGTH); // currentStep (pointer to block)
       if(loadMode == LM_ALL) {
         currentStep = TO_PCMEMPTR(toUint32(tmpString));
       }
-      readLine(tmpString); // currentStep (offset in bytes within block)
+      readLine(tmpString, TMP_STR_LENGTH); // currentStep (offset in bytes within block)
       if(loadMode == LM_ALL) {
         currentStep += toUint32(tmpString);
       }
@@ -1880,16 +1905,16 @@ int64_t stringToInt64(const char *str) {
         }
       }
 
-      readLine(tmpString); // firstFreeProgramByte (pointer to block)
+      readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte (pointer to block)
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
         firstFreeProgramByte = TO_PCMEMPTR(toUint32(tmpString));
       }
-      readLine(tmpString); // firstFreeProgramByte (offset in bytes within block)
+      readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte (offset in bytes within block)
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
         firstFreeProgramByte += toUint32(tmpString);
       }
 
-      readLine(tmpString); // freeProgramBytes
+      readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes
       if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
         freeProgramBytes = toUint16(tmpString);
       }
@@ -1951,7 +1976,7 @@ int64_t stringToInt64(const char *str) {
           printf(".");
         #endif // LOADDEBUG
 
-        readLine(tmpString); // One block
+        readLine(tmpString, TMP_STR_LENGTH); // One block
         if(loadMode == LM_ALL) {
           *(((uint32_t *)(beginOfProgramMemory)) + i) = toUint32(tmpString);
         }
@@ -1986,7 +2011,7 @@ int64_t stringToInt64(const char *str) {
         #endif //LOADDEBUG
       }
 
-      readLine(tmpString); // Number of formulae
+      readLine(tmpString, TMP_STR_LENGTH); // Number of formulae
       formulae = toUint16(tmpString);
       if(formulae > 0 && (loadMode == LM_ALL || loadMode == LM_PROGRAMS)) {
         #if defined(LOADDEBUG)
@@ -2010,7 +2035,7 @@ int64_t stringToInt64(const char *str) {
         }
 
         for(i = 0; i < formulae; i++) {
-          readLine(tmpString); // One formula
+          readLine(tmpString, TMP_STR_LENGTH); // One formula
           if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
             #if defined(LOADDEBUG)
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -2033,10 +2058,10 @@ int64_t stringToInt64(const char *str) {
           debugPrintf(16, "A", tmpString);
         #endif //LOADDEBUG
       }
-      readLine(tmpString);                            // Read number params is not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
+      readLine(tmpString, TMP_STR_LENGTH);                            // Read number params is not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
       //numberOfRegs = toInt16(tmpString);            // Number of regs or params is not used anymore
 
-      readLine(aimBuffer); //param                    // Reading duplicated OTHER_CONFIGURATION_STUFF
+      readLine(aimBuffer, AIM_BUFFER_LENGTH); //param                    // Reading duplicated OTHER_CONFIGURATION_STUFF
       if(strcmp(aimBuffer, "END_OTHER_PARAM") == 0) { // This is used for short form key-only state files, which specify that a setting reset is not to occur
         #if defined(LOADDEBUG)
           debugPrintf(16, "A", "Ending OTHER_CONFIGURATION_STUFF prior to RESET");
@@ -2046,15 +2071,15 @@ int64_t stringToInt64(const char *str) {
       else {
         resetOtherConfigurationStuff(allowUserKeys);  // Ensure all the configuration stuff below is reset prior to loading. That ensures if missing settings, that the proper defaults are set.
       }
-      readLine(tmpString); //value 00                 // Reading second (duplicated 00)
+      readLine(tmpString, TMP_STR_LENGTH); //value 00                 // Reading second (duplicated 00)
 
       i = 0;
       while(i < 255) {                                                            //adjust for absolute maximum number of OTHER CONFIGUARTION SETTINGS
-        readLine(aimBuffer); // param
+        readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
         if(strcmp(aimBuffer, "END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) {
           break; //to END_CONFIG break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
         }
-        readLine(tmpString); // value
+        readLine(tmpString, TMP_STR_LENGTH); // value
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -2176,7 +2201,7 @@ int64_t stringToInt64(const char *str) {
                 Norm_Key_00.funcParam[0]=0;                                         //  - old file compatibility: If next setting name is found as data, clear it.
                 Norm_Key_00.used = 0;                                               //  - populate the the next setting to default 0,  as the read has already currupted the sequence
               }
-              readLine(tmpString);                                                  //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
+              readLine(tmpString, TMP_STR_LENGTH);                                                  //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
             }
             else if(allowUserKeys && strcmp(tmpString, "NoNormKeyParamDef") == 0) { //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
               Norm_Key_00.funcParam[0]=0;                                           //  - if the code word for a blank string, blank the string.
@@ -2335,7 +2360,7 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
   dataFileMode = true;                                                           // accept compact complex form and free-form matrix whitespace while reading this file
 
   // Line 1 must be "DATA_FILE_REVISION" and line 2 must be exactly "0"
-  readLine(tmpString);                      // "DATA_FILE_REVISION"
+  readLine(tmpString, TMP_STR_LENGTH);                      // "DATA_FILE_REVISION"
   if(strcmp(tmpString, "DATA_FILE_REVISION") != 0) {
     sprintf(tmpString, " \nThis is not a C47/R47 data file\n \nIt will not be loaded.");
     show_warning(tmpString);
@@ -2343,7 +2368,7 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
     ioFileClose();
     return;
   }
-  readLine(tmpString);                      // revision number
+  readLine(tmpString, TMP_STR_LENGTH);                      // revision number
   if(strcmp(tmpString, "0") != 0) {
     sprintf(tmpString, " \n   !!! Data file revision not supported !!!\nNot compatible with current version\n \nIt will not be loaded.");
     show_warning(tmpString);
@@ -2428,11 +2453,11 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   //  while doing no check on manual loading. This may allow manual loading of older files at risk
   loadedVersion = 0;
   {
-    readLine(tmpString);
+    readLine(tmpString, TMP_STR_LENGTH);
     if(strcmp(tmpString, "SAVE_FILE_REVISION") == 0) {
-      readLine(aimBuffer); // internal rev number (ignore now)
-      readLine(aimBuffer); // param
-      readLine(tmpString); // value
+      readLine(aimBuffer, AIM_BUFFER_LENGTH); // internal rev number (ignore now)
+      readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
+      readLine(tmpString, TMP_STR_LENGTH); // value
 
       // Determine on which calculator the file was saved
       if(strcmp(aimBuffer, "C47_save_file_00") == 0) {

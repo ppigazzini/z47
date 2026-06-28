@@ -1992,8 +1992,7 @@ static uint16_t _getUnicodeValue(calcRegister_t regist) {
   else if(getRegisterDataType(regist) == dtShortInteger) {
     longInteger_t lgInt;
 
-    longIntegerInit(lgInt);
-    convertShortIntegerRegisterToLongInteger(regist, lgInt);
+    convertShortIntegerRegisterToLongInteger(regist, lgInt); // initialises lgInt
     longIntegerToUInt32(lgInt, value);
     longIntegerFree(lgInt);
   }

@@ -1,0 +1,5 @@
+Defaults to 32, change file in situ
+
+python3 snap.py font.ttf                    # 32 grid, overwrite, verbose
+python3 snap.py font.ttf 16                 # 16 grid, overwrite
+python3 snap.py font.ttf 32 out.ttf         # 32 grid, write to out.ttf

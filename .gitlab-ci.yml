@@ -14,7 +14,7 @@ variables:
 
 macOS:
   stage: build
-  image: macos-14-xcode-15
+  image: macos-26-xcode-26
   script:
     - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio xlsxio
     - pip3 install --upgrade pip
@@ -56,7 +56,7 @@ linux:
 windows:
   stage: build
   script:
-    - C:\msys64\msys2_shell.cmd -defterm -mingw64 -no-start -here -c "make dist_windows"
+    - C:\msys64\msys2_shell.cmd -defterm -ucrt64 -no-start -here -c "make dist_windows"
   artifacts:
     expire_in: 1 day
     paths:

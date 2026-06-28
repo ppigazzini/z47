@@ -812,6 +812,10 @@ const real_t *z47_math_wrappers_const_100(void) {
   return const_100;
 }
 
+const real_t *z47_math_wrappers_const_3600(void) {
+  return const_3600;
+}
+
 #endif
 
 #ifndef Z47_MATH_WRAPPERS_C47_H

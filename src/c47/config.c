@@ -1207,7 +1207,7 @@ void fnClAll(uint16_t confirmation) {
 
 
 void addTestPrograms(void) {
-  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(22000));
+  uint32_t numberOfBytesUsed, numberOfBytesForTheTestPrograms = TO_BYTES(TO_BLOCKS(24000));
 
   resizeProgramMemory(TO_BLOCKS(numberOfBytesForTheTestPrograms));
   firstDisplayedStep            = beginOfProgramMemory;

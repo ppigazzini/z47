@@ -1566,6 +1566,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         done = true;
         screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
         closeNim();
+        if(lastErrorCode != 0) {
+          return; // closeNim rejected buffer; skip display rebuild
+        }
         if(calcMode != CM_NIM && lastErrorCode == 0) {
           #if defined(IR_PRINTING)
             printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack

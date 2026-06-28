@@ -521,9 +521,9 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
 
     //Check save file version
     uint32_t loadedVersion = 0;
-    readLine(tmpString);
+    readLine(tmpString, TMP_STR_LENGTH);
     if(strcmp(tmpString, "PROGRAM_FILE_FORMAT") == 0) {
-      readLine(aimBuffer); // Format of program instructions (ignore now, there is only one format)
+      readLine(aimBuffer, AIM_BUFFER_LENGTH); // Format of program instructions (ignore now, there is only one format)
     }
     else {
       sprintf(tmpString, " \nThis is not a C47 program\n\nIt will not be loaded.");
@@ -531,8 +531,8 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
       ioFileClose();
       return;
     }
-    readLine(aimBuffer); // param
-    readLine(tmpString); // value
+    readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
+    readLine(tmpString, TMP_STR_LENGTH); // value
     if(strcmp(aimBuffer, "C47_program_file_version") == 0) {
       loadedVersion = stringToUint32(tmpString);
       if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
@@ -555,8 +555,8 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
         return;
       }
     }
-    readLine(aimBuffer); // param
-    readLine(tmpString); // value
+    readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
+    readLine(tmpString, TMP_STR_LENGTH); // value
     if(strcmp(aimBuffer, "PROGRAM") == 0) {
       pgmSizeInByte = stringToUint32(tmpString);
     }
@@ -577,7 +577,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     _addSpaceAfterPrograms(pgmSizeInByte);
     startOfProgram = firstFreeProgramByte - pgmSizeInByte;
     for(i=0; i<pgmSizeInByte; i++) {
-      readLine(tmpString); // One byte
+      readLine(tmpString, TMP_STR_LENGTH); // One byte
       startOfProgram[i] = stringToUint8(tmpString);
     }
 

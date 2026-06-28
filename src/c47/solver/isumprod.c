@@ -31,11 +31,10 @@
     int16_t       finished = 0;
     longInteger_t resultLi, xLi;
     longInteger_t loopStep, loopTo, iCounter, iLoop;
-    longIntegerInit(loopStep);
-    longIntegerInit(loopTo);
-    longIntegerInit(iCounter);
     longIntegerInit(iLoop);
     longIntegerInit(resultLi);
+    // loopTo/loopStep/iCounter are initialised by the converters below; do not
+    // pre-init them or that first allocation is orphaned (a long-integer leak).
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, loopTo);
     convertLongIntegerRegisterToLongInteger(REGISTER_X, loopStep);
     convertLongIntegerRegisterToLongInteger(REGISTER_Z, iCounter); //Loopfrom counter initial value = From
