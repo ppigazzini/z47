@@ -338,7 +338,8 @@ pub export fn fnProgrammableMenu(unusedButMandatoryParameter: u16) callconv(.c) 
     else if (programmableMenu.itemParam[@intCast(dynamicMenuItem)] != INVALID_VARIABLE) {
         const prm: i16 = dynamicMenuItem;
         dynamicMenuItem = -1;
-        popSoftmenu();
+        // No popSoftmenu() here — upstream removed it (commit 5d2af9e43); popping
+        // the softmenu before runProgram corrupted the stack the program runs under.
         runProgram(false, programmableMenu.itemParam[@intCast(prm)]);
     }
     // EXIT key
