@@ -1615,12 +1615,17 @@ pub export fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, f
     var rval: real_t = undefined;
     var frac: bool = false;
 
-    mpz_init(val);
+    // C inits val exactly once per path: the dtLongInteger/dtShortInteger callees
+    // init it themselves (mpz_init2 / mpz_init), and the real and default/error
+    // paths init explicitly. The port hoisted a single mpz_init to the top, which
+    // double-initialises val on the long/short paths — the callee's init then
+    // overwrites _mp_d and leaks the first allocation. Mirror C's per-path init.
     switch (getRegisterDataType(reg)) {
         dtLongInteger => convertLongIntegerRegisterToLongInteger(reg, val),
         dtShortInteger => convertShortIntegerRegisterToLongInteger(reg, val),
         dtComplex34, dtReal34 => {
             if (getRegisterAsReal(reg, &rval)) {
+                mpz_init(val); // convertRealToLongInteger expects an initialised val
                 if (realIsSpecial(&rval)) {
                     return ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
                 }
@@ -1630,10 +1635,14 @@ pub export fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, f
                 }
                 convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
             } else {
+                mpz_init(val); // C falls through to default, which inits val
                 return ERROR_INVALID_DATA_TYPE_FOR_OP;
             }
         },
-        else => return ERROR_INVALID_DATA_TYPE_FOR_OP,
+        else => {
+            mpz_init(val);
+            return ERROR_INVALID_DATA_TYPE_FOR_OP;
+        },
     }
     if (fractional) |f| {
         f.* = frac;
