@@ -319,8 +319,12 @@ const ITM_NOP: u16 = 1542;
 const ITM_alpha: u16 = 628;
 const ITM_INDIRECTION: u16 = 539;
 const ITM_GTO: u8 = 2;
+const ITM_KEY: i16 = 1497;
 const ITM_KEYG: i16 = 1498;
 const ITM_KEYX: i16 = 1499;
+const ITM_42KEY: i16 = 2794;
+const ITM_42KEYG: i16 = 2795;
+const ITM_42KEYX: i16 = 2796;
 const ITM_FF: i16 = 112;
 const ITM_op_j: u16 = 1830;
 const ITM_op_j_pol: u16 = 1795;
@@ -1949,15 +1953,21 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             }
         },
         PARAM_KEYG_KEYX => {
-            func = if (opParam2 == ITM_GTO) ITM_KEYG else ITM_KEYX;
+            if (func == ITM_KEY) {
+                func = if (opParam2 == ITM_GTO) ITM_KEYG else ITM_KEYX;
+            } else { // ITM_42KEY
+                func = if (opParam2 == ITM_GTO) ITM_42KEYG else ITM_42KEYX;
+            }
             deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            if (pemCursorIsZerothStep == 0) {
+                fnBst(NOPARAM);
+            }
             runFunction(func);
             tamProcessInput(@as(i16, ITM_0) + @divTrunc(@as(i16, opParam), 10));
             tamProcessInput(@as(i16, ITM_0) + @as(i16, opParam % 10));
             if ((opParam3 == INDIRECT_REGISTER) or (opParam3 == INDIRECT_VARIABLE)) {
                 tamProcessInput(ITM_INDIRECTION);
             }
-            scrollPemBackwards();
         },
         else => {},
     }

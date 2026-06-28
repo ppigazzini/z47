@@ -285,6 +285,9 @@ const ITM_END: u16 = 1458;
 const ITM_KEY: u16 = 1497;
 const ITM_KEYG: u16 = 1498;
 const ITM_KEYX: u16 = 1499;
+const ITM_42KEY: u16 = 2794;
+const ITM_42KEYG: u16 = 2795;
+const ITM_42KEYX: u16 = 2796;
 const ITM_REM: u16 = 1554;
 const ITM_toINT: u16 = 1687;
 const ITM_HMStoTM: u16 = 1688;
@@ -2003,10 +2006,11 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
     switch (indexOfItems[@intCast(func)].status & PTP_STATUS) {
         PTP_DISABLED => {
             switch (ufunc) {
-                ITM_KEYG, ITM_KEYX => {
+                ITM_KEYG, ITM_KEYX, ITM_42KEYG, ITM_42KEYX => {
                     var opLen: usize = undefined;
-                    tmpString[0] = @intCast((ITM_KEY >> 8) | 0x80);
-                    tmpString[1] = @intCast(ITM_KEY & 0xff);
+                    const keyFunc: u16 = if ((ufunc == ITM_42KEYG) or (ufunc == ITM_42KEYX)) ITM_42KEY else ITM_KEY;
+                    tmpString[0] = @intCast((keyFunc >> 8) | 0x80);
+                    tmpString[1] = @intCast(keyFunc & 0xff);
                     if (tam.keyAlpha) {
                         const nameLength: u16 = @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(@divTrunc(AIM_BUFFER_LENGTH, 2)))));
                         tmpString[2] = INDIRECT_VARIABLE;
@@ -2022,7 +2026,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                         opLen = 3;
                     }
 
-                    tmpString[opLen + 0] = @intCast(if (ufunc == ITM_KEYX) ITM_XEQ else ITM_GTO);
+                    tmpString[opLen + 0] = @intCast(if ((ufunc == ITM_KEYX) or (ufunc == ITM_42KEYX)) ITM_XEQ else ITM_GTO);
                     if (tam.alpha) {
                         const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
                         tmpString[opLen + 1] = if (tam.indirect) INDIRECT_VARIABLE else STRING_LABEL_VARIABLE;
@@ -2269,7 +2273,7 @@ pub export fn addStepInProgram(func: i16) callconv(.c) void {
         pemCursorIsZerothStep = false;
         if ((indexOfItems[@intCast(func)].status & PTP_STATUS) == PTP_DISABLED) {
             switch (@as(u16, @bitCast(func))) {
-                VAR_ACC, VAR_ULIM, VAR_LLIM, VAR_UX, VAR_LX, VAR_UEST, VAR_LEST, VAR_UY, VAR_LY, ITM_DELP, ITM_DELPALL, ITM_GTOP, ITM_KEYG, ITM_KEYX, ITM_BST, ITM_SST => {},
+                VAR_ACC, VAR_ULIM, VAR_LLIM, VAR_UX, VAR_LX, VAR_UEST, VAR_LEST, VAR_UY, VAR_LY, ITM_DELP, ITM_DELPALL, ITM_GTOP, ITM_KEYG, ITM_KEYX, ITM_42KEYG, ITM_42KEYX, ITM_BST, ITM_SST => {},
                 else => {
                     return;
                 },

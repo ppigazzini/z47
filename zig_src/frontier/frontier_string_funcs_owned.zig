@@ -1199,7 +1199,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(regist);
+        badTypeError(@intCast(regist));
         return;
     }
 
@@ -1265,7 +1265,7 @@ pub export fn fnAlphaRight(regist: u16) callconv(.c) void {
 
 pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(regist);
+        badTypeError(@intCast(regist));
         return;
     }
 
@@ -1430,7 +1430,7 @@ fn _doXToAlpha(regist: u16) void {
 
 pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(regist);
+        badTypeError(@intCast(regist));
         return;
     }
 
