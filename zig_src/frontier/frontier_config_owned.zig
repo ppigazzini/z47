@@ -429,14 +429,14 @@ const configSettings = [7]ConfigSetting{
 // Generated faithfully from the C preprocessor; xxx == -10001.
 // ---------------------------------------------------------------------------
 const Settings = [_]i32{
-    101,-10001,-10001,2,0,2,0,-10001,-10001,
+    101,-10001,-10001,2,0,0,0,-10001,-10001,
     102,-10001,-10001,9,3,-10001,-10001,-10001,-10001,
     103,-10001,-10001,-10001,-10001,-10001,3,-10001,-10001,
     104,-10001,-10001,-10001,-10001,3,-10001,-10001,-10001,
     107,-10001,6145,99,6145,6145,6145,-10001,-10001,
     108,-10001,0,16,0,0,34,-10001,-10001,
     123,-10001,0,16,31,0,34,-10001,-10001,
-    118,-10001,0,0,31,0,0,-10001,-10001,
+    118,-10001,0,0,31,30,0,-10001,-10001,
     109,-10001,4,1,4,4,4,-10001,-10001,
     110,-10001,4,1,4,4,4,-10001,-10001,
     111,-10001,2,0,2,0,2,-10001,-10001,
@@ -472,6 +472,12 @@ const Settings = [_]i32{
     3,1,49193,-10001,-10001,-10001,-10001,-10001,49193,
     124,-10001,1,-10001,-10001,-10001,-10001,-10001,1,
     125,-10001,12,-10001,-10001,-10001,-10001,-10001,12,
+    // FLAG_SIGZEROS (32874) / FLAG_BOLD (32873) preset rows (config.c) — these
+    // 4 rows were dropped in the port, so no profile configured BOLD/SIGZEROS.
+    3,1,32874,32874,-10001,32874,32874,-10001,-10001,
+    3,0,-10001,-10001,32874,-10001,-10001,-10001,-10001,
+    3,0,32873,32873,-10001,32873,32873,-10001,-10001,
+    3,1,-10001,-10001,32873,-10001,-10001,-10001,-10001,
     3,1,32832,-10001,-10001,-10001,-10001,-10001,-10001,
     3,1,32834,-10001,-10001,-10001,-10001,-10001,-10001,
     3,0,-10001,-10001,32834,32834,-10001,-10001,-10001,
@@ -600,6 +606,7 @@ const _TVM: i16 = 7;
 // Globals: genuine C pointer/scalar variables -> extern var.
 // ---------------------------------------------------------------------------
 extern var ram: [*c]u32;
+extern var loadTestData: bool_t; // c47.c global; default false, set only by the host test-data option
 extern var tmpString: [*c]u8;
 extern var errorMessage: [*c]u8;
 extern var aimBuffer: [*c]u8;
@@ -2330,7 +2337,10 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             checkBatteryFw();
         }
 
-        {
+        // C guards this with if(loadTestData) — populating registers with test
+        // data (cubes/pi digits/primes) only when the host test-data option is on.
+        // The port ran it unconditionally, corrupting registers on every reset.
+        if (loadTestData) {
             const n: usize = indexOfStrings.len;
             var i: usize = 0;
             while (i < n) : (i += 1) {
