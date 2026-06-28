@@ -46,7 +46,9 @@ res/PACKAGES.md
 res/PROGRAMS
 res/combo
 res/dmcp5/update_R47.txt
+res/fonts/C47__NumericFontBold.ttf
 res/fonts/FontCreator15 Home details
+res/fonts/Font_snap
 res/offimg/General
 res/r47.cmd
 res/r47.ico

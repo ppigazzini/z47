@@ -1,4 +1,4 @@
 # Tracked upstream commit triage ledger for z47.
 # Keep one `pin-only` row for the currently pinned upstream commit.
 upstream_commit	upstream_subject	surface	kind	local_owner	parity_target	status	notes
-fd83b4a4ee4295543a398b19df9b00175dfcedca	Repo-root imported baseline pin (M10.4 advance)	repo-root-import	pin	.github/project/upstream-pin.env	source-manifest	pin-only	Current maintained baseline at UPSTREAM_ROOT=.; run report-upstream-refresh.py before recording surface-specific follow-up rows so new upstream-commit counts stay live.
+643ef567adca99128a6566546c8ecf03bd9bfaf1	Repo-root imported baseline pin (string funcs + 42KEY advance)	repo-root-import	pin	.github/project/upstream-pin.env	source-manifest	pin-only	Current maintained baseline at UPSTREAM_ROOT=.; run report-upstream-refresh.py before recording surface-specific follow-up rows so new upstream-commit counts stay live.
