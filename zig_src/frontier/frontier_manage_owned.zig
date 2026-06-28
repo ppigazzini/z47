@@ -1496,8 +1496,13 @@ pub export fn pemCloseAlphaInput() callconv(.c) void {
     calcModeNormalGuiCall();
     currentLocalStepNumber += 1;
     currentStep = findNextStep(currentStep);
-    firstDisplayedLocalStepNumber += 1;
-    firstDisplayedStep = findNextStep(firstDisplayedStep);
+    // C: if((getNumberOfSteps() - currentLocalStepNumber) > 4) — the display window
+    // only advances when there are >4 steps below the cursor. The subtraction is
+    // signed int in C (uint16 promote), so an underflow goes negative, not wrapping.
+    if ((@as(i32, getNumberOfSteps()) - @as(i32, currentLocalStepNumber)) > 4) {
+        firstDisplayedLocalStepNumber += 1;
+        firstDisplayedStep = findNextStep(firstDisplayedStep);
+    }
     _closeAlphaMenus();
 }
 
