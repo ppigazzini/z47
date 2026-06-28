@@ -98,7 +98,7 @@ const FLAG_W: i16 = 224;
 const FLAG_K: i16 = 111;
 const FLAG_M: i16 = 211;
 
-const NUMBER_OF_SYSTEM_FLAGS: i16 = 105;
+const NUMBER_OF_SYSTEM_FLAGS: i16 = 64 + 43; // defines.h:926 (107) — was 105, truncated like menu_SYSFL
 const NUMBER_OF_LOCAL_FLAGS: i16 = 32;
 const FIRST_LOCAL_FLAG: i16 = 112;
 
