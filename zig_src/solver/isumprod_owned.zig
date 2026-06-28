@@ -163,9 +163,8 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
     var loopTo: longInteger_t = undefined;
     var iCounter: longInteger_t = undefined;
     var iLoop: longInteger_t = undefined;
-    longIntegerInit(&loopStep[0]);
-    longIntegerInit(&loopTo[0]);
-    longIntegerInit(&iCounter[0]);
+    // loopTo/loopStep/iCounter are initialised by the converters below; do not
+    // double-init (the first allocation would leak). iLoop/resultLi need init.
     longIntegerInit(&iLoop[0]);
     longIntegerInit(&resultLi[0]);
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, &loopTo[0]);

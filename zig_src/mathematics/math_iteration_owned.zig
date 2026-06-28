@@ -46,6 +46,7 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const real34_t = runtime.real34_t;
+const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
 const rounding_t = runtime.rounding_t;
@@ -57,7 +58,15 @@ const amAngleMask = runtime.amAngleMask;
 const dtReal34 = runtime.dtReal34;
 const dtLongInteger = runtime.dtLongInteger;
 const dtShortInteger = runtime.dtShortInteger;
+const dtTime = runtime.dtTime;
 const DEC_ROUND_DOWN = runtime.DEC_ROUND_DOWN;
+
+const const_3600 = runtime.z47_math_wrappers_const_3600;
+const ctxtReal39 = &runtime.ctxtReal39;
+const real34ToReal = runtime.real34ToReal;
+const realToReal34 = runtime.realToReal34;
+const realAdd = runtime.realAdd;
+const realSubtract = runtime.realSubtract;
 
 const INC_FLAG: u16 = 0;
 const DEC_FLAG: u16 = 1;
@@ -91,6 +100,7 @@ extern fn incDecReal(regist: u16, flag: u8) void;
 extern fn incDecShoI(regist: u16, flag: u8) void;
 extern fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, result: *i8) bool;
 extern fn real34CompareAbsLessThan(number1: *const real34_t, number2: *const real34_t) bool;
+extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
 
 // real34 sign / predicate / set helpers (realType.h macros / decQuad).
 extern fn decQuadZero(res: *real34_t) *real34_t;
@@ -201,6 +211,22 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
                 real34Add(registerReal34Data(@intCast(regist)), &fp, registerReal34Data(@intCast(regist)));
             } else {
                 // fallthrough to default: goto invalidType
+                return invalidType(regist);
+            }
+        },
+        dtTime => {
+            if ((mode & 2) == 2) { // DSZ / ISZ : count by whole hours
+                var v: real_t = undefined;
+                real34ToReal(registerReal34Data(@intCast(regist)), &v); // seconds
+                if ((mode >> 2) == DEC_FLAG) {
+                    realSubtract(&v, const_3600(), &v, ctxtReal39);
+                } else {
+                    realAdd(&v, const_3600(), &v, ctxtReal39);
+                } // step = 1 hour = 3600 s
+                realToReal34(&v, registerReal34Data(@intCast(regist)));
+                compared = if (realCompareAbsLessThan(&v, const_3600())) 0 else 1; // |time| < 1h -> treat as zero
+            } else {
+                // ISG/DSE/ISE/DSL counter format has no meaning for Time
                 return invalidType(regist);
             }
         },
