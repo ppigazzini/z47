@@ -33,7 +33,7 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
 const C47_NULL: u16 = 65535;
-const configFileVersion: u32 = 10000023;
+const configFileVersion: u32 = 10000024; // C saveRestoreCalcState.c:7 (FLAG_SIGZEROS bump)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
 const subroutineLevelHeader_t = extern struct {

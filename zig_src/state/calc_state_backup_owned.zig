@@ -11,7 +11,7 @@ const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"
 
 const FILE_OK: c_int = 1;
 const ioPathBackup: c_int = 4; const ioModeWrite: c_int = 1;
-const BACKUP_VERSION: u32 = 1014;
+const BACKUP_VERSION: u32 = 1015; // C saveRestoreBackup.c:14 (FLAG_SIGZEROS bump)
 const INVALID_VARIABLE: i16 = 2199; const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46; const USER_DM42: u16 = 45; const USER_R47: u16 = 66;
 const USER_R47f_g: u16=61; const USER_R47fg_g: u16=64; const USER_R47fg_bk: u16=63; const USER_R47bk_fg: u16=62;
@@ -774,6 +774,7 @@ extern fn getSystemFlag(sf: i32) bool; extern fn setSystemFlag(sf: c_uint) void;
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 const ioModeRead: c_int = 0; const CONFIRMED: u16 = 9877; const loadAutoSav: bool = true;
 const FLAG_FRACT: c_uint = 32775; const FLAG_IRFRAC: c_uint = 32839; const MNU_HOME: i16 = 1921;
+const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 
 fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { restoreStateValue(buffer, size, name, type_str); }
 fn toPcmem(blk: u32) [*c]u8 { return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk))); }
@@ -1020,6 +1021,7 @@ pub fn restoreCalc() void {
     rv(&printerState[12], 2, "printerState.delay", "uint16");
     graphVariabl1 = INVALID_VARIABLE; rv(&graphVariabl1, 2, "graphVariabl1", "int16");
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
+    if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreBackup.c:1153-1155
     if (getSystemFlag(@intCast(FLAG_FRACT))) { setSystemFlag(FLAG_FRACT); } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) { setSystemFlag(FLAG_IRFRAC); }
     backupFreeParams();
     scanLabelsAndPrograms();

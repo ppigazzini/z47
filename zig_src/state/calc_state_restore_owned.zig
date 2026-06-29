@@ -99,6 +99,7 @@ const FLAG_MONIT: c_uint = 32832;
 const FLAG_FRACT: c_uint = 32775;
 const FLAG_IRFRAC: c_uint = 32839;
 const FLAG_IRFRQ: c_uint = 49224;
+const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 const FLAG_FGLNLIM: c_uint = 32866;
 const FLAG_FGLNFUL: c_uint = 32867;
 const FLAG_HOME_TRIPLE: c_uint = 32864;
@@ -500,6 +501,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 clearSystemFlag(FLAG_IRFRAC);
                 clearSystemFlag(FLAG_IRFRQ);
             }
+            if (loaded_version < 10000024) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreCalcState.c:1696-1698
             if (getSystemFlag(@intCast(FLAG_FRACT))) {
                 setSystemFlag(FLAG_FRACT);
             } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {
