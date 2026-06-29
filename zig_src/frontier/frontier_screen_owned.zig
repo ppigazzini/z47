@@ -851,7 +851,7 @@ inline fn lcd_buffer() [*c]u8 {
     return lcd_bufferPtr.*;
 }
 
-const bugMsgValueReturnedByFindGlyph: usize = 0;
+const bugMsgValueReturnedByFindGlyph: usize = 3; // typeDefinitions.h:315 — index into commonBugScreenMessages[] (was 0 = wrong message)
 
 // ---------------------------------------------------------------------------
 // File-local TO_QSPI const strings (upstream screen.c statics; not referenced by
