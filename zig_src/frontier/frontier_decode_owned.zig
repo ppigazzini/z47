@@ -246,7 +246,8 @@ extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString
 extern fn complex34ToDisplayString(complex34: *const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool) void;
 extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
 extern fn julianDayToInternalDate(source: *align(1) const real34_t, destination: *align(1) real34_t) void;
-extern fn expandConversionName(msg1: [*c]u8) void;
+extern fn isItemConversion(itemNr: i16) bool;
+extern fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) void;
 extern fn decQuadFromString(r: *align(1) real34_t, s: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
 extern fn abs(x: c_int) c_int;
 
@@ -1025,15 +1026,15 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
 // ===========================================================================
 // decodeRem (static)
 // ===========================================================================
-fn decodeRem(literalAddress_arg: [*c]u8) void {
+fn decodeRem(literalAddress_arg: [*c]u8, op: u16) void {
     var literalAddress = literalAddress_arg;
     const kind: u8 = literalAddress[0];
     literalAddress += 1;
     if (kind == STRING_LABEL_VARIABLE) {
         var str: [*c]u8 = tmpString;
         getStringLabelOrVariableName(literalAddress);
-        str = stringCopy(str, "REM ");
-        str = stringCopy(str, STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, @ptrCast(&indexOfItems[op].itemCatalogName));
+        str = stringCopy(str, " " ++ STD_LEFT_SINGLE_QUOTE);
         str = stringCopy(str, tmpStringLabelOrVariableName);
         str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
     }
@@ -1080,8 +1081,8 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                         _ = strcpy(&nameOp, if (indexOfItems[op].itemCatalogName[0] != 0) @as([*c]const u8, @ptrCast(&indexOfItems[op].itemCatalogName)) else @as([*c]const u8, @ptrCast(&indexOfItems[op].itemSoftmenuName)));
                     }
                 }
-                if (indexOfItems[op].param == multiply_param or indexOfItems[op].param == divide_param) {
-                    expandConversionName(&nameOp);
+                if (isItemConversion(@intCast(op))) {
+                    fullConvSoftMenuItemNameInclHPCONV(@intCast(op), &nameOp); //Display only the standard display partner, as a program cannot contain a custom conversion
                 }
                 _ = sprintf(tmpString, "%s%s", @as([*c]const u8, if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) "# " else ""), @as([*c]const u8, &nameOp));
             },
@@ -1095,7 +1096,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
             },
 
             PTP_REM => {
-                decodeRem(step);
+                decodeRem(step, op);
             },
 
             else => {
