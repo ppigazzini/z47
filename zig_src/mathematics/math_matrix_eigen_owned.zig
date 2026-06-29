@@ -1401,6 +1401,18 @@ pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t,
             }
         } // end main loop
 
+        // POST_QR_RELATIVE_BLOCK_CHECK: compute relative threshold based on
+        // average diagonal magnitude (matrix.c ~7320-7329). Active #if branch.
+        var diag_sum: real_t = undefined;
+        var avg_diag: real_t = undefined;
+        var rel_threshold: real_t = undefined;
+        sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, size, DIAG, &diag_sum, true, realContext);
+        // avg_diag = diag_sum / size
+        realCopy(&diag_sum, &avg_diag);
+        avg_diag.exponent -= @as(i32, size); // divide by size
+        realCopy(&avg_diag, &rel_threshold);
+        rel_threshold.exponent -= 10;
+
         // ---- dedicated 2x2 block scan ----
         var first_unconverged: i32 = -1;
         var last_unconverged: i32 = -1;
@@ -1409,10 +1421,8 @@ pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t,
             while (i + 1 < sz) : (i += 1) {
                 var offdiag_mag: real_t = undefined;
                 complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
-                var threshold: real_t = undefined;
-                realSetOne(&threshold);
-                threshold.exponent -= blockDetectionTolerance;
-                if (!realCompareLessThan(&offdiag_mag, &threshold)) {
+                // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
+                if (!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
                     if (first_unconverged == -1) first_unconverged = @intCast(i);
                     last_unconverged = @intCast(i + 1);
                 }
@@ -1460,10 +1470,8 @@ pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t,
             while (i + 1 < sz) : (i += 1) {
                 var offdiag_mag: real_t = undefined;
                 complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
-                var threshold: real_t = undefined;
-                realSetOne(&threshold);
-                threshold.exponent -= blockDetectionTolerance;
-                if (!realCompareLessThan(&offdiag_mag, &threshold)) {
+                // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
+                if (!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
                     if (first_unconverged == -1) first_unconverged = @intCast(i);
                     last_unconverged = @intCast(i + 1);
                 }
