@@ -232,11 +232,16 @@ fn shrinkNamedVariableHeaderStorage() void {
 }
 
 fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runtime.calcRegister_t {
+    _ = glyph_length; // C _findReservedVariable keys on BYTE length (stringByteLength), not glyph count
     const reserved_count: runtime.calcRegister_t = runtime.LAST_RESERVED_VARIABLE - runtime.FIRST_RESERVED_VARIABLE + 1;
+    var byte_len: u8 = 0;
+    while (variable_name[byte_len] != 0) : (byte_len += 1) {}
 
     var reg: runtime.calcRegister_t = 0;
     while (reg < reserved_count) : (reg += 1) {
-        if (allReservedVariables[@intCast(reg)].reservedVariableName[0] != glyph_length) {
+        // reservedVariableName[0] holds the byte length (a multibyte glyph counts >1),
+        // so a name like sigma-Lim (4 glyphs / 5 bytes) must match on 5, not 4.
+        if (allReservedVariables[@intCast(reg)].reservedVariableName[0] != byte_len) {
             continue;
         }
 
