@@ -46,7 +46,8 @@ fn roundiReal() callconv(.c) void {
             runtime.ERROR_OVERFLOW_MINUS_INF;
         runtime.displayCalcErrorMessage(error_code, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function roundiReal:", "real exponent exceeds long-integer range", null, null);
-        return;
+        // C roundiReal (roundi.c): NO return here — after the overflow error it still
+        // falls through to convertReal34ToLongIntegerRegister (unlike NaN/Inf which return).
     }
 
     runtime.convertReal34ToLongIntegerRegister(runtime.registerReal34Ptr(runtime.REGISTER_X), runtime.REGISTER_X, runtime.DEC_ROUND_HALF_UP);
