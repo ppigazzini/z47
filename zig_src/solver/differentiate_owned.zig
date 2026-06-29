@@ -196,7 +196,7 @@ const DERIVATIVE_SECOND_CENTRAL: u16 = 1;
 //   TI_1ST_DERIVATIVE=57 TI_2ND_DERIVATIVE=58
 //   ITM_RCL=51 ITM_STO=44; AIM_BUFFER_LENGTH=1024; EQUATION_PARSER_XEQ=1
 // ---------------------------------------------------------------------------
-const FIRST_LABEL: u16 = 2044;
+const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 const LAST_LABEL: u16 = 6999;
 const INVALID_VARIABLE: u16 = 2199;
 

@@ -78,7 +78,7 @@ const REGISTER_Z: calcRegister_t = 102;
 const REGISTER_T: calcRegister_t = 103;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 
-const FIRST_LABEL: u16 = 2044;
+const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 const LAST_LABEL: u16 = 6999;
 const INVALID_VARIABLE: u16 = 2199;
 

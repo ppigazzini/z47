@@ -13,7 +13,7 @@ else
 
 pub const bool_t = bool;
 pub const calcRegister_t = i16;
-pub const FIRST_LABEL: u16 = 2044;
+pub const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 pub const LAST_LABEL: u16 = 6999;
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Z: calcRegister_t = 102;
