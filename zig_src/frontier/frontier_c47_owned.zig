@@ -600,7 +600,7 @@ const dmcp = struct {
         calc_state_ptr.* &= ~x;
     }
 
-    const SCREEN_REFRESH_PERIOD: u32 = 160; // DMCP_BUILD value (defines.h)
+    const SCREEN_REFRESH_PERIOD: u32 = if (dmcp_build) 160 else 100; // defines.h: 160 DMCP / 100 host
     const TIMER_IDX_REFRESH_SLEEP: c_int = 0;
     const TMR_RUNNING: u8 = 2;
     const PGM_RUNNING_v: u8 = 1;

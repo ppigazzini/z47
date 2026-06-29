@@ -320,7 +320,7 @@ const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const ERROR_SOLVER_ABORT: u8 = 60;
 
 const FLAG_CPXRES: i32 = 0x8004;
-const FLAG_ASLIFT: i32 = 0x8019;
+const FLAG_ASLIFT: i32 = 0xc023; // defines.h:853 (was 0x8019 = FLAG_QUIET)
 
 const NOPARAM: u16 = 9876;
 const PRN_TMP: u16 = 8;

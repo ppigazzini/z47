@@ -39,7 +39,7 @@ const real34Matrix_t = runtime.real34Matrix_t;
 const REGISTER_X = runtime.REGISTER_X;
 const REGISTER_Y = runtime.REGISTER_Y;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
-const NIM_REGISTER_LINE: calcRegister_t = 105;
+const NIM_REGISTER_LINE: calcRegister_t = 100; // = REGISTER_X (was 105 = REGISTER_B)
 
 const FLAG_ASLIFT: i32 = 0xc023;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;

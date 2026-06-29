@@ -116,9 +116,9 @@ const CM_GRAPH: u8 = 15;
 const CM_NO_UNDO: u8 = 16;
 const CM_MIM: u8 = 12;
 
-const PGM_WAITING: u8 = 0;
+const PGM_WAITING: u8 = 2;
 const PGM_RUNNING: u8 = 1;
-const PGM_SINGLE_STEP: u8 = 2;
+const PGM_SINGLE_STEP: u8 = 6; // defines.h (was 2; programRunStop==6 in single-step)
 
 const ERROR_NONE: i16 = 0;
 const ERROR_RAM_FULL: i16 = 11;
