@@ -765,9 +765,45 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
             roundReal();
         },
 
+        // when time vs Real or longinteger
+        typePair(runtime.dtTime, runtime.dtReal34) => {
+            roundTime();
+            runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        },
+
+        typePair(runtime.dtShortInteger, runtime.dtTime) => {
+            convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+            runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+            roundTime();
+            runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        },
+
+        typePair(runtime.dtLongInteger, runtime.dtTime),
+        typePair(runtime.dtReal34, runtime.dtTime),
+        => {
+            // (LongInteger, Time) falls through to (Real34, Time) in C
+            if (type_pair == typePair(runtime.dtLongInteger, runtime.dtTime)) {
+                runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+            }
+            runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+            roundTime();
+            runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        },
+
+        typePair(runtime.dtTime, runtime.dtShortInteger),
+        typePair(runtime.dtTime, runtime.dtLongInteger),
+        => {
+            roundTime();
+            runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+        },
+
         typePair(runtime.dtTime, runtime.dtTime) => roundTime(),
 
-        else => {},
+        else => {
+            fnSwapX(regist);
+            compareTypeError(asRegister(regist));
+            return;
+        },
     }
     if (regist != TEMP_REGISTER_1) {
         fnSwapX(regist);
@@ -798,6 +834,37 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
             => {
                 runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
                 roundReal();
+            },
+
+            typePair(runtime.dtReal34, runtime.dtTime) => {
+                roundTime();
+                runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+            },
+
+            typePair(runtime.dtTime, runtime.dtShortInteger) => {
+                convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+                runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+                roundTime();
+                runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+            },
+
+            typePair(runtime.dtTime, runtime.dtLongInteger),
+            typePair(runtime.dtTime, runtime.dtReal34),
+            => {
+                // (Time, LongInteger) falls through to (Time, Real34) in C
+                if (type_pair == typePair(runtime.dtTime, runtime.dtLongInteger)) {
+                    runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+                }
+                runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+                roundTime();
+                runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
+            },
+
+            typePair(runtime.dtShortInteger, runtime.dtTime),
+            typePair(runtime.dtLongInteger, runtime.dtTime),
+            => {
+                roundTime();
+                runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             },
 
             typePair(runtime.dtTime, runtime.dtTime) => roundTime(),
@@ -840,6 +907,12 @@ pub export fn z47_math_wrappers_legacy_fnXAlmostEqual(regist: u16) callconv(.c) 
         typePair(runtime.dtShortInteger, runtime.dtReal34),
         typePair(runtime.dtLongInteger, runtime.dtComplex34),
         typePair(runtime.dtLongInteger, runtime.dtReal34),
+        typePair(runtime.dtReal34, runtime.dtTime),
+        typePair(runtime.dtTime, runtime.dtReal34),
+        typePair(runtime.dtLongInteger, runtime.dtTime),
+        typePair(runtime.dtTime, runtime.dtLongInteger),
+        typePair(runtime.dtShortInteger, runtime.dtTime),
+        typePair(runtime.dtTime, runtime.dtShortInteger),
         typePair(runtime.dtTime, runtime.dtTime),
         => almostEqualScalar(regist, type_pair),
 

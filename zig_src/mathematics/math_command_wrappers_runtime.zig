@@ -123,6 +123,11 @@ pub const SIM_SIGNMT: u8 = 3;
 pub const TI_FALSE: u8 = 12;
 pub const TI_REGTYPE: u8 = 123;
 pub const TI_VECTOR: u8 = 127;
+// defines.h: polar/rectangular display labels for fnToPolar/fnToRect.
+pub const TI_RADIUS_THETA: u8 = 1;
+pub const TI_RADIUS_THETA_SWAPPED: u8 = 2;
+pub const TI_X_Y: u8 = 4;
+pub const TI_X_Y_SWAPPED: u8 = 5;
 
 pub const DECNEG: u8 = 0x80;
 const DECINF: u8 = 0x40;

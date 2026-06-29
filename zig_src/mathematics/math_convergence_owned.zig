@@ -24,12 +24,12 @@ fn getConvergenceInput(
             return true;
         },
         runtime.dtLongInteger => {
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
+            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal75);
             runtime.realSetZero(imag);
             return true;
         },
         runtime.dtShortInteger => {
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
+            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal34);
             runtime.realSetZero(imag);
             return true;
         },
