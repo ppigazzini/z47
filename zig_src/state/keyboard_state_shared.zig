@@ -423,6 +423,25 @@ pub fn implementation(comptime runtime: type) type {
                                         }
                                     } else {
                                         runtime.runFunction(item);
+
+                                        // Double execution when a custom conversion: additional to the
+                                        // runFunction which operated the 'normal' conversion (keyboard.c:1384)
+                                        if (!(runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) and runtime.calcMode != runtime.CM_PEM and item > 0 and runtime.isItemConversion(item)) {
+                                            var itemNrPair: i16 = undefined;
+                                            runtime.executionConversionPartner(item, &itemNrPair, null);
+                                            if (itemNrPair != 0) { // non-zero = custom non-standard pair needing the round-trip via SI
+                                                if (!runtime.getSystemFlag(runtime.FLAG_HPCONV)) { // normal CONV_HP clear
+                                                    runtime.runConversionToSI(item);
+                                                    runtime.runConversionFromSI(itemNrPair);
+                                                } else { // flipped CONV_HP set
+                                                    runtime.runFunction(runtime.conversionPartner(item, null, null, null));
+                                                    runtime.runConversionToSI(itemNrPair);
+                                                    runtime.runConversionFromSI(runtime.conversionPartner(item, null, null, null));
+                                                }
+                                                runtime.temporaryInformation = runtime.TI_CONV_MENU_STR;
+                                            }
+                                        }
+
                                         if (runtime.calcMode == runtime.CM_EIM and runtime.tam.mode == 0) {
                                             if (runtime.isAlphaSubmenu(0)) {
                                                 while (runtime.currentMenu() != -runtime.MNU_EQ_EDIT) {

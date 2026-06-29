@@ -376,6 +376,56 @@ const STD_BINARY_ONE = "\xa0\x27";
 const STD_BINARY_ZERO = "\xa2\x0e";
 
 // ---------------------------------------------------------------------------
+// compressBinary (static) — twin of charString.c:166
+// ---------------------------------------------------------------------------
+fn compressBinary(in: [*c]const u8, out: [*c]u8, jjPtr: *i16) bool_t {
+    if ('1' == in[0] and '0' == in[1] and '0' == in[2] and ('k' == in[3] or 'm' == in[3])) {
+        var jj = jjPtr.*;
+        out[@intCast(jj)] = STD_BINARY_ONE[0];
+        jj += 1;
+        out[@intCast(jj)] = STD_BINARY_ONE[1];
+        jj += 1;
+        out[@intCast(jj)] = STD_BINARY_ZERO[0];
+        jj += 1;
+        out[@intCast(jj)] = STD_BINARY_ZERO[1];
+        jj += 1;
+        out[@intCast(jj)] = STD_BINARY_ZERO[0];
+        jj += 1;
+        out[@intCast(jj)] = STD_BINARY_ZERO[1];
+        jj += 1;
+        out[@intCast(jj)] = in[3]; // k or m for km or mile
+        jj += 1;
+        jjPtr.* = jj;
+        return true;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// expandAbbreviations — twin of charString.c:183
+// ---------------------------------------------------------------------------
+pub export fn expandAbbreviations(msg1: [*c]u8) callconv(.c) void {
+    expandConversionName(msg1);
+    var i: i16 = 0;
+    var jj: i16 = 0;
+    var inStr: [51]u8 = undefined;
+    _ = xcopy(&inStr, msg1, @intCast(minI(50, stringByteLength(msg1) + 1)));
+    inStr[50] = 0;
+    msg1[0] = 0;
+    while (inStr[@intCast(i)] != 0) {
+        if (compressBinary(@ptrCast(&inStr[@intCast(i)]), msg1, &jj)) {
+            i += 4;
+        } else {
+            msg1[@intCast(jj)] = inStr[@intCast(i)];
+            jj += 1;
+            i += 1;
+        }
+    }
+    msg1[@intCast(jj)] = 0;
+    jj += 1;
+}
+
+// ---------------------------------------------------------------------------
 // compressConversionName
 // ---------------------------------------------------------------------------
 pub export fn compressConversionName(msg1: [*c]u8) callconv(.c) void {

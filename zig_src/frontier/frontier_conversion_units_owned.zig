@@ -1183,6 +1183,149 @@ pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
     runFunction(entry.partner);                                                 // inverse of the user's choice
 }
 
+// ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───
+// item_t / indexOfItems: exact layout copied from frontier_items_owned.zig /
+// frontier_softmenus_owned.zig (must match src/c47 typeDefinitions.h item_t).
+const item_t = extern struct {
+    func: ?*const fn (u16) callconv(.c) void,
+    param: u16,
+    itemCatalogName: [16]u8,
+    itemSoftmenuName: [16]u8,
+    tamMinMax: u16,
+    status: u16,
+};
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+
+// Right/left arrow glyphs (re-declared locally; match the softmenus owner).
+const STD_RIGHT_ARROW: [*:0]const u8 = "\xa1\x92";
+const STD_LEFT_ARROW: [*:0]const u8 = "\xa1\x90";
+
+extern fn strlen(s: [*c]const u8) usize;
+inline fn stringByteLength(str: [*c]const u8) i32 {
+    return @intCast(strlen(str));
+}
+// stringCopy is a macro for stpcpy (returns pointer to dst's terminating NUL).
+fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    var d = dst;
+    var s = src;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
+inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
+    return stpcpy(dst, src);
+}
+// truncateAtArrow/truncateAtString: ~8-line pair duplicated locally from
+// frontier_softmenus_owned.zig (those copies are private there).
+fn truncateAtString(label: [*c]u8, search: [*c]const u8) void {
+    var i: usize = 0;
+    while (label[i + 1] != 0) {
+        if (search[0] == label[i] and search[1] == label[i + 1]) {
+            label[i] = 0;
+            break;
+        }
+        i += 1;
+    }
+}
+fn truncateAtArrow(label: [*c]u8) void {
+    var sample: [4]u8 = undefined;
+    _ = stringCopy(&sample, STD_RIGHT_ARROW);
+    truncateAtString(label, &sample);
+    _ = stringCopy(&sample, STD_LEFT_ARROW);
+    truncateAtString(label, &sample);
+}
+
+pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) callconv(.c) void {
+    if (!isItemConversion(item)) {                                               // not a conversion: plain softmenu name
+        _ = stringCopy(outString, &indexOfItems[@intCast(item)].itemSoftmenuName);
+        return;
+    }
+    const useNameExcludingRightArrowOnLeft: i16 = item;
+    const useNameExcludingRightArrowOnRight: i16 = conversionPartner(item, null, null, null);
+    var scratch: [64]u8 = undefined;
+    _ = stringCopy(&scratch, &indexOfItems[@intCast(useNameExcludingRightArrowOnLeft)].itemSoftmenuName); // left side up to arrow
+    truncateAtArrow(&scratch);
+    _ = stringCopy(outString, &scratch);
+    _ = stringCopy(outString + @as(usize, @intCast(stringByteLength(outString))), STD_RIGHT_ARROW);        // arrow between sides
+    _ = stringCopy(&scratch, &indexOfItems[@intCast(useNameExcludingRightArrowOnRight)].itemSoftmenuName); // right side up to arrow
+    truncateAtArrow(&scratch);
+    _ = stringCopy(outString + @as(usize, @intCast(stringByteLength(outString))), &scratch);
+}
+
+// Cross-owner globals for executionConversionPartner — EXACT decls copied from
+// frontier_softmenus_owned.zig (struct layouts must match that owner).
+const userMenuItem_t = extern struct {
+    item: i16,
+    unused: i16, // padding (present in the C struct)
+    argumentName: [16]u8,
+};
+const userMenu_t = extern struct {
+    menuName: [16]u8,
+    menuItem: [18]userMenuItem_t,
+};
+const softmenu_t = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    softkeyItem: [*c]const i16,
+};
+const softmenuStack_t = extern struct {
+    softmenuId: i16,
+    firstItem: i16,
+    userMenuId: i16,
+    calcMode: u8,
+};
+extern var dynamicMenuItem: i16;
+const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
+const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
+const userMenuItems = @extern([*c]userMenuItem_t, .{ .name = "userMenuItems" });
+extern var userMenus: [*c]userMenu_t;
+extern var currentUserMenu: u16;
+const MNU_MyMenu: i16 = 1349;
+const MNU_DYNAMIC: i16 = 1394;
+const FLAG_HPCONV: i32 = 0x8042;
+
+pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) callconv(.c) void {
+    if (!isItemConversion(item)) {                                               // not a conversion: plain softmenu name, no partner work
+        if (itemNrPair) |p| p.* = 0;
+        if (pairName != null) {
+            _ = stringCopy(pairName, &indexOfItems[@intCast(item)].itemSoftmenuName);
+        }
+        return;
+    }
+    const softKeyIx: i16 = dynamicMenuItem ^ 1;
+    const curMenu: i16 = -%softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
+    const softKeyPartner: i16 = if (curMenu == MNU_MyMenu)
+        userMenuItems[@intCast(softKeyIx)].item
+    else if (curMenu == MNU_DYNAMIC)
+        userMenus[@intCast(currentUserMenu)].menuItem[@intCast(softKeyIx)].item
+    else
+        0;
+    if (areBothConvertConfigurable(item, softKeyPartner) and !isStandardPair(item, softKeyPartner)) {  // custom non-standard pair of the SAME configurable UT
+        if (itemNrPair) |p| p.* = softKeyPartner;
+        if (pairName != null) {
+            const leftItem: i16 = if (getSystemFlag(FLAG_HPCONV)) conversionPartner(softKeyPartner, null, null, null) else item;
+            const rightItem: i16 = if (getSystemFlag(FLAG_HPCONV)) conversionPartner(item, null, null, null) else softKeyPartner;
+            var scratch: [64]u8 = undefined;
+            _ = stringCopy(&scratch, &indexOfItems[@intCast(leftItem)].itemSoftmenuName);
+            truncateAtArrow(&scratch);
+            _ = stringCopy(pairName, &scratch);
+            _ = stringCopy(pairName + @as(usize, @intCast(stringByteLength(pairName))), STD_RIGHT_ARROW);
+            _ = stringCopy(&scratch, &indexOfItems[@intCast(rightItem)].itemSoftmenuName);
+            truncateAtArrow(&scratch);
+            _ = stringCopy(pairName + @as(usize, @intCast(stringByteLength(pairName))), &scratch);
+        }
+    } else {
+        if (itemNrPair) |p| p.* = 0;                                            // standard pair (or mismatched UTs)
+        if (pairName != null) {
+            fullConvSoftMenuItemNameInclHPCONV(item, pairName);                 // delegate the standard-pair name
+        }
+    }
+}
+
 comptime {                                                                       // keep MimFunctionsType3Conv referenced until fType==3 dispatch lands
     _ = &MimFunctionsType3Conv;
 }

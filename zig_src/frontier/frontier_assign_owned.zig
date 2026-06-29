@@ -265,6 +265,9 @@ const STD_SUP_BOLD_g = "\x9d\x4d";
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
+extern fn isItemConversion(itemNr: i16) bool_t;
+extern fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) void;
+extern fn expandAbbreviations(msg1: [*c]u8) void;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
 extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -966,6 +969,11 @@ pub export fn updateAssignTamBuffer() callconv(.c) void {
         tbPtr = stringCopy(tbPtr, @ptrCast(&allNamedVariables[@intCast(itemToBeAssigned - ASSIGN_NAMED_VARIABLES)].variableName[1]));
     } else if (itemToBeAssigned <= ASSIGN_USER_MENU) {
         tbPtr = stringCopy(tbPtr, &userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName);
+    } else if (isItemConversion(itemToBeAssigned)) {
+        var tb: [64]u8 = undefined;
+        fullConvSoftMenuItemNameInclHPCONV(itemToBeAssigned, &tb);
+        expandAbbreviations(&tb);
+        tbPtr = stringCopy(tbPtr, &tb);
     } else if (itemToBeAssigned < 0) {
         tbPtr = stringCopy(tbPtr, &indexOfItems[@intCast(-itemToBeAssigned)].itemCatalogName);
     } else if (indexOfItems[@intCast(itemToBeAssigned)].itemCatalogName[0] == 0) {
