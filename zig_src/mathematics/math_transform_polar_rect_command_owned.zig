@@ -77,7 +77,10 @@ fn tryToPolar2Real34Pair() bool {
     runtime.reallocateRegister(imag_reg, runtime.dtReal34, 0, @intCast(runtime.currentAngularMode));
     runtime.convertRealToReal34ResultRegister(&real_value, real_reg);
     runtime.convertRealToReal34ResultRegister(&imag_value, imag_reg);
-    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
+        runtime.TI_RADIUS_THETA
+    else
+        runtime.TI_RADIUS_THETA_SWAPPED;
     return true;
 }
 
@@ -170,7 +173,10 @@ fn tryToRect2Real34Pair() bool {
     runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
     runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
-    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
+        runtime.TI_X_Y
+    else
+        runtime.TI_X_Y_SWAPPED;
     return true;
 }
 
@@ -220,7 +226,10 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
     runtime.reallocateRegister(angle_reg, runtime.dtReal34, 0, runtime.amNone);
     runtime.convertRealToReal34ResultRegister(&radius_value, radius_reg);
     runtime.convertRealToReal34ResultRegister(&angle_value, angle_reg);
-    _ = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    runtime.temporaryInformation = if (runtime.getSystemFlag(runtime.FLAG_HPRP))
+        runtime.TI_X_Y
+    else
+        runtime.TI_X_Y_SWAPPED;
     return true;
 }
 
