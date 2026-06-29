@@ -122,6 +122,7 @@ const fnDrop = runtime.fnDrop;
 // safe; the runtime declarations require natural alignment).
 extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
 extern fn mod2Pi(x: *align(1) const real_t, result: *align(1) real_t, ctxt: *realContext_t) void;
+extern fn fnDropT(unusedButMandatoryParameter: u16) void;
 
 extern var currentAngularMode: angularMode_t;
 extern var lastErrorCode: u8;
@@ -1098,6 +1099,13 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
         realSubtract(paramX, paramY, paramY, &c);
         realPlus(paramY, &tmpR, &runtime.ctxtReal75);
         convertRealToResultRegister(&tmpR, REGISTER_Z, amNone);
+    }
+
+    // Step 6: drop T, A, B for a successful dyadic function (C xfn.c:794-799)
+    if (lastErrorCode == 0 and functionType == FT_DYADIC) {
+        fnDropT(NOPARAM);
+        fnDropT(NOPARAM);
+        fnDropT(NOPARAM);
     }
 
     return;
