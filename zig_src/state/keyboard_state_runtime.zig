@@ -430,6 +430,7 @@ pub extern var currentAsnScr: u8;
 pub extern var currentFntScr: u8;
 pub extern var numScreensStandardFont: u8;
 pub extern var numScreensNumericFont: u8;
+pub extern var numScreensNumericFontBold: u8;
 pub extern var numScreensTinyFont: u8;
 pub extern var alphaCase: u8;
 
@@ -1052,6 +1053,7 @@ pub const TM_SOLVE: u16 = 10010;
 pub const TM_M_DIM: u16 = 10007;
 pub const TM_REGISTER: u16 = 10003;
 pub const TM_CMP: u16 = 10022; // defines.h: 10022 (matches comparison items' .param=10022); was 10021 (=TM_STRING) -> interactive comparisons broke
+pub const TM_STRING: u16 = 10021; // defines.h:1697
 pub const ITM_TAMMAX: i16 = 2110;
 pub const ITM_YY_TRACK: i16 = 2237;
 pub const ITM_YY_OFF: i16 = 1919;
