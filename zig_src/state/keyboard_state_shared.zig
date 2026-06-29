@@ -349,7 +349,7 @@ pub fn implementation(comptime runtime: type) type {
                                         break :blk;
                                     }
                                 }
-                                if (runtime.tam.alpha and runtime.calcMode != runtime.CM_ASSIGN and runtime.tam.mode != runtime.TM_NEWMENU and !((runtime.tam.mode == runtime.TM_STORCL or runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or runtime.tam.mode == runtime.TM_SOLVE or runtime.tam.mode == runtime.TM_KEY or runtime.tam.mode == runtime.TM_M_DIM or runtime.tam.mode == runtime.TM_REGISTER or runtime.tam.mode == runtime.TM_CMP) and (item == runtime.CHR_num or item == runtime.CHR_case or item == runtime.ITM_SCR or item == runtime.ITM_USERMODE))) {
+                                if (runtime.tam.alpha and runtime.calcMode != runtime.CM_ASSIGN and runtime.tam.mode != runtime.TM_NEWMENU and !((runtime.tam.mode == runtime.TM_STORCL or runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or runtime.tam.mode == runtime.TM_SOLVE or runtime.tam.mode == runtime.TM_KEY or runtime.tam.mode == runtime.TM_M_DIM or runtime.tam.mode == runtime.TM_REGISTER or runtime.tam.mode == runtime.TM_CMP or runtime.tam.mode == runtime.TM_STRING) and (item == runtime.CHR_num or item == runtime.CHR_case or item == runtime.ITM_SCR or item == runtime.ITM_USERMODE))) {
                                     if (runtime.calcMode != runtime.CM_PEM or item != runtime.ITM_NOP) {
                                         runtime.leaveTamModeIfEnabled();
                                     }
@@ -2878,7 +2878,7 @@ pub fn implementation(comptime runtime: type) type {
                 },
 
                 runtime.CM_FONT_BROWSER => {
-                    if (runtime.currentFntScr < @as(u16, runtime.numScreensNumericFont) + runtime.numScreensStandardFont + runtime.numScreensTinyFont) {
+                    if (runtime.currentFntScr < @as(u16, runtime.numScreensNumericFont) + runtime.numScreensNumericFontBold + runtime.numScreensStandardFont + runtime.numScreensTinyFont) {
                         runtime.currentFntScr += 1;
                     }
                 },
