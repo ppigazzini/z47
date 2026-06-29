@@ -102,11 +102,13 @@ const dtComplex34Matrix: u32 = 7;
 const dtShortInteger: u32 = 8;
 const dtConfig: u32 = 9;
 
+// typeDefinitions.h:223-227 — Grad=1, Degree=2, DMS=3, MultPi=4 (was mis-valued:
+// amMultPi=1/amGrad=2/amDegree=3/amDMS=4, which scrambled the angle annunciator strings).
 const amRadian: angularMode_t = 0;
-const amMultPi: angularMode_t = 1;
-const amGrad: angularMode_t = 2;
-const amDegree: angularMode_t = 3;
-const amDMS: angularMode_t = 4;
+const amGrad: angularMode_t = 1;
+const amDegree: angularMode_t = 2;
+const amDMS: angularMode_t = 3;
+const amMultPi: angularMode_t = 4;
 const amNone: angularMode_t = 5;
 const amAngleMask: u32 = 15;
 

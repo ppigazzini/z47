@@ -113,7 +113,7 @@ pub const FLAG_PROPFR: i32 = 0x8008;
 pub const FLAG_CARRY: i32 = 0x800b;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
-pub const FLAG_ASLIFT: i32 = 0x8019;
+pub const FLAG_ASLIFT: i32 = 0xc023; // defines.h:853 (was 0x8019 = FLAG_QUIET)
 pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;

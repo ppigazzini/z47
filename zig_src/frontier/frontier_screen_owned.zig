@@ -265,7 +265,7 @@ const SCRUPD_MANUAL_SHIFT_STATUS: u8 = 8;
 const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 16;
 const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 32;
 const SCRUPD_SKIP_MENU_ONE_TIME: u8 = 64;
-const SCREEN_REFRESH_PERIOD: i16 = 100;
+const SCREEN_REFRESH_PERIOD: i16 = if (dmcp_build) 160 else 100; // defines.h: 160 DMCP / 100 host
 const FAST_SCREEN_REFRESH_PERIOD: i16 = 100;
 
 // Registers
@@ -299,7 +299,7 @@ const NIM_REGISTER_LINE: calcRegister_t = 100;
 const AIM_REGISTER_LINE: calcRegister_t = 100;
 const TRUE_FALSE_REGISTER_LINE: calcRegister_t = 102;
 const ERR_REGISTER_LINE: calcRegister_t = 102;
-const C47_NULL: u32 = 0;
+const C47_NULL: u32 = 65535; // 0xFFFF null-block sentinel (was 0; block 0 is valid)
 
 const NUMBER_OF_DISPLAY_DIGITS: i16 = 20;
 const LIMITEXP: bool_t = 1;

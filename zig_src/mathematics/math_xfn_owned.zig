@@ -36,7 +36,7 @@ const REGISTER_Z = runtime.REGISTER_Z;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const ERROR_INPUT_DATA_TYPE_NOT_MATCHING: u8 = 31; // defines.h 31
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
-const ERROR_UNDEF_SOURCE_VAR: u8 = 6;
+const ERROR_UNDEF_SOURCE_VAR: u8 = 36; // defines.h:704 (was 6 = ERROR_LABEL_NOT_FOUND)
 const ERROR_UNDEFINED_OPCODE: u8 = 3; // defines.h 3
 
 const dtLongInteger = runtime.dtLongInteger;

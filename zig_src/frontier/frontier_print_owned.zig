@@ -273,7 +273,7 @@ const ITM_VIEW: u16 = 101;
 const ITM_PRINTERADV: i32 = 1708;
 const ITM_PRINTERX: i32 = 1676;
 const ITM_BACKSPACE: i32 = 1738;
-const ITM_EXIT1: i32 = 2017; // not used directly; see printTrace tam.mode check
+const ITM_EXIT1: i32 = 1737; // items.h:1786
 const MNU_DYNAMIC: i32 = 1394;
 
 const TM_VALUE: u16 = 10001;
@@ -434,7 +434,7 @@ extern var ctxtReal39: realContext_t;
 
 // const34_0 is a pointer into the `constants` blob (constantPointers.h).
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_0: usize = 15692;
+const OFF_const34_0: usize = 16200; // constantPointers.h:352
 inline fn const34_0() *align(1) const real34_t {
     return @ptrCast(constants + OFF_const34_0);
 }
@@ -954,7 +954,7 @@ fn setPrinterSBI(status: bool_t) void {
     setSystemFlagChanged(SETTING_PRINTERICON);
     refreshStatusBar();
 }
-const SETTING_PRINTERICON: i32 = 130; // verified below if needed; only setSystemFlagChanged sink
+const SETTING_PRINTERICON: i32 = 134; // defines.h:935 0x86 (was 130; status bar reads 134)
 
 const charWidths = [171]u8{
     162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,

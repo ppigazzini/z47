@@ -178,7 +178,7 @@ const ITM_SIGMAPLUS: i16 = 433;
 const MNU_PLOT_SCATR: i16 = 1395;
 
 // register data type
-const dtReal34: u32 = 0; // reallocateRegister(REGISTER_X, dtReal34, 0, amNone)
+const dtReal34: u32 = 1; // typeDefinitions.h:200 (was 0 = dtLongInteger) // reallocateRegister(REGISTER_X, dtReal34, 0, amNone)
 
 // temporaryInformation
 const TI_SCATTER_SMI: u8 = 92;
