@@ -463,6 +463,9 @@ extern fn updateMatrixHeightCache() void;
 extern fn LastOpTimerReStart(func: u16) void;
 extern fn LastOpTimerLap(func: u16) void;
 extern fn expandConversionName(msg1: [*c]u8) void;
+extern fn isItemConversion(itemNr: i16) bool;
+extern fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) void;
+extern fn expandAbbreviations(msg1: [*c]u8) void;
 
 // libc
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -925,36 +928,26 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
             else => {},
         }
 
-        // TI for conversion menus
+        // TI for conversion menus (items.c:555-573)
         if (lastErrorCode == ERROR_NONE and temporaryInformation == TI_NO_INFO) {
-            switch (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem) {
-                -MNU_CONVE, -MNU_CONVP, -MNU_CONVFP, -MNU_CONVM, -MNU_CONVX, -MNU_CONVV, -MNU_CONVA, -MNU_CONVS, -MNU_CONVANG, -MNU_MISC, -MNU_CONVHUM, -MNU_CONVYMMV, -MNU_CONVCHEF, -MNU_CONVTEMP => {
-                    errorMessage[0] = 0;
-                    _ = strcat(errorMessage, &indexOfItems[@intCast(func)].itemCatalogName);
-                    temporaryInformation = TI_NO_INFO;
-                    var i: i16 = 0;
-                    while (errorMessage[@intCast(i + 1)] != 0) {
-                        if (STD_RIGHT_ARROW0 == errorMessage[@intCast(i)] and (STD_RIGHT_ARROW1 == errorMessage[@intCast(i + 1)] or STD_RIGHT_SHORT_ARROW1 == errorMessage[@intCast(i + 1)])) {
-                            temporaryInformation = TI_CONV_MENU_STR;
-                            errorMessage[@intCast(i)] = 0;
-                            i += 1;
-                            errorMessage[@intCast(i)] = 0;
-                            i += 1;
-                            break;
-                        }
-                        i += 1;
-                    }
-                    var j: i16 = 0;
-                    errorMessage[@intCast(j)] = 0;
-                    while (errorMessage[@intCast(i)] != 0) {
-                        errorMessage[@intCast(j)] = errorMessage[@intCast(i)];
-                        j += 1;
-                        i += 1;
-                    }
-                    errorMessage[@intCast(j)] = 0;
-                    expandConversionName(errorMessage);
-                },
-                else => {},
+            temporaryInformation = TI_NO_INFO;
+            if (isItemConversion(func)) {
+                executionConversionPartner(func, null, errorMessage);
+                errorMessage[0] = 0;
+                temporaryInformation = TI_CONV_MENU_STR;
+                var i: i16 = 0;
+                while (!(STD_RIGHT_ARROW0 == errorMessage[@intCast(i)] and (STD_RIGHT_ARROW1 == errorMessage[@intCast(i + 1)] or STD_RIGHT_SHORT_ARROW1 == errorMessage[@intCast(i + 1)]))) {
+                    i += 1;
+                }
+                i += 2; // step past the two bytes of the right-arrow glyph to the first byte of the second unit name
+                var j: i16 = 0;
+                while (errorMessage[@intCast(i)] != 0) {
+                    errorMessage[@intCast(j)] = errorMessage[@intCast(i)];
+                    j += 1;
+                    i += 1;
+                }
+                errorMessage[@intCast(j)] = 0;
+                expandAbbreviations(errorMessage);
             }
         }
     }

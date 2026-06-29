@@ -127,6 +127,14 @@ pub const USER_R47fg_g: u8 = 64;
 pub extern fn getSystemFlag(flag: i32) bool_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn runFunction(item: i16) void;
+// conversion-name slice: custom-conversion double execution (keyboard.c:1384)
+pub const FLAG_HPCONV: i32 = 0x8042;
+pub const TI_CONV_MENU_STR: u8 = 67;
+pub extern fn isItemConversion(itemNr: i16) bool_t;
+pub extern fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) void;
+pub extern fn runConversionToSI(itemNr: i16) void;
+pub extern fn runConversionFromSI(itemNr: i16) void;
+pub extern fn conversionPartner(input: i16, unity: ?*i16, exponent: ?*i8, type_out: ?*u8) i16;
 pub extern fn addItemToNimBuffer(item: i16) void;
 pub extern fn refreshScreen(reason: i16) void;
 extern fn z47_keyboard_state_processKeyAction(item: i16) void;

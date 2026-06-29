@@ -1167,6 +1167,9 @@ fn pencilWhite(x: u32, y: u32) callconv(.c) void {
 // First-party / runtime / libc externs.
 // ---------------------------------------------------------------------------
 extern fn getSystemFlag(sf: c_int) bool_t;
+extern fn isItemConversion(itemNr: i16) bool;
+extern fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) void;
+extern fn expandAbbreviations(msg1: [*c]u8) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -3022,6 +3025,9 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         showFunctionNameArg = @constCast(arg);
     } else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) {
         _ = stringCopy(&functionName, pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
+    } else if (isItemConversion(item)) {
+        executionConversionPartner(item, null, &functionName);
+        expandAbbreviations(&functionName);
     } else if (item < LAST_ITEM and item != MNU_DYNAMIC) {
         _ = stringCopy(&functionName, pickValidItemFromItems(item, PRIORITY_itemCatalogName));
     } else if (dynamicMenuItem > -1) {
