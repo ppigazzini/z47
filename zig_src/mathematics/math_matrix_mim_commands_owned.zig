@@ -48,8 +48,10 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
 inline fn realIsPositive(value: *const real_t) bool {
-    const isZero = value.digits == 1 and value.lsu[0] == 0 and (value.bits & 0x70) == 0;
-    return (value.bits & 0x80) == 0 and !isZero;
+    // C realType.h:140: #define realIsPositive(x) (((bits) & 0x80) == 0x00) — sign
+    // bit clear, INCLUDING +0 (do NOT exclude zero; that diverged from C and made
+    // MIM swap/get/put range guards reject zero-valued indices/sizes at edges).
+    return (value.bits & 0x80) == 0;
 }
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
