@@ -69,6 +69,60 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
+// Single-byte read primitives used by the dataFileMode token readers below.
+// These are the exact analogs of saveRestoreCalcState.c's static restore()
+// (a one-byte ioFileRead wrapper) and ioEof(); both are provided by the
+// runtime/HAL the same C uses, so they are genuinely linkable here.
+extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
+extern fn ioEof() c_int;
+
+// Read the next whitespace-delimited token, skipping leading whitespace.
+// Faithful port of saveRestoreCalcState.c readToken: any run of spaces/tabs/
+// newlines/CRs separates elements, so a data-file matrix row may hold several
+// elements. `tok` must point at a buffer large enough for the token.
+fn readToken(tok: [*c]u8) void {
+    var p = tok;
+    if (ioEof() == 0) {
+        _ = ioFileRead(p, 1);
+        while ((p[0] == ' ' or p[0] == '\t' or p[0] == '\n' or p[0] == '\r') and ioEof() == 0) {
+            _ = ioFileRead(p, 1);
+        }
+        while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
+            p += 1;
+            _ = ioFileRead(p, 1);
+        }
+    }
+    p[0] = 0;
+}
+
+// Read the next complex matrix element token, skipping leading whitespace. A
+// complex element is either a parenthesised group "( ... )" (read up to and
+// including the closing ')', may span newlines) or a bare whitespace-free 'i'
+// form token. Faithful port of saveRestoreCalcState.c readComplexToken.
+fn readComplexToken(tok: [*c]u8) void {
+    var p = tok;
+    if (ioEof() == 0) {
+        _ = ioFileRead(p, 1);
+        while ((p[0] == ' ' or p[0] == '\t' or p[0] == '\n' or p[0] == '\r') and ioEof() == 0) {
+            _ = ioFileRead(p, 1);
+        }
+        if (p[0] == '(') {
+            while (p[0] != ')' and ioEof() == 0) {
+                p += 1;
+                _ = ioFileRead(p, 1);
+            }
+            if (p[0] == ')') {
+                p += 1;
+            }
+        } else {
+            while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
+                p += 1;
+                _ = ioFileRead(p, 1);
+            }
+        }
+    }
+    p[0] = 0;
+}
 
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getRegisterDataPointer(regist: i16) [*c]u8;
@@ -347,17 +401,39 @@ pub fn saveMatrixElements(regist: i16) void {
     while (element < count) : (element += 1) {
         if (dt == dtReal34Matrix) {
             _ = decQuadToString(base + element * REAL34_SIZE_IN_BYTES, mb);
+            if (dataFileMode) {
+                // one matrix row per line; tab-separate elements within a row
+                _ = strcat(mb, if ((element % cols) == (cols - 1)) "\n" else "\t");
+            } else {
+                _ = strcat(mb, "\n");
+            }
         } else {
             const elem = base + element * COMPLEX34_SIZE_IN_BYTES;
-            _ = decQuadToString(elem, mb);
-            _ = strcat(mb, " ");
-            _ = decQuadToString(elem + REAL34_SIZE_IN_BYTES, mb + strlen(mb));
-        }
-        if (dataFileMode) {
-            // one matrix row per line; tab-separate elements within a row
-            _ = strcat(mb, if ((element % cols) == (cols - 1)) "\n" else "\t");
-        } else {
-            _ = strcat(mb, "\n");
+            if (dataFileMode) {
+                var reStr: [100]u8 = undefined;
+                var imStr: [100]u8 = undefined;
+                _ = decQuadToString(elem, &reStr[0]);
+                _ = decQuadToString(elem + REAL34_SIZE_IN_BYTES, &imStr[0]);
+                // the imaginary sign is emitted between the real part and the
+                // 'i', so strip it from the imaginary value
+                var imSign: u8 = '+';
+                var imValue: [*c]const u8 = &imStr[0];
+                if (imStr[0] == '-') {
+                    imSign = '-';
+                    imValue += 1;
+                } else if (imStr[0] == '+') {
+                    imValue += 1;
+                }
+                // parenthesised so element boundaries are unambiguous under
+                // free-form whitespace
+                _ = sprintf(mb, "(%s%ci%s)", &reStr[0], @as(c_int, imSign), imValue);
+                _ = strcat(mb, if ((element % cols) == (cols - 1)) "\n" else "\t");
+            } else {
+                _ = decQuadToString(elem, mb);
+                _ = strcat(mb, " ");
+                _ = decQuadToString(elem + REAL34_SIZE_IN_BYTES, mb + strlen(mb));
+                _ = strcat(mb, "\n");
+            }
         }
         ioFileWrite(mb, @intCast(strlen(mb)));
     }
@@ -559,10 +635,14 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
             value = &stdTmp[0];
         }
         var imaginaryPart = text.skipWord(value);
-        imaginaryPart[0] = 0;
-        imaginaryPart += 1;
+        if (imaginaryPart[0] != 0) { // separator present: split into real | imaginary
+            imaginaryPart[0] = 0;
+            imaginaryPart += 1;
+            _ = decQuadFromString(regImag34Data(regist), imaginaryPart, &ctxtReal34);
+        } else { // no imaginary token: imaginary part is zero, never step past '\0'
+            _ = decQuadFromString(regImag34Data(regist), "0", &ctxtReal34);
+        }
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
-        _ = decQuadFromString(regImag34Data(regist), imaginaryPart, &ctxtReal34);
     } else if (strcmpEq(type_str, "Rema")) {
         var numOfCols = text.skipWord(value);
         numOfCols[0] = 0;
@@ -606,7 +686,12 @@ pub fn restoreMatrixData(regist: i16) void {
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;
         while (i < count) : (i += 1) {
-            readLine(tmpString, @intCast(TMP_STR_LENGTH));
+            if (dataFileMode) {
+                readToken(tmpString); // any whitespace (spaces/newlines) separates elements
+                dataFileCommaToPeriod(tmpString);
+            } else {
+                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+            }
             _ = decQuadFromString(base + i * REAL34_SIZE_IN_BYTES, tmpString, &ctxtReal34);
         }
     } else if (dt == dtComplex34Matrix) {
@@ -615,13 +700,27 @@ pub fn restoreMatrixData(regist: i16) void {
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;
         while (i < count) : (i += 1) {
-            readLine(tmpString, @intCast(TMP_STR_LENGTH));
-            var imaginaryPart = text.skipWord(tmpString);
-            imaginaryPart[0] = 0;
-            imaginaryPart += 1;
+            if (dataFileMode) {
+                var stdTmp: [200]u8 = undefined;
+                // one parenthesised "(re-iIM)" group (or bare i form) per
+                // element, free-form whitespace between elements
+                readComplexToken(tmpString);
+                standardiseComplex(tmpString, &stdTmp[0]);
+                dataFileCommaToPeriod(&stdTmp[0]);
+                _ = strcpy(tmpString, &stdTmp[0]);
+            } else {
+                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+            }
             const elem = base + i * COMPLEX34_SIZE_IN_BYTES;
+            var imaginaryPart = text.skipWord(tmpString);
+            if (imaginaryPart[0] != 0) { // separator present: split into real | imaginary
+                imaginaryPart[0] = 0;
+                imaginaryPart += 1;
+                _ = decQuadFromString(elem + REAL34_SIZE_IN_BYTES, imaginaryPart, &ctxtReal34);
+            } else { // no imaginary token: imaginary part is zero, never step past '\0'
+                _ = decQuadFromString(elem + REAL34_SIZE_IN_BYTES, "0", &ctxtReal34);
+            }
             _ = decQuadFromString(elem, tmpString, &ctxtReal34);
-            _ = decQuadFromString(elem + REAL34_SIZE_IN_BYTES, imaginaryPart, &ctxtReal34);
         }
     }
 }
@@ -635,7 +734,18 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
         const cols = text.toUint16(numOfCols);
         const count = @as(u32, rows) * @as(u32, cols);
         var i: u32 = 0;
-        while (i < count) : (i += 1) readLine(tmpString, @intCast(TMP_STR_LENGTH));
+        while (i < count) : (i += 1) {
+            if (dataFileMode) {
+                // skip exactly as restoreMatrixData reads, or the file position desyncs
+                if (strcmpEq(type_str, "Cxma")) {
+                    readComplexToken(tmpString);
+                } else {
+                    readToken(tmpString);
+                }
+            } else {
+                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+            }
+        }
     }
 }
 
