@@ -397,6 +397,7 @@ extern var shortIntegerSignBit: u64;
 extern var bcdDisplaySign: u8;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
+extern var ctxtReal75: realContext_t;
 extern var currentAngularMode: angularMode_t;
 extern var temporaryInformation: u8;
 extern var showRegis: u16;
@@ -544,6 +545,7 @@ extern fn decNumberSubtract(res: *real_t, a: *const real_t, b: *const real_t, ct
 extern fn decNumberPlus(res: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
+extern fn decNumberGetBCD(dn: *const real_t, bcd: [*c]u8) [*c]u8;
 // real symbols (true functions, not macros).
 extern fn realSetOne(r: *real_t) void;
 extern fn realSetZero(r: *real_t) void;
@@ -2970,6 +2972,182 @@ pub export fn longIntegerRegisterToDisplayString(regist: calcRegister_t, display
     longIntegerFree(&lgInt);
 }
 
+// emitSciDigits: the DF_SCI body lifted out (matches the inlined SCI path in
+// real34ToDisplayString2), fed from a digit-per-byte bcd[] (MSD first) so a long
+// real can supply up to digitsToDisplay digits. (display.c emitSciDigits)
+fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: i16, exponent_in: i32, sign: bool_t, digitToRound_in: i16, digitsToDisplay: i16, frontSpace: bool_t, displayString: [*c]u8) void {
+    _ = lastDigit;
+    var charIndex: i32 = 0;
+    var valueIndex: i32 = 0;
+    var digitCount: i16 = undefined;
+    var digitPointer: i16 = undefined;
+    var firstDigitAfterPeriod: bool = true;
+
+    var firstDigit = firstDigit_in;
+    var numDigits = numDigits_in;
+    var exponent = exponent_in;
+    var digitToRound = digitToRound_in;
+
+    // Round the displayed number
+    if (bcd[@intCast(digitToRound + 1)] >= 5) {
+        bcd[@intCast(digitToRound)] += 1;
+    }
+    // Transfer the carry
+    while (bcd[@intCast(digitToRound)] == 10) {
+        bcd[@intCast(digitToRound)] = 0;
+        digitToRound -= 1;
+        numDigits -= 1;
+        bcd[@intCast(digitToRound)] += 1;
+    }
+    // Case when 9.9999 rounds to 10.0000
+    if (digitToRound < firstDigit) {
+        firstDigit -= 1;
+        numDigits = 1;
+        exponent += 1;
+    }
+    // Sign
+    if (sign != 0) {
+        displayString[@intCast(charIndex)] = '-';
+        charIndex += 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[@intCast(valueIndex)] = '-';
+            valueIndex += 1;
+        }
+    } else {
+        if (frontSpace != 0) {
+            displayString[@intCast(charIndex)] = ' ';
+            charIndex += 1;
+        }
+    }
+    // First digit
+    displayString[@intCast(charIndex)] = '0' + bcd[@intCast(firstDigit)];
+    charIndex += 1;
+    if (updateDisplayValueX != 0) {
+        displayValueX[@intCast(valueIndex)] = '0' + bcd[@intCast(firstDigit)];
+        valueIndex += 1;
+    }
+    // Radix mark
+    displayString[@intCast(charIndex)] = 0;
+    var tt: [4]u8 = undefined;
+    radixTT(&tt);
+    _ = strcat(displayString, &tt);
+    charIndex +%= @intCast(strlen(&tt));
+    if (updateDisplayValueX != 0) {
+        displayValueX[@intCast(valueIndex)] = '.';
+        valueIndex += 1;
+    }
+    // Significant digits
+    digitCount = -1;
+    digitPointer = firstDigit + 1;
+    while (digitPointer < firstDigit + @as(i16, @intCast(minI(numDigits, digitsToDisplay + 1)))) : ({
+        digitPointer += 1;
+        digitCount -= 1;
+    }) {
+        if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
+            const sr = SEPARATOR_RIGHT();
+            const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
+            _ = xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
+            charIndex +%= @intCast(n);
+        } else {
+            firstDigitAfterPeriod = false;
+        }
+        displayString[@intCast(charIndex)] = '0' + bcd[@intCast(digitPointer)];
+        charIndex += 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[@intCast(valueIndex)] = '0' + bcd[@intCast(digitPointer)];
+            valueIndex += 1;
+        }
+    }
+    // The ending zeros
+    digitPointer = 0;
+    while (digitPointer <= digitsToDisplay - numDigits) : ({
+        digitPointer += 1;
+        digitCount -= 1;
+    }) {
+        if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
+            const sr = SEPARATOR_RIGHT();
+            const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
+            _ = xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
+            charIndex +%= @intCast(n);
+        } else {
+            firstDigitAfterPeriod = false;
+        }
+        displayString[@intCast(charIndex)] = '0';
+        charIndex += 1;
+        if (updateDisplayValueX != 0) {
+            displayValueX[@intCast(valueIndex)] = '0';
+            valueIndex += 1;
+        }
+    }
+    displayString[@intCast(charIndex)] = 0;
+    if (updateDisplayValueX != 0) {
+        displayValueX[@intCast(valueIndex)] = 0;
+    }
+    // Append the ten exponent
+    if (exponent != 0) {
+        if (updateDisplayValueX != 0) {
+            exponentToDisplayString(exponent, displayString + @as(usize, @intCast(charIndex)), @as([*c]u8, &displayValueX) + @as(usize, @intCast(valueIndex)), 0);
+        } else {
+            exponentToDisplayString(exponent, displayString + @as(usize, @intCast(charIndex)), null, 0);
+        }
+    }
+}
+
+// realSCIToDisplayString renders work in SCI form into displayString via
+// emitSciDigits, showing digitsToDisplay digits after the radix.
+// bcd points to caller-supplied scratch (>= maxDigits bytes). (display.c)
+fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8, digitsToDisplay_in: i16, frontSpace: bool_t, bcd: [*c]u8, maxDigits: i16) void {
+    var numDigits: i16 = undefined;
+    var digitPointer: i16 = undefined;
+    var firstDigit: i16 = undefined;
+    var lastDigit: i16 = undefined;
+    var digitToRound: i16 = undefined;
+    var exponent: i16 = undefined;
+    var sign: i32 = undefined;
+    var digitsToDisplay = digitsToDisplay_in;
+
+    _ = memset(bcd, 0, @intCast(maxDigits));
+
+    sign = @intFromBool(realIsNegative(work));
+    exponent = @intCast(work.exponent);
+    _ = decNumberGetBCD(work, bcd + 1);
+
+    digitPointer = 1;
+    while (digitPointer <= @as(i16, @intCast(work.digits))) : (digitPointer += 1) {
+        if (bcd[@intCast(digitPointer)] != 0) {
+            break;
+        }
+    }
+
+    if (digitPointer > @as(i16, @intCast(work.digits))) { // value is 0.0
+        firstDigit = 0;
+        lastDigit = 0;
+        numDigits = 1;
+        exponent = 0;
+    } else {
+        firstDigit = digitPointer;
+        // Fold trailing zeros into the exponent.
+        digitPointer = @intCast(work.digits);
+        while (digitPointer >= 1) : (digitPointer -= 1) {
+            if (bcd[@intCast(digitPointer)] == 0) {
+                exponent += 1;
+            } else {
+                break;
+            }
+        }
+        lastDigit = digitPointer;
+        numDigits = lastDigit - firstDigit;
+        exponent += numDigits;
+        numDigits += 1; // exponent is now the power of the MSD, numDigits the inclusive count
+    }
+
+    digitsToDisplay = @intCast(minI(digitsToDisplay, numDigits - 1)); // no trailing zeros
+
+    digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
+
+    emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intCast(sign), digitToRound, digitsToDisplay, frontSpace, displayString);
+}
+
 pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, minimum: i32, removeTrailingRadix: bool_t) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
     convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
@@ -2977,12 +3155,33 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
     longIntegerFree(&lgInt);
     var tmp4: real_t = undefined;
     var tmpReal: real_t = undefined;
-    var tmpReal34: real34_t = undefined;
-    stringToReal(displayString, &tmpReal, &ctxtReal39);
+    stringToReal(displayString, &tmpReal, &ctxtReal75);
     int32ToReal(minimum, &tmp4);
     if (minimum == 0 or !(realCompareAbsLessThan(&tmpReal, &tmp4) != 0)) {
-        realToReal34(&tmpReal, &tmpReal34);
-        real34ToDisplayString(&tmpReal34, amNone, displayString, if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, maxWidth, 34, LIMITEXP, @intFromBool(FRONTSPACE == 0), NOIRFRAC);
+        const font = if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont;
+        // The long path is only for the wide-LI caller, which selects DF_ALL and
+        // sets displayFormatDigits above DSP_MAX. Every other caller (capped at
+        // DSP_MAX) and every other format uses the old real34 delegation.
+        if (displayFormat == DF_ALL and displayFormatDigits > DSP_MAX) {
+            const regDispMaxDigits: i16 = 48; // buffer ceiling for shown digits
+            var bcdScratch: [100]u8 = undefined;
+            var c: realContext_t = ctxtReal75;
+            c.digits = regDispMaxDigits;
+            realPlus(&tmpReal, &tmpReal, &c);
+            var digitsToDisplay: i16 = regDispMaxDigits - 1; // fill the width
+            while (true) {
+                realSCIToDisplayString(&tmpReal, displayString, digitsToDisplay, @intFromBool(FRONTSPACE == 0), @as([*c]u8, &bcdScratch), @intCast(bcdScratch.len));
+                if (digitsToDisplay == 0) {
+                    break;
+                }
+                digitsToDisplay -= 1;
+                if (!(stringWidth(displayString, font, 1, 1) > maxWidth)) break;
+            }
+        } else {
+            var tmpReal34: real34_t = undefined;
+            realToReal34(&tmpReal, &tmpReal34);
+            real34ToDisplayString(&tmpReal34, amNone, displayString, font, maxWidth, 34, LIMITEXP, @intFromBool(FRONTSPACE == 0), NOIRFRAC);
+        }
 
         if (removeTrailingRadix != 0) {
             const lastGlyphPosition = stringLastGlyph(displayString);
