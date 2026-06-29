@@ -46,7 +46,7 @@ const bool_t = bool;
 // ---------------------------------------------------------------------------
 // defines.h values (verified)
 // ---------------------------------------------------------------------------
-const FIRST_LABEL: u16 = 2044;
+const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 const LAST_LABEL: u16 = 6999;
 const INVALID_VARIABLE: u16 = 2199;
 const FIRST_NAMED_VARIABLE: u16 = 256;
@@ -65,7 +65,7 @@ const RESERVED_VARIABLE_IPONA: u16 = 2035;
 const RESERVED_VARIABLE_NPPER: u16 = 2036;
 const RESERVED_VARIABLE_PMT: u16 = 2038;
 const RESERVED_VARIABLE_PV: u16 = 2039;
-const FIRST_RESERVED_VARIABLE: u16 = 2029;
+const FIRST_RESERVED_VARIABLE: u16 = 2000; // = LAST_NAMED_VARIABLE(1999)+1; 2029 was RESERVED_VARIABLE_SPARE4
 
 const ERROR_NONE: u8 = 0;
 const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
