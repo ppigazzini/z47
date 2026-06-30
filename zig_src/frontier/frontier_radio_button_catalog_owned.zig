@@ -127,6 +127,7 @@ const FN_END: u16 = 243;
 const ITM_M_GROW: u16 = 1533;
 const ITM_M_WRAP: u16 = 1541;
 
+const ITM_USER_R47: u16 = 1964; // item id (items.h) — distinct from the USER_R47 setting value (66)
 const USER_R47: u16 = 66;
 const USER_R47f_g: u16 = 61;
 const USER_R47bk_fg: u16 = 62;
@@ -691,7 +692,7 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                 RB_RX => rb_param = gapItemRadix,
                 RB_KY => {
                     rb_param = calcModel;
-                    if (itemNr == USER_R47) {
+                    if (itemNr == ITM_USER_R47) {
                         switch (calcModel) {
                             @as(u8, @intCast(USER_R47f_g)), @as(u8, @intCast(USER_R47bk_fg)), @as(u8, @intCast(USER_R47fg_bk)), @as(u8, @intCast(USER_R47fg_g)) => rb_param = USER_R47,
                             else => {},
