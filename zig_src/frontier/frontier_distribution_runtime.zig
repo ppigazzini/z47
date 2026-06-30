@@ -266,7 +266,9 @@ pub inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool 
     return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);
 }
 pub inline fn realCompareGreaterEqual(lhs: *const real_t, rhs: *const real_t) bool {
-    return !realCompareLessThan(lhs, rhs);
+    // Faithful to C realCompareGreaterEqual = isPositive || isZero (FALSE for NaN).
+    // `!realCompareLessThan` would wrongly return true for NaN operands.
+    return realCompareGreaterThan(lhs, rhs) or realCompareEqual(lhs, rhs);
 }
 
 pub fn const0() *const real_t {

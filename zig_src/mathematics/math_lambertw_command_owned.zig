@@ -1,7 +1,9 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn realCompareGreaterEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareLessThan(lhs, rhs);
+    // Faithful to C realCompareGreaterEqual = isPositive(lhs-rhs) || isZero (FALSE for NaN).
+    // realCompareLessThan(rhs, lhs) == lhs>rhs strictly; OR Equal gives >=, false for NaN.
+    return runtime.realCompareLessThan(rhs, lhs) or runtime.realCompareEqual(lhs, rhs);
 }
 
 fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
