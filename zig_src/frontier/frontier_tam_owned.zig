@@ -1666,7 +1666,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
         }
     }
 
-    if (tam.mode == TM_NEWMENU) {
+    if (tam.mode == TM_NEWMENU or tam.mode == TM_STRING) {
         setSystemFlag(FLAG_ALPHA);
         aimBuffer[0] = 0;
         calcModeAim(NOPARAM);
