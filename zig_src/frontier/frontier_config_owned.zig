@@ -327,10 +327,14 @@ const ITM_VERS: i16 = 1631;
 const REGISTER_K: u16 = 111;
 const ITM_DREAL: i16 = 1899;
 const ITM_op_j_pol: i16 = 1795;
+const ITM_op_j: i16 = 1830;
+const ITM_BOLD: i16 = 2051;
 const ITM_END: u16 = 1458;
 const ITM_EXIT1: u16 = 1737;
 const ITM_RIBBON_C47: u16 = 2509;
+const ITM_RIBBON_C47PL: u16 = 2510;
 const ITM_RIBBON_R47: u16 = 2511;
+const ITM_RIBBON_R47PL: u16 = 2512;
 const ITM_RESET: i16 = 1568;
 const ITM_DELALL: i16 = 1419;
 const ITM_CLFALL: i16 = 1421;
@@ -344,6 +348,7 @@ const ITM_DELVALL: i16 = 2242;
 
 const MNU_EE: i16 = 1925;
 const MNU_RIBBONS: i16 = 2235;
+const MNU_DEV: i16 = 2625;
 const MNU_YESNO: i16 = 2244;
 const MNU_HOME: i16 = 1921;
 const MNU_MyMenu: i16 = 1349;
@@ -1288,7 +1293,6 @@ pub export fn fnSetHP35(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnSetJM(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnDrop(NOPARAM);
-    fnSquare(0);
     resetOtherConfigurationStuff(true);
     getDateString(&lastStateFileOpened);
     _ = strcat(&lastStateFileOpened, ": Jaco defaults");
@@ -1296,16 +1300,24 @@ pub export fn fnSetJM(unusedButMandatoryParameter: u16) callconv(.c) void {
     Sett(_JM);
 
     roundingMode = RM_HALF_UP;
-    fnKeysManagement(ITM_RIBBON_C47);
+    if (!isR47FAM()) {
+        fnKeysManagement(ITM_RIBBON_C47PL);
+    } else {
+        fnKeysManagement(ITM_RIBBON_R47PL);
+    }
 
-    itemToBeAssigned = -MNU_EE;
-    assignToMyMenu(6);
+    itemToBeAssigned = ITM_op_j;
+    assignToMyMenu(10);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
     itemToBeAssigned = -MNU_RIBBONS;
-    assignToMyMenu(10);
-    itemToBeAssigned = ITM_DREAL;
     assignToMyMenu(9);
+    itemToBeAssigned = ITM_BOLD;
+    assignToMyMenu(8);
+    itemToBeAssigned = -MNU_DEV;
+    assignToMyMenu(7);
+    itemToBeAssigned = -MNU_EE;
+    assignToMyMenu(6);
 
     cachedDynamicMenu = 0;
 
