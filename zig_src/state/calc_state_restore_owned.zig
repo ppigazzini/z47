@@ -351,6 +351,18 @@ fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
     return strcmp(line, name) == 0;
 }
 
+// Mirror of saveRestoreCalcState.c readLineSkippingComments: read a line, and
+// while it is a "Cmnt" header drop the following comment-text line and read the
+// next (real id/name, or another Cmnt). Lets a hand-edited register data-file
+// carry comments between entries without throwing off the per-register count.
+fn readLineSkippingComments(line: [*c]u8, max_len: usize) void {
+    readLine(line, max_len);
+    while (cmpName(line, "Cmnt")) {
+        readLine(line, max_len); // drop the comment text line
+        readLine(line, max_len); // next line: another Cmnt, or the real id / name
+    }
+}
+
 fn b2i(x: bool) c_int {
     return @intFromBool(x);
 }
@@ -391,7 +403,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
             regist = stringToRegisterNumber(tmpString); // "RX".."RW" or "Rnnn"
             read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             if (load_mode == LM_ALL or
@@ -467,6 +479,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 codec.skipMatrixData(aimBuffer, tmpString);
             }
         }
+    } else if (cmpName(tmpString, "Cmnt")) {
+        readLine(tmpString, TMP_STR_LENGTH); // discard the single comment line that follows
+        // falls through to the common `return true` so the load loop continues
     } else if (cmpName(tmpString, "STATISTICAL_SUMS")) {
         readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
