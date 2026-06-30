@@ -63,6 +63,8 @@ const flip_flags = [_]u16{
     runtime.FLAG_FGGR,
     runtime.FLAG_TRACE,
     runtime.FLAG_NORM,
+    0x8069, // FLAG_BOLD
+    0x806a, // FLAG_SIGZEROS
 };
 
 fn needsRefreshState(system_flag: u16) bool {
@@ -108,6 +110,8 @@ fn needsRefreshState(system_flag: u16) bool {
         0x8054,
         0x8058,
         0x8064,
+        0x8069, // FLAG_BOLD
+        0x806a, // FLAG_SIGZEROS
         => true,
         else => false,
     };
