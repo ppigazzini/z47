@@ -100,9 +100,8 @@ fn decodeCommand(plot_mode: u16) Command {
 
 fn applyNext(ctx: *Context) void {
     var cursor = SelectionCursor.init(ctx.lr_selection_mask, ctx.selection);
-    if (cursor.isZero()) {
-        cursor.selection = 1;
-    }
+    // C PLOT_NXT (plotstat.c:1933) shifts FIRST with only a post-shift zero-check;
+    // there is no pre-shift check here (unlike PLOT_REV / applyPrev).
     cursor.shiftLeft();
     if (cursor.isZero()) {
         cursor.selection = 1;
