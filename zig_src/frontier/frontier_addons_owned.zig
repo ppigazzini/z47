@@ -1956,9 +1956,11 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             tamProcessInput(func);
             if (opParam == STRING_LABEL_VARIABLE) {
                 tamProcessInput(ITM_alpha);
-                varOrLblName[6] = 0; // Ensure name is 6 characters maximum
+                if (stringGlyphLength(varOrLblName) == 7) {
+                    varOrLblName[@intCast(stringLastGlyph(varOrLblName))] = 0; // Ensure name is 6 characters maximum
+                }
                 _ = strcpy(aimBuffer, varOrLblName);
-                alphaCursor = @intCast(strlen(varOrLblName));
+                alphaCursor = @intCast(stringGlyphLength(varOrLblName));
                 tamProcessInput(ITM_NOP);
             }
         },
@@ -2183,7 +2185,7 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
 
     if (temporaryInformation != TI_NO_INFO) {
         if (temporaryInformation == TI_FROM_MS_TIME) {
-            copyRegisterToClipboardString2(regist, &tmpString100);
+            timeToDisplayString(regist, &tmpString100, 1);
         }
         if (temporaryInformation == TI_FROM_MS_DEG) {
             // !LIMITEXP=0, FRONTSPACE=1, NOIRFRAC=0
@@ -3331,14 +3333,17 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
     real34SetPositiveSign(&real34);
 
     if (hms == 3) {
+        //total seconds
         reallocateRegister(regist, dtReal34, 0, amNone);
         real34Copy(&real34, reg34(regist));
+        if (sign != 0) {
+            real34ChangeSign(reg34(regist));
+        }
         return;
     }
 
     // Seconds
     real34Copy(&real34, &s34);
-    real34Subtract(&real34, &s34, &real34); // Fractional part
     // Minutes
     real34Divide(&s34, const34_60, &m34);
     real34ToIntegralValue(&m34, &m34, DEC_ROUND_DOWN);
