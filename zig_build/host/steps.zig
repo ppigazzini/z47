@@ -674,6 +674,33 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle) (Annex A5)");
     charstring_diff_step.dependOn(&run_charstring_diff.step);
 
+    // Headless .p47 program runner: load a user program file through the real
+    // load path and XEQ it from the top on the full calc core (no GTK). Catches
+    // crashes and (wrapped in `timeout`) infinite loops in the actual programs.
+    //   zig build pgm_run -- res/PROGRAMS/BinetV3.p47
+    const pgm_run_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "pgmRun",
+        "zig_build/tests/pgm_run/pgm_run_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+        false,
+    );
+    const run_pgm_run = b.addRunArtifact(pgm_run_harness);
+    run_pgm_run.setCwd(b.path("."));
+    if (b.args) |args| run_pgm_run.addArgs(args);
+    const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (args: <file.p47>)");
+    pgm_run_step.dependOn(&run_pgm_run.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.
