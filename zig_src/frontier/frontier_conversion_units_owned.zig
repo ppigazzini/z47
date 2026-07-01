@@ -1298,9 +1298,15 @@ pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName:
     }
     const softKeyIx: i16 = dynamicMenuItem ^ 1;
     const curMenu: i16 = -%softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
-    const softKeyPartner: i16 = if (curMenu == MNU_MyMenu)
+    // dynamicMenuItem is -1 outside a softmenu selection (e.g. when a running
+    // program executes a conversion step), making softKeyIx negative. The C
+    // indexes userMenuItems/userMenus with a signed int16_t and reads out of
+    // bounds; the garbage never forms a configurable pair, so it falls through
+    // to the standard-pair name. Guard the negative index (which @intCast cannot
+    // represent) and yield the same "no partner" outcome without the OOB read.
+    const softKeyPartner: i16 = if (softKeyIx >= 0 and curMenu == MNU_MyMenu)
         userMenuItems[@intCast(softKeyIx)].item
-    else if (curMenu == MNU_DYNAMIC)
+    else if (softKeyIx >= 0 and curMenu == MNU_DYNAMIC)
         userMenus[@intCast(currentUserMenu)].menuItem[@intCast(softKeyIx)].item
     else
         0;
