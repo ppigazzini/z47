@@ -777,11 +777,14 @@ fn showStringAndClear(str: [*c]const u8, font: *const font_t, x: u32, y: i32, dx
 }
 
 noinline fn showStringAndClearTail(x: u32, y: i32, dx: u32, dy: u32, xx: u32, row: u32) void {
-    if (xx < x + dx) {
-        lcd_fill_rect(xx, @intCast(maxI(0, y)), x + dx - xx, @intCast(maxI(@as(i32, @intCast(row)), @as(i32, @intCast(dy))) + minI(0, y)), LCD_SET_VALUE);
+    // All width/offset math is uint32_t wrapping in the C, so dx can arrive as a
+    // large wrapped value (a negative status-bar width); use wrapping ops (+%/-%)
+    // to match instead of Zig's checked arithmetic, which panics on the wrap.
+    if (xx < x +% dx) {
+        lcd_fill_rect(xx, @intCast(maxI(0, y)), x +% dx -% xx, @intCast(maxI(@as(i32, @intCast(row)), @as(i32, @intCast(dy))) + minI(0, y)), LCD_SET_VALUE);
     }
     if (y < 0) {
-        lcd_fill_rect(x, @bitCast(@as(i32, @intCast(row)) + y), dx, @bitCast(@as(i32, @intCast(dx)) - @as(i32, @intCast(row))), LCD_SET_VALUE);
+        lcd_fill_rect(x, @bitCast(@as(i32, @intCast(row)) + y), dx, dx -% row, LCD_SET_VALUE);
     } else if (y > 0) {
         lcd_fill_rect(x, 0, dx, @bitCast(y - 0), LCD_SET_VALUE);
     }
@@ -1088,7 +1091,11 @@ pub export fn showHideHourGlass() callconv(.c) void {
     if (SBhourglassShown[0] != statusMessage[0] or SBhourglassShown[1] != statusMessage[1]) {
         SBhourglassShown[0] = statusMessage[0];
         SBhourglassShown[1] = statusMessage[1];
-        _ = showStringAndClear(&statusMessage, &standardFont, @intCast(xx + offs), yoffs, @intCast(xxx - xx), 20, vmNormal, false, false);
+        // xxx - xx is negative in graph mode (X_COMPLEX_MODE+ADJ < X_HOURGLASS_GRAPHS);
+        // the C passes it to a uint32_t dx, wrapping to a large value that
+        // lcd_fill_rect clamps to the screen. @bitCast reproduces that wrap;
+        // @intCast would reject the negative value.
+        _ = showStringAndClear(&statusMessage, &standardFont, @intCast(xx + offs), yoffs, @bitCast(xxx - xx), 20, vmNormal, false, false);
         force_SBrefresh(force);
     }
 }
