@@ -495,3 +495,13 @@ pub inline fn c6068() *const Real {
     return at(6068); }
 pub inline fn c12092() *const Real {
     return at(12092); }
+pub inline fn c5308() *const Real {
+    return at(5308); }
+pub inline fn c5260() *const Real {
+    return at(5260); }
+pub inline fn c4808() *const Real {
+    return at(4808); }
+pub inline fn c5296() *const Real {
+    return at(5296); }
+pub inline fn c5448() *const Real {
+    return at(5448); }
