@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const cstR = consts.cstR;
 const consts = abi.constants;
 const const_2p32 = consts.const_2p32;
 const const34_86400 = consts.const34_86400;
@@ -143,11 +144,7 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN; // 0x70
 // ---------------------------------------------------------------------------
 // Constant blob
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
 
-inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals
