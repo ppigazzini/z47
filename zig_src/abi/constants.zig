@@ -70,3 +70,39 @@ pub inline fn const1071_pi() *align(1) const Real {
 pub inline fn const2139_2pi() *align(1) const Real {
     return at(10656);
 }
+pub inline fn const__4() *align(1) const Real {
+    return at(4364);
+}
+pub inline fn const_1on4() *align(1) const Real {
+    return at(4532);
+}
+pub inline fn const39_1on3() *align(1) const Real {
+    return at(4544);
+}
+pub inline fn const39_pi() *align(1) const Real {
+    return at(1848);
+}
+pub inline fn const39_piOn2() *align(1) const Real {
+    return at(4880);
+}
+pub inline fn const39_piOn4() *align(1) const Real {
+    return at(4736);
+}
+pub inline fn const75_2pi() *align(1) const Real {
+    return at(7640);
+}
+pub inline fn const_1e_32() *align(1) const Real {
+    return at(5708);
+}
+pub inline fn const_1e_37() *align(1) const Real {
+    return at(4436);
+}
+pub inline fn const_1e_49() *align(1) const Real {
+    return at(4424);
+}
+pub inline fn const__1Off() *align(1) const Real {
+    return at(4376);
+}
+pub inline fn const_3Off() *align(1) const Real {
+    return at(5012);
+}
