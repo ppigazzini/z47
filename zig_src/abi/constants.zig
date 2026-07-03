@@ -145,3 +145,21 @@ pub inline fn const39_gammaEM() *align(1) const Real {
 pub inline fn const39_egamma() *align(1) const Real {
     return at(4592);
 }
+pub inline fn const_NaN() *align(1) const Real {
+    return at(812);
+}
+pub inline fn const39_2pi() *align(1) const Real {
+    return at(1812);
+}
+pub inline fn const39_ln2piOn2() *align(1) const Real {
+    return at(4820);
+}
+pub inline fn const_12() *align(1) const Real {
+    return at(5144);
+}
+pub inline fn const_1260() *align(1) const Real {
+    return at(5408);
+}
+pub inline fn const_1680() *align(1) const Real {
+    return at(5420);
+}
