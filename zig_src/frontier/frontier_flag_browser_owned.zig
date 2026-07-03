@@ -184,7 +184,7 @@ extern var ctxtReal34: realContext_t;
 
 extern const registerFlagLetters: [27]u8;
 extern const KEY_X: [7]c_int;
-const LAST_ITEM: usize = 2850;
+const LAST_ITEM: usize = 2860;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 extern const standardFont: font_t;
 

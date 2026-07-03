@@ -1009,8 +1009,8 @@
 #define ITM_US                       979
 #define ITM_NEG_EXCLAMATION_MARK     980
 #define ITM_ex                       981
-#define ITM_0982                     982
-#define ITM_0983                     983
+#define ITM_LF_PIC                   982
+#define ITM_SMALL_SQUARE             983
 #define ITM_0984                     984
 #define ITM_0985                     985
 #define ITM_0986                     986
@@ -2956,8 +2956,18 @@
 #define MNU_CONV_P_LOAD             2848 
 #define MNU_STRUCT                  2849
 
+#define ITM_XGEP0                   2850
+#define ITM_XLEM0                   2851
+#define ITM_PLTFCNS                 2852
+#define ITM_2853                    2853
+#define ITM_2854                    2854
+#define ITM_2855                    2855
+#define ITM_2856                    2856
+#define ITM_2857                    2857
+#define ITM_2858                    2858
+#define ITM_2859                    2859
 
-#define LAST_ITEM                   2850
+#define LAST_ITEM                   2860
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

@@ -406,7 +406,7 @@ const ITM_WEIBLU = 1270;
 const ITM_XTHROOT_XFN = 2584;
 const ITM_YYX = 1665;
 const ITM_YY_DFLT = 2550;
-const LAST_ITEM = 2850;
+const LAST_ITEM = 2860;
 const MB_FALSE = 4;
 const MB_TRUE = 5;
 const MNU_1STDERIV = 1335;
@@ -844,6 +844,7 @@ extern fn refreshScreen(source: u16) void;
 extern fn checkOpCodeOfStep(step: [*c]const u8, op: i16) bool_t;
 extern fn findNextStep(step: [*c]u8) [*c]u8;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
+extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
 extern fn parseEquation(equation: u16, parseMode: u16, buffer: [*c]u8, dest: [*c]u8) [*c]u8;
 extern fn reallyRunFunction(func: i16, param: i16) void;
 extern fn saveForUndo() void;
@@ -990,8 +991,8 @@ const menu_NUMTHEORY linksection(code_section) = [_]i16{ 1477, 2409, 2410, 2411,
 const menu_Norml linksection(code_section) = [_]i16{ 1253, 0, 1254, 1255, 0, 1256, 1238, 0, 1239, 1240, 0, 1241, 2326, 2327, 0, 0, 0, 0 };
 const menu_Orthog linksection(code_section) = [_]i16{ 1483, 1505, 1506, 1550, 1623, 1627, 1484, 0, 0, 0, 0, 0 };
 const menu_PARTS linksection(code_section) = [_]i16{ 93, 94, 1517, 1470, 1600, 1444, 423, 424, 1868, 1869, 1565, 1577, 88, 87, 105, 1706, 1566, 1485 };
-const menu_PFN_1 linksection(code_section) = [_]i16{ 43, 2018, 2020, 38, 1620, -1357, 1496, 1468, 1554, 77, 1501, 1556, 1548, 1551, 1409, 0, 2042, 1762 };
-const menu_PFN_2 linksection(code_section) = [_]i16{ 1498, 1499, 1520, 1524, 1630, -2403, 1514, 1553, 1424, 2405, 1469, 0, 1581, 1582, 1583, 1580, 0, 0 };
+const menu_PFN_1 linksection(code_section) = [_]i16{ 43, 2018, 2020, 38, 1620, -1357, 1496, 1468, 1554, 77, 1501, 1556, 1548, 1551, 1409, 1762, 2042, 2852 };
+const menu_PFN_2 linksection(code_section) = [_]i16{ 1498, 1499, 1520, 1524, 1630, -2403, 1514, 1553, 1424, 2405, 1469, -2738, 1581, 1582, 1583, 1580, 0, 0 };
 const menu_PFN_3 linksection(code_section) = [_]i16{ 1, 2, 3, 4, 1458, -1403, 1603, 1412, 2223, 1579, -1342, -1365, 2404, 1418, 2224, 0, 0, 2055 };
 const menu_PLOTFUNC linksection(code_section) = [_]i16{ 1206, 1205, 0, 0, 0, 0, 2007, 2042, 0, 0, 0, 0, 2034, 2035, 0, 0, 0, 0, 2015, 2014, 0, 0, 0, 0, 2384, 1880, 0, 0, 0, 0, -2374, 1405, 0, 0, 0, 0, 2010, 2162, 0, 0, 0, 0, 2009, 2011, 0, 0, 0, 0, 1980, 0, 0, 0, 0, 0, 2025, 2024, 0, 0, 0, 0, 2026, 2027, 0, 0, 0, 0, 2013, 2012, 0, 0, 0, 0 };
 const menu_PLOTTING linksection(code_section) = [_]i16{ 433, 436, 438, 437, 440, 441, 434, 452, 453, 455, 456, 454, 435, 457, 458, 2040, -1401, -2080, 433, 443, 444, 446, 447, 439, 434, 445, 442, 448, 449, 451, 435, 0, 0, 450, 0, 1429 };
@@ -1019,7 +1020,7 @@ const menu_Sfdx linksection(code_section) = [_]i16{ 1192, 1690, 1700, 1194, 1193
 const menu_Solver linksection(code_section) = [_]i16{ 0, 0, 0, 0, 0, 0 };
 const menu_Solver_TOOL linksection(code_section) = [_]i16{ 2197, 2370, 2371, 2546, 2545, -2374, 0, 2368, 2369, 0, 0, 0 };
 const menu_StdNorml linksection(code_section) = [_]i16{ 1278, 0, 1279, 1280, 0, 1281, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-const menu_TEST linksection(code_section) = [_]i16{ 16, 17, 11, 12, 18, 19, 14, 13, 15, 33, 0, 0, 57, 77, 1503, 34, 1504, 56, 2400, 2398, 29, 26, 2397, 2401, 0, 0, 0, 0, 0, 0, 31, 0, 2524, 2525, 0, 2526, 24, 25, 2527, 2528, 27, 113, 22, 23, 2529, 2530, 2531, 2532, 2399, 2396, 28, 32, 30 };
+const menu_TEST linksection(code_section) = [_]i16{ 16, 17, 11, 12, 18, 19, 14, 13, 15, 33, 2850, 2851, 57, 77, 1503, 34, 1504, 56, 2400, 2398, 29, 26, 2397, 2401, 0, 0, 0, 0, 0, 0, 31, 0, 2524, 2525, 0, 2526, 24, 25, 2527, 2528, 27, 113, 22, 23, 2529, 2530, 2531, 2532, 2399, 2396, 28, 32, 30 };
 const menu_TRG linksection(code_section) = [_]i16{ 1445, 1557, 1480, 1451, 1523, 1775, 115, 119, 117, 116, 118, 0, 1850, 1849, 1909, 1910, 1500, 1540 };
 const menu_TRG_C47 linksection(code_section) = [_]i16{ 115, 119, 117, 116, 118, 1873, 1500, 1540, 1909, 1910, 1850, 1849, 1445, 1557, 1480, 1451, 1523, 1775 };
 const menu_TRG_C47_MORE linksection(code_section) = [_]i16{ 115, 119, 117, 76, 74, 79, 1500, 1540, 1775, 83, 81, 85, 78, 75, 80, 84, 82, 86 };
@@ -1055,7 +1056,7 @@ const menu_XXFCNS linksection(code_section) = [_]i16{ 2554, 2555, 2573, 2574, 25
 const menu_YESNO linksection(code_section) = [_]i16{ 0, 2245, 0, 0, 2246, 0 };
 const menu_alphaFN linksection(code_section) = [_]i16{ 1722, 1645, 1660, 1652, 1655, 1932, 1658, 1659, 1656, 1657, 2543, 2544, 2538, 2539, 0, 2540, 2541, 2542 };
 const menu_alphaMATH linksection(code_section) = [_]i16{ 824, 949, 825, 947, 950, 826, 834, 829, 814, 815, 831, 836, 830, 821, 857, 855, 819, 817, 832, 920, 921, 922, 867, 866, 845, 932, 933, 956, 957, 958, 837, 943, 942, 948, 944, 847, 1161, 925, 1149, 927, 2429, 812, 835, 846, 876, 880, 1165, 955, 930, 919, 918, 1155, 644, 1159, 1160, 888, 2032, 1168, 916, 848, 936, 938, 937, 939, 2430, 2431, 627, 905, 909, 910, 2447, 2444, 906, 907, 911, 912, 913, 914, 908, 935, 934, 1167, 1158, 904, 886, 926, 889, 890, 891, 1156, 964, 967, 852, 851, 923, 924, 963, 966, 2421, 1076, 1075, 1077, 962, 965, 903, 1004, 1003, 1006, 2437, 2438, 2439, 797, 799, 2440, 2443, 2441, 796, 798, 800, 2442, 0, 0, 0, 761, 2445, 2446 };
-const menu_alphaMisc linksection(code_section) = [_]i16{ 1172, 809, 828, 812, 811, 813, 808, 810, 839, 885, 840, 841, 838, 853, 820, 818, 823, 822, 807, 827, 893, 895, 892, 894, 897, 1164, 2433, 2435, 2432, 2434, 898, 1171, 1169, 1154, 1157, 1163, 981, 896, 2427, 2428, 844, 850, 1174, 1173, 842, 941, 919, 816, 1007, 837, 960, 959, 1001, 980, 977, 975, 961, 901, 899, 900, 1152, 1170, 1073, 1074, 979, 978, 991, 879, 880, 1153, 1148, 2436, 1144, 1145, 1146, 1147, 1151, 1162 };
+const menu_alphaMisc linksection(code_section) = [_]i16{ 1172, 809, 828, 812, 811, 813, 808, 810, 839, 885, 840, 841, 838, 853, 820, 818, 823, 822, 807, 827, 893, 895, 892, 894, 897, 1164, 2433, 2435, 2432, 2434, 898, 1171, 1169, 1154, 1157, 1163, 981, 896, 2427, 2428, 844, 850, 1174, 1173, 842, 941, 919, 816, 1007, 837, 960, 959, 1001, 980, 977, 975, 961, 901, 899, 900, 1152, 1170, 1073, 1074, 979, 978, 991, 879, 880, 1153, 1148, 2436, 1144, 1145, 1146, 1147, 1151, 1162, 982, 983, 0, 0, 0, 0 };
 pub export const menu_alpha_INTL linksection(code_section) = [_]i16{ 667, 665, 670, 669, 668, 671, 672, 664, 666, 673, 676, 674, 675, 678, 677, 682, 680, 684, 683, 679, 681, 858, 685, 860, 686, 690, 688, 692, 691, 687, 689, 693, 694, 697, 698, 696, 701, 699, 700, 705, 703, 708, 707, 706, 709, 702, 704, 710, 862, 863, 712, 714, 713, 711, 716, 715, 720, 718, 723, 721, 722, 717, 719, 724, 864, 725, 727, 726, 728, 729, 731, 730 };
 pub export const menu_alpha_intl linksection(code_section) = [_]i16{ 735, 733, 738, 737, 736, 739, 740, 732, 734, 741, 744, 742, 743, 746, 745, 750, 748, 752, 751, 747, 749, 859, 753, 861, 754, 759, 757, 761, 760, 756, 758, 762, 764, 766, 767, 765, 770, 768, 769, 774, 772, 777, 776, 775, 778, 771, 773, 779, 781, 780, 783, 785, 784, 782, 787, 786, 791, 789, 794, 792, 793, 788, 790, 795, 865, 796, 801, 800, 802, 803, 805, 804 };
 const menu_alpha_omega linksection(code_section) = [_]i16{ 628, 629, 630, 631, 632, 1846, 633, 634, 635, 636, 638, 639, 640, 641, 642, 643, 644, 1845, 645, 646, 660, 647, 648, 650, 651, 652, 653, 1847, 0, 0, 654, 655, 656, 657, 658, 0, 637, 659, 661, 649, 662, 663 };
@@ -1292,6 +1293,7 @@ const FLAG_MULTx = 32795;
 const ITM_3x1TOSTK = 2041;
 const ITM_BITSp2 = 2553;
 const ITM_CLKp2 = 2500;
+const ITM_PLTFCNS = 2852;
 const ITM_CPXexV = 2492;
 const ITM_Ek = 1727;
 const ITM_Ephik = 1764;
@@ -1701,9 +1703,10 @@ fn _dynmenuConstructMVarsFromPgm(label: u16, numberOfBytes: *u16, numberOfVars: 
         if (!(checkOpCodeOfStep(step, ITM_MVAR) != 0 and step[2] == STRING_LABEL_VARIABLE)) {
             break;
         }
-        _ = xcopy(&tmpString[numberOfBytes.*], step + 4, step[3]);
+        const varNameLen = boundProgramNameLength(step + 4, step[3]);
+        _ = xcopy(&tmpString[numberOfBytes.*], step + 4, varNameLen);
         _ = findOrAllocateNamedVariable(&tmpString[numberOfBytes.*]);
-        numberOfBytes.* += @as(u16, step[3]) + 1;
+        numberOfBytes.* += @as(u16, varNameLen) + 1;
         numberOfVars.* += 1;
         step = findNextStep(step);
     }
@@ -1807,9 +1810,13 @@ fn initVariableSoftmenu(mIdx: i16) void {
             i = 0;
             while (i < @as(i16, @bitCast(numberOfLabels))) : (i += 1) {
                 if (labelList[@intCast(i)].step > 0) {
-                    _ = xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], labelList[@intCast(i)].labelPointer + 1, labelList[@intCast(i)].labelPointer[0]);
+                    var lblNameLen: u8 = labelList[@intCast(i)].labelPointer[0];
+                    if (lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
+                        lblNameLen = 14;
+                    }
+                    _ = xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], labelList[@intCast(i)].labelPointer + 1, lblNameLen);
                     numberOfGlobalLabels += 1;
-                    numberOfBytes += 1 + @as(i16, labelList[@intCast(i)].labelPointer[0]);
+                    numberOfBytes += 1 + @as(i16, lblNameLen);
                 }
             }
             if (numberOfGlobalLabels != 0) {
@@ -2199,6 +2206,7 @@ pub export fn isFunctionItemAMenu(item: i16) callconv(.c) bool_t {
         item == ITM_M_EDI or
         item == ITM_M_EDIN or
         item == ITM_CLKp2 or
+        item == ITM_PLTFCNS or
         item == ITM_BITSp2);
 }
 
