@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/ui/tam.c: the TAM (Temporary Argument Mode) state machine.
 // Faithful, line-by-line port of tamOperation, _tamMaxDigits, _tamUpdateBuffer,
@@ -356,12 +357,8 @@ const USER_R47fg_g: u8 = 64;
 // ---------------------------------------------------------------------------
 // constants blob (const34_0 / const34_1 by byte offset)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
-const const34_0 = cst34(16200);
-const const34_1 = cst34(16312);
+const const34_0 = consts.q16200();
+const const34_1 = consts.q16312();
 
 // ---------------------------------------------------------------------------
 // Globals (extern var/const)

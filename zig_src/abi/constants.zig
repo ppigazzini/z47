@@ -352,3 +352,7 @@ pub inline fn const_9999() *const Real {
 pub inline fn const39_ln2() *const Real {
     return at(4628);
 }
+pub inline fn q16200() *align(1) const Real34 {
+    return at34(16200); }
+pub inline fn q16312() *align(1) const Real34 {
+    return at34(16312); }
