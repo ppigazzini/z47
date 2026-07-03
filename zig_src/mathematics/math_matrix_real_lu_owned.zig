@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 // Zig port of WP34S_LU_decomposition from src/c47/mathematics/matrix.c: the real
 // partial-pivoting LU decomposition, packing the matrix into a plain real_t
 // scratch array, running Gaussian elimination with pivoting and writing the
@@ -19,9 +21,8 @@ const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 
-const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 4436));
+    return consts.c4436();
 }
 
 inline fn realElems(matrix: anytype) [*]real34_t {
