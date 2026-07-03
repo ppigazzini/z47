@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const__1 = consts.const__1;
 //
 // Zig owner for src/c47/mathematics/ortho_polynom.c: orthogonal polynomials
 // (Hermite He/H, Laguerre L / L_alpha, Legendre P, Chebyshev T / U). Faithful
@@ -61,10 +64,6 @@ extern var ctxtReal39: realContext_t;
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
-}
-const OFF_const__1: u32 = 4376;
-inline fn const__1() *const real_t {
-    return cstR(OFF_const__1);
 }
 
 fn getOrthoPolyParam(regist: calcRegister_t, val: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
