@@ -169,9 +169,21 @@ fn elecInputIsComplex(regs: []const calcRegister_t) bool {
     return false;
 }
 
-fn elecResultsOk(results: []const *cplx_t) bool {
+// L2 error surface (REPORT-23 §6 P5): the core returns an error instead of
+// calling displayCalcErrorMessage inline; the L3 shim maps it back at the ABI
+// boundary. The SPCRES NaN-substitution path is a success (it recovers), so it
+// stays in the core.
+const Error = error{ArgExceedsDomain};
+
+fn reportError(e: Error) void {
+    switch (e) {
+        error.ArgExceedsDomain => displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X),
+    }
+}
+
+fn checkResults(results: []const *cplx_t) Error!void {
     if (getSystemFlag(FLAG_CPXRES)) {
-        return true;
+        return;
     }
     var bad = false;
     for (results) |res| {
@@ -181,17 +193,16 @@ fn elecResultsOk(results: []const *cplx_t) bool {
         }
     }
     if (!bad) {
-        return true;
+        return;
     }
     if (getSystemFlag(FLAG_SPCRES)) {
         for (results) |res| {
             realSetNaN(&res.Real);
             realSetZero(&res.Imag);
         }
-        return true;
+        return;
     }
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    return false;
+    return error.ArgExceedsDomain;
 }
 
 fn elecGetXYZ(x: *cplx_t, y: *cplx_t, z: *cplx_t) void {
@@ -271,297 +282,299 @@ fn elecStoreTriple(base: calcRegister_t, r1: *const cplx_t, r2: *const cplx_t, r
 // ---------------------------------------------------------------------------
 // Public item entry points
 // ---------------------------------------------------------------------------
+fn fnDeltaToStarCore() Error!void {
+    var x: cplx_t = undefined;
+    var y: cplx_t = undefined;
+    var z: cplx_t = undefined;
+    var s: cplx_t = undefined;
+    var xy: cplx_t = undefined;
+    var yz: cplx_t = undefined;
+    var zx: cplx_t = undefined;
+    var rx: cplx_t = undefined;
+    var ry: cplx_t = undefined;
+    var rz: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+    const results = [_]*cplx_t{ &rx, &ry, &rz };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
+    }
+    elecGetXYZ(&x, &y, &z);
+    rt.add(&x, &y, &s); // s = x + y + z
+    rt.add(&s, &z, &s);
+    rt.mul(&z, &x, &zx); // pairwise products
+    rt.mul(&x, &y, &xy);
+    rt.mul(&y, &z, &yz);
+    rt.div(&zx, &s, &rx); // X = (z*x) / s
+    rt.div(&xy, &s, &ry); // Y = (x*y) / s
+    rt.div(&yz, &s, &rz); // Z = (y*z) / s
+    try checkResults(&results);
+    saveForUndo();
+    setSystemFlag(FLAG_ASLIFT);
+    elecPutResults(&x, &rx, &ry, &rz); // L = original X
+    temporaryInformation = TI_ABC;
+}
+
 pub export fn fnDeltaToStar(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var x: cplx_t = undefined;
-        var y: cplx_t = undefined;
-        var z: cplx_t = undefined;
-        var s: cplx_t = undefined;
-        var xy: cplx_t = undefined;
-        var yz: cplx_t = undefined;
-        var zx: cplx_t = undefined;
-        var rx: cplx_t = undefined;
-        var ry: cplx_t = undefined;
-        var rz: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
-        const results = [_]*cplx_t{ &rx, &ry, &rz };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetXYZ(&x, &y, &z);
-        rt.add(&x, &y, &s); // s = x + y + z
-        rt.add(&s, &z, &s);
-        rt.mul(&z, &x, &zx); // pairwise products
-        rt.mul(&x, &y, &xy);
-        rt.mul(&y, &z, &yz);
-        rt.div(&zx, &s, &rx); // X = (z*x) / s
-        rt.div(&xy, &s, &ry); // Y = (x*y) / s
-        rt.div(&yz, &s, &rz); // Z = (y*z) / s
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        setSystemFlag(FLAG_ASLIFT);
-        elecPutResults(&x, &rx, &ry, &rz); // L = original X
-        temporaryInformation = TI_ABC;
+    if (option_elec) fnDeltaToStarCore() catch |e| reportError(e);
+}
+
+fn fnStarToDeltaCore() Error!void {
+    var x: cplx_t = undefined;
+    var y: cplx_t = undefined;
+    var z: cplx_t = undefined;
+    var p: cplx_t = undefined;
+    var t: cplx_t = undefined;
+    var rx: cplx_t = undefined;
+    var ry: cplx_t = undefined;
+    var rz: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+    const results = [_]*cplx_t{ &rx, &ry, &rz };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetXYZ(&x, &y, &z);
+    rt.mul(&x, &y, &p); // p = x*y + y*z + z*x
+    rt.mul(&y, &z, &t);
+    rt.add(&p, &t, &p);
+    rt.mul(&z, &x, &t);
+    rt.add(&p, &t, &p);
+    rt.div(&p, &z, &rx); // X = p / z
+    rt.div(&p, &x, &ry); // Y = p / x
+    rt.div(&p, &y, &rz); // Z = p / y
+    try checkResults(&results);
+    saveForUndo();
+    setSystemFlag(FLAG_ASLIFT);
+    elecPutResults(&x, &rx, &ry, &rz); // L = original X
+    temporaryInformation = TI_ABBCCA;
 }
 
 pub export fn fnStarToDelta(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var x: cplx_t = undefined;
-        var y: cplx_t = undefined;
-        var z: cplx_t = undefined;
-        var p: cplx_t = undefined;
-        var t: cplx_t = undefined;
-        var rx: cplx_t = undefined;
-        var ry: cplx_t = undefined;
-        var rz: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
-        const results = [_]*cplx_t{ &rx, &ry, &rz };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetXYZ(&x, &y, &z);
-        rt.mul(&x, &y, &p); // p = x*y + y*z + z*x
-        rt.mul(&y, &z, &t);
-        rt.add(&p, &t, &p);
-        rt.mul(&z, &x, &t);
-        rt.add(&p, &t, &p);
-        rt.div(&p, &z, &rx); // X = p / z
-        rt.div(&p, &x, &ry); // Y = p / x
-        rt.div(&p, &y, &rz); // Z = p / y
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        setSystemFlag(FLAG_ASLIFT);
-        elecPutResults(&x, &rx, &ry, &rz); // L = original X
-        temporaryInformation = TI_ABBCCA;
+    if (option_elec) fnStarToDeltaCore() catch |e| reportError(e);
+}
+
+fn fnSymToAbcCore() Error!void {
+    var a2: cplx_t = undefined;
+    var a1: cplx_t = undefined;
+    var a0: cplx_t = undefined;
+    var va: cplx_t = undefined;
+    var vb: cplx_t = undefined;
+    var vc: cplx_t = undefined;
+    var aOp: cplx_t = undefined;
+    var aaOp: cplx_t = undefined;
+    var t: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+    const results = [_]*cplx_t{ &vc, &vb, &va };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetXYZ(&a2, &a1, &a0); // X = A2, Y = A1, Z = A0
+    elecSetAOperators(&aOp, &aaOp);
+    rt.add(&a0, &a1, &va); // Va = A0 + A1 + A2
+    rt.add(&va, &a2, &va);
+    rt.mul(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
+    rt.mul(&aOp, &a2, &t);
+    rt.add(&vb, &t, &vb);
+    rt.add(&vb, &a0, &vb);
+    rt.mul(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
+    rt.mul(&aaOp, &a2, &t);
+    rt.add(&vc, &t, &vc);
+    rt.add(&vc, &a0, &vc);
+    try checkResults(&results);
+    saveForUndo();
+    setSystemFlag(FLAG_ASLIFT);
+    elecPutResults(&a2, &vc, &vb, &va); // L = original X (A2)
+    temporaryInformation = TI_ABC;
 }
 
 pub export fn fnSymToAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var a2: cplx_t = undefined;
-        var a1: cplx_t = undefined;
-        var a0: cplx_t = undefined;
-        var va: cplx_t = undefined;
-        var vb: cplx_t = undefined;
-        var vc: cplx_t = undefined;
-        var aOp: cplx_t = undefined;
-        var aaOp: cplx_t = undefined;
-        var t: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
-        const results = [_]*cplx_t{ &vc, &vb, &va };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetXYZ(&a2, &a1, &a0); // X = A2, Y = A1, Z = A0
-        elecSetAOperators(&aOp, &aaOp);
-        rt.add(&a0, &a1, &va); // Va = A0 + A1 + A2
-        rt.add(&va, &a2, &va);
-        rt.mul(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
-        rt.mul(&aOp, &a2, &t);
-        rt.add(&vb, &t, &vb);
-        rt.add(&vb, &a0, &vb);
-        rt.mul(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
-        rt.mul(&aaOp, &a2, &t);
-        rt.add(&vc, &t, &vc);
-        rt.add(&vc, &a0, &vc);
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        setSystemFlag(FLAG_ASLIFT);
-        elecPutResults(&a2, &vc, &vb, &va); // L = original X (A2)
-        temporaryInformation = TI_ABC;
+    if (option_elec) fnSymToAbcCore() catch |e| reportError(e);
+}
+
+fn fnAbcToSymCore() Error!void {
+    var vc: cplx_t = undefined;
+    var vb: cplx_t = undefined;
+    var va: cplx_t = undefined;
+    var s0: cplx_t = undefined;
+    var s1: cplx_t = undefined;
+    var s2: cplx_t = undefined;
+    var aOp: cplx_t = undefined;
+    var aaOp: cplx_t = undefined;
+    var t: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
+    const results = [_]*cplx_t{ &s2, &s1, &s0 };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetXYZ(&vc, &vb, &va); // X = Vc, Y = Vb, Z = Va
+    elecSetAOperators(&aOp, &aaOp);
+    rt.add(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
+    rt.add(&s0, &vc, &s0);
+    realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal39);
+    realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal39);
+    rt.mul(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
+    rt.mul(&aaOp, &vc, &t);
+    rt.add(&s1, &t, &s1);
+    rt.add(&s1, &va, &s1);
+    realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal39);
+    realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal39);
+    rt.mul(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
+    rt.mul(&aOp, &vc, &t);
+    rt.add(&s2, &t, &s2);
+    rt.add(&s2, &va, &s2);
+    realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal39);
+    realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal39);
+    try checkResults(&results);
+    saveForUndo();
+    setSystemFlag(FLAG_ASLIFT);
+    elecPutResults(&vc, &s2, &s1, &s0); // L = original X (Vc)
+    temporaryInformation = TI_012;
 }
 
 pub export fn fnAbcToSym(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var vc: cplx_t = undefined;
-        var vb: cplx_t = undefined;
-        var va: cplx_t = undefined;
-        var s0: cplx_t = undefined;
-        var s1: cplx_t = undefined;
-        var s2: cplx_t = undefined;
-        var aOp: cplx_t = undefined;
-        var aaOp: cplx_t = undefined;
-        var t: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ REGISTER_X, REGISTER_Y, REGISTER_Z };
-        const results = [_]*cplx_t{ &s2, &s1, &s0 };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetXYZ(&vc, &vb, &va); // X = Vc, Y = Vb, Z = Va
-        elecSetAOperators(&aOp, &aaOp);
-        rt.add(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
-        rt.add(&s0, &vc, &s0);
-        realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal39);
-        realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal39);
-        rt.mul(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
-        rt.mul(&aaOp, &vc, &t);
-        rt.add(&s1, &t, &s1);
-        rt.add(&s1, &va, &s1);
-        realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal39);
-        realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal39);
-        rt.mul(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
-        rt.mul(&aOp, &vc, &t);
-        rt.add(&s2, &t, &s2);
-        rt.add(&s2, &va, &s2);
-        realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal39);
-        realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal39);
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        setSystemFlag(FLAG_ASLIFT);
-        elecPutResults(&vc, &s2, &s1, &s0); // L = original X (Vc)
-        temporaryInformation = TI_012;
+    if (option_elec) fnAbcToSymCore() catch |e| reportError(e);
+}
+
+fn fnTripleZfromVICore() Error!void {
+    var v1: cplx_t = undefined;
+    var v2: cplx_t = undefined;
+    var v3: cplx_t = undefined;
+    var ii1: cplx_t = undefined;
+    var ii2: cplx_t = undefined;
+    var ii3: cplx_t = undefined;
+    var z1: cplx_t = undefined;
+    var z2: cplx_t = undefined;
+    var z3: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegI1_93, TripleRegI2_94, TripleRegI3_95 };
+    const results = [_]*cplx_t{ &z1, &z2, &z3 };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
+    elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
+    rt.div(&v1, &ii1, &z1); // Z1 = V1 / I1
+    rt.div(&v2, &ii2, &z2);
+    rt.div(&v3, &ii3, &z3);
+    try checkResults(&results);
+    saveForUndo();
+    elecStoreTriple(TripleRegZ1_96, &z1, &z2, &z3);
 }
 
 pub export fn fnTripleZfromVI(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var v1: cplx_t = undefined;
-        var v2: cplx_t = undefined;
-        var v3: cplx_t = undefined;
-        var ii1: cplx_t = undefined;
-        var ii2: cplx_t = undefined;
-        var ii3: cplx_t = undefined;
-        var z1: cplx_t = undefined;
-        var z2: cplx_t = undefined;
-        var z3: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegI1_93, TripleRegI2_94, TripleRegI3_95 };
-        const results = [_]*cplx_t{ &z1, &z2, &z3 };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
-        elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
-        rt.div(&v1, &ii1, &z1); // Z1 = V1 / I1
-        rt.div(&v2, &ii2, &z2);
-        rt.div(&v3, &ii3, &z3);
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        elecStoreTriple(TripleRegZ1_96, &z1, &z2, &z3);
+    if (option_elec) fnTripleZfromVICore() catch |e| reportError(e);
+}
+
+fn fnTripleVfromIZCore() Error!void {
+    var ii1: cplx_t = undefined;
+    var ii2: cplx_t = undefined;
+    var ii3: cplx_t = undefined;
+    var z1: cplx_t = undefined;
+    var z2: cplx_t = undefined;
+    var z3: cplx_t = undefined;
+    var v1: cplx_t = undefined;
+    var v2: cplx_t = undefined;
+    var v3: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ TripleRegI1_93, TripleRegI2_94, TripleRegI3_95, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
+    const results = [_]*cplx_t{ &v1, &v2, &v3 };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
+    elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
+    rt.mul(&ii1, &z1, &v1); // V1 = I1 * Z1
+    rt.mul(&ii2, &z2, &v2);
+    rt.mul(&ii3, &z3, &v3);
+    try checkResults(&results);
+    saveForUndo();
+    elecStoreTriple(TripleRegV1_90, &v1, &v2, &v3);
 }
 
 pub export fn fnTripleVfromIZ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var ii1: cplx_t = undefined;
-        var ii2: cplx_t = undefined;
-        var ii3: cplx_t = undefined;
-        var z1: cplx_t = undefined;
-        var z2: cplx_t = undefined;
-        var z3: cplx_t = undefined;
-        var v1: cplx_t = undefined;
-        var v2: cplx_t = undefined;
-        var v3: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ TripleRegI1_93, TripleRegI2_94, TripleRegI3_95, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
-        const results = [_]*cplx_t{ &v1, &v2, &v3 };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
-        elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-        rt.mul(&ii1, &z1, &v1); // V1 = I1 * Z1
-        rt.mul(&ii2, &z2, &v2);
-        rt.mul(&ii3, &z3, &v3);
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        elecStoreTriple(TripleRegV1_90, &v1, &v2, &v3);
+    if (option_elec) fnTripleVfromIZCore() catch |e| reportError(e);
+}
+
+fn fnTripleIfromVZCore() Error!void {
+    var v1: cplx_t = undefined;
+    var v2: cplx_t = undefined;
+    var v3: cplx_t = undefined;
+    var z1: cplx_t = undefined;
+    var z2: cplx_t = undefined;
+    var z3: cplx_t = undefined;
+    var ii1: cplx_t = undefined;
+    var ii2: cplx_t = undefined;
+    var ii3: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
+    const results = [_]*cplx_t{ &ii1, &ii2, &ii3 };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
+    elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
+    rt.div(&v1, &z1, &ii1); // I1 = V1 / Z1
+    rt.div(&v2, &z2, &ii2);
+    rt.div(&v3, &z3, &ii3);
+    try checkResults(&results);
+    saveForUndo();
+    elecStoreTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
 }
 
 pub export fn fnTripleIfromVZ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var v1: cplx_t = undefined;
-        var v2: cplx_t = undefined;
-        var v3: cplx_t = undefined;
-        var z1: cplx_t = undefined;
-        var z2: cplx_t = undefined;
-        var z3: cplx_t = undefined;
-        var ii1: cplx_t = undefined;
-        var ii2: cplx_t = undefined;
-        var ii3: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{ TripleRegV1_90, TripleRegV2_91, TripleRegV3_92, TripleRegZ1_96, TripleRegZ2_97, TripleRegZ3_98 };
-        const results = [_]*cplx_t{ &ii1, &ii2, &ii3 };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
-        elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-        rt.div(&v1, &z1, &ii1); // I1 = V1 / Z1
-        rt.div(&v2, &z2, &ii2);
-        rt.div(&v3, &z3, &ii3);
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        elecStoreTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
-    }
+    if (option_elec) fnTripleIfromVZCore() catch |e| reportError(e);
+}
+
+fn fnTripleFlipPolarCore() Error!void {
+    saveForUndo();
+    flipPolar(REGISTER_X);
+    flipPolar(REGISTER_Y);
+    flipPolar(REGISTER_Z);
 }
 
 pub export fn fnTripleFlipPolar(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        saveForUndo();
-        flipPolar(REGISTER_X);
-        flipPolar(REGISTER_Y);
-        flipPolar(REGISTER_Z);
+    if (option_elec) fnTripleFlipPolarCore() catch |e| reportError(e);
+}
+
+fn fnCopyXtoAbcCore() Error!void {
+    var x: cplx_t = undefined;
+    var rx: cplx_t = undefined;
+    var ry: cplx_t = undefined;
+    var aOp: cplx_t = undefined;
+    var aaOp: cplx_t = undefined;
+    const inRegs = [_]calcRegister_t{REGISTER_X};
+    const results = [_]*cplx_t{ &rx, &ry, &x };
+    if (elecInputIsComplex(&inRegs)) {
+        setSystemFlag(FLAG_CPXRES);
     }
+    getRegCplx(REGISTER_X, &x); // x = source phasor
+    elecSetAOperators(&aOp, &aaOp);
+    rt.mul(&aOp, &x, &ry); // a*x   -> Y
+    rt.mul(&aaOp, &x, &rx); // a^2*x -> X
+    try checkResults(&results);
+    saveForUndo();
+    fnDrop(NOPARAM); // consume the input
+    putRegCplx(&x, REGISTER_L); // L = original x
+    liftStack();
+    putRegCplx(&x, REGISTER_X); // x is the base of the set
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    putRegCplx(&ry, REGISTER_X); // a*x into X, x rolls to Y
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x -> Y, x -> Z
+    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    convertComplexRegisterToRealIfZeroImag(REGISTER_L);
+    temporaryInformation = TI_ABC;
 }
 
 pub export fn fnCopyXtoAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (option_elec) {
-        var x: cplx_t = undefined;
-        var rx: cplx_t = undefined;
-        var ry: cplx_t = undefined;
-        var aOp: cplx_t = undefined;
-        var aaOp: cplx_t = undefined;
-        const inRegs = [_]calcRegister_t{REGISTER_X};
-        const results = [_]*cplx_t{ &rx, &ry, &x };
-        if (elecInputIsComplex(&inRegs)) {
-            setSystemFlag(FLAG_CPXRES);
-        }
-        getRegCplx(REGISTER_X, &x); // x = source phasor
-        elecSetAOperators(&aOp, &aaOp);
-        rt.mul(&aOp, &x, &ry); // a*x   -> Y
-        rt.mul(&aaOp, &x, &rx); // a^2*x -> X
-        if (!elecResultsOk(&results)) {
-            return;
-        }
-        saveForUndo();
-        fnDrop(NOPARAM); // consume the input
-        putRegCplx(&x, REGISTER_L); // L = original x
-        liftStack();
-        putRegCplx(&x, REGISTER_X); // x is the base of the set
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
-        putRegCplx(&ry, REGISTER_X); // a*x into X, x rolls to Y
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
-        putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x -> Y, x -> Z
-        convertComplexRegisterToRealIfZeroImag(REGISTER_X);
-        convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
-        convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
-        convertComplexRegisterToRealIfZeroImag(REGISTER_L);
-        temporaryInformation = TI_ABC;
-    }
+    if (option_elec) fnCopyXtoAbcCore() catch |e| reportError(e);
 }
