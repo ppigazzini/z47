@@ -28,6 +28,14 @@ inline fn at34(comptime offset: u32) *align(1) const Real34 {
     return @ptrCast(constants + offset);
 }
 
+/// Dynamic (runtime-offset) blob accessors; align 1 since the offset is not comptime.
+pub inline fn cstR(offset: u32) *align(1) const Real {
+    return @ptrCast(constants + offset);
+}
+pub inline fn cst34(offset: u32) *align(1) const Real34 {
+    return @ptrCast(constants + offset);
+}
+
 // --- Seeded for the elec pilot (mathematics/elec.c) ---
 pub inline fn const1on2() *const Real {
     return at(4580);
