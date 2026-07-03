@@ -513,3 +513,7 @@ pub inline fn c2048() *const Real {
     return at(2048); }
 pub inline fn c2648() *const Real {
     return at(2648); }
+pub inline fn q16552() *align(1) const Real34 {
+    return at34(16552); }
+pub inline fn q16632() *align(1) const Real34 {
+    return at34(16632); }
