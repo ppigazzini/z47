@@ -44,6 +44,9 @@ pub const Complex = extern struct { Real: Real, Imag: Real };
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.
 pub const constants = @import("constants.zig");
 
+/// Typed C-runtime wrappers (L1), reached as `abi.runtime.add(&a, &b, &r)`.
+pub const runtime = @import("runtime.zig");
+
 // decNumber bit flags (realType.h), shared by the owners that inspect `Real.bits`.
 pub const DECNEG: u8 = 0x80;
 pub const DECINF: u8 = 0x40;
