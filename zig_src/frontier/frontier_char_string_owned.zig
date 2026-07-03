@@ -831,8 +831,25 @@ pub export fn utf8ToString(utf8In: [*c]const u8, strIn: [*c]u8) callconv(.c) voi
 
     while (utf8[0] != 0) {
         utf8 += utf8ToCodePoint(utf8, &codePoint);
+        // Glyphs whose low byte is 0x00 are forbidden in C47 (a 0x00 second byte
+        // terminates C strings early). Relocate each such real Unicode point to
+        // its internal 0x00-free slot.
+        switch (codePoint) {
+            0x0100 => codePoint = 0x017F, // STD_A_MACRON (was U+0100)
+            0x1D00 => codePoint = 0x045A, // STD_SMALLCAP_A (was U+1D00)
+            0x2200 => codePoint = 0x2C6F, // STD_FOR_ALL (was U+2200)
+            else => {},
+        }
         if (codePoint < 0x0080) {
             str[0] = @truncate(codePoint);
+            str += 1;
+        } else if ((codePoint & 0x00FF) == 0) {
+            // Any other code point with a 0x00 low byte -> placeholder '?' to
+            // prevent an early string terminator.
+            if (comptime !dmcp_build) {
+                _ = printf("In function utf8ToString: code point U+%04X has a 0x00 second byte and was replaced with '?'\n", codePoint);
+            }
+            str[0] = '?';
             str += 1;
         } else {
             codePoint |= 0x8000;
