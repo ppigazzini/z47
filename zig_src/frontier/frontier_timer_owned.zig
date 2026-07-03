@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const consts = abi.constants;
-const cst34 = consts.cst34;
 //
 // Zig owner for src/c47/timer.c: the kb-timer subsystem and the STOPW timer
 // application. Faithful, line-by-line port of the C.
@@ -110,7 +109,6 @@ const vmNormal: c_int = 0;
 
 // constant blob offsets (constantPointers.h).
 const OFF_const_3600: u32 = 5448;
-const OFF_const34_1: u32 = 16312;
 
 // ---------------------------------------------------------------------------
 // softmenu / softmenuStack structs (typeDefinitions.h)
@@ -162,7 +160,7 @@ extern const numericFont: font_t;
 
 const cst = consts.cstR;
 const const_3600 = cst(OFF_const_3600);
-const const34_1 = cst34(OFF_const34_1);
+const const34_1 = consts.q16312();
 
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
