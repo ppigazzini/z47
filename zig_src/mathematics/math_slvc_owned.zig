@@ -1,4 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const_1e_37 = consts.const_1e_37;
+const const_1on2 = consts.const_1on2;
+const const39_root3on2 = consts.const39_root3on2;
+const const_2 = consts.const_2;
+const const_3 = consts.const_3;
+const const_4 = consts.const_4;
+const const_9 = consts.const_9;
+const const_54 = consts.const_54;
+const const_2916 = consts.const_2916;
 //
 // Zig owner for src/c47/mathematics/slvc.c: solve cubic (SLVC). Exports
 // slvc.h's fnSlvc, solveCubicEquation and solveCubicEquation159. Covered by
@@ -122,50 +134,6 @@ inline fn chsComplex(aReal: *align(1) real_t, aImag: *align(1) real_t) void {
 }
 
 // Blob constants.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const_1e_37: u32 = 4436;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const39_root3on2: u32 = 4772;
-const OFF_const_2: u32 = 4928;
-const OFF_const_3: u32 = 5012;
-const OFF_const_4: u32 = 5024;
-const OFF_const_9: u32 = 5120;
-const OFF_const_54: u32 = 5248;
-const OFF_const_2916: u32 = 5432;
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const39_root3on2() *align(1) const real_t {
-    return cstR(OFF_const39_root3on2);
-}
-inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
-}
-inline fn const_3() *align(1) const real_t {
-    return cstR(OFF_const_3);
-}
-inline fn const_4() *align(1) const real_t {
-    return cstR(OFF_const_4);
-}
-inline fn const_9() *align(1) const real_t {
-    return cstR(OFF_const_9);
-}
-inline fn const_54() *align(1) const real_t {
-    return cstR(OFF_const_54);
-}
-inline fn const_2916() *align(1) const real_t {
-    return cstR(OFF_const_2916);
-}
 
 // REAL_T_PTR(name, 159).
 inline fn realMaxDigits(comptime digits: u32) u32 {
