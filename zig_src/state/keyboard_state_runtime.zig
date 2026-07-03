@@ -356,11 +356,7 @@ const softmenuStack_t = extern struct {
     userMenuId: i16,
     calcMode: u8,
 };
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const abi = @import("abi"); // L1 shared bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 

@@ -124,11 +124,8 @@ const formulaHeader_t = extern struct {
     unused: u8,
 };
 
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const softmenu_t = abi.Softmenu;
 
 const softmenuStack_t = extern struct {
     softmenuId: i16,

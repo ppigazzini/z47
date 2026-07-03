@@ -1804,11 +1804,7 @@ inline fn isnanF(v: f32) bool {
 }
 
 // softmenu[softmenuStack[0].softmenuId].menuItem - reuse the sibling externs.
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const softmenuStack_t = extern struct {
     softmenuId: i16,
     firstItem: i16,

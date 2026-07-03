@@ -39,11 +39,7 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const softmenuStack_t = extern struct {
     softmenuId: i16,
     firstItem: i16,

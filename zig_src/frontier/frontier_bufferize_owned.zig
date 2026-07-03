@@ -56,11 +56,7 @@ const item_t = extern struct {
     tamMinMax: u16,
     status: u16,
 };
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const dynamicSoftmenu_t = extern struct {
     menuItem: i16,
     numItems: i16,

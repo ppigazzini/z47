@@ -85,11 +85,7 @@ const dataType_t = u32;
 const videoMode_t = c_int;
 const font_t = opaque {};
 
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const dynamicSoftmenu_t = extern struct {
     menuItem: i16,
     numItems: i16,

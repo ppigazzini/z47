@@ -305,11 +305,7 @@ const const39_pi = consts.c1848();
 const const39_piOn2 = consts.c4880();
 const const_0 = consts.c1708();
 
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const softmenuStack_t = extern struct {
     softmenuId: i16,
     firstItem: i16,
