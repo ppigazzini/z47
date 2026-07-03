@@ -135,10 +135,7 @@ const ItemFn = ?*const fn (u16) callconv(.c) void;
 const item_t = abi.Item;
 
 // registerHeader_t is 4 bytes; namedVariableHeader_t / reservedVariableHeader_t.
-const namedVariableHeader_t = extern struct {
-    header: u32,
-    variableName: [16]u8,
-};
+const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = extern struct {
     header: u32,
     reservedVariableName: [8]u8,

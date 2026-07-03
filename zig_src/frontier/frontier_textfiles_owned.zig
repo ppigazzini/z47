@@ -42,10 +42,8 @@ const registerHeader_t = packed struct(u32) {
     readOnly: u1,
     notUsed: u6,
 };
-const namedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    variableName: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings
+const namedVariableHeader_t = abi.NamedVariableHeader;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
