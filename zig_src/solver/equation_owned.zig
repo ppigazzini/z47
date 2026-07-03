@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/equation.c: the EQN equation editor + recursive
 // formula parser/evaluator (RPN shunting-yard). UNCOVERED by the testSuite (no
@@ -278,18 +279,14 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessors
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_NaN: u32 = 812;
-const OFF_const34_0: u32 = 16200;
-const OFF_const34_1: u32 = 16312;
 inline fn const_NaN() *align(1) const real_t {
-    return @ptrCast(constants + OFF_const_NaN);
+    return consts.c812();
 }
 inline fn const34_0() *align(1) const real34_t {
-    return @ptrCast(constants + OFF_const34_0);
+    return consts.q16200();
 }
 inline fn const34_1() *align(1) const real34_t {
-    return @ptrCast(constants + OFF_const34_1);
+    return consts.q16312();
 }
 
 // ---------------------------------------------------------------------------
