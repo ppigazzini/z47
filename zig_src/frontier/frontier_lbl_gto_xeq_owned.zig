@@ -48,15 +48,7 @@ const mpz_init = @"__gmpz_init";
 const mpz_clear = @"__gmpz_clear";
 const mpz_set_str = @"__gmpz_set_str";
 
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 const subroutineLevels_t = extern struct {
     numberOfSubroutineLevels: u16,

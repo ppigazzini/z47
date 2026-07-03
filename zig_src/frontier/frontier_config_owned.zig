@@ -98,15 +98,7 @@ const freeMemoryRegion_t = extern struct {
     sizeInBlocks: u16,
 };
 const matrixHeader_t = extern struct { descriptor: u32 };
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const subroutineLevels_t = extern struct {
     numberOfSubroutineLevels: u16,
     ptrToSubroutineLevel0Header: u16,

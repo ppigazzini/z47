@@ -367,15 +367,7 @@ const labelList_t2 = extern struct {
     labelPointer: [*c]u8,
     instructionPointer: [*c]u8,
 };
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = extern struct {
     mode: u16,
     function: i16,
