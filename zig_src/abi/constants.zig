@@ -184,3 +184,15 @@ pub inline fn const_1e_30() *align(1) const Real {
 pub inline fn const_1e_34() *align(1) const Real {
     return at(4448);
 }
+pub inline fn const_1e_16() *align(1) const Real {
+    return at(4484);
+}
+pub inline fn const39_ln10() *align(1) const Real {
+    return at(4940);
+}
+pub inline fn const_7() *align(1) const Real {
+    return at(5096);
+}
+pub inline fn const_1e_6143() *align(1) const Real {
+    return at(5840);
+}
