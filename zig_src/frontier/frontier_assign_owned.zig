@@ -51,7 +51,7 @@ const userMenu_t = extern struct {
     menuName: [16]u8,
     menuItem: [18]userMenuItem_t,
 };
-const registerHeader_t = extern struct { descriptor: u32 };
+const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = extern struct {
     header: registerHeader_t,
     variableName: [16]u8,

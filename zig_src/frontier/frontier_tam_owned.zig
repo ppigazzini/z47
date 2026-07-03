@@ -57,7 +57,7 @@ const programList_t = extern struct {
     step: i32,
     instructionPointer: [*c]u8,
 };
-const registerHeader_t = extern struct { descriptor: u32 };
+const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
