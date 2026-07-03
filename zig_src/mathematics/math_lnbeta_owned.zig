@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_NaN = consts.const_NaN;
+const const39_pi = consts.const39_pi;
 //
 // Zig owner for src/c47/mathematics/lnbeta.c: ln Beta(x, y) = LnGamma(x) +
 // LnGamma(y) - LnGamma(x+y), real and complex. Faithful line-by-line
@@ -53,18 +57,6 @@ inline fn const_plusInfinity() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_NaN: u32 = 812;
-const OFF_const39_pi: u32 = 1848;
-inline fn const_NaN() *align(1) const real_t {
-    return cstR(OFF_const_NaN);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
 
 // real ops / predicates not in runtime: extern / inline macro equivalents.
 extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
