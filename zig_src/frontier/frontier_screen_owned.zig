@@ -138,17 +138,7 @@ const mpz_struct = extern struct {
 const longInteger_t = [1]mpz_struct;
 
 // calcKey_t: int16 fields. We only touch primary/gShifted.
-const calcKey_t = extern struct {
-    keyId: i16,
-    primary: i16,
-    fShifted: i16,
-    gShifted: i16,
-    keyLblAim: i16,
-    primaryAim: i16,
-    fShiftedAim: i16,
-    gShiftedAim: i16,
-    primaryTam: i16,
-};
+const calcKey_t = abi.CalcKey;
 
 // softmenu_t {i16 menuItem, i16 numItems, ptr softkeyItem}
 const softmenu_t = extern struct {
