@@ -124,7 +124,6 @@ const CM_NIM: u8 = 2;
 // ---------------------------------------------------------------------------
 // Constant blob
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
 
 
 // const34_* named pointers (match the C macros that name these blob entries).
