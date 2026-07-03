@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/mathematics/percentSigma.c: %Sigma = x/Sum(x)*100.
 // Faithful line-by-line translation; covered by percentSigma.txt. The
@@ -67,10 +70,6 @@ inline fn SIGMA_X() *real_t {
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
-}
-const OFF_const_1: u32 = 4856;
-inline fn const_1() *const real_t {
-    return cstR(OFF_const_1);
 }
 
 pub export fn percentSigma(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
