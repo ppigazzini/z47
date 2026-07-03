@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_2 = consts.const_2;
+const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/plotstat.c: the stat-plot drawing/formatting layer.
 // Faithful, line-by-line port of every PUBLIC symbol of plotstat.c plus the
@@ -205,7 +208,6 @@ const DISPLAY_VALUE_LEN: usize = 80;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_2 = 4928;
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
@@ -1287,7 +1289,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
     numberOfPlotPoints = 0;
     roundedTicks = false;
 
-    if ((plotStatMx[0] == 'S' and checkMinimumDataPoints(cstR(OFF_const_2))) or
+    if ((plotStatMx[0] == 'S' and checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3))
     {
@@ -1562,7 +1564,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     const isValidDraw: bool_t =
         selection != 0 and
         n >= @as(i32, @intCast(minLRDataPoints(selection))) and
-        !realCompareGreaterThan(RR, cstR(OFF_const_1)) and
+        !realCompareGreaterThan(RR, const_1()) and
         !realIsNaN(RR) and
         !realIsNaN(aa0) and
         !realIsNaN(aa1) and
@@ -1822,7 +1824,6 @@ inline fn softmenuMenuItem0() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
 
-const OFF_const_1 = 4856;
 
 // ===========================================================================
 // fnPlotCloseSmi
@@ -1850,7 +1851,7 @@ pub export fn z47_frontier_plot_set_statmx_histo() callconv(.c) void {
 }
 
 pub export fn z47_frontier_plot_has_source_data() callconv(.c) bool_t {
-    return (plotStatMx[0] == 'S' and checkMinimumDataPoints(cstR(OFF_const_2))) or
+    return (plotStatMx[0] == 'S' and checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3);
 }
