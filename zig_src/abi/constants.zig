@@ -43,3 +43,30 @@ pub inline fn const39piOn2() *align(1) const Real {
 pub inline fn const39piOn4() *align(1) const Real {
     return at(4736);
 }
+pub inline fn const__1() *align(1) const Real {
+    return at(4376);
+}
+pub inline fn const_1() *align(1) const Real {
+    return at(4856);
+}
+pub inline fn const_2() *align(1) const Real {
+    return at(4928);
+}
+pub inline fn const_1on2() *align(1) const Real {
+    return at(4580);
+}
+pub inline fn const_10() *align(1) const Real {
+    return at(5132);
+}
+pub inline fn const_360() *align(1) const Real {
+    return at(5356);
+}
+pub inline fn const_400() *align(1) const Real {
+    return at(5368);
+}
+pub inline fn const1071_pi() *align(1) const Real {
+    return at(9932);
+}
+pub inline fn const2139_2pi() *align(1) const Real {
+    return at(10656);
+}
