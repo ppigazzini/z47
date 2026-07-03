@@ -18,9 +18,8 @@ const TI_FROM_DMS: u8 = 79;
 const TI_FROM_HMS: u8 = 82;
 const TI_FROM_DATEX: u8 = 84;
 
-const real34_t = extern struct {
-    bytes: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real34_t = abi.Real34;
 
 const complex34_t = extern struct {
     real: real34_t,
