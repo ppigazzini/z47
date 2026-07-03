@@ -20,21 +20,6 @@ const consts = abi.constants;
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-const OFF_const_1 = 4856;
-const OFF_const_60 = 5296;
-const OFF_const_90 = 7544;
-const OFF_const_100 = 7532;
-const OFF_const_180 = 7460;
-const OFF_const_200 = 7448;
-const OFF_const_3600 = 5448;
-const OFF_const_9on10 = 4808;
-const OFF_const39_pi = 1848;
-const OFF_const75_pi = 7388;
-const OFF_const1071_pi = 9932;
-const OFF_const75_piOn2 = 7472;
-const OFF_const1071_piOn2 = 9208;
-const OFF_const39_200onPi = 5308;
-const OFF_const39_180onPi = 5260;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
@@ -212,67 +197,67 @@ pub export fn convertAngleFromTo(angle: *real_t, from_angular_mode_arg: angularM
     const a: *align(1) const real_t = angle;
     switch (from) {
         amRadian => switch (to) {
-            amMultPi => realDiv(a, if (vlp) cst(OFF_const1071_pi) else if (lp) cst(OFF_const75_pi) else cst(OFF_const39_pi), angle, real_context),
+            amMultPi => realDiv(a, if (vlp) consts.c9932() else if (lp) consts.c7388() else consts.c1848(), angle, real_context),
             amGrad => {
                 if (vlp) {
-                    realMul(a, cst(OFF_const_100), angle, real_context);
-                    realDiv(a, cst(OFF_const1071_piOn2), angle, real_context);
+                    realMul(a, consts.c7532(), angle, real_context);
+                    realDiv(a, consts.c9208(), angle, real_context);
                 } else if (lp) {
-                    realMul(a, cst(OFF_const_100), angle, real_context);
-                    realDiv(a, cst(OFF_const75_piOn2), angle, real_context);
+                    realMul(a, consts.c7532(), angle, real_context);
+                    realDiv(a, consts.c7472(), angle, real_context);
                 } else {
-                    realMul(a, cst(OFF_const39_200onPi), angle, real_context);
+                    realMul(a, consts.c5308(), angle, real_context);
                 }
             },
             amDegree, amDMS => {
                 if (vlp) {
-                    realMul(a, cst(OFF_const_90), angle, real_context);
-                    realDiv(a, cst(OFF_const1071_piOn2), angle, real_context);
+                    realMul(a, consts.c7544(), angle, real_context);
+                    realDiv(a, consts.c9208(), angle, real_context);
                 } else if (lp) {
-                    realMul(a, cst(OFF_const_90), angle, real_context);
-                    realDiv(a, cst(OFF_const75_piOn2), angle, real_context);
+                    realMul(a, consts.c7544(), angle, real_context);
+                    realDiv(a, consts.c7472(), angle, real_context);
                 } else {
-                    realMul(a, cst(OFF_const39_180onPi), angle, real_context);
+                    realMul(a, consts.c5260(), angle, real_context);
                 }
             },
             else => {},
         },
         amMultPi => switch (to) {
-            amRadian => realMul(a, if (vlp) cst(OFF_const1071_pi) else if (lp) cst(OFF_const75_pi) else cst(OFF_const39_pi), angle, real_context),
-            amGrad => realMul(a, cst(OFF_const_200), angle, real_context),
-            amDegree, amDMS => realMul(a, cst(OFF_const_180), angle, real_context),
+            amRadian => realMul(a, if (vlp) consts.c9932() else if (lp) consts.c7388() else consts.c1848(), angle, real_context),
+            amGrad => realMul(a, consts.c7448(), angle, real_context),
+            amDegree, amDMS => realMul(a, consts.c7460(), angle, real_context),
             else => {},
         },
         amGrad => switch (to) {
             amRadian => {
                 if (vlp) {
-                    realMul(a, cst(OFF_const1071_piOn2), angle, real_context);
-                    realDiv(a, cst(OFF_const_100), angle, real_context);
+                    realMul(a, consts.c9208(), angle, real_context);
+                    realDiv(a, consts.c7532(), angle, real_context);
                 } else if (lp) {
-                    realMul(a, cst(OFF_const75_piOn2), angle, real_context);
-                    realDiv(a, cst(OFF_const_100), angle, real_context);
+                    realMul(a, consts.c7472(), angle, real_context);
+                    realDiv(a, consts.c7532(), angle, real_context);
                 } else {
-                    realDiv(a, cst(OFF_const39_200onPi), angle, real_context);
+                    realDiv(a, consts.c5308(), angle, real_context);
                 }
             },
-            amMultPi => realDiv(a, cst(OFF_const_200), angle, real_context),
-            amDegree, amDMS => realMul(a, cst(OFF_const_9on10), angle, real_context),
+            amMultPi => realDiv(a, consts.c7448(), angle, real_context),
+            amDegree, amDMS => realMul(a, consts.c4808(), angle, real_context),
             else => {},
         },
         amDegree, amDMS => switch (to) {
             amRadian => {
                 if (vlp) {
-                    realMul(a, cst(OFF_const1071_piOn2), angle, real_context);
-                    realDiv(a, cst(OFF_const_90), angle, real_context);
+                    realMul(a, consts.c9208(), angle, real_context);
+                    realDiv(a, consts.c7544(), angle, real_context);
                 } else if (lp) {
-                    realMul(a, cst(OFF_const75_piOn2), angle, real_context);
-                    realDiv(a, cst(OFF_const_90), angle, real_context);
+                    realMul(a, consts.c7472(), angle, real_context);
+                    realDiv(a, consts.c7544(), angle, real_context);
                 } else {
-                    realDiv(a, cst(OFF_const39_180onPi), angle, real_context);
+                    realDiv(a, consts.c5260(), angle, real_context);
                 }
             },
-            amMultPi => realDiv(a, cst(OFF_const_180), angle, real_context),
-            amGrad => realDiv(a, cst(OFF_const_9on10), angle, real_context),
+            amMultPi => realDiv(a, consts.c7460(), angle, real_context),
+            amGrad => realDiv(a, consts.c4808(), angle, real_context),
             else => {},
         },
         else => {},
@@ -296,15 +281,15 @@ pub export fn checkDms34(angle34_dms: *real34_t) callconv(.c) void {
     realToIntegralValue(&angle_dms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
     realSubOp(&angle_dms, &minutes, &angle_dms, &ctxtReal39);
 
-    realMul(&angle_dms, cst(OFF_const_100), &seconds, &ctxtReal39);
+    realMul(&angle_dms, consts.c7532(), &seconds, &ctxtReal39);
 
-    if (realGreaterEqual(&seconds, cst(OFF_const_60))) {
-        realSubOp(&seconds, cst(OFF_const_60), &seconds, &ctxtReal39);
-        realAddOp(&minutes, cst(OFF_const_1), &minutes, &ctxtReal39);
+    if (realGreaterEqual(&seconds, consts.c5296())) {
+        realSubOp(&seconds, consts.c5296(), &seconds, &ctxtReal39);
+        realAddOp(&minutes, consts.c4856(), &minutes, &ctxtReal39);
     }
-    if (realGreaterEqual(&minutes, cst(OFF_const_60))) {
-        realSubOp(&minutes, cst(OFF_const_60), &minutes, &ctxtReal39);
-        realAddOp(&degrees, cst(OFF_const_1), &degrees, &ctxtReal39);
+    if (realGreaterEqual(&minutes, consts.c5296())) {
+        realSubOp(&minutes, consts.c5296(), &minutes, &ctxtReal39);
+        realAddOp(&degrees, consts.c4856(), &degrees, &ctxtReal39);
     }
 
     minutes.exponent -= 2; // / 100
@@ -362,19 +347,19 @@ pub export fn real34FromDmsToDeg(angle_dms: *const real34_t, angle_dec: *real34_
     realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &minutes, &angle, &ctxtReal39);
-    realMul(&angle, cst(OFF_const_100), &seconds, &ctxtReal39);
+    realMul(&angle, consts.c7532(), &seconds, &ctxtReal39);
 
-    if (realGreaterEqual(&seconds, cst(OFF_const_60))) {
-        realSubOp(&seconds, cst(OFF_const_60), &seconds, &ctxtReal39);
-        realAddOp(&minutes, cst(OFF_const_1), &minutes, &ctxtReal39);
+    if (realGreaterEqual(&seconds, consts.c5296())) {
+        realSubOp(&seconds, consts.c5296(), &seconds, &ctxtReal39);
+        realAddOp(&minutes, consts.c4856(), &minutes, &ctxtReal39);
     }
-    if (realGreaterEqual(&minutes, cst(OFF_const_60))) {
-        realSubOp(&minutes, cst(OFF_const_60), &minutes, &ctxtReal39);
-        realAddOp(&degrees, cst(OFF_const_1), &degrees, &ctxtReal39);
+    if (realGreaterEqual(&minutes, consts.c5296())) {
+        realSubOp(&minutes, consts.c5296(), &minutes, &ctxtReal39);
+        realAddOp(&degrees, consts.c4856(), &degrees, &ctxtReal39);
     }
 
-    realDiv(&minutes, cst(OFF_const_60), &minutes, &ctxtReal39);
-    realDiv(&seconds, cst(OFF_const_3600), &seconds, &ctxtReal39);
+    realDiv(&minutes, consts.c5296(), &minutes, &ctxtReal39);
+    realDiv(&seconds, consts.c5448(), &seconds, &ctxtReal39);
 
     realAddOp(&degrees, &minutes, &angle, &ctxtReal39);
     realAddOp(&angle, &seconds, &angle, &ctxtReal39);
@@ -397,12 +382,12 @@ pub export fn real34FromDegToDms(angle_dec: *const real34_t, angle_dms: *real34_
     realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &degrees, &angle, &ctxtReal39);
-    realMul(&angle, cst(OFF_const_60), &angle, &ctxtReal39);
+    realMul(&angle, consts.c5296(), &angle, &ctxtReal39);
 
     realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &minutes, &angle, &ctxtReal39);
-    realMul(&angle, cst(OFF_const_60), &seconds, &ctxtReal39);
+    realMul(&angle, consts.c5296(), &seconds, &ctxtReal39);
 
     minutes.exponent -= 2; // / 100
     seconds.exponent -= 4; // / 10000
