@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/tvm.c: the Time-Value-of-Money engine.
 // Faithful line-by-line translation preserving the exact order of every real_t
@@ -146,76 +147,59 @@ inline fn cstR(comptime off: u32) *align(1) const real_t {
 inline fn cst34(comptime off: u32) *align(1) const real34_t {
     return @ptrCast(constants + off);
 }
-const OFF_const_0: u32 = 1708;
-const OFF_const__1: u32 = 4376;
-const OFF_const_1e_37: u32 = 4436;
-const OFF_const_1on10: u32 = 4520;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_1: u32 = 4856;
-const OFF_const_100: u32 = 7532;
 
 inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
+    return consts.c1708();
 }
 inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
+    return consts.c4376();
 }
 inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
+    return consts.c4436();
 }
 inline fn const_1on10() *align(1) const real_t {
-    return cstR(OFF_const_1on10);
+    return consts.c4520();
 }
 inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
+    return consts.c4580();
 }
 inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
+    return consts.c4856();
 }
 inline fn const_100() *align(1) const real_t {
-    return cstR(OFF_const_100);
+    return consts.c7532();
 }
 
-const OFF_const34_0: u32 = 16200;
-const OFF_const34_1e_4: u32 = 16264;
-const OFF_const34_1on10: u32 = 16280;
-const OFF_const34_1on2: u32 = 16296;
-const OFF_const34_1: u32 = 16312;
-const OFF_const34_2: u32 = 16328;
-const OFF_const34_3: u32 = 16344;
-const OFF_const34_7: u32 = 16392;
-const OFF_const34_9: u32 = 16408;
-const OFF_const34_24: u32 = 16472;
 
 inline fn const34_0() *align(1) const real34_t {
-    return cst34(OFF_const34_0);
+    return consts.q16200();
 }
 inline fn const34_1e_4() *align(1) const real34_t {
-    return cst34(OFF_const34_1e_4);
+    return consts.q16264();
 }
 inline fn const34_1on10() *align(1) const real34_t {
-    return cst34(OFF_const34_1on10);
+    return consts.q16280();
 }
 inline fn const34_1on2() *align(1) const real34_t {
-    return cst34(OFF_const34_1on2);
+    return consts.q16296();
 }
 inline fn const34_1() *align(1) const real34_t {
-    return cst34(OFF_const34_1);
+    return consts.q16312();
 }
 inline fn const34_2() *align(1) const real34_t {
-    return cst34(OFF_const34_2);
+    return consts.q16328();
 }
 inline fn const34_3() *align(1) const real34_t {
-    return cst34(OFF_const34_3);
+    return consts.q16344();
 }
 inline fn const34_7() *align(1) const real34_t {
-    return cst34(OFF_const34_7);
+    return consts.q16392();
 }
 inline fn const34_9() *align(1) const real34_t {
-    return cst34(OFF_const34_9);
+    return consts.q16408();
 }
 inline fn const34_24() *align(1) const real34_t {
-    return cst34(OFF_const34_24);
+    return consts.q16472();
 }
 
 // ---------------------------------------------------------------------------

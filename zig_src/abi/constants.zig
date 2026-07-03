@@ -370,3 +370,33 @@ pub inline fn c1684() *const Real {
     return at(1684); }
 pub inline fn c1696() *const Real {
     return at(1696); }
+pub inline fn q16264() *align(1) const Real34 {
+    return at34(16264); }
+pub inline fn q16280() *align(1) const Real34 {
+    return at34(16280); }
+pub inline fn q16296() *align(1) const Real34 {
+    return at34(16296); }
+pub inline fn q16328() *align(1) const Real34 {
+    return at34(16328); }
+pub inline fn q16344() *align(1) const Real34 {
+    return at34(16344); }
+pub inline fn q16392() *align(1) const Real34 {
+    return at34(16392); }
+pub inline fn q16408() *align(1) const Real34 {
+    return at34(16408); }
+pub inline fn q16472() *align(1) const Real34 {
+    return at34(16472); }
+pub inline fn c1708() *const Real {
+    return at(1708); }
+pub inline fn c4376() *const Real {
+    return at(4376); }
+pub inline fn c4436() *const Real {
+    return at(4436); }
+pub inline fn c4520() *const Real {
+    return at(4520); }
+pub inline fn c4580() *const Real {
+    return at(4580); }
+pub inline fn c4856() *const Real {
+    return at(4856); }
+pub inline fn c7532() *const Real {
+    return at(7532); }
