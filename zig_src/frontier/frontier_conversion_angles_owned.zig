@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/conversionAngles.c: angular-mode conversion. The core
 // convertAngleFromTo (used across ~26 first-party files via trig and display)
@@ -19,7 +20,6 @@
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-const constants = @extern([*]const u8, .{ .name = "constants" });
 const OFF_const_1 = 4856;
 const OFF_const_60 = 5296;
 const OFF_const_90 = 7544;
@@ -96,9 +96,7 @@ extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t)
 inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(msg1, msg2, null, null);
 }
-inline fn cst(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
+const cst = consts.cstR;
 inline fn reg34(reg: calcRegister_t) *real34_t {
     return @ptrCast(getRegisterDataPointer(reg));
 }
