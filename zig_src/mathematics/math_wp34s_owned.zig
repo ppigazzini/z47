@@ -43,209 +43,160 @@ const amMultPi = runtime.amMultPi;
 const cstR = consts.cstR;
 
 // Offsets extracted from the generated constantPointers.h.
-const OFF_const_0: u32 = 1708;
-const OFF_const_1: u32 = 4856;
-const OFF_const_2: u32 = 4928;
-const OFF_const_3: u32 = 5012;
-const OFF_const__1: u32 = 4376;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_1on4: u32 = 4532;
-const OFF_const_1on10: u32 = 4520;
-const OFF_const_29: u32 = 5180;
-const OFF_const_45: u32 = 7628;
-const OFF_const_47: u32 = 5236;
-const OFF_const_50: u32 = 7616;
-const OFF_const_90: u32 = 7544;
-const OFF_const_100: u32 = 7532;
-const OFF_const_180: u32 = 7460;
-const OFF_const_200: u32 = 7448;
-const OFF_const_205: u32 = 5344;
-const OFF_const_360: u32 = 5356;
-const OFF_const_400: u32 = 5368;
-const OFF_const_9000: u32 = 5460;
-const OFF_const_995on1000: u32 = 5696;
-const OFF_const_1e_10000: u32 = 5684;
-const OFF_const_1e_24: u32 = 4472;
-const OFF_const_1e_37: u32 = 4436;
-const OFF_const_1e_49: u32 = 4424;
-const OFF_const_gammaR: u32 = 5192;
-const OFF_const_NaN: u32 = 812;
-const OFF_const_minusInfinity: u32 = 1684;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const39_2pi: u32 = 1812;
-const OFF_const39_piOn2: u32 = 4880;
-const OFF_const39_piOn4: u32 = 4736;
-const OFF_const39_3piOn4: u32 = 4976;
-const OFF_const39_ln2: u32 = 4628;
-const OFF_const39_ln10: u32 = 4940;
-const OFF_const39_root2on2: u32 = 4700;
-const OFF_const39_egamma: u32 = 4592;
-const OFF_const39_eE: u32 = 176;
-const OFF_const39_1on3: u32 = 4544;
-const OFF_const75_pi: u32 = 7388;
-const OFF_const75_piOn2: u32 = 7472;
-const OFF_const75_piOn4: u32 = 7556;
-const OFF_const75_3piOn4: u32 = 7700;
-const OFF_const1071_pi: u32 = 9932;
-const OFF_const1071_piOn2: u32 = 9208;
-const OFF_const1071_piOn4: u32 = 8484;
-const OFF_const1071_3piOn4: u32 = 7760;
-const OFF_const51_gammaC00: u32 = 6068;
 const OFF_const51_gammaC01: u32 = 6112;
-const OFF_const6147_2pi: u32 = 12092;
 
 // REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
 const REAL_SIZE_51: u32 = 44;
 
 inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
+    return consts.c1708();
 }
 inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
+    return consts.c4856();
 }
 inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
+    return consts.c4928();
 }
 inline fn const_3() *align(1) const real_t {
-    return cstR(OFF_const_3);
+    return consts.c5012();
 }
 inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
+    return consts.c4376();
 }
 inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
+    return consts.c4580();
 }
 inline fn const_1on4() *align(1) const real_t {
-    return cstR(OFF_const_1on4);
+    return consts.c4532();
 }
 inline fn const_1on10() *align(1) const real_t {
-    return cstR(OFF_const_1on10);
+    return consts.c4520();
 }
 inline fn const_29() *align(1) const real_t {
-    return cstR(OFF_const_29);
+    return consts.c5180();
 }
 inline fn const_45() *align(1) const real_t {
-    return cstR(OFF_const_45);
+    return consts.c7628();
 }
 inline fn const_47() *align(1) const real_t {
-    return cstR(OFF_const_47);
+    return consts.c5236();
 }
 inline fn const_50() *align(1) const real_t {
-    return cstR(OFF_const_50);
+    return consts.c7616();
 }
 inline fn const_90() *align(1) const real_t {
-    return cstR(OFF_const_90);
+    return consts.c7544();
 }
 inline fn const_100() *align(1) const real_t {
-    return cstR(OFF_const_100);
+    return consts.c7532();
 }
 inline fn const_180() *align(1) const real_t {
-    return cstR(OFF_const_180);
+    return consts.c7460();
 }
 inline fn const_200() *align(1) const real_t {
-    return cstR(OFF_const_200);
+    return consts.c7448();
 }
 inline fn const_205() *align(1) const real_t {
-    return cstR(OFF_const_205);
+    return consts.c5344();
 }
 inline fn const_360() *align(1) const real_t {
-    return cstR(OFF_const_360);
+    return consts.c5356();
 }
 inline fn const_400() *align(1) const real_t {
-    return cstR(OFF_const_400);
+    return consts.c5368();
 }
 inline fn const_9000() *align(1) const real_t {
-    return cstR(OFF_const_9000);
+    return consts.c5460();
 }
 inline fn const_995on1000() *align(1) const real_t {
-    return cstR(OFF_const_995on1000);
+    return consts.c5696();
 }
 inline fn const_1e_10000() *align(1) const real_t {
-    return cstR(OFF_const_1e_10000);
+    return consts.c5684();
 }
 inline fn const_1e_24() *align(1) const real_t {
-    return cstR(OFF_const_1e_24);
+    return consts.c4472();
 }
 inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
+    return consts.c4436();
 }
 inline fn const_1e_49() *align(1) const real_t {
-    return cstR(OFF_const_1e_49);
+    return consts.c4424();
 }
 inline fn const_gammaR() *align(1) const real_t {
-    return cstR(OFF_const_gammaR);
+    return consts.c5192();
 }
 inline fn const_NaN() *align(1) const real_t {
-    return cstR(OFF_const_NaN);
+    return consts.c812();
 }
 inline fn const_minusInfinity() *align(1) const real_t {
-    return cstR(OFF_const_minusInfinity);
+    return consts.c1684();
 }
 inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
+    return consts.c1848();
 }
 inline fn const39_2pi() *align(1) const real_t {
-    return cstR(OFF_const39_2pi);
+    return consts.c1812();
 }
 inline fn const39_piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_piOn2);
+    return consts.c4880();
 }
 inline fn const39_piOn4() *align(1) const real_t {
-    return cstR(OFF_const39_piOn4);
+    return consts.c4736();
 }
 inline fn const39_3piOn4() *align(1) const real_t {
-    return cstR(OFF_const39_3piOn4);
+    return consts.c4976();
 }
 inline fn const39_ln2() *align(1) const real_t {
-    return cstR(OFF_const39_ln2);
+    return consts.c4628();
 }
 inline fn const39_ln10() *align(1) const real_t {
-    return cstR(OFF_const39_ln10);
+    return consts.c4940();
 }
 inline fn const39_root2on2() *align(1) const real_t {
-    return cstR(OFF_const39_root2on2);
+    return consts.c4700();
 }
 inline fn const39_egamma() *align(1) const real_t {
-    return cstR(OFF_const39_egamma);
+    return consts.c4592();
 }
 inline fn const39_eE() *align(1) const real_t {
-    return cstR(OFF_const39_eE);
+    return consts.c176();
 }
 inline fn const39_1on3() *align(1) const real_t {
-    return cstR(OFF_const39_1on3);
+    return consts.c4544();
 }
 inline fn const75_pi() *align(1) const real_t {
-    return cstR(OFF_const75_pi);
+    return consts.c7388();
 }
 inline fn const75_piOn2() *align(1) const real_t {
-    return cstR(OFF_const75_piOn2);
+    return consts.c7472();
 }
 inline fn const75_piOn4() *align(1) const real_t {
-    return cstR(OFF_const75_piOn4);
+    return consts.c7556();
 }
 inline fn const75_3piOn4() *align(1) const real_t {
-    return cstR(OFF_const75_3piOn4);
+    return consts.c7700();
 }
 inline fn const1071_pi() *align(1) const real_t {
-    return cstR(OFF_const1071_pi);
+    return consts.c9932();
 }
 inline fn const1071_piOn2() *align(1) const real_t {
-    return cstR(OFF_const1071_piOn2);
+    return consts.c9208();
 }
 inline fn const1071_piOn4() *align(1) const real_t {
-    return cstR(OFF_const1071_piOn4);
+    return consts.c8484();
 }
 inline fn const1071_3piOn4() *align(1) const real_t {
-    return cstR(OFF_const1071_3piOn4);
+    return consts.c7760();
 }
 inline fn const51_gammaC00() *align(1) const real_t {
-    return cstR(OFF_const51_gammaC00);
+    return consts.c6068();
 }
 inline fn const51_gammaC01(k: u32) *align(1) const real_t {
     return consts.cstR(OFF_const51_gammaC01 + k * REAL_SIZE_51);
 }
 inline fn const6147_2pi() *align(1) const real_t {
-    return cstR(OFF_const6147_2pi);
+    return consts.c12092();
 }
 
 // ---------------------------------------------------------------------------

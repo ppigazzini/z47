@@ -421,3 +421,77 @@ pub inline fn c4508() *const Real {
     return at(4508); }
 pub inline fn c4544() *const Real {
     return at(4544); }
+pub inline fn c5012() *const Real {
+    return at(5012); }
+pub inline fn c4532() *const Real {
+    return at(4532); }
+pub inline fn c5180() *const Real {
+    return at(5180); }
+pub inline fn c7628() *const Real {
+    return at(7628); }
+pub inline fn c5236() *const Real {
+    return at(5236); }
+pub inline fn c7616() *const Real {
+    return at(7616); }
+pub inline fn c7544() *const Real {
+    return at(7544); }
+pub inline fn c7460() *const Real {
+    return at(7460); }
+pub inline fn c7448() *const Real {
+    return at(7448); }
+pub inline fn c5344() *const Real {
+    return at(5344); }
+pub inline fn c5356() *const Real {
+    return at(5356); }
+pub inline fn c5368() *const Real {
+    return at(5368); }
+pub inline fn c5460() *const Real {
+    return at(5460); }
+pub inline fn c5696() *const Real {
+    return at(5696); }
+pub inline fn c5684() *const Real {
+    return at(5684); }
+pub inline fn c4472() *const Real {
+    return at(4472); }
+pub inline fn c4424() *const Real {
+    return at(4424); }
+pub inline fn c5192() *const Real {
+    return at(5192); }
+pub inline fn c1812() *const Real {
+    return at(1812); }
+pub inline fn c4880() *const Real {
+    return at(4880); }
+pub inline fn c4736() *const Real {
+    return at(4736); }
+pub inline fn c4976() *const Real {
+    return at(4976); }
+pub inline fn c4628() *const Real {
+    return at(4628); }
+pub inline fn c4940() *const Real {
+    return at(4940); }
+pub inline fn c4700() *const Real {
+    return at(4700); }
+pub inline fn c4592() *const Real {
+    return at(4592); }
+pub inline fn c176() *const Real {
+    return at(176); }
+pub inline fn c7388() *const Real {
+    return at(7388); }
+pub inline fn c7472() *const Real {
+    return at(7472); }
+pub inline fn c7556() *const Real {
+    return at(7556); }
+pub inline fn c7700() *const Real {
+    return at(7700); }
+pub inline fn c9932() *const Real {
+    return at(9932); }
+pub inline fn c9208() *const Real {
+    return at(9208); }
+pub inline fn c8484() *const Real {
+    return at(8484); }
+pub inline fn c7760() *const Real {
+    return at(7760); }
+pub inline fn c6068() *const Real {
+    return at(6068); }
+pub inline fn c12092() *const Real {
+    return at(12092); }
