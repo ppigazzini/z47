@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_4 = consts.const_4;
+const const_8 = consts.const_8;
 //
 // Zig owner for src/c47/mathematics/power.c: the y^x POWER command, real /
 // complex / short-integer / long-integer, plus the exported helpers PowerReal,
@@ -52,12 +56,6 @@ inline fn const_1() *const real_t {
 inline fn const_2() *const real_t {
     return runtime.z47_math_wrappers_const_2();
 }
-inline fn const_4() *align(1) const real_t {
-    return cstR(OFF_const_4);
-}
-inline fn const_8() *align(1) const real_t {
-    return cstR(OFF_const_8);
-}
 inline fn const_plusInfinity() *const real_t {
     return runtime.z47_math_wrappers_const_plus_infinity();
 }
@@ -66,12 +64,6 @@ inline fn const_minusInfinity() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_4: u32 = 5024;
-const OFF_const_8: u32 = 5108;
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
