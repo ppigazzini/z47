@@ -41,14 +41,7 @@ const programList_t = extern struct {
     step: i32,
     instructionPointer: [*c]u8,
 };
-const item_t = extern struct {
-    func: ?*const anyopaque,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / items.h)

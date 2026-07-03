@@ -98,14 +98,7 @@ const softmenuStack_t = extern struct {
     calcMode: u8,
 };
 
-const item_t = extern struct {
-    func: ?*const fn (u16) callconv(.c) void,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 const userMenuItem_t = extern struct {
     item: i16,

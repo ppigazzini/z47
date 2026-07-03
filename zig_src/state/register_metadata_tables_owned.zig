@@ -39,14 +39,8 @@ const reserved_variable_header_t = extern struct {
 // item_t mirrors the upstream layout: a target-sized function pointer, then the
 // catalog and softmenu names with the status word trailing. sizeof is 48 on the
 // 64-bit host and itemCatalogName sits at offset 10, status at 44.
-const item_t = extern struct {
-    func: ?*const anyopaque,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const item_t = abi.Item;
 
 extern var allNamedVariables: ?[*]named_variable_header_t;
 extern var numberOfNamedVariables: u16;

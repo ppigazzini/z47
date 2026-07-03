@@ -52,14 +52,7 @@ const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const realContext_t = abi.RealContext;
 
-const item_t = extern struct {
-    func: ?*const fn (u16) callconv(.c) void,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // letteredFlagDisplay_t { const char *txt; int16_t position; } (8 bytes).
 const letteredFlagDisplay_t = extern struct {

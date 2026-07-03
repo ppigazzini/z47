@@ -33,14 +33,7 @@ const normKey_t = extern struct {
     funcParam: [16]u8,
     used: bool_t,
 };
-const item_t = extern struct {
-    func: ?*const fn (u16) callconv(.c) void,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // tamState_t — only .alpha is read by this file. Full layout for ABI size.
 const tamState_t = extern struct {
