@@ -100,11 +100,6 @@ const OFF_const39_kBeVK = 3948;
 const OFF_const_9on10 = 4808;
 const OFF_const39_180onPi = 5260;
 const OFF_const39_200onPi = 5308;
-const OFF_const_GaluseqE = 5828;
-const OFF_const_100 = 7532;
-const OFF_const_GalusToL = 2628;
-const OFF_const_MiToKm = 2048;
-const OFF_const_GalukToL = 2648;
 const OFF_const_10 = 5132;
 const OFF_const_20 = 5156;
 
@@ -308,7 +303,7 @@ fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, inv
         }
     }
 
-    if (invert) rDiv(cst(OFF_const_1), &re_x, &re_x);
+    if (invert) rDiv(consts.c4856(), &re_x, &re_x);
     if (multiply_divide == multiply) rMul(&re_x, coefficient, &re_x) else rDiv(&re_x, coefficient, &re_x);
 
     convertRealToResultRegister(&re_x, REGISTER_X, amNone);
@@ -362,40 +357,40 @@ pub export fn fnCvtGradRad(multiply_divide: u16) callconv(.c) void {
 pub export fn fnKmletok100K(multiply_divide: u16) callconv(.c) void {
     _ = multiply_divide; // bidirectional formula
     var factor: real_t = undefined;
-    rMul(cst(OFF_const_GaluseqE), cst(OFF_const_100), &factor);
-    rDiv(&factor, cst(OFF_const_GalusToL), &factor);
+    rMul(consts.c5828(), consts.c7532(), &factor);
+    rDiv(&factor, consts.c2628(), &factor);
     unitConversion(&factor, multiply, inverting);
 }
 
 pub export fn fnL100Tomgus(multiply_divide: u16) callconv(.c) void {
     _ = multiply_divide;
     var factor: real_t = undefined;
-    rMul(cst(OFF_const_100), cst(OFF_const_GalusToL), &factor);
-    rDiv(&factor, cst(OFF_const_MiToKm), &factor);
+    rMul(consts.c7532(), consts.c2628(), &factor);
+    rDiv(&factor, consts.c2048(), &factor);
     unitConversion(&factor, multiply, inverting);
 }
 
 pub export fn fnMgeustok100M(multiply_divide: u16) callconv(.c) void {
     _ = multiply_divide;
     var factor: real_t = undefined;
-    rMul(cst(OFF_const_GaluseqE), cst(OFF_const_100), &factor);
+    rMul(consts.c5828(), consts.c7532(), &factor);
     unitConversion(&factor, multiply, inverting);
 }
 
 pub export fn fnL100Tomguk(multiply_divide: u16) callconv(.c) void {
     _ = multiply_divide;
     var factor: real_t = undefined;
-    rMul(cst(OFF_const_100), cst(OFF_const_GalukToL), &factor);
-    rDiv(&factor, cst(OFF_const_MiToKm), &factor);
+    rMul(consts.c7532(), consts.c2648(), &factor);
+    rDiv(&factor, consts.c2048(), &factor);
     unitConversion(&factor, multiply, inverting);
 }
 
 pub export fn fnMgeuktok100M(multiply_divide: u16) callconv(.c) void {
     _ = multiply_divide;
     var factor: real_t = undefined;
-    rMul(cst(OFF_const_GaluseqE), cst(OFF_const_100), &factor);
-    rMul(&factor, cst(OFF_const_GalukToL), &factor);
-    rDiv(&factor, cst(OFF_const_GalusToL), &factor);
+    rMul(consts.c5828(), consts.c7532(), &factor);
+    rMul(&factor, consts.c2648(), &factor);
+    rDiv(&factor, consts.c2628(), &factor);
     unitConversion(&factor, multiply, inverting);
 }
 
