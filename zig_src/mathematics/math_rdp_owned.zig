@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const__1 = consts.const__1;
+const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/mathematics/rdp.c: round-to-decimal-places (RDP). Ports
 // rdp.h's roundToDecimalPlace, fnRdp, rdpError, rdpTime, rdpRema, rdpCxma,
@@ -79,22 +84,6 @@ inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, 
 }
 
 // Blob constants.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const__1: u32 = 4376;
-const OFF_const_1: u32 = 4856;
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
-}
-inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
-}
 
 // roundingMode / roundingModeTable.
 extern var roundingMode: u8;
