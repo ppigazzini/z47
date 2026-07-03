@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/solve.c: the central generic equation solver
 // (Brent + optional Newton, OPTION_TVM_FORMULAS / OPTION_TVM_NEWTON both ON).
@@ -182,53 +183,36 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 // ---------------------------------------------------------------------------
 // Constants blob accessors (offsets verified vs generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-inline fn cst34(comptime off: u32) *align(1) const real34_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_NaN: u32 = 812;
-const OFF_const_minusInfinity: u32 = 1684;
-const OFF_const_plusInfinity: u32 = 1696;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_1: u32 = 4856;
-const OFF_const_2: u32 = 4928;
-const OFF_const_1e_16: u32 = 4484;
-const OFF_const_1e_32: u32 = 5708;
-const OFF_const_100: u32 = 7532;
-const OFF_const34_153: u32 = 16568;
 
 inline fn const_NaN() *align(1) const real_t {
-    return cstR(OFF_const_NaN);
+    return consts.c812();
 }
 inline fn const_minusInfinity() *align(1) const real_t {
-    return cstR(OFF_const_minusInfinity);
+    return consts.c1684();
 }
 inline fn const_plusInfinity() *align(1) const real_t {
-    return cstR(OFF_const_plusInfinity);
+    return consts.c1696();
 }
 inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
+    return consts.c4580();
 }
 inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
+    return consts.c4856();
 }
 inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
+    return consts.c4928();
 }
 inline fn const_1e_16() *align(1) const real_t {
-    return cstR(OFF_const_1e_16);
+    return consts.c4484();
 }
 inline fn const_1e_32() *align(1) const real_t {
-    return cstR(OFF_const_1e_32);
+    return consts.c5708();
 }
 inline fn const_100() *align(1) const real_t {
-    return cstR(OFF_const_100);
+    return consts.c7532();
 }
 inline fn const34_153() *align(1) const real34_t {
-    return cst34(OFF_const34_153);
+    return consts.q16568();
 }
 
 // ---------------------------------------------------------------------------

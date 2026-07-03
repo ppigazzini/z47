@@ -402,3 +402,11 @@ pub inline fn c7532() *const Real {
     return at(7532); }
 pub inline fn c812() *const Real {
     return at(812); }
+pub inline fn q16568() *align(1) const Real34 {
+    return at34(16568); }
+pub inline fn c4928() *const Real {
+    return at(4928); }
+pub inline fn c4484() *const Real {
+    return at(4484); }
+pub inline fn c5708() *const Real {
+    return at(5708); }
