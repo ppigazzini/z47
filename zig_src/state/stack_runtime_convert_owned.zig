@@ -13,10 +13,7 @@ const real_t = runtime.real_t;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 
-const complex34_t = extern struct {
-    re: real34_t,
-    im: real34_t,
-};
+const complex34_t = abi.Complex34;
 
 // Upstream matrixHeader_t packs four bitfields into 32 bits, first field in the
 // least-significant bits on the little-endian build target.

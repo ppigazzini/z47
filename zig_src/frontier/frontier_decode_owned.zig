@@ -37,7 +37,7 @@ const bool_t = u32;
 const angularMode_t = c_int;
 
 const real34_t = abi.Real34;
-const complex34_t = extern struct { real: real34_t, imag: real34_t };
+const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const realContext_t = abi.RealContext;
 const font_t = opaque {};

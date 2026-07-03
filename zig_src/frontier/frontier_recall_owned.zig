@@ -20,7 +20,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
-const complex34_t = extern struct { real: real34_t, imag: real34_t };
+const complex34_t = abi.Complex34;
 const matrixHeader_t = packed struct(u32) {
     matrixRows: u12,
     matrixColumns: u12,
