@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/conversionUnits.c: the unit-conversion command surface
 // (fnUnitConvert + the conversionFactors table, temperature/angle/fuel-economy/
@@ -61,9 +62,7 @@ extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 // `constants` is a byte array (alignment 1); the C macros cast (real_t *) and
 // access it unaligned, which arm64/x86/Cortex-M tolerate. Return an align(1)
 // pointer so we match that without asserting 4-byte alignment.
-inline fn cst(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
+const cst = consts.cstR;
 inline fn realIsZero(r: *const real_t) bool {
     return r.digits == 1 and r.lsu[0] == 0 and (r.bits & 0x70) == 0;
 }
