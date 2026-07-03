@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/graph.c: the function-plot engine and the
 // complex solver. graph_eqn walks the x-range with adaptive step size
@@ -190,17 +191,6 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_0 = 1708;
-const OFF_const_1e_6 = 4508;
-const OFF_const_1on10 = 4520;
-const OFF_const39_1on3 = 4544;
-const OFF_const_1on2 = 4580;
-const OFF_const_1 = 4856;
-const OFF_const_1e32 = 5568;
-inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Exported globals (non-static in the C)
@@ -1400,14 +1390,14 @@ fn complexSolver() void {
     _ = getRegisterAsComplex(REGISTER_Y, &X0.Real, &X0.Imag);
     copyComplex(&X0, &cpxSlvBestX);
 
-    realCopy(cstR(OFF_const_1e32), &cpxSlvBestMagnitudeY);
+    realCopy(consts.c5568(), &cpxSlvBestMagnitudeY);
 
     // if input parameters X0 and X1 are the same, add a random number to X0
     if (realCompareEqual(&X0.Real, &X1.Real) and realCompareEqual(&X0.Imag, &X1.Imag)) {
         if (comptime !is_dmcp_build) {
             _ = printf(">>> ADD 1 to second input parameter to prevent infinite result\n");
         }
-        realAdd(&X1.Real, cstR(OFF_const_1), &X1.Real, ctxtSolver2);
+        realAdd(&X1.Real, consts.c4856(), &X1.Real, ctxtSolver2);
     }
 
     realSetZero(&dXold.Real);
@@ -1416,10 +1406,10 @@ fn complexSolver() void {
     copyComplex(&dXold, &X2N);
     copyComplex(&dXold, &dX);
     // initial value for difference comparison must be larger than tolerance
-    realCopy(cstR(OFF_const_1on10), &dX.Real);
+    realCopy(consts.c4520(), &dX.Real);
     copyComplex(&dX, &dY);
 
-    realCopy(cstR(OFF_const_1on2), &f); // factor ()
+    realCopy(consts.c4580(), &f); // factor ()
 
     // set tolerance from significantDigits and use higher precision in execute_rpn_function();
     const signDig: u16 = if (significantDigits != 0) significantDigits else 34;
@@ -1440,7 +1430,7 @@ fn complexSolver() void {
         subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
         // avoid equal Y as it causes double iterations
         if (check2RealZeroTol(&temp1.Real, &temp1.Imag, &tol)) {
-            addComplex(&X0.Real, &X0.Imag, cstR(OFF_const_1e_6), cstR(OFF_const_0), &X0.Real, &X0.Imag, ctxtSolver2);
+            addComplex(&X0.Real, &X0.Imag, consts.c4508(), consts.c1708(), &X0.Real, &X0.Imag, ctxtSolver2);
             _ = execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
             subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
         }
@@ -1449,7 +1439,7 @@ fn complexSolver() void {
         mulComplexComplex(&temp0.Real, &temp0.Imag, &Y1.Real, &Y1.Imag, &temp0.Real, &temp0.Imag, ctxtSolver2); // deltaX = Y1 x dx/dy
         subComplex(&X1.Real, &X1.Imag, &temp0.Real, &temp0.Imag, &X2.Real, &X2.Imag, ctxtSolver2); // x2=x1-deltaX
         if (realIsZero(&X2.Imag)) {
-            realMultiply(&X2.Real, cstR(OFF_const39_1on3), &X2.Imag, ctxtSolver2);
+            realMultiply(&X2.Real, consts.c4544(), &X2.Imag, ctxtSolver2);
         }
     }
 
@@ -1533,7 +1523,7 @@ fn complexSolver() void {
         // if same as cpxSlvBestX we probably hit the precision limit for this equation?
         subComplex(&cpxSlvBestX.Real, &cpxSlvBestX.Imag, &X2.Real, &X2.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
         complexMagnitude(&temp1.Real, &temp1.Imag, &temp1.Real, ctxtSolver2);
-        Y2IsCloseToZero = Y2IsCloseToZero or (realCompareLessThan(&cpxSlvBestMagnitudeY, cstR(OFF_const_1e_6)) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
+        Y2IsCloseToZero = Y2IsCloseToZero or (realCompareLessThan(&cpxSlvBestMagnitudeY, consts.c4508()) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
 
         iterAfterBest = if (execute_rpn_function_reals(&X2, &Y2N, &magnitudeY)) 0 else iterAfterBest + 1;
         powCplxNat(&Y2N, &yPower, &Y2);
@@ -1599,7 +1589,7 @@ fn complexSolver() void {
             // if converges slow without oscillating then accelerate.
             if (convergent > 10) {
                 convertDoubleToReal(1.0 + @as(f64, @floatFromInt(convergent)) * 0.1, &f, ctxtSolver2); // factor ()
-                mulComplexComplex(&X2N.Real, &X2N.Imag, &f, cstR(OFF_const_0), &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
+                mulComplexComplex(&X2N.Real, &X2N.Imag, &f, consts.c1708(), &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
             }
 
             subComplex(&X1.Real, &X1.Imag, &X2N.Real, &X2N.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n

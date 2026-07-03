@@ -410,3 +410,9 @@ pub inline fn c4484() *const Real {
     return at(4484); }
 pub inline fn c5708() *const Real {
     return at(5708); }
+pub inline fn c5568() *const Real {
+    return at(5568); }
+pub inline fn c4508() *const Real {
+    return at(4508); }
+pub inline fn c4544() *const Real {
+    return at(4544); }
