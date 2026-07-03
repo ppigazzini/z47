@@ -10,9 +10,8 @@ const real_t = runtime.real_t;
 
 // A real34 value is a 16-byte decimal128 (decQuad). Byte 15 carries the sign
 // bit, matching the upstream real34IsPositive / real34SetPositiveSign macros.
-const real34_t = extern struct {
-    bytes: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real34_t = abi.Real34;
 
 const complex34_t = extern struct {
     re: real34_t,
