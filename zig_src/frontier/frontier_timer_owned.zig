@@ -160,10 +160,7 @@ extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern const standardFont: font_t;
 extern const numericFont: font_t;
 
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cst(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
+const cst = consts.cstR;
 const const_3600 = cst(OFF_const_3600);
 const const34_1 = cst34(OFF_const34_1);
 
