@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_NaN = consts.const_NaN;
 //
 // Zig owner for src/c47/mathematics/xthRoot.c: the x-th root command y^(1/x),
 // real / complex / short-integer / long-integer. Faithful line-by-line
@@ -61,14 +64,6 @@ inline fn const_plusInfinity() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_NaN: u32 = 812;
-inline fn const_NaN() *align(1) const real_t {
-    return cstR(OFF_const_NaN);
-}
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
