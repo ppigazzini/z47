@@ -47,6 +47,20 @@ pub const RealContext = extern struct {
 /// A complex value as a pair of `Real` (the C `CPLX(x)` passes &x.Real, &x.Imag).
 pub const Complex = extern struct { Real: Real, Imag: Real };
 
+/// decQuad complex (two Real34).
+pub const Complex34 = extern struct { real: Real34, imag: Real34 };
+
+/// Subroutine-level header (run-time stack frame).
+pub const SubroutineLevelHeader = extern struct {
+    returnProgramNumber: i16,
+    returnLocalStep: u16,
+    numberOfLocalFlags: u8,
+    numberOfLocalRegisters: u8,
+    subroutineLevel: u16,
+    ptrToNextLevel: u16,
+    ptrToPreviousLevel: u16,
+};
+
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.
 pub const constants = @import("constants.zig");
 
@@ -70,6 +84,8 @@ comptime {
     std.debug.assert(@sizeOf(Real) == 60);
     std.debug.assert(@sizeOf(Real34) == 16);
     std.debug.assert(@sizeOf(Complex) == 2 * @sizeOf(Real));
+    std.debug.assert(@sizeOf(Complex34) == 32);
+    std.debug.assert(@sizeOf(SubroutineLevelHeader) == 12);
 }
 
 // Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.

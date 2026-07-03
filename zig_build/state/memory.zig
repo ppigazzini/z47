@@ -39,6 +39,13 @@ fn addRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
+    // L1 shared ABI bindings (REPORT-23 §5).
+    const abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("abi", abi_module);
     const build_options = b.addOptions();
     const use_fake_harness_surface = std.mem.endsWith(u8, name_prefix, "parity");
     const free_regions_are_inline_array = target.result.os.tag == .freestanding and std.mem.eql(u8, name_prefix, "dmcp");
