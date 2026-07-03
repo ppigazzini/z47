@@ -53,7 +53,8 @@ const CALCMODEL: u8 = @import("frontier_build_options").calcmodel;
 const bool_t = bool; // C `bool`, 1 byte
 const calcRegister_t = i16;
 const angularMode_t = c_int;
-const real_t = extern struct { bytes: [60]u8 align(4) }; // decNumber, zero-init here
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real_t = abi.RealBlob; // decNumber, zero-init here
 const real34_t = extern struct { bytes: [16]u8 align(4) }; // decQuad, zero-init here
 
 const realContext_t = extern struct {

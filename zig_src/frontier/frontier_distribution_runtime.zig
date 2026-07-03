@@ -56,12 +56,8 @@ pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
-pub const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+pub const real_t = abi.Real;
 
 pub const realContext_t = extern struct {
     digits: i32,
