@@ -52,10 +52,7 @@ const userMenu_t = extern struct {
     menuItem: [18]userMenuItem_t,
 };
 
-const namedVariableHeader_t = extern struct {
-    header: u32,
-    variableName: [16]u8,
-};
+const namedVariableHeader_t = abi.NamedVariableHeader;
 
 const formulaHeader_t = extern struct {
     pointerToFormulaData: u16,

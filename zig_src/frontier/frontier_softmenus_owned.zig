@@ -662,10 +662,7 @@ const KEY_X = @extern([*c]const c_int, .{ .name = "KEY_X" });
 
 // namedVariableHeader_t / reservedVariableHeader_t: a 32-bit registerHeader_t
 // union followed by a length-prefixed name array (Pascal-style: [0] = length).
-const namedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    variableName: [16]u8,
-};
+const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,

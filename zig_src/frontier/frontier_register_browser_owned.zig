@@ -31,10 +31,7 @@ const registerHeader_t = packed struct(u32) {
     readOnly: u1,
     notUsed: u6,
 };
-const namedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    variableName: [16]u8,
-};
+const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
