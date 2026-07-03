@@ -67,15 +67,8 @@ const calcRegister_t = i16;
 const videoMode_t = c_int;
 const font_t = opaque {};
 const real34_t = extern struct { bytes: [16]u8 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const realContext_t = abi.RealContext;
 
 // GMP mpz_struct. Limb width == pointer width on every z47 target. longInteger_t
 // is mpz_t == __mpz_struct[1]; an array decays to a *mpz_struct on call.

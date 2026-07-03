@@ -183,15 +183,7 @@ else
         matrixElements: [*c]complex34_t,
     };
 
-pub const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: rounding_t,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+pub const realContext_t = abi.RealContext;
 
 pub const mpz_struct = extern struct {
     _mp_alloc: c_int,

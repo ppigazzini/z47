@@ -32,15 +32,7 @@ const real_t = abi.Real;
 const real34_t = extern struct {
     bytes: [16]u8,
 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: u32,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 
 const calcRegister_t = runtime.calcRegister_t;
 

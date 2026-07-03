@@ -34,15 +34,7 @@ const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_b
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
 const real34_t = extern struct { bytes: [16]u8 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: u32,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 const calcRegister_t = i16;
 const matrixHeader_t = packed struct(u32) {
     matrixRows: u12,
@@ -53,10 +45,7 @@ const matrixHeader_t = packed struct(u32) {
 const real34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]real34_t };
 const font_t = opaque {};
 
-const cplx_t = extern struct {
-    Real: real_t,
-    Imag: real_t,
-};
+const cplx_t = abi.Complex;
 
 const PlotPoint = extern struct {
     x: f64,

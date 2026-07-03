@@ -26,15 +26,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 
