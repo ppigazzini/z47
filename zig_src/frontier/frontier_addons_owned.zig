@@ -112,11 +112,7 @@ const softmenuStack_t = extern struct {
     calcMode: u8,
 };
 
-const userMenuItem_t = extern struct {
-    item: i16,
-    unused: i16,
-    argumentName: [16]u8,
-};
+const userMenuItem_t = abi.UserMenuItem;
 
 // tamState_t (sizeof 26).
 const tamState_t = extern struct {

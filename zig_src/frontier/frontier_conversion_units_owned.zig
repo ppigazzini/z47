@@ -1232,11 +1232,7 @@ pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) c
 
 // Cross-owner globals for executionConversionPartner — EXACT decls copied from
 // frontier_softmenus_owned.zig (struct layouts must match that owner).
-const userMenuItem_t = extern struct {
-    item: i16,
-    unused: i16, // padding (present in the C struct)
-    argumentName: [16]u8,
-};
+const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = extern struct {
     menuName: [16]u8,
     menuItem: [18]userMenuItem_t,

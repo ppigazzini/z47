@@ -102,10 +102,7 @@ const softmenuStack_t = extern struct {
     softmenuScrollDelta: u16,
 }; // size 8, align 2
 
-const userMenuItem_t = extern struct {
-    item: i16,
-    argumentName: [18]u8,
-}; // size 20, align 2
+const userMenuItem_t = abi.UserMenuItem; // size 20, align 2
 
 const programmableMenu_t = extern struct {
     menuItem: [18]userMenuItem_t,
