@@ -88,14 +88,7 @@ const real34Matrix_t = extern struct {
 
 // item_t (typeDefinitions.h): only .itemSoftmenuName is read by RADIX34_MARK_CHAR.
 const ItemFn = ?*const fn (u16) callconv(.c) void;
-const item_t = extern struct {
-    func: ItemFn,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
 // Constants (defines.h / plotstat.h / display.h)

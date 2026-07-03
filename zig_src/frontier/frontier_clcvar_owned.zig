@@ -48,14 +48,7 @@ extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 const mpz_init = @"__gmpz_init";
 const mpz_clear = @"__gmpz_clear";
 
-const item_t = extern struct {
-    func: ?*const anyopaque,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / items.h /

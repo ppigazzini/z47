@@ -67,14 +67,7 @@ const realContext_t = abi.RealContext;
 
 const font_t = opaque {};
 
-const item_t = extern struct {
-    func: ?*const fn (u16) callconv(.c) void,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 
 // matrixHeader_t is a bitfield struct {rows:12; cols:12; mtag:6; notUsed:2}.
 // Access via the two 12-bit fields packed into a u32; reproduce with explicit

@@ -1167,14 +1167,7 @@ pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
 // ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───
 // item_t / indexOfItems: exact layout copied from frontier_items_owned.zig /
 // frontier_softmenus_owned.zig (must match src/c47 typeDefinitions.h item_t).
-const item_t = extern struct {
-    func: ?*const fn (u16) callconv(.c) void,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
 // Right/left arrow glyphs (re-declared locally; match the softmenus owner).

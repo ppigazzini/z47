@@ -57,14 +57,8 @@ const printerState_t = extern struct {
 
 // item_t (typeDefinitions.h): func@0, param@8; only .func is read here.
 const ItemFn = ?*const fn (u16) callconv(.c) void;
-const item_t = extern struct {
-    func: ItemFn,
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
 // Constants (verified via C probe against the sim build)

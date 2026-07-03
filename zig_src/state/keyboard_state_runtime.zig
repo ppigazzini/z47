@@ -767,21 +767,14 @@ pub const MNU_DYNAMIC: i16 = 1394;
 pub const ITM_ms: i16 = 1909;
 pub const ITM_HASH_JM: i16 = 1872;
 pub const ITM_toINT: i16 = 1687;
-const item_t = extern struct {
-    func: ?*const anyopaque, // void(*)(uint16_t) -- only ever compared, never called
-    param: u16,
-    itemCatalogName: [16]u8,
-    itemSoftmenuName: [16]u8,
-    tamMinMax: u16,
-    status: u16,
-};
+const item_t = abi.Item;
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 pub fn itemFuncIsAddItemToBuffer(item: i16) bool {
-    const f = indexOfItems[@intCast(item)].func;
+    const f: ?*const anyopaque = @ptrCast(indexOfItems[@intCast(item)].func);
     return f == @as(?*const anyopaque, @ptrCast(&addItemToBuffer));
 }
 pub fn itemFuncEquals(item: i16, f: ?*const anyopaque) bool {
-    return indexOfItems[@intCast(item)].func == f;
+    return @as(?*const anyopaque, @ptrCast(indexOfItems[@intCast(item)].func)) == f;
 }
 pub fn indexOfItemsParam(item: i16) u16 {
     return indexOfItems[@intCast(item)].param;
