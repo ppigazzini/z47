@@ -61,6 +61,27 @@ pub const SubroutineLevelHeader = extern struct {
     ptrToPreviousLevel: u16,
 };
 
+
+/// Keyboard key descriptor (keyboard.h calcKey_t), all i16 slots.
+pub const CalcKey = extern struct {
+    keyId: i16,
+    primary: i16,
+    fShifted: i16,
+    gShifted: i16,
+    keyLblAim: i16,
+    primaryAim: i16,
+    fShiftedAim: i16,
+    gShiftedAim: i16,
+    primaryTam: i16,
+};
+
+/// Soft-menu descriptor (softmenu_t): item indices + pointer to the key list.
+pub const Softmenu = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    softkeyItem: [*c]const i16,
+};
+
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.
 pub const constants = @import("constants.zig");
 
@@ -86,6 +107,8 @@ comptime {
     std.debug.assert(@sizeOf(Complex) == 2 * @sizeOf(Real));
     std.debug.assert(@sizeOf(Complex34) == 32);
     std.debug.assert(@sizeOf(SubroutineLevelHeader) == 12);
+    std.debug.assert(@sizeOf(CalcKey) == 18);
+    std.debug.assert(@offsetOf(Softmenu, "numItems") == 2);
 }
 
 // Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.

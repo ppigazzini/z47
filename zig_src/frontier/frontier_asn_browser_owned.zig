@@ -26,17 +26,8 @@ const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 const bool_t = bool;
 const videoMode_t = c_int;
 
-const calcKey_t = extern struct {
-    keyId: i16,
-    primary: i16,
-    fShifted: i16,
-    gShifted: i16,
-    keyLblAim: i16,
-    primaryAim: i16,
-    fShiftedAim: i16,
-    gShiftedAim: i16,
-    primaryTam: i16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const calcKey_t = abi.CalcKey;
 const normKey_t = extern struct {
     func: i16,
     funcParam: [16]u8,

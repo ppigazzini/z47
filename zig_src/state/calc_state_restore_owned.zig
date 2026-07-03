@@ -123,17 +123,8 @@ fn TO_BLOCKS(n: anytype) u32 {
 }
 
 // --- Struct models (asserted against the C ABI) ---
-const calcKey_t = extern struct {
-    keyId: i16,
-    primary: i16,
-    fShifted: i16,
-    gShifted: i16,
-    keyLblAim: i16,
-    primaryAim: i16,
-    fShiftedAim: i16,
-    gShiftedAim: i16,
-    primaryTam: i16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const calcKey_t = abi.CalcKey;
 const userMenuItem_t = extern struct {
     item: i16,
     unused: i16,
