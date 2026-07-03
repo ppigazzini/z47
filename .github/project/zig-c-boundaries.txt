@@ -34,6 +34,7 @@ zig_build/tests/constants/constants_parity.zig
 zig_build/tests/distributions/distribution_fake_runtime.zig
 zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
+zig_src/abi/runtime.zig
 zig_src/shortint/shortint_runtime.zig
 zig_src/constants/constants_runtime.zig
 zig_src/mathematics/math_command_wrappers_runtime.zig
