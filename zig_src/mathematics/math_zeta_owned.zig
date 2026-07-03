@@ -54,10 +54,7 @@ inline fn const_1on2() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
+const cstR = consts.cstR;
 
 // real ops accepting an unaligned (*align(1)) const operand, for the blob
 // constants. These wrap the same decNumber primitives the runtime helpers use.
