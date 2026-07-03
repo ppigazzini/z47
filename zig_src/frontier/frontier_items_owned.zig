@@ -61,7 +61,8 @@ else
 const bool_t = u8;
 const calcRegister_t = i16;
 const dataType_t = u32;
-const real_t = extern struct { bytes: [60]u8 align(4) };
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real_t = abi.RealBlob;
 
 const ItemFn = ?*const fn (u16) callconv(.c) void;
 

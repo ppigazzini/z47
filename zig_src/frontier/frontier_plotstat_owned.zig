@@ -64,12 +64,8 @@ const irfracOption_t = c_int;
 const font_t = opaque {};
 
 const DECNUMUNITS = 25;
-const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real_t = abi.Real;
 comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");
 }

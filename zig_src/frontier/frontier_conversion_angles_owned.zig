@@ -37,12 +37,8 @@ const OFF_const39_200onPi = 5308;
 const OFF_const39_180onPi = 5260;
 
 const DECNUMUNITS = 25;
-const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real_t = abi.Real;
 const realContext_t = extern struct {
     digits: i32,
     emax: i32,
