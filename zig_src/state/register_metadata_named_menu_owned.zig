@@ -7,9 +7,8 @@ const use_fake_register_metadata_harness_surface =
 const max_fake_named_variables: u16 = 64;
 const ITM_RCL: u16 = 51;
 
-const userMenu_t = extern struct {
-    menuName: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings
+const userMenu_t = abi.UserMenu;
 
 const register_descriptor_t = u32;
 

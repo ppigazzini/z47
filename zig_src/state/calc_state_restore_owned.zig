@@ -126,10 +126,7 @@ fn TO_BLOCKS(n: anytype) u32 {
 const abi = @import("abi"); // L1 shared bindings
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
-const userMenu_t = extern struct {
-    menuName: [16]u8,
-    menuItem: [18]userMenuItem_t,
-};
+const userMenu_t = abi.UserMenu;
 const normKey_t = extern struct {
     func: i16,
     funcParam: [16]u8,

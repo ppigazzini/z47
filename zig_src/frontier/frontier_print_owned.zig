@@ -151,10 +151,7 @@ const labelList_t = extern struct {
 
 // userMenuItem_t / userMenu_t (typeDefinitions.h)
 const userMenuItem_t = abi.UserMenuItem;
-const userMenu_t = extern struct {
-    menuName: [16]u8,
-    menuItem: [18]userMenuItem_t,
-};
+const userMenu_t = abi.UserMenu;
 // programmableMenu_t
 const programmableMenu_t = extern struct {
     itemName: [18][16]u8,
