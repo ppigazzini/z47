@@ -1,4 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const__4 = consts.const__4;
+const const_1on4 = consts.const_1on4;
+const const39_1on3 = consts.const39_1on3;
+const const_1on2 = consts.const_1on2;
+const const39_pi = consts.const39_pi;
+const const39_piOn2 = consts.const39_piOn2;
+const const39_piOn4 = consts.const39_piOn4;
+const const75_2pi = consts.const75_2pi;
+const const_1e_32 = consts.const_1e_32;
+const const_1e_37 = consts.const_1e_37;
+const const_1e_49 = consts.const_1e_49;
+const const__1Off = consts.const__1Off;
+const const_3Off = consts.const_3Off;
 //
 // Zig owner for src/c47/mathematics/elliptic.c: the elliptic-integral and
 // Jacobi-function family. Exports the elliptic.h commands (fnEllipse, fnKtoM,
@@ -113,54 +128,6 @@ inline fn const_2() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const__4: u32 = 4364;
-const OFF_const_1on4: u32 = 4532;
-const OFF_const39_1on3: u32 = 4544;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const39_piOn2: u32 = 4880;
-const OFF_const39_piOn4: u32 = 4736;
-const OFF_const75_2pi: u32 = 7640;
-const OFF_const_1e_32: u32 = 5708;
-const OFF_const_1e_37: u32 = 4436;
-const OFF_const_1e_49: u32 = 4424;
-inline fn const__4() *align(1) const real_t {
-    return cstR(OFF_const__4);
-}
-inline fn const_1on4() *align(1) const real_t {
-    return cstR(OFF_const_1on4);
-}
-inline fn const39_1on3() *align(1) const real_t {
-    return cstR(OFF_const39_1on3);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
-inline fn const39_piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_piOn2);
-}
-inline fn const39_piOn4() *align(1) const real_t {
-    return cstR(OFF_const39_piOn4);
-}
-inline fn const75_2pi() *align(1) const real_t {
-    return cstR(OFF_const75_2pi);
-}
-inline fn const_1e_32() *align(1) const real_t {
-    return cstR(OFF_const_1e_32);
-}
-inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
-}
-inline fn const_1e_49() *align(1) const real_t {
-    return cstR(OFF_const_1e_49);
-}
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
@@ -750,10 +717,6 @@ fn _ellipticFE_lambda_mu(phi: *const real_t, psi: *const real_t, m: *const real_
     }
 }
 
-const OFF_const__1: u32 = 4376;
-inline fn const__1Off() *align(1) const real_t {
-    return cstR(OFF_const__1);
-}
 
 inline fn carlsonTol(realContext: *realContext_t) *align(1) const real_t {
     return if (realContext.digits <= 39) const_1e_37() else const_1e_49();
@@ -835,10 +798,6 @@ fn carlsonRD(x0: *const real_t, y0: *const real_t, z0: *const real_t, res: *real
     realFMA(const_3Off(), &sum, res, res, realContext);
 }
 
-const OFF_const_3: u32 = 5012;
-inline fn const_3Off() *align(1) const real_t {
-    return cstR(OFF_const_3);
-}
 
 fn _ellipticF(phi: *const real_t, m: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     var s: real_t = undefined;
