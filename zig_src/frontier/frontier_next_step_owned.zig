@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const34_65535 = consts.const34_65535;
+const const34_1 = consts.const34_1;
 //
 // Zig owner for src/c47/programming/nextStep.c: program-step navigation.
 // countOpBytes/countLiteralBytes size one instruction's parameter bytes;
@@ -143,12 +146,6 @@ const LAST_ITEM: u32 = 2860;
 // ---------------------------------------------------------------------------
 // Constant blob
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1 = 16312;
-const OFF_const34_65535 = 16792;
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -740,9 +737,9 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
         return;
     }
 
-    if (real34CompareLessThan(&arg, cst34(OFF_const34_1))) {
+    if (real34CompareLessThan(&arg, const34_1())) {
         fnSkip(0);
-    } else if (real34CompareGreaterEqual(&arg, cst34(OFF_const34_65535))) {
+    } else if (real34CompareGreaterEqual(&arg, const34_65535())) {
         fnSkip(65534);
     } else {
         fnSkip(@intCast(real34ToUInt32(&arg) - 1));
