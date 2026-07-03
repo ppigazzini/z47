@@ -36,6 +36,11 @@ pub inline fn cst34(offset: u32) *align(1) const Real34 {
     return @ptrCast(constants + offset);
 }
 
+/// Dynamic align-4 Real accessor (offset must be 4-aligned; asserted).
+pub inline fn cstRAligned(offset: u32) *const Real {
+    return @ptrCast(@alignCast(constants + offset));
+}
+
 // --- Seeded for the elec pilot (mathematics/elec.c) ---
 pub inline fn const1on2() *const Real {
     return at(4580);
