@@ -1,4 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const__4 = consts.const__4;
+const const_1on2 = consts.const_1on2;
+const const_2 = consts.const_2;
+const const_4 = consts.const_4;
 //
 // Zig owner for src/c47/mathematics/slvq.c: solve quadratic (SLVQ). Exports
 // slvq.h's fnSlvq, solveQuadraticEquation and solveQuadraticEquation159.
@@ -119,30 +126,6 @@ extern fn realRectangularToPolar(re: *align(1) const real_t, im: *align(1) const
 extern fn realPolarToRectangular(magnitude: *align(1) const real_t, theta: *align(1) const real_t, re: *align(1) real_t, im: *align(1) real_t, ctxt: *realContext_t) void;
 
 // Blob constants.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const__4: u32 = 4364;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_2: u32 = 4928;
-const OFF_const_4: u32 = 5024;
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const__4() *align(1) const real_t {
-    return cstR(OFF_const__4);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
-}
-inline fn const_4() *align(1) const real_t {
-    return cstR(OFF_const_4);
-}
 
 // REAL_T_PTR(name, 159): a 159-digit stack scratch real_t buffer.
 inline fn realMaxDigits(comptime digits: u32) u32 {
