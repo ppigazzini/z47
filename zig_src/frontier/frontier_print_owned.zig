@@ -264,6 +264,7 @@ const SFL_TDM24: i32 = 463;
 const SFL_MONIT: i32 = 2251;
 
 const ITM_LBL: i32 = 1;
+const ITM_PRINTERALPHA: i16 = 2682;
 const ITM_XEQ: i32 = 3;
 const ITM_OPEN_MENU: i32 = 2405;
 const ITM_MENU: i32 = 1520;
@@ -392,6 +393,7 @@ const STD_RIGHT_ARROW = "\xa1\x92";
 // Globals (extern var) and print.c file globals
 // ---------------------------------------------------------------------------
 extern var printerState: printerState_t;
+extern var lastFunc: i16;
 extern var printerColumn: u16;
 extern var printerIconEnabled: bool_t;
 extern var tmpString: [*c]u8;
@@ -474,6 +476,7 @@ const tamState_t = extern struct {
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
+extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
@@ -841,10 +844,10 @@ const NamesAlias = [_]nameAlias_t{
 
 // HP-82240 Roman-8 to Unicode table (TO_QSPI const uint16_t[256]).
 const hp82240CharMap = [256]u16{
-    0x0000, 0x0000, 0x0000, 0x0000, 0x0004, 0x0000, 0x0000, 0x0000,
-    0x0000, 0x0000, 0x000A, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x2404, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x240A, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-    0x0000, 0x0000, 0x0000, 0x001B, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
     0x0028, 0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F,
     0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
@@ -859,7 +862,7 @@ const hp82240CharMap = [256]u16{
     0x0078, 0x0079, 0x007A, 0x007B, 0x007C, 0x007D, 0x007E, 0x0000,
     0x00A0, 0x00F7, 0x00D7, 0x221A, 0x222B, 0x2211, 0x25B6, 0x03C0,
     0x2202, 0x2264, 0x2265, 0x2260, 0x03B1, 0x2192, 0x2190, 0x03BC,
-    0x21B5, 0x00B0, 0x00AB, 0x00BB, 0x22A2, 0x2081, 0x2082, 0x2162,
+    0x240A, 0x00B0, 0x00AB, 0x00BB, 0x22A2, 0x2081, 0x2082, 0x2162,
     0x2163, 0x24A4, 0x24A5, 0x0000, 0x248A, 0x248B, 0x248C, 0x248F,
     0x2221, 0x00C0, 0x00C2, 0x00C8, 0x00CA, 0x00CB, 0x00CE, 0x00CF,
     0x00B4, 0x0060, 0x005E, 0x00A8, 0x02DC, 0x00D9, 0x00FB, 0x20A4,
@@ -879,8 +882,16 @@ const hp82240CharMap = [256]u16{
 // IR helpers (file static & public). All compiled only when ir_printing.
 // ---------------------------------------------------------------------------
 fn charMap(charCode: u16) u8 {
+    if (lastFunc == ITM_PRINTERALPHA) { // map control-char symbols only for pr_alpha
+        var j: u32 = 0;
+        while (j < 32) : (j += 1) { // characters below 0x20
+            if (hp82240CharMap[j] == (charCode & ~@as(u16, 0x8000))) {
+                return @intCast(j);
+            }
+        }
+    }
     var i: u32 = 128;
-    while (i < 255) : (i += 1) {
+    while (i < 255) : (i += 1) { // characters above 0x80
         if (hp82240CharMap[i] == (charCode & ~@as(u16, 0x8000))) {
             return @intCast(i);
         }
@@ -2061,8 +2072,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             _ = strcat(tmpString, " " ++ STD_LEFT_SINGLE_QUOTE);
                             const strLength: u16 = @intCast(stringByteLength(tmpString));
                             const lp = labelList[@as(usize, param) - @as(usize, @intCast(FIRST_LABEL))].labelPointer;
-                            _ = xcopy(tmpString + strLength, lp + 1, lp[0]);
-                            tmpString[strLength + lp[0]] = 0;
+                            const lblNameLen = boundProgramNameLength(lp + 1, lp[0]);
+                            _ = xcopy(tmpString + strLength, lp + 1, lblNameLen);
+                            tmpString[strLength + lblNameLen] = 0;
                             _ = strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
                         }
                     } else if ((tam.mode == TM_FLAGR or tam.mode == TM_FLAGW) and !tam.indirect) {
@@ -2502,7 +2514,9 @@ pub export fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, lab
     if (step[1] <= LAST_LOCAL_LABEL) {
         return false;
     }
-    var length: u16 = step[2];
+    // Clamp to the program-memory end (upstream boundProgramNameLength) so a
+    // corrupt step cannot read past program memory, then to the caller buffer.
+    var length: u16 = boundProgramNameLength(step + 3, step[2]);
     if (length >= label_size) {
         length = label_size - 1;
     }

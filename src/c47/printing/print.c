@@ -49,13 +49,13 @@
   /* 0x01, */ 0x0000, // #UNDEFINED
   /* 0x02, */ 0x0000, // #UNDEFINED
   /* 0x03, */ 0x0000, // #UNDEFINED
-  /* 0x04, */ 0x0004, // #PRINT LINE AND LEAVE PRINT HEAD AT RIGHT
+  /* 0x04, */ 0x2404, // #CARRIAGE RIGHT
   /* 0x05, */ 0x0000, // #UNDEFINED
   /* 0x06, */ 0x0000, // #UNDEFINED
   /* 0x07, */ 0x0000, // #UNDEFINED
   /* 0x08, */ 0x0000, // #UNDEFINED
   /* 0x09, */ 0x0000, // #UNDEFINED
-  /* 0x0A, */ 0x000A, // #LINE FEED
+  /* 0x0A, */ 0x240A, // #LINE FEED
   /* 0x0B, */ 0x0000, // #UNDEFINED
   /* 0x0C, */ 0x0000, // #UNDEFINED
   /* 0x0D, */ 0x0000, // #UNDEFINED
@@ -73,7 +73,7 @@
   /* 0x18, */ 0x0000, // #UNDEFINED
   /* 0x19, */ 0x0000, // #UNDEFINED
   /* 0x1A, */ 0x0000, // #UNDEFINED
-  /* 0x1B, */ 0x001B, // #ESCAPE
+  /* 0x1B, */ 0x0000, // #ESCAPE
   /* 0x1C, */ 0x0000, // #UNDEFINED
   /* 0x1D, */ 0x0000, // #UNDEFINED
   /* 0x1E, */ 0x0000, // #UNDEFINED
@@ -198,7 +198,7 @@
   /* 0x8E, */ 0x2190, // #LEFTWARDS ARROW
   /* 0x8F, */ 0x03BC, // #GREEK SMALL LETTER MU
 
-  /* 0x90, */ 0x21B5, // #DOWNWARDS ARROW WITH CORNER LEFTWARDS
+  /* 0x90, */ 0x240A, // #SYMBOL FOR LINE FEED
   /* 0x91, */ 0x00B0, // #DEGREE SIGN
   /* 0x92, */ 0x00AB, // #LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
   /* 0x93, */ 0x00BB, // #RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
@@ -321,7 +321,14 @@
 
   uint8_t charMap(uint16_t charCode) {
     uint8_t i;
-    for(i=128; i<255; i++) {
+    if(lastFunc == ITM_PRINTERALPHA) {  // map the control character symbols only for pr_alpha, otherwise print the symbol
+      for(i=0; i<32; i++) {     // map characters below 0x20
+        if(hp82240CharMap[i] == (charCode & ~0x8000)) {
+          return (i);
+        }
+      }
+    }
+    for(i=128; i<255; i++) {  // map characters above 0x80
       if(hp82240CharMap[i] == (charCode & ~0x8000)) {
         return (i);
       }
@@ -412,57 +419,6 @@
     setSystemFlagChanged(SETTING_PRINTERICON);
     refreshStatusBar();
   }
-
-unsigned int charlengths(unsigned int c) {
-  static const unsigned char widths[171] = {
-    162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,
-    215,  85, 107, 123, 160, 172, 172,  88, 178, 177, 208, 208,
-    166, 208, 179, 173, 209, 215, 130, 165, 170, 172, 172, 165,
-    177, 172, 172, 214, 171, 117, 131, 209, 143, 215, 131, 178,
-    215, 213, 143, 201, 213, 179, 172, 214, 170, 172, 215, 209,
-    215,  95, 129, 129, 172, 172, 172, 172, 129, 207, 215, 136,
-    172, 208, 173, 172, 172, 172, 136, 129, 172, 172, 166, 172,
-    172, 112, 135, 147, 129, 171, 130, 129, 176, 131, 141, 208,
-    115, 143,  82, 140,  50,  93, 129, 129,  57, 128, 165, 129,
-    129,  57, 135, 137, 171, 129, 135,  93, 123, 123, 129, 129,
-     87, 195, 129, 129, 129, 131,  57, 135, 141, 172, 171, 131,
-    207, 165, 202, 177,  93, 167, 178, 135, 165, 124, 129, 177,
-    136, 142, 143,  86, 129, 129, 129, 129, 129,  87, 165, 129,
-    129, 129, 129, 129, 129, 129, 129, 129, 123, 129, 129, 129,
-    129, 129,  21
-  };
-  static const unsigned char divs[3] = { 1, 6, 36 };
-  return (widths[c/3] / divs[c%3]) % 6 + 1;
-}
-
-void findlengths(unsigned short int posns[257], int smallp) {
-  const int mask = smallp ? 256 : 0;
-  int i;
-
-  posns[0] = 0;
-  for(i=0; i<256; i++) {
-    posns[i+1] = posns[i] + charlengths(i + mask) - 1;
-  }
-}
-
-
-/* Determine the pixel length of the string if it were displayed
-*/
-int pixel_length(const char *s, int smallp) {
-  int len = 0;
-  const int offset = smallp ? 256 : 0;
-  while(*s != '\0') {
-    #if defined(INCLUDE_FONT_ESCAPE)
-    if(s[0] == '\007') {
-      len += s[1] & 0x1F;
-      s += 3;
-      continue;
-    }
-    #endif // INCLUDE_FONT_ESCAPE
-    len += charlengths((unsigned char)*s++ + offset);
-  }
-  return len;
-}
 
 
 void prepareNewLine(void) {
@@ -705,31 +661,6 @@ void printGlyph24(uint16_t charCode, const font_t *font) {
   printerColumn += 14;
 }
 
-/*
-//
-//  Determine the length of a string in printer pixels based on the current mode.
-//
-static int buffer_width(const char *buff) {
-  const int mode = printerState.print_mode;
-  unsigned int c;
-  int l = 0;
-
-  while((c = 0xff & *buff++) != '\0') {
-    switch(mode) {
-    default:
-      l += 7;
-      break;
-
-    case PMODE_SMALLGRAPHICS:
-      c += 256;
-    case PMODE_GRAPHICS:
-      l += charlengths(c);
-      break;
-    }
-  }
-  return l;
-}
-*/
 
 
 //
@@ -812,9 +743,8 @@ void printLine(const char *buff, int with_lf) {
 //  Print buffer right justified
 //
 void printJustified(const char *buff) {
-  print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength(buff) * 7 - 1
-                                        : pixel_length(buff, pmode == PMODE_SMALLGRAPHICS);
+  //print_modes_t pmode = printerState.print_mode;
+  uint16_t len = stringGlyphLength(buff) * 7 - 1;
   uint16_t paperWidth = PAPER_WIDTH;
 
   if(len >= paperWidth - printerColumn) {
@@ -830,9 +760,8 @@ void printJustified(const char *buff) {
 //  Print buffer justified on the left half of the paper line
 //
 void printJustifiedLeft(const char *buff) {
-  print_modes_t pmode = printerState.print_mode;
-  uint16_t len = pmode == PMODE_DEFAULT ? stringGlyphLength(buff) * 7 - 1
-                                        : pixel_length(buff, pmode == PMODE_SMALLGRAPHICS);
+  //print_modes_t pmode = printerState.print_mode;
+  uint16_t len = stringGlyphLength(buff) * 7 - 1;
   uint16_t paperWidth = (PAPER_WIDTH / 2) - 7;
 
   if(len >= paperWidth - printerColumn) {
@@ -1707,8 +1636,9 @@ void printTrace(int16_t func, uint16_t param) {
             else if((param >= FIRST_LABEL) && (param <= LAST_LABEL)) { // Alpha labels
               strcat(tmpString, " " STD_LEFT_SINGLE_QUOTE);
               uint16_t strLength = stringByteLength(tmpString);
-              xcopy(tmpString + strLength, labelList[param - FIRST_LABEL].labelPointer + 1, *(labelList[param - FIRST_LABEL].labelPointer));
-              tmpString[strLength + *(labelList[param - FIRST_LABEL].labelPointer)] = 0;
+              uint8_t lblNameLen = boundProgramNameLength(labelList[param - FIRST_LABEL].labelPointer + 1, *(labelList[param - FIRST_LABEL].labelPointer));
+              xcopy(tmpString + strLength, labelList[param - FIRST_LABEL].labelPointer + 1, lblNameLen);
+              tmpString[strLength + lblNameLen] = 0;
               strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
             }
           }
@@ -2132,7 +2062,7 @@ void fnP_Tab(uint16_t column) {
 // Print User
 void fnP_User(uint16_t unusedButMandatoryParameter) {
   #if defined(IR_PRINTING)
-    char label[16];
+    char label[256]; // a global label name is a 1-byte-length string, so up to 255 bytes
     currentKeyCode = 255;
 
     if(!getSystemFlag(FLAG_PRTACT)) {
@@ -2180,8 +2110,9 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
       nextStep = findNextStep(step);
       if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
         if(*(step + 1) > LAST_LOCAL_LABEL) { // Global label
-          xcopy(label, step + 3, *(step+2));
-          label[*(step+2)] = 0;
+          uint8_t lblNameLen = boundProgramNameLength(step + 3, *(step + 2));
+          xcopy(label, step + 3, lblNameLen);
+          label[lblNameLen] = 0;
           printLine("LBL " STD_LEFT_SINGLE_QUOTE, 0);
           printLine(label, 0);
           printLine(STD_RIGHT_SINGLE_QUOTE, !firstProgramLabel);

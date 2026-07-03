@@ -171,6 +171,11 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
 
   while(glyphIndex) {
     if(32 <= charCode && charCode <= 0x7ffful) {
+      // A code point >= 0x80 is stored as a 2-byte glyph (byte1 = 0x80 | (cp >> 8), byte2 = cp & 0xFF). C47 forbids a 0x00 second byte because it terminates C strings early, so reject and error.
+      if(charCode >= 0x80ul && (charCode & 0xFFul) == 0ul) {
+        fprintf(stderr, "\nERROR: code point U+%04X in %s would encode with a 0x00 second byte, which is forbidden in C47. Relocate this glyph in the TTF to a code point whose low byte is not 00, a.k.a. a loan point.\n", (unsigned int)charCode, ttfName);
+        exit(1);
+      }
       #if defined(DEBUG)
         printf("%u %04X \n", glyphIndex, (uint16_t)charCode);
       #endif

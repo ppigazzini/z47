@@ -728,8 +728,23 @@ void utf8ToString(const uint8_t *utf8, char *str) {
 
   while(*utf8) {
     utf8 += utf8ToCodePoint(utf8, &codePoint);
+    // Glyphs with low byte is 0x00 (forbidden in C47, as a 0x00 second byte terminates C strings early).
+    // Relocate each incoming real Unicode point to its relocated internal slot with no 0x00, mapped to the loan code point used for this glyph.
+    switch(codePoint) {
+      case 0x0100: codePoint = 0x017F; break; // STD_A_MACRON: latin capital A with macron (was U+0100)
+      case 0x1D00: codePoint = 0x045A; break; // STD_SMALLCAP_A: latin letter small capital A (was U+1D00)
+      case 0x2200: codePoint = 0x2C6F; break; // STD_FOR_ALL: for all (was U+2200)
+      default: break;
+    }
     if(codePoint < 0x0080) {
       *(str++) = codePoint;
+    }
+    else if((codePoint & 0x00FF) == 0) {
+      // Any other code point whose low byte is 0x00 substituted a placeholder ? to prevent crash
+      #if defined(PC_BUILD)
+        printf("In function utf8ToString: code point U+%04X has a 0x00 second byte and was replaced with '?'\n", codePoint);
+      #endif // PC_BUILD
+      *(str++) = '?';
     }
     else {
       codePoint |= 0x8000;

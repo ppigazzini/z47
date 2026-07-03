@@ -2026,7 +2026,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     259 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     267 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -2181,7 +2181,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
-    #define TO_QSPI                          __attribute__ ((section(".qspi")))
+    #define TO_QSPI                          __attribute__ ((section(".qspi_data")))
   #else // !TWO_FILE_PGM
     #define TO_QSPI
   #endif // TWO_FILE_PGM
@@ -2524,17 +2524,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #endif // PC_BUILD
 
 #if defined(DMCP_BUILD)
+  #define STRINGIFY_HELPER(x) #x
+  #define STRINGIFY(x) STRINGIFY_HELPER(x)
   /* Import a binary file - from https://elm-chan.org/junk/32bit/binclude.html */
   #define IMPORT_BIN(sect, file, sym) asm (                                   \
-      ".section " #sect "\n"                  /* Change section */            \
-      ".balign 4\n"                           /* Word alignment */            \
+      ".section " #sect "\n"                  /* Change section            */ \
+      ".balign 4\n"                           /* Word alignment            */ \
       ".global " #sym "\n"                    /* Export the object address */ \
-      #sym ":\n"                              /* Define the object label */   \
-      ".incbin \"" file "\"\n"                /* Import the file */           \
-      ".global _sizeof_" #sym "\n"            /* Export the object size */    \
-      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size */    \
-      ".balign 4\n"                           /* Word alignment */            \
-      ".section \".text\"\n")                 /* Restore section */
+      #sym ":\n"                              /* Define the object label   */ \
+      ".incbin \"" STRINGIFY(file) "\"\n"     /* Import the file           */ \
+      ".global _sizeof_" #sym "\n"            /* Export the object size    */ \
+      ".set _sizeof_" #sym ", . - " #sym "\n" /* Define the object size    */ \
+      ".balign 4\n"                           /* Word alignment            */ \
+      ".section \".text\"\n")                 /* Restore section           */
 #endif // DMCP_BUILD
 
 #endif // !DEFINES_H
