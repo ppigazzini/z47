@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const34_1e6 = consts.const34_1e6;
 //
 // Zig owner for src/c47/stringFuncs.c: the alpha-string commands aLENG?,
 // a->x, x->a, aPOS?, aRR, aRL, aSR and aSL. This is a faithful, line-by-line
@@ -63,12 +65,7 @@ const DEC_ROUND_DOWN: c_int = 5;
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1e6 = 16856;
 
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -343,7 +340,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
             convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), cst34(OFF_const34_1e6))) {
+            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
                 convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
@@ -657,7 +654,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
             convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), cst34(OFF_const34_1e6))) {
+            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
                 convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
@@ -731,7 +728,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
             convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), cst34(OFF_const34_1e6))) {
+            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
                 convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
@@ -1386,7 +1383,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
             convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
-            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), cst34(OFF_const34_1e6))) {
+            if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
                 longIntegerFree(&lgInt[0]);
