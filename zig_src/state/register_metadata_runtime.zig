@@ -41,9 +41,8 @@ pub const ERROR_TOO_MANY_VARIABLES: u8 = 49;
 const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
 const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
-const userMenu_t = extern struct {
-    menuName: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings
+const userMenu_t = abi.UserMenu;
 
 const named_variable_header_t = extern struct {
     header: extern struct {

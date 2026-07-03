@@ -101,10 +101,7 @@ const softmenuStack_t = extern struct {
 const item_t = abi.Item;
 
 const userMenuItem_t = abi.UserMenuItem;
-const userMenu_t = extern struct {
-    menuName: [16]u8,
-    menuItem: [18]userMenuItem_t,
-};
+const userMenu_t = abi.UserMenu;
 
 // labelList entries: only fields softmenus.c reads (step, instructionPointer,
 // labelPointer). Layout mirrors src/c47 label.h labelList_t.
