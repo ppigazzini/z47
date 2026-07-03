@@ -31,12 +31,8 @@ const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_b
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [25]u16,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real_t = abi.Real;
 const real34_t = extern struct { bytes: [16]u8 };
 const realContext_t = extern struct {
     digits: i32,
