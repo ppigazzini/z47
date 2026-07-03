@@ -136,12 +136,8 @@ const DECSNAN: u8 = 0x10;
 const DECSPECIAL: u8 = 0x70;
 const DECNUMUNITS = 25;
 
-pub const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+pub const real_t = abi.Real;
 
 pub const real34_t = extern struct {
     bytes: [16]u8,
