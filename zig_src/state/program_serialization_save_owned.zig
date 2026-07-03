@@ -23,7 +23,7 @@ pub fn saveAllPrograms() void {
 
     var i: u16 = 0;
     while (i < runtime.numberOfLabels) : (i += 1) {
-        var label_name: [16]u8 = undefined;
+        var label_name: [256]u8 = undefined; // a global label name is a 1-byte-length string, so up to 255 bytes
         if (!runtime.globalLabelNameAt(i, &label_name)) {
             continue;
         }

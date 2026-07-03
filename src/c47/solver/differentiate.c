@@ -178,7 +178,7 @@ static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[]
                            const real_t *h, real_t *r, realContext_t *realContext) {
   uint16_t i, maxi = 2*stencil->n+1;
   real_t t, s;
-  const real_t *const fx = fxIn + MAX_ORDER - stencil->n;
+  const real_t * const fx = fxIn + MAX_ORDER - stencil->n;
 
   // Check if all f(x) are defined or not
   for(i=0; i<maxi; i++) {

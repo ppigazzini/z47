@@ -331,8 +331,9 @@ static void _selectProgram(uint16_t label) {
         while(currentLabel < numberOfLabels) {
           if(labelList[currentLabel].step > 0) {  // global label
             // get current label name (to be used as default file name)
-            xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
-            tmpStringLabelOrVariableName[*(labelList[currentLabel].labelPointer)] = 0;
+            uint8_t lblNameLen = boundProgramNameLength(labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
+            xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, lblNameLen);
+            tmpStringLabelOrVariableName[lblNameLen] = 0;
             break;
           }
           currentLabel++;
@@ -342,8 +343,9 @@ static void _selectProgram(uint16_t label) {
     else if(label >= FIRST_LABEL && label <= LAST_LABEL) {
       fnGoto(label);
       // get current label name (to be used as default file name)
-      xcopy(tmpStringLabelOrVariableName, labelList[label - FIRST_LABEL].labelPointer + 1, *(labelList[label - FIRST_LABEL].labelPointer));
-      tmpStringLabelOrVariableName[*(labelList[label - FIRST_LABEL].labelPointer)] = 0;
+      uint8_t lblNameLen = boundProgramNameLength(labelList[label - FIRST_LABEL].labelPointer + 1, *(labelList[label - FIRST_LABEL].labelPointer));
+      xcopy(tmpStringLabelOrVariableName, labelList[label - FIRST_LABEL].labelPointer + 1, lblNameLen);
+      tmpStringLabelOrVariableName[lblNameLen] = 0;
     }
     // Invalid label
     else {
@@ -470,12 +472,13 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
     uint16_t oldCurrentProgramNumber = 0;
 
     uint16_t label;
-    char labelName[16];
+    char labelName[256]; // a global label name is a 1-byte-length string, so up to 255 bytes
     char labelName1[500];
         for(int i=0; i<numberOfLabels; i++) {
           if(labelList[i].step > 0) { // Global label
-            xcopy(labelName, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
-            labelName[labelList[i].labelPointer[0]]=0;
+            uint8_t nameLength = boundProgramNameLength(labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+            xcopy(labelName, labelList[i].labelPointer + 1, nameLength);
+            labelName[nameLength]=0;
             label = findNamedLabel(labelName);
             _selectProgram(label);
             stringToASCII(labelName, labelName1);
