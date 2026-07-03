@@ -733,6 +733,21 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const ringbuffer_test_step = b.step("keyboard_ringbuffer_test", "Run the DMCP key ring-buffer mechanics tests");
     ringbuffer_test_step.dependOn(&run_ringbuffer_test.step);
 
+    // REPORT-23 §7.2/§11: the idiomatic-refactor colocated `test {}` blocks. These
+    // are hermetic (no C runtime) -- the L1 abi ABI-contract asserts and, as the
+    // L2 owner cores land, their pure-logic tests. The C parity oracle stays the
+    // authority for behavior; this covers invariants the oracle cannot express.
+    const idiom_test = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_src/abi/types.zig"),
+            .target = context.host_target,
+            .optimize = optimize,
+        }),
+    });
+    const run_idiom_test = b.addRunArtifact(idiom_test);
+    const idiom_test_step = b.step("idiom-test", "Run the REPORT-23 idiomatic-Zig colocated test blocks");
+    idiom_test_step.dependOn(&run_idiom_test.step);
+
     const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));

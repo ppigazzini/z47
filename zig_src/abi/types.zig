@@ -27,6 +27,12 @@ pub const Real = extern struct {
 /// decQuad-backed 34-digit real (16 raw bytes).
 pub const Real34 = extern struct { bytes: [16]u8 };
 
+/// Byte-compatible opaque view of `Real` for owners that only pass it to C as a
+/// handle (zero-init + &x) and never read fields. Same size/align as `Real`, so
+/// it is a drop-in for the `{ bytes: [60]u8 align(4) }` owners the migration
+/// task converts.
+pub const RealBlob = extern struct { bytes: [60]u8 align(4) };
+
 /// decContext.
 pub const RealContext = extern struct {
     digits: i32,
@@ -64,4 +70,29 @@ comptime {
     std.debug.assert(@sizeOf(Real) == 60);
     std.debug.assert(@sizeOf(Real34) == 16);
     std.debug.assert(@sizeOf(Complex) == 2 * @sizeOf(Real));
+}
+
+// Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.
+// These assert the ABI contract the C parity oracle cannot express directly.
+const testing = std.testing;
+
+test "Real matches the C decNumber ABI (size/offsets)" {
+    try testing.expectEqual(@as(usize, 60), @sizeOf(Real));
+    try testing.expectEqual(@as(usize, 4), @alignOf(Real));
+    try testing.expectEqual(@as(usize, 0), @offsetOf(Real, "digits"));
+    try testing.expectEqual(@as(usize, 10), @offsetOf(Real, "lsu"));
+}
+
+test "Complex is two back-to-back Reals" {
+    try testing.expectEqual(@sizeOf(Real), @offsetOf(Complex, "Imag"));
+    try testing.expectEqual(2 * @sizeOf(Real), @sizeOf(Complex));
+}
+
+test "RealBlob is a drop-in for Real (same size and align)" {
+    try testing.expectEqual(@sizeOf(Real), @sizeOf(RealBlob));
+    try testing.expectEqual(@alignOf(Real), @alignOf(RealBlob));
+}
+
+test "decNumber special-flag mask is INF|NAN|SNAN" {
+    try testing.expectEqual(@as(u8, DECINF | DECNAN | DECSNAN), DECSPECIAL);
 }

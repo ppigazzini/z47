@@ -89,10 +89,28 @@ def main() -> int:
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--json", action="store_true", help="emit the full census as JSON")
     ap.add_argument("--write-baseline", action="store_true", help="record totals to the baseline file")
+    ap.add_argument("--check", action="store_true", help="compare to baseline; exit 1 if any metric rose")
     args = ap.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
     result = scan(repo_root)
+
+    if args.check:
+        baseline = json.loads((repo_root / BASELINE_PATH).read_text(encoding="utf-8"))["totals"]
+        cur = result["totals"]
+        rc = 0
+        for key, ceiling in baseline.items():
+            have = cur.get(key, 0)
+            if have > ceiling:
+                print(f"IDIOM RATCHET REGRESSION: {key} = {have}, baseline ceiling {ceiling} -- "
+                      "a transliteration anti-pattern grew. Reduce it, or raise the ceiling with "
+                      "an explicit justification (--write-baseline).")
+                rc = 1
+            elif have < ceiling:
+                print(f"{key} = {have} (below ceiling {ceiling}) -- run --write-baseline to lock the gain")
+            else:
+                print(f"{key} = {have} (at ceiling)")
+        return rc
 
     if args.write_baseline:
         baseline = {"totals": result["totals"], "owner_count": result["owner_count"]}
