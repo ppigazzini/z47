@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/differentiate.c: numerical first/second
 // derivative commands (finite differences, ported from WP34s). UNCOVERED by the
@@ -235,10 +236,8 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessor: const_1on10
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1on10: u32 = 4520;
 inline fn const_1on10() *align(1) const real_t {
-    return @ptrCast(constants + OFF_const_1on10);
+    return consts.c4520();
 }
 
 // ---------------------------------------------------------------------------
