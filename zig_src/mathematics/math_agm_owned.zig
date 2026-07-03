@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_1e_37 = consts.const_1e_37;
+const const39_pi = consts.const39_pi;
 //
 // Zig owner for src/c47/mathematics/agm.c: the arithmetic-geometric mean, real
 // and complex, with the NORMAL / E (for the second elliptic integral) / STEP
@@ -45,18 +49,6 @@ inline fn const_1on2() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_1e_37: u32 = 4436;
-const OFF_const39_pi: u32 = 1848;
-inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
 
 extern fn realSetOne(value: *real_t) void;
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *align(1) const real_t) bool;
