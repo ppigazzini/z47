@@ -523,8 +523,13 @@ fn _integratorIteration() linksection(runtime.code_section) void {
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     } else {
+        // mirror of the solver's guard (Mihail, 9bb487e44 "Fix integral nested in
+        // SOLVE"); a nested program may repoint currentSolverProgram. Enables
+        // INT(INT).
+        const savedCurrentSolverProgram: u16 = currentSolverProgram;
         dynamicMenuItem = -1;
         execProgram(currentSolverProgram + FIRST_LABEL);
+        currentSolverProgram = savedCurrentSolverProgram;
     }
 }
 

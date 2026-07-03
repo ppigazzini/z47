@@ -301,8 +301,10 @@ static void _integratorIteration(void) {
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
   else {
+    uint16_t savedCurrentSolverProgram = currentSolverProgram;     // mirror of the solver's guard (Mihail, 9bb487e44 "Fix integral nested in SOLVE"); a nested program may repoint it. Enables INT(INT)
     dynamicMenuItem = -1;
     execProgram(currentSolverProgram + FIRST_LABEL);
+    currentSolverProgram = savedCurrentSolverProgram;
   }
                             if(ENABLE_INTEGRATOR_FILE_OUTPUT == 1) {
                               copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Y);

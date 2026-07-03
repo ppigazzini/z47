@@ -70,6 +70,20 @@ extern var numberOfPrograms: u16;
 extern var currentProgramNumber: u16;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern var ram: [*c]u32;
+extern var firstFreeProgramByte: [*c]u8;
+
+// Mirror of manage.c's boundProgramNameLength: clamp a program-step name length
+// to the bytes that remain before firstFreeProgramByte so a corrupt or imported
+// program cannot make a name read run past the program region.
+fn boundProgramNameLength(name_start: [*c]const u8, claimed: u8) u8 {
+    if (@intFromPtr(name_start) >= @intFromPtr(firstFreeProgramByte)) {
+        return 0;
+    }
+    if (claimed > @intFromPtr(firstFreeProgramByte) - @intFromPtr(name_start)) {
+        return @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(name_start));
+    }
+    return claimed;
+}
 
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
@@ -111,7 +125,7 @@ fn cStringLength(text: [*c]const u8) usize {
 
 fn copyLabelName(label_ptr: ?[*]u8) void {
     const ptr = label_ptr orelse return;
-    const len = ptr[0];
+    const len = boundProgramNameLength(ptr + 1, ptr[0]);
     _ = xcopy(tmpStringLabelOrVariableName, ptr + 1, len);
     tmpStringLabelOrVariableName[len] = 0;
 }
@@ -171,7 +185,7 @@ pub fn openSaveProgram(path: c_int) c_int {
 
 // Copies the i-th label's name into buf when it is a global label (step > 0),
 // returning false otherwise. Mirrors the per-label setup in fnSaveAllPrograms.
-pub fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
+pub fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
     // Product-only: the parity/fake harness does not provide labelList/xcopy, so
     // keep their references behind the comptime gate (as the other helpers do).
     if (use_fake_program_serialization_harness_surface) {
@@ -180,7 +194,7 @@ pub fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
     const labels = labelList orelse return false;
     if (labels[i].step <= 0) return false;
     const lp = labels[i].labelPointer orelse return false;
-    const len = lp[0];
+    const len = boundProgramNameLength(lp + 1, lp[0]);
     _ = xcopy(buf, lp + 1, len);
     buf[len] = 0;
     return true;

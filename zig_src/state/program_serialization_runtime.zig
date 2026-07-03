@@ -76,7 +76,7 @@ pub inline fn openSaveProgram(path: c_int) c_int {
     return io_owned.openSaveProgram(path);
 }
 
-pub inline fn globalLabelNameAt(i: u16, buf: *[16]u8) bool {
+pub inline fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
     return io_owned.globalLabelNameAt(i, buf);
 }
 
