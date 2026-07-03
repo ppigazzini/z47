@@ -74,12 +74,6 @@
     }
   }
 
-  static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
-    uint8_t stringLength = *(uint8_t *)(stringAddress++);
-    xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-  }
-
   static void _indirectRegister(uint8_t *paramAddress) {
     uint8_t opParam = *(uint8_t *)paramAddress;
     if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
@@ -92,7 +86,7 @@
 
   static void _indirectVariable(uint8_t *stringAddress) {
     calcRegister_t regist;
-    _getStringLabelOrVariableName(stringAddress);
+    getStringLabelOrVariableName(stringAddress);
     regist = findOrAllocateNamedVariable(tmpStringLabelOrVariableName);
     _clearVar(regist);
   }
@@ -218,7 +212,7 @@
           _clearVar(regKStoC(opParam));
         }
         else if(opParam == STRING_LABEL_VARIABLE) {
-          _getStringLabelOrVariableName(paramAddress);
+          getStringLabelOrVariableName(paramAddress);
           _clearVar(findOrAllocateNamedVariable(tmpStringLabelOrVariableName));
         }
         else if(paramMode == PARAM_COMPARE && (opParam == VALUE_0 || opParam == VALUE_1)) {
@@ -293,7 +287,9 @@
         case PTP_KEYG_KEYX: {
           uint8_t *secondParam = findKey2ndParam(step - 2);
           _processOp(step, op, PARAM_NUMBER_8);
-          _processOp(secondParam, *secondParam, PARAM_LABEL);
+          if(secondParam != NULL) { // findKey2ndParam returns NULL on a malformed/.END. step
+            _processOp(secondParam, *secondParam, PARAM_LABEL);
+          }
           return true;
         }
 

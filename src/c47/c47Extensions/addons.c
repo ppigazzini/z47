@@ -30,15 +30,6 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
-#if !defined(SAVE_SPACE_DM42_23_EDIT2)
-  static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
-    uint8_t stringLength = *(uint8_t *)(stringAddress++);
-    xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-  }
-#endif // !SAVE_SPACE_DM42_23_EDIT2
-
-
 #if !defined(SAVE_SPACE_DM42_22_EDIT1)
 void _fractionToString(calcRegister_t regist, char *displayString, int16_t *lessEqualGreater) {
   int16_t  sign;
@@ -688,7 +679,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             bool isDate = (opParam == STRING_DATE ? true : false);
 
             if((opParam == STRING_REAL34)|| (opParam == STRING_COMPLEX34))  {
-              _getStringLabelOrVariableName(&currentStep[2]);
+              getStringLabelOrVariableName(&currentStep[2]);
               strcpy(tempBuffer, tmpStringLabelOrVariableName);
             }
             else {

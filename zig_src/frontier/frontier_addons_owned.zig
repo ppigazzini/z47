@@ -618,6 +618,7 @@ extern var nimBufferDisplay: [*c]u8;
 extern var errorMessage: [*c]u8;
 extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var currentStep: [*c]u8;
 extern var cursorFont: ?*const font_t;
 
@@ -1185,10 +1186,17 @@ inline fn setVectorRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 // ===========================================================================
 
 // !SAVE_SPACE_DM42_23_EDIT2
+// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
+// this local copy carries the same clamp so a corrupt step's length byte cannot
+// read past the program region.
 fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    var p = stringAddress;
-    const stringLength: u8 = p[0];
-    p += 1;
+    const p = stringAddress + 1;
+    var stringLength: u8 = stringAddress[0];
+    if (@intFromPtr(p) >= @intFromPtr(firstFreeProgramByte)) {
+        stringLength = 0;
+    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(p)) {
+        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(p));
+    }
     _ = xcopy(tmpStringLabelOrVariableName, p, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }

@@ -84,10 +84,32 @@ bool_t checkOpCodeOfStep(const uint8_t *step, uint16_t op) {
 
 
 
+// A label or variable name stored in a program step is preceded by a one-byte
+// length that is taken from program memory on trust. A corrupt or crafted program
+// - a restored state file or imported program - can claim a name longer than the
+// bytes that remain. Clamp the claimed length to the span before
+// firstFreeProgramByte so a name read can never run past the program region.
+// When the name would start at or past firstFreeProgramByte there are no valid
+// bytes left (the scan can register a label in the gap up to the RAM end), so
+// return 0 rather than skipping the clamp and leaving the length unbounded.
+uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimedLength) {
+  if(nameStart >= firstFreeProgramByte) {
+    return 0;
+  }
+  if(claimedLength > firstFreeProgramByte - nameStart) {
+    return (uint8_t)(firstFreeProgramByte - nameStart);
+  }
+  return claimedLength;
+}
+
+
 void scanLabelsAndPrograms(void) {
 #if !defined(SAVE_SPACE_DM42_10)
   uint32_t stepNumber = 0;
   uint8_t *nextStep, *step = beginOfProgramMemory;
+  // Hard upper bound of the program region; a step that would advance past it has
+  // a corrupt length and must not be walked, or findNextStep reads out of bounds.
+  uint8_t * const programRegionEnd = (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS);
 
   freeC47Blocks(labelList, TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
   freeC47Blocks(programList, TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
@@ -98,13 +120,16 @@ void scanLabelsAndPrograms(void) {
     if(*step == ITM_LBL) { // LBL
       numberOfLabels++;
     }
+    nextStep = findNextStep(step);
+    if(nextStep == NULL || nextStep <= step || nextStep >= programRegionEnd) {
+      break; // malformed program: a step runs past program memory
+    }
     if(isAtEndOfProgram(step)) { // END
-      nextStep = findNextStep(step);
       if(!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
         numberOfPrograms++;
       }
     }
-    step = findNextStep(step);
+    step = nextStep;
   }
 
   labelList = allocC47Blocks(TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
@@ -129,6 +154,9 @@ void scanLabelsAndPrograms(void) {
   stepNumber = 1;
   while(!isAtEndOfPrograms(step)) { // .END.
     nextStep = findNextStep(step);
+    if(nextStep == NULL || nextStep <= step || nextStep >= programRegionEnd) {
+      break; // malformed program: stop before walking past program memory
+    }
     if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
       labelList[numberOfLabels].program = numberOfPrograms;
       if(*(step + 1) <= LAST_LOCAL_LABEL) { // Local label
@@ -180,12 +208,12 @@ void deleteStepsFromTo(uint8_t *from, uint8_t *to) {
 
 static void _removeLabelsAssignments() {
   int16_t i;
-  char label[15];
+  char label[256]; // a global label name is a 1-byte-length string, so up to 255 bytes
   uint8_t labelLength;
   for(i=0; i<numberOfLabels; i++) {
     if((labelList[i].program == currentProgramNumber) && (labelList[i].step > 0)) {
-      labelLength = labelList[i].labelPointer[0];
-      xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+      labelLength = boundProgramNameLength(labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+      xcopy(label, labelList[i].labelPointer + 1, labelLength);
       label[labelLength]=0;
       removeUserItemAssignments(ITM_XEQ, label);   // Remove label assignments
     }
@@ -1842,8 +1870,9 @@ calcRegister_t findNamedLabel(const char *labelName) {
 calcRegister_t findNamedLabelWithDuplicate(const char *labelName, int16_t dupNum) {
   for(uint16_t lbl = 0; lbl < numberOfLabels; lbl++) {
     if(labelList[lbl].step > 0) {
-      xcopy(tmpString, labelList[lbl].labelPointer + 1, *(labelList[lbl].labelPointer));
-      tmpString[*(labelList[lbl].labelPointer)] = 0;
+      uint8_t lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, *(labelList[lbl].labelPointer));
+      xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+      tmpString[lblNameLen] = 0;
       if(compareString(tmpString, labelName, CMP_BINARY) == 0) {
         if(dupNum <= 0) {
           return lbl + FIRST_LABEL;

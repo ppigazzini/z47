@@ -652,12 +652,36 @@ inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
 }
 
 // ===========================================================================
+// boundProgramNameLength (public) — src/c47/programming/manage.c
+// ===========================================================================
+// A label or variable name stored in a program step is preceded by a one-byte
+// length taken from program memory on trust. A corrupt or crafted program (a
+// restored state file or imported program) can claim a name longer than the
+// bytes that remain. Clamp the claimed length to the span before
+// firstFreeProgramByte so a name read can never run past the program region.
+// When the name would start at or past firstFreeProgramByte there are no valid
+// bytes left, so return 0 rather than leaving the length unbounded.
+pub export fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) callconv(.c) u8 {
+    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
+        return 0;
+    }
+    if (claimedLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
+        return @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
+    }
+    return claimedLength;
+}
+
+// ===========================================================================
 // scanLabelsAndPrograms (public) — THE test-reached fn.
 // ===========================================================================
 pub export fn scanLabelsAndPrograms() callconv(.c) void {
     var stepNumber: u32 = 0;
     var nextStep: [*c]u8 = undefined;
     var step: [*c]u8 = beginOfProgramMemory;
+    // Hard upper bound of the program region; a step that would advance past it
+    // has a corrupt length and must not be walked, or findNextStep reads out of
+    // bounds. (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS).
+    const programRegionEnd: [*c]u8 = ramEnd();
 
     freeC47Blocks(labelList, toBlocks(@sizeOf(labelList_t)) * numberOfLabels);
     freeC47Blocks(programList, toBlocks(@sizeOf(programList_t)) * numberOfPrograms);
@@ -668,13 +692,16 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         if (step[0] == ITM_LBL) { // LBL
             numberOfLabels += 1;
         }
+        nextStep = findNextStep(step);
+        if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
+            break; // malformed program: a step runs past program memory
+        }
         if (isAtEndOfProgram(step)) { // END
-            nextStep = findNextStep(step);
             if (!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
                 numberOfPrograms += 1;
             }
         }
-        step = findNextStep(step);
+        step = nextStep;
     }
 
     labelList = @ptrCast(@alignCast(allocC47Blocks(toBlocks(@sizeOf(labelList_t)) * numberOfLabels)));
@@ -699,6 +726,9 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     stepNumber = 1;
     while (!isAtEndOfPrograms(step)) { // .END.
         nextStep = findNextStep(step);
+        if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
+            break; // malformed program: stop before walking past program memory
+        }
         if (checkOpCodeOfStep(step, ITM_LBL)) { // LBL
             labelList[numberOfLabels].program = @intCast(numberOfPrograms);
             if (step[1] <= LAST_LOCAL_LABEL) { // Local label
@@ -748,11 +778,11 @@ pub export fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) callconv(.c) void {
 // _removeLabelsAssignments (static)
 fn _removeLabelsAssignments() void {
     var i: i16 = 0;
-    var label: [15]u8 = undefined;
+    var label: [256]u8 = undefined; // a global label name is a 1-byte-length string, so up to 255 bytes
     while (i < numberOfLabels) : (i += 1) {
         if ((labelList[@intCast(i)].program == currentProgramNumber) and (labelList[@intCast(i)].step > 0)) {
-            const labelLength = labelList[@intCast(i)].labelPointer[0];
-            _ = xcopy(&label, labelList[@intCast(i)].labelPointer + 1, labelList[@intCast(i)].labelPointer[0]);
+            const labelLength = boundProgramNameLength(labelList[@intCast(i)].labelPointer + 1, labelList[@intCast(i)].labelPointer[0]);
+            _ = xcopy(&label, labelList[@intCast(i)].labelPointer + 1, labelLength);
             label[labelLength] = 0;
             removeUserItemAssignments(ITM_XEQ, &label); // Remove label assignments
         }
@@ -2318,8 +2348,9 @@ pub export fn findNamedLabelWithDuplicate(labelName: [*c]const u8, dupNumIn: i16
     var lbl: u16 = 0;
     while (lbl < numberOfLabels) : (lbl += 1) {
         if (labelList[lbl].step > 0) {
-            _ = xcopy(tmpString, labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
-            tmpString[labelList[lbl].labelPointer[0]] = 0;
+            const lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
+            _ = xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+            tmpString[lblNameLen] = 0;
             if (compareString(tmpString, labelName, CMP_BINARY) == 0) {
                 if (dupNum <= 0) {
                     return @intCast(@as(i32, lbl) + FIRST_LABEL);

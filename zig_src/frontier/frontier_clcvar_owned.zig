@@ -140,6 +140,7 @@ inline fn cst34(offset: u32) *align(1) const real34_t {
 // ---------------------------------------------------------------------------
 extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var beginOfCurrentProgram: [*c]u8;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 
@@ -255,9 +256,18 @@ fn _clearVar(regist: calcRegister_t) void {
 // ===========================================================================
 // Static helpers
 // ===========================================================================
+// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
+// this local copy carries the same clamp so a corrupt step's length byte cannot
+// read past the program region.
 fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    const stringLength: u8 = stringAddress[0];
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(stringAddress + 1), stringLength);
+    var stringLength: u8 = stringAddress[0];
+    const nameStart: [*c]u8 = stringAddress + 1;
+    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
+        stringLength = 0;
+    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
+        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
+    }
+    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -428,7 +438,9 @@ fn _processOneStep(step_arg: [*c]u8) bool {
             PTP_KEYG_KEYX => {
                 const secondParam: [*c]u8 = findKey2ndParam(step - 2);
                 _processOp(step, op, PARAM_NUMBER_8);
-                _processOp(secondParam, secondParam[0], PARAM_LABEL);
+                if (secondParam != null) { // findKey2ndParam returns NULL on a malformed/.END. step
+                    _processOp(secondParam, secondParam[0], PARAM_LABEL);
+                }
                 return true;
             },
 

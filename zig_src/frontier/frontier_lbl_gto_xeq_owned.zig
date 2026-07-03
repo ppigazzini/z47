@@ -307,6 +307,7 @@ extern var currentLocalFlags: ?*localFlags_t;
 extern var currentLocalRegisters: ?[*]register_header_t;
 
 extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var errorMessage: [*c]u8;
 
 extern var ctxtReal34: anyopaque;
@@ -782,9 +783,18 @@ pub export fn fnStopProgram(unusedButMandatoryParameter: u16) callconv(.c) void 
 // ===========================================================================
 // Static helpers
 // ===========================================================================
+// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
+// this local copy carries the same clamp so a corrupt step's length byte cannot
+// read past the program region.
 fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    const stringLength: u8 = stringAddress[0];
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(stringAddress + 1), stringLength);
+    var stringLength: u8 = stringAddress[0];
+    const nameStart: [*c]u8 = stringAddress + 1;
+    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
+        stringLength = 0;
+    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
+        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
+    }
+    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 

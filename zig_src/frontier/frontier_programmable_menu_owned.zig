@@ -80,6 +80,7 @@ const INDIRECT_VARIABLE: u8 = 255;
 
 const ERROR_NONE: u8 = 0;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 
 const REGISTER_X: calcRegister_t = 100;
@@ -122,6 +123,7 @@ const STD_RIGHT_ARROW = "\xa1\x92";
 // Globals
 // ---------------------------------------------------------------------------
 extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var tmpString: [*c]u8;
 extern var currentStep: [*c]u8;
 extern var lastErrorCode: u8;
@@ -213,10 +215,17 @@ inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
 // ===========================================================================
 // _getStringLabelOrVariableName (static in the C)
 // ===========================================================================
+// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
+// this local copy carries the same clamp so a corrupt step's length byte cannot
+// read past the program region.
 fn _getStringLabelOrVariableName(stringAddress_arg: [*c]u8) void {
-    var stringAddress = stringAddress_arg;
-    const stringLength: u8 = stringAddress[0];
-    stringAddress += 1;
+    const stringAddress = stringAddress_arg + 1;
+    var stringLength: u8 = stringAddress_arg[0];
+    if (@intFromPtr(stringAddress) >= @intFromPtr(firstFreeProgramByte)) {
+        stringLength = 0;
+    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(stringAddress)) {
+        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(stringAddress));
+    }
     _ = xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
@@ -298,6 +307,11 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
 pub export fn fnKeyGtoXeq(keyNum: u16) callconv(.c) void {
     const secondParam: [*c]u8 = findKey2ndParam(currentStep);
     var label: u16 = undefined;
+
+    if (secondParam == null) { // findKey2ndParam returns NULL on a malformed/.END. step
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    }
 
     const opParam: [*c]u8 = secondParam + 1;
     label = _get2ndParamOfKey(opParam);

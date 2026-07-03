@@ -215,6 +215,7 @@ extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern var aimBuffer: [*c]u8;
 extern var currentStep: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var calcMode: u8;
 extern var decodedIntegerBase: u32;
 extern var currentAngularMode: angularMode_t;
@@ -353,8 +354,20 @@ inline fn groupRightDisabled() bool {
 // Static helpers
 // ===========================================================================
 fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    const stringLength: u8 = stringAddress[0];
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(stringAddress + 1), stringLength);
+    var stringLength: u8 = stringAddress[0];
+    const nameStart: [*c]u8 = stringAddress + 1;
+    // The length byte is taken from the program step on trust. A corrupt step can
+    // claim a name longer than the bytes that remain in program memory, so clamp
+    // it to firstFreeProgramByte before xcopy reads the name; without this a
+    // damaged imported program would read past the program region. When the name
+    // would start at or past firstFreeProgramByte there are no valid bytes left,
+    // so read nothing rather than skipping the clamp and reading unbounded.
+    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
+        stringLength = 0;
+    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
+        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
+    }
+    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -576,12 +589,16 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
 
         PARAM_KEYG_KEYX => {
             const secondParam: [*c]u8 = findKey2ndParam(paramAddress - 3);
-            decodeOp(secondParam + 1, secondParam[0], @ptrCast(&indexOfItems[secondParam[0]].itemCatalogName), PARAM_LABEL, indexOfItems[secondParam[0]].tamMinMax & TAM_MAX_MASK);
-            _ = xcopy(@ptrCast(tmpString + TMP_STR_LENGTH / 2), @ptrCast(tmpString), @intCast(stringByteLength(tmpString) + 1));
-            decodeOp(paramAddress - 1, secondParam[0], op, PARAM_NUMBER_8, 21);
-            tmpString[@intCast(stringByteLength(tmpString) + 1)] = 0;
-            tmpString[@intCast(stringByteLength(tmpString))] = ' ';
-            _ = xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
+            if (secondParam != null) {
+                decodeOp(secondParam + 1, secondParam[0], @ptrCast(&indexOfItems[secondParam[0]].itemCatalogName), PARAM_LABEL, indexOfItems[secondParam[0]].tamMinMax & TAM_MAX_MASK);
+                _ = xcopy(@ptrCast(tmpString + TMP_STR_LENGTH / 2), @ptrCast(tmpString), @intCast(stringByteLength(tmpString) + 1));
+                decodeOp(paramAddress - 1, secondParam[0], op, PARAM_NUMBER_8, 21);
+                tmpString[@intCast(stringByteLength(tmpString) + 1)] = 0;
+                tmpString[@intCast(stringByteLength(tmpString))] = ' ';
+                _ = xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
+            } else {
+                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_KEYG_KEYX, %s has no valid second key parameter!", op);
+            }
         },
 
         PARAM_SKIP_BACK => {
@@ -754,7 +771,10 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
             var gap: u8 = groupWidthLeft();
             var dispStringPtr: [*c]u8 = tmpString;
             var sourceStringPtr: [*c]u8 = tmpStringLabelOrVariableName;
-            const base: u8 = literalAddress[0];
+            var base: u8 = literalAddress[0];
+            if (base > 16) { // bases above 16 are invalid; baseChars[] only spans 0..16
+                base = 0;
+            }
             decodedIntegerBase = base;
             getStringLabelOrVariableName(literalAddress + 1);
 
