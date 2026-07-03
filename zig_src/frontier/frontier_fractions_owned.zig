@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_1 = consts.const_1;
+const const_3on2 = consts.const_3on2;
+const const_9999 = consts.const_9999;
+const const_1on2 = consts.const_1on2;
 //
 // Zig owner for src/c47/fractions.c: fnDenMax and the fraction() decomposition
 // engine used by the display layer. This is a faithful, line-by-line port of
@@ -54,10 +59,6 @@ const DEC_ROUND_DOWN: c_int = 5;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1on2 = 4580;
-const OFF_const_1 = 4856;
-const OFF_const_3on2 = 4868;
-const OFF_const_9999 = 5496;
 
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
@@ -231,7 +232,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
     var delta: real_t = undefined;
     var temp3: real_t = undefined;
     realCopy(&temp0, &posr);
-    realCopy(cstR(OFF_const_9999), &delta); // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
+    realCopy(const_9999(), &delta); // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
     //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
     //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
     var ip: u32 = undefined;
@@ -248,7 +249,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
     uInt32ToReal(denMaxLocal, &factorOfOneOnDenMax);
 
     // check if the fraction is lower than 0.5/DMX
-    realDivide(cstR(OFF_const_1on2), &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
+    realDivide(const_1on2(), &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
     if (realCompareLessThan(&temp0, &checkPoint)) {
         numer.* = 0;
         if (getSystemFlag(FLAG_DENANY)) {
@@ -265,7 +266,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
 
     if (!validResult) {
         // check if the fraction is lower than 1.5/DMX
-        realDivide(cstR(OFF_const_3on2), &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
+        realDivide(const_3on2(), &factorOfOneOnDenMax, &checkPoint, &ctxtReal39);
         if (realCompareLessThan(&temp0, &checkPoint)) {
             numer.* = 1;
             if (getSystemFlag(FLAG_DENANY)) {
@@ -283,7 +284,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
 
     if (!validResult) {
         // check if fraction is a simple integer/DMX, fast track, only integer GCD needed, not Farey fractions which run to n = DMX loops if the fraction is low
-        realDivide(cstR(OFF_const_1), &factorOfOneOnDenMax, &factorOfOneOnDenMax, &ctxtReal51);
+        realDivide(const_1(), &factorOfOneOnDenMax, &factorOfOneOnDenMax, &ctxtReal51);
         realDivide(&temp0, &factorOfOneOnDenMax, &factorOfOneOnDenMax, &ctxtReal51);
         var factorOfOneOnDenMax34: real34_t = undefined;
         realToReal34(&factorOfOneOnDenMax, &factorOfOneOnDenMax34);
@@ -400,7 +401,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
         denom.* = denMaxLocal;
 
         uInt32ToReal(denMaxLocal, &delta);
-        realFMA(&delta, &temp0, cstR(OFF_const_1on2), &temp3, &ctxtReal34);
+        realFMA(&delta, &temp0, const_1on2(), &temp3, &ctxtReal34);
         ip = realToUint32C47(&temp3, null);
         numer.* = ip;
     }
@@ -419,7 +420,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
         while (i <= denMaxLocal) : (i += 1) {
             if (denMaxLocal % i == 0) {
                 uInt32ToReal(i, &temp4);
-                realFMA(&temp4, &temp0, cstR(OFF_const_1on2), &temp3, &ctxtReal34);
+                realFMA(&temp4, &temp0, const_1on2(), &temp3, &ctxtReal34);
                 ip = realToUint32C47(&temp3, null);
                 numer.* = ip;
 
