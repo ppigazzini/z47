@@ -35,7 +35,6 @@ const realContext_t = abi.RealContext;
 
 extern var ctxtReal39: realContext_t;
 // `constants` is an extern byte array; @extern yields a pointer to its base.
-const constants = @extern([*]const u8, .{ .name = "constants" });
 
 extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
