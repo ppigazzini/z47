@@ -1,4 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const__1 = consts.const__1;
+const const_1 = consts.const_1;
+const const_2 = consts.const_2;
+const const_1on2 = consts.const_1on2;
+const const_10 = consts.const_10;
+const const_360 = consts.const_360;
+const const_400 = consts.const_400;
+const const1071_pi = consts.const1071_pi;
+const const2139_2pi = consts.const2139_2pi;
 //
 // Zig owner for src/c47/mathematics/xfn.c: the extended 1000-digit X.FN engine
 // (OPTION_XFN_1000). Exports the xfn.h surface: registerFMAOutputString, fnXXfn
@@ -288,46 +299,6 @@ inline fn setSystemFlagAslift() void {
 }
 
 // Blob constants.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const__1: u32 = 4376;
-const OFF_const_1: u32 = 4856;
-const OFF_const_2: u32 = 4928;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_10: u32 = 5132;
-const OFF_const_360: u32 = 5356;
-const OFF_const_400: u32 = 5368;
-const OFF_const1071_pi: u32 = 9932;
-const OFF_const2139_2pi: u32 = 10656;
-inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
-}
-inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_10() *align(1) const real_t {
-    return cstR(OFF_const_10);
-}
-inline fn const_360() *align(1) const real_t {
-    return cstR(OFF_const_360);
-}
-inline fn const_400() *align(1) const real_t {
-    return cstR(OFF_const_400);
-}
-inline fn const1071_pi() *align(1) const real_t {
-    return cstR(OFF_const1071_pi);
-}
-inline fn const2139_2pi() *align(1) const real_t {
-    return cstR(OFF_const2139_2pi);
-}
 
 // modulus(a)
 inline fn modulus(a: angularMode_t) *align(1) const real_t {
