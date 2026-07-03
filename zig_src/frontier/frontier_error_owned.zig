@@ -1,4 +1,5 @@
 const std = @import("std");
+const consts = abi.constants;
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/error.c: the error-display core. displayCalcErrorMessage
@@ -88,12 +89,7 @@ const DEC_ROUND_DOWN: c_int = 5;
 // ---------------------------------------------------------------------------
 // Constant blob (shared `constants` symbol by byte offset).
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_1 = 16312;
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
-const const34_1 = cst34(OFF_const34_1);
+const const34_1 = consts.const34_1();
 
 // const_NaN is a `const real_t *` global pointer (the address is the value).
 extern var const_NaN: *const real_t;
