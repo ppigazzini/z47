@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const cst34 = consts.cst34;
 //
 // Zig owner for src/c47/timer.c: the kb-timer subsystem and the STOPW timer
 // application. Faithful, line-by-line port of the C.
@@ -160,9 +162,6 @@ extern const numericFont: font_t;
 
 const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cst(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
-inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);
 }
 const const_3600 = cst(OFF_const_3600);
