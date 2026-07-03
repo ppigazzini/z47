@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const39_pi = consts.const39_pi;
+const const39_piOn2 = consts.const39_piOn2;
+const const_8 = consts.const_8;
+const const_4 = consts.const_4;
+const const_3 = consts.const_3;
+const const39_ln2 = consts.const39_ln2;
 //
 // Zig owner for src/c47/mathematics/zeta.c: the Riemann zeta function, real and
 // complex (the complex path is Jean-Marc Baillard's algorithm). Faithful
@@ -49,27 +57,6 @@ inline fn const_1on2() *const real_t {
 const constants = @extern([*]const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *align(1) const real_t {
     return @ptrCast(constants + off);
-}
-const OFF_const_3: u32 = 5012;
-const OFF_const_8: u32 = 5108;
-const OFF_const39_piOn2: u32 = 4880;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const39_ln2: u32 = 4628;
-const OFF_const_4: u32 = 5024;
-inline fn const_3() *align(1) const real_t {
-    return cstR(OFF_const_3);
-}
-inline fn const_8() *align(1) const real_t {
-    return cstR(OFF_const_8);
-}
-inline fn const39_piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_piOn2);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
-inline fn const39_ln2() *align(1) const real_t {
-    return cstR(OFF_const39_ln2);
 }
 
 // real ops accepting an unaligned (*align(1)) const operand, for the blob
@@ -155,7 +142,7 @@ fn zeta_calc_complex(reg4: *real_t, reg5: *real_t, reg6: *real_t, reg7: *real_t,
     realDivide(&p, &q, &p, realContext);
     realToIntegralValue(&p, &p, DEC_ROUND_DOWN, realContext);
     realAddB(&p, const_1(), &p, realContext);
-    realMul(&p, cstR(OFF_const_4), &p, realContext); // for extra digits we have
+    realMul(&p, const_4(), &p, realContext); // for extra digits we have
     realCopy(&p, &reg0);
     realSetOne(&reg1);
     realCopy(&p, &reg2);

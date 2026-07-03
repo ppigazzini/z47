@@ -349,3 +349,6 @@ pub inline fn const_3on2() *const Real {
 pub inline fn const_9999() *const Real {
     return at(5496);
 }
+pub inline fn const39_ln2() *const Real {
+    return at(4628);
+}
