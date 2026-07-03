@@ -343,3 +343,9 @@ pub inline fn const_2p63() *const Real {
 pub inline fn const34_0() *align(1) const Real34 {
     return at34(16200);
 }
+pub inline fn const_3on2() *const Real {
+    return at(4868);
+}
+pub inline fn const_9999() *const Real {
+    return at(5496);
+}
