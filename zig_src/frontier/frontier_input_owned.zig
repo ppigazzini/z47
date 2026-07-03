@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/programming/input.c: fnInput, fnVarMnu, fnPause, fnKey,
 // fnKeyType, fnPutKey, fnEntryQ and the file-static _getKeyArg. This is a
@@ -98,8 +99,6 @@ const STAT_PGM_END: u32 = 1 << 9;
 const STAT_CLK_WKUP_FLAG: u32 = 1 << 12;
 
 // constant blob offsets (constantPointers.h).
-const OFF_const34_1: u32 = 16312;
-const OFF_const34_65535: u32 = 16792;
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -117,12 +116,8 @@ extern var screenUpdatingMode: u8;
 extern var errorMessage: [*c]u8;
 extern var ctxtReal34: realContext_t;
 
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
-const const34_1 = cst34(OFF_const34_1);
-const const34_65535 = cst34(OFF_const34_65535);
+const const34_1 = consts.const34_1();
+const const34_65535 = consts.const34_65535();
 
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
