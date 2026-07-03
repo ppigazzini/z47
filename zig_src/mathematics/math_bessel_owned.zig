@@ -1,4 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const__1 = consts.const__1;
+const const_1on4 = consts.const_1on4;
+const const_1on2 = consts.const_1on2;
+const const_3 = consts.const_3;
+const const_4 = consts.const_4;
+const const_5 = consts.const_5;
+const const_8 = consts.const_8;
+const const_24 = consts.const_24;
+const const_90 = consts.const_90;
+const const39_pi = consts.const39_pi;
+const const39_piOn4 = consts.const39_piOn4;
+const const75_piOn2 = consts.const75_piOn2;
+const const75_2pi = consts.const75_2pi;
+const const39_gammaEM = consts.const39_gammaEM;
+const const39_egamma = consts.const39_egamma;
 //
 // Zig owner for src/c47/mathematics/bessel.c: the Bessel J and Y commands
 // (fnBesselJ / fnBesselY) plus the public WP34S_BesselJ / WP34S_BesselY
@@ -99,70 +116,6 @@ inline fn const_2() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const__1: u32 = 4376;
-const OFF_const_1on4: u32 = 4532;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_3: u32 = 5012;
-const OFF_const_4: u32 = 5024;
-const OFF_const_5: u32 = 5072;
-const OFF_const_8: u32 = 5108;
-const OFF_const_24: u32 = 5168;
-const OFF_const_90: u32 = 7544;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const39_piOn4: u32 = 4736;
-const OFF_const75_piOn2: u32 = 7472;
-const OFF_const75_2pi: u32 = 7640;
-const OFF_const39_gammaEM: u32 = 1256;
-const OFF_const39_egamma: u32 = 4592;
-inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
-}
-inline fn const_1on4() *align(1) const real_t {
-    return cstR(OFF_const_1on4);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_3() *align(1) const real_t {
-    return cstR(OFF_const_3);
-}
-inline fn const_4() *align(1) const real_t {
-    return cstR(OFF_const_4);
-}
-inline fn const_5() *align(1) const real_t {
-    return cstR(OFF_const_5);
-}
-inline fn const_8() *align(1) const real_t {
-    return cstR(OFF_const_8);
-}
-inline fn const_24() *align(1) const real_t {
-    return cstR(OFF_const_24);
-}
-inline fn const_90() *align(1) const real_t {
-    return cstR(OFF_const_90);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
-inline fn const39_piOn4() *align(1) const real_t {
-    return cstR(OFF_const39_piOn4);
-}
-inline fn const75_piOn2() *align(1) const real_t {
-    return cstR(OFF_const75_piOn2);
-}
-inline fn const75_2pi() *align(1) const real_t {
-    return cstR(OFF_const75_2pi);
-}
-inline fn const39_gammaEM() *align(1) const real_t {
-    return cstR(OFF_const39_gammaEM);
-}
-inline fn const39_egamma() *align(1) const real_t {
-    return cstR(OFF_const39_egamma);
-}
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
