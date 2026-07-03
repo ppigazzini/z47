@@ -43,6 +43,7 @@ zig_build/tests/math_wrappers/random_fake_runtime_helpers.c
 zig_build/tests/memory/memory_fake_runtime.c
 zig_build/tests/memory/memory_oracle.c
 zig_build/tests/memory/memory_parity.c
+zig_build/tests/pgm_run/pgm_run_harness.c
 zig_build/tests/program_serialization/program_serialization_fake_runtime.c
 zig_build/tests/program_serialization/program_serialization_oracle.c
 zig_build/tests/program_serialization/program_serialization_parity.c
