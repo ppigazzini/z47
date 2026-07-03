@@ -34,11 +34,8 @@ const bool_t = bool;
 const angularMode_t = c_int;
 const videoMode_t = c_int;
 const font_t = opaque {};
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const softmenu_t = abi.Softmenu;
 const softmenuStack_t = extern struct {
     softmenuId: i16,
     firstItem: i16,

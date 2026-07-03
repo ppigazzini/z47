@@ -66,11 +66,7 @@ const labelList_t = extern struct {
     labelPointer: [*c]u8,
     instructionPointer: [*c]u8,
 };
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const item_t = extern struct {
     func: ?*const fn (u16) callconv(.c) void,
     param: u16,

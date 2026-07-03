@@ -141,11 +141,7 @@ const longInteger_t = [1]mpz_struct;
 const calcKey_t = abi.CalcKey;
 
 // softmenu_t {i16 menuItem, i16 numItems, ptr softkeyItem}
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 // softmenuStack_t {i16 softmenuId, i16 firstItem, i16 userMenuId, u8 calcMode}
 const softmenuStack_t = extern struct {
     softmenuId: i16,

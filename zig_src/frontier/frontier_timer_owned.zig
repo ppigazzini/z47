@@ -112,11 +112,7 @@ const vmNormal: c_int = 0;
 // ---------------------------------------------------------------------------
 // softmenu / softmenuStack structs (typeDefinitions.h)
 // ---------------------------------------------------------------------------
-const softmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    softkeyItem: [*c]const i16,
-};
+const softmenu_t = abi.Softmenu;
 const softmenuStack_t = extern struct {
     softmenuId: i16,
     firstItem: i16,
