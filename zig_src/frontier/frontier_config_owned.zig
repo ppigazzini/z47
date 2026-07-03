@@ -82,15 +82,7 @@ const DECNUMUNITS = 25;
 const real34_t = extern struct { bytes: [16]u8 };
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 
 const registerHeader_t = extern struct { descriptor: u32 };
 const reservedVariableHeader_t = extern struct {

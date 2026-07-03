@@ -59,15 +59,7 @@ pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 pub const real_t = abi.Real;
 
-pub const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: rounding_t,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+pub const realContext_t = abi.RealContext;
 
 pub extern var ctxtReal39: realContext_t;
 pub extern var ctxtReal51: realContext_t;

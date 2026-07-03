@@ -57,15 +57,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.RealBlob; // decNumber, zero-init here
 const real34_t = extern struct { bytes: [16]u8 align(4) }; // decQuad, zero-init here
 
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-}; // size 28, align 4
+const realContext_t = abi.RealContext; // size 28, align 4
 
 const subroutineLevels_t = extern struct {
     numberOfSubroutineLevels: u16,

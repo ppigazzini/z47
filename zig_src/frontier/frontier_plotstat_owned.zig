@@ -70,15 +70,7 @@ comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");
 }
 const real34_t = extern struct { bytes: [16]u8 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 
 const matrixHeader_t = packed struct(u32) {
     matrixRows: u12,

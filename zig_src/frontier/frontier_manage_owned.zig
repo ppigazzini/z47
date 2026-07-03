@@ -111,15 +111,8 @@ const tamState_t = extern struct {
     keyIndirect: bool_t,
     keyInputFinished: bool_t,
 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const realContext_t = abi.RealContext;
 
 // ---------------------------------------------------------------------------
 // Constants (probed from c47.h via a preprocessor probe)

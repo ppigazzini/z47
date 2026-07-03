@@ -28,15 +28,7 @@ const real34_t = extern struct {
 };
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: u32,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const realContext_t = abi.RealContext;
 
 const calcRegister_t = runtime.calcRegister_t;
 const bool_t = bool;
