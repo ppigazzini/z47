@@ -35,3 +35,11 @@ pub inline fn root3on2() *align(1) const Real {
 pub inline fn const1e_37() *align(1) const Real {
     return at(4436);
 }
+
+// --- math_gd ---
+pub inline fn const39piOn2() *align(1) const Real {
+    return at(4880);
+}
+pub inline fn const39piOn4() *align(1) const Real {
+    return at(4736);
+}
