@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/sumprod.c: the programmable Sigma / Pi
 // (fnProgrammableSum / fnProgrammableProduct). This file is UNCOVERED by the
@@ -110,25 +111,15 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 // Constants blob accessors
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-inline fn cst34(comptime off: u32) *align(1) const real34_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const_1: u32 = 4856;
-const OFF_const34_0: u32 = 16200;
 
 inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
+    return consts.c1708();
 }
 inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
+    return consts.c4856();
 }
 inline fn const34_0() *align(1) const real34_t {
-    return cst34(OFF_const34_0);
+    return consts.q16200();
 }
 
 // ---------------------------------------------------------------------------
