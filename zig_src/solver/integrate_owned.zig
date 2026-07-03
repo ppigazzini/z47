@@ -1,4 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const39_pi = consts.const39_pi;
+const const__1 = consts.const__1;
+const const_1e_16 = consts.const_1e_16;
+const const_1on2 = consts.const_1on2;
+const const_1 = consts.const_1;
+const const39_piOn2 = consts.const39_piOn2;
+const const_2 = consts.const_2;
+const const39_ln10 = consts.const39_ln10;
+const const_4 = consts.const_4;
+const const_7 = consts.const_7;
+const const_8 = consts.const_8;
+const const_10 = consts.const_10;
+const const_1e_32 = consts.const_1e_32;
+const const_1e_6143 = consts.const_1e_6143;
 //
 // Zig owner for src/c47/solver/integrate.c: numerical integration (double
 // exponential, WP34s-derived). UNCOVERED by the testSuite (no direct gate;
@@ -133,71 +149,7 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 // ---------------------------------------------------------------------------
 // Constants blob accessors (offsets verified vs generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const__1: u32 = 4376;
-const OFF_const_1e_16: u32 = 4484;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_1: u32 = 4856;
-const OFF_const39_piOn2: u32 = 4880;
-const OFF_const_2: u32 = 4928;
-const OFF_const39_ln10: u32 = 4940;
-const OFF_const_4: u32 = 5024;
-const OFF_const_7: u32 = 5096;
-const OFF_const_8: u32 = 5108;
-const OFF_const_10: u32 = 5132;
-const OFF_const_1e_32: u32 = 5708;
-const OFF_const_1e_6143: u32 = 5840;
 
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
-inline fn const__1() *align(1) const real_t {
-    return cstR(OFF_const__1);
-}
-inline fn const_1e_16() *align(1) const real_t {
-    return cstR(OFF_const_1e_16);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const39_piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_piOn2);
-}
-inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
-}
-inline fn const39_ln10() *align(1) const real_t {
-    return cstR(OFF_const39_ln10);
-}
-inline fn const_4() *align(1) const real_t {
-    return cstR(OFF_const_4);
-}
-inline fn const_7() *align(1) const real_t {
-    return cstR(OFF_const_7);
-}
-inline fn const_8() *align(1) const real_t {
-    return cstR(OFF_const_8);
-}
-inline fn const_10() *align(1) const real_t {
-    return cstR(OFF_const_10);
-}
-inline fn const_1e_32() *align(1) const real_t {
-    return cstR(OFF_const_1e_32);
-}
-inline fn const_1e_6143() *align(1) const real_t {
-    return cstR(OFF_const_1e_6143);
-}
 
 // ---------------------------------------------------------------------------
 // decNumber primitives / real_t macro reproductions. The ones used inline as
