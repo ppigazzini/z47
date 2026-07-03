@@ -102,6 +102,8 @@ extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(str: [*c]const u8) usize;
 extern fn liftStack() void;
 extern fn saveLastX() bool;
+extern fn fnSwapX(regist: u16) void;
+extern fn elementwiseRema_UInt16(f: ?*const fn (u16) callconv(.c) void, param: u16) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
 extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
@@ -287,7 +289,60 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
 // ===========================================================================
 // fnXToAlpha
 // ===========================================================================
-pub export fn fnXToAlpha(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, similar to the hp-42s ATOX function
+    if (!saveLastX()) {
+        return;
+    }
+
+    switch (getRegisterDataType(REGISTER_X)) {
+        dtLongInteger, dtReal34, dtShortInteger => {
+            _doXToAlpha(regist);
+            return;
+        },
+        dtString => {
+            _readDestinationRegister(regist);
+            if (stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+                displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+                if (comptime extra_info) {
+                    _ = sprintf(errorMessage, "the resulting string would be %d (%d + %d) characters long. Maximum is %d", stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)), stringGlyphLength(tmpString), stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING);
+                    moreInfoOnError("In function fnXToAlpha:", errorMessage);
+                }
+            } else {
+                var l: i32 = stringByteLength(tmpString);
+                _ = xcopy(tmpString + @as(usize, @intCast(l)), regString(REGISTER_X), @intCast(stringByteLength(regString(REGISTER_X)) + 1));
+                l = stringByteLength(tmpString);
+                reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
+                _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
+            }
+            return;
+        },
+        dtReal34Matrix => {
+            if (regist != REGISTER_X) {
+                elementwiseRema_UInt16(&_doXToAlpha, regist);
+            } else { // X is the destination: return in X a string of the character codes from the matrix in X
+                reallocateRegister(REGISTER_L, dtString, 1, amNone);
+                _ = xcopy(regString(REGISTER_L), "", 1);
+                elementwiseRema_UInt16(&_doXToAlpha, @intCast(REGISTER_L));
+                fnSwapX(REGISTER_L);
+            }
+            return;
+        },
+        else => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "cannot x\xa1\x92\x83\xb1 when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                moreInfoOnError("In function fnXToAlpha:", errorMessage);
+            }
+            return;
+        },
+    }
+}
+
+// fnXToAlphaOld (deprecated x→α, items opcode XtoALPHA_OLD=1645) —
+// master fd83b4a4 kept the old behaviour under this name (identical to the
+// historical fnXToAlpha body above). The NEW master fnXToAlpha (ATOX) is a
+// separate deferred port; until then opcode 2785 also runs the old logic.
+pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void { // deprecated version, backward compatibility only
     _ = unusedButMandatoryParameter;
     var lgInt: longInteger_t = undefined;
     var char1: u8 = undefined;
@@ -348,14 +403,6 @@ pub export fn fnXToAlpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     regString(REGISTER_X)[0] = char1;
     (regString(REGISTER_X) + 1)[0] = char2;
     (regString(REGISTER_X) + 2)[0] = 0;
-}
-
-// fnXToAlphaOld (deprecated x→α, items opcode XtoALPHA_OLD=1645) —
-// master fd83b4a4 kept the old behaviour under this name (identical to the
-// historical fnXToAlpha body above). The NEW master fnXToAlpha (ATOX) is a
-// separate deferred port; until then opcode 2785 also runs the old logic.
-pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void {
-    fnXToAlpha(unusedButMandatoryParameter);
 }
 
 // ===========================================================================
@@ -1339,7 +1386,7 @@ fn _readDestinationRegister(regist: u16) void {
 }
 
 // _doXToAlpha: append the alpha char encoded by X's numeric value to `regist`.
-fn _doXToAlpha(regist: u16) void {
+fn _doXToAlpha(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
     var char1: u8 = undefined;
     var char2: u8 = undefined;
