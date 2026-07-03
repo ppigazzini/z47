@@ -37,7 +37,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 const code_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

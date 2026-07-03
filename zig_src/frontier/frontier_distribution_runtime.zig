@@ -17,7 +17,7 @@ const extra_info_on_calc_error: bool = frontier_build_options.extra_info_on_calc
 // 704 KB main FLASH. Host and DMCP5 keep the normal code section (mach-o needs a
 // SEG,sect form). Owners tag their fn declarations `linksection(dr.code_section)`.
 pub const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

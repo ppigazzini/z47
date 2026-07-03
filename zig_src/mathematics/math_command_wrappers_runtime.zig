@@ -13,7 +13,7 @@ pub const wp34s_mod_small_buffers = @hasDecl(build_options, "wp34s_mod_small_buf
 // normal section (no-op there). Same mechanism as the dateTime owner.
 const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
 pub const code_section = if (dm42_pkg_xip)
-    ".qspi"
+    ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
     "__TEXT,__text"
 else
@@ -28,7 +28,7 @@ else
 // QSPI/XIP firmware and ELF .text resolve the pointers at link time (no runtime
 // rebase), so those targets keep the code section.
 pub const code_data_section = if (dm42_pkg_xip)
-    ".qspi"
+    ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
     "__DATA_CONST,__const"
 else

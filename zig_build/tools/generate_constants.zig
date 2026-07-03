@@ -192,7 +192,7 @@ const Generator = struct {
 
         var real_t_array = try std.ArrayList(u8).initCapacity(allocator, 0);
         errdefer real_t_array.deinit(allocator);
-        try real_t_array.appendSlice(allocator, "\nTO_QSPI const real_t *realtConstants[NOUC] = {\n");
+        try real_t_array.appendSlice(allocator, "\nTO_QSPI const real_t * const realtConstants[NOUC] = {\n");
 
         return .{
             .allocator = allocator,

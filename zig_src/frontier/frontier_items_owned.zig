@@ -49,7 +49,7 @@ const ir_printing: bool = frontier_build_options.ir_printing;
 const option_xfn_1000: bool = !(dmcp_build and old_hw);
 
 const code_data_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__DATA_CONST,__const"
 else
