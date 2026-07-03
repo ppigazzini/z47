@@ -61,14 +61,14 @@ const option_xfn_1000: bool = !(dmcp_build and old_hw);
 const option_tvm_amort: bool = !(dmcp_build and old_hw);
 
 const code_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else
     ".text";
 
 const code_data_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__DATA_CONST,__const"
 else

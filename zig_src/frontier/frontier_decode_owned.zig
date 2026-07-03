@@ -23,7 +23,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // TO_QSPI data tables go to the executable QSPI region on old_hw DM42.
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

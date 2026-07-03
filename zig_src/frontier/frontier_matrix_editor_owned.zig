@@ -53,7 +53,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
 const code_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

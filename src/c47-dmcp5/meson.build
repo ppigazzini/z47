@@ -6,6 +6,9 @@ dmcp_cargs = [
   '-fno-exceptions',                 # added in symmetry with DM42
   '-fno-unwind-tables',              # added in symmetry with DM42
   '-fno-asynchronous-unwind-tables', # added in symmetry with DM42
+  '-ffunction-sections',             # needed so prog_info lands in .rodata.prog_info (KEEP'd at offset 0); LTO otherwise merges .rodata and breaks the loader magic
+  '-fdata-sections',                 # ditto - matches the DMCP5 SDK reference build flags
+  '-flto',
 ]
 
 dmcp_linkargs = [
@@ -19,8 +22,12 @@ dmcp_linkargs = [
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
-  '-T' + meson.current_source_dir() + '/stm32_program.ld'
+  '-T' + meson.current_source_dir() + '/stm32_program.ld',
 #  '-Wl,--strip-all',
+  '-Wl,-u,prog_info',
+  '-ffunction-sections',             # passed at link too so the LTO code-gen (LTRANS) pass emits per-symbol sections
+  '-fdata-sections',
+  '-flto',
 ]
 
 gmp_build_dir = meson.project_build_root() / 'subprojects' / 'gmp-6.2.1' / 'build'

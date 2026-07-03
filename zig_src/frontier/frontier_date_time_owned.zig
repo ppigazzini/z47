@@ -28,7 +28,7 @@ const frontier_build_options = @import("frontier_build_options");
 // the flash-limited old_hw DM42 (XIP), keeping pkg1 main FLASH free for
 // always-on owners. Host/dmcp5/macos use the normal section (no-op there).
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

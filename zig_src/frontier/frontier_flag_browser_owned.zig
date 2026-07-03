@@ -23,7 +23,7 @@ const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 // The TO_QSPI letteredFlagDisplay table goes to the executable QSPI region on the
 // flash-limited old_hw DM42, matching the sibling owners' code_section.
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else
@@ -36,7 +36,7 @@ else
 // (EXC_BAD_ACCESS code=2). Route such constants to a rebase-capable section.
 // QSPI/XIP and ELF .text resolve the pointers at link time, so keep those.
 const code_data_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__DATA_CONST,__const"
 else

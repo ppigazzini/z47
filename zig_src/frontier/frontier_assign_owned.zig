@@ -30,7 +30,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // Pure int16 tables: executable QSPI region on flash-limited old_hw DM42.
 const code_section = if (dmcp_build and old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

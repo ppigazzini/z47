@@ -18,7 +18,7 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

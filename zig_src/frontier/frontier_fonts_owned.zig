@@ -13,7 +13,7 @@ const build_options = @import("frontier_build_options");
 // (DMCP_BUILD + TWO_FILE_PGM); host and DMCP5 use the platform's read-only data
 // section (mach-o needs SEG,sect form; ELF uses .rodata).
 const hexa_font_section = if (build_options.dmcp_build and build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__const"
 else

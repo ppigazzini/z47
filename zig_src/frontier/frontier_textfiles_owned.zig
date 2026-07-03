@@ -18,7 +18,7 @@ const frontier_build_options = @import("frontier_build_options");
 // The TO_QSPI string table goes to the executable QSPI region on the
 // flash-limited old_hw DM42, matching the sibling owners' code_section.
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

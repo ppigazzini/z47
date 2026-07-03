@@ -5,7 +5,7 @@ const solve_build_options = @import("solve_build_options");
 // keep the normal section (no-op there). Same mechanism as the math owners.
 const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
 pub const code_section = if (dm42_pkg_xip)
-    ".qspi"
+    ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
     "__TEXT,__text"
 else

@@ -29,7 +29,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // executable QSPI region on the flash-limited old_hw DM42 (matches the sibling
 // distribution owners' code_section).
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else

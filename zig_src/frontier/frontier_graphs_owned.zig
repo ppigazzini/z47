@@ -57,7 +57,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
-const code_section = if (dmcp_build and old_hw) ".qspi" else if (builtin.target.os.tag == .macos) "__TEXT,__text" else ".text";
+const code_section = if (dmcp_build and old_hw) ".qspi_data" else if (builtin.target.os.tag == .macos) "__TEXT,__text" else ".text";
 
 // ---------------------------------------------------------------------------
 // Types

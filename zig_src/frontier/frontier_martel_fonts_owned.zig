@@ -11,7 +11,7 @@ const build_options = @import("frontier_build_options");
 // Upstream marks the table TO_QSPI (see fonts owner): .qspi on old_hw DMCP,
 // platform read-only data section otherwise (mach-o needs SEG,sect form).
 const martel_section = if (build_options.dmcp_build and build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__const"
 else

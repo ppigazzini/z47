@@ -25,7 +25,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // The TO_QSPI typeName table is pure bytes (no pointers) so it can live in the
 // executable QSPI region on flash-limited old_hw DM42, matching the siblings.
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
-    ".qspi"
+    ".qspi_data"
 else if (builtin.target.os.tag == .macos)
     "__TEXT,__text"
 else
