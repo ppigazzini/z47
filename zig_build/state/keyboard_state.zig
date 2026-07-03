@@ -76,6 +76,13 @@ fn addRuntimeObjectWithIncludeDir(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
+    // L1 shared ABI bindings (REPORT-23 §5).
+    const abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("abi", abi_module);
 
     const kb_build_options = b.addOptions();
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
