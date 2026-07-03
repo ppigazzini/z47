@@ -1,4 +1,6 @@
 // Zig port of the column-reduction / search commands of
+const abi = @import("abi");
+const consts = abi.constants;
 // src/c47/mathematics/matrix.c: fnColumnMin / fnColumnMax (min/max of the
 // indexed column, with the row index returned in Y) and fnMatrixFind (locate a
 // scalar in the indexed matrix, returning its I,J). All dispatch through the
@@ -27,10 +29,10 @@ inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
 }
 inline fn const_minusInfinity() *const real_t {
-    return cstR(1684);
+    return consts.c1684();
 }
 inline fn const_plusInfinity() *const real_t {
-    return cstR(1696);
+    return consts.c1696();
 }
 
 extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
