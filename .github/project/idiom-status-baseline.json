@@ -2,12 +2,12 @@
   "totals": {
     "extern_struct_files": 91,
     "cptr_files": 98,
-    "ptrcast_sites": 1050,
+    "ptrcast_sites": 1040,
     "callconv_c_sites": 2947,
     "printf_family_files": 53,
     "anyopaque_files": 93,
-    "off_offset_sites": 367,
-    "constants_blob_sites": 27,
+    "off_offset_sites": 363,
+    "constants_blob_sites": 18,
     "qspi_section_files": 26
   },
   "owner_count": 308
