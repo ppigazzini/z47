@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const34_1 = consts.const34_1;
+const const34_0 = consts.const34_0;
 //
 // Zig owner for src/c47/programming/clcvar.c: the clear-variables machinery.
 // fnClCVar walks the current program step by step and zeroes every register /
@@ -129,12 +132,6 @@ const LAST_ITEM: u32 = 2860;
 // ---------------------------------------------------------------------------
 // Constant blob
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_0 = 16200;
-const OFF_const34_1 = 16312;
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -212,7 +209,7 @@ fn _clearVar(regist: calcRegister_t) void {
         },
 
         dtDate => {
-            composeJulianDay(cst34(OFF_const34_0), cst34(OFF_const34_1), cst34(OFF_const34_1), reg34(regist));
+            composeJulianDay(const34_0(), const34_1(), const34_1(), reg34(regist));
             julianDayToInternalDate(reg34(regist), reg34(regist));
         },
 

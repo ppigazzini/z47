@@ -340,3 +340,6 @@ pub inline fn const34_1e_4() *align(1) const Real34 {
 pub inline fn const_2p63() *const Real {
     return at(5636);
 }
+pub inline fn const34_0() *align(1) const Real34 {
+    return at34(16200);
+}
