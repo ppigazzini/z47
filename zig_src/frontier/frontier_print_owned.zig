@@ -422,12 +422,8 @@ extern var tam: tamState_t;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 
-// const34_0 is a pointer into the `constants` blob (constantPointers.h).
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_0: usize = 16200; // constantPointers.h:352
-inline fn const34_0() *align(1) const real34_t {
-    return @ptrCast(constants + OFF_const34_0);
-}
+// const34_0 is a pointer into the shared `constants` blob (constantPointers.h).
+const const34_0 = abi.constants.q16200;
 
 extern const standardFont: font_t;
 
