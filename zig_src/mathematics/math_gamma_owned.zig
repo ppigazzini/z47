@@ -1,4 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_NaN = consts.const_NaN;
+const const39_2pi = consts.const39_2pi;
+const const39_pi = consts.const39_pi;
+const const39_ln2piOn2 = consts.const39_ln2piOn2;
+const const_12 = consts.const_12;
+const const_360 = consts.const_360;
+const const_1260 = consts.const_1260;
+const const_1680 = consts.const_1680;
 //
 // Zig owner for src/c47/mathematics/gamma.c: the GAMMA and LNGAMMA commands,
 // real and complex, plus the complexLnGamma helper (exported, used by lnbeta).
@@ -63,42 +73,6 @@ inline fn const_plusInfinity() *const real_t {
 }
 
 // Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_NaN: u32 = 812;
-const OFF_const39_2pi: u32 = 1812;
-const OFF_const39_pi: u32 = 1848;
-const OFF_const39_ln2piOn2: u32 = 4820;
-const OFF_const_12: u32 = 5144;
-const OFF_const_360: u32 = 5356;
-const OFF_const_1260: u32 = 5408;
-const OFF_const_1680: u32 = 5420;
-inline fn const_NaN() *align(1) const real_t {
-    return cstR(OFF_const_NaN);
-}
-inline fn const39_2pi() *align(1) const real_t {
-    return cstR(OFF_const39_2pi);
-}
-inline fn const39_pi() *align(1) const real_t {
-    return cstR(OFF_const39_pi);
-}
-inline fn const39_ln2piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_ln2piOn2);
-}
-inline fn const_12() *align(1) const real_t {
-    return cstR(OFF_const_12);
-}
-inline fn const_360() *align(1) const real_t {
-    return cstR(OFF_const_360);
-}
-inline fn const_1260() *align(1) const real_t {
-    return cstR(OFF_const_1260);
-}
-inline fn const_1680() *align(1) const real_t {
-    return cstR(OFF_const_1680);
-}
 
 // real ops / predicates / copy not in runtime, plus blob-constant variants.
 extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
