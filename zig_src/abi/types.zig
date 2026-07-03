@@ -92,6 +92,49 @@ pub const Item = extern struct {
     status: u16,
 };
 
+/// Register header (registerHeader_t): packed descriptor word.
+pub const RegisterHeader = extern struct { descriptor: u32 };
+
+/// Named-variable header (namedVariableHeader_t).
+pub const NamedVariableHeader = extern struct {
+    header: RegisterHeader,
+    variableName: [16]u8,
+};
+
+/// Reserved-variable header (reservedVariableHeader_t).
+pub const ReservedVariableHeader = extern struct {
+    header: RegisterHeader,
+    reservedVariableName: [8]u8,
+};
+
+/// Soft-menu stack entry (softmenuStack_t), 8 bytes.
+pub const SoftmenuStack = extern struct {
+    softmenuId: i16,
+    softmenuJumpToItem: i16,
+    softmenuUserSize: u16,
+    softmenuScrollDelta: u16,
+};
+
+/// User-menu item (userMenuItem_t).
+pub const UserMenuItem = extern struct {
+    item: i16,
+    unused: i16,
+    argumentName: [16]u8,
+};
+
+/// User menu (userMenu_t): name + 18 items.
+pub const UserMenu = extern struct {
+    menuName: [16]u8,
+    menuItem: [18]UserMenuItem,
+};
+
+/// GMP mpz_t element (mpz_struct): alloc/size + limb pointer.
+pub const Mpz = extern struct {
+    mp_alloc: c_int,
+    mp_size: c_int,
+    mp_d: ?*anyopaque,
+};
+
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.
 pub const constants = @import("constants.zig");
 

@@ -332,7 +332,7 @@ const STD_RIGHT_SHORT_ARROW1: u8 = 0xc0;
 // ---------------------------------------------------------------------------
 // Extern variables (genuine pointers stay [*c]; C arrays are @extern by address)
 // ---------------------------------------------------------------------------
-const registerHeader_t = extern struct { bits: u32 };
+const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = extern struct {
     header: registerHeader_t,
     variableName: [16]u8,

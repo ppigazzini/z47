@@ -125,9 +125,7 @@ const printerState_t = extern struct {
     bytes: [16]u8 align(4),
 }; // opaque blob, size 16 align 4
 
-const registerHeader_t = extern struct {
-    bytes: [4]u8 align(4),
-}; // size 4 align 4
+const registerHeader_t = abi.RegisterHeader; // size 4 align 4
 
 const freeMemoryRegion_t = extern struct {
     bytes: [4]u8 align(2),

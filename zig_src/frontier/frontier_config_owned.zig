@@ -84,7 +84,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
-const registerHeader_t = extern struct { descriptor: u32 };
+const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
