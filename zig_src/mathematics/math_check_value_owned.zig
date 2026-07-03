@@ -152,6 +152,38 @@ fn tryCheckSignedZero(comptime sign: ZeroSign) bool {
     }
 }
 
+// signedZeroCheck (checkValue.c): compare the SIGN bit (not zero-ness).
+//   neg = true  -> x <= -0?  true for negatives and -0
+//   neg = false -> x >= +0?  true for positives and +0
+// The invalid-type path uses compareTypeErrorX() upstream; typeErrorX() here is
+// behaviorally identical in the default build (the extra moreInfoOnError hint is
+// EXTRA_INFO_ON_CALC_ERROR-gated).
+fn signedZeroCheck(neg: bool) void {
+    var check: bool = false;
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
+        runtime.dtLongInteger => {
+            var value: runtime.longInteger_t = undefined;
+            runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &value[0]);
+            defer runtime.__gmpz_clear(&value[0]);
+            check = (value[0]._mp_size < 0) == neg; // long integers have no -0: zero is +0
+        },
+        runtime.dtShortInteger => {
+            var stored_sign: i16 = 0;
+            var value: u64 = 0;
+            runtime.convertShortIntegerRegisterToUInt64(runtime.REGISTER_X, &stored_sign, &value);
+            check = stored_sign == @intFromBool(neg);
+        },
+        runtime.dtTime, runtime.dtDate, runtime.dtReal34 => {
+            check = runtime.real34IsNegative(runtime.registerReal34Ptr(runtime.REGISTER_X)) == neg;
+        },
+        else => {
+            typeErrorX();
+            return;
+        },
+    }
+    runtime.setTemporaryInformation(check);
+}
+
 pub fn checkType(type_: u16) void {
     runtime.setTemporaryInformation(runtime.getRegisterDataType(runtime.REGISTER_X) == type_);
 }
@@ -290,4 +322,10 @@ pub fn checkMinusZero() void {
     if (!tryCheckSignedZero(.minus)) {
         typeErrorX();
     }
+}
+pub fn checkLessEqualMinusZero() void {
+    signedZeroCheck(true);
+}
+pub fn checkGreaterEqualPlusZero() void {
+    signedZeroCheck(false);
 }

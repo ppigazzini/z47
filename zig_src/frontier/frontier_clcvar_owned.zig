@@ -123,7 +123,7 @@ const FIRST_LOCAL_REGISTER_IN_KS_CODE: i16 = 112;
 const LAST_LOCAL_REGISTER_IN_KS_CODE_I: i16 = 210;
 const FIRST_LOCAL_REGISTER: i16 = 7000;
 
-const LAST_ITEM: u32 = 2850;
+const LAST_ITEM: u32 = 2860;
 
 // ---------------------------------------------------------------------------
 // Constant blob

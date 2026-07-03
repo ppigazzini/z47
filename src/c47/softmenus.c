@@ -318,10 +318,10 @@ TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                   ITM_GTO,
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_INPUT,                 ITM_AVIEW,                 ITM_PROMPT,                ITM_PAUSE,                 ITM_TICKS,                 -MNU_PFN_2,
                                              ITM_MSG,                   ITM_ERR,                   ITM_REM,                   ITM_KEYQ,                  ITM_KTYP,                  ITM_PUTK,
-                                             ITM_PIXEL,                 ITM_POINT,                 ITM_AGRAPH,                ITM_NULL,                  ITM_PLOTRST,               ITM_PLOTZOOM                   };
+                                             ITM_PIXEL,                 ITM_POINT,                 ITM_AGRAPH,                ITM_PLOTZOOM,              ITM_PLOTRST,               ITM_PLTFCNS,                   };
 
 TO_QSPI const int16_t menu_PFN_2[]       = { ITM_KEYG,                  ITM_KEYX,                  ITM_MENU,                  ITM_MVAR,                  ITM_VARMNU,                -MNU_PFN_3,
-                                             ITM_LocR,                  ITM_POPLR,                 ITM_CLMENU,                ITM_OPEN_MENU,             ITM_EXITALL,               ITM_NULL,
+                                             ITM_LocR,                  ITM_POPLR,                 ITM_CLMENU,                ITM_OPEN_MENU,             ITM_EXITALL,               -MNU_42,
                                              ITM_R_COPY,                ITM_R_SORT,                ITM_R_SWAP,                ITM_R_CLR,                 ITM_NULL,                  ITM_NULL                       };
 
 TO_QSPI const int16_t menu_PFN_3[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN,
@@ -391,7 +391,7 @@ TO_QSPI const int16_t menu_MULTSTK[]     = { ITM_3STO,                      ITM_
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
 TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_XLE,                    ITM_XEQU,                 ITM_XNE,               ITM_XGE,                     ITM_XGT,
-                                             ITM_XEQUM0,                    ITM_XEQUP0,                 ITM_XAEQU,                ITM_PRIME,             ITM_NULL,                    ITM_NULL,
+                                             ITM_XEQUM0,                    ITM_XEQUP0,                 ITM_XAEQU,                ITM_PRIME,             ITM_XGEP0,                   ITM_XLEM0,
                                              ITM_ENTRY,                     ITM_KEYQ,                   ITM_LBLQ,                 ITM_TOP,               ITM_LEAPQ,                   ITM_CONVG,
 
                                              ITM_SINTQ,                     ITM_LINTQ,                  ITM_REALQ,                ITM_CPXQ,              ITM_DATEQ,                   ITM_TIMEQ,
@@ -699,7 +699,8 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                        ITM_
                                              ITM_CYCLIC,                    ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                ITM_US,                       ITM_UK,
                                              ITM_litre,                     ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           ITM_ALTERN_CURRENT,           ITM_POWER_SYMBOL,
 
-                                             ITM_CB_OFF,                    ITM_CB_ON,                    ITM_RB_OFF,                   ITM_RB_ON,                    ITM_DIA_OFF,                  ITM_DIA_ON };
+                                             ITM_CB_OFF,                    ITM_CB_ON,                    ITM_RB_OFF,                   ITM_RB_ON,                    ITM_DIA_OFF,                  ITM_DIA_ON,
+                                             ITM_LF_PIC,                    ITM_SMALL_SQUARE,             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL                  };
 
 
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_EQ_EDI,                  -MNU_2NDDERIV,                -MNU_1STDERIV,                -MNU_Sf,                      -MNU_Solver,
@@ -1558,9 +1559,10 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
       if(!(checkOpCodeOfStep(step, ITM_MVAR) && *(step + 2) == STRING_LABEL_VARIABLE)) {
         break;
       }
-      xcopy(tmpString + *numberOfBytes, step + 4, *(step + 3));
+      uint8_t varNameLen = boundProgramNameLength(step + 4, *(step + 3));
+      xcopy(tmpString + *numberOfBytes, step + 4, varNameLen);
       (void)findOrAllocateNamedVariable(tmpString + *numberOfBytes);
-      *numberOfBytes += *(step + 3) + 1;
+      *numberOfBytes += varNameLen + 1;
       (*numberOfVars)++;
       step = findNextStep(step);
     }
@@ -1675,9 +1677,13 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
         memset(tmpString, 0, TMP_STR_LENGTH);
         for(i=0; i<numberOfLabels; i++) {
           if(labelList[i].step > 0) { // Global label
-            xcopy(tmpString + 15 * numberOfGlobalLabels, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+            uint8_t lblNameLen = labelList[i].labelPointer[0];
+            if(lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
+              lblNameLen = 14;
+            }
+            xcopy(tmpString + 15 * numberOfGlobalLabels, labelList[i].labelPointer + 1, lblNameLen);
             numberOfGlobalLabels++;
-            numberOfBytes += 1 + labelList[i].labelPointer[0];
+            numberOfBytes += 1 + lblNameLen;
           }
         }
 
@@ -1835,6 +1841,7 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
 
 
 static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText, bool_t doubleMidLine);
+static uint32_t trimSoftKeyName(uint16_t lim, char *l, int mode, int comp, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows);
 char label0[30];
 int16_t xx1;
 
@@ -2017,6 +2024,26 @@ static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t
   int16_t arrowSpace;
   const char *w[4];
 
+  // Combined key = two slots with a floating mid-divider; the two names share the width the arrows leave behind. Only clip
+  // when the pair together overflows, and let a short partner donate its slack so a long name opposite it is kept whole.
+  char lab0[50], lab1[50];
+  xcopy(lab0, label0, stringByteLength(label0) + 1);
+  xcopy(lab1, label1, stringByteLength(label1) + 1);
+  int16_t arrowR = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1 + YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+  int16_t arrowL = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1 + YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+  int16_t w0     = stringWidthC47(lab0, stdNoEnlarge, DO_compress, false, false);
+  int16_t w1     = stringWidthC47(lab1, stdNoEnlarge, DO_compress, false, false);
+  int16_t avail  = max(16, (x2 - x1) - arrowR - arrowL - 7);          // px for both names once both arrows and minimal gaps are reserved
+  if(w0 + w1 > avail) {                                               // only intervene when the pair really overflows
+    int16_t  half = avail / 2;
+    uint16_t b0   = (w1 < half) ? (avail - w1) : half;               // short partner donates its slack to the long side
+    uint16_t b1   = (w0 < half) ? (avail - w0) : half;
+    trimSoftKeyName(b0, lab0, stdNoEnlarge, DO_compress, false, false);
+    trimSoftKeyName(b1, lab1, stdNoEnlarge, DO_compress, false, false);
+  }
+  label0 = lab0;
+  label1 = lab1;
+
   if(getSystemFlag(FLAG_HPCONV) /*&& calcMode != CM_ASSIGN*/) { //select this to auto-swap to CF CONV_hp, for the duration of an assign
     t[0] = label1;
     t[1] = STD_LEFT_ARROW;
@@ -2193,7 +2220,8 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
     //continue with trimmed label
     strcpy(ll, figlabel(l, showText, showValue));
-    w = trimKey(ll, 0);
+    trimKey(ll, 0);                                                                          // truncate only if it won't fit even when compressed
+    w = stringWidthC47(ll, stdNoEnlarge, 0, false, false);                                   // uncompressed width drives the compress decision (else wide labels print uncompressed)
   //w = trimSoftKeyName(x2-x1-1, l, stdNoEnlarge, 0, false, false);                           // trim label to fit slot, returns final width
 
     if((showCb >= 0) || (w >= ((min(x2, SCREEN_WIDTH) - max(0, x1))*3)/4 )) {
@@ -2261,6 +2289,7 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading
          item == ITM_M_EDI     ||
          item == ITM_M_EDIN    ||
          item == ITM_CLKp2     ||
+         item == ITM_PLTFCNS   ||
          item == ITM_BITSp2;
          /*item == ITM_PLOT_CENTRL ||  CENTRL does not bring up a new menu - it is the same menu therefore not inverted */
          /*|| (item == ITM_TIMER)*/       //JMvv colour PLOT in reverse font to appear to be menus

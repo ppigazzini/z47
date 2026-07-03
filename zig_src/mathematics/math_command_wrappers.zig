@@ -1109,6 +1109,16 @@ pub export fn fnCheckMinusZero(unused_but_mandatory_parameter: u16) callconv(.c)
     check_value_owned.checkMinusZero();
 }
 
+pub export fn fnCheckLessEqualMinusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkLessEqualMinusZero();
+}
+
+pub export fn fnCheckGreaterEqualPlusZero(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+    check_value_owned.checkGreaterEqualPlusZero();
+}
+
 pub export fn fnGetType(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     get_type_owned.getType();
