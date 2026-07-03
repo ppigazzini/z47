@@ -74,15 +74,7 @@ const reservedVariableHeader_t = extern struct {
     reservedVariableName: [8]u8,
 };
 // subroutineLevelHeader_t: numberOfLocalRegisters is at byte offset 5.
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = extern struct {
     mode: u16,
     function: i16,

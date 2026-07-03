@@ -24,15 +24,8 @@ const named_variable_header_t = extern struct {
     variableName: [16]u8,
 };
 
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 const GlobalRegisterBacking = if (use_array_backed_global_registers)
     [number_of_global_registers]register_header_t

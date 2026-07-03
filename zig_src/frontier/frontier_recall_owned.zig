@@ -157,15 +157,7 @@ comptime {
 }
 
 // subroutineLevelHeader_t for the currentNumberOfLocalRegisters macro.
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)

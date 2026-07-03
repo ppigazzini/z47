@@ -128,15 +128,7 @@ extern var allNamedVariables: [*c]namedVariableHeader_t;
 // allReservedVariables[] is a C array; its symbol address is the table base.
 const allReservedVariables = @extern([*]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: *subroutineLevelHeader_t;
 
 extern const standardFont: font_t;

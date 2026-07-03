@@ -181,15 +181,7 @@ const LAST_ITEM: usize = 2860;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 extern const standardFont: font_t;
 
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: *subroutineLevelHeader_t;
 
 // menu_SYSFL is declared `extern int16_t menu_SYSFL[]` inside the C function; its

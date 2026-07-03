@@ -36,15 +36,8 @@ const C47_NULL: u16 = 65535;
 const configFileVersion: u32 = 10000024; // C saveRestoreCalcState.c:7 (FLAG_SIGZEROS bump)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 const calcKey_t = extern struct {
     keyId: i16,

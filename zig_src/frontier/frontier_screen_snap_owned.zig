@@ -636,15 +636,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
 }
 
 // currentNumberOfLocalRegisters: currentSubroutineLevelData->numberOfLocalRegisters.
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
 inline fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData[0].numberOfLocalRegisters;

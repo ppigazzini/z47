@@ -371,15 +371,8 @@ const softmenu_t = extern struct {
     numItems: i16,
     softkeyItem: [*c]const i16,
 };
-const subroutineLevelHeader_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const abi = @import("abi"); // L1 shared bindings
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 pub const MNU_TAMALPHA: i16 = 1913;
 pub const MNU_REG: i16 = 2066;
