@@ -21,10 +21,7 @@ const TI_FROM_DATEX: u8 = 84;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 
-const complex34_t = extern struct {
-    real: real34_t,
-    imag: real34_t,
-};
+const complex34_t = abi.Complex34;
 
 extern var significantDigits: u8;
 extern var temporaryInformation: u8;

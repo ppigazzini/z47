@@ -1067,7 +1067,7 @@ const upperLower_t = extern struct {
 };
 
 // complex34_t == two real34_t (32 bytes).
-const complex34_t = extern struct { bytes: [32]u8 };
+const complex34_t = abi.Complex34;
 
 // Cross-owner runtime callees for the new ops.
 extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;

@@ -141,10 +141,7 @@ pub const real_t = abi.Real;
 
 pub const real34_t = abi.Real34;
 
-pub const complex34_t = extern struct {
-    real: real34_t,
-    imag: real34_t,
-};
+pub const complex34_t = abi.Complex34;
 
 pub const matrixHeader_t = if (use_fake_wp34s_harness_surface)
     extern struct {

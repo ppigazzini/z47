@@ -69,7 +69,7 @@ const calcRegister_t = i16;
 const angularMode_t = c_int; // C enum -> int ABI
 const videoMode_t = c_int;
 const real34_t = abi.Real34;
-const complex34_t = extern struct { re: real34_t, im: real34_t };
+const complex34_t = abi.Complex34;
 // decNumber (real_t): big enough working buffer. The matrix display code only
 // passes real_t by pointer to extern helpers and never inspects the layout, but
 // we still need a correctly-sized storage type for the on-stack `aa,bb,cc,theta`
@@ -510,10 +510,10 @@ inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
 }
 // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA on a complex34_t*.
 inline fn cRe(c: *complex34_t) *real34_t {
-    return &c.re;
+    return &c.real;
 }
 inline fn cIm(c: *complex34_t) *real34_t {
-    return &c.im;
+    return &c.imag;
 }
 inline fn reg34(reg: calcRegister_t) *real34_t {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
@@ -1302,15 +1302,15 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                 if (polarMode) {
                     var x: real_t = undefined;
                     var y: real_t = undefined;
-                    real34ToReal(&elem.re, &x);
-                    real34ToReal(&elem.im, &y);
+                    real34ToReal(&elem.real, &x);
+                    real34ToReal(&elem.imag, &y);
                     realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
                     convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
                     realToReal34(&x, &re);
                     realToReal34(&y, &im);
                 } else {
-                    real34Copy(&elem.re, &re);
-                    real34Copy(&elem.im, &im);
+                    real34Copy(&elem.real, &re);
+                    real34Copy(&elem.imag, &im);
                 }
 
                 if (((@as(c_int, @intCast(i)) == maxRows - 1) and (rows > maxRows + @as(c_int, sRow))) or ((j == @as(usize, @intCast(maxCols))) and rightEllipsis) or ((i == 0) and (sRow > 0))) {
@@ -1414,18 +1414,18 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 if (polarMode) {
                     var x: real_t = undefined;
                     var y: real_t = undefined;
-                    real34ToReal(&c34Val.re, &x);
-                    real34ToReal(&c34Val.im, &y);
+                    real34ToReal(&c34Val.real, &x);
+                    real34ToReal(&c34Val.imag, &y);
                     realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
                     convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
-                    realToReal34(&x, &c34Val.re);
-                    realToReal34(&y, &c34Val.im);
+                    realToReal34(&x, &c34Val.real);
+                    realToReal34(&y, &c34Val.imag);
                 }
 
                 rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
-                real34SetPositiveSign(&c34Val.re);
-                var c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].re);
-                real34ToDisplayString(&c34Val.re, amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                real34SetPositiveSign(&c34Val.real);
+                var c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].real);
+                real34ToDisplayString(&c34Val.real, amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
                 var width: i16 = stringWidth(&tmpStringL, font, true, true) + 1;
                 if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
                     var xStr: [*c]u8 = &tmpStringL;
@@ -1454,10 +1454,10 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
                 c34sign = false;
                 if (!polarMode) {
-                    c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].im);
-                    real34SetPositiveSign(&c34Val.im);
+                    c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].imag);
+                    real34SetPositiveSign(&c34Val.imag);
                 }
-                real34ToDisplayString(&c34Val.im, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
+                real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
                 width = stringWidth(&tmpStringL, font, true, true) + 1;
                 if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
                     var xStr: [*c]u8 = &tmpStringL;
@@ -1777,8 +1777,8 @@ pub export fn z47_frontier_matrix_zero_current_element() callconv(.c) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         real34SetZero(&openMatrixMIMPointer.realMatrix.matrixElements.?[idx]);
     } else {
-        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re);
-        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im);
+        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real);
+        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag);
     }
     setSystemFlag(FLAG_ASLIFT);
 }
@@ -1792,8 +1792,8 @@ pub export fn z47_frontier_matrix_change_sign_current_element() callconv(.c) voi
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         real34ChangeSign(&openMatrixMIMPointer.realMatrix.matrixElements.?[idx]);
     } else {
-        real34ChangeSign(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re);
-        real34ChangeSign(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im);
+        real34ChangeSign(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real);
+        real34ChangeSign(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag);
     }
     setSystemFlag(FLAG_ASLIFT);
 }
@@ -1820,11 +1820,11 @@ pub export fn z47_frontier_matrix_make_j_element() callconv(.c) void {
             var theta: real_t = undefined;
             realCopy(const39_piOn2, &theta);
             convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
-            real34SetOne(&elm.re);
-            realToReal34(&theta, &elm.im);
+            real34SetOne(&elm.real);
+            realToReal34(&theta, &elm.imag);
         } else {
-            real34SetZero(&elm.re);
-            real34SetOne(&elm.im);
+            real34SetZero(&elm.real);
+            real34SetOne(&elm.imag);
         }
     }
 }
@@ -1838,8 +1838,8 @@ pub export fn z47_frontier_matrix_set_current_to_pi() callconv(.c) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         realToReal34(const39_pi, &openMatrixMIMPointer.realMatrix.matrixElements.?[idx]);
     } else {
-        realToReal34(const39_pi, &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re);
-        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im);
+        realToReal34(const39_pi, &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real);
+        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag);
     }
 }
 
@@ -1871,8 +1871,8 @@ pub export fn z47_frontier_matrix_capture_selected_before() callconv(.c) void {
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
     if (saved_is_complex) {
-        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re, &saved_re);
-        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im, &saved_im);
+        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real, &saved_re);
+        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag, &saved_im);
     } else {
         real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements.?[idx], &saved_re);
         real34SetZero(&saved_im);
@@ -1888,10 +1888,10 @@ pub export fn z47_frontier_matrix_load_selected_into_register_x() callconv(.c) v
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
     if (isComplex) {
-        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re, &re);
-        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im, &im);
+        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real, &re);
+        real34Copy(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag, &im);
         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-        real34Copy(&re, &regCplx(REGISTER_X).re);
+        real34Copy(&re, &regCplx(REGISTER_X).real);
         real34Copy(&im, regImag34(REGISTER_X));
     } else {
         real34Copy(&openMatrixMIMPointer.realMatrix.matrixElements.?[idx], &re);
@@ -1928,8 +1928,8 @@ pub export fn z47_frontier_matrix_apply_register_x_to_selected() callconv(.c) bo
     }
 
     if (isComplex) {
-        real34Copy(reg34(REGISTER_X), &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].re);
-        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].im);
+        real34Copy(reg34(REGISTER_X), &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].real);
+        real34SetZero(&openMatrixMIMPointer.complexMatrix.matrixElements.?[idx].imag);
         return false;
     }
 
@@ -1966,8 +1966,8 @@ pub export fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted(
         convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, REGISTER_X);
         linkToComplexMatrixRegister(REGISTER_X, &linkedMatrix);
         const idx: usize = @intCast(@as(c_int, i) * @as(c_int, linkedMatrix.header.matrixColumns) + @as(c_int, j));
-        real34Copy(&saved_re, &linkedMatrix.matrixElements.?[idx].re);
-        real34Copy(&saved_im, &linkedMatrix.matrixElements.?[idx].im);
+        real34Copy(&saved_re, &linkedMatrix.matrixElements.?[idx].real);
+        real34Copy(&saved_im, &linkedMatrix.matrixElements.?[idx].imag);
     } else {
         var linkedMatrix: real34Matrix_t = undefined;
         convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, REGISTER_X);
@@ -2113,7 +2113,7 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
                 openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
                 openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
                 const complex34Ptr = &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx];
-                closeNimWithComplex(&complex34Ptr.re, &complex34Ptr.im);
+                closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
             },
             else => {
                 stringToReal34(aimBuffer, &real34tmp);
@@ -2129,15 +2129,15 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
 
         switch (nimNumberPart) {
             NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => {
-                closeNimWithFraction(&complex34Ptr.re);
-                real34SetZero(&complex34Ptr.im);
+                closeNimWithFraction(&complex34Ptr.real);
+                real34SetZero(&complex34Ptr.imag);
             },
             NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
-                closeNimWithComplex(&complex34Ptr.re, &complex34Ptr.im);
+                closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
             },
             else => {
-                stringToReal34(aimBuffer, &complex34Ptr.re);
-                real34SetZero(&complex34Ptr.im);
+                stringToReal34(aimBuffer, &complex34Ptr.real);
+                real34SetZero(&complex34Ptr.imag);
             },
         }
     }
