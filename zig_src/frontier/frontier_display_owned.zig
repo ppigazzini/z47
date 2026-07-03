@@ -61,7 +61,7 @@ const angularMode_t = c_int;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const complex34_t = extern struct { bytes: [32]u8 };
 const realContext_t = abi.RealContext;
 

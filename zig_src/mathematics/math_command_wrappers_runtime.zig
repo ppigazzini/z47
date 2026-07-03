@@ -139,9 +139,7 @@ const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 pub const real_t = abi.Real;
 
-pub const real34_t = extern struct {
-    bytes: [16]u8,
-};
+pub const real34_t = abi.Real34;
 
 pub const complex34_t = extern struct {
     real: real34_t,

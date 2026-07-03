@@ -28,9 +28,7 @@ const runtime = @import("solve_runtime.zig");
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const real34_t = extern struct {
-    bytes: [16]u8,
-};
+const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 
 const calcRegister_t = runtime.calcRegister_t;

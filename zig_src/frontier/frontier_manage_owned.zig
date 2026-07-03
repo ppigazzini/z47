@@ -48,7 +48,7 @@ else
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const calcRegister_t = i16;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const font_t = opaque {};
 const softmenu_t = extern struct {
     menuItem: i16,
