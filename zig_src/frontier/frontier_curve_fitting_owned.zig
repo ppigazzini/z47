@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const cstR = consts.cstR;
 const consts = abi.constants;
 const const_1 = consts.const_1;
 const const_2 = consts.const_2;
@@ -118,10 +119,6 @@ const SUM_X4 = 23;
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals
