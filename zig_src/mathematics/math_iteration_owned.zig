@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 //
 // Zig owner for src/c47/mathematics/iteration.c: the DSE/DSL/DSZ/ISE/ISG/ISZ
 // loop-counter increment/decrement-and-skip commands. UNCOVERED by the
@@ -143,17 +145,14 @@ const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cst34(comptime off: u32) *const real34_t {
     return @ptrCast(@alignCast(constants + off));
 }
-const OFF_const34_1: u32 = 16312;
-const OFF_const34_100: u32 = 16552;
-const OFF_const34_1000: u32 = 16632;
 inline fn const34_1() *const real34_t {
-    return cst34(OFF_const34_1);
+    return consts.q16312();
 }
 inline fn const34_100() *const real34_t {
-    return cst34(OFF_const34_100);
+    return consts.q16552();
 }
 inline fn const34_1000() *const real34_t {
-    return cst34(OFF_const34_1000);
+    return consts.q16632();
 }
 
 fn getIterParam(regist: u16, fp: *real34_t, target: *real34_t, step: *real34_t) linksection(runtime.code_section) void {
