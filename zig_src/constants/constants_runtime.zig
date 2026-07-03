@@ -18,9 +18,8 @@ pub const amNone: angularMode_t = 5;
 pub const NOUC: usize = 84;
 
 pub const real_t = opaque {};
-pub const real34_t = extern struct {
-    bytes: [16]u8,
-};
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+pub const real34_t = abi.Real34;
 
 pub extern var currentSolverStatus: u16;
 pub extern var errorMessage: [512]u8;
