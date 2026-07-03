@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_1 = consts.const_1;
+const const_3 = consts.const_3;
+const const_100 = consts.const_100;
+const const_1on2 = consts.const_1on2;
 //
 // Zig owner for src/c47/mathematics/median.c: median / quartiles / MAD / IQR /
 // percentile of the STATS matrix. UNCOVERED by the testSuite (no gate); this is
@@ -104,22 +110,6 @@ extern fn qsort(base: ?*anyopaque, nmemb: usize, size: usize, compar: *const fn 
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
-}
-const OFF_const_1: u32 = 4856;
-const OFF_const_3: u32 = 5012;
-const OFF_const_100: u32 = 7532;
-const OFF_const_1on2: u32 = 4580;
-inline fn const_1() *const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const_3() *const real_t {
-    return cstR(OFF_const_3);
-}
-inline fn const_100() *const real_t {
-    return cstR(OFF_const_100);
-}
-inline fn const_1on2() *const real_t {
-    return cstR(OFF_const_1on2);
 }
 
 const REAL_SIZE_IN_BYTES_75: usize = 60;
