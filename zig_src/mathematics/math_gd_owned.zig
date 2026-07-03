@@ -40,19 +40,8 @@ inline fn const_1on2() *const real_t {
     return runtime.z47_math_wrappers_const_1on2();
 }
 
-// Blob-offset constants without a runtime accessor.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const39_piOn2: u32 = 4880;
-const OFF_const39_piOn4: u32 = 4736;
-inline fn const39_piOn2() *align(1) const real_t {
-    return cstR(OFF_const39_piOn2);
-}
-inline fn const39_piOn4() *align(1) const real_t {
-    return cstR(OFF_const39_piOn4);
-}
+const abi = @import("abi");
+const consts = abi.constants;
 
 // real ops / predicates not in runtime.
 extern fn realCompareAbsLessThan(number1: *const real_t, number2: *align(1) const real_t) bool;
@@ -136,9 +125,9 @@ fn gdCplx(gd: bool) void {
 pub export fn GudermannianReal(x: *const real_t, res: *real_t, realContext: *realContext_t) callconv(.c) u8 {
     if (realIsInfinite(x)) {
         if (realIsPositive(x)) {
-            realCopy(const39_piOn2(), res);
+            realCopy(consts.const39piOn2(), res);
         } else {
-            realCopy(const39_piOn2(), res);
+            realCopy(consts.const39piOn2(), res);
             realChangeSign(res);
         }
     } else {
@@ -146,7 +135,7 @@ pub export fn GudermannianReal(x: *const real_t, res: *real_t, realContext: *rea
         realExp(x, res, realContext);
         C47_WP34S_Atan(res, res, realContext);
         realMultiply(res, const_2(), res, realContext);
-        realSubtractBlob(res, const39_piOn2(), res, realContext);
+        realSubtractBlob(res, consts.const39piOn2(), res, realContext);
     }
 
     return ERROR_NONE;
@@ -159,7 +148,7 @@ pub export fn GudermannianComplex(xReal: *const real_t, xImag: *const real_t, re
 
     realMultiply(resReal, const_2(), resReal, realContext);
     realMultiply(resImag, const_2(), resImag, realContext);
-    realSubtractBlob(resReal, const39_piOn2(), resReal, realContext);
+    realSubtractBlob(resReal, consts.const39piOn2(), resReal, realContext);
 
     return ERROR_NONE;
 }
@@ -168,7 +157,7 @@ pub export fn InverseGudermannianReal(x: *const real_t, res: *real_t, realContex
     var result: u8 = ERROR_NONE;
 
     // InvGd(x) = Ln(Tan(x/2 + PI/4))
-    if (!realIsNaN(x) and realCompareAbsLessThan(x, const39_piOn2())) {
+    if (!realIsNaN(x) and realCompareAbsLessThan(x, consts.const39piOn2())) {
         if (realIsZero(x)) {
             realSetZero(res);
         } else {
@@ -177,7 +166,7 @@ pub export fn InverseGudermannianReal(x: *const real_t, res: *real_t, realContex
 
             // InvGd(x) = Ln(Tan(x/2 + PI/4)), -PI/2 < x < PI/2
             realMultiply(x, const_1on2(), res, realContext); // r = x/2
-            realAddBlob(res, const39_piOn4(), res, realContext); // r = x/2 + pi/4
+            realAddBlob(res, consts.const39piOn4(), res, realContext); // r = x/2 + pi/4
             C47_WP34S_Cvt2RadSinCosTan(res, amRadian, &sin, &cos, res, &runtime.ctxtReal39); // r = Tan(x/2 + pi/4)
             WP34S_Ln(res, res, &runtime.ctxtReal39); // r = Ln(Tan(x/2 + pi/4))
         }
@@ -193,7 +182,7 @@ pub export fn InverseGudermannianComplex(xReal: *const real_t, xImag: *const rea
     realMultiply(xReal, const_1on2(), resReal, realContext); // r = x/2
     realMultiply(xImag, const_1on2(), resImag, realContext);
 
-    realAddBlob(xReal, const39_piOn4(), resReal, realContext); // r = x/2 + pi/2
+    realAddBlob(xReal, consts.const39piOn4(), resReal, realContext); // r = x/2 + pi/2
 
     _ = TanComplex(resReal, resImag, resReal, resImag, realContext); // r = Tan(x/2 + pi/4)
     lnComplex(resReal, resImag, resReal, resImag, realContext); // r = Ln(Tan(x/2 + pi/4))
