@@ -67,19 +67,27 @@ fn addRuntimeObject(
     root_source_file: []const u8,
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path(root_source_file),
+        .target = target,
+        .optimize = optimize,
+        .strip = options.strip,
+        .unwind_tables = options.unwind_tables,
+        .stack_protector = options.stack_protector,
+        .stack_check = options.stack_check,
+        .omit_frame_pointer = options.omit_frame_pointer,
+        .error_tracing = options.error_tracing,
+    });
+    // L1 shared ABI bindings (REPORT-23 §5), imported as `@import("abi")`.
+    const abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("abi", abi_module);
     return b.addObject(.{
         .name = b.fmt("{s}-{s}", .{ name_prefix, name_suffix }),
-        .root_module = b.createModule(.{
-            .root_source_file = b.path(root_source_file),
-            .target = target,
-            .optimize = optimize,
-            .strip = options.strip,
-            .unwind_tables = options.unwind_tables,
-            .stack_protector = options.stack_protector,
-            .stack_check = options.stack_check,
-            .omit_frame_pointer = options.omit_frame_pointer,
-            .error_tracing = options.error_tracing,
-        }),
+        .root_module = module,
     });
 }
 
