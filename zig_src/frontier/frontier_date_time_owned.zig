@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
 //
 // Zig owner for src/c47/dateTime.c: the date/time layer. It hosts Julian-day
 // composition/decomposition (composeJulianDay/decomposeJulianDay and the
@@ -124,93 +125,48 @@ const CM_NIM: u8 = 2;
 // Constant blob
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const34_43200 = 16776;
-const OFF_const34_86400 = 16808;
-const OFF_const34_2 = 16328;
-const OFF_const34_28 = 16488;
-const OFF_const34_400 = 16616;
-const OFF_const34__4712 = 16216;
-const OFF_const34_1 = 16312;
-const OFF_const34_31 = 16504;
-const OFF_const34_12 = 16440;
-const OFF_const34_14 = 16456;
-const OFF_const34_4800 = 16712;
-const OFF_const34_1461 = 16664;
-const OFF_const34_4 = 16360;
-const OFF_const34_367 = 16600;
-const OFF_const34_4900 = 16728;
-const OFF_const34_100 = 16552;
-const OFF_const34_3 = 16344;
-const OFF_const34_9 = 16408;
-const OFF_const34_7 = 16392;
-const OFF_const34_5001 = 16744;
-const OFF_const34_275 = 16584;
-const OFF_const34_1729777 = 16872;
-const OFF_const34_1401 = 16648;
-const OFF_const34_274277 = 16840;
-const OFF_const34_146097 = 16824;
-const OFF_const34_38 = 16520;
-const OFF_const34_153 = 16568;
-const OFF_const34_5 = 16376;
-const OFF_const34_4716 = 16696;
-const OFF_const34_1on2 = 16296;
-const OFF_const34_24 = 16472;
-const OFF_const34_3600 = 16680;
-const OFF_const34_60 = 16536;
-const OFF_const34_maxDate = 16904;
-const OFF_const34_maxTime = 16920;
-const OFF_const34_1e6 = 16856;
-const OFF_const34_1on10 = 16280;
-const OFF_const34_32075 = 16760;
-const OFF_const_86400 = 5524;
 
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
-inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
 
 // const34_* named pointers (match the C macros that name these blob entries).
-const const34_43200 = cst34(OFF_const34_43200);
-const const34_86400 = cst34(OFF_const34_86400);
-const const34_2 = cst34(OFF_const34_2);
-const const34_28 = cst34(OFF_const34_28);
-const const34_400 = cst34(OFF_const34_400);
-const const34__4712 = cst34(OFF_const34__4712);
-const const34_1 = cst34(OFF_const34_1);
-const const34_31 = cst34(OFF_const34_31);
-const const34_12 = cst34(OFF_const34_12);
-const const34_14 = cst34(OFF_const34_14);
-const const34_4800 = cst34(OFF_const34_4800);
-const const34_1461 = cst34(OFF_const34_1461);
-const const34_4 = cst34(OFF_const34_4);
-const const34_367 = cst34(OFF_const34_367);
-const const34_4900 = cst34(OFF_const34_4900);
-const const34_100 = cst34(OFF_const34_100);
-const const34_3 = cst34(OFF_const34_3);
-const const34_9 = cst34(OFF_const34_9);
-const const34_7 = cst34(OFF_const34_7);
-const const34_5001 = cst34(OFF_const34_5001);
-const const34_275 = cst34(OFF_const34_275);
-const const34_1729777 = cst34(OFF_const34_1729777);
-const const34_1401 = cst34(OFF_const34_1401);
-const const34_274277 = cst34(OFF_const34_274277);
-const const34_146097 = cst34(OFF_const34_146097);
-const const34_38 = cst34(OFF_const34_38);
-const const34_153 = cst34(OFF_const34_153);
-const const34_5 = cst34(OFF_const34_5);
-const const34_4716 = cst34(OFF_const34_4716);
-const const34_1on2 = cst34(OFF_const34_1on2);
-const const34_24 = cst34(OFF_const34_24);
-const const34_3600 = cst34(OFF_const34_3600);
-const const34_60 = cst34(OFF_const34_60);
-const const34_maxDate = cst34(OFF_const34_maxDate);
-const const34_maxTime = cst34(OFF_const34_maxTime);
-const const34_1e6 = cst34(OFF_const34_1e6);
-const const34_1on10 = cst34(OFF_const34_1on10);
-const const34_32075 = cst34(OFF_const34_32075);
-const const_86400 = cstR(OFF_const_86400);
+const const34_43200 = consts.const34_43200();
+const const34_86400 = consts.const34_86400();
+const const34_2 = consts.const34_2();
+const const34_28 = consts.const34_28();
+const const34_400 = consts.const34_400();
+const const34__4712 = consts.const34__4712();
+const const34_1 = consts.const34_1();
+const const34_31 = consts.const34_31();
+const const34_12 = consts.const34_12();
+const const34_14 = consts.const34_14();
+const const34_4800 = consts.const34_4800();
+const const34_1461 = consts.const34_1461();
+const const34_4 = consts.const34_4();
+const const34_367 = consts.const34_367();
+const const34_4900 = consts.const34_4900();
+const const34_100 = consts.const34_100();
+const const34_3 = consts.const34_3();
+const const34_9 = consts.const34_9();
+const const34_7 = consts.const34_7();
+const const34_5001 = consts.const34_5001();
+const const34_275 = consts.const34_275();
+const const34_1729777 = consts.const34_1729777();
+const const34_1401 = consts.const34_1401();
+const const34_274277 = consts.const34_274277();
+const const34_146097 = consts.const34_146097();
+const const34_38 = consts.const34_38();
+const const34_153 = consts.const34_153();
+const const34_5 = consts.const34_5();
+const const34_4716 = consts.const34_4716();
+const const34_1on2 = consts.const34_1on2();
+const const34_24 = consts.const34_24();
+const const34_3600 = consts.const34_3600();
+const const34_60 = consts.const34_60();
+const const34_maxDate = consts.const34_maxDate();
+const const34_maxTime = consts.const34_maxTime();
+const const34_1e6 = consts.const34_1e6();
+const const34_1on10 = consts.const34_1on10();
+const const34_32075 = consts.const34_32075();
+const const_86400 = consts.const_86400();
 
 // ---------------------------------------------------------------------------
 // Globals

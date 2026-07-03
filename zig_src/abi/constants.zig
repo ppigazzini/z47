@@ -202,3 +202,120 @@ pub inline fn const_7() *const Real {
 pub inline fn const_1e_6143() *const Real {
     return at(5840);
 }
+pub inline fn const_86400() *const Real {
+    return at(5524);
+}
+pub inline fn const34_43200() *align(1) const Real34 {
+    return at34(16776);
+}
+pub inline fn const34_86400() *align(1) const Real34 {
+    return at34(16808);
+}
+pub inline fn const34_2() *align(1) const Real34 {
+    return at34(16328);
+}
+pub inline fn const34_28() *align(1) const Real34 {
+    return at34(16488);
+}
+pub inline fn const34_400() *align(1) const Real34 {
+    return at34(16616);
+}
+pub inline fn const34__4712() *align(1) const Real34 {
+    return at34(16216);
+}
+pub inline fn const34_1() *align(1) const Real34 {
+    return at34(16312);
+}
+pub inline fn const34_31() *align(1) const Real34 {
+    return at34(16504);
+}
+pub inline fn const34_12() *align(1) const Real34 {
+    return at34(16440);
+}
+pub inline fn const34_14() *align(1) const Real34 {
+    return at34(16456);
+}
+pub inline fn const34_4800() *align(1) const Real34 {
+    return at34(16712);
+}
+pub inline fn const34_1461() *align(1) const Real34 {
+    return at34(16664);
+}
+pub inline fn const34_4() *align(1) const Real34 {
+    return at34(16360);
+}
+pub inline fn const34_367() *align(1) const Real34 {
+    return at34(16600);
+}
+pub inline fn const34_4900() *align(1) const Real34 {
+    return at34(16728);
+}
+pub inline fn const34_100() *align(1) const Real34 {
+    return at34(16552);
+}
+pub inline fn const34_3() *align(1) const Real34 {
+    return at34(16344);
+}
+pub inline fn const34_9() *align(1) const Real34 {
+    return at34(16408);
+}
+pub inline fn const34_7() *align(1) const Real34 {
+    return at34(16392);
+}
+pub inline fn const34_5001() *align(1) const Real34 {
+    return at34(16744);
+}
+pub inline fn const34_275() *align(1) const Real34 {
+    return at34(16584);
+}
+pub inline fn const34_1729777() *align(1) const Real34 {
+    return at34(16872);
+}
+pub inline fn const34_1401() *align(1) const Real34 {
+    return at34(16648);
+}
+pub inline fn const34_274277() *align(1) const Real34 {
+    return at34(16840);
+}
+pub inline fn const34_146097() *align(1) const Real34 {
+    return at34(16824);
+}
+pub inline fn const34_38() *align(1) const Real34 {
+    return at34(16520);
+}
+pub inline fn const34_153() *align(1) const Real34 {
+    return at34(16568);
+}
+pub inline fn const34_5() *align(1) const Real34 {
+    return at34(16376);
+}
+pub inline fn const34_4716() *align(1) const Real34 {
+    return at34(16696);
+}
+pub inline fn const34_1on2() *align(1) const Real34 {
+    return at34(16296);
+}
+pub inline fn const34_24() *align(1) const Real34 {
+    return at34(16472);
+}
+pub inline fn const34_3600() *align(1) const Real34 {
+    return at34(16680);
+}
+pub inline fn const34_60() *align(1) const Real34 {
+    return at34(16536);
+}
+pub inline fn const34_maxDate() *align(1) const Real34 {
+    return at34(16904);
+}
+pub inline fn const34_maxTime() *align(1) const Real34 {
+    return at34(16920);
+}
+pub inline fn const34_1e6() *align(1) const Real34 {
+    return at34(16856);
+}
+pub inline fn const34_1on10() *align(1) const Real34 {
+    return at34(16280);
+}
+pub inline fn const34_32075() *align(1) const Real34 {
+    return at34(16760);
+}
