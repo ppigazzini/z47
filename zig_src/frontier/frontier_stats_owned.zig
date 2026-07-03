@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_1 = consts.const_1;
+const const_1on2 = consts.const_1on2;
+const const34_1 = consts.const34_1;
+const const_3 = consts.const_3;
 //
 // Zig owner for src/c47/stats.c: the Sigma+/Sigma- accumulator engine over the
 // 28 statistical sums (75-digit reals), the STATS matrix bookkeeping
@@ -144,15 +149,8 @@ const DEC_ROUND_CEILING: c_int = 0;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1 = 4856;
-const OFF_const_3 = 5012;
-const OFF_const34_1 = 16312;
-const OFF_const_1on2 = 4580;
 
 inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
-inline fn cst34(offset: u32) *align(1) const real34_t {
     return @ptrCast(constants + offset);
 }
 
@@ -336,7 +334,7 @@ fn accumulateToSigma(x: *const real_t, y: *const real_t, accum: *const accumulat
     _ = accum.minimum(x, y);
 
     // n
-    if (!acc(sigma(0), cstR(OFF_const_1))) {
+    if (!acc(sigma(0), const_1())) {
         return;
     }
 
@@ -381,7 +379,7 @@ fn accumulateToSigma(x: *const real_t, y: *const real_t, accum: *const accumulat
     }
 
     // sigma 1/x^2
-    realDivide(cstR(OFF_const_1), &tmpReal1, &tmpReal2, realContext);
+    realDivide(const_1(), &tmpReal1, &tmpReal2, realContext);
     if (!acc(sigma(SUM_1onX2), &tmpReal2)) {
         return;
     }
@@ -393,7 +391,7 @@ fn accumulateToSigma(x: *const real_t, y: *const real_t, accum: *const accumulat
     }
 
     // sigma 1/y^2
-    realDivide(cstR(OFF_const_1), &tmpReal1, &tmpReal2, realContext);
+    realDivide(const_1(), &tmpReal1, &tmpReal2, realContext);
     if (!acc(sigma(SUM_1onY2), &tmpReal2)) {
         return;
     }
@@ -460,7 +458,7 @@ fn accumulateToSigma(x: *const real_t, y: *const real_t, accum: *const accumulat
     }
 
     // sigma 1/x
-    realDivide(cstR(OFF_const_1), x, &tmpReal1, realContext);
+    realDivide(const_1(), x, &tmpReal1, realContext);
     if (!acc(sigma(SUM_1onX), &tmpReal1)) {
         return;
     }
@@ -472,7 +470,7 @@ fn accumulateToSigma(x: *const real_t, y: *const real_t, accum: *const accumulat
     }
 
     // sigma 1/y
-    realDivide(cstR(OFF_const_1), y, &tmpReal1, realContext);
+    realDivide(const_1(), y, &tmpReal1, realContext);
     if (!acc(sigma(SUM_1onY), &tmpReal1)) {
         return;
     }
@@ -935,7 +933,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
             badTypeError(REGISTER_X);
         }
     } else if (plusMinusSelection == SIGMA_MINUS) { // SIGMA-
-        if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+        if (checkMinimumDataPoints(const_1())) {
             getLastRowStatsMatrix(&x, &y);
             if (statisticalSumsUpdate) {
                 subSigma(&x, &y);
@@ -962,7 +960,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
 // Sum / min / max / range readouts
 // ===========================================================================
 pub export fn fnStatSum(sum: u16) callconv(.c) void {
-    if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+    if (checkMinimumDataPoints(const_1())) {
         liftStack();
         convertRealToResultRegister(sigma(sum), REGISTER_X, amNone);
     }
@@ -970,7 +968,7 @@ pub export fn fnStatSum(sum: u16) callconv(.c) void {
 
 pub export fn fnSumXY(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+    if (checkMinimumDataPoints(const_1())) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
@@ -984,7 +982,7 @@ pub export fn fnSumXY(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnXmin(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+    if (checkMinimumDataPoints(const_1())) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
@@ -998,7 +996,7 @@ pub export fn fnXmin(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnXmax(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+    if (checkMinimumDataPoints(const_1())) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
@@ -1014,7 +1012,7 @@ pub export fn fnRangeXY(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     var t: real_t = undefined;
 
-    if (checkMinimumDataPoints(cstR(OFF_const_1))) {
+    if (checkMinimumDataPoints(const_1())) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
@@ -1137,7 +1135,7 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
     var nn: real_t = undefined;
 
     if (statMx[0] == 'S' and isStatsMatrix(&rows, &statMx)) {
-        if (checkMinimumDataPoints(cstR(OFF_const_3))) {
+        if (checkMinimumDataPoints(const_3())) {
             if (statsVariableToHistogram == ITM_Y) {
                 realToReal34(sigma(SUM_YMIN), &loBinR); // set up the user variables from auto estimates from the data
                 realToReal34(sigma(SUM_YMAX), &hiBinR); // set up the user variables from auto estimates from the data
@@ -1182,7 +1180,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     var i: u16 = 0;
     var j: u16 = 0;
 
-    if (!checkMinimumDataPoints(cstR(OFF_const_3))) {
+    if (!checkMinimumDataPoints(const_3())) {
         return;
     }
     if (statMx[0] != 'S') {
@@ -1204,7 +1202,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         const NN: i32 = real34ToInt32(&nBins);
         realSubtract(&hb, &lb, &bw, &ctxtReal39);
         realDivide(&bw, &nb, &bw, &ctxtReal39);
-        realMultiply(&bw, cstR(OFF_const_1on2), &bwon2, &ctxtReal39); // calculate bin width bw and half bin width bw_on_2
+        realMultiply(&bw, const_1on2(), &bwon2, &ctxtReal39); // calculate bin width bw and half bin width bw_on_2
 
         var stats: real34Matrix_t = undefined;
         var histo: real34Matrix_t = undefined;
@@ -1215,7 +1213,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
             i = 0;
             while (@as(i32, i) < NN) : (i += 1) {
                 int32ToReal(i, &ii);
-                realAdd(&ii, cstR(OFF_const_1on2), &ii, &ctxtReal39);
+                realAdd(&ii, const_1on2(), &ii, &ctxtReal39);
                 realMultiply(&ii, &bw, &ii, &ctxtReal39);
                 realAdd(&ii, &lb, &ii, &ctxtReal39); // bin midpoint
                 initHistoMatrix(&ii); // Set up all x-mid-points of the bins in HISTO, with 0 in y
@@ -1237,7 +1235,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                         if ((@as(i32, j) < NN - 1 and realCompareLessThan(&t, &th) and realCompareGreaterEqual(&t, &tl)) or
                             (@as(i32, j) == NN - 1 and realCompareLessEqual(&t, &th) and realCompareGreaterEqual(&t, &tl)))
                         {
-                            real34Add(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]), cst34(OFF_const34_1), @ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]));
+                            real34Add(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]), const34_1(), @ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns) + 1]));
                             break;
                         }
                     }
