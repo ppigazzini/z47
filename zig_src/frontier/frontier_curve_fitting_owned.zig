@@ -1,4 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_1 = consts.const_1;
+const const_2 = consts.const_2;
+const const_0 = consts.const_0;
+const const_1on2 = consts.const_1on2;
+const const__4 = consts.const__4;
 //
 // Zig owner for src/c47/curveFitting.c: the L.R. / curve-fit engine.
 // fnCurveFitting / fnCurveFitting_T / fnCurveFittingReset manage the
@@ -113,11 +119,6 @@ const SUM_X4 = 23;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_0 = 1708;
-const OFF_const__4 = 4364;
-const OFF_const_1on2 = 4580;
-const OFF_const_1 = 4856;
-const OFF_const_2 = 4928;
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
@@ -360,7 +361,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
     if (comptime extra_info) {
         _ = printf("Processing for best fit: %s\n", getCurveFitModeNames(curveFitting));
     }
-    realCopy(cstR(OFF_const__4), &s_RRMAX);
+    realCopy(const__4(), &s_RRMAX);
     var s: u16 = 0; // default
     var jx: u16 = 0; // only a single graph can be evaluated at once, so retain the single lowest bit, and clear the higher order bits.
     var ix: u4 = 0;
@@ -375,7 +376,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
                 processCurvefitSelection(jx, &s_RR, &s_SMI, &s_aa0, &s_aa1, &s_aa2);
                 realMultiply(&s_RR, &s_RR, &s_RR2, &ctxtReal39);
 
-                if (realCompareGreaterThan(&s_RR2, &s_RRMAX) and realCompareLessEqual(&s_RR2, cstR(OFF_const_1))) { // Only consider L.R. models where R^2<=1
+                if (realCompareGreaterThan(&s_RR2, &s_RRMAX) and realCompareLessEqual(&s_RR2, const_1())) { // Only consider L.R. models where R^2<=1
                     realCopy(&s_RR2, &s_RRMAX);
                     s = jx;
                 }
@@ -418,7 +419,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
         } else if (resultType == 4) {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertRealToResultRegister(cstR(OFF_const_0), REGISTER_X, amNone);
+            convertRealToResultRegister(const_0(), REGISTER_X, amNone);
         }
         if (resultType & 2 != 0) {
             liftStack();
@@ -442,7 +443,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
 }
 
 pub export fn fnProcessLR(resultType: u16) callconv(.c) void {
-    if (checkMinimumDataPoints(cstR(OFF_const_2))) {
+    if (checkMinimumDataPoints(const_2())) {
         fnProcessLRfind(lrSelection, resultType);
     }
 }
@@ -638,9 +639,9 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realDivide(&SS, &TT, RR_, ctx);
             realDivide(RR_, &VV, RR_, ctx); // r
 
-            realSubtract(sigma(0), cstR(OFF_const_1), &SS, ctx); // Section for s(a)
+            realSubtract(sigma(0), const_1(), &SS, ctx); // Section for s(a)
             realMultiply(sigma(0), &SS, &SS, ctx);
-            realDivide(cstR(OFF_const_1), &SS, &SS, ctx);
+            realDivide(const_1(), &SS, &SS, ctx);
             realMultiply(&SS, &ZZ, SY2, ctx);
         },
 
@@ -681,9 +682,9 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realDivide(&SS, &TT, RR_, ctx);
             realDivide(RR_, &UU, RR_, ctx); // r
 
-            realSubtract(sigma(0), cstR(OFF_const_1), &SS, ctx); // Section for s(a)
+            realSubtract(sigma(0), const_1(), &SS, ctx); // Section for s(a)
             realMultiply(sigma(0), &SS, &SS, ctx);
-            realDivide(cstR(OFF_const_1), &SS, &SS, ctx);
+            realDivide(const_1(), &SS, &SS, ctx);
             realMultiply(&SS, &WW, SX2, ctx);
             realDivide(sigma(SUM_lnX), sigma(0), MX, ctx);
             realMultiply(MX, MX, MX2, ctx);
@@ -727,16 +728,16 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realDivide(&SS, &TT, RR_, ctx);
             realDivide(RR_, &UU, RR_, ctx); // r
 
-            realSubtract(sigma(0), cstR(OFF_const_1), &SS, ctx); // Section for s(a)
+            realSubtract(sigma(0), const_1(), &SS, ctx); // Section for s(a)
             realMultiply(sigma(0), &SS, &SS, ctx);
-            realDivide(cstR(OFF_const_1), &SS, &SS, ctx);
+            realDivide(const_1(), &SS, &SS, ctx);
             realMultiply(&SS, &WW, SX2, ctx);
             realDivide(sigma(SUM_lnX), sigma(0), MX, ctx);
             realMultiply(MX, MX, MX2, ctx);
 
-            realSubtract(sigma(0), cstR(OFF_const_1), &SS, ctx); // Section for s(a)
+            realSubtract(sigma(0), const_1(), &SS, ctx); // Section for s(a)
             realMultiply(sigma(0), &SS, &SS, ctx);
-            realDivide(cstR(OFF_const_1), &SS, &SS, ctx);
+            realDivide(const_1(), &SS, &SS, ctx);
             realMultiply(&SS, &ZZ, SY2, ctx);
         },
 
@@ -748,7 +749,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realMultiply(sigma(SUM_1onX), sigma(SUM_1onX), &AA, ctx);
             realSubtract(&SS, &AA, &AA, ctx); // err fixed
 
-            realDivide(cstR(OFF_const_1), &AA, &SS, ctx); // err fixed
+            realDivide(const_1(), &AA, &SS, ctx); // err fixed
             realMultiply(sigma(SUM_1onX2), sigma(SUM_lnY), &TT, ctx);
             realMultiply(sigma(SUM_1onX), sigma(SUM_lnYonX), &UU, ctx);
             realSubtract(&TT, &UU, &TT, ctx);
@@ -769,7 +770,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realMultiply(&BB, sigma(SUM_lnY), &SS, ctx);
             realMultiply(&CC, sigma(SUM_lnYonX), &TT, ctx);
             realAdd(&SS, &TT, &SS, ctx); // t1+t2
-            realDivide(cstR(OFF_const_1), sigma(0), &TT, ctx);
+            realDivide(const_1(), sigma(0), &TT, ctx);
             realMultiply(&TT, sigma(SUM_lnY), &TT, ctx);
             realMultiply(&TT, sigma(SUM_lnY), &TT, ctx); // t3
             realSubtract(&SS, &TT, &SS, ctx); // t1+t2-t3
@@ -802,7 +803,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realMultiply(aa0, sigma(SUM_1onY), &SS, ctx);
             realMultiply(aa1, sigma(SUM_XonY), &TT, ctx);
             realAdd(&SS, &TT, &SS, ctx); // ss=t1+t2
-            realDivide(cstR(OFF_const_1), sigma(0), &TT, ctx);
+            realDivide(const_1(), sigma(0), &TT, ctx);
             realMultiply(&TT, sigma(SUM_1onY), &TT, ctx);
             realMultiply(&TT, sigma(SUM_1onY), &TT, ctx); // tt=t3
             realSubtract(&SS, &TT, &SS, ctx); // t1+t2-t3
@@ -868,10 +869,10 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realDivide(&HH, sigma(0), &HH, ctx);
 
             //        a2 = (1.0)/F;
-            realDivide(cstR(OFF_const_1), &FF, aa2, ctx);
+            realDivide(const_1(), &FF, aa2, ctx);
 
             //        a1 = -G/(2.0) * a2;
-            realMultiply(&GG, cstR(OFF_const_1on2), &TT, ctx);
+            realMultiply(&GG, const_1on2(), &TT, ctx);
             realChangeSign(&TT);
             realMultiply(&TT, aa2, aa1, ctx);
 
@@ -925,7 +926,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realCopy(&FF, aa0);
 
             //        a1 = G/2.0 * a0;
-            realDivide(&GG, cstR(OFF_const_2), &TT, ctx);
+            realDivide(&GG, const_2(), &TT, ctx);
             realDivide(&TT, aa0, aa1, ctx); // err
 
             //      a2 = H - F * a1 * a1;
@@ -956,15 +957,15 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
             realSubtract(&SS, &TT, &UU, ctx); // keep  uu = sy2-sx2
             realMultiply(&UU, &UU, &VV, ctx);
             realMultiply(&S_XY, &S_XY, &WW, ctx);
-            realMultiply(&WW, cstR(OFF_const_2), &WW, ctx);
-            realMultiply(&WW, cstR(OFF_const_2), &WW, ctx);
+            realMultiply(&WW, const_2(), &WW, ctx);
+            realMultiply(&WW, const_2(), &WW, ctx);
             realAdd(&WW, &VV, &VV, ctx);
             realSquareRoot(&VV, &VV, ctx); // sqrt term
 
-            realMultiply(&UU, cstR(OFF_const_1on2), &UU, ctx); // term1
+            realMultiply(&UU, const_1on2(), &UU, ctx); // term1
             realDivide(&UU, &S_XY, &UU, ctx);
 
-            realMultiply(&VV, cstR(OFF_const_1on2), &VV, ctx); // term2
+            realMultiply(&VV, const_1on2(), &VV, ctx); // term2
             realDivide(&VV, &S_XY, &VV, ctx);
 
             realAdd(&UU, &VV, aa1, ctx); // a1
@@ -1062,7 +1063,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             if (USEFLOAT == 0) {
                 y.* = a0 * pow(a1, 1 / x);
             } else {
-                realDivide(cstR(OFF_const_1), XX, &SS, realContextForecast.?);
+                realDivide(const_1(), XX, &SS, realContextForecast.?);
                 realPower(aa1, &SS, &SS, realContextForecast.?); // very very slow with a1=0.9982, probably in the 0.4 < x < 1.0 area
                 realMultiply(&SS, aa0, YY, realContextForecast.?);
                 realToFloat(YY, &yf);
@@ -1075,7 +1076,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             } else {
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realAdd(&UU, aa0, &TT, realContextForecast.?);
-                realDivide(cstR(OFF_const_1), &TT, YY, realContextForecast.?);
+                realDivide(const_1(), &TT, YY, realContextForecast.?);
                 realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
@@ -1114,7 +1115,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realMultiply(&TT, &TT, &TT, realContextForecast.?);
                 realMultiply(&TT, aa0, &TT, realContextForecast.?);
                 realAdd(&TT, aa2, &TT, realContextForecast.?);
-                realDivide(cstR(OFF_const_1), &TT, YY, realContextForecast.?);
+                realDivide(const_1(), &TT, YY, realContextForecast.?);
                 realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
@@ -1149,7 +1150,7 @@ pub export fn fnYIsFnx(unusedButMandatoryParameter: u16) callconv(.c) void {
     realSetZero(&aa0);
     realSetZero(&aa1);
     realSetZero(&aa2);
-    if (checkMinimumDataPoints(cstR(OFF_const_2))) {
+    if (checkMinimumDataPoints(const_2())) {
         if (lrChosen == 0) { // if lrChosen contains something, the stat data exists, otherwise set it to linear.
             lrChosen = CF_LINEAR_FITTING;
         }
@@ -1212,7 +1213,7 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
             temporaryInformation = TI_CALCX;
         },
         CF_HYPERBOLIC_FITTING => {
-            realDivide(cstR(OFF_const_1), YY, &UU, realContextForecast.?);
+            realDivide(const_1(), YY, &UU, realContextForecast.?);
             realSubtract(&UU, aa0, &UU, realContextForecast.?);
             realDivide(&UU, aa1, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX;
@@ -1220,14 +1221,14 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
         CF_PARABOLIC_FITTING => {
             // (1/(2.a2)) . ( -a1 +- sqrt(a1.a1 - 4a2.(a0 - y) ) )
             realSubtract(YY, aa0, &UU, realContextForecast.?);
-            realMultiply(cstR(OFF_const_2), &UU, &UU, realContextForecast.?);
-            realMultiply(cstR(OFF_const_2), &UU, &UU, realContextForecast.?);
+            realMultiply(const_2(), &UU, &UU, realContextForecast.?);
+            realMultiply(const_2(), &UU, &UU, realContextForecast.?);
             realMultiply(aa2, &UU, &UU, realContextForecast.?);
             realMultiply(aa1, aa1, &TT, realContextForecast.?);
             realAdd(&UU, &TT, &UU, realContextForecast.?); // swapped terms around minus, therefore add
             realSquareRoot(&UU, &UU, realContextForecast.?);
 
-            realSubtract(cstR(OFF_const_0), aa1, &SS, realContextForecast.?);
+            realSubtract(const_0(), aa1, &SS, realContextForecast.?);
             if (rootNo == 1) {
                 realSubtract(&SS, &UU, &SS, realContextForecast.?); // This term could be Add due to plus and minus
             }
@@ -1235,16 +1236,16 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
                 realAdd(&SS, &UU, &SS, realContextForecast.?); // This term could be Add due to plus and minus
             }
 
-            realMultiply(&SS, cstR(OFF_const_1on2), &SS, realContextForecast.?);
+            realMultiply(&SS, const_1on2(), &SS, realContextForecast.?);
             realDivide(&SS, aa2, XX, realContextForecast.?);
             temporaryInformation = TI_CALCX2;
         },
         CF_CAUCHY_FITTING => {
-            realDivide(cstR(OFF_const_1), YY, &UU, realContextForecast.?);
+            realDivide(const_1(), YY, &UU, realContextForecast.?);
             realSubtract(&UU, aa2, &UU, realContextForecast.?);
             realDivide(&UU, aa0, &UU, realContextForecast.?);
             realSquareRoot(&UU, &UU, realContextForecast.?);
-            realSubtract(cstR(OFF_const_0), aa1, &SS, realContextForecast.?);
+            realSubtract(const_0(), aa1, &SS, realContextForecast.?);
             if (rootNo == 1) {
                 realSubtract(&SS, &UU, XX, realContextForecast.?);
             }
@@ -1290,7 +1291,7 @@ pub export fn fnXIsFny(unusedButMandatoryParameter: u16) callconv(.c) void {
     realSetZero(&aa0);
     realSetZero(&aa1);
     realSetZero(&aa2);
-    if (checkMinimumDataPoints(cstR(OFF_const_2))) {
+    if (checkMinimumDataPoints(const_2())) {
         if (lrChosen == 0) { // if lrChosen contains something, the stat data exists, otherwise set it to linear.
             lrChosen = CF_LINEAR_FITTING;
         }
