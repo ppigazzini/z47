@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 // Zig port of the determinant cluster of src/c47/mathematics/matrix.c:
 // detRealMatrix / detComplexMatrix. Both pack the matrix into an interleaved
 // real/imag real_t scratch array and run a partial-pivoting complex LU
@@ -29,9 +31,8 @@ extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t)
 
 // const_1e_37 is "#define const_1e_37 ((real_t *)(constants + 4436))" in the
 // generated constantPointers.h; hand out the same pointer into the blob.
-const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 4436));
+    return consts.c4436();
 }
 
 inline fn constRealElems(matrix: anytype) [*]const real34_t {
