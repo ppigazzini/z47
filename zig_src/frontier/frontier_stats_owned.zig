@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const cstR = consts.cstR;
 const consts = abi.constants;
 const const_1 = consts.const_1;
 const const_1on2 = consts.const_1on2;
@@ -148,11 +149,7 @@ const DEC_ROUND_CEILING: c_int = 0;
 // ---------------------------------------------------------------------------
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
 
-inline fn cstR(offset: u32) *align(1) const real_t {
-    return @ptrCast(constants + offset);
-}
 
 // ---------------------------------------------------------------------------
 // Globals (defined in c47.c / plotstat.c, compiled through the legacy shims)
