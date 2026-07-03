@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const_1on10 = consts.const_1on10;
+const const_1 = consts.const_1;
+const const_10 = consts.const_10;
+const const_60 = consts.const_60;
+const const_100 = consts.const_100;
 //
 // Zig owner for src/c47/mathematics/rsd.c: round-to-significant-digits (RSD).
 // Ports rsd.h's roundToSignificantDigits, senaryDigitToDecimal,
@@ -89,34 +97,6 @@ inline fn realDivideRemainder(op1: *const real_t, op2: *align(1) const real_t, r
 }
 
 // Blob constants.
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const_1on10: u32 = 4520;
-const OFF_const_1: u32 = 4856;
-const OFF_const_10: u32 = 5132;
-const OFF_const_60: u32 = 5296;
-const OFF_const_100: u32 = 7532;
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const_1on10() *align(1) const real_t {
-    return cstR(OFF_const_1on10);
-}
-inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const_10() *align(1) const real_t {
-    return cstR(OFF_const_10);
-}
-inline fn const_60() *align(1) const real_t {
-    return cstR(OFF_const_60);
-}
-inline fn const_100() *align(1) const real_t {
-    return cstR(OFF_const_100);
-}
 
 // roundingMode / roundingModeTable.
 extern var roundingMode: u8;

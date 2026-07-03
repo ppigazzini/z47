@@ -106,3 +106,15 @@ pub inline fn const__1Off() *align(1) const Real {
 pub inline fn const_3Off() *align(1) const Real {
     return at(5012);
 }
+pub inline fn const_0() *align(1) const Real {
+    return at(1708);
+}
+pub inline fn const_1on10() *align(1) const Real {
+    return at(4520);
+}
+pub inline fn const_60() *align(1) const Real {
+    return at(5296);
+}
+pub inline fn const_100() *align(1) const Real {
+    return at(7532);
+}
