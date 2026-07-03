@@ -100,9 +100,6 @@ extern fn displayCalcErrorMessage(code: u8, errMsgRegLine: calcRegister_t, errRe
 extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
 extern fn convertComplexToResultRegister(real: *align(1) const real_t, imag: *align(1) const real_t, dest: calcRegister_t) void;
 extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void;
-extern fn addComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *real_t, ri: *real_t, ctx: *realContext_t) void;
-extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *real_t, pi: *real_t, ctx: *realContext_t) void;
-extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *real_t, qi: *real_t, ctx: *realContext_t) void;
 extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
@@ -143,16 +140,9 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, angle | (pm & amPolar));
 }
 
-// cplx_t helpers (the C CPLX(x) macro passes &x.Real, &x.Imag).
-inline fn addCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
-    addComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
-}
-inline fn mulCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
-    mulComplexComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
-}
-inline fn divCplx(a: *const cplx_t, b: *const cplx_t, r: *cplx_t) void {
-    divComplexComplex(&a.Real, &a.Imag, &b.Real, &b.Imag, &r.Real, &r.Imag, &ctxtReal39);
-}
+// Complex arithmetic comes from the shared L1 runtime wrappers (abi.runtime):
+// rt.add/mul/div take a *Complex and thread ctxtReal39.
+const rt = abi.runtime;
 inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
     _ = getRegisterAsComplex(reg, &c.Real, &c.Imag);
 }
@@ -300,14 +290,14 @@ pub export fn fnDeltaToStar(unusedButMandatoryParameter: u16) callconv(.c) void 
             setSystemFlag(FLAG_CPXRES);
         }
         elecGetXYZ(&x, &y, &z);
-        addCplx(&x, &y, &s); // s = x + y + z
-        addCplx(&s, &z, &s);
-        mulCplx(&z, &x, &zx); // pairwise products
-        mulCplx(&x, &y, &xy);
-        mulCplx(&y, &z, &yz);
-        divCplx(&zx, &s, &rx); // X = (z*x) / s
-        divCplx(&xy, &s, &ry); // Y = (x*y) / s
-        divCplx(&yz, &s, &rz); // Z = (y*z) / s
+        rt.add(&x, &y, &s); // s = x + y + z
+        rt.add(&s, &z, &s);
+        rt.mul(&z, &x, &zx); // pairwise products
+        rt.mul(&x, &y, &xy);
+        rt.mul(&y, &z, &yz);
+        rt.div(&zx, &s, &rx); // X = (z*x) / s
+        rt.div(&xy, &s, &ry); // Y = (x*y) / s
+        rt.div(&yz, &s, &rz); // Z = (y*z) / s
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -335,14 +325,14 @@ pub export fn fnStarToDelta(unusedButMandatoryParameter: u16) callconv(.c) void 
             setSystemFlag(FLAG_CPXRES);
         }
         elecGetXYZ(&x, &y, &z);
-        mulCplx(&x, &y, &p); // p = x*y + y*z + z*x
-        mulCplx(&y, &z, &t);
-        addCplx(&p, &t, &p);
-        mulCplx(&z, &x, &t);
-        addCplx(&p, &t, &p);
-        divCplx(&p, &z, &rx); // X = p / z
-        divCplx(&p, &x, &ry); // Y = p / x
-        divCplx(&p, &y, &rz); // Z = p / y
+        rt.mul(&x, &y, &p); // p = x*y + y*z + z*x
+        rt.mul(&y, &z, &t);
+        rt.add(&p, &t, &p);
+        rt.mul(&z, &x, &t);
+        rt.add(&p, &t, &p);
+        rt.div(&p, &z, &rx); // X = p / z
+        rt.div(&p, &x, &ry); // Y = p / x
+        rt.div(&p, &y, &rz); // Z = p / y
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -372,16 +362,16 @@ pub export fn fnSymToAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
         elecGetXYZ(&a2, &a1, &a0); // X = A2, Y = A1, Z = A0
         elecSetAOperators(&aOp, &aaOp);
-        addCplx(&a0, &a1, &va); // Va = A0 + A1 + A2
-        addCplx(&va, &a2, &va);
-        mulCplx(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
-        mulCplx(&aOp, &a2, &t);
-        addCplx(&vb, &t, &vb);
-        addCplx(&vb, &a0, &vb);
-        mulCplx(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
-        mulCplx(&aaOp, &a2, &t);
-        addCplx(&vc, &t, &vc);
-        addCplx(&vc, &a0, &vc);
+        rt.add(&a0, &a1, &va); // Va = A0 + A1 + A2
+        rt.add(&va, &a2, &va);
+        rt.mul(&aaOp, &a1, &vb); // Vb = A0 + a^2*A1 + a*A2
+        rt.mul(&aOp, &a2, &t);
+        rt.add(&vb, &t, &vb);
+        rt.add(&vb, &a0, &vb);
+        rt.mul(&aOp, &a1, &vc); // Vc = A0 + a*A1 + a^2*A2
+        rt.mul(&aaOp, &a2, &t);
+        rt.add(&vc, &t, &vc);
+        rt.add(&vc, &a0, &vc);
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -411,20 +401,20 @@ pub export fn fnAbcToSym(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
         elecGetXYZ(&vc, &vb, &va); // X = Vc, Y = Vb, Z = Va
         elecSetAOperators(&aOp, &aaOp);
-        addCplx(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
-        addCplx(&s0, &vc, &s0);
+        rt.add(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
+        rt.add(&s0, &vc, &s0);
         realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal39);
         realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal39);
-        mulCplx(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
-        mulCplx(&aaOp, &vc, &t);
-        addCplx(&s1, &t, &s1);
-        addCplx(&s1, &va, &s1);
+        rt.mul(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
+        rt.mul(&aaOp, &vc, &t);
+        rt.add(&s1, &t, &s1);
+        rt.add(&s1, &va, &s1);
         realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal39);
         realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal39);
-        mulCplx(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
-        mulCplx(&aOp, &vc, &t);
-        addCplx(&s2, &t, &s2);
-        addCplx(&s2, &va, &s2);
+        rt.mul(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
+        rt.mul(&aOp, &vc, &t);
+        rt.add(&s2, &t, &s2);
+        rt.add(&s2, &va, &s2);
         realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal39);
         realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal39);
         if (!elecResultsOk(&results)) {
@@ -456,9 +446,9 @@ pub export fn fnTripleZfromVI(unusedButMandatoryParameter: u16) callconv(.c) voi
         }
         elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
         elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
-        divCplx(&v1, &ii1, &z1); // Z1 = V1 / I1
-        divCplx(&v2, &ii2, &z2);
-        divCplx(&v3, &ii3, &z3);
+        rt.div(&v1, &ii1, &z1); // Z1 = V1 / I1
+        rt.div(&v2, &ii2, &z2);
+        rt.div(&v3, &ii3, &z3);
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -486,9 +476,9 @@ pub export fn fnTripleVfromIZ(unusedButMandatoryParameter: u16) callconv(.c) voi
         }
         elecGetTriple(TripleRegI1_93, &ii1, &ii2, &ii3);
         elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-        mulCplx(&ii1, &z1, &v1); // V1 = I1 * Z1
-        mulCplx(&ii2, &z2, &v2);
-        mulCplx(&ii3, &z3, &v3);
+        rt.mul(&ii1, &z1, &v1); // V1 = I1 * Z1
+        rt.mul(&ii2, &z2, &v2);
+        rt.mul(&ii3, &z3, &v3);
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -516,9 +506,9 @@ pub export fn fnTripleIfromVZ(unusedButMandatoryParameter: u16) callconv(.c) voi
         }
         elecGetTriple(TripleRegV1_90, &v1, &v2, &v3);
         elecGetTriple(TripleRegZ1_96, &z1, &z2, &z3);
-        divCplx(&v1, &z1, &ii1); // I1 = V1 / Z1
-        divCplx(&v2, &z2, &ii2);
-        divCplx(&v3, &z3, &ii3);
+        rt.div(&v1, &z1, &ii1); // I1 = V1 / Z1
+        rt.div(&v2, &z2, &ii2);
+        rt.div(&v3, &z3, &ii3);
         if (!elecResultsOk(&results)) {
             return;
         }
@@ -552,8 +542,8 @@ pub export fn fnCopyXtoAbc(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
         getRegCplx(REGISTER_X, &x); // x = source phasor
         elecSetAOperators(&aOp, &aaOp);
-        mulCplx(&aOp, &x, &ry); // a*x   -> Y
-        mulCplx(&aaOp, &x, &rx); // a^2*x -> X
+        rt.mul(&aOp, &x, &ry); // a*x   -> Y
+        rt.mul(&aaOp, &x, &rx); // a^2*x -> X
         if (!elecResultsOk(&results)) {
             return;
         }
