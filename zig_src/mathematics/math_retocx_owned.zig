@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 //
 // Zig owner for src/c47/mathematics/reToCx.c: the Re->Cx command (combine regY
 // and regX into the complex regY + i*regX, rectangular or polar mode), for both
@@ -46,14 +48,11 @@ extern fn realToReal34(source: *const real_t, destination: *align(1) real34_t) v
 inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const39_pi: u32 = 1848;
-const OFF_const34_0: u32 = 16200;
 inline fn const39_pi() *align(1) const real_t {
-    return @ptrCast(constants + OFF_const39_pi);
+    return consts.c1848();
 }
 inline fn const34_0() *align(1) const real34_t {
-    return @ptrCast(constants + OFF_const34_0);
+    return consts.q16200();
 }
 
 // real34Copy: copy the 16 raw bytes (two u64 stores in C).
