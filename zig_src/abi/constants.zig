@@ -118,3 +118,30 @@ pub inline fn const_60() *align(1) const Real {
 pub inline fn const_100() *align(1) const Real {
     return at(7532);
 }
+pub inline fn const_3() *align(1) const Real {
+    return at(5012);
+}
+pub inline fn const_4() *align(1) const Real {
+    return at(5024);
+}
+pub inline fn const_5() *align(1) const Real {
+    return at(5072);
+}
+pub inline fn const_8() *align(1) const Real {
+    return at(5108);
+}
+pub inline fn const_24() *align(1) const Real {
+    return at(5168);
+}
+pub inline fn const_90() *align(1) const Real {
+    return at(7544);
+}
+pub inline fn const75_piOn2() *align(1) const Real {
+    return at(7472);
+}
+pub inline fn const39_gammaEM() *align(1) const Real {
+    return at(1256);
+}
+pub inline fn const39_egamma() *align(1) const Real {
+    return at(4592);
+}
