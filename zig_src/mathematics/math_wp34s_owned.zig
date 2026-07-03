@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 //
 // Zig owner for src/c47/mathematics/wp34s.c: the high-precision WP34S
 // transcendental engine borrowed from the WP 34S project. Faithful, line-by-
@@ -38,10 +40,7 @@ const amMultPi = runtime.amMultPi;
 // real_t constant blob accessors. Use the runtime accessors where they exist
 // (properly aligned *align(1) const real_t); otherwise the byte-offset blob pattern.
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
+const cstR = consts.cstR;
 
 // Offsets extracted from the generated constantPointers.h.
 const OFF_const_0: u32 = 1708;
@@ -243,7 +242,7 @@ inline fn const51_gammaC00() *align(1) const real_t {
     return cstR(OFF_const51_gammaC00);
 }
 inline fn const51_gammaC01(k: u32) *align(1) const real_t {
-    return @ptrCast(constants + OFF_const51_gammaC01 + k * REAL_SIZE_51);
+    return consts.cstR(OFF_const51_gammaC01 + k * REAL_SIZE_51);
 }
 inline fn const6147_2pi() *align(1) const real_t {
     return cstR(OFF_const6147_2pi);
