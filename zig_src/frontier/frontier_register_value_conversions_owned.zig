@@ -1,4 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const consts = abi.constants;
+const const_2p32 = consts.const_2p32;
+const const34_86400 = consts.const34_86400;
+const const34_43200 = consts.const34_43200;
+const const34_2p32 = consts.const34_2p32;
+const const6147_2pi = consts.const6147_2pi;
+const const_2p64 = consts.const_2p64;
+const const_0 = consts.const_0;
+const const34_100 = consts.const34_100;
+const const34_1e_4 = consts.const34_1e_4;
+const const_2p63 = consts.const_2p63;
+const const34_3600 = consts.const34_3600;
+const const34_1e6 = consts.const34_1e6;
 //
 // Zig owner for src/c47/registerValueConversions.c: the central register-datatype
 // conversion layer. It bridges GMP long integers, real/real34, short integers,
@@ -131,22 +144,7 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN; // 0x70
 // Constant blob
 // ---------------------------------------------------------------------------
 const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_0 = 1708;
-const OFF_const_2p32 = 5548;
-const OFF_const_2p63 = 5636;
-const OFF_const_2p64 = 5660;
-const OFF_const6147_2pi = 12092;
-const OFF_const34_1e_4 = 16264;
-const OFF_const34_100 = 16552;
-const OFF_const34_3600 = 16680;
-const OFF_const34_43200 = 16776;
-const OFF_const34_86400 = 16808;
-const OFF_const34_1e6 = 16856;
-const OFF_const34_2p32 = 16888;
 
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
 inline fn cstR(offset: u32) *align(1) const real_t {
     return @ptrCast(constants + offset);
 }
@@ -604,7 +602,7 @@ pub export fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t
 
     uInt32ToReal34(@intCast(value >> 32), reg34(destination));
     uInt32ToReal34(@intCast(value & 0x00000000ffffffff), &lowWord);
-    real34FMA(reg34(destination), cst34(OFF_const34_2p32), &lowWord, reg34(destination));
+    real34FMA(reg34(destination), const34_2p32(), &lowWord, reg34(destination));
 
     if (sign != 0) {
         real34SetNegativeSign(reg34(destination));
@@ -620,7 +618,7 @@ pub export fn convertShortIntegerRegisterToReal(source: calcRegister_t, destinat
 
     uInt32ToReal(@intCast(value >> 32), destination);
     uInt32ToReal(@intCast(value & 0x00000000ffffffff), &lowWord);
-    realFMA(destination, cstR(OFF_const_2p32), &lowWord, destination, ctxt);
+    realFMA(destination, const_2p32(), &lowWord, destination, ctxt);
 
     if (sign != 0) {
         realSetNegativeSign(destination);
@@ -829,14 +827,14 @@ pub export fn convertTimeRegisterToReal34Register(source: calcRegister_t, destin
     var real34: real34_t = undefined;
     real34Copy(reg34(source), &real34);
     reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
-    real34Divide(&real34, cst34(OFF_const34_3600), reg34(destination));
+    real34Divide(&real34, const34_3600(), reg34(destination));
 }
 
 pub export fn convertReal34RegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
     var real34: real34_t = undefined;
     real34Copy(reg34(source), &real34);
     reallocateRegister(destination, dtTime, REAL34_SIZE_IN_BLOCKS, amNoneU);
-    real34Multiply(&real34, cst34(OFF_const34_3600), reg34(destination));
+    real34Multiply(&real34, const34_3600(), reg34(destination));
 }
 
 pub export fn convertLongIntegerRegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
@@ -857,14 +855,14 @@ pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destin
     real34SetPositiveSign(&y);
 
     if (getSystemFlag(FLAG_YMD)) {
-        real34Divide(&m, cst34(OFF_const34_100), &m);
-        real34Multiply(&d, cst34(OFF_const34_1e_4), &d);
+        real34Divide(&m, const34_100(), &m);
+        real34Multiply(&d, const34_1e_4(), &d);
     } else if (getSystemFlag(FLAG_MDY)) {
-        real34Divide(&d, cst34(OFF_const34_100), &d);
-        real34Divide(&y, cst34(OFF_const34_1e6), &y);
+        real34Divide(&d, const34_100(), &d);
+        real34Divide(&y, const34_1e6(), &y);
     } else if (getSystemFlag(FLAG_DMY)) {
-        real34Divide(&m, cst34(OFF_const34_100), &m);
-        real34Divide(&y, cst34(OFF_const34_1e6), &y);
+        real34Divide(&m, const34_100(), &m);
+        real34Divide(&y, const34_1e6(), &y);
     }
 
     reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
@@ -892,7 +890,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
     real34ToIntegralValue(&part2, &part1, DEC_ROUND_DOWN); // Y D or M
 
     real34Subtract(&part2, &part1, &part2);
-    real34Multiply(&part2, cst34(OFF_const34_100), &part2);
+    real34Multiply(&part2, const34_100(), &part2);
     real34Copy(&part2, &part3);
     real34ToIntegralValue(&part2, &part2, DEC_ROUND_DOWN); // M or D
 
@@ -916,13 +914,13 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
 
         // remember last used century if the century is not an abbreviation
         if (getSystemFlag(FLAG_YMD)) {
-            if (real34CompareGreaterEqual(&part1, cst34(OFF_const34_100))) {
+            if (real34CompareGreaterEqual(&part1, const34_100())) {
                 const t: i16 = @truncate(@divTrunc(real34ToInt32(&part1), 100));
                 lastCenturyHighUsedtmp = @bitCast(@as(i16, @truncate(@as(i32, 100) * t + 99)));
             }
         }
         // FLAG_MDY // FLAG_DMY
-        else if (real34CompareGreaterEqual(&part3, cst34(OFF_const34_100))) {
+        else if (real34CompareGreaterEqual(&part3, const34_100())) {
             const t: i16 = @truncate(@divTrunc(real34ToInt32(&part3), 100));
             lastCenturyHighUsedtmp = @bitCast(@as(i16, @truncate(@as(i32, 100) * t + 99)));
         }
@@ -955,7 +953,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         // Only YY digits
         const thresholdYYHigh: i16 = @max(0, @as(i16, @bitCast(lastCenturyHighUsed & (YY_MASK_TRACKING - 1))) - 99);
         if (getSystemFlag(FLAG_YMD)) {
-            if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and real34CompareLessThan(&part1, cst34(OFF_const34_100))) {
+            if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and real34CompareLessThan(&part1, const34_100())) {
                 var yy: i16 = @intCast(real34ToInt32(&part1));
                 if (yy >= @rem(thresholdYYHigh, 100)) {
                     yy += (thresholdYYHigh - @rem(thresholdYYHigh, 100));
@@ -966,7 +964,7 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
             }
         }
         // FLAG_MDY // FLAG_DMY
-        else if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and real34CompareLessThan(&part3, cst34(OFF_const34_100))) {
+        else if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and real34CompareLessThan(&part3, const34_100())) {
             var yy: i16 = @intCast(real34ToInt32(&part3));
             if (yy >= @rem(thresholdYYHigh, 100)) {
                 yy += (thresholdYYHigh - @rem(thresholdYYHigh, 100));
@@ -1000,8 +998,8 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         composeJulianDay(&part3, &part2, &part1, reg34(destination));
     }
 
-    real34Multiply(reg34(destination), cst34(OFF_const34_86400), reg34(destination));
-    real34Add(reg34(destination), cst34(OFF_const34_43200), reg34(destination));
+    real34Multiply(reg34(destination), const34_86400(), reg34(destination));
+    real34Add(reg34(destination), const34_43200(), reg34(destination));
 }
 
 // ===========================================================================
@@ -1527,24 +1525,24 @@ pub export fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64,
 
                 var iv: real_t = undefined;
                 realToIntegralValue(&rval, &iv, DEC_ROUND_DOWN, &ctxtReal39);
-                _ = decNumberQuantize(&iv, &iv, cstR(OFF_const_0), &ctxtReal39);
+                _ = decNumberQuantize(&iv, &iv, const_0(), &ctxtReal39);
                 u64v = decNumberToUInt64(&iv, &ctxtReal39);
 
                 of = (u64v & shortIntegerMask) != u64v;
                 if (!of) {
                     switch (shortIntegerMode) {
                         SIM_UNSIGN => {
-                            of = realCompareGreaterEqual(&rval, cstR(OFF_const_2p64));
+                            of = realCompareGreaterEqual(&rval, const_2p64());
                         },
                         SIM_2COMPL => {
                             if (sign.*) {
-                                of = realCompareGreaterThan(&rval, cstR(OFF_const_2p63));
+                                of = realCompareGreaterThan(&rval, const_2p63());
                             } else {
-                                of = realCompareGreaterEqual(&rval, cstR(OFF_const_2p63));
+                                of = realCompareGreaterEqual(&rval, const_2p63());
                             }
                         },
                         SIM_1COMPL, SIM_SIGNMT => {
-                            of = realCompareGreaterEqual(&rval, cstR(OFF_const_2p63));
+                            of = realCompareGreaterEqual(&rval, const_2p63());
                         },
                         else => {},
                     }
@@ -1679,7 +1677,7 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
 
                 _ = mpz_get_str(tmpString, 10, &angle);
                 _ = decNumberFromString(reducedAngleTmp, tmpString, &c);
-                WP34S_Mod(reducedAngleTmp, cstR(OFF_const6147_2pi), reducedAngleTmp2, &c);
+                WP34S_Mod(reducedAngleTmp, const6147_2pi(), reducedAngleTmp2, &c);
                 realPlus(reducedAngleTmp2, reducedAngle, &ctxtReal75);
                 mpz_clear(&angle);
                 return;

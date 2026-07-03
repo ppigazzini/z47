@@ -322,3 +322,21 @@ pub inline fn const34_32075() *align(1) const Real34 {
 pub inline fn const34_65535() *align(1) const Real34 {
     return at34(16792);
 }
+pub inline fn const_2p32() *const Real {
+    return at(5548);
+}
+pub inline fn const34_2p32() *align(1) const Real34 {
+    return at34(16888);
+}
+pub inline fn const6147_2pi() *const Real {
+    return at(12092);
+}
+pub inline fn const_2p64() *const Real {
+    return at(5660);
+}
+pub inline fn const34_1e_4() *align(1) const Real34 {
+    return at34(16264);
+}
+pub inline fn const_2p63() *const Real {
+    return at(5636);
+}
