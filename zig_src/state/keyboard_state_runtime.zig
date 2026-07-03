@@ -1250,11 +1250,7 @@ pub const SOLVER_STATUS_EQUATION_SOLVER: u16 = 0;
 pub const SOLVER_STATUS_EQUATION_1ST_DERIVATIVE: u16 = 8;
 pub const SOLVER_STATUS_EQUATION_2ND_DERIVATIVE: u16 = 12;
 
-pub const userMenuItem_t = extern struct {
-    item: i16,
-    unused: i16,
-    argumentName: [16]u8,
-};
+pub const userMenuItem_t = abi.UserMenuItem;
 pub const userMenu_t = extern struct {
     menuName: [16]u8,
     menuItem: [18]userMenuItem_t,

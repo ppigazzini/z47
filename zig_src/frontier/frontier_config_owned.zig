@@ -126,11 +126,7 @@ const confirmationTI_t = extern struct {
     string: [30]u8,
 };
 const item_t = abi.Item;
-const userMenuItem_t = extern struct {
-    item: i16,
-    unused: i16,
-    argumentName: [16]u8,
-};
+const userMenuItem_t = abi.UserMenuItem;
 
 // indexOfStrings / indexOfMsgs / msg2 are file-local const tables.
 const numberstr = extern struct {

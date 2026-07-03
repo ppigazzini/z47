@@ -42,11 +42,7 @@ else
 const bool_t = bool;
 const abi = @import("abi"); // L1 shared bindings
 const calcKey_t = abi.CalcKey;
-const userMenuItem_t = extern struct {
-    item: i16,
-    unused: i16,
-    argumentName: [16]u8,
-};
+const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = extern struct {
     menuName: [16]u8,
     menuItem: [18]userMenuItem_t,
