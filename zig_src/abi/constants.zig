@@ -22,6 +22,12 @@ inline fn at(comptime offset: u32) *const Real {
     return @ptrCast(@alignCast(constants + offset));
 }
 
+/// decQuad (Real34) constant at a blob byte offset (align 1, comptime-safe).
+const Real34 = types.Real34;
+inline fn at34(comptime offset: u32) *align(1) const Real34 {
+    return @ptrCast(constants + offset);
+}
+
 // --- Seeded for the elec pilot (mathematics/elec.c) ---
 pub inline fn const1on2() *const Real {
     return at(4580);
