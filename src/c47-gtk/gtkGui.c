@@ -907,11 +907,30 @@ returnKeyReleasedFalse:
 #define allowAltGrKey (C47SpecialKey_Valid_Pressed)
 #define tamArrows (labelText || tam.mode == TM_FLAGW || tam.mode == TM_FLAGR)
 
-if(     (CTRL_State != 65536 || allowAltGrKey)
+
+  //HEX MODE
+  if(     (CTRL_State != 65536 || allowAltGrKey)
+     && (    calcMode == CM_NIM
+         ||  calcMode == CM_PEM
+        )
+     && !getSystemFlag(FLAG_ALPHA) && calcMode == CM_NIM && lastIntegerBase > 0 && nimNumberPart != NP_INT_BASE
+  ) {
+     if(event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_F) {
+       addItemToBuffer(ITM_A + event->keyval - GDK_KEY_A); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+     } else
+     if(event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_f) {
+       addItemToBuffer(ITM_A + event->keyval - GDK_KEY_a); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+     } else
+     if(event->keyval == GDK_KEY_numbersign) {
+       addItemToBuffer(ITM_HASH_JM); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
+     }
+  }
+
+else if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
      && (!(tamArrows || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
-         ||  calcMode == CM_NIM
+         ||  (calcMode == CM_NIM && nimNumberPart != NP_INT_BASE)
          ||  calcMode == CM_PEM
          ||  calcMode == CM_TIMER
          || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
@@ -1172,7 +1191,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
       }
       #endif
     }
-  }
+ }
 
 
 

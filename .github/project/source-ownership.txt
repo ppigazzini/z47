@@ -49,6 +49,7 @@ res/dmcp5/update_R47.txt
 res/fonts/C47__NumericFontBold.ttf
 res/fonts/FontCreator15 Home details
 res/fonts/Font_snap
+res/fonts/MacOS_Info_Strip
 res/offimg/General
 res/r47.cmd
 res/r47.ico

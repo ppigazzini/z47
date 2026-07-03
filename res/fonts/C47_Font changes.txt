@@ -1,4 +1,4 @@
-2019-11-27 Started new WP43C / C43 Font files
++2019-11-27 Started new WP43C / C43 Font files
 
 2019-11-27 Added 6 last glyphs in font. Copied from 2019-07-07 previous font, into the new WP43C font.
            JM Added 6 Greek glyphs to WP43S_StandardFont.ttf.
@@ -421,6 +421,7 @@ Added QRNZ to NUM font
 2025-09-11 Fix Numfont arrow directions and arrow glyph names
 
 2026-01-03 Add Numfont glyphs for Radiobuttons, Checkboxes and Diamond boxes
+        2026-06-22 Correction - Not NUM font, but STD font.
 
      U+2610 STD_CB_OFF      \xa6\x10
      U+2612 STD_CB_ON       \xa6\x12
@@ -460,5 +461,25 @@ Added QRNZ to NUM font
      U+0458 STD_TRI_RHB_2  Add glyph ^2_◮
      U+25ED STD_TRI_LHB    Add glyph  ◭  
      U+25EE STD_TRI_RHB    Add glyph  ◮  
+
+2026-06-28
+   ADD to STD font:
+     U+2404   🮕▒▩        HP42S checkered block
+     U+25B6   ▶           HP42S Black right pointing triangle
+     U+240A   ␊           HP42S Line Feed picture
+     U+241B   ␛           HP42S ESC picture
+     U+25AA   ▪           HP42S Small black square
+
+     U+0459   X           HP42S SMALL CAPS X (Does not exist, loan code point)     
+     U+028F   ʏ           HP42S SMALL CAPS Y
+     U+0299   ʙ           HP42S SMALL CAPS B
+     U+029F   ʟ           HP42S SMALL CAPS L
+     U+045A   ᴀ           HP42S SMALL CAPS A (1D 00 not allowed in C47, use a loan code point)
+     U+1D04   ᴄ           HP42S SMALL CAPS C
+     U+1D05   ᴅ           HP42S SMALL CAPS D
+     U+1D1B   ᴛ           HP42S SMALL CAPS T
+     U+1D22   ᴢ           HP42S SMALL CAPS Z
+     U+25B7   ▷           HP42S Black right pointing triangle
+
 
 

@@ -1,20 +1,3 @@
-# z47 project files
-.zig-cache
-zig-out
-__DEV/
-__pycache__
-.venv
-*.pyc
-*.pyo
-*.pyd
-pyproject.toml
-uv.lock
-.pre-commit-config.yaml
-
-# Local build scratch and staging folders.
-/.tmp/
-/tmp/
-
 # C47 project specific files
 /build
 /build.sim
@@ -22,6 +5,7 @@ uv.lock
 /wp43
 /c47
 /r47
+/t47
 /testSuite
 /generate*
 /ttf2RasterFonts
@@ -50,6 +34,7 @@ tags
 /PROGRAMS
 /SAVFILES
 /src/generated
+AGENTS.md
 
 # Over_score testing agent coding
 AGENTS.md
@@ -126,11 +111,10 @@ massif.out.*
 bb.out
 bb.out.*
 
-
-
 ### vscode ###
 /.vscode
 *.code-workspace
+.cache
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -188,6 +172,3 @@ build.ninja
 compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
-
-# A0 coverage harness artifact
-cov_pcs.txt
