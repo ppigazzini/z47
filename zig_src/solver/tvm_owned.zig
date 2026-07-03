@@ -140,13 +140,8 @@ inline fn ctxtSolverTvmInv() *realContext_t {
 // ---------------------------------------------------------------------------
 // Constants blob accessors (offsets verified from generated constantPointers.h)
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-inline fn cst34(comptime off: u32) *align(1) const real34_t {
-    return @ptrCast(constants + off);
-}
+const cstR = consts.cstR;
+const cst34 = consts.cst34;
 
 inline fn const_0() *align(1) const real_t {
     return consts.c1708();
