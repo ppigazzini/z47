@@ -67,7 +67,7 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const angularMode_t = c_int; // C enum -> int ABI
 const videoMode_t = c_int;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const complex34_t = extern struct { re: real34_t, im: real34_t };
 // decNumber (real_t): big enough working buffer. The matrix display code only
 // passes real_t by pointer to extern helpers and never inspects the layout, but

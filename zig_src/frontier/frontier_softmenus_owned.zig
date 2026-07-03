@@ -143,7 +143,7 @@ const registerHeader_t = extern struct {
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 
 // ---------------------------------------------------------------------------
 // Numeric constants (probe-resolved from c47.h; identical sim/dmcp).

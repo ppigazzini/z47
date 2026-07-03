@@ -35,7 +35,7 @@ const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const calcRegister_t = i16;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;

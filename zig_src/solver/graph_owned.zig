@@ -33,7 +33,7 @@ const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_b
 // ---------------------------------------------------------------------------
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 const calcRegister_t = i16;
 const matrixHeader_t = packed struct(u32) {

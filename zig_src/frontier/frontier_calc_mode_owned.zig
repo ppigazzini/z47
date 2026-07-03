@@ -30,7 +30,8 @@ const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
 const bool_t = bool;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
-const real34_t = extern struct { bytes: [16]u8 };
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real34_t = abi.Real34;
 
 const tamState_t = extern struct {
     mode: u16,

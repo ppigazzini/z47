@@ -36,7 +36,8 @@ else
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const calcRegister_t = i16;
-const real34_t = extern struct { bytes: [16]u8 };
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real34_t = abi.Real34;
 const softmenu_t = extern struct {
     menuItem: i16,
     numItems: i16,

@@ -55,7 +55,7 @@ const calcRegister_t = i16;
 const angularMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.RealBlob; // decNumber, zero-init here
-const real34_t = extern struct { bytes: [16]u8 align(4) }; // decQuad, zero-init here
+const real34_t = abi.Real34; // decQuad, zero-init here
 
 const realContext_t = abi.RealContext; // size 28, align 4
 

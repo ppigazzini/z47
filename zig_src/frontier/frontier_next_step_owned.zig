@@ -23,7 +23,7 @@ const calcRegister_t = i16;
 const bool_t = u32;
 const angularMode_t = c_int;
 
-const real34_t = extern struct { bytes: [16]u8 };
+const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const realContext_t = abi.RealContext;
 const font_t = opaque {};

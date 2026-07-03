@@ -29,7 +29,8 @@ const bool_t = u32;
 const angularMode_t = c_int;
 const localFlags_t = u32;
 
-const real34_t = extern struct { bytes: [16]u8 };
+const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const real34_t = abi.Real34;
 const complex34_t = extern struct { real: real34_t, imag: real34_t };
 
 // GMP mpz_struct. Limb width == pointer width on every z47 target (NOT c_ulong:
