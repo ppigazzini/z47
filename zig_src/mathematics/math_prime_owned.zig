@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const34_0 = consts.const34_0;
+const const34_1 = consts.const34_1;
 //
 // Zig owner for src/c47/mathematics/prime.c: the prime-number / integer
 // factorization engine. Provides the four prime.h commands (fnIsPrime,
@@ -229,18 +233,6 @@ inline fn mpz_sizeinbase(op: *const mpz_struct, base: c_int) usize {
 // ---------------------------------------------------------------------------
 // real_t / real34_t helpers and constants
 // ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cst34(offset: u32) *align(1) const real34_t {
-    return @ptrCast(constants + offset);
-}
-const OFF_const34_0: u32 = 16200;
-const OFF_const34_1: u32 = 16312;
-inline fn const34_0() *align(1) const real34_t {
-    return cst34(OFF_const34_0);
-}
-inline fn const34_1() *align(1) const real34_t {
-    return cst34(OFF_const34_1);
-}
 // real_t constants: use the runtime accessors (properly-aligned *const real_t).
 inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
