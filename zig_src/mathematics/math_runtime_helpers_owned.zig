@@ -70,11 +70,9 @@ extern var tmpString: [*c]u8;
 // constants[]` and must match the generated constantPointers.h. align(1) is
 // mandatory: the blob is a byte array (macOS alignment trap otherwise).
 // ---------------------------------------------------------------------------
-const constants_blob = @extern([*]const u8, .{ .name = "constants" });
-
-inline fn constantPointer(comptime offset: comptime_int) *align(1) const real_t {
-    return @ptrCast(constants_blob + offset);
-}
+const abi = @import("abi");
+const consts = abi.constants;
+const constantPointer = consts.cstR;
 
 // Byte offsets from the generated constantPointers.h.
 const offset_const_1 = 4856; // const_1
