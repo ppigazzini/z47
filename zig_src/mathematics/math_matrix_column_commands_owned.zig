@@ -24,10 +24,7 @@ const TI_FALSE = runtime.TI_FALSE;
 const FLAG_ASLIFT: i32 = 0xc023;
 const REAL34_SIZE_IN_BYTES: u16 = 16;
 
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = consts.cstRAligned;
 inline fn const_minusInfinity() *const real_t {
     return consts.c1684();
 }
