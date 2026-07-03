@@ -6,7 +6,7 @@
     "callconv_c_sites": 2947,
     "printf_family_files": 53,
     "anyopaque_files": 93,
-    "off_offset_sites": 83,
+    "off_offset_sites": 77,
     "constants_blob_sites": 1,
     "qspi_section_files": 26
   },
