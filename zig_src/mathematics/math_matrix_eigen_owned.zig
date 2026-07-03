@@ -1,4 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_0 = consts.const_0;
+const const_1 = consts.const_1;
+const const_2 = consts.const_2;
+const const_1on2 = consts.const_1on2;
+const const_1e_6 = consts.const_1e_6;
+const const_1e_32 = consts.const_1e_32;
+const const_1e_30 = consts.const_1e_30;
+const const_1e_34 = consts.const_1e_34;
 // Zig port of the eigenvalue/eigenvector engine of src/c47/mathematics/matrix.c
 // (the static numeric workers behind fnEigenvalues/fnEigenvectors/
 // fnMatrixSquareRoot). OPTION_EIGEN_159 is defined on every z47 build, so the
@@ -186,42 +196,6 @@ extern fn solveCubicEquation159(
 extern var blockMonitoring: bool;
 
 // --- blob constants -------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-const OFF_const_0: u32 = 1708;
-const OFF_const_1: u32 = 4856;
-const OFF_const_2: u32 = 4928;
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_1e_6: u32 = 4508;
-inline fn const_0() *align(1) const real_t {
-    return cstR(OFF_const_0);
-}
-inline fn const_1() *align(1) const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const_2() *align(1) const real_t {
-    return cstR(OFF_const_2);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_1e_6() *align(1) const real_t {
-    return cstR(OFF_const_1e_6);
-}
-const OFF_const_1e_32: u32 = 5708;
-inline fn const_1e_32() *align(1) const real_t {
-    return cstR(OFF_const_1e_32);
-}
-const OFF_const_1e_30: u32 = 4460;
-inline fn const_1e_30() *align(1) const real_t {
-    return cstR(OFF_const_1e_30);
-}
-const OFF_const_1e_34: u32 = 4448;
-inline fn const_1e_34() *align(1) const real_t {
-    return cstR(OFF_const_1e_34);
-}
 
 // Matrix-product owners + a real comparison, used by the matrix-sqrt engine.
 extern fn multiplyRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
