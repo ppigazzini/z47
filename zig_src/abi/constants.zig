@@ -163,3 +163,15 @@ pub inline fn const_1260() *align(1) const Real {
 pub inline fn const_1680() *align(1) const Real {
     return at(5420);
 }
+pub inline fn const39_root3on2() *align(1) const Real {
+    return at(4772);
+}
+pub inline fn const_9() *align(1) const Real {
+    return at(5120);
+}
+pub inline fn const_54() *align(1) const Real {
+    return at(5248);
+}
+pub inline fn const_2916() *align(1) const Real {
+    return at(5432);
+}
