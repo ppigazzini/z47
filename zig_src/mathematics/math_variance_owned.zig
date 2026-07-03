@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
+const const_1 = consts.const_1;
+const const_2 = consts.const_2;
 //
 // Zig owner for src/c47/mathematics/variance.c: sample/population standard
 // deviations, standard errors, covariances, correlation, sxy/sx/sy and the
@@ -134,14 +138,6 @@ inline fn SIGMA_ln2Y() *real_t {
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 inline fn cstR(comptime off: u32) *const real_t {
     return @ptrCast(@alignCast(constants + off));
-}
-const OFF_const_1: u32 = 4856;
-const OFF_const_2: u32 = 4928;
-inline fn const_1() *const real_t {
-    return cstR(OFF_const_1);
-}
-inline fn const_2() *const real_t {
-    return cstR(OFF_const_2);
 }
 
 // Standard deviations and standard errors. The computation involves
