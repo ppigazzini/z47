@@ -119,6 +119,15 @@ fn addRuntimeObject(
         .error_tracing = options.error_tracing,
     });
 
+    // L1 shared ABI bindings (REPORT-23 §5): single source of truth for the C
+    // numeric layouts + typed constant-blob accessors, imported as `@import("abi")`.
+    const abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    root_module.addImport("abi", abi_module);
+
     const build_options = b.addOptions();
     build_options.addOption(bool, "strip_16", options.strip_16);
     build_options.addOption(bool, "strip_17", options.strip_17);

@@ -20,27 +20,17 @@ const frontier_build_options = @import("frontier_build_options");
 const option_elec: bool = frontier_build_options.option_elec;
 
 // ---------------------------------------------------------------------------
-// Types
+// Types -- L1 shared bindings (REPORT-23 §5). The hand-mirrored extern structs
+// (real_t/real34_t/realContext_t/cplx_t) now come from the single-source-of-truth
+// abi module; only the local spellings are aliased so the ported body is stable.
 // ---------------------------------------------------------------------------
-const DECNUMUNITS = 25;
-const real_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [DECNUMUNITS]u16,
-};
-const real34_t = extern struct { bytes: [16]u8 };
-const realContext_t = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+const abi = @import("abi");
+const consts = abi.constants;
+const real_t = abi.Real;
+const real34_t = abi.Real34;
+const realContext_t = abi.RealContext;
+const cplx_t = abi.Complex;
 const calcRegister_t = i16;
-const cplx_t = extern struct { Real: real_t, Imag: real_t };
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
@@ -67,12 +57,11 @@ const TI_012: u16 = 74;
 const NOPARAM: u16 = 9876;
 const REAL34_SIZE_IN_BYTES: usize = 16;
 
-// decNumber bit flags (realType.h macros, inlined below).
-const DECNEG: u8 = 0x80;
-const DECINF: u8 = 0x40;
-const DECNAN: u8 = 0x20;
-const DECSNAN: u8 = 0x10;
-const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN;
+// decNumber bit flags (realType.h) -- from the shared L1 bindings.
+const DECNEG = abi.DECNEG;
+const DECNAN = abi.DECNAN;
+const DECSNAN = abi.DECSNAN;
+const DECSPECIAL = abi.DECSPECIAL;
 
 // Three-phase named-register ids (elec.c defines).
 const TripleRegZ1_96: calcRegister_t = 96;
@@ -85,34 +74,9 @@ const TripleRegI3_95: calcRegister_t = 95;
 const TripleRegZ2_97: calcRegister_t = 97;
 const TripleRegZ3_98: calcRegister_t = 98;
 
-// ---------------------------------------------------------------------------
-// Constant blob. elec compiles its body only under option_elec, which is set on
-// exactly two variants -- the host and DMCP package 3 -- and the post-pin-advance
-// generated constantPointers.h gives both the SAME blob layout, so a single set
-// of offsets is correct for every build that actually runs this code. Verified
-// against the host generateConstants output (and pkg-3 build parity); the host
-// values are additionally pinned by src/testSuite/tests/elec.txt.
-// ---------------------------------------------------------------------------
-const constants = @extern([*]const u8, .{ .name = "constants" });
-const OFF_const_1on2: u32 = 4580;
-const OFF_const_3: u32 = 5012;
-const OFF_const39_root3on2: u32 = 4772;
-const OFF_const_1e_37: u32 = 4436;
-inline fn cstR(comptime off: u32) *align(1) const real_t {
-    return @ptrCast(constants + off);
-}
-inline fn const_1on2() *align(1) const real_t {
-    return cstR(OFF_const_1on2);
-}
-inline fn const_3() *align(1) const real_t {
-    return cstR(OFF_const_3);
-}
-inline fn const39_root3on2() *align(1) const real_t {
-    return cstR(OFF_const39_root3on2);
-}
-inline fn const_1e_37() *align(1) const real_t {
-    return cstR(OFF_const_1e_37);
-}
+// Named, typed constant-blob accessors live in the shared L1 module
+// (zig_src/abi/constants.zig): consts.const1on2(), const3(), root3on2(),
+// const1e_37() -- no magic offsets or unchecked casts in this body.
 
 // ---------------------------------------------------------------------------
 // Globals and function externs
@@ -203,7 +167,7 @@ fn elecImagIsDust(im: *align(1) const real_t) bool {
     if (realIsZero(im)) {
         return true;
     }
-    return realCompareAbsLessThan(im, const_1e_37()); // ELEC_DUST_FILTER == true
+    return realCompareAbsLessThan(im, consts.const1e_37()); // ELEC_DUST_FILTER == true
 }
 
 fn elecInputIsComplex(regs: []const calcRegister_t) bool {
@@ -259,9 +223,9 @@ fn elecPutResults(l: *const cplx_t, x: *const cplx_t, y: *const cplx_t, z: *cons
 
 fn elecSetAOperators(aOp: *cplx_t, aaOp: *cplx_t) void {
     // a = 1 angle 120deg = -1/2 + j*root3/2 ; a^2 = conjugate of a
-    realCopy(const_1on2(), &aOp.Real);
+    realCopy(consts.const1on2(), &aOp.Real);
     realChangeSign(&aOp.Real);
-    realCopy(const39_root3on2(), &aOp.Imag);
+    realCopy(consts.root3on2(), &aOp.Imag);
     realCopy(&aOp.Real, &aaOp.Real);
     realCopy(&aOp.Imag, &aaOp.Imag);
     realChangeSign(&aaOp.Imag);
@@ -449,20 +413,20 @@ pub export fn fnAbcToSym(unusedButMandatoryParameter: u16) callconv(.c) void {
         elecSetAOperators(&aOp, &aaOp);
         addCplx(&va, &vb, &s0); // A0 = (Va + Vb + Vc) / 3
         addCplx(&s0, &vc, &s0);
-        realDivide(&s0.Real, const_3(), &s0.Real, &ctxtReal39);
-        realDivide(&s0.Imag, const_3(), &s0.Imag, &ctxtReal39);
+        realDivide(&s0.Real, consts.const3(), &s0.Real, &ctxtReal39);
+        realDivide(&s0.Imag, consts.const3(), &s0.Imag, &ctxtReal39);
         mulCplx(&aOp, &vb, &s1); // A1 = (Va + a*Vb + a^2*Vc) / 3
         mulCplx(&aaOp, &vc, &t);
         addCplx(&s1, &t, &s1);
         addCplx(&s1, &va, &s1);
-        realDivide(&s1.Real, const_3(), &s1.Real, &ctxtReal39);
-        realDivide(&s1.Imag, const_3(), &s1.Imag, &ctxtReal39);
+        realDivide(&s1.Real, consts.const3(), &s1.Real, &ctxtReal39);
+        realDivide(&s1.Imag, consts.const3(), &s1.Imag, &ctxtReal39);
         mulCplx(&aaOp, &vb, &s2); // A2 = (Va + a^2*Vb + a*Vc) / 3
         mulCplx(&aOp, &vc, &t);
         addCplx(&s2, &t, &s2);
         addCplx(&s2, &va, &s2);
-        realDivide(&s2.Real, const_3(), &s2.Real, &ctxtReal39);
-        realDivide(&s2.Imag, const_3(), &s2.Imag, &ctxtReal39);
+        realDivide(&s2.Real, consts.const3(), &s2.Real, &ctxtReal39);
+        realDivide(&s2.Imag, consts.const3(), &s2.Imag, &ctxtReal39);
         if (!elecResultsOk(&results)) {
             return;
         }
