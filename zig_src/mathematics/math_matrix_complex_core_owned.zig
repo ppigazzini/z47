@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const abi = @import("abi");
+const consts = abi.constants;
 // Zig port of the complex dense linear-algebra core of
 // src/c47/mathematics/matrix.c: invCpxMat (in-place inverse of an
 // interleaved-complex matrix via LU + pivoting solve) and mulCpxMat
@@ -25,9 +27,8 @@ extern fn WP34S_Log10(x: *const real_t, res: *real_t, real_context: *runtime.rea
 extern var displayFormatDigits: u8;
 
 // const_1e_37 == ((real_t *)(constants + 4436)) in constantPointers.h.
-const constants_blob = @extern([*]const u8, .{ .name = "constants" });
 inline fn const_1e_37() *const real_t {
-    return @ptrCast(@alignCast(constants_blob + 4436));
+    return consts.c4436();
 }
 
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
