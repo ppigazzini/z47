@@ -772,8 +772,7 @@ pub export fn getWeekOfYear(jd: *real34_t) linksection(code_section) callconv(.c
     return real34ToUInt32(&woy);
 }
 
-pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+fn fnJulianToDateTimeCore() error{JulianBadType}!void {
     var date: real34_t = undefined;
 
     if (!saveLastX()) {
@@ -824,11 +823,7 @@ pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(c
             reallocateRegister(REGISTER_X, dtTime, 0, amNoneU); // this must be in front of the next line, otherwise accuracy is gone
             convertRealToReal34ResultRegister(&tmp, REGISTER_X);
         },
-        else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnJulianToDateTime:", "data type cannot be converted to date!");
-            return;
-        },
+        else => return error.JulianBadType,
     }
 
     // check range
@@ -836,6 +831,14 @@ pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(c
     if (lastErrorCode != 0) {
         undo();
     }
+}
+
+pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnJulianToDateTimeCore() catch {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function fnJulianToDateTime:", "data type cannot be converted to date!");
+    };
 }
 
 pub export fn fnDateToJulian(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
@@ -889,7 +892,7 @@ pub export fn fnIsLeap(unusedButMandatoryParameter: u16) linksection(code_sectio
     }
 }
 
-pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
+fn fnSetFirstGregorianDayCore(param: u16) error{ SetFgdDisabled, SetFgdBadType }!void {
     var jd34: real34_t = undefined;
     const fgd: u32 = firstGregorianDay;
 
@@ -914,15 +917,18 @@ pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callc
         }
         temporaryInformation = TI_DISP_JULIAN;
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            if (getRegisterDataType(REGISTER_X) == dtDate) {
-                c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type is disabled as input because of complicated Julian-Gregorian issue!", null, null);
-            } else {
-                c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type cannot be interpreted as a date!", null, null);
-            }
-        }
+        return if (getRegisterDataType(REGISTER_X) == dtDate) error.SetFgdDisabled else error.SetFgdBadType;
     }
+}
+
+pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
+    fnSetFirstGregorianDayCore(param) catch |e| {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) switch (e) {
+            error.SetFgdDisabled => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type is disabled as input because of complicated Julian-Gregorian issue!", null, null),
+            error.SetFgdBadType => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type cannot be interpreted as a date!", null, null),
+        };
+    };
 }
 
 pub export fn fnGetFirstGregorianDay(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
@@ -947,10 +953,8 @@ pub export fn fnYYDflt(tmp: u16) linksection(code_section) callconv(.c) void {
     }
 }
 
-pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section) callconv(.c) void {
-    if (!saveLastX()) {
-        return;
-    }
+fn fnXToDateRegisterCore(regist: calcRegister_t) error{XToDateBadType}!void {
+    if (!saveLastX()) return;
 
     switch (getRegisterDataType(regist)) {
         dtDate => {
@@ -965,18 +969,20 @@ pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section
                     undo();
                 }
             } else {
-                // fallthrough
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
-                moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
-                return;
+                return error.XToDateBadType;
             }
         },
-        else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
-            moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
-            return;
-        },
+        else => return error.XToDateBadType,
     }
+}
+
+pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section) callconv(.c) void {
+    // The error register is the dynamic `regist` argument, so the report is
+    // inlined in the shim rather than a shared reporter.
+    fnXToDateRegisterCore(regist) catch {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+        moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
+    };
 }
 
 pub export fn fnXToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
