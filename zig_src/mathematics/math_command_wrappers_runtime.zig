@@ -175,11 +175,7 @@ else
 
 pub const realContext_t = abi.RealContext;
 
-pub const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]c_ulong,
-};
+pub const mpz_struct = abi.Mpz;
 
 pub const longInteger_t = [1]mpz_struct;
 

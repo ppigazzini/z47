@@ -1,8 +1,5 @@
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]c_ulong,
-};
+const abi = @import("abi");
+const mpz_struct = abi.Mpz;
 
 const FakeLongIntegerAbi = struct {
     extern fn longIntegerInit(value: *u32) void;
