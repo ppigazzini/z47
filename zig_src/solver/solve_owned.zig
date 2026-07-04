@@ -166,12 +166,7 @@ const dynamicSoftmenu_t = extern struct {
     numItems: i16,
     menuContent: [*c]u8,
 };
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 // C `dynamicSoftmenu[N]` / `softmenuStack[N]` are ARRAYS: the symbol address IS
 // the data. `extern var x: [*]T` loads the array's first 8 bytes AS the pointer
 // (gotcha #1) -> dynamicSoftmenu[softmenuStack[0].softmenuId] dereferenced garbage

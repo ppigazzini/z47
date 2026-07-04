@@ -53,12 +53,7 @@ const tamState_t = extern struct {
 };
 
 const softmenu_t = abi.Softmenu;
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 const matrixHeader_t = packed struct(u32) {
     matrixRows: u12,

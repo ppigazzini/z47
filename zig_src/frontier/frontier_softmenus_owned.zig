@@ -91,12 +91,7 @@ const dynamicSoftmenu_t = extern struct {
     numItems: i16,
     menuContent: [*c]u8,
 };
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 const item_t = abi.Item;
 

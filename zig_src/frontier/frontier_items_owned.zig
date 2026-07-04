@@ -68,12 +68,7 @@ const ItemFn = ?*const fn (u16) callconv(.c) void;
 
 const item_t = abi.Item;
 
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 const softmenu_t = abi.Softmenu;
 const labelList_t = extern struct {
     program: u16,

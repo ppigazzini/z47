@@ -135,12 +135,7 @@ const dynamicSoftmenu_t = extern struct {
     numItems: i16,
     menuContent: [*c]u8,
 };
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 // C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
 // form crashed fnIntegrateVar's dynamicSoftmenu[...] access like fnSolveVar.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
