@@ -224,15 +224,9 @@ extern fn clearStatisticalSums() void;
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, null);
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(@as([*]u8, @ptrCast(getRegisterDataPointer(reg))) + 16);
-}
-inline fn regShortInt(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
+const regShortInt = abi.registerShortInteger;
 inline fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
 }

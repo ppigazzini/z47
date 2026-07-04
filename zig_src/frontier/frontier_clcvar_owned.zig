@@ -157,13 +157,8 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const
 inline fn real34SetZero(dst: *align(1) real34_t) void {
     _ = decQuadZero(dst);
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg));
-    return @ptrCast(bytes + 16);
-}
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
 inline fn regKStoC(regKS: u8) i16 {
     const k: i16 = @intCast(regKS);
     const stat: i16 = if (FIRST_STAT_REGISTER_IN_KS_CODE <= k and regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE) NUMBER_OF_LOCAL_REGISTERS else 0;

@@ -256,9 +256,7 @@ inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     d[0] = 0;
     return d;
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn stringToReal34(source: [*c]const u8, destination: *align(1) real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }

@@ -1072,19 +1072,11 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @intCast(am));
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg) + REAL34_SIZE_IN_BYTES);
-}
-inline fn regShortInteger(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regString(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + SIZEOF_STR_LG_INT_HEADER;
-}
-const SIZEOF_STR_LG_INT_HEADER: usize = 4; // sizeof(strLgIntHeader_t)
+// M22: typed register views centralized in abi (single @ptrCast per shape).
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
+const regShortInteger = abi.registerShortInteger;
+const regString = abi.registerString;
 inline fn toBlocks(n: u32) u16 {
     return @intCast((n + (BYTES_PER_BLOCK - 1)) >> BPB);
 }

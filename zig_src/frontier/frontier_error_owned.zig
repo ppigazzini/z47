@@ -159,9 +159,7 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
     _ = decQuadFromUInt32(dst, src);
 }

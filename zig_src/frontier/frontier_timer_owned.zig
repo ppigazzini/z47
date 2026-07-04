@@ -245,9 +245,7 @@ const refreshLcd = @extern(RefreshLcdFn, .{ .name = "refreshLcd" });
 // ---------------------------------------------------------------------------
 // real* macro wrappers
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn uInt32ToReal(source: u32, destination: *real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }

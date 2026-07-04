@@ -730,22 +730,14 @@ inline fn GROUPRIGHT_DISABLED() bool {
 // ---------------------------------------------------------------------------
 // register data accessors (REGISTER_*_DATA / VARIABLE_*_DATA macros).
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regComplex34(reg: calcRegister_t) *align(1) complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regShortInteger(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
+const regComplex34 = abi.registerComplex34;
+const regShortInteger = abi.registerShortInteger;
 inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
     return @ptrCast(getRegisterDataPointer(reg));
 }
 const SIZEOF_STR_LG_INT_HEADER: usize = 4; // sizeof(strLgIntHeader_t)
-inline fn regString(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + SIZEOF_STR_LG_INT_HEADER;
-}
+const regString = abi.registerString;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
 inline fn varReal34(c: *align(1) const complex34_t) *align(1) const real34_t {
     return @ptrCast(c);
