@@ -862,10 +862,11 @@ extern var asmBuffer: [5]u8;
 
 // const_0 / const39_pi / const34_0 are NOT symbols: they are
 // constantPointers.h macros over the shared `constants` blob, by byte offset.
-const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
-const const_0: *const real_t = @ptrCast(@alignCast(constants + 1708));
-const const39_pi: *const real_t = @ptrCast(@alignCast(constants + 1848));
-const const34_0: *const real34_t = @ptrCast(constants + 16200);
+// M22: named constants via the oracle-gated abi accessors (offsets verified by
+// .github/project/check-constant-offsets.py) instead of raw blob @ptrCast.
+const const_0 = abi.constants.const_0();
+const const39_pi = abi.constants.const39_pi();
+const const34_0 = abi.constants.const34_0();
 
 // scalar globals
 // Owned global (bufferize.c defined it). Other C units reference it.
