@@ -91,10 +91,7 @@ const item_t = abi.Item;
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 const complex34Matrix_t = abi.Complex34Matrix;
-const any34Matrix_t = extern union {
-    realMatrix: real34Matrix_t,
-    complexMatrix: complex34Matrix_t,
-};
+const any34Matrix_t = abi.Any34Matrix;
 
 // mpz / longInteger
 const mp_limb_t = usize;
