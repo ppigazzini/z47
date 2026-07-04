@@ -1153,29 +1153,40 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
     }
 }
 
-pub export fn fnToHr(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
-    if (!saveLastX()) {
-        return;
+// L2 error surface (REPORT-23 P1/P5): the time-conversion command cores return
+// an invalid-data-type error instead of calling displayCalcErrorMessage inline;
+// reportTimeError maps each to its static message (all ERROR_INVALID_DATA_TYPE
+// on REGISTER_X). The error paths return before the trailing range-check work,
+// so the split is behavior-identical.
+const TimeError = error{ ToHrBadType, HMStoTMBadType, HRtoTMBadType };
+
+fn reportTimeError(e: TimeError) void {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    switch (e) {
+        error.ToHrBadType => moreInfoOnError("In function fnToHr:", "data type cannot be converted to a real34!"),
+        error.HMStoTMBadType => moreInfoOnError("In function fnHMStoTM:", "data type cannot be converted to time!"),
+        error.HRtoTMBadType => moreInfoOnError("In function fnHRtoTM:", "data type cannot be converted to time!"),
     }
+}
+
+fn fnToHrCore() TimeError!void {
+    if (!saveLastX()) return;
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtTime => {
             convertTimeRegisterToReal34Register(REGISTER_X, REGISTER_X);
         },
-        else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnToHr:", "data type cannot be converted to a real34!");
-            return;
-        },
+        else => return error.ToHrBadType,
     }
 }
 
-pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+pub export fn fnToHr(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    if (!saveLastX()) {
-        return;
-    }
+    fnToHrCore() catch |e| reportTimeError(e);
+}
+
+fn fnHMStoTMCore() TimeError!void {
+    if (!saveLastX()) return;
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
@@ -1189,17 +1200,10 @@ pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_secti
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
                 // break
             } else {
-                // fallthrough
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function fnHMStoTM:", "data type cannot be converted to time!");
-                return;
+                return error.HMStoTMBadType;
             }
         },
-        else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnHMStoTM:", "data type cannot be converted to time!");
-            return;
-        },
+        else => return error.HMStoTMBadType,
     }
     hmmssInRegisterToSeconds(REGISTER_X);
     if (lastErrorCode != 0) {
@@ -1207,8 +1211,12 @@ pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_secti
     }
 }
 
-pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnHMStoTMCore() catch |e| reportTimeError(e);
+}
+
+fn fnHRtoTMCore() TimeError!void {
     switch (calcMode) { //JM vv
         CM_NIM => {
             addItemToNimBuffer(ITM_HRtoTM);
@@ -1231,22 +1239,20 @@ pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) linksection(code_sectio
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
                 convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
             } else {
-                // fallthrough
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function fnHRtoTM:", "data type cannot be converted to time!");
-                return;
+                return error.HRtoTMBadType;
             }
         },
-        else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnHRtoTM:", "data type cannot be converted to time!");
-            return;
-        },
+        else => return error.HRtoTMBadType,
     }
     checkTimeRange(reg34(REGISTER_X));
     if (lastErrorCode != 0) {
         undo();
     }
+}
+
+pub export fn fnHRtoTM(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnHRtoTMCore() catch |e| reportTimeError(e);
 }
 
 pub export fn fnDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
