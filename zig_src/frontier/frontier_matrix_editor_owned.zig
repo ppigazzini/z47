@@ -499,15 +499,9 @@ inline fn cRe(c: *complex34_t) *real34_t {
 inline fn cIm(c: *complex34_t) *real34_t {
     return &c.imag;
 }
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
-inline fn regCplx(reg: calcRegister_t) *complex34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
-inline fn regImag34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg) + 16));
-}
+const reg34 = abi.registerReal34Aligned;
+const regCplx = abi.registerComplex34Aligned;
+const regImag34 = abi.registerImag34Aligned;
 
 // Vector geometry macros (OPTION_VECTOR; defines.h).
 inline fn isMatrix2dVector(rows: c_int, cols: c_int) bool {

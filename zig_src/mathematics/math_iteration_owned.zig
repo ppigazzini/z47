@@ -132,9 +132,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
 
-inline fn registerReal34Data(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
+const registerReal34Data = abi.registerReal34Aligned;
 
 inline fn SET_TI_TRUE_FALSE(condition: bool) void {
     runtime.temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
