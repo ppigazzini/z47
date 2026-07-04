@@ -81,18 +81,7 @@ const martelFont24_t = extern struct {
     numberOfGlyphs: u16,
     // glyphMartelPrinter_t glyphs[];
 };
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-};
+const glyph_t = abi.Glyph;
 const nameAlias_t = extern struct {
     item: u16,
     name: [16]u8,

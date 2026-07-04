@@ -96,18 +96,7 @@ const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const subroutineLevels_t = abi.SubroutineLevels;
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-};
+const glyph_t = abi.Glyph;
 const confirmationTI_t = extern struct {
     item: i16,
     string: [30]u8,

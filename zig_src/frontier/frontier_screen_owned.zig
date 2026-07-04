@@ -74,18 +74,7 @@ const complex34_t = abi.Complex34;
 const realContext_t = abi.RealContext;
 
 // glyph_t: 24 bytes. byte fields at 2..7, data ptr at 16.
-const glyph_t = extern struct {
-    charCode: u16, // offset 0
-    colsBeforeGlyph: u8, // 2
-    colsGlyph: u8, // 3
-    colsAfterGlyph: u8, // 4
-    rowsAboveGlyph: u8, // 5
-    rowsGlyph: u8, // 6
-    rowsBelowGlyph: u8, // 7
-    _pad: [8]u8, // 8..15
-    data: [*c]const u8, // 16
-};
-// font_t: header {id@0, numberOfGlyphs@2}, glyphs flex member @8.
+const glyph_t = abi.Glyph;
 const font_t = extern struct {
     id: u16,
     numberOfGlyphs: u16,

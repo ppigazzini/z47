@@ -11,6 +11,7 @@
 // build/link across every target plus the boundary gates.
 
 const frontier_build_options = @import("frontier_build_options");
+const abi = @import("abi");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 
 // ---------------------------------------------------------------------------
@@ -20,25 +21,8 @@ const videoMode_t = c_int;
 
 // glyph_t — natural C ABI layout (charCode first). Only charCode is read; the
 // rest matters for the element stride of the glyphs[] array.
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-};
-
-// font_t — { int8_t id; uint16_t numberOfGlyphs; glyph_t glyphs[]; }.
-const font_t = extern struct {
-    id: i8,
-    numberOfGlyphs: u16,
-    glyphs: [0]glyph_t, // flexible array member
-};
+const glyph_t = abi.Glyph;
+const font_t = abi.Font;
 inline fn glyphsOf(font: *const font_t) [*]const glyph_t {
     return @ptrCast(&font.glyphs);
 }

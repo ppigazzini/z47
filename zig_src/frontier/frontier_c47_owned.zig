@@ -65,24 +65,9 @@ const localFlags_t = extern struct {
     localFlags: u32,
 }; // size 4, align 4
 
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-}; // size 24, align 8
+const glyph_t = abi.Glyph;
 
-const font_t = extern struct {
-    id: i8,
-    numberOfGlyphs: u16,
-    glyphs: [0]glyph_t,
-}; // size 8, align 8
+const font_t = abi.Font;
 
 const calcKey_t = abi.CalcKey; // size 18, align 2
 
