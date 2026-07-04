@@ -242,8 +242,25 @@ fn cmplxSortCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksection(ru
 // ===========================================================================
 // fnSlvc
 // ===========================================================================
+// L2 error surface (REPORT-23 §6 P5): the core returns an error instead of
+// calling displayCalcErrorMessage inline; the L3 shim maps it at the ABI edge.
+const SlvcError = error{LeadingCoeffsAllZero};
+
+fn reportSlvcError(e: SlvcError) void {
+    switch (e) {
+        error.LeadingCoeffsAllZero => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", null, null);
+        },
+    }
+}
+
 pub export fn fnSlvc(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
+    fnSlvcCore() catch |e| reportSlvcError(e);
+}
+
+fn fnSlvcCore() linksection(runtime.code_section) SlvcError!void {
     var complexCoefs: bool = false;
     var aReal: real_t = undefined;
     var bReal: real_t = undefined;
@@ -269,9 +286,7 @@ pub export fn fnSlvc(unused_but_mandatory_parameter: u16) linksection(runtime.co
         realIsZero(&bReal) and realIsZero(&bImag) and
         realIsZero(&cReal) and realIsZero(&cImag))
     {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", null, null);
-        return;
+        return error.LeadingCoeffsAllZero;
     }
 
     if (!saveLastX()) {
