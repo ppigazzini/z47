@@ -22,8 +22,8 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]real34_t };
-const complex34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]complex34_t };
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 
