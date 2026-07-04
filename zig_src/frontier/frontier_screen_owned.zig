@@ -99,15 +99,7 @@ const font_t = extern struct {
 
 const item_t = abi.Item;
 
-const matrixHeader_t = extern struct {
-    bits: u32,
-    inline fn matrixRows(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast(self.bits & 0x0FFF);
-    }
-    inline fn matrixColumns(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast((self.bits >> 12) & 0x0FFF);
-    }
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: [*c]real34_t,
@@ -1454,12 +1446,12 @@ inline fn regMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
 inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool_t {
     if (getRegisterDataType(reg) != dtReal34Matrix) return 0;
     const h = regMatrixHeaderPtr(reg);
-    return @intFromBool(isMatrix3dVector(h.matrixRows(), h.matrixColumns()));
+    return @intFromBool(isMatrix3dVector(h.matrixRows, h.matrixColumns));
 }
 inline fn isRegisterMatrix2dVector(reg: calcRegister_t) bool_t {
     if (getRegisterDataType(reg) != dtReal34Matrix) return 0;
     const h = regMatrixHeaderPtr(reg);
-    return @intFromBool(isMatrix2dVector(h.matrixRows(), h.matrixColumns()));
+    return @intFromBool(isMatrix2dVector(h.matrixRows, h.matrixColumns));
 }
 inline fn isRegisterMatrixVector(reg: calcRegister_t) bool_t {
     return @intFromBool(isRegisterMatrix3dVector(reg) != 0 or isRegisterMatrix2dVector(reg) != 0);
@@ -3266,8 +3258,8 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         } else {
             linkToRealMatrixRegister(REGISTER_X, &matrix);
         }
-        const rows: u16 = matrix.header.matrixRows();
-        const cols: u16 = matrix.header.matrixColumns();
+        const rows: u16 = matrix.header.matrixRows;
+        const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
         var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16);
 
@@ -3321,8 +3313,8 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         } else {
             linkToComplexMatrixRegister(REGISTER_X, &matrix);
         }
-        const rows: u16 = matrix.header.matrixRows();
-        const cols: u16 = matrix.header.matrixColumns();
+        const rows: u16 = matrix.header.matrixRows;
+        const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
         var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16);
         const mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3) ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) ..].ptr, if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
