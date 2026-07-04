@@ -46,10 +46,7 @@ const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const labelList_t = extern struct {
     program: i16,
     step: i32,

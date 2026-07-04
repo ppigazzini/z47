@@ -85,10 +85,7 @@ const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
 const registerHeader_t = abi.RegisterHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const strLgIntHeader_t = extern struct {
     dataMaxLengthInBlocks: u16,
     unused: u16,

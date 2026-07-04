@@ -64,10 +64,7 @@ const programList_t = extern struct {
     instructionPointer: [*c]u8,
 };
 const registerHeader_t = abi.RegisterHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)

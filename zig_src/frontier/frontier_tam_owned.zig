@@ -53,10 +53,7 @@ const programList_t = extern struct {
     instructionPointer: [*c]u8,
 };
 const registerHeader_t = abi.RegisterHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 // subroutineLevelHeader_t: numberOfLocalRegisters is at byte offset 5.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;

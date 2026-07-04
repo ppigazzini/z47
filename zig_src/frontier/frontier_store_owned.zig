@@ -35,10 +35,7 @@ const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 const registerHeader_t = abi.RegisterHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
 // dtConfigDescriptor_t — byte-exact mirror of typeDefinitions.h (840 bytes).
 const calcKey_t = abi.CalcKey;
