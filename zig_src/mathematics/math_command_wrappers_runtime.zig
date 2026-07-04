@@ -149,12 +149,7 @@ pub const matrixHeader_t = if (use_fake_wp34s_harness_surface)
         matrixColumns: u16,
     }
 else
-    packed struct(u32) {
-        matrixRows: u12,
-        matrixColumns: u12,
-        mtag: u6,
-        notUsed: u2,
-    };
+    abi.MatrixHeader;
 
 pub const real34Matrix_t = if (use_fake_wp34s_harness_surface)
     extern struct {
