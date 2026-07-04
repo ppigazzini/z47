@@ -136,12 +136,7 @@ const calcKey_t = abi.CalcKey;
 // softmenu_t {i16 menuItem, i16 numItems, ptr softkeyItem}
 const softmenu_t = abi.Softmenu;
 // softmenuStack_t {i16 softmenuId, i16 firstItem, i16 userMenuId, u8 calcMode}
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 // confirmationTI_t {i16 item, char[30] string}
 const confirmationTI_t = extern struct {
     item: i16,

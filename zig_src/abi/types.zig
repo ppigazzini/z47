@@ -107,12 +107,15 @@ pub const ReservedVariableHeader = extern struct {
     reservedVariableName: [8]u8,
 };
 
-/// Soft-menu stack entry (softmenuStack_t), 8 bytes.
+/// Soft-menu stack entry (softmenuStack_t, typeDefinitions.h): 8 bytes, align 2.
+/// The C ground truth is {softmenuId, firstItem, userMenuId, calcMode}; an
+/// earlier stale fork ({softmenuJumpToItem, softmenuUserSize, softmenuScrollDelta})
+/// only ever zero-inited the storage, so this reconciles to the pinned-C names.
 pub const SoftmenuStack = extern struct {
     softmenuId: i16,
-    softmenuJumpToItem: i16,
-    softmenuUserSize: u16,
-    softmenuScrollDelta: u16,
+    firstItem: i16,
+    userMenuId: i16,
+    calcMode: u8,
 };
 
 /// User-menu item (userMenuItem_t).
@@ -162,6 +165,11 @@ comptime {
     std.debug.assert(@sizeOf(SubroutineLevelHeader) == 12);
     std.debug.assert(@sizeOf(CalcKey) == 18);
     std.debug.assert(@offsetOf(Softmenu, "numItems") == 2);
+    std.debug.assert(@sizeOf(SoftmenuStack) == 8);
+    std.debug.assert(@alignOf(SoftmenuStack) == 2);
+    std.debug.assert(@offsetOf(SoftmenuStack, "firstItem") == 2);
+    std.debug.assert(@offsetOf(SoftmenuStack, "userMenuId") == 4);
+    std.debug.assert(@offsetOf(SoftmenuStack, "calcMode") == 6);
 }
 
 // Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.

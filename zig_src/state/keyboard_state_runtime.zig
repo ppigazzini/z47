@@ -350,12 +350,7 @@ pub inline fn isShowMode() bool {
 }
 
 // --- fnKeyUp / fnKeyDown dependencies ---------------------------------------
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 const softmenu_t = abi.Softmenu;
 const abi = @import("abi"); // L1 shared bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;

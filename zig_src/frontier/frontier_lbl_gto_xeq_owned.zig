@@ -75,12 +75,7 @@ const item_t = abi.Item;
 
 const softmenu_t = abi.Softmenu;
 
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 // tam: only the first field (mode) is accessed.
 const tamState_t = extern struct {

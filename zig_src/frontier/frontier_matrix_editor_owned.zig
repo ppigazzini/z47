@@ -306,12 +306,7 @@ const const39_piOn2 = consts.c4880();
 const const_0 = consts.c1708();
 
 const softmenu_t = abi.Softmenu;
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 const softmenu = @extern([*]const softmenu_t, .{ .name = "softmenu" });
 extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 

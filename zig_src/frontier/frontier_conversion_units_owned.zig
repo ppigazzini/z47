@@ -1235,12 +1235,7 @@ pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) c
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 const softmenu_t = abi.Softmenu;
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 extern var dynamicMenuItem: i16;
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });

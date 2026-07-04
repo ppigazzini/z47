@@ -113,12 +113,7 @@ const vmNormal: c_int = 0;
 // softmenu / softmenuStack structs (typeDefinitions.h)
 // ---------------------------------------------------------------------------
 const softmenu_t = abi.Softmenu;
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 // ---------------------------------------------------------------------------
 // Globals (extern var)

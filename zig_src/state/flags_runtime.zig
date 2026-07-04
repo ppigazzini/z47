@@ -127,12 +127,7 @@ const formulaHeader_t = extern struct {
 const abi = @import("abi"); // L1 shared bindings
 const softmenu_t = abi.Softmenu;
 
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 const ConfirmationHandler = *const fn (u16) callconv(.c) void;
 

@@ -36,12 +36,7 @@ const videoMode_t = c_int;
 const font_t = opaque {};
 const abi = @import("abi"); // L1 shared bindings
 const softmenu_t = abi.Softmenu;
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    firstItem: i16,
-    userMenuId: i16,
-    calcMode: u8,
-};
+const softmenuStack_t = abi.SoftmenuStack;
 
 // ---------------------------------------------------------------------------
 // Constants (defines.h / typeDefinitions.h)

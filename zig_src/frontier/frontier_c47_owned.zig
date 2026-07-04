@@ -95,12 +95,7 @@ const normKey_t = extern struct {
     used: bool_t,
 }; // size 20, align 2
 
-const softmenuStack_t = extern struct {
-    softmenuId: i16,
-    softmenuJumpToItem: i16,
-    softmenuUserSize: u16,
-    softmenuScrollDelta: u16,
-}; // size 8, align 2
+const softmenuStack_t = abi.SoftmenuStack;
 
 const userMenuItem_t = abi.UserMenuItem; // size 20, align 2
 
