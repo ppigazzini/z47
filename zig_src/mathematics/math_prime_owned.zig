@@ -584,27 +584,25 @@ pub export fn fnNextPrime(unused_but_mandatory_parameter: u16) callconv(.c) void
         convertRealToLongInteger(&x, &currentNumber, DEC_ROUND_DOWN);
     } else {
         if (!getIntArg(&currentNumber, REGISTER_X)) {
-            // goto abort1
             longIntegerFree(&currentNumber);
             return;
         }
     }
+    // currentNumber is now initialized on every path that reaches here (the
+    // getIntArg failure returned above); defer replaces the goto-cleanup, freeing
+    // in reverse registration order (nextPrime, tmp, currentNumber) to match the C.
+    defer longIntegerFree(&currentNumber);
 
     longIntegerInit(&tmp);
+    defer longIntegerFree(&tmp);
     longIntegerPowerUIntUInt(10, maximumPrime, &tmp);
     longIntegerSubtract(&currentNumber, &tmp, &tmp);
     if (longIntegerIsPositive(&tmp)) {
         badDomainError(REGISTER_X);
-        // goto abort2
-        longIntegerFree(&tmp);
-        longIntegerFree(&currentNumber);
         return;
     }
 
     if (!saveLastX()) {
-        // goto abort2
-        longIntegerFree(&tmp);
-        longIntegerFree(&currentNumber);
         return;
     }
 
@@ -613,6 +611,7 @@ pub export fn fnNextPrime(unused_but_mandatory_parameter: u16) callconv(.c) void
     }
 
     longIntegerInit(&nextPrime);
+    defer longIntegerFree(&nextPrime);
     calculateNextPrime(&currentNumber, &nextPrime);
 
     if (getRegisterDataType(REGISTER_L) == dtShortInteger) {
@@ -620,12 +619,6 @@ pub export fn fnNextPrime(unused_but_mandatory_parameter: u16) callconv(.c) void
     } else {
         convertLongIntegerToLongIntegerRegister(&nextPrime, REGISTER_X);
     }
-
-    longIntegerFree(&nextPrime);
-    // abort2:
-    longIntegerFree(&tmp);
-    // abort1:
-    longIntegerFree(&currentNumber);
 }
 
 inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
@@ -1069,27 +1062,27 @@ pub export fn fnEvPFacts(param: u16) callconv(.c) void {
     var isValidMxY: bool = false;
     var needsFactorizeX: bool = false;
 
+    // The C `return10:` screen-cleanup ran on every exit; defer replaces the
+    // goto so the early returns below are plain.
+    defer {
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        refreshScreen(254);
+    }
+
     if (param != M_FACTORS) {
         if (!ensureFactorizationMatrix(REGISTER_X, false, false, &isValidMxX)) {
-            // goto return10
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-            refreshScreen(254);
             return;
         }
         needsFactorizeX = !isValidMxX and (param == M_SIGMA_0 or param == M_SIGMA_1 or param == M_SIGMA_p1);
     }
 
     if (!saveLastX()) {
-        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        refreshScreen(254);
         return;
     }
     saveForUndo();
 
     if (needsFactorizeX) {
         if (!ensureFactorizationMatrix(REGISTER_X, false, true, &isValidMxX)) {
-            screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-            refreshScreen(254);
             return;
         }
     }
@@ -1101,14 +1094,10 @@ pub export fn fnEvPFacts(param: u16) callconv(.c) void {
         },
         M_SIGMA_k, M_SIGMA_pk => {
             if (!ensureFactorizationMatrix(REGISTER_Y, false, false, &isValidMxY)) {
-                screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-                refreshScreen(254);
                 return;
             }
             if (!isValidMxY) {
                 if (!ensureFactorizationMatrix(REGISTER_Y, false, true, &isValidMxY)) {
-                    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-                    refreshScreen(254);
                     return;
                 }
             }
@@ -1130,10 +1119,6 @@ pub export fn fnEvPFacts(param: u16) callconv(.c) void {
         },
         else => {},
     }
-
-    // return10:
-    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-    refreshScreen(254);
 }
 
 // ===========================================================================
