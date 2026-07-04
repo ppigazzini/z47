@@ -46,10 +46,7 @@ const mpz_set_str = @"__gmpz_set_str";
 
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
-const subroutineLevels_t = extern struct {
-    numberOfSubroutineLevels: u16,
-    ptrToSubroutineLevel0Header: u16,
-};
+const subroutineLevels_t = abi.SubroutineLevels;
 
 const register_header_t = abi.RegisterHeader;
 

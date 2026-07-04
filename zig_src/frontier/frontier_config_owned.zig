@@ -93,10 +93,7 @@ const strLgIntHeader_t = extern struct {
 const freeMemoryRegion_t = abi.FreeMemoryRegion;
 const matrixHeader_t = abi.MatrixHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
-const subroutineLevels_t = extern struct {
-    numberOfSubroutineLevels: u16,
-    ptrToSubroutineLevel0Header: u16,
-};
+const subroutineLevels_t = abi.SubroutineLevels;
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
 const glyph_t = extern struct {

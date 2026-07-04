@@ -223,6 +223,12 @@ pub const FormulaHeader = extern struct {
     unused: u8,
 };
 
+/// Subroutine-levels header (subroutineLevels_t, typeDefinitions.h): 4 bytes.
+pub const SubroutineLevels = extern struct {
+    numberOfSubroutineLevels: u16,
+    ptrToSubroutineLevel0Header: u16,
+};
+
 /// Free-memory region (freeMemoryRegion_t): block address + size, 4 bytes.
 pub const FreeMemoryRegion = extern struct {
     blockAddress: u16,

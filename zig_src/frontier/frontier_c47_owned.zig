@@ -59,10 +59,7 @@ const real34_t = abi.Real34; // decQuad, zero-init here
 
 const realContext_t = abi.RealContext; // size 28, align 4
 
-const subroutineLevels_t = extern struct {
-    numberOfSubroutineLevels: u16,
-    maxSubroutineLevels: u16,
-}; // size 4, align 2
+const subroutineLevels_t = abi.SubroutineLevels; // size 4, align 2
 
 const localFlags_t = extern struct {
     localFlags: u32,
