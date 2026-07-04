@@ -39,11 +39,7 @@ const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-};
+const normKey_t = abi.NormKey;
 const calcKey_t = abi.CalcKey;
 
 // ---------------------------------------------------------------------------

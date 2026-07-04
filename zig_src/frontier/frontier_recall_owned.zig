@@ -46,11 +46,7 @@ const reservedVariableHeader_t = extern struct {
 
 // dtConfigDescriptor_t — byte-exact mirror of typeDefinitions.h (840 bytes).
 const calcKey_t = abi.CalcKey;
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool,
-};
+const normKey_t = abi.NormKey;
 const pcg32_random_t = abi.Pcg32Random;
 const dtConfigDescriptor_t = extern struct {
     shortIntegerMode: u8,

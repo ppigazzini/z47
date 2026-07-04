@@ -891,11 +891,7 @@ pub fn lowercaseSelected() bool {
     return (alphaCase == AC_LOWER and !lastshiftF) or (alphaCase == AC_UPPER and lastshiftF);
 }
 
-pub const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-};
+pub const normKey_t = abi.NormKey;
 pub extern var Norm_Key_00: normKey_t;
 
 // Norm_Key_00_key macro (defines.h:554): key index of the blank/Norm key per model.

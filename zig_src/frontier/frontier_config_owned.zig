@@ -104,11 +104,7 @@ const subroutineLevels_t = extern struct {
     ptrToSubroutineLevel0Header: u16,
 };
 const calcKey_t = abi.CalcKey;
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-};
+const normKey_t = abi.NormKey;
 const glyph_t = extern struct {
     charCode: u16,
     colsBeforeGlyph: u8,

@@ -127,11 +127,7 @@ const abi = @import("abi"); // L1 shared bindings
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: u8,
-};
+const normKey_t = abi.NormKey;
 const formulaHeader_t = abi.FormulaHeader;
 const programList_t = extern struct {
     step: i32,
@@ -858,9 +854,9 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00_VAR")) {
         if (normKey00Key() != -1) {
             Norm_Key_00.func = @bitCast(text.toUint16(tmpString));
-            Norm_Key_00.used = @intFromBool(Norm_Key_00.func != kbdStdPrimary(normKey00Key()));
+            Norm_Key_00.used = Norm_Key_00.func != kbdStdPrimary(normKey00Key());
         } else {
-            Norm_Key_00.used = 0;
+            Norm_Key_00.used = false;
         }
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.func")) {
         Norm_Key_00.func = @bitCast(text.toUint16(tmpString));
@@ -868,7 +864,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         if (cmpName(tmpString, "Norm_Key_00.used")) {
             if (allow_user_keys) {
                 Norm_Key_00.funcParam[0] = 0;
-                Norm_Key_00.used = 0;
+                Norm_Key_00.used = false;
             }
             readLine(tmpString, TMP_STR_LENGTH);
         } else if (allow_user_keys and cmpName(tmpString, "NoNormKeyParamDef")) {
@@ -877,7 +873,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
             _ = strcpy(&Norm_Key_00.funcParam[0], tmpString);
         }
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.used")) {
-        Norm_Key_00.used = @intFromBool(text.toUint8(tmpString) != 0);
+        Norm_Key_00.used = text.toUint8(tmpString) != 0;
     } else if (allow_user_keys and cmpName(ab, "calcModel")) {
         const calcModelRead = text.toUint16(tmpString);
         if (saved_calc_model == USER_R47 and (calcModelRead == USER_R47f_g or calcModelRead == USER_R47fg_g or calcModelRead == USER_R47fg_bk or calcModelRead == USER_R47bk_fg)) {

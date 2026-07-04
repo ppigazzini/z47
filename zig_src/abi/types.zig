@@ -208,6 +208,13 @@ pub const FormulaHeader = extern struct {
     unused: u8,
 };
 
+/// Norm-key descriptor (normKey_t, typeDefinitions.h): 20 bytes, align 2.
+pub const NormKey = extern struct {
+    func: i16,
+    funcParam: [16]u8,
+    used: bool,
+};
+
 /// PCG32 RNG state (pcg32_random_t, pcg_basic.h): 16 bytes, align 8.
 pub const Pcg32Random = extern struct {
     state: u64,

@@ -37,13 +37,7 @@ const radiocb_t = extern struct {
 };
 
 // normKey_t (typeDefinitions.h): only Norm_Key_00.func (offset 0) is read.
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-};
-
-// printerState_t (typeDefinitions.h): print_on@0, printer_model@8, delay@12.
+const normKey_t = abi.NormKey;
 const print_modes_t = c_int; // enum, 4 bytes
 const printerModel_t = c_int; // enum, 4 bytes
 const printerState_t = abi.PrinterState;
