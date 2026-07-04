@@ -926,10 +926,7 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
 // unreached: no items.c dispatch wiring yet. Stores up to 6 bytes of the alpha
 // register as a string into `regist`.
 // ===========================================================================
-inline fn regStringData(reg: calcRegister_t) [*c]u8 {
-    // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
-    return @as([*c]u8, @ptrCast(getRegisterDataPointer(reg))) + 4;
-}
+const regStringData = abi.registerString;
 
 pub export fn fn42AlphaStore(regist: u16) callconv(.c) void {
     if (regInRange(regist)) {

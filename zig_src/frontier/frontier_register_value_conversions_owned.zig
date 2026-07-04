@@ -297,9 +297,7 @@ inline fn regLongIntData(reg: calcRegister_t) [*]u8 {
     return dataPtr(reg) + 4; // sizeof(strLgIntHeader_t)
 }
 const regShortInt = abi.registerShortInteger;
-inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeader = abi.registerMatrixHeader;
 inline fn regRealMatrixElems(reg: calcRegister_t) [*]align(1) real34_t {
     return @ptrCast(dataPtr(reg) + 4);
 }

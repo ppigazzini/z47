@@ -222,9 +222,7 @@ inline fn stVal(bit: u32) bool {
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *align(1) const real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }

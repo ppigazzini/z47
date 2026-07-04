@@ -159,15 +159,9 @@ extern fn strlen(s: [*c]const u8) usize;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *align(1) const real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regComplex34(reg: calcRegister_t) *align(1) const complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regStringData(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + @as(usize, @intCast(sizeof_strLgIntHeader_t));
-}
+const reg34 = abi.registerReal34;
+const regComplex34 = abi.registerComplex34;
+const regStringData = abi.registerString;
 inline fn regMatrixHeader(reg: calcRegister_t) *align(1) const matrixHeader_t {
     return @ptrCast(getRegisterDataPointer(reg));
 }

@@ -90,9 +90,7 @@ extern fn strlen(s: [*c]const u8) usize;
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 // REGISTER_MATRIX_HEADER(a) == (matrixHeader_t *)getRegisterDataPointer(a).
-inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeader = abi.registerMatrixHeader;
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }

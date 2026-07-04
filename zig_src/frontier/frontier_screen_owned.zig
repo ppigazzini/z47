@@ -1405,9 +1405,7 @@ inline fn isMatrix3dVector(rows: u16, cols: u16) bool {
 inline fn isMatrix2dVector(rows: u16, cols: u16) bool {
     return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
 }
-inline fn regMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeaderPtr = abi.registerMatrixHeader;
 inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool_t {
     if (getRegisterDataType(reg) != dtReal34Matrix) return 0;
     const h = regMatrixHeaderPtr(reg);
@@ -1435,16 +1433,10 @@ inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
 }
 
 // register-data accessors (REGISTER_*_DATA macros).
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn REGISTER_COMPLEX34_DATA(reg: calcRegister_t) *align(1) complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const REGISTER_REAL34_DATA = abi.registerReal34;
+const REGISTER_COMPLEX34_DATA = abi.registerComplex34;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4;
-inline fn REGISTER_STRING_DATA(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + SIZEOF_STR_LG_INT_HEADER;
-}
+const REGISTER_STRING_DATA = abi.registerString;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }

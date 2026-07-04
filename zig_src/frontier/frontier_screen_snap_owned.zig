@@ -217,9 +217,7 @@ inline fn regReal34MatrixElems(reg: calcRegister_t) [*]real34_t {
 inline fn regComplex34MatrixElems(reg: calcRegister_t) [*]complex34_t {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg) + MATRIX_HEADER_SIZE));
 }
-inline fn regStringData(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + STR_LGINT_HEADER_SIZE;
-}
+const regStringData = abi.registerString;
 
 // ---------------------------------------------------------------------------
 // fnSNAP backup helpers
