@@ -308,17 +308,9 @@ inline fn stringToReal34(source: [*:0]const u8, destination: *align(1) real34_t)
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
-inline fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-inline fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + REAL34_SIZE_IN_BYTES);
-}
-inline fn registerStringPtr(reg: calcRegister_t) [*c]u8 {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return base + STR_LGINT_HEADER_SIZE;
-}
+const registerReal34Ptr = abi.registerReal34;
+const registerImag34Ptr = abi.registerImag34;
+const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;

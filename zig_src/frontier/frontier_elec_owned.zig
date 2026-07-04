@@ -128,10 +128,7 @@ inline fn realIsNaN(x: *align(1) const real_t) bool {
 inline fn real34IsZero(x: *align(1) const real34_t) bool {
     return decQuadIsZero(x) != 0;
 }
-inline fn registerImag34Data(reg: calcRegister_t) *align(1) const real34_t {
-    const p: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(p + REAL34_SIZE_IN_BYTES);
-}
+const registerImag34Data = abi.registerImag34;
 inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }

@@ -342,17 +342,9 @@ extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
-inline fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-inline fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + 16);
-}
-inline fn registerStringPtr(reg: calcRegister_t) [*c]u8 {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return base + STR_LGINT_HEADER_SIZE;
-}
+const registerReal34Ptr = abi.registerReal34;
+const registerImag34Ptr = abi.registerImag34;
+const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
