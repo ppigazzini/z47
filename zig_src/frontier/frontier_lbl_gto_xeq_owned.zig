@@ -51,9 +51,7 @@ const subroutineLevels_t = extern struct {
     ptrToSubroutineLevel0Header: u16,
 };
 
-const register_header_t = extern union {
-    descriptor: u32,
-};
+const register_header_t = abi.RegisterHeader;
 
 const labelList_t = extern struct {
     program: i16,

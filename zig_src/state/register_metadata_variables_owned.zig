@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("register_metadata_build_options");
 
 const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
@@ -27,19 +28,11 @@ const reserved_variable_count = runtime.LAST_RESERVED_VARIABLE - runtime.FIRST_R
 const max_fake_named_variables: u16 = 64;
 const use_fake_register_metadata_harness_surface = @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and build_options.use_fake_register_metadata_harness_surface;
 
-const register_header_t = extern struct {
-    descriptor: runtime.register_descriptor_t,
-};
+const register_header_t = abi.RegisterHeader;
 
-const named_variable_header_t = extern struct {
-    header: register_header_t,
-    variableName: [16]u8,
-};
+const named_variable_header_t = abi.NamedVariableHeader;
 
-const reserved_variable_header_t = extern struct {
-    header: register_header_t,
-    reservedVariableName: [8]u8,
-};
+const reserved_variable_header_t = abi.ReservedVariableHeader;
 
 extern var allNamedVariables: ?[*]named_variable_header_t;
 extern var allReservedVariables: [reserved_variable_count]reserved_variable_header_t;

@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const register_runtime = @import("register_metadata_runtime.zig");
 const reg_param_product = @import("stack_runtime_reg_param_product_owned.zig");
 const product_real = @import("stack_runtime_product_real_owned.zig");
@@ -15,18 +16,13 @@ const use_fake_register_metadata_harness_surface =
     register_metadata_build_options.use_fake_register_metadata_harness_surface;
 
 const register_descriptor_t = u32;
-const register_header_t = extern struct {
-    descriptor: register_descriptor_t,
-};
+const register_header_t = abi.RegisterHeader;
 
 const reserved_variable_desc_t = extern struct {
     Desc: [28]u8,
 };
 
-const reserved_variable_header_t = extern struct {
-    header: register_header_t,
-    reservedVariableName: [8]u8,
-};
+const reserved_variable_header_t = abi.ReservedVariableHeader;
 
 const reserved_variable_count: usize = @intCast(register_runtime.LAST_RESERVED_VARIABLE - register_runtime.FIRST_RESERVED_VARIABLE + 1);
 
