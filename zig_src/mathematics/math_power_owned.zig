@@ -231,50 +231,37 @@ fn powLonI() linksection(runtime.code_section) callconv(.c) void {
     var result: mpz_struct = undefined;
 
     if (!getRegisterAsLongInt(REGISTER_Y, &base, null)) {
-        // goto finish1
         longIntegerFree(&base);
         return;
     }
+    // base is init'd (getRegisterAsLongInt inits even on the failure just handled);
+    // defer replaces the finish1/finish2 goto-cleanup in matching LIFO order.
+    defer longIntegerFree(&base);
     if (!getRegisterAsLongInt(REGISTER_X, &exponent, null)) {
-        // goto finish2
         longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
+    defer longIntegerFree(&exponent);
 
     if (longIntegerIsZero(&exponent) and longIntegerIsZero(&base)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function powLonI: Cannot calculate 0^0!", null, null, null);
-        // goto finish2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
 
     if ((longIntegerCompareInt(&base, 1) == 0 or longIntegerCompareInt(&base, -1) == 0) and longIntegerCompareInt(&exponent, -1) == 0) {
         convertLongIntegerToLongIntegerRegister(&base, REGISTER_X);
-        // goto finish2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     } else if (longIntegerIsNegative(&exponent)) {
         powReal();
-        // goto finish2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
 
     longIntegerInit(&result);
+    defer longIntegerFree(&result);
     longIntegerPower(&base, &exponent, &result);
 
     convertLongIntegerToLongIntegerRegister(&result, REGISTER_X);
-
-    longIntegerFree(&result);
-    // finish2:
-    longIntegerFree(&exponent);
-    // finish1:
-    longIntegerFree(&base);
 }
 
 // ===========================================================================
