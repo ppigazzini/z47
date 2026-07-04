@@ -141,10 +141,7 @@ const programList_t = extern struct {
     step: i32,
     instructionPointer: [*c]u8,
 };
-const pcg32_random_t = extern struct {
-    state: u64,
-    inc: u64,
-};
+const pcg32_random_t = abi.Pcg32Random;
 
 comptime {
     std.debug.assert(@sizeOf(calcKey_t) == 18);

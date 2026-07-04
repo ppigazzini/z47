@@ -46,10 +46,7 @@ pub const angularMode_t = c_int;
 pub const rounding_t = c_int;
 pub const trigType_t = c_int;
 
-pub const pcg32_random_t = extern struct {
-    state: u64,
-    inc: u64,
-};
+pub const pcg32_random_t = abi.Pcg32Random;
 
 pub const NOPARAM: u16 = 9876;
 
