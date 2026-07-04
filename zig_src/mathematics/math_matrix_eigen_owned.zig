@@ -1827,15 +1827,15 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
 // signature is chosen for convenience (no bridge rename).
 // ===========================================================================
-pub export fn calculateEigenvectors(matrix_any: *const anyopaque, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    const rm: *const real34Matrix_t = @ptrCast(@alignCast(matrix_any));
-    const cm: *const complex34Matrix_t = @ptrCast(@alignCast(matrix_any));
-    const size: u16 = rm.header.matrixRows;
+pub export fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    // real34Matrix_t and complex34Matrix_t share the {header, matrixElements}
+    // layout; the complex element view reinterprets the same element pointer.
+    const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
-    if (rm.header.matrixRows != rm.header.matrixColumns) return;
+    if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
 
-    const rElems: [*]const real34_t = @ptrCast(rm.matrixElements);
-    const cElems: [*]const runtime.complex34_t = @ptrCast(cm.matrixElements);
+    const rElems: [*]const real34_t = @ptrCast(matrix.matrixElements);
+    const cElems: [*]const runtime.complex34_t = @ptrCast(matrix.matrixElements);
 
     var i: usize = 0;
     while (i < sz * sz * 2) : (i += 1) realSetZero(&r[i]);
@@ -2066,7 +2066,7 @@ pub export fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix
             realSetZero(&a[i * 2 + 1]);
         }
         calculateEigenvalues(a, q, r, eig, previousDiagonal, size, true, false, &runtime.ctxtReal75);
-        calculateEigenvectors(@ptrCast(matrix), false, a, q, r, eig, &runtime.ctxtReal75);
+        calculateEigenvectors(matrix, false, a, q, r, eig, &runtime.ctxtReal75);
 
         // Defective-matrix detection: a genuine eigenvector is never all-zero.
         var j: usize = 0;
