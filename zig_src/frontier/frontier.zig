@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const clear_all = @import("frontier_clear_all_owned.zig");
 const display_format = @import("frontier_display_format_owned.zig");
 const frontend_settings = @import("frontier_frontend_settings_owned.zig");
@@ -361,14 +362,7 @@ extern var nimBufferDisplay: [*]u8;
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 extern var confirmedFunction: ?ConfirmedFunction;
 
-const PrinterState = extern struct {
-    print_on: bool,
-    trace_done: bool,
-    print_blank_line: u8,
-    print_mode: c_int,
-    printer_model: c_int,
-    delay: u16,
-};
+const PrinterState = abi.PrinterState;
 
 extern var printerState: PrinterState;
 

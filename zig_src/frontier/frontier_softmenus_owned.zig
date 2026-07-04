@@ -639,11 +639,7 @@ const KEY_X = @extern([*c]const c_int, .{ .name = "KEY_X" });
 const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
-const programmableMenu_t = extern struct {
-    itemName: [18][16]u8,
-    itemParam: [21]u16,
-    unused: u16,
-};
+const programmableMenu_t = abi.ProgrammableMenu;
 extern var programmableMenu: programmableMenu_t;
 
 extern var calcMode: u8;
