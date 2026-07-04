@@ -24,13 +24,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 
-const registerHeader_t = packed struct(u32) {
-    pointerToRegisterData: u16,
-    dataType: u4,
-    tag: u5,
-    readOnly: u1,
-    notUsed: u6,
-};
+const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,

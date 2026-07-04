@@ -32,13 +32,7 @@ const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 // registerHeader_t (typeDefinitions.h) as a packed u32.
-const registerHeader_t = packed struct(u32) {
-    pointerToRegisterData: u16,
-    dataType: u4,
-    tag: u5,
-    readOnly: u1,
-    notUsed: u6,
-};
+const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
@@ -537,7 +531,7 @@ pub export fn fnRecallMin(regist_arg: u16) callconv(.c) void {
         if (!saveLastX()) {
             return;
         }
-        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(if (regist == @as(u16, @intCast(REGISTER_L))) SAVED_REGISTER_L else @as(calcRegister_t, @intCast(regist)), TEMP_REGISTER_1);
             regist = @intCast(TEMP_REGISTER_1);
         }
@@ -557,7 +551,7 @@ pub export fn fnRecallMax(regist_arg: u16) callconv(.c) void {
         if (!saveLastX()) {
             return;
         }
-        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(if (regist == @as(u16, @intCast(REGISTER_L))) SAVED_REGISTER_L else @as(calcRegister_t, @intCast(regist)), TEMP_REGISTER_1);
             regist = @intCast(TEMP_REGISTER_1);
         }

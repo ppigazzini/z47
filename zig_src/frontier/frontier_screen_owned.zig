@@ -129,12 +129,7 @@ const reservedVariableDescStr_t = extern struct {
     Desc: [28]u8,
 };
 // registerHeader_t: union with bitfields; pointerToRegisterData = low 16 bits.
-const registerHeader_t = extern struct {
-    descriptor: u32,
-    inline fn pointerToRegisterData(self: *allowzero const registerHeader_t) u32 {
-        return self.descriptor & 0xFFFF;
-    }
-};
+const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
@@ -4075,7 +4070,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     const baseY: i16 = @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X + (if (restoreRegisterT == RESTORE_T) @as(calcRegister_t, 0) else (if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) @as(calcRegister_t, 0) else (if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) @as(calcRegister_t, @intCast(4 - @as(i32, displayStack))) else 0)))));
     const origRegist: calcRegister_t = regist;
     if (temporaryInformation == TI_VIEW_REGISTER and regist == REGISTER_T) {
-        if (FIRST_RESERVED_VARIABLE <= currentViewRegister and currentViewRegister < LAST_RESERVED_VARIABLE and allReservedVariables[@intCast(@as(calcRegister_t, @intCast(currentViewRegister)) - FIRST_RESERVED_VARIABLE)].header.pointerToRegisterData() == C47_NULL) {
+        if (FIRST_RESERVED_VARIABLE <= currentViewRegister and currentViewRegister < LAST_RESERVED_VARIABLE and allReservedVariables[@intCast(@as(calcRegister_t, @intCast(currentViewRegister)) - FIRST_RESERVED_VARIABLE)].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(@intCast(currentViewRegister), TEMP_REGISTER_1);
             regist = TEMP_REGISTER_1;
         } else {

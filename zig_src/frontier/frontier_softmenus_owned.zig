@@ -105,12 +105,7 @@ const labelList_t = extern struct {
 
 // registerHeader_t: 32-bit union; notUsed is bits 26..31 (after
 // pointerToRegisterData:16, dataType:4, tag:5, readOnly:1).
-const registerHeader_t = extern struct {
-    bits: u32,
-    inline fn notUsed(self: *align(1) const registerHeader_t) bool {
-        return ((self.bits >> 26) & 0x3F) != 0;
-    }
-};
+const registerHeader_t = abi.RegisterHeader;
 
 // real_t for placeSubscript / changeSoftKey local math.
 const DECNUMUNITS = 25;
@@ -1606,7 +1601,7 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
         while (i < NUMBER_OF_RESERVED_VARIABLES) : (i += 1) {
             const regist: calcRegister_t = @intCast(i + FIRST_RESERVED_VARIABLE);
             const rv = &allReservedVariables[@intCast(i)];
-            if (((rv.header.bits >> 26) & 0x3F) != 0) {
+            if (rv.header.bits.notUsed != 0) {
                 continue;
             }
             if (applyFilter == 0 or _filterDataType(regist, typeFilter, isAngular) != 0) {

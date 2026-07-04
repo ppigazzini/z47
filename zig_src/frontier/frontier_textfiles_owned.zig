@@ -30,13 +30,7 @@ else
 const calcRegister_t = i16;
 const bool_t = bool;
 const matrixHeader_t = abi.MatrixHeader;
-const registerHeader_t = packed struct(u32) {
-    pointerToRegisterData: u16,
-    dataType: u4,
-    tag: u5,
-    readOnly: u1,
-    notUsed: u6,
-};
+const registerHeader_t = abi.RegisterHeader;
 const abi = @import("abi"); // L1 shared bindings
 const namedVariableHeader_t = abi.NamedVariableHeader;
 
