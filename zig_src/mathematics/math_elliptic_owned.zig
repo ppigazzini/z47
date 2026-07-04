@@ -1846,19 +1846,26 @@ pub export fn fnJacobiAmplitude(unusedButMandatoryParameter: u16) linksection(ru
     adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
 
-pub export fn fnEllipticK(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+// L2 error surface (REPORT-23 P1/P5): the command cores return a domain error
+// instead of calling displayCalcErrorMessage inline; the L3 shims map it and run
+// the trailing adjustResult (which the C runs on every path, including the error).
+const EllipticError = error{ KNeedsCpxRes, ENeedsCpxRes };
+
+fn reportEllipticError(e: EllipticError) void {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    switch (e) {
+        error.KNeedsCpxRes => moreInfoOnError("In function fnEllipticK:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null),
+        error.ENeedsCpxRes => moreInfoOnError("In function fnEllipticE:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null),
+    }
+}
+
+fn fnEllipticKCore() EllipticError!void {
     var m: real_t = undefined;
     var a: real_t = undefined;
     var b: real_t = undefined;
 
-    if (!saveLastX()) {
-        return;
-    }
-
-    if (!getRegisterAsReal(REGISTER_X, &m)) {
-        return;
-    }
+    if (!saveLastX()) return;
+    if (!getRegisterAsReal(REGISTER_X, &m)) return;
 
     if (realCompareLessEqual(&m, const_1())) {
         ellipticKE(&m, &b, null, null, null, &runtime.ctxtReal39);
@@ -1867,26 +1874,26 @@ pub export fn fnEllipticK(unusedButMandatoryParameter: u16) linksection(runtime.
         ellipticKE(&m, &a, &b, null, null, &runtime.ctxtReal39);
         convertComplexToResultRegister(&a, &b, REGISTER_X);
     } else {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEllipticK:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
+        return error.KNeedsCpxRes;
     }
-
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
-pub export fn fnEllipticE(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub export fn fnEllipticK(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnEllipticKCore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    };
+}
+
+fn fnEllipticECore() EllipticError!void {
     var m: real_t = undefined;
     var a: real_t = undefined;
     var b: real_t = undefined;
 
-    if (!saveLastX()) {
-        return;
-    }
-
-    if (!getRegisterAsReal(REGISTER_X, &m)) {
-        return;
-    }
+    if (!saveLastX()) return;
+    if (!getRegisterAsReal(REGISTER_X, &m)) return;
 
     if (realCompareLessEqual(&m, const_1())) {
         ellipticKE(&m, null, null, &b, null, &runtime.ctxtReal39);
@@ -1895,11 +1902,17 @@ pub export fn fnEllipticE(unusedButMandatoryParameter: u16) linksection(runtime.
         ellipticKE(&m, null, null, &a, &b, &runtime.ctxtReal39);
         convertComplexToResultRegister(&a, &b, REGISTER_X);
     } else {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEllipticE:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
+        return error.ENeedsCpxRes;
     }
-
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
+
+pub export fn fnEllipticE(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnEllipticECore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    };
 }
 
 pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
