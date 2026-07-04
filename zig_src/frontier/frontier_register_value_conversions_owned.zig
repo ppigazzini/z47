@@ -274,8 +274,8 @@ const mpz_sizeinbase = @"__gmpz_sizeinbase";
 // ---------------------------------------------------------------------------
 // DMCP / PC date path
 // ---------------------------------------------------------------------------
-const dt_t = extern struct { year: u16, month: u8, day: u8 };
-const tm_t = extern struct { hour: u8, min: u8, sec: u8, csec: u8, dow: u8 };
+const dt_t = abi.DateShort;
+const tm_t = abi.TimeShort;
 const Tm = extern struct {
     sec: c_int,
     min: c_int,

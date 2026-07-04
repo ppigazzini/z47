@@ -13,6 +13,7 @@
 //   * The free-region cap is 50 on old_hw firmware, 200 elsewhere.
 
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 
 const dmcp_build: bool = build_options.dmcp_build;
@@ -26,10 +27,7 @@ const NOPARAM: u16 = 9876;
 const MAX_FREE_REGIONS: i32 = if (free_regions_is_array) 50 else 200;
 const MAX_ALLOCATED_REGIONS: i32 = 5000;
 
-const freeMemoryRegion_t = extern struct {
-    blockAddress: u16,
-    sizeInBlocks: u16,
-};
+const freeMemoryRegion_t = abi.FreeMemoryRegion;
 
 extern var ram: [*c]u32;
 extern var numberOfFreeMemoryRegions: i32;
