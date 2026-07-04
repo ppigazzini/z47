@@ -54,9 +54,7 @@ extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *rea
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
-inline fn registerReal34Data(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(runtime.getRegisterDataPointer(reg).?);
-}
+const registerReal34Data = abi.registerReal34;
 
 extern var lastErrorCode: u8;
 const saveLastX = runtime.saveLastX;

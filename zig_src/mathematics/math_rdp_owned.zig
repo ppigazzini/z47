@@ -118,9 +118,7 @@ extern var updateDisplayValueX: bool;
 extern var displayValueX: [80]u8;
 
 const REAL34_SIZE_IN_BYTES: u32 = 16;
-inline fn registerReal34Data(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
+const registerReal34Data = abi.registerReal34;
 inline fn registerImag34Data(reg: calcRegister_t) *align(1) real34_t {
     const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
     return @ptrCast(base + REAL34_SIZE_IN_BYTES);
