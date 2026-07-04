@@ -10,6 +10,8 @@
 // upstream GLYPH_TO_CHAR_CODE macro ((byte0 << 8) | byte1), matching the
 // TO_QSPI tables in the original sort.c byte-for-byte.
 
+const abi = @import("abi");
+
 // Comparison modes (src/c47/defines.h).
 const CMP_BINARY: i32 = 0;
 const CMP_EXTENSIVE: i32 = 2;
@@ -17,24 +19,9 @@ const CMP_NAME: i32 = 3;
 
 // Glyph table layout copied from upstream fonts.h. findGlyph (Zig-owned in
 // frontier_fonts_owned.zig) and standardFont need this exact extern layout.
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-};
+const glyph_t = abi.Glyph;
 
-const font_t = extern struct {
-    id: i8,
-    numberOfGlyphs: u16,
-    glyphs: [0]glyph_t, // flexible array member
-};
+const font_t = abi.Font;
 
 extern const standardFont: font_t;
 

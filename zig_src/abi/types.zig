@@ -223,6 +223,29 @@ pub const FormulaHeader = extern struct {
     unused: u8,
 };
 
+/// Font glyph (glyph_t, typeDefinitions.h): 24 bytes, align 8. The `_pad:[8]u8`
+/// owner is an opaque view over the rank1/rank2 (+trailing pad) bytes.
+pub const Glyph = extern struct {
+    charCode: u16,
+    colsBeforeGlyph: u8,
+    colsGlyph: u8,
+    colsAfterGlyph: u8,
+    rowsAboveGlyph: u8,
+    rowsGlyph: u8,
+    rowsBelowGlyph: u8,
+    rank1: i16,
+    rank2: i16,
+    data: [*c]u8,
+};
+
+/// Font description (font_t, typeDefinitions.h): id + count + flexible glyph
+/// array (the `id:u16` owner is a misspelling of the C `int8_t id`).
+pub const Font = extern struct {
+    id: i8,
+    numberOfGlyphs: u16,
+    glyphs: [0]Glyph,
+};
+
 /// Subroutine-levels header (subroutineLevels_t, typeDefinitions.h): 4 bytes.
 pub const SubroutineLevels = extern struct {
     numberOfSubroutineLevels: u16,

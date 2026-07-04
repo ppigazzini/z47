@@ -24,6 +24,7 @@
 // across every target plus the boundary gates.
 
 const std = @import("std");
+const abi = @import("abi");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -41,24 +42,8 @@ else
 // Types
 // ---------------------------------------------------------------------------
 const bool_t = bool;
-const glyph_t = extern struct {
-    charCode: u16,
-    colsBeforeGlyph: u8,
-    colsGlyph: u8,
-    colsAfterGlyph: u8,
-    rowsAboveGlyph: u8,
-    rowsGlyph: u8,
-    rowsBelowGlyph: u8,
-    rank1: i16,
-    rank2: i16,
-    data: [*c]u8,
-};
-const font_t = extern struct {
-    id: i8,
-    numberOfGlyphs: u16,
-    // glyphs[] flexible array.
-};
-// glyphs[] follows the 4-byte header but is aligned to glyph_t's alignment
+const glyph_t = abi.Glyph;
+const font_t = abi.Font;
 // (8 on 64-bit hosts where the data pointer makes glyph_t 8-aligned, 4 on the
 // 32-bit firmware). Compute the offset from the alignment to match the C layout.
 const FONT_GLYPHS_OFFSET: usize = std.mem.alignForward(usize, 4, @alignOf(glyph_t));
