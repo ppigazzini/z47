@@ -866,26 +866,7 @@ const nameOfWday_en: [8]nstr = .{
 // ---------------------------------------------------------------------------
 // tamState_t (only .mode / .alpha touched).
 // ---------------------------------------------------------------------------
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
-
-// ---------------------------------------------------------------------------
+const tamState_t = abi.TamState;
 // Owned module-scope globals (screen.c defines these). External linkage.
 // ---------------------------------------------------------------------------
 pub export var blockMonitoring: bool_t = 0; // = false
@@ -1924,7 +1905,7 @@ pub export fn Shft_handler() callconv(.c) void {
                         }
                         shiftF = 0;
                         shiftG = 0;
-                    } else if (tam.alpha != 0 or tam.mode == 0) {
+                    } else if (tam.alpha or tam.mode == 0) {
                         if (calcMode == CM_NIM and item != ITM_ms and item != ITM_CC and item != ITM_op_j and item != ITM_op_j_pol and item != ITM_dotD and item != ITM_HASH_JM and item != ITM_toINT and item != ITM_BACKSPACE and indexOfItems[@intCast(item)].func != addItemToBufferPtr) {
                             delayCloseNim = 0;
                             closeNim();
@@ -1952,7 +1933,7 @@ pub export fn Shft_handler() callconv(.c) void {
                                 if (getSystemFlag(FLAG_ALPHA) != 0 and ((currentMenu() == -MNU_MyAlpha) or (currentMenu() == -MNU_AIMCATALOG) or isAlphabeticSoftmenu() != 0)) {
                                     popSoftmenu();
                                 }
-                                if (tam.alpha != 0) {
+                                if (tam.alpha) {
                                     showSoftmenu(-MNU_TAMALPHA);
                                 } else if ((calcMode == CM_AIM) or getSystemFlag(FLAG_ALPHA) != 0 or ((calcMode == CM_ASSIGN) and (previousCalcMode == CM_AIM))) {
                                     showSoftmenu(-MNU_ALPHA);
@@ -1965,7 +1946,7 @@ pub export fn Shft_handler() callconv(.c) void {
                             } else {
                                 var baseOverrideOnce: bool_t = 1;
                                 BASE_OVERRIDEONCE = baseOverrideOnce;
-                                if ((calcMode == CM_AIM) or getSystemFlag(FLAG_ALPHA) != 0 or ((calcMode == CM_ASSIGN) and (previousCalcMode == CM_AIM)) or tam.alpha != 0) {
+                                if ((calcMode == CM_AIM) or getSystemFlag(FLAG_ALPHA) != 0 or ((calcMode == CM_ASSIGN) and (previousCalcMode == CM_AIM)) or tam.alpha) {
                                     showSoftmenu(-MNU_MyAlpha);
                                 } else if (getSystemFlag(FLAG_USER) != 0 and (key.gShifted != ITM_NULL)) {
                                     showSoftmenu(key.gShifted);
@@ -2065,7 +2046,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                 }
             }
 
-            if ((calcMode == CM_AIM or calcMode == CM_EIM or tam.alpha != 0) and !((currentKeyCode == 16 or currentKeyCode == 12)) and JM_auto_longpress_enabled != ITM_CLRMOD and JM_auto_longpress_enabled > 0) {
+            if ((calcMode == CM_AIM or calcMode == CM_EIM or tam.alpha) and !((currentKeyCode == 16 or currentKeyCode == 12)) and JM_auto_longpress_enabled != ITM_CLRMOD and JM_auto_longpress_enabled > 0) {
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     return;
                 }
@@ -2078,7 +2059,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                 fnTimerStop(TO_FN_LONG);
                 if (calcMode == CM_AIM) {
                     refreshRegisterLine(AIM_REGISTER_LINE);
-                } else if (calcMode == CM_EIM or tam.alpha != 0) {
+                } else if (calcMode == CM_EIM or tam.alpha) {
                     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
                     refreshScreen(1312);
                 }
@@ -2996,7 +2977,7 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
     showFunctionNameItem = item;
     showFunctionNameCounter = delayInMs;
 
-    if (tam.alpha != 0 and ((item == ITM_BACKSPACE) or (item == ITM_T_LEFT_ARROW) or (item == ITM_T_RIGHT_ARROW))) {
+    if (tam.alpha and ((item == ITM_BACKSPACE) or (item == ITM_T_LEFT_ARROW) or (item == ITM_T_RIGHT_ARROW))) {
         return;
     }
 
@@ -3031,7 +3012,7 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
 pub export fn hideFunctionName() callconv(.c) void {
     if (tmpString[0] != 0 or calcMode != CM_AIM) {
         if (calcMode != CM_PEM) {
-            if (tam.alpha == 0 or (showFunctionNameItem != ITM_BACKSPACE and
+            if (!tam.alpha or (showFunctionNameItem != ITM_BACKSPACE and
                 showFunctionNameItem != ITM_T_LEFT_ARROW and
                 showFunctionNameItem != ITM_T_RIGHT_ARROW and
                 showFunctionNameItem != ITM_NULL))
@@ -5674,7 +5655,7 @@ pub export fn displayShiftAndTamBuffer() callconv(.c) void {
         updateAssignTamBuffer();
     }
 
-    if (calcMode != CM_ASSIGN or itemToBeAssigned == 0 or tam.alpha != 0) {
+    if (calcMode != CM_ASSIGN or itemToBeAssigned == 0 or tam.alpha) {
         if (shiftF != 0) {
             showShiftStateF();
         } else if (shiftG != 0) {
@@ -5890,7 +5871,7 @@ fn _refreshNormalScreen() void {
 
     if ((calcMode != CM_NIM or (skippedStackLines != 0 and calcMode == CM_NIM)) and (screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) == 0) {
         if (calcMode != CM_AIM) {
-            if (calcMode != CM_TIMER and tam.alpha == 0 and temporaryInformation != TI_VIEW_REGISTER) {
+            if (calcMode != CM_TIMER and !tam.alpha and temporaryInformation != TI_VIEW_REGISTER) {
                 refreshRegisterLine(REGISTER_T);
             }
             refreshRegisterLine(REGISTER_Z);

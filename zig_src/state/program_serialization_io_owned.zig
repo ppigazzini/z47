@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("program_serialization_build_options");
 
@@ -40,15 +41,7 @@ const programList_t = extern struct {
 
 // Only the fields consumed here are modelled; alpha sits at offset 4 and
 // digitsSoFar at offset 10, matching upstream tamState_t.
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: u8,
-    currentOperation: i16,
-    dot: u8,
-    indirect: u8,
-    digitsSoFar: i16,
-};
+const tamState_t = abi.TamState;
 
 comptime {
     // Lock the upstream field layout these helpers index into. Offsets are
@@ -144,7 +137,7 @@ pub fn selectProgram(label: u16) bool {
 
     dynamicMenuItem = -1;
 
-    if (label == 0 and tam.alpha == 0 and tam.digitsSoFar == 0) {
+    if (label == 0 and !tam.alpha and tam.digitsSoFar == 0) {
         const untitled = "untitled";
         @memcpy(tmpStringLabelOrVariableName[0..untitled.len], untitled);
         tmpStringLabelOrVariableName[untitled.len] = 0;

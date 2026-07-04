@@ -205,24 +205,7 @@ const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 const PGM_RUNNING: u8 = 1;
 
 // tam state (assign reads/writes tam.alpha).
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
+const tamState_t = abi.TamState;
 extern var tam: tamState_t;
 
 // STD_* byte sequences (fonts.h).

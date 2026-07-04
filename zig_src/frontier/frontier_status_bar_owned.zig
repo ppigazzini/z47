@@ -264,24 +264,7 @@ extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern const standardFont: font_t;
 
 // tam state (statusBar reads tam.mode / tam.alpha).
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
+const tamState_t = abi.TamState;
 extern var tam: tamState_t;
 
 // CATALOG_MVAR pointer comparison uses `catalog` which is i16.

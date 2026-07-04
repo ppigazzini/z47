@@ -131,6 +131,28 @@ pub const UserMenu = extern struct {
     menuItem: [18]UserMenuItem,
 };
 
+/// TAM-mode state (tamState_t, typeDefinitions.h): 26 bytes, align 2. The C
+/// bool_t members are `bool` (1 byte); the owners that had forked these to `u8`
+/// (int-style `!= 0` / `= 1`) are converted to bool idiom at their access sites.
+pub const TamState = extern struct {
+    mode: u16,
+    function: i16,
+    alpha: bool,
+    currentOperation: i16,
+    dot: bool,
+    indirect: bool,
+    digitsSoFar: i16,
+    value0: i16,
+    value: i16,
+    min: i16,
+    max: i16,
+    key: i16,
+    keyAlpha: bool,
+    keyDot: bool,
+    keyIndirect: bool,
+    keyInputFinished: bool,
+};
+
 /// GMP mpz_t element (mpz_struct): alloc/size + limb pointer.
 pub const Mpz = extern struct {
     mp_alloc: c_int,
@@ -170,6 +192,11 @@ comptime {
     std.debug.assert(@offsetOf(SoftmenuStack, "firstItem") == 2);
     std.debug.assert(@offsetOf(SoftmenuStack, "userMenuId") == 4);
     std.debug.assert(@offsetOf(SoftmenuStack, "calcMode") == 6);
+    std.debug.assert(@sizeOf(TamState) == 26);
+    std.debug.assert(@alignOf(TamState) == 2);
+    std.debug.assert(@offsetOf(TamState, "alpha") == 4);
+    std.debug.assert(@offsetOf(TamState, "digitsSoFar") == 10);
+    std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
 }
 
 // Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.

@@ -36,26 +36,7 @@ const normKey_t = extern struct {
 const item_t = abi.Item;
 
 // tamState_t — only .alpha is read by this file. Full layout for ABI size.
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
-
-// ---------------------------------------------------------------------------
+const tamState_t = abi.TamState;
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
 // ---------------------------------------------------------------------------
 const CM_AIM: u8 = 1;

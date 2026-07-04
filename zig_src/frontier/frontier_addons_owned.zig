@@ -110,26 +110,7 @@ const softmenuStack_t = abi.SoftmenuStack;
 const userMenuItem_t = abi.UserMenuItem;
 
 // tamState_t (sizeof 26).
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
-
-// matrixHeader_t bitfield {rows:12; cols:12; mtag:6; notUsed:2} packed into a u32.
+const tamState_t = abi.TamState;
 const matrixHeader_t = extern struct {
     bits: u32,
     inline fn rows(self: *align(1) const matrixHeader_t) u16 {
@@ -1866,7 +1847,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             var maxDigits: u8 = if (tam.max < 10) 1 else if (tam.max < 100) 2 else if (tam.max < 1000) 3 else if (tam.max < 10000) 4 else 5;
 
             if ((opParam == INDIRECT_REGISTER) and (isFunctionOldParam16(func) == 0)) {
-                tam.indirect = 1;
+                tam.indirect = true;
                 tam.max = 99;
                 maxDigits = 2;
                 opParam = opParam2;
@@ -1875,7 +1856,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
                 showSoftmenu(-MNU_TAM);
                 numberOfTamMenusToPop -= 1;
             } else if ((opParam == INDIRECT_VARIABLE) and (isFunctionOldParam16(func) == 0)) {
-                tam.indirect = 1;
+                tam.indirect = true;
                 opParam = STRING_LABEL_VARIABLE;
                 popSoftmenu();
                 showSoftmenu(-MNU_TAM);
@@ -1883,7 +1864,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             }
 
             regNumber = opParam;
-            if ((paramMode == PARAM_REGISTER) or (paramMode == PARAM_COMPARE) or tam.indirect != 0) {
+            if ((paramMode == PARAM_REGISTER) or (paramMode == PARAM_COMPARE) or tam.indirect) {
                 if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) {
                     regNumber = regKStoC(opParam);
                 }
@@ -1899,20 +1880,20 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
                 tam.digitsSoFar = 0;
                 tam.value = 0;
             } else if ((paramMode == PARAM_FLAG) and opParam > LAST_GLOBAL_FLAG) {
-                tam.dot = 1;
+                tam.dot = true;
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
                 tam.value = @intCast((opParam - FIRST_LOCAL_FLAG) / 10);
-            } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_COMPARE) or tam.indirect != 0) and (regNumber > LAST_GLOBAL_REGISTER)) {
-                tam.dot = 1;
+            } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_COMPARE) or tam.indirect) and (regNumber > LAST_GLOBAL_REGISTER)) {
+                tam.dot = true;
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
                 tam.value = @intCast((regNumber - FIRST_LOCAL_REGISTER) / 10);
-            } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_FLAG) or (paramMode == PARAM_COMPARE) or tam.indirect != 0) and opParam >= REGISTER_X) {
+            } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_FLAG) or (paramMode == PARAM_COMPARE) or tam.indirect) and opParam >= REGISTER_X) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
             } else if (((paramMode == PARAM_DECLARE_LABEL) or (paramMode == PARAM_LABEL)) and opParam >= 100) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
-            } else if ((paramMode == PARAM_NUMBER_16) and tam.indirect == 0) {
+            } else if ((paramMode == PARAM_NUMBER_16) and !tam.indirect) {
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
                 if (isFunctionOldParam16(func) != 0) {
                     tam.value = @intCast(((@as(u16, opParam2) << 8) + opParam) / 10);

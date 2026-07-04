@@ -413,26 +413,7 @@ const martelFont24 = @extern(*const martelFont24_t, .{ .name = "martelFont24" })
 const glyphNotFound = @extern(*glyph_t, .{ .name = "glyphNotFound" });
 
 // tamState_t: only mode/indirect/value/value0 are read; full layout for ABI.
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
-
-// ---------------------------------------------------------------------------
+const tamState_t = abi.TamState;
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
 extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
