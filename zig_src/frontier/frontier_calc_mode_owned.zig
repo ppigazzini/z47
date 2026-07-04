@@ -41,14 +41,8 @@ const softmenuStack_t = abi.SoftmenuStack;
 const matrixHeader_t = abi.MatrixHeader;
 // any34Matrix_t union { header; realMatrix{header; real34_t *elements}; ... }.
 // The matrixElements pointer sits after the 4-byte header in both arms.
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?*real34_t,
-};
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?*anyopaque,
-};
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 
 const font_t = opaque {};
 

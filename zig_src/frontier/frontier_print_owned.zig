@@ -116,14 +116,8 @@ const printerState_t = extern struct {
 // matrix structs (typeDefinitions.h). matrixHeader_t is a 4-byte bitfield
 // (rows:12, cols:12, mtag:6, notUsed:2); only rows/cols are read.
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*]real34_t,
-};
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*]complex34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 
 // item_t (typeDefinitions.h)
 const ItemFn = ?*const fn (u16) callconv(.c) void;
@@ -1468,7 +1462,7 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
                 while (jj < cols) : (jj += 1) {
                     _ = sprintf(tmpString, "%u" ++ ":%u" ++ "=", @as(c_uint, i + 1), @as(c_uint, jj + 1));
                     printLineImpl(tmpString, 0);
-                    const elem: [*c]const complex34_t = matrix.matrixElements + (i * cols + jj);
+                    const elem: [*c]const complex34_t = matrix.matrixElements.? + (i * cols + jj);
                     const real34 = @constCast(varReal34(elem));
                     const imag34 = @constCast(varImag34(elem));
                     _complex34ToPrintString(real34, imag34, tagAngle, tagPolar, tmpString);
@@ -1807,13 +1801,13 @@ pub export fn printTraceMatElement(where: u16) callconv(.c) void {
             const matrix = &mat;
             convertReal34MatrixRegisterToReal34Matrix(matrixIndexReg(), &mat);
             reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-            real34Copy(&matrix.matrixElements[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
+            real34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
         } else {
             var mat: complex34Matrix_t = undefined;
             const matrix = &mat;
             convertComplex34MatrixRegisterToComplex34Matrix(matrixIndexReg(), &mat);
             reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-            complex34Copy(&matrix.matrixElements[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
+            complex34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
         }
         printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, @intCast(where), false);
         if (comptime !dmcp_build) {
@@ -2389,14 +2383,14 @@ pub export fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) callconv(.
     var x: real34Matrix_t = undefined;
     convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
-    real34Copy(&x.matrixElements[index], reg34(TEMP_REGISTER_1));
+    real34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
 
 pub export fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) callconv(.c) void {
     var x: complex34Matrix_t = undefined;
     convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-    complex34Copy(&x.matrixElements[index], reg34(TEMP_REGISTER_1));
+    complex34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
 
 pub export fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buffer_size: u16) callconv(.c) bool_t {
