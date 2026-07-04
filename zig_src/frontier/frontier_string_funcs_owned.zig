@@ -1085,9 +1085,7 @@ extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c
 extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
 extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool) void;
 
-inline fn reg34c(reg: calcRegister_t) *align(1) complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34c = abi.registerComplex34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }
