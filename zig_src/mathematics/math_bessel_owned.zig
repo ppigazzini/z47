@@ -156,16 +156,27 @@ const REAL_SIZE_IN_BLOCKS_75: usize = 15;
 // ===========================================================================
 // fnBesselJ
 // ===========================================================================
-pub export fn fnBesselJ(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+// L2 error surface (REPORT-23 P1/P5): the Bessel command cores return a domain
+// error instead of calling displayCalcErrorMessage inline; the shims map it and
+// run the trailing adjustResult, which the C runs on every path except the
+// saveLastX early-abort.
+const BesselError = error{ BesselJNegArg, BesselYNegArg };
+
+fn reportBesselError(e: BesselError) void {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    switch (e) {
+        error.BesselJNegArg => moreInfoOnError("In function fnBesselJ:", "negative argument for Bessel function of non-integer degree", null, null),
+        error.BesselYNegArg => moreInfoOnError("In function fnBesselY:", "negative argument for Bessel function", null, null),
+    }
+}
+
+fn fnBesselJCore() BesselError!void {
     var x: real_t = undefined;
     var n: real_t = undefined;
     var r: real_t = undefined;
     var a: real_t = undefined;
 
-    if (!saveLastX()) {
-        return;
-    }
+    if (!saveLastX()) return;
 
     if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &n)) {
         if (realIsAnInteger(&n) or (!realIsNegative(&x))) {
@@ -181,19 +192,25 @@ pub export fn fnBesselJ(unusedButMandatoryParameter: u16) linksection(runtime.co
             reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
             convertComplexToResultRegister(&r, &a, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnBesselJ:", "negative argument for Bessel function of non-integer degree", null, null);
+            return error.BesselJNegArg;
         }
     }
 
     adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 }
 
+pub export fn fnBesselJ(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnBesselJCore() catch |e| {
+        reportBesselError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+    };
+}
+
 // ===========================================================================
 // fnBesselY
 // ===========================================================================
-pub export fn fnBesselY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+fn fnBesselYCore() BesselError!void {
     var x: real_t = undefined;
     var n: real_t = undefined;
     var r: real_t = undefined;
@@ -201,9 +218,7 @@ pub export fn fnBesselY(unusedButMandatoryParameter: u16) linksection(runtime.co
     var b: real_t = undefined;
     var c: real_t = undefined;
 
-    if (!saveLastX()) {
-        return;
-    }
+    if (!saveLastX()) return;
 
     if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &n)) {
         if (!realIsNegative(&x)) {
@@ -227,12 +242,19 @@ pub export fn fnBesselY(unusedButMandatoryParameter: u16) linksection(runtime.co
             reallocateRegister(REGISTER_X, dtComplex34, 0, @intCast(amNone));
             convertComplexToResultRegister(&r, &a, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnBesselY:", "negative argument for Bessel function", null, null);
+            return error.BesselYNegArg;
         }
     }
 
     adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
+
+pub export fn fnBesselY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnBesselYCore() catch |e| {
+        reportBesselError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+    };
 }
 
 // Hankel's asymptotic expansion (Abramowitz and Stegun, p.364)
