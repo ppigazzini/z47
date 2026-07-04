@@ -513,14 +513,7 @@ const ITM_BATT: i16 = 1413;
 const ITM_PRINTERLCD: i16 = 1711;
 const PRINTER_MARTEL: u32 = 1;
 
-const printerState_t = extern struct {
-    print_on: bool_t,
-    trace_done: bool_t,
-    print_blank_line: u8,
-    print_mode: u32,
-    printer_model: u32,
-    delay: u16,
-};
+const printerState_t = abi.PrinterState;
 extern var printerState: printerState_t;
 
 // max(itemNr, -itemNr) == abs(itemNr) for the switch
@@ -790,7 +783,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
                     ext_printTraceX(LINE_FULL);
                 }
             }
-            printerState.trace_done = 0;
+            printerState.trace_done = false;
         }
     } else {
         if (itemERRTIVal(func) == _TO_ITM_TI) {

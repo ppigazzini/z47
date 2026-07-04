@@ -2374,14 +2374,7 @@ inline fn tam_mode_set(v: u16) void {
     tam.mode = v;
 }
 
-const printerState_t = extern struct {
-    print_on: bool_t,
-    trace_done: bool_t,
-    print_blank_line: u8,
-    print_mode: c_int,
-    printer_model: c_int,
-    delay: u16,
-};
+const printerState_t = abi.PrinterState;
 extern var printerState: printerState_t;
 inline fn printerState_print_on(v: bool_t) void {
     printerState.print_on = v;
