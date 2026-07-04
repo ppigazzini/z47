@@ -162,9 +162,7 @@ extern fn strlen(s: [*c]const u8) usize;
 const reg34 = abi.registerReal34;
 const regComplex34 = abi.registerComplex34;
 const regStringData = abi.registerString;
-inline fn regMatrixHeader(reg: calcRegister_t) *align(1) const matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeader = abi.registerMatrixHeader;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }

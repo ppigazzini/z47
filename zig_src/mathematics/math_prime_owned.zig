@@ -286,10 +286,7 @@ const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
 
 const registerMatrixHeader = abi.registerMatrixHeader;
-inline fn registerReal34MatrixElements(reg: calcRegister_t) [*]align(1) real34_t {
-    const base: [*]u8 = @ptrCast(runtime.getRegisterDataPointer(reg).?);
-    return @ptrCast(@alignCast(base + @sizeOf(matrixHeader_t)));
-}
+const registerReal34MatrixElements = abi.registerReal34MatrixElements;
 
 // ---------------------------------------------------------------------------
 // Error / data-type / stack externs

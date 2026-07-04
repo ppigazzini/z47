@@ -82,9 +82,7 @@ inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(msg1, msg2, null, null);
 }
 const cst = consts.cstR;
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34Aligned;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }

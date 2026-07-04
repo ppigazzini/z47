@@ -583,3 +583,10 @@ pub inline fn registerComplex34Aligned(reg: i16) *Complex34 {
 pub inline fn registerMatrixHeaderAligned(reg: i16) *MatrixHeader {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
 }
+pub inline fn registerShortIntegerAligned(reg: i16) *u64 {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
+pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
+    const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(base + @sizeOf(MatrixHeader));
+}
