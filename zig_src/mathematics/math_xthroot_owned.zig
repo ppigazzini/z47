@@ -340,32 +340,29 @@ fn doXthRootLonI() linksection(runtime.code_section) callconv(.c) void {
     var exp: i32 = undefined;
 
     if (!getRegisterAsLongInt(REGISTER_Y, &base, null)) {
-        // goto end1
         longIntegerFree(&base);
         return;
     }
+    // defer replaces the end1/end2 goto-cleanup in matching LIFO order (exponent
+    // then base); the getRegisterAsLongInt init-then-fail paths keep an explicit
+    // free before the defer is registered so there is no double-free. `l` stays
+    // manually managed -- it is scoped to the root-check blocks.
+    defer longIntegerFree(&base);
     if (!getRegisterAsLongInt(REGISTER_X, &exponent, null)) {
-        // goto end2
         longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
+    defer longIntegerFree(&exponent);
 
     if (longIntegerIsZero(&exponent)) { // 1/0 is not possible
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function doXthRootLonI: Cannot divide by 0!", null, null, null);
-        // goto end2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
 
     if (longIntegerIsZero(&base)) { // base=0 -->  0
         uInt32ToLongInteger(0, &base);
         convertLongIntegerToLongIntegerRegister(&base, REGISTER_X);
-        // goto end2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
 
@@ -376,9 +373,6 @@ fn doXthRootLonI() linksection(runtime.code_section) callconv(.c) void {
             if (longIntegerRoot(&base, @bitCast(exp), &l) != 0) { // if integer xthRoot found, return
                 convertLongIntegerToLongIntegerRegister(&l, REGISTER_X);
                 longIntegerFree(&l);
-                // goto end2
-                longIntegerFree(&exponent);
-                longIntegerFree(&base);
                 return;
             }
             longIntegerFree(&l);
@@ -391,9 +385,6 @@ fn doXthRootLonI() linksection(runtime.code_section) callconv(.c) void {
                         longIntegerChangeSign(&l);
                         convertLongIntegerToLongIntegerRegister(&l, REGISTER_X);
                         longIntegerFree(&l);
-                        // goto end2
-                        longIntegerFree(&exponent);
-                        longIntegerFree(&base);
                         return;
                     }
                     longIntegerFree(&l);
@@ -403,18 +394,10 @@ fn doXthRootLonI() linksection(runtime.code_section) callconv(.c) void {
     }
 
     if (!runtime.getRegisterAsReal(REGISTER_X, &x) or !runtime.getRegisterAsReal(REGISTER_Y, &y)) {
-        // goto end2
-        longIntegerFree(&exponent);
-        longIntegerFree(&base);
         return;
     }
 
     xthRootReal(&y, &x, &runtime.ctxtReal75);
-
-    // end2:
-    longIntegerFree(&exponent);
-    // end1:
-    longIntegerFree(&base);
 }
 
 // ===========================================================================

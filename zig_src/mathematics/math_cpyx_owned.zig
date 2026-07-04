@@ -275,16 +275,15 @@ fn cpyxLonI(combOrPerm: u16) void {
     var y: mpz_struct = undefined;
 
     if (!runtime.getRegisterAsLongInt(REGISTER_X, &x, null)) {
-        // goto end1
         longIntegerFree(&x);
         return;
     }
+    defer longIntegerFree(&x);
     if (!runtime.getRegisterAsLongInt(REGISTER_Y, &y, null)) {
-        // goto end2
         longIntegerFree(&y);
-        longIntegerFree(&x);
         return;
     }
+    defer longIntegerFree(&y);
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -298,11 +297,6 @@ fn cpyxLonI(combOrPerm: u16) void {
         convertLongIntegerToLongIntegerRegister(&t, REGISTER_X);
         longIntegerFree(&t);
     }
-
-    // end2:
-    longIntegerFree(&y);
-    // end1:
-    longIntegerFree(&x);
 }
 
 fn cpyxReal(combOrPerm: u16) void {
@@ -350,16 +344,15 @@ fn cpyxShoI(combOrPerm: u16) void {
     var y: mpz_struct = undefined;
 
     if (!runtime.getRegisterAsLongInt(REGISTER_X, &x, null)) {
-        // goto end1
         longIntegerFree(&x);
         return;
     }
+    defer longIntegerFree(&x);
     if (!runtime.getRegisterAsLongInt(REGISTER_Y, &y, null)) {
-        // goto end2
         longIntegerFree(&y);
-        longIntegerFree(&x);
         return;
     }
+    defer longIntegerFree(&y);
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -372,7 +365,10 @@ fn cpyxShoI(combOrPerm: u16) void {
 
         convertLongIntegerToShortIntegerRegister(&t, getRegisterShortIntegerBase(REGISTER_Y), REGISTER_X);
 
-        longIntegerFree(&x); // Because convertShortIntegerRegisterToLongInteger reinits the long integer
+        // frees the original x, then convertShortIntegerRegisterToLongInteger
+        // re-inits it; the deferred free above releases this re-init'd x -- two
+        // distinct lifetimes, no double-free.
+        longIntegerFree(&x);
         convertShortIntegerRegisterToLongInteger(REGISTER_X, &x);
         if (longIntegerCompare(&t, &x) != 0) {
             runtime.setSystemFlag(FLAG_OVERFLOW);
@@ -380,11 +376,6 @@ fn cpyxShoI(combOrPerm: u16) void {
 
         longIntegerFree(&t);
     }
-
-    // end2:
-    longIntegerFree(&y);
-    // end1:
-    longIntegerFree(&x);
 }
 
 fn doCyxReal() callconv(.c) void {
