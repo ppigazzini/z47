@@ -17,6 +17,7 @@
 // are interleaved-complex, row-major: element (i,j) real at [(i*size+j)*2],
 // imag at [(i*size+j)*2 + 1].
 void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, bool is_real_symmetric, realContext_t *realContext);
+void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, real_t *t3r, real_t *t3i, bool is_real_symmetric, realContext_t *realContext);
 bool isRealSymmetric(const real_t *a, uint16_t size, realContext_t *realContext);
 
 static void initRuntime(void) {
@@ -114,11 +115,79 @@ static void runEigenvalues22(void) {
   expectEigenPair("eig22[[5,0],[0,3]]", &t1r, &t1i, &t2r, &t2i, "5", "0", "3", "0");
 }
 
+// Assert the unordered eigenvalue triple {actual t1,t2,t3} equals the three
+// expected pairs as a multiset (greedy match; each expected consumes one
+// distinct actual). Used with distinct-spectrum test matrices.
+static void expectEigenTriple(const char *name,
+                              const real_t *tr[3], const real_t *ti[3],
+                              const char *const er[3], const char *const ei[3]) {
+  bool used[3] = {false, false, false};
+  for(int e = 0; e < 3; ++e) {
+    bool matched = false;
+    for(int a = 0; a < 3; ++a) {
+      if(!used[a] && realEqualsText(tr[a], er[e]) && realEqualsText(ti[a], ei[e])) {
+        used[a] = true;
+        matched = true;
+        break;
+      }
+    }
+    if(!matched) {
+      char b1[TMP_STR_LENGTH], b2[TMP_STR_LENGTH], b3[TMP_STR_LENGTH];
+      realToString(tr[0], b1); realToString(tr[1], b2); realToString(tr[2], b3);
+      printf("eigen oracle: %s eigenvalue triple mismatch (expected %s missing)\n", name, er[e]);
+      printf("  actual reals: %s, %s, %s\n", b1, b2, b3);
+      ++failures;
+      return;
+    }
+  }
+}
+
+static void runEigenvalues33(void) {
+  real_t mat[18];
+  real_t t1r, t1i, t2r, t2i, t3r, t3i;
+  const real_t *tr[3] = {&t1r, &t2r, &t3r};
+  const real_t *ti[3] = {&t1i, &t2i, &t3i};
+
+  // Diagonal [[7,0,0],[0,4,0],[0,0,1]] -> eigenvalues {7,4,1}.
+  const char *diag[18] = {
+    "7","0", "0","0", "0","0",
+    "0","0", "4","0", "0","0",
+    "0","0", "0","0", "1","0",
+  };
+  loadMatrix(mat, 3, diag);
+  calculateEigenvalues33(mat, 3, &t1r, &t1i, &t2r, &t2i, &t3r, &t3i, true, &ctxtReal39);
+  {
+    const char *er[3] = {"7", "4", "1"};
+    const char *ei[3] = {"0", "0", "0"};
+    expectEigenTriple("eig33 diagonal{7,4,1}", tr, ti, er, ei);
+  }
+
+  // Symmetric [[2,1,0],[1,2,1],[0,1,2]] -> eigenvalues {2-sqrt2, 2, 2+sqrt2}.
+  // Assert the exact-integer middle root 2 is present (the irrational pair is
+  // representation-sensitive; the integer eigenvalue is a clean pin).
+  const char *sym[18] = {
+    "2","0", "1","0", "0","0",
+    "1","0", "2","0", "1","0",
+    "0","0", "1","0", "2","0",
+  };
+  loadMatrix(mat, 3, sym);
+  calculateEigenvalues33(mat, 3, &t1r, &t1i, &t2r, &t2i, &t3r, &t3i, true, &ctxtReal39);
+  {
+    bool has_two = realEqualsText(&t1r, "2") || realEqualsText(&t2r, "2") || realEqualsText(&t3r, "2");
+    bool all_real = realEqualsText(&t1i, "0") && realEqualsText(&t2i, "0") && realEqualsText(&t3i, "0");
+    if(!has_two || !all_real) {
+      printf("eigen oracle: eig33 symmetric tridiagonal expected a real eigenvalue 2\n");
+      ++failures;
+    }
+  }
+}
+
 int main(void) {
   initRuntime();
 
   runIsRealSymmetric();
   runEigenvalues22();
+  runEigenvalues33();
 
   if(failures != 0) {
     printf("eigen oracle failed %zu check(s)\n", failures);
