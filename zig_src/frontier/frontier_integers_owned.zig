@@ -95,18 +95,25 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 // ===========================================================================
 // fnChangeBase
 // ===========================================================================
-pub export fn fnChangeBase(base: u16) callconv(.c) void {
+fn fnChangeBaseCore(base: u16) error{BaseOutOfRange}!void {
     var sign: bool = undefined;
     var val: u64 = undefined;
 
     if (base < 2 or base > 16) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
-        moreInfoOnError("In function fnChangeBase:", "The base must be from 2 to 16.");
+        return error.BaseOutOfRange;
     } else if (getRegisterAsShortInt(REGISTER_X, &sign, &val, null, null)) {
         convertUInt64ToShortIntegerRegister(@intFromBool(sign), val, base, REGISTER_X);
         lastIntegerBase = base;
         fnRefreshState();
     }
+}
+
+pub export fn fnChangeBase(base: u16) callconv(.c) void {
+    // Single error on REGISTER_T (not X), so the report is inlined in the shim.
+    fnChangeBaseCore(base) catch {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
+        moreInfoOnError("In function fnChangeBase:", "The base must be from 2 to 16.");
+    };
 }
 
 // ===========================================================================
