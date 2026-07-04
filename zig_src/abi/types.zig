@@ -566,3 +566,20 @@ pub inline fn registerString(reg: i16) [*c]u8 {
 pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
     return @ptrCast(getRegisterDataPointer(reg).?);
 }
+
+// Fully-aligned variants: some owners @alignCast the register data pointer to a
+// naturally-aligned view instead of the *align(1) one above. Same C symbol, same
+// data; the alignment assumption is the owner's (preserved here verbatim).
+pub inline fn registerReal34Aligned(reg: i16) *Real34 {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
+pub inline fn registerImag34Aligned(reg: i16) *Real34 {
+    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(@alignCast(bytes + @sizeOf(Real34)));
+}
+pub inline fn registerComplex34Aligned(reg: i16) *Complex34 {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
+pub inline fn registerMatrixHeaderAligned(reg: i16) *MatrixHeader {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}

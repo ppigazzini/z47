@@ -160,13 +160,9 @@ extern fn decQuadFromString(r: *real34_t, str: [*:0]const u8, ctx: *realContext_
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const reg34 = abi.registerReal34Aligned;
 // REGISTER_IMAG34_DATA(a) = getRegisterDataPointer(a) + REAL34_SIZE_IN_BYTES (16).
-inline fn regImag34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg) + 16));
-}
+const regImag34 = abi.registerImag34Aligned;
 inline fn stringToReal34(source: [*:0]const u8, destination: *real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
 }

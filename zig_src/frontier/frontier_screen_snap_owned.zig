@@ -202,15 +202,9 @@ inline fn complexUnit() [*:0]const u8 {
 }
 
 // REGISTER_* data accessors.
-inline fn regReal34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
-inline fn regImag34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg) + REAL34_SIZE_IN_BYTES));
-}
-inline fn regMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const regReal34 = abi.registerReal34Aligned;
+const regImag34 = abi.registerImag34Aligned;
+const regMatrixHeader = abi.registerMatrixHeaderAligned;
 inline fn regReal34MatrixElems(reg: calcRegister_t) [*]real34_t {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg) + MATRIX_HEADER_SIZE));
 }

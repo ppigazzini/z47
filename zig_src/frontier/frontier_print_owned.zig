@@ -490,9 +490,7 @@ extern fn fflush(f: ?*anyopaque) c_int;
 // ---------------------------------------------------------------------------
 // real34 macro reproductions
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const reg34 = abi.registerReal34Aligned;
 inline fn regBytes(reg: calcRegister_t) [*c]u8 {
     return @ptrCast(getRegisterDataPointer(reg));
 }
@@ -505,9 +503,7 @@ inline fn regString(reg: calcRegister_t) [*c]u8 {
 inline fn regShortInt(reg: calcRegister_t) *u64 {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
 }
-inline fn regMatrixHeader(reg: calcRegister_t) *matrixHeader_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const regMatrixHeader = abi.registerMatrixHeaderAligned;
 inline fn regReal34MatrixElems(reg: calcRegister_t) [*c]real34_t {
     return @ptrCast(@alignCast(regBytes(reg) + MATRIX_HEADER_SIZE));
 }

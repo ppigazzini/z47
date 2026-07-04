@@ -499,9 +499,7 @@ inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u
 }
 
 // REGISTER_REAL34_DATA(a)
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const reg34 = abi.registerReal34Aligned;
 inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, src, &ctxtReal34);
 }

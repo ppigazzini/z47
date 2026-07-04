@@ -225,9 +225,7 @@ extern var shiftG: bool_t;
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const reg34 = abi.registerReal34Aligned;
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }

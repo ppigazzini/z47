@@ -925,9 +925,7 @@ inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
 // REGISTER_REAL34_DATA(a)
-inline fn reg34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-}
+const reg34 = abi.registerReal34Aligned;
 // reserved-variable register data pointer (4-byte block aligned).
 inline fn reservedReal34(varNo: usize) *align(4) real34_t {
     const blk = allReservedVariables[varNo].header.descriptor & 0xFFFF;
