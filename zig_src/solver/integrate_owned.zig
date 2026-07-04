@@ -130,11 +130,7 @@ extern var ctxtReal51: realContext_t;
 extern var ctxtReal75: realContext_t;
 
 // softmenu globals (for fnIntVar)
-const dynamicSoftmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    menuContent: [*c]u8,
-};
+const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 // C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
 // form crashed fnIntegrateVar's dynamicSoftmenu[...] access like fnSolveVar.

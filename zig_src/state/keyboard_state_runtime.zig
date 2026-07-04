@@ -1247,11 +1247,7 @@ pub const SOLVER_STATUS_EQUATION_2ND_DERIVATIVE: u16 = 12;
 
 pub const userMenuItem_t = abi.UserMenuItem;
 pub const userMenu_t = abi.UserMenu;
-pub const dynamicSoftmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    menuContent: [*c]u8,
-};
+pub const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 pub extern var userMenuItems: [18]userMenuItem_t;
 pub extern var userAlphaItems: [18]userMenuItem_t;
 pub const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });

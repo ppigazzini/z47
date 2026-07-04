@@ -50,11 +50,7 @@ const realContext_t = abi.RealContext;
 
 const item_t = abi.Item;
 const softmenu_t = abi.Softmenu;
-const dynamicSoftmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    menuContent: [*c]u8,
-};
+const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 const tamState_t = abi.TamState;
 
