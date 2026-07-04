@@ -362,6 +362,10 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
+          # typed accessor's blob offset must match the C constantPointers.h ground
+          # truth, so the offset-crash class stays caught after each pin advance.
+          python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
           # NON-BLOCKING: the headless GUI smoke trips a pixman SSE2 composite
@@ -884,6 +888,10 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
+          # typed accessor's blob offset must match the C constantPointers.h ground
+          # truth, so the offset-crash class stays caught after each pin advance.
+          python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
           zig build test
@@ -1108,6 +1116,10 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
+          # typed accessor's blob offset must match the C constantPointers.h ground
+          # truth, so the offset-crash class stays caught after each pin advance.
+          python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
           zig build test
