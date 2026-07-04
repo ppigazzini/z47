@@ -265,6 +265,48 @@ pub const FreeMemoryRegion = extern struct {
     sizeInBlocks: u16,
 };
 
+/// Broken-down calendar time (libc-style tm / Tm): 9 c_int fields.
+pub const Tm = extern struct {
+    sec: c_int,
+    min: c_int,
+    hour: c_int,
+    mday: c_int,
+    mon: c_int,
+    year: c_int,
+    wday: c_int,
+    yday: c_int,
+    isdst: c_int,
+};
+
+/// Confirmation temporary-info entry (confirmationTI_t).
+pub const ConfirmationTI = extern struct {
+    item: i16,
+    string: [30]u8,
+};
+
+/// Function-in-MIM descriptor (fInMim_t).
+pub const FInMim = extern struct {
+    itemNr: u16,
+};
+
+/// Martel-printer glyph (glyphMartelPrinter_t): char + 48-byte bitmap.
+pub const GlyphMartelPrinter = extern struct {
+    charCode: u16,
+    data: [48]u8,
+};
+
+/// Printer glyph (glyphPrinter_t): char + 5-byte bitmap.
+pub const GlyphPrinter = extern struct {
+    charCode: u16,
+    data: [5]u8,
+};
+
+/// String / long-integer data header (strLgIntHeader_t).
+pub const StrLgIntHeader = extern struct {
+    dataMaxLengthInBlocks: u16,
+    unused: u16,
+};
+
 /// Short date (dt_t): year/month/day.
 pub const DateShort = extern struct {
     year: u16,

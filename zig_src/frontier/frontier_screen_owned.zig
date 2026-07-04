@@ -109,10 +109,7 @@ const softmenu_t = abi.Softmenu;
 // softmenuStack_t {i16 softmenuId, i16 firstItem, i16 userMenuId, u8 calcMode}
 const softmenuStack_t = abi.SoftmenuStack;
 // confirmationTI_t {i16 item, char[30] string}
-const confirmationTI_t = extern struct {
-    item: i16,
-    string: [30]u8,
-};
+const confirmationTI_t = abi.ConfirmationTI;
 // reservedVariableDescStr_t { char Desc[28] }
 const reservedVariableDescStr_t = extern struct {
     Desc: [28]u8,

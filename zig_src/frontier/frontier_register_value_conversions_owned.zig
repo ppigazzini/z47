@@ -276,17 +276,7 @@ const mpz_sizeinbase = @"__gmpz_sizeinbase";
 // ---------------------------------------------------------------------------
 const dt_t = abi.DateShort;
 const tm_t = abi.TimeShort;
-const Tm = extern struct {
-    sec: c_int,
-    min: c_int,
-    hour: c_int,
-    mday: c_int,
-    mon: c_int,
-    year: c_int,
-    wday: c_int,
-    yday: c_int,
-    isdst: c_int,
-};
+const Tm = abi.Tm;
 extern fn time(t: ?*i64) i64;
 extern fn localtime(t: *const i64) *Tm;
 

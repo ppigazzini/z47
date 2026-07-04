@@ -429,7 +429,7 @@ pub export fn fnCvtDbRatio(ten_or_twenty: u16) callconv(.c) void {
 // testSuite (no items.c dispatch wiring yet). convPair table + pure-logic
 // helpers; the softmenu/HPCONV name helpers are a later slice.
 const ITM_NULL: i16 = 0;
-const fInMim_t = extern struct { itemNr: u16 };
+const fInMim_t = abi.FInMim;
 extern fn runFunction(func: i16) void;
 extern fn fnMultiplySI(param: u16) void;
 

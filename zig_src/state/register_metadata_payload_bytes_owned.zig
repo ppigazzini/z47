@@ -6,10 +6,7 @@ pub const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
 pub const Z47_LOCAL_MATRIX_ROWS_SHIFT: u5 = 0;
 pub const Z47_LOCAL_MATRIX_COLUMNS_SHIFT: u5 = 12;
 
-pub const strLgIntHeader_t = extern struct {
-    dataMaxLengthInBlocks: u16,
-    unused: u16,
-};
+pub const strLgIntHeader_t = abi.StrLgIntHeader;
 
 // Only @sizeOf(matrixHeader_t) (== 4) is used here; the raw-u32 mask helpers
 // below operate on the serialized bytes directly.

@@ -6,6 +6,7 @@
 // byte-for-byte from the upstream table.
 
 const builtin = @import("builtin");
+const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 
 // Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, platform read-only
@@ -17,10 +18,7 @@ else if (builtin.target.os.tag == .macos)
 else
     ".rodata";
 
-const glyphPrinter_t = extern struct {
-    charCode: u16,
-    data: [5]u8,
-};
+const glyphPrinter_t = abi.GlyphPrinter;
 
 const PrinterFont8 = extern struct {
     numberOfGlyphs: u16,
