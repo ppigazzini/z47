@@ -97,7 +97,7 @@ const freeMemoryRegion_t = extern struct {
     blockAddress: u16,
     sizeInBlocks: u16,
 };
-const matrixHeader_t = extern struct { descriptor: u32 };
+const matrixHeader_t = abi.MatrixHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const subroutineLevels_t = extern struct {
     numberOfSubroutineLevels: u16,
@@ -1671,7 +1671,8 @@ pub export fn initSimEqMatABX() callconv(.c) void {
 }
 // matrixHeader bit-fields: matrixRows:12, matrixColumns:12, mtag:6, notUsed:2.
 inline fn setMatrixDims(h: *matrixHeader_t, rows: u32, cols: u32) void {
-    h.descriptor = (h.descriptor & ~@as(u32, 0x00FFFFFF)) | (rows & 0xFFF) | ((cols & 0xFFF) << 12);
+    h.matrixRows = @truncate(rows);
+    h.matrixColumns = @truncate(cols);
 }
 // REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr): (real34_t*)((matrixHeader_t*)ptr + 1)
 inline fn matrixElementsAfterHeader(h: *matrixHeader_t) *real34_t {

@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 
 pub const Z47_LOCAL_MATRIX_ROWS_MASK: u32 = 0x00000fff;
 pub const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
@@ -10,9 +11,9 @@ pub const strLgIntHeader_t = extern struct {
     unused: u16,
 };
 
-pub const matrixHeader_t = extern struct {
-    descriptor: u32,
-};
+// Only @sizeOf(matrixHeader_t) (== 4) is used here; the raw-u32 mask helpers
+// below operate on the serialized bytes directly.
+pub const matrixHeader_t = abi.MatrixHeader;
 
 pub fn bytesPerBlock() comptime_int {
     return 4;
