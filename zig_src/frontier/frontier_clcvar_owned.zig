@@ -33,11 +33,7 @@ const complex34Matrix_t = abi.Complex34Matrix;
 
 // GMP mpz_struct (limb width == pointer width on every z47 target).
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 extern fn @"__gmpz_init"(p: *mpz_struct) void;
 extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 const mpz_init = @"__gmpz_init";

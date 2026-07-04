@@ -12,6 +12,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 
+const abi = @import("abi");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
@@ -92,11 +93,7 @@ extern fn WP34S_expmod(a: u64, b: u64, c: u64) u64;
 // GMP long integer (mpz).
 // ---------------------------------------------------------------------------
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 extern fn @"__gmpz_init"(op: *mpz_struct) void;

@@ -78,11 +78,7 @@ const complex34Matrix_t = abi.Complex34Matrix;
 
 // mpz / longInteger
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 // ---------------------------------------------------------------------------

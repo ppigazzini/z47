@@ -181,11 +181,17 @@ pub const Complex34Matrix = extern struct {
     matrixElements: ?[*]Complex34,
 };
 
-/// GMP mpz_t element (mpz_struct): alloc/size + limb pointer.
+/// GMP limb: pointer-width on every z47 target (usize, NOT c_ulong which is
+/// 32-bit on Win64 -- see math_command_wrappers_runtime).
+pub const MpLimb = usize;
+
+/// GMP mpz_t element (mpz_struct, gmp.h __mpz_struct): {_mp_alloc, _mp_size,
+/// _mp_d}. Field names carry the GMP underscore prefix and _mp_d is the limb
+/// pointer owners index directly; [*c] is the faithful GMP ABI spelling.
 pub const Mpz = extern struct {
-    mp_alloc: c_int,
-    mp_size: c_int,
-    mp_d: ?*anyopaque,
+    _mp_alloc: c_int,
+    _mp_size: c_int,
+    _mp_d: [*c]MpLimb,
 };
 
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.

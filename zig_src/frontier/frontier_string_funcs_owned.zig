@@ -30,11 +30,7 @@ const calcRegister_t = i16;
 // (64-bit on Linux and Win64, 32-bit on ARM32 firmware). NOT c_ulong: Win64
 // is LLP64 where `unsigned long` is 32-bit yet GMP limbs are 64-bit.
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 // ---------------------------------------------------------------------------

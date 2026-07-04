@@ -43,11 +43,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 // matrixHeader_t: rows:12, cols:12, mtag:6, notUsed:2 (only rows/cols read).
 const matrixHeader_t = abi.MatrixHeader;

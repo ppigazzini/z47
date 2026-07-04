@@ -39,11 +39,7 @@ const pcg32_random_t = runtime.pcg32_random_t;
 // long int" function arguments are genuine c_ulong in the ABI.
 // ---------------------------------------------------------------------------
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 extern fn @"__gmpz_init"(op: *mpz_struct) void;

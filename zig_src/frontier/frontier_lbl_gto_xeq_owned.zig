@@ -36,11 +36,7 @@ const complex34_t = abi.Complex34;
 // GMP mpz_struct. Limb width == pointer width on every z47 target (NOT c_ulong:
 // Win64 is LLP64). Matches the registerValueConversions owner.
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 extern fn @"__gmpz_init"(p: *mpz_struct) void;
 extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 extern fn @"__gmpz_set_str"(p: *mpz_struct, str: [*c]const u8, base: c_int) c_int;

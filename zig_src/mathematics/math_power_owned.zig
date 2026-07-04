@@ -89,11 +89,7 @@ inline fn realIsPositive(source: *const real_t) bool {
 // GMP long integer (mpz). Limb width == pointer width on every z47 target.
 // ---------------------------------------------------------------------------
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 
 extern fn @"__gmpz_init"(op: *mpz_struct) void;
 extern fn @"__gmpz_clear"(op: *mpz_struct) void;

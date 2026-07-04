@@ -14,6 +14,7 @@
 // sibling owners); the control flow is identical.
 
 const frontier_build_options = @import("frontier_build_options");
+const abi = @import("abi");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // ---------------------------------------------------------------------------
@@ -22,11 +23,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // and Win64, 32-bit on ARM32 firmware) — NOT c_ulong, which is 32-bit on Win64.
 // ---------------------------------------------------------------------------
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 extern fn @"__gmpz_mul"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
 extern fn @"__gmpz_add"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
 extern fn @"__gmpz_sub"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
