@@ -83,6 +83,77 @@ fn addMathLnComplexOracle(
     return exe;
 }
 
+fn addMathEigenOracle(
+    b: *std.Build,
+    context: host_types.Context,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step.Compile {
+    const core_c_flags = if (context.host_target.result.os.tag == .windows)
+        build_common.common_c_flags_windows
+    else
+        build_common.common_c_flags;
+
+    const exe = b.addExecutable(.{
+        .name = "math-eigen-oracle",
+        .root_module = b.createModule(.{
+            .root_source_file = null,
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    host_platform.addHostMacros(exe.root_module, context.common);
+    host_platform.addHostSystemPaths(exe.root_module, context.common);
+    exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    exe.root_module.addIncludePath(build_common.upstreamPath(b, "src/testSuite"));
+    exe.root_module.addIncludePath(context.version_headers_dir);
+    exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
+    exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    // raw_core_sources minus ONLY the math-replaced files (matrix.c /
+    // comparisonReals.c / slvq.c / slvc.c): the Zig math module below provides
+    // those symbols. The fully-filtered context.core_sources would also drop
+    // frontier/state-replaced C this math-only harness still needs as C, so use
+    // the math replaced-manifest filter specifically.
+    const eigen_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = eigen_core_sources, .flags = core_c_flags });
+
+    const eigen_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    const eigen_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    eigen_module.addImport("abi", eigen_abi_module);
+    const eigen_build_options = b.addOptions();
+    eigen_build_options.addOption(bool, "use_fake_wp34s_model", false);
+    eigen_build_options.addOption(bool, "export_public_ln_complex", false);
+    eigen_module.addOptions("math_command_wrappers_build_options", eigen_build_options);
+    const eigen_object = b.addObject(.{
+        .name = "math-eigen-oracle-owned",
+        .root_module = eigen_module,
+    });
+
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_eigen_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
+    exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
+    exe.root_module.addObject(eigen_object);
+    exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers2_c, .flags = core_c_flags });
+    host_platform.linkGtk3(exe.root_module, context.common);
+    host_platform.linkGmp(exe.root_module, context.host_target);
+    exe.root_module.linkSystemLibrary("m", .{});
+    return exe;
+}
+
 fn addMathRealRectangularToPolarOracle(
     b: *std.Build,
     context: host_types.Context,
@@ -765,6 +836,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     run_math_ln_complex_oracle.setCwd(b.path("."));
     const math_ln_complex_oracle_step = b.step("math_ln_complex_oracle", "Run the direct lnComplex helper oracle");
     math_ln_complex_oracle_step.dependOn(&run_math_ln_complex_oracle.step);
+
+    const math_eigen_oracle = addMathEigenOracle(b, context, optimize);
+    const run_math_eigen_oracle = b.addRunArtifact(math_eigen_oracle);
+    run_math_eigen_oracle.setCwd(b.path("."));
+    const eigen_parity_step = b.step("eigen_parity", "Run the eigenvalue worker golden oracle (matrix.c eigen engine)");
+    eigen_parity_step.dependOn(&run_math_eigen_oracle.step);
 
     const math_real_rectangular_to_polar_oracle = addMathRealRectangularToPolarOracle(b, context, optimize);
     const run_math_real_rectangular_to_polar_oracle = b.addRunArtifact(math_real_rectangular_to_polar_oracle);
