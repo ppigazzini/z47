@@ -671,9 +671,7 @@ extern fn decQuadZero(destination: *align(1) real34_t) *align(1) real34_t;
 inline fn real34SetZero(destination: *align(1) real34_t) void {
     _ = decQuadZero(destination);
 }
-inline fn registerReal34Data(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
+const registerReal34Data = abi.registerReal34;
 
 // ===========================================================================
 // fnXXfn
