@@ -91,14 +91,8 @@ const decContext = extern struct {
 const font_t = opaque {};
 
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?[*]real34_t,
-};
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?[*]complex34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 const AnyMatrix = extern union {
     header: matrixHeader_t,
     realMatrix: real34Matrix_t,

@@ -165,6 +165,22 @@ pub const TamState = extern struct {
     keyInputFinished: bool,
 };
 
+/// Real34 matrix (real34Matrix_t, typeDefinitions.h): {matrixHeader_t header;
+/// real34_t *matrixElements}. The element pointer is a nullable multi-item
+/// pointer (owners index it and null-check it); this is the idiomatic spelling of
+/// the C `real34_t *` and lets the [*c] forks drop their C-pointer.
+pub const Real34Matrix = extern struct {
+    header: MatrixHeader,
+    matrixElements: ?[*]Real34,
+};
+
+/// Complex34 matrix (complex34Matrix_t): {matrixHeader_t header;
+/// complex34_t *matrixElements}.
+pub const Complex34Matrix = extern struct {
+    header: MatrixHeader,
+    matrixElements: ?[*]Complex34,
+};
+
 /// GMP mpz_t element (mpz_struct): alloc/size + limb pointer.
 pub const Mpz = extern struct {
     mp_alloc: c_int,

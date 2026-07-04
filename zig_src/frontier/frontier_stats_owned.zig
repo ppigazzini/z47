@@ -38,7 +38,7 @@ const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]real34_t };
+const real34Matrix_t = abi.Real34Matrix;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 

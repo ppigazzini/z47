@@ -19,15 +19,9 @@ const complex34_t = abi.Complex34;
 // least-significant bits on the little-endian build target.
 const matrixHeader_t = abi.MatrixHeader;
 
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?[*]real34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
 
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?[*]complex34_t,
-};
+const complex34Matrix_t = abi.Complex34Matrix;
 
 const amDMS: u32 = 3;
 const amAngleMask: u32 = 15;

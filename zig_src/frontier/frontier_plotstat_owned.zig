@@ -77,10 +77,7 @@ const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: ?[*]real34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
 
 // item_t (typeDefinitions.h): only .itemSoftmenuName is read by RADIX34_MARK_CHAR.
 const ItemFn = ?*const fn (u16) callconv(.c) void;
