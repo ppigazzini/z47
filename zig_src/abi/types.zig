@@ -200,6 +200,14 @@ pub const Complex34Matrix = extern struct {
     matrixElements: ?[*]Complex34,
 };
 
+/// Any-matrix union (any34Matrix_t, typeDefinitions.h): overlays the shared
+/// header with the real and complex matrix views.
+pub const Any34Matrix = extern union {
+    header: MatrixHeader,
+    realMatrix: Real34Matrix,
+    complexMatrix: Complex34Matrix,
+};
+
 /// Printer state (printerState_t, typeDefinitions.h): 16 bytes, align 4. The C
 /// print_modes_t/printerModel_t are int-backed enums (c_int); the owners had
 /// forked the enum fields between c_int/u32/enum-alias and the bool fields

@@ -381,10 +381,7 @@ extern var errorMessageRegisterLine: calcRegister_t;
 // openMatrixMIMPointer is an any34Matrix_t union; we only touch header + element
 // pointer of real34Matrix_t / complex34Matrix_t views. Bind to the bigger of the
 // two layouts via a union-like extern.
-const any34Matrix_t = extern union {
-    realMatrix: real34Matrix_t,
-    complexMatrix: complex34Matrix_t,
-};
+const any34Matrix_t = abi.Any34Matrix;
 extern var openMatrixMIMPointer: any34Matrix_t;
 // grouping globals
 extern var grpGroupingLeft: u8;
