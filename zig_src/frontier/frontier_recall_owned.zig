@@ -21,12 +21,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]real34_t };
 const complex34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]complex34_t };
 const calcRegister_t = i16;

@@ -90,12 +90,7 @@ const decContext = extern struct {
 };
 const font_t = opaque {};
 
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: ?[*]real34_t,

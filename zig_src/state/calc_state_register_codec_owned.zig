@@ -8,6 +8,7 @@
 // remain for the DMCP retained path.
 
 const std = @import("std");
+const abi = @import("abi");
 const text = @import("calc_state_text_owned.zig");
 
 // data types (typeDefinitions.h)
@@ -45,12 +46,7 @@ const REAL34_SIZE_IN_BLOCKS: u32 = 4;
 const COMPLEX34_SIZE_IN_BLOCKS: u32 = 8;
 const OpaqueCtx = opaque {};
 
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const MpzStruct = extern struct {
     mp_alloc: c_int,
     mp_size: c_int,

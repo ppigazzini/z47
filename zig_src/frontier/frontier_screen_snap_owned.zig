@@ -50,12 +50,7 @@ const mpz_struct = extern struct {
 };
 const longInteger_t = [1]mpz_struct;
 // matrixHeader_t: rows:12, cols:12, mtag:6, notUsed:2 (only rows/cols read).
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 
 // ---------------------------------------------------------------------------
 // Constants (defines.h / registers.h / fonts.h)
