@@ -538,28 +538,21 @@ pub export fn fnIsPrime(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var primeCandidate: mpz_struct = undefined;
 
     if (!getIntArg(&primeCandidate, REGISTER_X)) {
-        // goto abort1
         longIntegerFree(&primeCandidate);
         return;
     }
+    defer longIntegerFree(&primeCandidate);
 
     longIntegerInit(&tmp);
+    defer longIntegerFree(&tmp);
     longIntegerPowerUIntUInt(10, maximumPrime, &tmp);
     longIntegerSubtract(&primeCandidate, &tmp, &tmp); // (primeCandidate - 10^300) positive is too large
     if (longIntegerIsPositive(&tmp)) {
         badDomainError(REGISTER_X);
-        // goto abort2
-        longIntegerFree(&tmp);
-        longIntegerFree(&primeCandidate);
         return;
     }
 
     setTiTrueFalse(longIntegerIsPositive(&primeCandidate) and longIntegerIsPrime(&primeCandidate) != 0);
-
-    // abort2:
-    longIntegerFree(&tmp);
-    // abort1:
-    longIntegerFree(&primeCandidate);
 }
 
 inline fn setTiTrueFalse(condition: bool) void {
@@ -1139,10 +1132,13 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
         if (useMatrix) {
             convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);
         }
-        // goto return1
         longIntegerFree(&x);
         return;
     }
+    // defer replaces the return1/return2 goto-cleanup. GMP clears are independent,
+    // so LIFO vs the C's fixed order is behavior-equivalent (ASAN-gated). p_li/
+    // p_li_less_1 stay manual -- they are init'd and freed inside the loop.
+    defer longIntegerFree(&x);
 
     if (useMatrix) {
         convertReal34MatrixToReal34MatrixRegister(&xx, REGISTER_X);
@@ -1156,6 +1152,9 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
     longIntegerInit(&phi_x);
     longIntegerInit(&phi_x_tmp);
     longIntegerInit(&phi_x_tmp_b);
+    defer longIntegerFree(&phi_x);
+    defer longIntegerFree(&phi_x_tmp);
+    defer longIntegerFree(&phi_x_tmp_b);
     var matrix: real34Matrix_t = undefined;
 
     // Returns true to indicate "goto returnValue".
@@ -1201,38 +1200,20 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
                     longIntegerFree(&p_li_less_1);
                 }
             } else {
-                // goto return2 (matrix dimensions wrong)
-                longIntegerFree(&phi_x);
-                longIntegerFree(&phi_x_tmp);
-                longIntegerFree(&phi_x_tmp_b);
-                longIntegerFree(&x);
+                // matrix dimensions wrong
                 return;
             }
         } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnEulPhi:", "The intermediate prime factor matrix could not be found.", null, null);
-            // goto return2
-            longIntegerFree(&phi_x);
-            longIntegerFree(&phi_x_tmp);
-            longIntegerFree(&phi_x_tmp_b);
-            longIntegerFree(&x);
             return;
         }
         break :blk false;
     };
     _ = gotoReturnValue;
 
-    // returnValue:
     convertLongIntegerToLongIntegerRegister(&phi_x, REGISTER_X);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-
-    // return2:
-    longIntegerFree(&phi_x);
-    longIntegerFree(&phi_x_tmp);
-    longIntegerFree(&phi_x_tmp_b);
-
-    // return1:
-    longIntegerFree(&x);
 }
 
 // ===========================================================================
