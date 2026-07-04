@@ -1542,7 +1542,7 @@ fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) void {
     }
 }
 
-pub export fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) callconv(.c) void {
+fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
@@ -1590,7 +1590,7 @@ pub export fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_
     }
 }
 
-pub export fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
@@ -2047,7 +2047,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
 // eigenvalues, solve for each eigenvector, detect defective (zero) columns,
 // normalize each column, and write real (res) + imaginary (ires) parts back.
 // ===========================================================================
-pub export fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) callconv(.c) void {
+fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
@@ -2146,7 +2146,7 @@ pub export fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix
 // ===========================================================================
 // complexEigenvectors (static) -- eigenvectors of a complex square matrix.
 // ===========================================================================
-pub export fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
@@ -2613,7 +2613,7 @@ fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matri
     }
 }
 
-pub export fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void {
+fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     res.matrixElements = null;
@@ -2661,7 +2661,7 @@ pub export fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t
     }
 }
 
-pub export fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void {
+fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     res.matrixElements = null;

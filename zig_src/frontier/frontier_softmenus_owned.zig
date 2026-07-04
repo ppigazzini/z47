@@ -2241,7 +2241,7 @@ inline fn strlenc(s: [*c]const u8) usize {
     return strlen(s);
 }
 
-pub export fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, showCb: *i8, showValue: *i16, showText: [*c]u8) callconv(.c) void {
+fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, showCb: *i8, showValue: *i16, showText: [*c]u8) void {
     _ = menuNr;
     var tmpF: f32 = 0;
     var tmpS: [30]u8 = undefined;

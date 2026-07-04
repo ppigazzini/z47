@@ -691,7 +691,7 @@ fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
 // ===========================================================================
 // C47_WP34S_SinCosTanTaylor_temp75
 // ===========================================================================
-pub export fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
     var epsilonDigits: i32 = undefined;
     var angle: real_t = undefined;
@@ -778,7 +778,7 @@ pub export fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode
 // ===========================================================================
 // C47_WP34S_SinCosTanTaylor_temp1071
 // ===========================================================================
-pub export fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     var angle_buf: BigReal(1071) = .{};
     var a2_buf: BigReal(1071) = .{};
     var t_buf: BigReal(1071) = .{};
