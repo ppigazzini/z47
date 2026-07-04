@@ -791,6 +791,13 @@ fn _doFnEvPFacts(param: u16) void {
             longIntegerInit(&prod);
             longIntegerInit(&factor);
             longIntegerInit(&tmp_prod);
+            // block-scoped defer: frees on the CPXRES-error return and the normal
+            // fall-through, matching the C's two manual free sites. The screen
+            // refreshScreen(253) is deliberately NOT deferred -- it is non-uniform
+            // (the CPXRES-error path skips it). p_li/k_li stay loop-scoped.
+            defer longIntegerFree(&prod);
+            defer longIntegerFree(&factor);
+            defer longIntegerFree(&tmp_prod);
             uInt32ToLongInteger(1, &prod);
             realSetOne(&prodR);
             var sumType: u8 = sumTypeInteger;
@@ -831,9 +838,6 @@ fn _doFnEvPFacts(param: u16) void {
                     } else {
                         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
                         moreInfoOnError("In function _doFnEvPFacts:", "cannot do complex results if CPXRES is not set", null, null);
-                        longIntegerFree(&prod);
-                        longIntegerFree(&factor);
-                        longIntegerFree(&tmp_prod);
                         return;
                     }
                 }
@@ -852,9 +856,6 @@ fn _doFnEvPFacts(param: u16) void {
                 else => {},
             }
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-            longIntegerFree(&prod);
-            longIntegerFree(&factor);
-            longIntegerFree(&tmp_prod);
         } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function _doFnEvPFacts:", "Only 2xn matrix supported", null, null);
