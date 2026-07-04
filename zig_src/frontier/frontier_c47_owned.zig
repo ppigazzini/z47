@@ -121,10 +121,7 @@ const freeMemoryRegion_t = extern struct {
     bytes: [4]u8 align(2),
 }; // size 4 align 2
 
-const pcg32_random_t = extern struct {
-    state: u64,
-    inc: u64,
-}; // size 16 align 8
+const pcg32_random_t = abi.Pcg32Random; // size 16 align 8
 
 // ---------------------------------------------------------------------------
 // TO_QSPI pure-data tables -> code_section (.qspi dmcp&&old_hw / __TEXT,__text

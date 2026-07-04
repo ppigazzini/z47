@@ -59,10 +59,7 @@ const normKey_t = extern struct {
     used: u8,
 };
 
-const pcg32_random_t = extern struct {
-    state: u64,
-    inc: u64,
-};
+const pcg32_random_t = abi.Pcg32Random;
 
 comptime {
     const assert = @import("std").debug.assert;

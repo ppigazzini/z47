@@ -181,6 +181,12 @@ pub const Complex34Matrix = extern struct {
     matrixElements: ?[*]Complex34,
 };
 
+/// PCG32 RNG state (pcg32_random_t, pcg_basic.h): 16 bytes, align 8.
+pub const Pcg32Random = extern struct {
+    state: u64,
+    inc: u64,
+};
+
 /// GMP limb: pointer-width on every z47 target (usize, NOT c_ulong which is
 /// 32-bit on Win64 -- see math_command_wrappers_runtime).
 pub const MpLimb = usize;
@@ -231,6 +237,8 @@ comptime {
     std.debug.assert(@offsetOf(TamState, "alpha") == 4);
     std.debug.assert(@offsetOf(TamState, "digitsSoFar") == 10);
     std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
+    std.debug.assert(@sizeOf(Pcg32Random) == 16);
+    std.debug.assert(@offsetOf(Pcg32Random, "inc") == 8);
     std.debug.assert(@sizeOf(MatrixHeader) == 4);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "matrixColumns") == 12);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);

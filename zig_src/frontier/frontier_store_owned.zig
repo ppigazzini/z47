@@ -53,10 +53,7 @@ const normKey_t = extern struct {
     funcParam: [16]u8,
     used: bool,
 };
-const pcg32_random_t = extern struct {
-    state: u64,
-    inc: u64,
-};
+const pcg32_random_t = abi.Pcg32Random;
 const dtConfigDescriptor_t = extern struct {
     shortIntegerMode: u8,
     shortIntegerWordSize: u8,
