@@ -152,10 +152,7 @@ fn BigReal(comptime digits: u32) type {
 }
 
 // struct cmplxPair { real_t r, i; }
-const cmplxPair = extern struct {
-    r: real_t,
-    i: real_t,
-};
+const cmplxPair = abi.CmplxPair;
 
 extern var ctxtReal39: realContext_t;
 extern var ctxtReal75: realContext_t;

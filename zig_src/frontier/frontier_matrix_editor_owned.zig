@@ -415,7 +415,7 @@ inline fn getVectorRegisterPolarMode(regist: calcRegister_t) u16 {
 // longInteger (GMP mpz_t) helpers used by getRegisterAsInt/setRegisterAsInt.
 // mpz_t is __mpz_struct[1]; a longInteger_t value decays to mpz_ptr
 // (= *__mpz_struct). We store one __mpz_struct and pass its address.
-const MpzStruct = extern struct { mp_alloc: c_int, mp_size: c_int, mp_d: ?*anyopaque };
+const MpzStruct = abi.Mpz;
 extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, longInteger: *MpzStruct) void;
 extern fn convertReal34ToLongInteger(real34: *const real34_t, lgInt: *MpzStruct, mode: c_int) void;
 extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const MpzStruct, regist: calcRegister_t) void;

@@ -50,6 +50,10 @@ pub const Complex = extern struct { Real: Real, Imag: Real };
 /// decQuad complex (two Real34).
 pub const Complex34 = extern struct { real: Real34, imag: Real34 };
 
+/// A complex pair with lower-case r/i fields (cmplxPair), distinct from Complex's
+/// {Real, Imag} spelling used by the solver/addons owners.
+pub const CmplxPair = extern struct { r: Real, i: Real };
+
 /// Subroutine-level header (run-time stack frame).
 pub const SubroutineLevelHeader = extern struct {
     returnProgramNumber: i16,
