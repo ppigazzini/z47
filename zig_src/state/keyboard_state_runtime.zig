@@ -517,11 +517,7 @@ pub fn bugScreenRbrMode(func_name: [*:0]const u8, key_str: [*:0]const u8, mode: 
 }
 
 // --- fnKeyEnter dependencies ------------------------------------------------
-const formulaHeader_t = extern struct {
-    pointerToFormulaData: u16,
-    sizeInBlocks: u8,
-    unused: u8,
-};
+const formulaHeader_t = abi.FormulaHeader;
 
 pub const FLAG_ERPN: i32 = 32837;
 pub const FLAG_ASLIFT: u32 = 49187;

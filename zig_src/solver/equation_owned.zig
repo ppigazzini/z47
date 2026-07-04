@@ -35,11 +35,7 @@ const bool_t = bool;
 // ---------------------------------------------------------------------------
 // Structures (typeDefinitions.h)
 // ---------------------------------------------------------------------------
-const formulaHeader_t = extern struct {
-    pointerToFormulaData: u16,
-    sizeInBlocks: u8,
-    unused: u8,
-};
+const formulaHeader_t = abi.FormulaHeader;
 
 const item_t = abi.Item;
 

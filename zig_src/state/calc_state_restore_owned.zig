@@ -132,11 +132,7 @@ const normKey_t = extern struct {
     funcParam: [16]u8,
     used: u8,
 };
-const formulaHeader_t = extern struct {
-    pointerToFormulaData: u16,
-    sizeInBlocks: u8,
-    unused: u8,
-};
+const formulaHeader_t = abi.FormulaHeader;
 const programList_t = extern struct {
     step: i32,
     instructionPointer: [*c]u8,
