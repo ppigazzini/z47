@@ -394,13 +394,8 @@ inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg));
-    return @ptrCast(bytes + REAL34_SIZE_IN_BYTES);
-}
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
 inline fn regStringData(reg: calcRegister_t) [*]u8 {
     const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg));
     return bytes + 4; // sizeof(strLgIntHeader_t)
@@ -1094,9 +1089,7 @@ inline fn real34Copy(src: *const real34_t, dst: *align(1) real34_t) void {
 inline fn complex34Copy(src: *const complex34_t, dst: *align(1) complex34_t) void {
     dst.* = src.*;
 }
-inline fn regComplex34(reg: calcRegister_t) *align(1) complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regComplex34 = abi.registerComplex34;
 inline fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *mpz_struct) i32 {
     return mpz_set_str(destination, source, radix);
 }

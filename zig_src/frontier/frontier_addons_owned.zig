@@ -1031,19 +1031,11 @@ inline fn maxI(a: i32, b: i32) i32 {
 }
 
 // register data accessors (REGISTER_*_DATA macros)
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg) + @as(usize, @intCast(REAL34_SIZE_IN_BYTES)));
-}
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4;
-inline fn regString(reg: calcRegister_t) [*c]u8 {
-    return getRegisterDataPointer(reg) + SIZEOF_STR_LG_INT_HEADER;
-}
-inline fn regShortInteger(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regString = abi.registerString;
+const regShortInteger = abi.registerShortInteger;
 inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
     return @ptrCast(getRegisterDataPointer(reg));
 }

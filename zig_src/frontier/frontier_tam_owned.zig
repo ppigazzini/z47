@@ -451,9 +451,7 @@ inline fn maxI(a: i32, b: i32) i32 {
 inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
     dst.* = src.*;
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 // REGISTER_STRING_DATA(a): char* at getRegisterDataPointer(a)+sizeof(strLgIntHeader_t) (=4).
 inline fn regStringData(reg: calcRegister_t) [*c]u8 {
     const base: [*c]u8 = @ptrCast(getRegisterDataPointer(reg));

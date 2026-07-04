@@ -123,13 +123,8 @@ extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long;
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn regString(reg: calcRegister_t) [*c]u8 {
-    // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
-    return @as([*c]u8, @ptrCast(getRegisterDataPointer(reg))) + 4;
-}
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regString = abi.registerString;
+const reg34 = abi.registerReal34;
 inline fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }

@@ -109,9 +109,7 @@ extern fn decQuadToInt32(r: *align(1) const real34_t, ctx: *realContext_t, round
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn realIsZero(v: *const real_t) bool {
     return v.lsu[0] == 0 and v.digits == 1 and (v.bits & DECSPECIAL) == 0;
 }

@@ -533,3 +533,33 @@ test "RealBlob is a drop-in for Real (same size and align)" {
 test "decNumber special-flag mask is INF|NAN|SNAN" {
     try testing.expectEqual(@as(u8, DECINF | DECNAN | DECSNAN), DECSPECIAL);
 }
+
+// ===========================================================================
+// Typed register-data accessors (M22 / REPORT-23 §5)
+// ---------------------------------------------------------------------------
+// registers.h reinterprets a register's data block as a real34 / complex34 /
+// matrix header / short-integer / string. Centralizing that reinterpretation
+// here -- one @ptrCast per shape, over the shared abi layout types -- replaces
+// the raw per-owner casts of getRegisterDataPointer scattered across ~29 owners.
+// The inline fns codegen only where used, so oracle/constants modules that map
+// @import("abi") to this file but never touch registers keep zero link deps.
+// ===========================================================================
+pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?*anyopaque;
+
+pub inline fn registerReal34(reg: i16) *align(1) Real34 {
+    return @ptrCast(getRegisterDataPointer(reg).?);
+}
+pub inline fn registerImag34(reg: i16) *align(1) Real34 {
+    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(bytes + @sizeOf(Real34));
+}
+pub inline fn registerComplex34(reg: i16) *align(1) Complex34 {
+    return @ptrCast(getRegisterDataPointer(reg).?);
+}
+pub inline fn registerShortInteger(reg: i16) *align(1) u64 {
+    return @ptrCast(getRegisterDataPointer(reg).?);
+}
+pub inline fn registerString(reg: i16) [*c]u8 {
+    const bytes: [*c]u8 = @ptrCast(getRegisterDataPointer(reg));
+    return bytes + @sizeOf(StrLgIntHeader);
+}

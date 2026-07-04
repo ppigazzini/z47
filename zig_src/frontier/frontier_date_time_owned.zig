@@ -280,9 +280,7 @@ else
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }

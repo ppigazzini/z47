@@ -363,13 +363,8 @@ extern fn sqrt(x: f64) f64;
 // ---------------------------------------------------------------------------
 const ctxtSolver2 = &ctxtReal39;
 
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
-    const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg));
-    return @ptrCast(bytes + 16);
-}
+const reg34 = abi.registerReal34;
+const regImag34 = abi.registerImag34;
 inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
     _ = decNumberCopy(dst, src);
 }

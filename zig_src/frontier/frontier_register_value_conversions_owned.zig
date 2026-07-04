@@ -289,18 +289,14 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 inline fn dataPtr(reg: calcRegister_t) [*]u8 {
     return @ptrCast(getRegisterDataPointer(reg));
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
     return @ptrCast(dataPtr(reg) + REAL34_SIZE_IN_BYTES);
 }
 inline fn regLongIntData(reg: calcRegister_t) [*]u8 {
     return dataPtr(reg) + 4; // sizeof(strLgIntHeader_t)
 }
-inline fn regShortInt(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regShortInt = abi.registerShortInteger;
 inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
     return @ptrCast(getRegisterDataPointer(reg));
 }

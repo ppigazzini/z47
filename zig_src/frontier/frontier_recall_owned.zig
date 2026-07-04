@@ -206,15 +206,9 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const
 inline fn dataPtr(reg: calcRegister_t) [*]u8 {
     return @ptrCast(getRegisterDataPointer(reg));
 }
-inline fn reg34(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regComplex34(reg: calcRegister_t) *align(1) complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regShortInt(reg: calcRegister_t) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
+const regComplex34 = abi.registerComplex34;
+const regShortInt = abi.registerShortInteger;
 inline fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
 }
