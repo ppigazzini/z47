@@ -53,11 +53,7 @@ const angularMode_t = c_int;
 // LLP64, where `unsigned long` is 32-bit yet GMP limbs are 64-bit — that mismatch
 // mis-sized _mp_d and broke the @ptrCast to [*]u64 below on the Windows CI lane.
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const LIMB_SIZE: u32 = @sizeOf(mp_limb_t);
 const is32: bool = @sizeOf(*anyopaque) == 4;
 

@@ -109,11 +109,7 @@ const any34Matrix_t = extern union {
 
 // mpz / longInteger
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 // calcKey_t: int16 fields. We only touch primary/gShifted.

@@ -38,11 +38,7 @@ const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
-const mpz_struct = extern struct {
-    _mp_alloc: c_int,
-    _mp_size: c_int,
-    _mp_d: [*c]mp_limb_t,
-};
+const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
 const labelList_t = extern struct {
