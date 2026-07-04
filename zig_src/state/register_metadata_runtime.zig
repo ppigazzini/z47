@@ -44,12 +44,7 @@ const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 const abi = @import("abi"); // L1 shared bindings
 const userMenu_t = abi.UserMenu;
 
-const named_variable_header_t = extern struct {
-    header: extern struct {
-        descriptor: register_descriptor_t,
-    },
-    variableName: [16]u8,
-};
+const named_variable_header_t = abi.NamedVariableHeader;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const REGISTER_Y = stack_runtime.REGISTER_Y;

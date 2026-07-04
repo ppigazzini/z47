@@ -12,12 +12,7 @@ const userMenu_t = abi.UserMenu;
 
 const register_descriptor_t = u32;
 
-const named_variable_header_t = extern struct {
-    header: extern struct {
-        descriptor: register_descriptor_t,
-    },
-    variableName: [16]u8,
-};
+const named_variable_header_t = abi.NamedVariableHeader;
 
 extern var numberOfNamedVariables: u16;
 extern var userMenus: [*c]userMenu_t;

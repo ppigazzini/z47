@@ -15,14 +15,9 @@ const use_fake_state_harness_surface =
     @hasDecl(build_options, "use_fake_state_harness_surface") and
     build_options.use_fake_state_harness_surface;
 
-const register_header_t = extern union {
-    descriptor: register_descriptor_t,
-};
+const register_header_t = abi.RegisterHeader;
 
-const named_variable_header_t = extern struct {
-    header: register_header_t,
-    variableName: [16]u8,
-};
+const named_variable_header_t = abi.NamedVariableHeader;
 
 const abi = @import("abi"); // L1 shared bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;

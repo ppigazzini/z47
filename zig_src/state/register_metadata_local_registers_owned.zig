@@ -1,4 +1,5 @@
 const build_options = @import("register_metadata_build_options");
+const abi = @import("abi");
 const memory_owned = @import("register_memory_owned.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
@@ -10,9 +11,7 @@ const use_fake_register_metadata_harness_surface =
 const localFlags_t = u32;
 const NUMBER_OF_LOCAL_FLAGS: u8 = 32;
 
-const register_header_t = extern union {
-    descriptor: runtime.register_descriptor_t,
-};
+const register_header_t = abi.RegisterHeader;
 
 const subroutine_levels_t = extern struct {
     numberOfSubroutineLevels: u16,

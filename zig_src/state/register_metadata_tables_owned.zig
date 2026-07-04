@@ -22,19 +22,11 @@ const CAT_STATUS: u16 = 0x00f0;
 const CAT_MENU: u16 = 2 << 4;
 const NAMED_VARIABLE_NAME_LENGTH: usize = 16;
 
-const register_header_t = extern union {
-    descriptor: register_descriptor_t,
-};
+const register_header_t = abi.RegisterHeader;
 
-const named_variable_header_t = extern struct {
-    header: register_header_t,
-    variableName: [NAMED_VARIABLE_NAME_LENGTH]u8,
-};
+const named_variable_header_t = abi.NamedVariableHeader;
 
-const reserved_variable_header_t = extern struct {
-    header: register_header_t,
-    reservedVariableName: [8]u8,
-};
+const reserved_variable_header_t = abi.ReservedVariableHeader;
 
 // item_t mirrors the upstream layout: a target-sized function pointer, then the
 // catalog and softmenu names with the status word trailing. sizeof is 48 on the
