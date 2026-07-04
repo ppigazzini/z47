@@ -712,12 +712,8 @@ const STD_NOCHAR: u8 = 1;
 // const34_* : constantPointers.h macros over the `constants` blob.
 // ---------------------------------------------------------------------------
 const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
-inline fn constR(comptime off: usize) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
-inline fn constR34(comptime off: usize) *const real34_t {
-    return @ptrCast(constants + off);
-}
+const constR = abi.constants.cstRAligned;
+const constR34 = abi.constants.cst34;
 const const_1000 = constR(5380);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
 const const34_0 = constR34(16200);

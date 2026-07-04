@@ -53,9 +53,7 @@ extern fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext: *re
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 pub export fn fnPcSigmaDeltaPcXmean(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;

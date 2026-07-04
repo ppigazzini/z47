@@ -108,9 +108,7 @@ extern fn qsort(base: ?*anyopaque, nmemb: usize, size: usize, compar: *const fn 
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 const REAL_SIZE_IN_BYTES_75: usize = 60;
 inline fn dataAt(data: [*]u8, index: usize) *real_t {

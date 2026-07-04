@@ -78,9 +78,7 @@ inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt:
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 pub export fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     var yReal: real_t = undefined;

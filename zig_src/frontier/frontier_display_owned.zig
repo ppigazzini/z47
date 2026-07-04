@@ -288,12 +288,8 @@ const oneOverE = "(" ++ STD_EulerE ++ STD_SUP_MINUS ++ STD_SUP_1 ++ STD_SPACE_HA
 // const_* / const34_* / const39_* : constantPointers.h macros over `constants`.
 // ---------------------------------------------------------------------------
 const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
-inline fn constR(comptime off: usize) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
-inline fn constR34(comptime off: usize) *const real34_t {
-    return @ptrCast(constants + off);
-}
+const constR = abi.constants.cstRAligned;
+const constR34 = abi.constants.cst34;
 const const_1 = constR(4856);
 const const_1000 = constR(5380);
 const const_1024 = constR(5392);

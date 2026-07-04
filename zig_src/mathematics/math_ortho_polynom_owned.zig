@@ -62,9 +62,7 @@ extern var ctxtReal39: realContext_t;
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 fn getOrthoPolyParam(regist: calcRegister_t, val: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     _ = realContext;
