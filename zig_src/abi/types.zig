@@ -535,58 +535,20 @@ test "decNumber special-flag mask is INF|NAN|SNAN" {
 }
 
 // ===========================================================================
-// Typed register-data accessors (M22 / REPORT-23 §5)
-// ---------------------------------------------------------------------------
-// registers.h reinterprets a register's data block as a real34 / complex34 /
-// matrix header / short-integer / string. Centralizing that reinterpretation
-// here -- one @ptrCast per shape, over the shared abi layout types -- replaces
-// the raw per-owner casts of getRegisterDataPointer scattered across ~29 owners.
-// The inline fns codegen only where used, so oracle/constants modules that map
-// @import("abi") to this file but never touch registers keep zero link deps.
-// ===========================================================================
-pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?*anyopaque;
-
-pub inline fn registerReal34(reg: i16) *align(1) Real34 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerImag34(reg: i16) *align(1) Real34 {
-    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(bytes + @sizeOf(Real34));
-}
-pub inline fn registerComplex34(reg: i16) *align(1) Complex34 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerShortInteger(reg: i16) *align(1) u64 {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-pub inline fn registerString(reg: i16) [*c]u8 {
-    const bytes: [*c]u8 = @ptrCast(getRegisterDataPointer(reg));
-    return bytes + @sizeOf(StrLgIntHeader);
-}
-pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-
-// Fully-aligned variants: some owners @alignCast the register data pointer to a
-// naturally-aligned view instead of the *align(1) one above. Same C symbol, same
-// data; the alignment assumption is the owner's (preserved here verbatim).
-pub inline fn registerReal34Aligned(reg: i16) *Real34 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
-pub inline fn registerImag34Aligned(reg: i16) *Real34 {
-    const bytes: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(@alignCast(bytes + @sizeOf(Real34)));
-}
-pub inline fn registerComplex34Aligned(reg: i16) *Complex34 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
-pub inline fn registerMatrixHeaderAligned(reg: i16) *MatrixHeader {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
-pub inline fn registerShortIntegerAligned(reg: i16) *u64 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
-pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
-    const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + @sizeOf(MatrixHeader));
-}
+// Typed register-data accessors (M22 / REPORT-23 §5): the extern binding of
+// getRegisterDataPointer lives in the approved boundary file abi/registers.zig
+// so this pure-layout file stays extern-free (check-zig-c-boundaries); the
+// accessors are re-exported here so owners reach them as abi.registerReal34(...).
+pub const registers = @import("registers.zig");
+pub const registerReal34 = registers.registerReal34;
+pub const registerImag34 = registers.registerImag34;
+pub const registerComplex34 = registers.registerComplex34;
+pub const registerShortInteger = registers.registerShortInteger;
+pub const registerString = registers.registerString;
+pub const registerMatrixHeader = registers.registerMatrixHeader;
+pub const registerReal34Aligned = registers.registerReal34Aligned;
+pub const registerImag34Aligned = registers.registerImag34Aligned;
+pub const registerComplex34Aligned = registers.registerComplex34Aligned;
+pub const registerMatrixHeaderAligned = registers.registerMatrixHeaderAligned;
+pub const registerShortIntegerAligned = registers.registerShortIntegerAligned;
+pub const registerReal34MatrixElements = registers.registerReal34MatrixElements;
