@@ -65,18 +65,12 @@ const longInteger_t = [1]mpz_struct;
 const font_t = opaque {};
 
 // glyph / font structs (typeDefinitions.h)
-const glyphPrinter_t = extern struct {
-    charCode: u16,
-    data: [5]u8,
-};
+const glyphPrinter_t = abi.GlyphPrinter;
 const printerFont_t = extern struct {
     numberOfGlyphs: u16,
     // glyphPrinter_t glyphs[]; flexible array member - accessed via pointer math
 };
-const glyphMartelPrinter_t = extern struct {
-    charCode: u16,
-    data: [48]u8,
-};
+const glyphMartelPrinter_t = abi.GlyphMartelPrinter;
 const martelFont24_t = extern struct {
     numberOfGlyphs: u16,
     // glyphMartelPrinter_t glyphs[];

@@ -257,17 +257,7 @@ inline fn uInt32ToLongInteger(v: u32, p: *mpz_struct) void {
 // ---------------------------------------------------------------------------
 const dt_t = abi.DateShort;
 const tm_t = abi.TimeShort;
-const Tm = extern struct {
-    sec: c_int,
-    min: c_int,
-    hour: c_int,
-    mday: c_int,
-    mon: c_int,
-    year: c_int,
-    wday: c_int,
-    yday: c_int,
-    isdst: c_int,
-};
+const Tm = abi.Tm;
 extern fn time(t: ?*i64) i64;
 extern fn localtime(t: *const i64) *Tm;
 extern fn strftime(buf: [*]u8, max: usize, fmt: [*:0]const u8, tm: *const Tm) usize;

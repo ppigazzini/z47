@@ -6,6 +6,7 @@
 // of the upstream table.
 
 const builtin = @import("builtin");
+const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 
 // Upstream marks the table TO_QSPI (see fonts owner): .qspi on old_hw DMCP,
@@ -17,10 +18,7 @@ else if (builtin.target.os.tag == .macos)
 else
     ".rodata";
 
-const glyphMartelPrinter_t = extern struct {
-    charCode: u16,
-    data: [48]u8,
-};
+const glyphMartelPrinter_t = abi.GlyphMartelPrinter;
 
 // Matches martelFont24_t { uint16_t numberOfGlyphs; glyphMartelPrinter_t glyphs[]; }
 // with the two glyphs materialised inline.

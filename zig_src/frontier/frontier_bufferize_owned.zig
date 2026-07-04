@@ -54,7 +54,7 @@ const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 const tamState_t = abi.TamState;
 
-const fInMim_t = extern struct { itemNr: u16 };
+const fInMim_t = abi.FInMim;
 const numStr = extern struct { noStr: [3]u8 };
 
 // GMP long integer (mpz). The mpz_* names are header macros; the real symbols are

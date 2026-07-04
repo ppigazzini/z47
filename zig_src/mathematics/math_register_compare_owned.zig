@@ -17,6 +17,7 @@
 // parity link stubs define the z47_math_wrappers_legacy_* symbols.
 
 const std = @import("std");
+const abi = @import("abi");
 const comparison_reals = @import("math_comparison_reals_owned.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -64,15 +65,7 @@ extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // Upstream macro currentNumberOfLocalRegisters expands to
 // currentSubroutineLevelData->numberOfLocalRegisters (defines.h:2281); the
 // struct layout matches zig_src/state/register_metadata_local_registers_owned.zig.
-const subroutine_level_header_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutine_level_header_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: ?*subroutine_level_header_t;
 
 fn localRegisterCount() u16 {

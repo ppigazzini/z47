@@ -18,15 +18,7 @@ const subroutine_levels_t = extern struct {
     ptrToSubroutineLevel0Header: u16,
 };
 
-const subroutine_level_header_t = extern struct {
-    returnProgramNumber: i16,
-    returnLocalStep: u16,
-    numberOfLocalFlags: u8,
-    numberOfLocalRegisters: u8,
-    subroutineLevel: u16,
-    ptrToNextLevel: u16,
-    ptrToPreviousLevel: u16,
-};
+const subroutine_level_header_t = abi.SubroutineLevelHeader;
 
 extern var allSubroutineLevels: subroutine_levels_t;
 extern var currentSubroutineLevelData: ?*subroutine_level_header_t;

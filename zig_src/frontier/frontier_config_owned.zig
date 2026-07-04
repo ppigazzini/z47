@@ -86,10 +86,7 @@ const realContext_t = abi.RealContext;
 
 const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
-const strLgIntHeader_t = extern struct {
-    dataMaxLengthInBlocks: u16,
-    unused: u16,
-};
+const strLgIntHeader_t = abi.StrLgIntHeader;
 const freeMemoryRegion_t = abi.FreeMemoryRegion;
 const matrixHeader_t = abi.MatrixHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
@@ -97,10 +94,7 @@ const subroutineLevels_t = abi.SubroutineLevels;
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
 const glyph_t = abi.Glyph;
-const confirmationTI_t = extern struct {
-    item: i16,
-    string: [30]u8,
-};
+const confirmationTI_t = abi.ConfirmationTI;
 const item_t = abi.Item;
 const userMenuItem_t = abi.UserMenuItem;
 
