@@ -1849,13 +1849,51 @@ pub export fn fnJacobiAmplitude(unusedButMandatoryParameter: u16) linksection(ru
 // L2 error surface (REPORT-23 P1/P5): the command cores return a domain error
 // instead of calling displayCalcErrorMessage inline; the L3 shims map it and run
 // the trailing adjustResult (which the C runs on every path, including the error).
-const EllipticError = error{ KNeedsCpxRes, ENeedsCpxRes };
+const EllipticError = error{
+    KNeedsCpxRes,
+    ENeedsCpxRes,
+    FphiNeedsCpxRes,
+    EphiNeedsCpxRes,
+    ZetaNeedsCpxRes,
+    PiMOutOfRange,
+    PiNeedsCpxRes,
+    PiComplexInX,
+};
 
 fn reportEllipticError(e: EllipticError) void {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     switch (e) {
-        error.KNeedsCpxRes => moreInfoOnError("In function fnEllipticK:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null),
-        error.ENeedsCpxRes => moreInfoOnError("In function fnEllipticE:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null),
+        error.KNeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticK:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
+        },
+        error.ENeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticE:", "Cannot calculate K(m) for m > 1 if CPXRES is not set", null, null);
+        },
+        error.FphiNeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticFphi:", "cannot return complex result without CPXRES set", null, null);
+        },
+        error.EphiNeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticEphi:", "cannot return complex result without CPXRES set", null, null);
+        },
+        error.ZetaNeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnJacobiZeta:", "cannot return complex result without CPXRES set", null, null);
+        },
+        error.PiMOutOfRange => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticPi:", "m is out of range (must in 0 <= m < 1)", null, null);
+        },
+        error.PiNeedsCpxRes => {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticPi:", "cannot return complex result without CPXRES set", null, null);
+        },
+        error.PiComplexInX => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnEllipticPi:", "cannot calculate elliptic integral with complex in X", null, null);
+        },
     }
 }
 
@@ -1915,8 +1953,7 @@ pub export fn fnEllipticE(unusedButMandatoryParameter: u16) linksection(runtime.
     };
 }
 
-pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+fn fnEllipticPiCore() EllipticError!void {
     var m: real_t = undefined;
     var ur: real_t = undefined;
     var ui: real_t = undefined;
@@ -1924,13 +1961,10 @@ pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime
     var ri: real_t = undefined;
     var realInput: bool = undefined;
 
-    if (jacobi_check_inputs(&m, &ur, &ui, &realInput) == 0) {
-        return;
-    }
+    if (jacobi_check_inputs(&m, &ur, &ui, &realInput) == 0) return;
 
     if (realIsNegative(&m) or realCompareGreaterEqual(&m, const_1())) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEllipticPi:", "m is out of range (must in 0 <= m < 1)", null, null);
+        return error.PiMOutOfRange;
     } else if (realInput) {
         ellipticPi(&ur, &m, &rr, &ri, &runtime.ctxtReal39);
         if (realIsZero(&ri)) {
@@ -1938,19 +1972,24 @@ pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime
         } else if (getFlag(FLAG_CPXRES)) {
             convertComplexToResultRegister(&rr, &ri, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticPi:", "cannot return complex result without CPXRES set", null, null);
+            return error.PiNeedsCpxRes;
         }
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEllipticPi:", "cannot calculate elliptic integral with complex in X", null, null);
+        return error.PiComplexInX;
     }
 
     adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
 
-pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnEllipticPiCore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    };
+}
+
+fn fnEllipticFphiCore() EllipticError!void {
     var realInput: bool = undefined;
     var m: real_t = undefined;
     var uReal: real_t = undefined;
@@ -1958,9 +1997,7 @@ pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runti
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
 
     ellipticF(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
     if (realInput) {
@@ -1969,8 +2006,41 @@ pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runti
         } else if (getFlag(FLAG_CPXRES)) {
             convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticFphi:", "cannot return complex result without CPXRES set", null, null);
+            return error.FphiNeedsCpxRes;
+        }
+    } else {
+        convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+    }
+
+    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+}
+
+pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnEllipticFphiCore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    };
+}
+
+fn fnEllipticEphiCore() EllipticError!void {
+    var realInput: bool = undefined;
+    var m: real_t = undefined;
+    var uReal: real_t = undefined;
+    var uImag: real_t = undefined;
+    var rReal: real_t = undefined;
+    var rImag: real_t = undefined;
+
+    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
+
+    ellipticE(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
+    if (realInput) {
+        if (realIsZero(&rImag)) {
+            convertRealToResultRegister(&rReal, REGISTER_X, amNone);
+        } else if (getFlag(FLAG_CPXRES)) {
+            convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+        } else {
+            return error.EphiNeedsCpxRes;
         }
     } else {
         convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
@@ -1981,6 +2051,13 @@ pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runti
 
 pub export fn fnEllipticEphi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnEllipticEphiCore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    };
+}
+
+fn fnJacobiZetaCore() EllipticError!void {
     var realInput: bool = undefined;
     var m: real_t = undefined;
     var uReal: real_t = undefined;
@@ -1988,19 +2065,16 @@ pub export fn fnEllipticEphi(unusedButMandatoryParameter: u16) linksection(runti
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
 
-    ellipticE(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
+    jacobiZeta(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
     if (realInput) {
         if (realIsZero(&rImag)) {
             convertRealToResultRegister(&rReal, REGISTER_X, amNone);
         } else if (getFlag(FLAG_CPXRES)) {
             convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticEphi:", "cannot return complex result without CPXRES set", null, null);
+            return error.ZetaNeedsCpxRes;
         }
     } else {
         convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
@@ -2011,30 +2085,8 @@ pub export fn fnEllipticEphi(unusedButMandatoryParameter: u16) linksection(runti
 
 pub export fn fnJacobiZeta(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    var realInput: bool = undefined;
-    var m: real_t = undefined;
-    var uReal: real_t = undefined;
-    var uImag: real_t = undefined;
-    var rReal: real_t = undefined;
-    var rImag: real_t = undefined;
-
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
-
-    jacobiZeta(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
-    if (realInput) {
-        if (realIsZero(&rImag)) {
-            convertRealToResultRegister(&rReal, REGISTER_X, amNone);
-        } else if (getFlag(FLAG_CPXRES)) {
-            convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-        } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnJacobiZeta:", "cannot return complex result without CPXRES set", null, null);
-        }
-    } else {
-        convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-    }
-
-    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    fnJacobiZetaCore() catch |e| {
+        reportEllipticError(e);
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    };
 }
