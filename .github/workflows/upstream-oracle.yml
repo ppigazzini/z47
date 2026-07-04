@@ -365,6 +365,9 @@ jobs:
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
+          # constantPointers.h is a gitignored generateConstants output, so refresh
+          # it into src/generated first.
+          zig build constants
           python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
@@ -891,6 +894,9 @@ jobs:
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
+          # constantPointers.h is a gitignored generateConstants output, so refresh
+          # it into src/generated first.
+          zig build constants
           python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
@@ -1119,6 +1125,9 @@ jobs:
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
+          # constantPointers.h is a gitignored generateConstants output, so refresh
+          # it into src/generated first.
+          zig build constants
           python3 .github/project/check-constant-offsets.py
           zig build keyboard_state_parity
           zig build both
