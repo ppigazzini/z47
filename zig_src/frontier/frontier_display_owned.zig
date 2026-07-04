@@ -733,9 +733,7 @@ inline fn GROUPRIGHT_DISABLED() bool {
 const reg34 = abi.registerReal34;
 const regComplex34 = abi.registerComplex34;
 const regShortInteger = abi.registerShortInteger;
-inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeader = abi.registerMatrixHeader;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4; // sizeof(strLgIntHeader_t)
 const regString = abi.registerString;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)

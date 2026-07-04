@@ -151,12 +151,8 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
-inline fn regReal34(reg: calcRegister_t) *align(1) const real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
-inline fn regComplex34(reg: calcRegister_t) *align(1) const complex34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regReal34 = abi.registerReal34;
+const regComplex34 = abi.registerComplex34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;
 }

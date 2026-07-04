@@ -228,9 +228,7 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn reg34(reg: calcRegister_t) *align(1) const real34_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const reg34 = abi.registerReal34;
 inline fn real34IsInfinite(src: *align(1) const real34_t) bool {
     return decQuadIsInfinite(src) != 0;
 }

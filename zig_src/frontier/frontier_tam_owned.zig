@@ -453,10 +453,7 @@ inline fn real34Copy(src: *align(1) const real34_t, dst: *real34_t) void {
 }
 const reg34 = abi.registerReal34;
 // REGISTER_STRING_DATA(a): char* at getRegisterDataPointer(a)+sizeof(strLgIntHeader_t) (=4).
-inline fn regStringData(reg: calcRegister_t) [*c]u8 {
-    const base: [*c]u8 = @ptrCast(getRegisterDataPointer(reg));
-    return base + 4;
-}
+const regStringData = abi.registerString;
 inline fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData.*.numberOfLocalRegisters;
 }

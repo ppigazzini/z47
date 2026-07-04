@@ -1036,9 +1036,7 @@ const regImag34 = abi.registerImag34;
 const SIZEOF_STR_LG_INT_HEADER: usize = 4;
 const regString = abi.registerString;
 const regShortInteger = abi.registerShortInteger;
-inline fn regMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(reg));
-}
+const regMatrixHeader = abi.registerMatrixHeader;
 // VARIABLE_REAL34_DATA(a)=((real34_t*)(a)); VARIABLE_IMAG34_DATA(a)=((real34_t*)(a)+1)
 // matrixElements[i] : index a [*c]complex34_t element and return its real/imag halves.
 inline fn varReal34(elems: [*c]complex34_t, i: usize) *align(1) real34_t {

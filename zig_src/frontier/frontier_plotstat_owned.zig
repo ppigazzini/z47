@@ -372,9 +372,7 @@ extern fn decQuadFromInt32(dst: *align(1) real34_t, src: i32) *align(1) real34_t
 inline fn int32ToReal34(source: i32, destination: *align(1) real34_t) void {
     _ = decQuadFromInt32(destination, source);
 }
-inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
-}
+const REGISTER_REAL34_DATA = abi.registerReal34;
 
 // libc
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
