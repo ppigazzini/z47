@@ -34,13 +34,7 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-const registerHeader_t = packed struct(u32) {
-    pointerToRegisterData: u16,
-    dataType: u4,
-    tag: u5,
-    readOnly: u1,
-    notUsed: u6,
-};
+const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
@@ -411,7 +405,7 @@ pub export fn regInRange(regist: u16) callconv(.c) bool {
 // _checkReadOnlyVariable (static in the C)
 // ===========================================================================
 fn _checkReadOnlyVariable(regist: u16) bool {
-    if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
+    if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.readOnly == 1) {
         displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             _ = sprintf(errorMessage, "reserved variable %s", @as([*c]const u8, @ptrCast(&allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName)) + 1);
@@ -525,7 +519,7 @@ fn _storeValue(regist: u16) void {
             }
             @"__gmpz_clear"(&x[0]); // longIntegerFree
         }
-    } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.dataType == dtReal34) {
+    } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.dataType == dtReal34) {
         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
         fnToReal(NOPARAM);
         if (lastErrorCode == ERROR_NONE) {
@@ -708,10 +702,10 @@ pub export fn fnStoreMin(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
     if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
         copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(@intCast(regist), TEMP_REGISTER_1);
             regist = @intCast(TEMP_REGISTER_1);
-        } else if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        } else if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             fnToReal(NOPARAM);
             if (lastErrorCode == ERROR_NONE) {
                 copySourceRegisterToDestRegister(@intCast(regist), TEMP_REGISTER_1);
@@ -727,10 +721,10 @@ pub export fn fnStoreMax(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
     if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
         copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(@intCast(regist), TEMP_REGISTER_1);
             regist = @intCast(TEMP_REGISTER_1);
-        } else if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+        } else if (FIRST_RESERVED_VARIABLE <= regist and regist < LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.pointerToRegisterData == C47_NULL) {
             fnToReal(NOPARAM);
             if (lastErrorCode == ERROR_NONE) {
                 copySourceRegisterToDestRegister(@intCast(regist), TEMP_REGISTER_1);

@@ -92,8 +92,23 @@ pub const Item = extern struct {
     status: u16,
 };
 
-/// Register header (registerHeader_t): packed descriptor word.
-pub const RegisterHeader = extern struct { descriptor: u32 };
+/// Register-header bitfield (registerHeader_t named struct, typeDefinitions.h):
+/// the 32-bit descriptor decoded into its C fields.
+pub const RegisterHeaderBits = packed struct(u32) {
+    pointerToRegisterData: u16,
+    dataType: u4,
+    tag: u5,
+    readOnly: u1,
+    notUsed: u6,
+};
+
+/// Register header (registerHeader_t, typeDefinitions.h): a C union of the raw
+/// 32-bit `descriptor` and the decoded `bits`. Opaque owners read `.descriptor`;
+/// owners that need the fields read `.bits.pointerToRegisterData` etc.
+pub const RegisterHeader = extern union {
+    descriptor: u32,
+    bits: RegisterHeaderBits,
+};
 
 /// Matrix header (matrixHeader_t, typeDefinitions.h): a 32-bit C bitfield
 /// {matrixRows:12, matrixColumns:12, mtag:6, notUsed:2}. The little-endian
@@ -273,6 +288,10 @@ comptime {
     std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
     std.debug.assert(@sizeOf(Pcg32Random) == 16);
     std.debug.assert(@offsetOf(Pcg32Random, "inc") == 8);
+    std.debug.assert(@sizeOf(RegisterHeader) == 4);
+    std.debug.assert(@alignOf(RegisterHeader) == 4);
+    std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "dataType") == 16);
+    std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "readOnly") == 25);
     std.debug.assert(@sizeOf(PrinterState) == 16);
     std.debug.assert(@alignOf(PrinterState) == 4);
     std.debug.assert(@offsetOf(PrinterState, "print_mode") == 4);
