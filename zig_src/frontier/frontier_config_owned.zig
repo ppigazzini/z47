@@ -850,11 +850,7 @@ extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, an
 extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
 
 // GMP mpz_struct (limb width == pointer width on every z47 target).
-const mpz_struct = extern struct {
-    mp_alloc: c_int,
-    mp_size: c_int,
-    mp_d: ?*anyopaque,
-};
+const mpz_struct = abi.Mpz;
 extern fn @"__gmpz_init"(p: *mpz_struct) void;
 extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
