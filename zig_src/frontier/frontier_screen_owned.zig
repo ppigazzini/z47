@@ -100,14 +100,8 @@ const font_t = extern struct {
 const item_t = abi.Item;
 
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*c]real34_t,
-};
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*c]complex34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 const any34Matrix_t = extern union {
     realMatrix: real34Matrix_t,
     complexMatrix: complex34Matrix_t,
@@ -3270,7 +3264,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
                 allElementsInColAreIntegers[j] = 1;
                 var i: usize = 0;
                 while (i < rows) : (i += 1) {
-                    if (real34IsAnInteger(@ptrCast(&matrix.matrixElements[i * cols + j])) == 0) {
+                    if (real34IsAnInteger(@ptrCast(&matrix.matrixElements.?[i * cols + j])) == 0) {
                         allElementsInColAreIntegers[j] = 0;
                         break;
                     }

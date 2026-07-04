@@ -112,14 +112,8 @@ const userMenuItem_t = abi.UserMenuItem;
 // tamState_t (sizeof 26).
 const tamState_t = abi.TamState;
 const matrixHeader_t = abi.MatrixHeader;
-const real34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*c]real34_t,
-};
-const complex34Matrix_t = extern struct {
-    header: matrixHeader_t,
-    matrixElements: [*c]complex34_t,
-};
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
 
 // mpz / longInteger
 const mp_limb_t = usize;
