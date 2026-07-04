@@ -68,9 +68,7 @@ inline fn SIGMA_X() *real_t {
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 pub export fn percentSigma(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     realCopy(SIGMA_X(), rReal); // r = Sum(x)

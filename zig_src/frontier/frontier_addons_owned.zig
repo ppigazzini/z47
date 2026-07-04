@@ -499,13 +499,9 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 // ===========================================================================
 // const_* / const34_* / const39_* : constantPointers.h macros over `constants`.
 // ===========================================================================
-const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
-inline fn constR(comptime off: usize) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
-inline fn constR34(comptime off: usize) *const real34_t {
-    return @ptrCast(constants + off);
-}
+// M22: blob accessors via abi (single @ptrCast site) instead of a local @extern.
+const constR = abi.constants.cstRAligned;
+const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
 const const_1 = constR(4856);
 const const_1on2 = constR(4580);

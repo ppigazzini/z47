@@ -136,9 +136,7 @@ inline fn SIGMA_ln2Y() *real_t {
 
 // Blob constants.
 const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cstR(comptime off: u32) *const real_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+const cstR = abi.constants.cstRAligned;
 
 // Standard deviations and standard errors. The computation involves
 // subtraction of large numbers that quite possibly are close to each other.
