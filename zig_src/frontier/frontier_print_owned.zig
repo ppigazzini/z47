@@ -115,12 +115,7 @@ const printerState_t = extern struct {
 
 // matrix structs (typeDefinitions.h). matrixHeader_t is a 4-byte bitfield
 // (rows:12, cols:12, mtag:6, notUsed:2); only rows/cols are read.
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: [*]real34_t,

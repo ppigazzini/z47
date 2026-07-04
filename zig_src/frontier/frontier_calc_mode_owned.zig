@@ -38,12 +38,7 @@ const tamState_t = abi.TamState;
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 // any34Matrix_t union { header; realMatrix{header; real34_t *elements}; ... }.
 // The matrixElements pointer sits after the 4-byte header in both arms.
 const real34Matrix_t = extern struct {

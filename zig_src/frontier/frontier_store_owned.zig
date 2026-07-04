@@ -24,12 +24,7 @@ const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 const complex34_t = abi.Complex34;
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]real34_t };
 const complex34Matrix_t = extern struct { header: matrixHeader_t, matrixElements: ?[*]complex34_t };
 const calcRegister_t = i16;

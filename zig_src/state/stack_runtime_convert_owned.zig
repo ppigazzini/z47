@@ -17,12 +17,7 @@ const complex34_t = abi.Complex34;
 
 // Upstream matrixHeader_t packs four bitfields into 32 bits, first field in the
 // least-significant bits on the little-endian build target.
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,

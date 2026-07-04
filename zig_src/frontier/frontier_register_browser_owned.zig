@@ -36,12 +36,7 @@ const reservedVariableHeader_t = extern struct {
     header: registerHeader_t,
     reservedVariableName: [8]u8,
 };
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    mtag: u6,
-    notUsed: u2,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const font_t = opaque {};
 
 // ---------------------------------------------------------------------------

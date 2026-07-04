@@ -95,6 +95,18 @@ pub const Item = extern struct {
 /// Register header (registerHeader_t): packed descriptor word.
 pub const RegisterHeader = extern struct { descriptor: u32 };
 
+/// Matrix header (matrixHeader_t, typeDefinitions.h): a 32-bit C bitfield
+/// {matrixRows:12, matrixColumns:12, mtag:6, notUsed:2}. The little-endian
+/// packed-struct layout matches the C bitfield (proven by the owners already
+/// using this exact shape). Fields are read directly (`h.matrixRows`); owners
+/// that had `{bits:u32}` + rows()/cols() accessors are converted to field access.
+pub const MatrixHeader = packed struct(u32) {
+    matrixRows: u12,
+    matrixColumns: u12,
+    mtag: u6,
+    notUsed: u2,
+};
+
 /// Named-variable header (namedVariableHeader_t).
 pub const NamedVariableHeader = extern struct {
     header: RegisterHeader,
@@ -197,6 +209,9 @@ comptime {
     std.debug.assert(@offsetOf(TamState, "alpha") == 4);
     std.debug.assert(@offsetOf(TamState, "digitsSoFar") == 10);
     std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
+    std.debug.assert(@sizeOf(MatrixHeader) == 4);
+    std.debug.assert(@bitOffsetOf(MatrixHeader, "matrixColumns") == 12);
+    std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);
 }
 
 // Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.
