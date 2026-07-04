@@ -89,11 +89,7 @@ const font_t = extern struct {
 
 const calcKey_t = abi.CalcKey; // size 18, align 2
 
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-}; // size 20, align 2
+const normKey_t = abi.NormKey;
 
 const softmenuStack_t = abi.SoftmenuStack;
 

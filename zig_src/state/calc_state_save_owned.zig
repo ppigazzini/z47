@@ -49,11 +49,7 @@ const namedVariableHeader_t = abi.NamedVariableHeader;
 
 const formulaHeader_t = abi.FormulaHeader;
 
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: u8,
-};
+const normKey_t = abi.NormKey;
 
 const pcg32_random_t = abi.Pcg32Random;
 
@@ -409,7 +405,7 @@ pub fn writeSaveSections() void {
         _ = sprintf(b(), "Norm_Key_00.funcParam\n%s\n", paramPtr);
         save(b());
     }
-    saveField("Norm_Key_00.used", "%u\n", .{cu(Norm_Key_00.used)});
+    saveField("Norm_Key_00.used", "%u\n", .{cu(@intFromBool(Norm_Key_00.used))});
     saveField("Input_Default", "%u\n", .{cu(Input_Default)});
     saveField("displayStackSHOIDISP", "%u\n", .{cu(displayStackSHOIDISP)});
     saveField("bcdDisplaySign", "%u\n", .{cu(bcdDisplaySign)});

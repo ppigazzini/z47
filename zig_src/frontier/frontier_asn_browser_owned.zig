@@ -28,11 +28,7 @@ const videoMode_t = c_int;
 
 const abi = @import("abi"); // L1 shared bindings
 const calcKey_t = abi.CalcKey;
-const normKey_t = extern struct {
-    func: i16,
-    funcParam: [16]u8,
-    used: bool_t,
-};
+const normKey_t = abi.NormKey;
 const item_t = abi.Item;
 
 // tamState_t — only .alpha is read by this file. Full layout for ABI size.
