@@ -76,11 +76,7 @@ comptime {
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 
-const matrixHeader_t = packed struct(u32) {
-    matrixRows: u12,
-    matrixColumns: u12,
-    rest: u8,
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: ?[*]real34_t,
