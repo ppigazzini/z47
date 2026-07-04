@@ -711,7 +711,7 @@ pub export fn calculateEigenvalues33(
 // ===========================================================================
 
 // Wilkinson-style shift from the bottom-right 2x2 block.
-pub export fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real_t, im: *align(1) real_t, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real_t, im: *align(1) real_t, is_real_symmetric: bool, realContext: *realContext_t) void {
     _ = is_real_symmetric;
     if (size < 2) {
         realSetZero(re);
@@ -782,7 +782,7 @@ pub export fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *al
 
 // Merge-sort the computed eigenvalues (stored on the diagonal of eig) by
 // descending magnitude, using the (i+1)/(i+2) off-diagonal slots as scratch.
-pub export fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) callconv(.c) void {
+fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) void {
     const end_a: u16 = begin_b - 1;
     const sz: usize = size;
 
@@ -847,7 +847,7 @@ pub export fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, 
 }
 
 // Final 2x2 deflation block: eigenvalues straight onto the diagonal.
-pub export fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) void {
     const sz: usize = size;
     var block: [8]real_t = undefined;
     for (0..2) |i| {
@@ -864,7 +864,7 @@ pub export fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size
 }
 
 // Final 3x3 deflation block.
-pub export fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) void {
     const sz: usize = size;
     var block: [18]real_t = undefined;
     for (0..3) |i| {
@@ -881,7 +881,7 @@ pub export fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size
 }
 
 // True when every off-diagonal element has magnitude below tol.
-pub export fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) callconv(.c) bool {
+fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) bool {
     const sz: usize = size;
     for (0..sz) |i| {
         for (0..sz) |j| {
@@ -903,7 +903,7 @@ pub export fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol:
 // every z47 build, so the diagonal sums accumulate sum-of-squares directly.
 // ===========================================================================
 
-pub export fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: [*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) callconv(.c) void {
+fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: [*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) void {
     _ = heading;
     var elemRe: real_t = undefined;
     var elemIm: real_t = undefined;
@@ -992,7 +992,7 @@ fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1
     return realCompareLessThan(&mag, tol);
 }
 
-pub export fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) callconv(.c) bool {
+fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) bool {
     var tol: real_t = undefined;
     realSetOne(&tol);
     tol.exponent -= symmetricTolerance;
@@ -1027,7 +1027,7 @@ pub export fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, chec
     return true;
 }
 
-pub export fn isSymmetricTridiagonal(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) callconv(.c) bool {
+fn isSymmetricTridiagonal(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) bool {
     return checkMatrixProperties(a, size, true, realContext);
 }
 
@@ -1035,7 +1035,7 @@ pub export fn isRealSymmetric(a: [*]align(1) const real_t, size: u16, realContex
     return checkMatrixProperties(a, size, false, realContext);
 }
 
-pub export fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) callconv(.c) void {
+fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) void {
     const n = last_unconverged - first_unconverged + 1;
     if (n < 2 or n > 3) {
         return;
@@ -1071,7 +1071,7 @@ pub export fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, si
 
 // Detect a circulant companion matrix (x^n - c), which the Householder QR
 // cannot handle; calculateEigenvalues raises ERROR_OUT_OF_RANGE for it.
-pub export fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) callconv(.c) bool {
+fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
     const sz: usize = size;
     var isCompanion = true;
     var i: usize = 0;
@@ -1104,7 +1104,7 @@ pub export fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) c
 // is a pure UI side effect with no calc-state impact and is not exercised by
 // the testSuite, so it is omitted here; the user-interrupt path is kept.
 // ===========================================================================
-pub export fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) callconv(.c) void {
+fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) void {
     var shifted = shifted_in;
     const sz: usize = size;
 
@@ -1766,7 +1766,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
 
 // Extract the diagonal of a square matrix into a 1xN row vector (the eigenvalue
 // list pushed onto the stack by fnEigenvalues). real34Plus rounds at ctxtReal34.
-pub export fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34Matrix_t) callconv(.c) void {
+fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34Matrix_t) void {
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.realMatrixInit(dest, 1, size)) {
@@ -1781,7 +1781,7 @@ pub export fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, de
     }
 }
 
-pub export fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *complex34Matrix_t) callconv(.c) void {
+fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *complex34Matrix_t) void {
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.complexMatrixInit(dest, 1, size)) {
@@ -1827,7 +1827,7 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
 // signature is chosen for convenience (no bridge rename).
 // ===========================================================================
-pub export fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) void {
     // real34Matrix_t and complex34Matrix_t share the {header, matrixElements}
     // layout; the complex element view reinterprets the same element pointer.
     const size: u16 = matrix.header.matrixRows;
