@@ -111,15 +111,7 @@ const userMenuItem_t = abi.UserMenuItem;
 
 // tamState_t (sizeof 26).
 const tamState_t = abi.TamState;
-const matrixHeader_t = extern struct {
-    bits: u32,
-    inline fn rows(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast(self.bits & 0x0FFF);
-    }
-    inline fn cols(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast((self.bits >> 12) & 0x0FFF);
-    }
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: [*c]real34_t,
@@ -1091,12 +1083,12 @@ inline fn isMatrix3dVector(rows: u16, cols: u16) bool {
 inline fn isRegisterMatrix2dVector(reg: calcRegister_t) bool {
     if (getRegisterDataType(reg) != dtReal34Matrix) return false;
     const h = regMatrixHeader(reg);
-    return isMatrix2dVector(h.rows(), h.cols());
+    return isMatrix2dVector(h.matrixRows, h.matrixColumns);
 }
 inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool {
     if (getRegisterDataType(reg) != dtReal34Matrix) return false;
     const h = regMatrixHeader(reg);
-    return isMatrix3dVector(h.rows(), h.cols());
+    return isMatrix3dVector(h.matrixRows, h.matrixColumns);
 }
 inline fn getVectorRegisterAngularMode(reg: calcRegister_t) u32 {
     return if (getRegisterDataType(reg) == dtReal34Matrix) (getRegisterTag(reg) & amAngleMask) & amAngleMask else @as(u32, @intCast(amNone));
@@ -2690,12 +2682,12 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     if (getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
         linkToComplexMatrixRegister(TEMP_REGISTER_1, &matrixC);
-        Xrows = matrixC.header.rows();
-        Xcols = matrixC.header.cols();
+        Xrows = matrixC.header.matrixRows;
+        Xcols = matrixC.header.matrixColumns;
     } else {
         linkToRealMatrixRegister(TEMP_REGISTER_1, &matrix);
-        Xrows = matrix.header.rows();
-        Xcols = matrix.header.cols();
+        Xrows = matrix.header.matrixRows;
+        Xcols = matrix.header.matrixColumns;
     }
 
     if (param1 == VECT_CR_zyx) {

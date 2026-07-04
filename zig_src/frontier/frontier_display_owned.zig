@@ -72,15 +72,7 @@ const item_t = abi.Item;
 // matrixHeader_t is a bitfield struct {rows:12; cols:12; mtag:6; notUsed:2}.
 // Access via the two 12-bit fields packed into a u32; reproduce with explicit
 // shifts so the layout is unambiguous.
-const matrixHeader_t = extern struct {
-    bits: u32,
-    inline fn rows(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast(self.bits & 0x0FFF);
-    }
-    inline fn cols(self: *align(1) const matrixHeader_t) u16 {
-        return @intCast((self.bits >> 12) & 0x0FFF);
-    }
-};
+const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = extern struct {
     header: matrixHeader_t,
     matrixElements: [*c]real34_t,
@@ -3676,15 +3668,15 @@ const STD_COMPLEX_C = "\xa1\x02";
 inline fn isRegisterMatrix2dVector(reg: calcRegister_t) bool {
     if (getRegisterDataType(reg) != dtReal34Matrix) return false;
     const h = regMatrixHeader(reg);
-    const r = h.rows();
-    const c = h.cols();
+    const r = h.matrixRows;
+    const c = h.matrixColumns;
     return (r == 1 and c == 2) or (r == 2 and c == 1);
 }
 inline fn isRegisterMatrix3dVector(reg: calcRegister_t) bool {
     if (getRegisterDataType(reg) != dtReal34Matrix) return false;
     const h = regMatrixHeader(reg);
-    const r = h.rows();
-    const c = h.cols();
+    const r = h.matrixRows;
+    const c = h.matrixColumns;
     return (r == 1 and c == 3) or (r == 3 and c == 1);
 }
 inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
@@ -3711,19 +3703,19 @@ pub export fn real34MatrixToDisplayString(regist: calcRegister_t, displayString:
         }
     }
     const matrixHeader = regMatrixHeader(regist);
-    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u Matrix]", @as(c_uint, matrixHeader.rows()), @as(c_uint, matrixHeader.cols()));
+    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u Matrix]", @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns));
 }
 
 pub export fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
     const matrixHeader = regMatrixHeader(regist);
-    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u " ++ STD_COMPLEX_C ++ " Matrix]", @as(c_uint, matrixHeader.rows()), @as(c_uint, matrixHeader.cols()));
+    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u " ++ STD_COMPLEX_C ++ " Matrix]", @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns));
 }
 
 pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) bool_t {
     if (getRegisterDataType(regist) == dtReal34Matrix) {
         const matrixHeader = regMatrixHeader(regist);
-        const r = matrixHeader.rows();
-        const c = matrixHeader.cols();
+        const r = matrixHeader.matrixRows;
+        const c = matrixHeader.matrixColumns;
         if ((r == 1 and c == 3) or (r == 3 and c == 1) or (r == 1 and c == 2) or (r == 2 and c == 1)) {
             var matrix: real34Matrix_t = undefined;
             linkToRealMatrixRegister(regist, &matrix);
@@ -3792,7 +3784,7 @@ pub export fn mimShowElement() callconv(.c) void {
 
     temporaryInformation = TI_SHOW_REGISTER;
 
-    const cols = openMatrixMIMPointer.realMatrix.header.cols();
+    const cols = openMatrixMIMPointer.realMatrix.header.matrixColumns;
     const elemIdx: usize = @intCast(@as(i32, i) * @as(i32, cols) + @as(i32, j));
     if (getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix) {
         const elems: [*]align(1) real34_t = @ptrCast(openMatrixMIMPointer.realMatrix.matrixElements);
