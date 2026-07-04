@@ -131,10 +131,7 @@ const reservedVariableDescStr_t = extern struct {
 // registerHeader_t: union with bitfields; pointerToRegisterData = low 16 bits.
 const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
 // ---------------------------------------------------------------------------
 // Numeric constants (probed from defines.h / typeDefinitions.h)

@@ -329,10 +329,7 @@ const STD_RIGHT_SHORT_ARROW1: u8 = 0xc0;
 // ---------------------------------------------------------------------------
 const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 const labelList_t2 = extern struct {

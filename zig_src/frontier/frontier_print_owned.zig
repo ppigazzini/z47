@@ -112,10 +112,7 @@ const item_t = abi.Item;
 
 // registerHeader_t is 4 bytes; namedVariableHeader_t / reservedVariableHeader_t.
 const namedVariableHeader_t = abi.NamedVariableHeader;
-const reservedVariableHeader_t = extern struct {
-    header: u32,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
 // labelList_t (typeDefinitions.h)
 const labelList_t = extern struct {

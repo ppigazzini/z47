@@ -26,10 +26,7 @@ const complex34_t = abi.Complex34;
 
 const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
-const reservedVariableHeader_t = extern struct {
-    header: registerHeader_t,
-    reservedVariableName: [8]u8,
-};
+const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const matrixHeader_t = abi.MatrixHeader;
 const font_t = opaque {};
 
