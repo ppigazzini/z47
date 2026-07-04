@@ -33,26 +33,7 @@ const programmableMenu_t = extern struct {
 
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool,
-    currentOperation: i16,
-    dot: bool,
-    indirect: bool,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool,
-    keyDot: bool,
-    keyIndirect: bool,
-    keyInputFinished: bool,
-};
-
-// ---------------------------------------------------------------------------
+const tamState_t = abi.TamState;
 // Constants / enum values (verified against defines.h / items.h / display.h)
 // ---------------------------------------------------------------------------
 const LAST_LOCAL_REGISTER_IN_KS_CODE: u8 = 210;

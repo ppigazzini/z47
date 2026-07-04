@@ -2368,13 +2368,7 @@ extern var numberOfAllocatedMemoryRegions: i32;
 extern var forceTamAlpha: bool_t;
 extern var deadKey: u32;
 
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    // remaining fields unused here.
-    _rest: [22]u8,
-};
+const tamState_t = abi.TamState;
 extern var tam: tamState_t;
 inline fn tam_alpha_set(v: bool_t) void {
     tam.alpha = v;

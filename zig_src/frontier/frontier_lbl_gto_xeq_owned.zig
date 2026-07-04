@@ -78,11 +78,7 @@ const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 
 // tam: only the first field (mode) is accessed.
-const tamState_t = extern struct {
-    mode: u16,
-};
-
-// ---------------------------------------------------------------------------
+const tamState_t = abi.TamState;
 // Constants / enum values
 // ---------------------------------------------------------------------------
 const C47_NULL: u16 = 65535;

@@ -56,24 +56,7 @@ const dynamicSoftmenu_t = extern struct {
     menuContent: [*c]u8,
 };
 const softmenuStack_t = abi.SoftmenuStack;
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
+const tamState_t = abi.TamState;
 
 const fInMim_t = extern struct { itemNr: u16 };
 const numStr = extern struct { noStr: [3]u8 };
@@ -2813,9 +2796,9 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
         currentSolverStatus &= ~@as(u16, SOLVER_STATUS_READY_TO_EXECUTE);
         if (calcMode == CM_NORMAL and fnKeyInCatalog != 0 and (isAlphabeticSoftmenu() != 0 or isJMAlphaOnlySoftmenu() != 0) and tam.mode == 0) {
             fnAim(NOPARAM);
-        } else if ((fnKeyInCatalog != 0 or catalog == 0 or catalog == CATALOG_MVAR) and (((calcMode == CM_AIM or calcMode == CM_EIM) and tam.mode == 0) or tam.alpha != 0)) {
+        } else if ((fnKeyInCatalog != 0 or catalog == 0 or catalog == CATALOG_MVAR) and (((calcMode == CM_AIM or calcMode == CM_EIM) and tam.mode == 0) or tam.alpha)) {
             item = convertItemToSubOrSup(item, nextChar);
-            if (tam.alpha != 0) {
+            if (tam.alpha) {
                 insertAlphaCharacter(item, &alphaCursor);
             } else if (stringByteLength(aimBuffer) + (if (item == ITM_poly_SIGN) @as(i32, 24) else stringByteLength(&indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) {
                 _ = sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", @as(c_int, AIM_BUFFER_LENGTH));

@@ -733,24 +733,7 @@ const printerState_t = extern struct {
 extern var printerState: printerState_t;
 
 // tamState_t: only mode / alpha / keyInputFinished are read here.
-const tamState_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
+const tamState_t = abi.TamState;
 extern var tam: tamState_t;
 
 // fnGetSystemFlag: compared by address against indexOfItems[].func.
@@ -2637,7 +2620,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
     if ((!IS_BASEBLANK_(m) or BASE_OVERRIDEONCE != 0) and calcMode != CM_FLAG_BROWSER and calcMode != CM_ASN_BROWSER and calcMode != CM_FONT_BROWSER and calcMode != CM_REGISTER_BROWSER and calcMode != CM_BUG_ON_SCREEN) {
         clearScreenOld(0, 0, 1);
         BASE_OVERRIDEONCE = 0;
-        if (tam.mode == TM_KEY and tam.keyInputFinished == 0) {
+        if (tam.mode == TM_KEY and !tam.keyInputFinished) {
             y = 0;
             while (y <= 2) : (y += 1) {
                 x = 0;
@@ -3419,7 +3402,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
         _ = sprintf(errorMessage, "In function showSoftmenu: softmenu %d not found!", @as(c_int, id));
         displayBugScreen(errorMessage);
     } else {
-        if (tam.mode != 0 or (calcMode == CM_ASSIGN and tam.alpha != 0)) {
+        if (tam.mode != 0 or (calcMode == CM_ASSIGN and tam.alpha)) {
             numberOfTamMenusToPop += 1;
         }
         pushSoftmenu(m);

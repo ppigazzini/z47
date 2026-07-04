@@ -109,9 +109,7 @@ const ProgrammableMenuBlob = extern struct {
     bytes: [332]u8 align(2),
 };
 
-const tamState_t = extern struct {
-    bytes: [26]u8 align(2),
-}; // opaque blob, size 26 align 2
+const tamState_t = abi.TamState;
 
 const printerState_t = extern struct {
     bytes: [16]u8 align(4),
