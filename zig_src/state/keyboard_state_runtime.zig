@@ -1284,10 +1284,7 @@ pub extern var beginOfCurrentProgram: [*c]u8;
 pub extern var endOfCurrentProgram: [*c]u8;
 pub extern var currentProgramNumber: u16;
 pub extern var firstDisplayedLocalStepNumber: u16;
-pub const programList_t = extern struct {
-    step: i32,
-    instructionPointer: [*c]u8,
-};
+pub const programList_t = abi.ProgramList;
 pub extern var programList: [*c]programList_t;
 pub extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
 pub extern fn scanLabelsAndPrograms() void;

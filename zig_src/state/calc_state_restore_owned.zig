@@ -129,10 +129,7 @@ const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 const normKey_t = abi.NormKey;
 const formulaHeader_t = abi.FormulaHeader;
-const programList_t = extern struct {
-    step: i32,
-    instructionPointer: [*c]u8,
-};
+const programList_t = abi.ProgramList;
 const pcg32_random_t = abi.Pcg32Random;
 
 comptime {

@@ -115,12 +115,7 @@ const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 
 // labelList_t (typeDefinitions.h)
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
+const labelList_t = abi.LabelList;
 
 // userMenuItem_t / userMenu_t (typeDefinitions.h)
 const userMenuItem_t = abi.UserMenuItem;

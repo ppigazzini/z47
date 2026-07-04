@@ -42,16 +42,8 @@ const real34_t = abi.Real34;
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 const item_t = abi.Item;
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
-const programList_t = extern struct {
-    step: i32,
-    instructionPointer: [*c]u8,
-};
+const labelList_t = abi.LabelList;
+const programList_t = abi.ProgramList;
 const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 // subroutineLevelHeader_t: numberOfLocalRegisters is at byte offset 5.

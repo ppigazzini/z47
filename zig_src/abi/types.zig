@@ -223,6 +223,21 @@ pub const FormulaHeader = extern struct {
     unused: u8,
 };
 
+/// Program-label entry (labelList_t, typeDefinitions.h): id/step + two C byte
+/// pointers into program memory (indexed and pointer-arithmetic'd, so [*c]).
+pub const LabelList = extern struct {
+    program: i16,
+    step: i32,
+    labelPointer: [*c]u8,
+    instructionPointer: [*c]u8,
+};
+
+/// Program entry (programList_t, typeDefinitions.h): begin step + instruction ptr.
+pub const ProgramList = extern struct {
+    step: i32,
+    instructionPointer: [*c]u8,
+};
+
 /// Norm-key descriptor (normKey_t, typeDefinitions.h): 20 bytes, align 2.
 pub const NormKey = extern struct {
     func: i16,

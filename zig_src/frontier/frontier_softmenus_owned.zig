@@ -96,12 +96,7 @@ const userMenu_t = abi.UserMenu;
 
 // labelList entries: only fields softmenus.c reads (step, instructionPointer,
 // labelPointer). Layout mirrors src/c47 label.h labelList_t.
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
+const labelList_t = abi.LabelList;
 
 // registerHeader_t: 32-bit union; notUsed is bits 26..31 (after
 // pointerToRegisterData:16, dataType:4, tag:5, readOnly:1).

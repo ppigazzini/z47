@@ -31,16 +31,8 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const realContext_t = abi.RealContext;
 const font_t = opaque {};
 
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
-const programList_t = extern struct {
-    step: i32,
-    instructionPointer: [*c]u8,
-};
+const labelList_t = abi.LabelList;
+const programList_t = abi.ProgramList;
 const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
