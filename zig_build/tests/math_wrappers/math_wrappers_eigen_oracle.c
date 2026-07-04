@@ -20,6 +20,7 @@ void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_
 void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, real_t *t3r, real_t *t3i, bool is_real_symmetric, realContext_t *realContext);
 bool isRealSymmetric(const real_t *a, uint16_t size, realContext_t *realContext);
 void dropNoise(real_t *eig, uint16_t size, uint16_t dig);
+void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext);
 
 static void initRuntime(void) {
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
@@ -202,6 +203,51 @@ static void runDropNoise(void) {
   if(!realEqualsText(&eig[4], "0.987654321")) { printf("eigen oracle: dropNoise perturbed off-diagonal (1,0)\n"); ++failures; }
 }
 
+// |a - b| < 10^-30 (real parts; the QR reconstruction of an integer matrix is
+// near-exact but Householder involves a square root, so compare with tolerance).
+static bool realCloseTo(const real_t *a, const real_t *b) {
+  real_t diff, tol;
+  realSubtract(a, b, &diff, &ctxtReal39);
+  stringToReal("1e-30", &tol, &ctxtReal39);
+  return realCompareAbsLessThan(&diff, &tol);
+}
+
+// QR factorization is not unique (Householder always applies reflections, with
+// sign choices), so assert the invariants that always hold: Q*R reconstructs the
+// input (within tolerance -- the reflection carries a square root) and R is
+// upper-triangular. Inputs here are real, so Q and R are real.
+static void checkQrReconstructs(const char *name, const char *const cells[8]) {
+  real_t mat[8], q[8], r[8];
+  loadMatrix(mat, 2, cells);
+  QR_decomposition_householder(mat, 2, q, r, &ctxtReal39);
+  for(int i = 0; i < 2; ++i) {
+    for(int j = 0; j < 2; ++j) {
+      real_t acc, prod;
+      realSetZero(&acc);
+      for(int k = 0; k < 2; ++k) {
+        realMultiply(&q[(i*2+k)*2], &r[(k*2+j)*2], &prod, &ctxtReal39);
+        realAdd(&acc, &prod, &acc, &ctxtReal39);
+      }
+      if(!realCloseTo(&acc, &mat[(i*2+j)*2])) {
+        char b1[TMP_STR_LENGTH], b2[TMP_STR_LENGTH];
+        realToString(&acc, b1); realToString(&mat[(i*2+j)*2], b2);
+        printf("eigen oracle: %s reconstruction (Q*R)[%d][%d]=%s != input %s\n", name, i, j, b1, b2);
+        ++failures;
+      }
+    }
+  }
+  real_t zero;
+  realSetZero(&zero);
+  if(!realCloseTo(&r[(1*2+0)*2], &zero)) { printf("eigen oracle: %s R[1][0] not zero (not upper-triangular)\n", name); ++failures; }
+}
+
+static void runQrDecomposition(void) {
+  const char *upper[8] = {"2","0", "3","0", "0","0", "4","0"};
+  checkQrReconstructs("QR upper-triangular", upper);
+  const char *general[8] = {"1","0", "2","0", "3","0", "4","0"};
+  checkQrReconstructs("QR general", general);
+}
+
 int main(void) {
   initRuntime();
 
@@ -209,6 +255,7 @@ int main(void) {
   runEigenvalues22();
   runEigenvalues33();
   runDropNoise();
+  runQrDecomposition();
 
   if(failures != 0) {
     printf("eigen oracle failed %zu check(s)\n", failures);
