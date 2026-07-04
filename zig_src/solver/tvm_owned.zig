@@ -1074,8 +1074,24 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
 // ===========================================================================
 // fnEff / fnEffToI
 // ===========================================================================
-pub export fn fnEff(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+// L2 error surface (REPORT-23 P1/P5): the finance-command cores return an
+// out-of-range error instead of calling displayCalcErrorMessage inline; the L3
+// shims map it via reportTvmError (all these paths share ERROR_OUT_OF_RANGE with
+// static two-part messages).
+const TvmError = error{ EffOutOfRange, EffToIOutOfRange, AmortBalOutOfRange, AmortPrnOutOfRange, AmortIntOutOfRange };
+
+fn reportTvmError(e: TvmError) void {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    switch (e) {
+        error.EffOutOfRange => moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameter cp/a = 0", null),
+        error.EffToIOutOfRange => moreInfoOnError("In function fnEffToI:", "cannot compute I%/a ", "with parameters n = 0 & EFF/a < 0 ", null),
+        error.AmortBalOutOfRange => moreInfoOnError("In function fnAmortBal:", "cannot compute BAL ", "with cp/a = 0 or P/YR = 0", null),
+        error.AmortPrnOutOfRange => moreInfoOnError("In function fnAmortPrn:", "cannot compute \xCE\xA3PRN ", "with cp/a = 0 or P/YR = 0", null),
+        error.AmortIntOutOfRange => moreInfoOnError("In function fnAmortInt:", "cannot compute \xCE\xA3INT ", "with cp/a = 0 or P/YR = 0", null),
+    }
+}
+
+fn fnEffCore() TvmError!void {
     ensureTvmContext();
     var iA: real_t = undefined;
     var cperA: real_t = undefined;
@@ -1100,13 +1116,16 @@ pub export fn fnEff(unusedButMandatoryParameter: u16) linksection(runtime.code_s
         convertRealToReal34ResultRegister(&tmp, REGISTER_X);
         temporaryInformation = TI_TVM_EFF;
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameter cp/a = 0", null);
+        return error.EffOutOfRange;
     }
 }
 
-pub export fn fnEffToI(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+pub export fn fnEff(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnEffCore() catch |e| reportTvmError(e);
+}
+
+fn fnEffToICore() TvmError!void {
     ensureTvmContext();
     var iEFF: real_t = undefined;
     var tmp: real_t = undefined;
@@ -1131,9 +1150,13 @@ pub export fn fnEffToI(unusedButMandatoryParameter: u16) linksection(runtime.cod
 
         temporaryInformation = TI_TVM_IA;
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEffToI:", "cannot compute I%/a ", "with parameters n = 0 & EFF/a < 0 ", null);
+        return error.EffToIOutOfRange;
     }
+}
+
+pub export fn fnEffToI(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnEffToICore() catch |e| reportTvmError(e);
 }
 
 // ===========================================================================
@@ -1556,47 +1579,47 @@ fn amortStoreResult(value: *const real_t, tiTag: u8) linksection(runtime.code_se
     temporaryInformation = tiTag;
 }
 
-pub export fn fnAmortBal(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+fn fnAmortBalCore() TvmError!void {
     ensureTvmContext();
     var sumInt: real_t = undefined;
     var sumPrn: real_t = undefined;
     var bal: real_t = undefined;
 
-    if (!amortCompute(&sumInt, &sumPrn, &bal)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnAmortBal:", "cannot compute BAL ", "with cp/a = 0 or P/YR = 0", null);
-        return;
-    }
+    if (!amortCompute(&sumInt, &sumPrn, &bal)) return error.AmortBalOutOfRange;
     amortStoreResult(&bal, TI_AMORT_BAL);
+}
+
+pub export fn fnAmortBal(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnAmortBalCore() catch |e| reportTvmError(e);
+}
+
+fn fnAmortPrnCore() TvmError!void {
+    ensureTvmContext();
+    var sumInt: real_t = undefined;
+    var sumPrn: real_t = undefined;
+    var bal: real_t = undefined;
+
+    if (!amortCompute(&sumInt, &sumPrn, &bal)) return error.AmortPrnOutOfRange;
+    amortStoreResult(&sumPrn, TI_AMORT_PRN);
 }
 
 pub export fn fnAmortPrn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
+    fnAmortPrnCore() catch |e| reportTvmError(e);
+}
+
+fn fnAmortIntCore() TvmError!void {
     ensureTvmContext();
     var sumInt: real_t = undefined;
     var sumPrn: real_t = undefined;
     var bal: real_t = undefined;
 
-    if (!amortCompute(&sumInt, &sumPrn, &bal)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnAmortPrn:", "cannot compute \xCE\xA3PRN ", "with cp/a = 0 or P/YR = 0", null);
-        return;
-    }
-    amortStoreResult(&sumPrn, TI_AMORT_PRN);
+    if (!amortCompute(&sumInt, &sumPrn, &bal)) return error.AmortIntOutOfRange;
+    amortStoreResult(&sumInt, TI_AMORT_INT);
 }
 
 pub export fn fnAmortInt(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    ensureTvmContext();
-    var sumInt: real_t = undefined;
-    var sumPrn: real_t = undefined;
-    var bal: real_t = undefined;
-
-    if (!amortCompute(&sumInt, &sumPrn, &bal)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnAmortInt:", "cannot compute \xCE\xA3INT ", "with cp/a = 0 or P/YR = 0", null);
-        return;
-    }
-    amortStoreResult(&sumInt, TI_AMORT_INT);
+    fnAmortIntCore() catch |e| reportTvmError(e);
 }
