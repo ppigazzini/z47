@@ -298,9 +298,7 @@ inline fn realToReal34(source: *const real_t, destination: *align(1) real34_t) v
 // Register / stack / program externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
-inline fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
+const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;

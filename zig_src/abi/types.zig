@@ -563,3 +563,6 @@ pub inline fn registerString(reg: i16) [*c]u8 {
     const bytes: [*c]u8 = @ptrCast(getRegisterDataPointer(reg));
     return bytes + @sizeOf(StrLgIntHeader);
 }
+pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
+    return @ptrCast(getRegisterDataPointer(reg).?);
+}

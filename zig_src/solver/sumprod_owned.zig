@@ -201,13 +201,8 @@ extern fn real34CompareLessEqual(number1: *align(1) const real34_t, number2: *al
 // ---------------------------------------------------------------------------
 const REAL34_SIZE_IN_BYTES: usize = 16;
 extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
-inline fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
-}
-inline fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + REAL34_SIZE_IN_BYTES);
-}
+const registerReal34Ptr = abi.registerReal34;
+const registerImag34Ptr = abi.registerImag34;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;

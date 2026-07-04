@@ -285,9 +285,7 @@ const TEMP_REGISTER_1: calcRegister_t = 135;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
 
-inline fn registerMatrixHeader(reg: calcRegister_t) *align(1) matrixHeader_t {
-    return @ptrCast(runtime.getRegisterDataPointer(reg).?);
-}
+const registerMatrixHeader = abi.registerMatrixHeader;
 inline fn registerReal34MatrixElements(reg: calcRegister_t) [*]align(1) real34_t {
     const base: [*]u8 = @ptrCast(runtime.getRegisterDataPointer(reg).?);
     return @ptrCast(@alignCast(base + @sizeOf(matrixHeader_t)));
