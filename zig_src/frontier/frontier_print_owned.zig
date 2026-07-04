@@ -110,11 +110,7 @@ const labelList_t = abi.LabelList;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 // programmableMenu_t
-const programmableMenu_t = extern struct {
-    itemName: [18][16]u8,
-    itemParam: [21]u16,
-    unused: u16,
-};
+const programmableMenu_t = abi.ProgrammableMenu;
 // subroutineLevelHeader_t (only numberOfLocalRegisters read)
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 

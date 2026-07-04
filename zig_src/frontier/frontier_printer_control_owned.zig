@@ -1,3 +1,5 @@
+const abi = @import("abi");
+
 const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
@@ -14,14 +16,7 @@ const PRINT_BYTE: c_int = 0;
 const PRINT_CHAR: c_int = 1;
 const PRINT_TAB: c_int = 2;
 
-const PrinterState = extern struct {
-    print_on: bool,
-    trace_done: bool,
-    print_blank_line: u8,
-    print_mode: c_int,
-    printer_model: c_int,
-    delay: u16,
-};
+const PrinterState = abi.PrinterState;
 
 pub const Command = enum {
     on_off,

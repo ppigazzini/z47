@@ -25,11 +25,7 @@ const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const irfracOption_t = c_int;
 
-const programmableMenu_t = extern struct {
-    itemName: [18][16]u8,
-    itemParam: [21]u16,
-    unused: u16,
-};
+const programmableMenu_t = abi.ProgrammableMenu;
 
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;

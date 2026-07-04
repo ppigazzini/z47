@@ -246,6 +246,13 @@ pub const Font = extern struct {
     glyphs: [0]Glyph,
 };
 
+/// Programmable-menu descriptor (programmableMenu_t): 332 bytes, align 2.
+pub const ProgrammableMenu = extern struct {
+    itemName: [18][16]u8,
+    itemParam: [21]u16,
+    unused: u16,
+};
+
 /// Subroutine-levels header (subroutineLevels_t, typeDefinitions.h): 4 bytes.
 pub const SubroutineLevels = extern struct {
     numberOfSubroutineLevels: u16,
