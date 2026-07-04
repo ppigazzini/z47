@@ -118,11 +118,7 @@ const C47_NULL: u16 = 65535;
 const ERR_REGISTER_LINE: calcRegister_t = stack_runtime.REGISTER_Z;
 const REGISTER_X: calcRegister_t = stack_runtime.REGISTER_X;
 
-const formulaHeader_t = extern struct {
-    pointerToFormulaData: u16,
-    sizeInBlocks: u8,
-    unused: u8,
-};
+const formulaHeader_t = abi.FormulaHeader;
 
 const abi = @import("abi"); // L1 shared bindings
 const softmenu_t = abi.Softmenu;

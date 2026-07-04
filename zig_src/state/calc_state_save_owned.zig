@@ -47,11 +47,7 @@ const userMenu_t = abi.UserMenu;
 
 const namedVariableHeader_t = abi.NamedVariableHeader;
 
-const formulaHeader_t = extern struct {
-    pointerToFormulaData: u16,
-    sizeInBlocks: u8,
-    unused: u8,
-};
+const formulaHeader_t = abi.FormulaHeader;
 
 const normKey_t = extern struct {
     func: i16,
