@@ -220,18 +220,8 @@ extern fn calcModeNormalGui() void;
 // DMCP-ROM trampolines (fixed-address on firmware).
 // ---------------------------------------------------------------------------
 const gpointer = ?*anyopaque;
-const tm_t = extern struct {
-    hour: u8,
-    min: u8,
-    sec: u8,
-    csec: u8,
-    dow: u8,
-};
-const dt_t = extern struct {
-    year: u16,
-    month: u8,
-    day: u8,
-};
+const tm_t = abi.TimeShort;
+const dt_t = abi.DateShort;
 inline fn sys_current_ms() u32 {
     const f: *const fn () callconv(.c) u32 = @ptrFromInt(LIBRARY_FN_BASE + 524);
     return f();

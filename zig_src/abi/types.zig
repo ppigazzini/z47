@@ -223,6 +223,28 @@ pub const FormulaHeader = extern struct {
     unused: u8,
 };
 
+/// Free-memory region (freeMemoryRegion_t): block address + size, 4 bytes.
+pub const FreeMemoryRegion = extern struct {
+    blockAddress: u16,
+    sizeInBlocks: u16,
+};
+
+/// Short date (dt_t): year/month/day.
+pub const DateShort = extern struct {
+    year: u16,
+    month: u8,
+    day: u8,
+};
+
+/// Short time (tm_t): hour/min/sec/csec + day-of-week.
+pub const TimeShort = extern struct {
+    hour: u8,
+    min: u8,
+    sec: u8,
+    csec: u8,
+    dow: u8,
+};
+
 /// Program-label entry (labelList_t, typeDefinitions.h): id/step + two C byte
 /// pointers into program memory (indexed and pointer-arithmetic'd, so [*c]).
 pub const LabelList = extern struct {

@@ -90,10 +90,7 @@ const strLgIntHeader_t = extern struct {
     dataMaxLengthInBlocks: u16,
     unused: u16,
 };
-const freeMemoryRegion_t = extern struct {
-    blockAddress: u16,
-    sizeInBlocks: u16,
-};
+const freeMemoryRegion_t = abi.FreeMemoryRegion;
 const matrixHeader_t = abi.MatrixHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const subroutineLevels_t = extern struct {

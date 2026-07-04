@@ -1,11 +1,9 @@
 const std = @import("std");
+const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("memory_build_options");
 
-pub const freeMemoryRegion_t = extern struct {
-    blockAddress: u16,
-    sizeInBlocks: u16,
-};
+pub const freeMemoryRegion_t = abi.FreeMemoryRegion;
 
 pub const BPB: u5 = 2;
 pub const BYTES_PER_BLOCK: u32 = 1 << BPB;
