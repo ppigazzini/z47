@@ -19,6 +19,7 @@
 void calculateEigenvalues22(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, bool is_real_symmetric, realContext_t *realContext);
 void calculateEigenvalues33(const real_t *mat, uint16_t size, real_t *t1r, real_t *t1i, real_t *t2r, real_t *t2i, real_t *t3r, real_t *t3i, bool is_real_symmetric, realContext_t *realContext);
 bool isRealSymmetric(const real_t *a, uint16_t size, realContext_t *realContext);
+void dropNoise(real_t *eig, uint16_t size, uint16_t dig);
 
 static void initRuntime(void) {
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
@@ -182,12 +183,32 @@ static void runEigenvalues33(void) {
   }
 }
 
+// dropNoise rounds each diagonal element (i,i) real+imag to `dig` significant
+// digits (HALF_UP) and leaves off-diagonal entries untouched.
+static void runDropNoise(void) {
+  real_t eig[8];
+  // Matrix-shaped 2x2: diagonal (0,0)=idx0, (1,1)=idx6; off-diagonal idx2/idx4.
+  const char *cells[8] = {
+    "2.99999999","0",   "0.123456789","0",
+    "0.987654321","0",  "0.99999999","0",
+  };
+  loadMatrix(eig, 2, cells);
+  dropNoise(eig, 2, 5);
+  // Diagonal rounded to 5 sig digits -> integers 3 and 1.
+  if(!realEqualsText(&eig[0], "3")) { printf("eigen oracle: dropNoise diag(0,0) expected 3\n"); ++failures; }
+  if(!realEqualsText(&eig[6], "1")) { printf("eigen oracle: dropNoise diag(1,1) expected 1\n"); ++failures; }
+  // Off-diagonal untouched (still the noisy inputs).
+  if(!realEqualsText(&eig[2], "0.123456789")) { printf("eigen oracle: dropNoise perturbed off-diagonal (0,1)\n"); ++failures; }
+  if(!realEqualsText(&eig[4], "0.987654321")) { printf("eigen oracle: dropNoise perturbed off-diagonal (1,0)\n"); ++failures; }
+}
+
 int main(void) {
   initRuntime();
 
   runIsRealSymmetric();
   runEigenvalues22();
   runEigenvalues33();
+  runDropNoise();
 
   if(failures != 0) {
     printf("eigen oracle failed %zu check(s)\n", failures);
