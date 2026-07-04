@@ -181,6 +181,20 @@ pub const Complex34Matrix = extern struct {
     matrixElements: ?[*]Complex34,
 };
 
+/// Dynamic soft-menu descriptor (dynamicSoftmenu_t): item counts + content ptr.
+pub const DynamicSoftmenu = extern struct {
+    menuItem: i16,
+    numItems: i16,
+    menuContent: [*c]u8,
+};
+
+/// Formula header (formulaHeader_t): data pointer + block size.
+pub const FormulaHeader = extern struct {
+    pointerToFormulaData: u16,
+    sizeInBlocks: u8,
+    unused: u8,
+};
+
 /// PCG32 RNG state (pcg32_random_t, pcg_basic.h): 16 bytes, align 8.
 pub const Pcg32Random = extern struct {
     state: u64,

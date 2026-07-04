@@ -161,11 +161,7 @@ inline fn ctxtSolverHi() *realContext_t {
 extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
 
 // softmenu globals
-const dynamicSoftmenu_t = extern struct {
-    menuItem: i16,
-    numItems: i16,
-    menuContent: [*c]u8,
-};
+const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 // C `dynamicSoftmenu[N]` / `softmenuStack[N]` are ARRAYS: the symbol address IS
 // the data. `extern var x: [*]T` loads the array's first 8 bytes AS the pointer
