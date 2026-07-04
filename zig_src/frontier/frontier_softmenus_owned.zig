@@ -718,14 +718,7 @@ extern var errorMessage: [*c]u8;
 // printerState_t: {print_on:u8, trace_done:u8, print_blank_line:u8, print_mode:c_int,
 // printer_model:c_int, delay:u16}. Enums are int-sized; print_mode is naturally
 // aligned to offset 4. Only printer_model is read here.
-const printerState_t = extern struct {
-    print_on: bool_t,
-    trace_done: bool_t,
-    print_blank_line: u8,
-    print_mode: c_int,
-    printer_model: c_int,
-    delay: u16,
-};
+const printerState_t = abi.PrinterState;
 extern var printerState: printerState_t;
 
 // tamState_t: only mode / alpha / keyInputFinished are read here.

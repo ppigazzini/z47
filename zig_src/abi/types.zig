@@ -181,6 +181,19 @@ pub const Complex34Matrix = extern struct {
     matrixElements: ?[*]Complex34,
 };
 
+/// Printer state (printerState_t, typeDefinitions.h): 16 bytes, align 4. The C
+/// print_modes_t/printerModel_t are int-backed enums (c_int); the owners had
+/// forked the enum fields between c_int/u32/enum-alias and the bool fields
+/// between bool/u8 -- all byte-identical, reconciled to the C-faithful shape.
+pub const PrinterState = extern struct {
+    print_on: bool,
+    trace_done: bool,
+    print_blank_line: u8,
+    print_mode: c_int,
+    printer_model: c_int,
+    delay: u16,
+};
+
 /// Dynamic soft-menu descriptor (dynamicSoftmenu_t): item counts + content ptr.
 pub const DynamicSoftmenu = extern struct {
     menuItem: i16,
@@ -253,6 +266,11 @@ comptime {
     std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
     std.debug.assert(@sizeOf(Pcg32Random) == 16);
     std.debug.assert(@offsetOf(Pcg32Random, "inc") == 8);
+    std.debug.assert(@sizeOf(PrinterState) == 16);
+    std.debug.assert(@alignOf(PrinterState) == 4);
+    std.debug.assert(@offsetOf(PrinterState, "print_mode") == 4);
+    std.debug.assert(@offsetOf(PrinterState, "printer_model") == 8);
+    std.debug.assert(@offsetOf(PrinterState, "delay") == 12);
     std.debug.assert(@sizeOf(MatrixHeader) == 4);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "matrixColumns") == 12);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);

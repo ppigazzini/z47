@@ -46,16 +46,7 @@ const normKey_t = extern struct {
 // printerState_t (typeDefinitions.h): print_on@0, printer_model@8, delay@12.
 const print_modes_t = c_int; // enum, 4 bytes
 const printerModel_t = c_int; // enum, 4 bytes
-const printerState_t = extern struct {
-    print_on: bool_t,
-    trace_done: bool_t,
-    print_blank_line: u8,
-    print_mode: print_modes_t,
-    printer_model: printerModel_t,
-    delay: u16,
-};
-
-// item_t (typeDefinitions.h): func@0, param@8; only .func is read here.
+const printerState_t = abi.PrinterState;
 const ItemFn = ?*const fn (u16) callconv(.c) void;
 const abi = @import("abi"); // L1 shared bindings
 const item_t = abi.Item;

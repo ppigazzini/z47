@@ -100,16 +100,7 @@ const nameAlias_t = extern struct {
 const summationRegisterName_t = extern struct {
     name: [16]u8,
 };
-const printerState_t = extern struct {
-    print_on: bool_t,
-    trace_done: bool_t,
-    print_blank_line: u8,
-    print_mode: print_modes_t,
-    printer_model: print_modes_t,
-    delay: u16,
-};
-
-// matrix structs (typeDefinitions.h). matrixHeader_t is a 4-byte bitfield
+const printerState_t = abi.PrinterState;
 // (rows:12, cols:12, mtag:6, notUsed:2); only rows/cols are read.
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
