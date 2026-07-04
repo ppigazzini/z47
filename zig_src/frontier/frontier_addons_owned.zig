@@ -120,7 +120,7 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-const cmplxPair = extern struct { r: real_t, i: real_t };
+const cmplxPair = abi.CmplxPair;
 
 // ===========================================================================
 // Numeric constants (probed from the C build)

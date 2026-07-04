@@ -47,11 +47,7 @@ const COMPLEX34_SIZE_IN_BLOCKS: u32 = 8;
 const OpaqueCtx = opaque {};
 
 const matrixHeader_t = abi.MatrixHeader;
-const MpzStruct = extern struct {
-    mp_alloc: c_int,
-    mp_size: c_int,
-    mp_d: ?*anyopaque,
-};
+const MpzStruct = abi.Mpz;
 comptime {
     std.debug.assert(@sizeOf(matrixHeader_t) == 4);
     // mpz_t = { int, int, mp_limb_t* }: 16 bytes on a 64-bit host, 12 on the
