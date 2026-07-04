@@ -27,17 +27,9 @@ const ERROR_CANNOT_WRITE_FILE: u8 = 55;
 
 const C47_NULL: u32 = 65535;
 
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: ?[*]u8,
-    instructionPointer: ?[*]u8,
-};
+const labelList_t = abi.LabelList;
 
-const programList_t = extern struct {
-    step: i32,
-    instructionPointer: ?[*]u8,
-};
+const programList_t = abi.ProgramList;
 
 // Only the fields consumed here are modelled; alpha sits at offset 4 and
 // digitsSoFar at offset 10, matching upstream tamState_t.
@@ -186,7 +178,8 @@ pub fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
     }
     const labels = labelList orelse return false;
     if (labels[i].step <= 0) return false;
-    const lp = labels[i].labelPointer orelse return false;
+    const lp = labels[i].labelPointer;
+    if (lp == null) return false;
     const len = boundProgramNameLength(lp + 1, lp[0]);
     _ = xcopy(buf, lp + 1, len);
     buf[len] = 0;

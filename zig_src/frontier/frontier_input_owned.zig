@@ -41,12 +41,7 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-const labelList_t = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
+const labelList_t = abi.LabelList;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified via C probe)
