@@ -1075,8 +1075,22 @@ pub export fn fnDateTo(unusedButMandatoryParameter: u16) linksection(code_sectio
     }
 }
 
-pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
+const DateError = error{ ToDateBadType, ToDateInvalidDate };
+
+fn reportDateError(e: DateError) void {
+    switch (e) {
+        error.ToDateBadType => {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnToDate:", "data type cannot be converted to a real34!");
+        },
+        error.ToDateInvalidDate => {
+            displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function fnToDate:", "Invalid date input like 30 Feb.");
+        },
+    }
+}
+
+fn fnToDateCore() DateError!void {
     var y: real34_t = undefined;
     var m: real34_t = undefined;
     var d: real34_t = undefined;
@@ -1114,24 +1128,15 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
                 if (getRegisterAngularMode(r[idx]) == amNone) {
                     real34ToIntegralValue(reg34(r[idx]), part[idx], DEC_ROUND_DOWN);
                 } else {
-                    // fallthrough
-                    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function fnToDate:", "data type cannot be converted to a real34!");
-                    return;
+                    return error.ToDateBadType;
                 }
             },
-            else => {
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function fnToDate:", "data type cannot be converted to a real34!");
-                return;
-            },
+            else => return error.ToDateBadType,
         }
     }
 
     if (!isValidDay(&y, &m, &d)) {
-        displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        moreInfoOnError("In function fnToDate:", "Invalid date input like 30 Feb.");
-        return;
+        return error.ToDateInvalidDate;
     }
 
     // valid date
@@ -1151,6 +1156,11 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
     if (lastErrorCode != 0) {
         undo();
     }
+}
+
+pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnToDateCore() catch |e| reportDateError(e);
 }
 
 // L2 error surface (REPORT-23 P1/P5): the time-conversion command cores return
