@@ -722,7 +722,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     if (programRunStop != PGM_RUNNING) { // NORMAL MODE
         if (comptime !dmcp_build) {
             var tmp: [200]u8 = undefined;
-            _ = c_sprintf(&tmp, "^^^^reallyRunFunction func=%d param=%d\n", func, @as(c_int, @intCast(param)));
+            abi.fmtCStr(&tmp, "^^^^reallyRunFunction func={d} param={d}\n", .{ @as(c_int, func), @as(c_int, @intCast(param)) });
             jm_show_comment(&tmp);
         }
 
@@ -956,7 +956,6 @@ extern fn updateVbatIntegrated(arg: bool_t) void;
 extern fn force_refresh(mode: u8) void;
 extern fn refreshLcd(unusedData: ?*anyopaque) c_int;
 extern fn jm_show_comment(comment: [*c]u8) void;
-const c_sprintf = @extern(*const fn ([*c]u8, [*c]const u8, c_int, c_int) callconv(.c) c_int, .{ .name = "sprintf" });
 
 pub export fn runFunction(func: i16) callconv(.c) void {
     funcOK = 1;
@@ -1033,7 +1032,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
 
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = c_sprintf(&tmp, "^^^^ReallyRunFunction func=%d\n", func, 0);
+        abi.fmtCStr(&tmp, "^^^^ReallyRunFunction func={d}\n", .{@as(c_int, func)});
         jm_show_comment(&tmp);
     }
 

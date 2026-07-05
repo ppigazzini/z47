@@ -1261,8 +1261,6 @@ extern fn strstr(h: [*c]const u8, n: [*c]const u8) [*c]u8;
 extern fn memcpy(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
-extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*c]const u8, ...) c_int;
 extern fn pow(x: f64, y: f64) f64;
 extern fn log10(x: f64) f64;
 
@@ -3191,7 +3189,8 @@ fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
 }
 
 fn _fnShowRecallTI(prefix: [*c]u8, prefixWidth: *i16) void {
-    viewRegName2(prefix + @as(usize, @intCast(sprintf(prefix, "SHOW RCL"))), prefixWidth);
+    abi.fmtCStr(prefix, "SHOW RCL", .{});
+    viewRegName2(prefix + "SHOW RCL".len, prefixWidth);
     prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
     temporaryInformation = TI_NO_INFO;
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;

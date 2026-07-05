@@ -101,7 +101,6 @@ extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: 
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
 // host-only libc / glib (referenced under !dmcp_build).
 const FILE = opaque {};
@@ -506,7 +505,9 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
     if (comptime dmcp_build) {
         var line: [TMP_STR_LENGTH]u8 = undefined; // Line buffer
         create_filename(".STAT.TSV");
-        _ = sprintf(&line, "%.16e%s%.16e%s", @as(f64, x), CSV_TAB, @as(f64, y), CSV_NEWLINE);
+        var xb: [64]u8 = undefined;
+        var yb: [64]u8 = undefined;
+        abi.fmtCStr(&line, "{s}\t{s}\n", .{ abi.fmtExpBuf(&xb, 16, @as(f64, x)), abi.fmtExpBuf(&yb, 16, @as(f64, y)) });
         if (export_append_string_to_file(&line, APPEND, &filename_csv) != 0) {
             return 1;
         }
@@ -514,7 +515,9 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
     } else {
         var line: [200]u8 = undefined; // Line buffer
         create_filename(".STAT.TSV");
-        _ = sprintf(&line, "%.16e%s%.16e%s", @as(f64, x), CSV_TAB, @as(f64, y), CSV_NEWLINE);
+        var xb: [64]u8 = undefined;
+        var yb: [64]u8 = undefined;
+        abi.fmtCStr(&line, "{s}\t{s}\n", .{ abi.fmtExpBuf(&xb, 16, @as(f64, x)), abi.fmtExpBuf(&yb, 16, @as(f64, y)) });
         _ = export_append_line(&line);
         return 0;
     }

@@ -381,8 +381,6 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn memmove(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
-extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*:0]const u8, ...) c_int;
 extern fn strtof(nptr: [*c]const u8, endptr: ?*[*c]u8) f32;
 extern fn srand(seed: c_uint) void;
 extern fn rand() c_int;
@@ -860,7 +858,7 @@ pub export fn auto_tick(tick_int_f_in: f32) callconv(.c) f32 {
     if (!roundedTicks) {
         return tick_int_f;
     }
-    _ = snprintf(&tmpString2, 100, "%.1e", @as(f64, fabs(tick_int_f)));
+    abi.fmtExpC(&tmpString2, 1, @as(f64, fabs(tick_int_f)));
     var tx: [4]u8 = undefined;
     tx[0] = tmpString2[0]; // expecting "6.5e+01"
     tx[1] = tmpString2[1];

@@ -849,8 +849,6 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
-extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*c]const u8, ...) c_int;
 extern fn strtof(s: [*c]const u8, end: ?*[*c]u8) f32;
 extern fn abs(v: c_int) c_int;
 
@@ -3128,7 +3126,7 @@ pub export fn doubleToXRegisterReal34(x: f64) callconv(.c) void {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    _ = snprintf(tmpString, TMP_STR_LENGTH, "%.16e", x);
+    abi.fmtExpC(tmpString, 16, x);
     stringToReal34(tmpString, reg34(REGISTER_X));
     setSystemFlag(FLAG_ASLIFT);
 }

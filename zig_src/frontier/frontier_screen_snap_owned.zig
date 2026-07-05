@@ -148,7 +148,6 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -523,7 +522,7 @@ fn copyStackRegistersToClipboardString(clipboardString: [*c]u8, lastRegist: calc
     var sep: [*:0]const u8 = "";
     var r: calcRegister_t = lastRegist;
     while (r >= REGISTER_X) : (r -= 1) {
-        ptr += @intCast(sprintf(ptr, "%s%c = ", sep, @as(c_int, letteredRegisterName(r))));
+        ptr += abi.fmtCStrN(ptr, "{s}{c} = ", .{ sep, @as(u8, @intCast(letteredRegisterName(r))) });
         copyRegisterToClipboardString(r, ptr, 0);
         ptr = strchr(ptr, 0);
         sep = LINEBREAK;

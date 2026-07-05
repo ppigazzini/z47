@@ -820,7 +820,6 @@ extern fn malloc(n: usize) [*c]u8;
 extern fn free(p: ?*anyopaque) void;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn qsort(base: ?*anyopaque, n: usize, size: usize, cmp: *const fn (?*const anyopaque, ?*const anyopaque) callconv(.c) c_int) void;
-extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
@@ -2274,7 +2273,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     } else if (tmpF > 1) {
                         _ = strcpy(&tmpS, concat2(STD_GAUSS_WHITE_R, "1"));
                     } else {
-                        _ = sprintf(&tmpS, "%5.G", @as(f64, tmpF));
+                        abi.fmtGC(&tmpS, 5, 0, true, @as(f64, tmpF));
                         _ = strcpy(&tmpS, eatSpacesMid(&tmpS));
                     }
                 }
@@ -2289,14 +2288,14 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
             },
             ITM_IPLUS, ITM_IMINUS => {
                 if (isMatrixIndexed() != 0 and getRegisterAsRealQuiet(REGISTER_I, &tmpR) != 0) {
-                    _ = sprintf(&tmpS, concat2(concat2(STD_SPACE_3_PER_EM, STD_SPACE_3_PER_EM), "%u"), @as(c_uint, @as(u16, @truncate(realToUint32C47(&tmpR, null)))));
+                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(realToUint32C47(&tmpR, null))))});
                     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
                     showValue.* = NOVAL;
                 }
             },
             ITM_JPLUS, ITM_JMINUS => {
                 if (isMatrixIndexed() != 0 and getRegisterAsRealQuiet(REGISTER_J, &tmpR) != 0) {
-                    _ = sprintf(&tmpS, concat2(concat2(STD_SPACE_3_PER_EM, STD_SPACE_3_PER_EM), "%u"), @as(c_uint, @as(u16, @truncate(realToUint32C47(&tmpR, null)))));
+                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(realToUint32C47(&tmpR, null))))});
                     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
                     showValue.* = NOVAL;
                 }
