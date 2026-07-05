@@ -30,6 +30,7 @@
 // call (LIBRARY_FN_BASE+60) on firmware and a real symbol on host (idiom copied from
 // the error owner). IR_PRINTING/DEBUG_PGM/MONITOR_CLRSCR are never defined here.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -809,7 +810,7 @@ pub export fn fnClP(label: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "label %u is not a global label", @as(c_uint, label));
+            abi.fmtBufZ(errorMessage[0..512], "label {d} is not a global label", .{@as(u32, label)});
             moreInfoErr("In function fnClP:", errorMessage, null);
         }
     }
@@ -989,7 +990,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     if (firstDisplayedLocalStepNumber == 0) {
         _ = showString("0000:" ++ STD_SPACE_4_PER_EM, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE), if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0)) vmReverse else vmNormal, false, true);
-        _ = sprintf(tmpString, "{Prgm #%u/%u: %u bytes / %u step%s}", @as(c_uint, currentProgramNumber), @as(c_uint, numberOfPrograms), @as(c_uint, _getProgramSize()), @as(c_uint, numberOfSteps), if (numberOfSteps == 1) @as([*:0]const u8, "") else @as([*:0]const u8, "s"));
+        abi.fmtBufZ(tmpString[0..2560], "{{Prgm #{d}/{d}: {d} bytes / {d} step{s}}}", .{ @as(u32, currentProgramNumber), @as(u32, numberOfPrograms), @as(u32, _getProgramSize()), @as(u32, numberOfSteps), if (numberOfSteps == 1) @as([*:0]const u8, "") else @as([*:0]const u8, "s") });
         _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vmNormal, false, false);
         firstLine = 1;
     } else {
@@ -1633,7 +1634,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
         var lastChar: i16 = @intCast(@as(i64, @intCast(strlen(aimBuffer))) - 1);
 
         if ((lastIntegerBase != 0) and (nimNumberPart == NP_INT_10 or nimNumberPart == NP_INT_16)) {
-            _ = sprintf(aimBuffer + strlen(aimBuffer), "#%u", @as(c_uint, @intCast(lastIntegerBase)));
+            abi.fmtBufZ(aimBuffer[strlen(aimBuffer)..AIM_BUFFER_LENGTH], "#{d}", .{@as(u32, @intCast(lastIntegerBase))});
             nimNumberPart = NP_INT_BASE;
         }
 

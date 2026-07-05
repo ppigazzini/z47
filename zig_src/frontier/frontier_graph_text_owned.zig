@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
@@ -303,7 +304,7 @@ pub export fn export_string_to_filename(line1: [*c]const u8, mode: u8, dirname: 
         _ = strcat(&dirfile, "\\");
         _ = strcat(&dirfile, filename);
 
-        _ = sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
+        abi.fmtBufZ(tmpString[0..2560], "{s}" ++ CSV_NEWLINE, .{std.mem.span(line1)});
         _ = check_create_dir(dirname);
         if (export_append_string_to_file(tmpString, mode, &dirfile) != 0) {
             return 1;
@@ -331,10 +332,10 @@ pub export fn export_string_to_filename(line1: [*c]const u8, mode: u8, dirname: 
             return 1;
         }
 
-        _ = sprintf(tmpString, "%s%s", line1, CSV_NEWLINE);
+        abi.fmtBufZ(tmpString[0..2560], "{s}" ++ CSV_NEWLINE, .{std.mem.span(line1)});
         frr = fputs(tmpString, outfile.?);
         if (frr == EOF) {
-            _ = sprintf(&line, "Write error ID009 --> %i    \n", frr);
+            abi.fmtBufZ(&line, "Write error ID009 --> {d}    \n", .{frr});
             _ = printf("%s", line1);
             _ = fflush(null);
             if (outfile != null) {
@@ -481,7 +482,7 @@ pub export fn export_append_line(inputstring: [*c]const u8) callconv(.c) i16 {
         var line: [200]u8 = undefined; // Line buffer
         frr = fputs(inputstring, outfile.?);
         if (frr == EOF) {
-            _ = sprintf(&line, "Write error ID012 --> %i %s\n", frr, inputstring);
+            abi.fmtBufZ(&line, "Write error ID012 --> {d} {s}\n", .{ frr, std.mem.span(inputstring) });
             _ = fflush(null);
             _ = printf("%s", &line);
             _ = fflush(null);
@@ -711,7 +712,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     _ = sys_disk_write_enable(1);
     fr = sys_is_disk_write_enable();
     if (fr == 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[1].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[1].itemName, 0), fr });
         print_linestr(&line, true);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -724,7 +725,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
         fr = f_open(&fil, filedir, FA_WRITE | FA_CREATE_ALWAYS);
     }
     if (fr != 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[2].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -734,7 +735,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
     if (mode == APPEND) {
         fr = f_lseek(&fil, f_size(&fil));
         if (fr != 0) {
-            _ = sprintf(&line, "%s%d    \n", &IOMsgs[3].itemName, fr);
+            abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
             print_linestr(&line, false);
             _ = f_close(&fil);
             _ = sys_disk_write_enable(0);
@@ -744,7 +745,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
 
     fr = f_puts(line1, &fil);
     if (fr == EOF) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[4].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -753,7 +754,7 @@ fn export_append_string_to_file(line1: [*c]const u8, mode: u8, filedir: [*c]cons
 
     fr = f_close(&fil);
     if (fr != 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[4].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -775,7 +776,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
             _ = sys_disk_write_enable(1);
             fr = sys_is_disk_write_enable();
             if (fr == 0) {
-                _ = sprintf(&line, "%s%d    \n", &IOMsgs[1].itemName, fr);
+                abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[1].itemName, 0), fr });
                 print_linestr(&line, true);
                 _ = f_close(&eastfn_fil);
                 _ = sys_disk_write_enable(0);
@@ -787,7 +788,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
                 fr = f_open(&eastfn_fil, filedir, FA_WRITE | FA_CREATE_ALWAYS);
             }
             if (fr != 0) {
-                _ = sprintf(&line, "%s%d    \n", &IOMsgs[2].itemName, fr);
+                abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
                 print_linestr(&line, false);
                 _ = f_close(&eastfn_fil);
                 _ = sys_disk_write_enable(0);
@@ -796,7 +797,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
             if (mode == APPEND) {
                 fr = f_lseek(&eastfn_fil, f_size(&eastfn_fil));
                 if (fr != 0) {
-                    _ = sprintf(&line, "%s%d    \n", &IOMsgs[3].itemName, fr);
+                    abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
                     print_linestr(&line, false);
                     _ = f_close(&eastfn_fil);
                     _ = sys_disk_write_enable(0);
@@ -807,7 +808,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
         WRITE => {
             fr = f_puts(line1, &eastfn_fil);
             if (fr == EOF) {
-                _ = sprintf(&line, "%s%d    \n", &IOMsgs[4].itemName, fr);
+                abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
                 print_linestr(&line, false);
                 _ = f_close(&eastfn_fil);
                 _ = sys_disk_write_enable(0);
@@ -817,7 +818,7 @@ fn export_append_string_to_file_n(line1: [*c]const u8, mode: u8, filedir: [*c]co
         CLOSE => {
             fr = f_close(&eastfn_fil);
             if (fr != 0) {
-                _ = sprintf(&line, "%s%d    \n", &IOMsgs[5].itemName, fr);
+                abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
                 print_linestr(&line, false);
                 _ = f_close(&eastfn_fil);
                 _ = sys_disk_write_enable(0);
@@ -898,7 +899,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
     _ = sys_disk_write_enable(1);
     fr = sys_is_disk_write_enable();
     if (fr == 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[4].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -907,7 +908,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
 
     fr = f_open(&fil, &filename_csv, FA_OPEN_APPEND | FA_WRITE);
     if (fr != 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[2].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[2].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -916,7 +917,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
 
     fr = f_lseek(&fil, f_size(&fil));
     if (fr != 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[3].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[3].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -926,7 +927,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
     fr = f_puts(inputstring, &fil);
 
     if (fr == 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[4].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[4].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
@@ -935,7 +936,7 @@ fn export_append_line_short(inputstring: [*c]const u8) c_int {
 
     fr = f_close(&fil);
     if (fr != 0) {
-        _ = sprintf(&line, "%s%d    \n", &IOMsgs[5].itemName, fr);
+        abi.fmtBufZ(&line, "{s}{d}    \n", .{ std.mem.sliceTo(&IOMsgs[5].itemName, 0), fr });
         print_linestr(&line, false);
         _ = f_close(&fil);
         _ = sys_disk_write_enable(0);
