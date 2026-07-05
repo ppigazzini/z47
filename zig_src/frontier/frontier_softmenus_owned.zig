@@ -2211,7 +2211,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
 
     radixProcess(tmpSS, tmpS);
     if (stringByteLength(tmpSS) < 4) {
-        _ = sprintf(tmpS, concat2(STD_SPACE_3_PER_EM, "%s"), tmpSS);
+        abi.fmtCStr(tmpS, "\xa0\x04{s}", .{@as([*:0]const u8, tmpSS)});
     } else {
         abi.fmtCStr(tmpS, "{s}", .{ @as([*:0]const u8, tmpSS) });
     }
@@ -2425,13 +2425,13 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
         if (itemNr == -%@as(i16, MNU_PRINTER)) {
             switch (printerState.printer_model) {
                 PRINTER_HP => {
-                    _ = sprintf(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), concat2(STD_SPACE_3_PER_EM, "%s"), stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName));
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
                 },
                 PRINTER_MARTEL => {
                     abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{ @as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName)) });
                 },
                 PRINTER_OTHER => {
-                    _ = sprintf(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), concat2(STD_SPACE_3_PER_EM, "%s"), stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName));
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
                 },
                 else => {},
             }

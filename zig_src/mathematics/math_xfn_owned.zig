@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 const const__1 = consts.const__1;
@@ -644,7 +645,7 @@ pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]
             const sciExp: i32 = tmp1.exponent + tmp1.digits - 1; // power of the leading digit
             tmp1.exponent = 1 - tmp1.digits; // one digit . rest, so decNumber prints it plainly
             realToString(tmp1, displayString + strlen(@ptrCast(displayString)));
-            _ = sprintf(displayString + strlen(@ptrCast(displayString)), "E%+ld", @as(c_long, sciExp));
+            abi.fmtCStr(@ptrCast(displayString + strlen(@ptrCast(displayString))), "E{s}{d}", .{ if (sciExp >= 0) @as([*:0]const u8, "+") else @as([*:0]const u8, "-"), @abs(@as(i64, sciExp)) });
         }
         return true;
     }
