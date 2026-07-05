@@ -745,6 +745,25 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle) (Annex A5)");
     charstring_diff_step.dependOn(&run_charstring_diff.step);
 
+    // Format-equivalence oracle (M24): a self-contained differential that proves
+    // each C sprintf conversion byte-equal to its std.fmt translation over a fuzz
+    // matrix (libc snprintf is the ground truth). Gates the sprintf->std.fmt
+    // migration -- a translation may only be applied at a call site once it is
+    // GREEN here. Pure Zig + libc; no core link needed.
+    const format_parity_exe = b.addExecutable(.{
+        .name = "format-parity-oracle",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("zig_build/tests/format/format_parity.zig"),
+            .target = context.host_target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    const run_format_parity = b.addRunArtifact(format_parity_exe);
+    run_format_parity.setCwd(b.path("."));
+    const format_parity_step = b.step("format_parity", "Run the sprintf<->std.fmt format-equivalence oracle (M24)");
+    format_parity_step.dependOn(&run_format_parity.step);
+
     // Headless .p47 program runner: load a user program file through the real
     // load path and XEQ it from the top on the full calc core (no GTK). Catches
     // crashes and (wrapped in `timeout`) infinite loops in the actual programs.
