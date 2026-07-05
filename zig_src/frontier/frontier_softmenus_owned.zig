@@ -1353,7 +1353,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     if (softmenu[@intCast(i)].menuItem == 0) {
         displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "menuArg '%d' is not a valid menuArg item", @as(c_int, @intCast(menuArg)));
+            abi.fmtBufZ(errorMessage[0..512], "menuArg '{d}' is not a valid menuArg item", .{@as(i32, @intCast(menuArg))});
             moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
         }
         menuPageNumber = 1;
@@ -1825,7 +1825,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
             dynamicSoftmenu[@intCast(mIdx)].numItems = 18;
         },
         else => {
-            _ = sprintf(errorMessage, "In function initVariableSoftmenu: unexpected variable softmenu %d!", @as(c_int, -%dynamicSoftmenu[@intCast(mIdx)].menuItem));
+            abi.fmtBufZ(errorMessage[0..512], "In function initVariableSoftmenu: unexpected variable softmenu {d}!", .{@as(i32, -%dynamicSoftmenu[@intCast(mIdx)].menuItem)});
             displayBugScreen(errorMessage);
         },
     }
@@ -1866,7 +1866,7 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
         x1.* = @intCast(KEY_X[@intCast(xSoftkey)]);
         x2.* = @intCast(KEY_X[@intCast(xSoftkey + 1)]);
     } else {
-        _ = sprintf(errorMessage, "In function initSoftkeyCoordinates: xSoftkey=%d must be from 0 to 5", @as(c_int, xSoftkey));
+        abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: xSoftkey={d} must be from 0 to 5", .{@as(i32, xSoftkey)});
         displayBugScreen(errorMessage);
         return 0;
     }
@@ -1874,7 +1874,7 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
         y1.* = 217 - SOFTMENU_HEIGHT * ySoftKey;
         y2.* = y1.* + SOFTMENU_HEIGHT;
     } else {
-        _ = sprintf(errorMessage, "In function initSoftkeyCoordinates: ySoftKey=%d but must be from 0 to 2!", @as(c_int, ySoftKey));
+        abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: ySoftKey={d} but must be from 0 to 2!", .{@as(i32, ySoftKey)});
         displayBugScreen(errorMessage);
         return 0;
     }
@@ -2788,7 +2788,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         } else if (item == -%@as(i16, MNU_HOME) or item == -%@as(i16, MNU_PFN)) {
                             showSoftkey(&indexOfItems[@intCast(-%item)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == 0) {
-                            _ = sprintf(errorMessage, "In function showSoftmenuCurrentPart: softmenu ID %d not found!", @as(c_int, item));
+                            abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenuCurrentPart: softmenu ID {d} not found!", .{@as(i32, item)});
                             displayBugScreen(errorMessage);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHA_OMEGA) and alphaCase == AC_UPPER) {
                             showSoftkey(&indexOfItems[@intCast(MNU_ALPHA_OMEGA)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
@@ -2852,10 +2852,10 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         tmpq[0] = 0;
                         switch (item) {
                             ITM_TIMER_SIGMA_T => _ = sprintf(&tmpq, "%s", concat3("[", STD_SIGMA, "+]")),
-                            ITM_TIMER_SIGMA_L => _ = sprintf(&tmpq, "%s", "[+]"),
-                            ITM_TIMER_R_T => _ = sprintf(&tmpq, "%s", "[ENTER]"),
-                            ITM_TIMER_R_L => _ = sprintf(&tmpq, "%s", "[.]"),
-                            ITM_TIMER_R_S, ITM_STOP => _ = sprintf(&tmpq, "%s", "[R/S]"),
+                            ITM_TIMER_SIGMA_L => abi.fmtBufZ(&tmpq, "[+]", .{}),
+                            ITM_TIMER_R_T => abi.fmtBufZ(&tmpq, "[ENTER]", .{}),
+                            ITM_TIMER_R_L => abi.fmtBufZ(&tmpq, "[.]", .{}),
+                            ITM_TIMER_R_S, ITM_STOP => abi.fmtBufZ(&tmpq, "[R/S]", .{}),
                             ITM_TIMER_RESET => _ = sprintf(&tmpq, "%s", concat3("[", STD_LEFT_ARROW, "]")),
                             else => {},
                         }
@@ -3371,7 +3371,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
     }
 
     if (softmenu[@intCast(m)].menuItem == 0) {
-        _ = sprintf(errorMessage, "In function showSoftmenu: softmenu %d not found!", @as(c_int, id));
+        abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenu: softmenu {d} not found!", .{@as(i32, id)});
         displayBugScreen(errorMessage);
     } else {
         if (tam.mode != 0 or (calcMode == CM_ASSIGN and tam.alpha)) {
