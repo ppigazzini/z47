@@ -699,9 +699,9 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     } else {
         var zero: longInteger_t = undefined;
         @"__gmpz_init"(&zero[0]); // longIntegerInit
+        defer @"__gmpz_clear"(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
 
         if (!saveLastX()) {
-            @"__gmpz_clear"(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
             return;
         }
 
@@ -731,8 +731,6 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
 
         adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
         adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
-
-        @"__gmpz_clear"(&zero[0]); // longIntegerFree
     }
 }
 
