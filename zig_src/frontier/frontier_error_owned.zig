@@ -450,7 +450,7 @@ pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: cal
         displayBugScreen(@ptrCast(errorMessage));
     } else if (errMessageRegisterLine > REGISTER_T or errMessageRegisterLine < REGISTER_X) {
         _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine");
-        _ = sprintf(errorMessage + strlen(errorMessage), "Must be from 100 (register X) to 103 (register T)");
+        abi.fmtBufZ(errorMessage[strlen(errorMessage)..512], "Must be from 100 (register X) to 103 (register T)", .{});
         displayBugScreen(@ptrCast(errorMessage));
     } else {
         lastErrorCode = errorCode;
