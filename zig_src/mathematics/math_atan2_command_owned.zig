@@ -1,4 +1,5 @@
 const atan2_owned = @import("math_atan2_owned.zig");
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -13,7 +14,7 @@ fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.
         return &matrix.matrixElements[index];
     }
 
-    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[index];
+    return &abi.matrixRealElems(matrix)[index];
 }
 
 fn reportZeroDomain(comptime function_name: [:0]const u8) void {

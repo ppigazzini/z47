@@ -35,12 +35,8 @@ inline fn const_1e_37() *const real_t {
     return consts.c4436();
 }
 
-inline fn constRealElems(matrix: anytype) [*]const real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constComplexElems(matrix: anytype) [*]const runtime.complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const constRealElems = abi.matrixConstRealElems;
+const constComplexElems = abi.matrixConstComplexElems;
 
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;

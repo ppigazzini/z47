@@ -552,3 +552,7 @@ pub const registerComplex34Aligned = registers.registerComplex34Aligned;
 pub const registerMatrixHeaderAligned = registers.registerMatrixHeaderAligned;
 pub const registerShortIntegerAligned = registers.registerShortIntegerAligned;
 pub const registerReal34MatrixElements = registers.registerReal34MatrixElements;
+pub const matrixRealElems = registers.matrixRealElems;
+pub const matrixConstRealElems = registers.matrixConstRealElems;
+pub const matrixComplexElems = registers.matrixComplexElems;
+pub const matrixConstComplexElems = registers.matrixConstComplexElems;

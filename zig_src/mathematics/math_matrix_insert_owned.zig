@@ -6,6 +6,7 @@
 // the rest of the engine stay in the matrix bridge until the later B clusters.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -21,12 +22,8 @@ extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) ca
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) callconv(.c) void;
 extern fn decQuadZero(result: *real34_t) callconv(.c) *real34_t;
 
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
 
 // real34Copy / complex34Copy upstream are raw element copies (defines.h);
 // real34Copy(const34_0, dst) zero-fills, equivalent to decQuadZero.

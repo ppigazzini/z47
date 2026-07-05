@@ -2,7 +2,7 @@
   "totals": {
     "extern_struct_files": 33,
     "cptr_files": 90,
-    "ptrcast_sites": 890,
+    "ptrcast_sites": 825,
     "callconv_c_sites": 2913,
     "printf_family_files": 53,
     "anyopaque_files": 91,

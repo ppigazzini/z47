@@ -6,18 +6,15 @@
 // clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
 
-inline fn constRealElems(matrix: anytype) [*]const real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constComplexElems(matrix: anytype) [*]const runtime.complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const constRealElems = abi.matrixConstRealElems;
+const constComplexElems = abi.matrixConstComplexElems;
 
 // Static worker, exported so the vector-angle owner can reuse it. The bridge
 // renames the legacy copy that the not-yet-ported vectorAngle still calls.

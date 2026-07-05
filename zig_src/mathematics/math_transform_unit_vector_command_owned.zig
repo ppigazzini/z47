@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -17,7 +18,7 @@ fn realMatrixElementPtr(matrix: *runtime.real34Matrix_t, index: usize) *runtime.
         return &matrix.matrixElements[index];
     }
 
-    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[index];
+    return &abi.matrixRealElems(matrix)[index];
 }
 
 fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.complex34_t {
@@ -25,7 +26,7 @@ fn complexMatrixElementPtr(matrix: *runtime.complex34Matrix_t, index: usize) *ru
         return &matrix.matrixElements[index];
     }
 
-    return &@as([*]runtime.complex34_t, @ptrCast(matrix.matrixElements))[index];
+    return &abi.matrixComplexElems(matrix)[index];
 }
 
 fn complexMatrixRealPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runtime.real34_t {

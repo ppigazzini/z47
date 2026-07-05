@@ -9,6 +9,7 @@
 
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -17,12 +18,8 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 const std_cross = "\x80\xd7";
 
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]runtime.complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);

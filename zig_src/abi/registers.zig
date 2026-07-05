@@ -63,3 +63,22 @@ pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
     const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
     return @ptrCast(base + @sizeOf(MatrixHeader));
 }
+
+// Matrix element views (M22): reinterpret a matrix header's `.matrixElements`
+// buffer as its typed element array -- the C `real34_t */complex34_t *
+// matrixElements` union field. Takes the header struct by `anytype` so it serves
+// both real34Matrix_t and complex34Matrix_t (each has a `.matrixElements`); these
+// replace the identical realElems/complexElems quartet reimplemented per matrix
+// owner.
+pub inline fn matrixRealElems(matrix: anytype) [*]Real34 {
+    return @ptrCast(matrix.matrixElements);
+}
+pub inline fn matrixConstRealElems(matrix: anytype) [*]const Real34 {
+    return @ptrCast(matrix.matrixElements);
+}
+pub inline fn matrixComplexElems(matrix: anytype) [*]Complex34 {
+    return @ptrCast(matrix.matrixElements);
+}
+pub inline fn matrixConstComplexElems(matrix: anytype) [*]const Complex34 {
+    return @ptrCast(matrix.matrixElements);
+}
