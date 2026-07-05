@@ -1049,7 +1049,7 @@ pub export fn showHideHourGlass() callconv(.c) void {
             offs = 0;
         },
         PGM_RUNNING => {
-            _ = sprintf(&statusMessage, STD_SPACE_HAIR ++ STD_P);
+            abi.fmtBufZ(&statusMessage, STD_SPACE_HAIR ++ STD_P, .{});
             offs = 1;
         },
         else => {
@@ -1521,7 +1521,7 @@ fn mockupSBImpl() callconv(.c) void {
     x = showGlyphY(STD_4, &standardFont, x, 0, vmNormal, true, true, false);
     x = @intCast(X_SSIZE_BEGIN);
     var dd: [6]u8 = undefined;
-    _ = sprintf(&dd, STD_SPACE_6_PER_EM ++ STD_8);
+    abi.fmtBufZ(&dd, STD_SPACE_6_PER_EM ++ STD_8, .{});
     _ = showStringY(&dd, &standardFont, x, L1, vmReverse, false, true);
     _ = showStringY(&dd, &standardFont, x, L2, vmReverse, false, true);
     _ = showStringY(&dd, &standardFont, x, L3, vmReverse, false, true);

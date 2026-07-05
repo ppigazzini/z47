@@ -1148,7 +1148,7 @@ pub export fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u
     number = regShortInteger(regist).*;
 
     if (base <= 1 or base >= 17) {
-        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", @as(c_int, base), "base");
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, base), "base" });
         displayBugScreen(errorMessage);
         base = 10;
     }
@@ -1168,7 +1168,7 @@ pub export fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
             displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
@@ -2209,7 +2209,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
         },
         CM_REGISTER_BROWSER, CM_ASN_BROWSER, CM_FLAG_BROWSER, CM_FONT_BROWSER, CM_PLOT_STAT, CM_LISTXY, CM_GRAPH => {},
         else => {
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgCalcModeWhileProcKey], "fnTo_ms", @as(c_int, calcMode), ".ms");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected calcMode value ({d}) while processing key {s}!", .{ "fnTo_ms", @as(c_int, calcMode), ".ms" });
             displayBugScreen(errorMessage);
         },
     }
@@ -3810,7 +3810,7 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
     }
 
     if ((resultingIntStr[@intCast(stringByteLength(&resultingIntStr) - 1)] == ' ' or resultingIntStr[@intCast(maxI(0, stringByteLength(&resultingIntStr) - 1))] == 0) and denomStr[0] == '/' and cStr[0] == 0) {
-        _ = sprintf(&tmpstr, STD_SUP_1 ++ "%s", &denomStr);
+        abi.fmtBufZ(&tmpstr, STD_SUP_1 ++ "{s}", .{std.mem.sliceTo(denomStr[0..], 0)});
         _ = strcpy(&denomStr, &tmpstr);
     }
 

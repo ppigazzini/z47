@@ -2852,12 +2852,12 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         var tmpq: [16]u8 = undefined;
                         tmpq[0] = 0;
                         switch (item) {
-                            ITM_TIMER_SIGMA_T => _ = sprintf(&tmpq, "%s", concat3("[", STD_SIGMA, "+]")),
+                            ITM_TIMER_SIGMA_T => abi.fmtBufZ(&tmpq, "{s}", .{@as([*:0]const u8, concat3("[", STD_SIGMA, "+]"))}),
                             ITM_TIMER_SIGMA_L => abi.fmtBufZ(&tmpq, "[+]", .{}),
                             ITM_TIMER_R_T => abi.fmtBufZ(&tmpq, "[ENTER]", .{}),
                             ITM_TIMER_R_L => abi.fmtBufZ(&tmpq, "[.]", .{}),
                             ITM_TIMER_R_S, ITM_STOP => abi.fmtBufZ(&tmpq, "[R/S]", .{}),
-                            ITM_TIMER_RESET => _ = sprintf(&tmpq, "%s", concat3("[", STD_LEFT_ARROW, "]")),
+                            ITM_TIMER_RESET => abi.fmtBufZ(&tmpq, "{s}", .{@as([*:0]const u8, concat3("[", STD_LEFT_ARROW, "]"))}),
                             else => {},
                         }
                         var x1: i16 = undefined;

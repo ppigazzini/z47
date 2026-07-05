@@ -1987,7 +1987,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             }
                         }
                     } else if ((tam.mode == TM_CMP) and (param == TEMP_REGISTER_1) and !tam.indirect) {
-                        _ = sprintf(&traceBuffer, if (real34IsZero(reg34(TEMP_REGISTER_1)) != 0) " 0." else " 1.");
+                        abi.fmtBufZ(&traceBuffer, "{s}", .{if (real34IsZero(reg34(TEMP_REGISTER_1)) != 0) @as([*:0]const u8, " 0.") else @as([*:0]const u8, " 1.")});
                     } else {
                         if (param < 99) {
                             if (!tam.indirect) {

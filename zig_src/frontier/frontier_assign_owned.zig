@@ -1333,7 +1333,7 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
                 }
                 if (stringByteLength(name) + 1 > @as(i32, @intCast(@sizeOf(@TypeOf(userMenus[0].menuName))))) {
                     var tmp: [1000]u8 = undefined;
-                    _ = sprintf(&tmp, "The string \"name\" <%s> is too long (%d+1 bytes) to be copied to userMenus[numberOfUserMenus].menuName (%d bytes)\n", name, stringByteLength(name), @as(i32, @intCast(@sizeOf(@TypeOf(userMenus[0].menuName)))));
+                    abi.fmtBufZ(&tmp, "The string \"name\" <{s}> is too long ({d}+1 bytes) to be copied to userMenus[numberOfUserMenus].menuName ({d} bytes)\n", .{ @as([*:0]const u8, name), stringByteLength(name), @as(i32, @intCast(@sizeOf(@TypeOf(userMenus[0].menuName)))) });
                     abortfHost(&tmp);
                 }
             }

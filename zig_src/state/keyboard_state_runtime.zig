@@ -274,8 +274,7 @@ const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 const bugMsgCalcModeWhileProcKey: usize = 1;
 const commonBugScreenMessages = @extern([*c]const u8, .{ .name = "commonBugScreenMessages" });
 pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) void {
-    const fmt = commonBugScreenMessages + bugMsgCalcModeWhileProcKey * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
-    _ = sprintf(errorMessage, fmt, func_name, @as(c_int, calcMode), key_str);
+    abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected calcMode value ({d}) while processing key {s}!", .{ func_name, @as(c_int, calcMode), key_str });
     displayBugScreen(errorMessage);
 }
 
@@ -511,8 +510,7 @@ pub fn modulo(n: i32, d: i32) i32 {
 }
 const bugMsgRbrMode: usize = 8;
 pub fn bugScreenRbrMode(func_name: [*:0]const u8, key_str: [*:0]const u8, mode: u8) void {
-    const fmt = commonBugScreenMessages + bugMsgRbrMode * SIZE_OF_EACH_BUG_SCREEN_MESSAGE;
-    _ = sprintf(errorMessage, fmt, func_name, key_str, @as(c_int, mode));
+    abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected case while processing key {s}! {d} is an unexpected value for rbrMode.", .{ func_name, key_str, @as(c_int, mode) });
     displayBugScreen(errorMessage);
 }
 

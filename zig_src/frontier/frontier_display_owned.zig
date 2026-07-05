@@ -1147,7 +1147,7 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
             _ = strcat(displayString, "s");
         } else {
             _ = strcat(displayString, "?");
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "angle34ToDisplayString2", @as(c_int, mode), "mode");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "angle34ToDisplayString2", @as(c_int, mode), "mode" });
             displayBugScreen(errorMessage);
         }
     }
@@ -2365,7 +2365,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
             displayBugScreen(errorMessage);
         }
     } else if (prependFraction) {
@@ -2377,7 +2377,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "<" ++ STD_SPACE_PUNCTUATION, .{});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
             displayBugScreen(errorMessage);
         }
     } else {
@@ -2552,7 +2552,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
     } else if (baseOverride == 0) {
         base = @intCast(getRegisterTag(regist));
         if (base <= 1 or base >= 17) {
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", @as(c_int, base), "base");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, base), "base" });
             displayBugScreen(errorMessage);
             base = 10;
         }
@@ -2575,7 +2575,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
             displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;

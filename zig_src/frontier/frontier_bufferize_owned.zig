@@ -2744,7 +2744,7 @@ pub export fn closeNim() callconv(.c) void {
                         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                         closeNimWithComplex(reg34(REGISTER_X), regImag34(REGISTER_X));
                     } else {
-                        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgUnexpectedSValue]), "closeNIM", @as(c_int, nimNumberPart), "nimNumberPart");
+                        abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected {s} value!", .{ "closeNIM", @as(c_int, nimNumberPart), "nimNumberPart" });
                         displayBugScreen(errorMessage);
                     }
                 }

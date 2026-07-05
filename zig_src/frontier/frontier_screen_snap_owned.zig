@@ -580,7 +580,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     var regist: i32 = 99;
     while (regist >= 0) : (regist -= 1) {
         ptr += strlen(ptr);
-        _ = sprintf(ptr, LINEBREAK ++ "R%02d = ", regist);
+        abi.fmtCStr(ptr, LINEBREAK ++ "R{d:0>2} = ", .{@as(u32, @intCast(regist))});
         ptr += strlen(ptr);
         copyRegisterToClipboardString(@intCast(regist), ptr, 0);
     }
@@ -589,7 +589,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     regist = numLocal - 1;
     while (regist >= 0) : (regist -= 1) {
         ptr += strlen(ptr);
-        _ = sprintf(ptr, LINEBREAK ++ "R.%02d = ", regist);
+        abi.fmtCStr(ptr, LINEBREAK ++ "R.{d:0>2} = ", .{@as(u32, @intCast(regist))});
         ptr += strlen(ptr);
         copyRegisterToClipboardString(@intCast(FIRST_LOCAL_REGISTER + regist), ptr, 0);
     }
@@ -602,7 +602,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
             ptr += strlen(ptr);
             _ = strcpy(&sumName, StatSumNames[@intCast(sum)].ptr);
 
-            _ = sprintf(ptr, LINEBREAK ++ "SR%02d = ", sum);
+            abi.fmtCStr(ptr, LINEBREAK ++ "SR{d:0>2} = ", .{@as(u32, @intCast(sum))});
             ptr += strlen(ptr);
             stringToUtf8(&sumName, ptr);
             ptr += strlen(ptr);
