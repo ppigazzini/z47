@@ -30,7 +30,6 @@ fn cursorFontId() i8 {
     if (cursorFont == &numericFont) return 3;
     return -1;
 }
-extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
@@ -314,11 +313,13 @@ fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]co
         abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, rd(u8, buffer)) });
         save(v);
     } else if (streq(type_str, "float")) {
-        _ = sprintf(v, "%s:%s:%.20e\n", name, type_str, @as(f64, rd(f32, buffer)));
+        var fb: [64]u8 = undefined;
+        abi.fmtCStr(v, "{s}:{s}:{s}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), abi.fmtExpBuf(&fb, 20, @as(f64, rd(f32, buffer))) });
         changeCommaToPeriod(v);
         save(v);
     } else if (streq(type_str, "double")) {
-        _ = sprintf(v, "%s:%s:%.20e\n", name, type_str, rd(f64, buffer));
+        var fb: [64]u8 = undefined;
+        abi.fmtCStr(v, "{s}:{s}:{s}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), abi.fmtExpBuf(&fb, 20, rd(f64, buffer)) });
         changeCommaToPeriod(v);
         save(v);
     } else if (streq(type_str, "real")) {

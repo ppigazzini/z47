@@ -389,7 +389,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     } else {
                                                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                                                         if (comptime !runtime.is_dmcp_build) {
-                                                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", varCatalogItem);
+                                                            runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
                                                         }
                                                     }
@@ -403,7 +403,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     } else {
                                                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                                                         if (comptime !runtime.is_dmcp_build) {
-                                                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", varCatalogItem);
+                                                            runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
                                                         }
                                                     }
@@ -1672,7 +1672,7 @@ pub fn implementation(comptime runtime: type) type {
                                                 } else {
                                                     runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                                                     if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
-                                                        _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", @as([*c]u8, &label));
+                                                        runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{runtime.sliceTo(@as([*c]const u8, &label), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
                                                     }
                                                 }
@@ -1685,7 +1685,7 @@ pub fn implementation(comptime runtime: type) type {
                                                 } else {
                                                     runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                                                     if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
-                                                        _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", @as([*c]u8, &varName));
+                                                        runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{runtime.sliceTo(@as([*c]const u8, &varName), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
                                                     }
                                                 }
@@ -1743,7 +1743,7 @@ pub fn implementation(comptime runtime: type) type {
                                 },
 
                                 else => {
-                                    _ = runtime.sprintf(runtime.errorMessage, "In function processKeyAction: %u is an unexpected value while processing calcMode!", @as(c_uint, runtime.calcMode));
+                                    runtime.fmtCStr(runtime.errorMessage, "In function processKeyAction: {d} is an unexpected value while processing calcMode!", .{@as(u32, runtime.calcMode)});
                                     runtime.displayBugScreen(runtime.errorMessage);
                                 },
                             }
@@ -2357,11 +2357,11 @@ pub fn implementation(comptime runtime: type) type {
                         const dtnX = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_X)), true, false);
                         const dtnY = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_Y)), true, false);
                         if (!polarOk and runtime.getSystemFlag(runtime.FLAG_POLAR)) {
-                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with %s(%s) in X and %s(%s) in Y!", dtnX, runtime.getRegisterTagName(runtime.REGISTER_X, false), dtnY, runtime.getRegisterTagName(runtime.REGISTER_Y, false));
+                            runtime.fmtCStr(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with {s}({s}) in X and {s}({s}) in Y!", .{ @as([*:0]const u8, dtnX), @as([*:0]const u8, runtime.getRegisterTagName(runtime.REGISTER_X, false)), @as([*:0]const u8, dtnY), @as([*:0]const u8, runtime.getRegisterTagName(runtime.REGISTER_Y, false)) });
                         } else if (!rectOk and !runtime.getSystemFlag(runtime.FLAG_POLAR)) {
-                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Rectangular complex number with %s(%s) in X and %s(%s) in Y!", dtnX, runtime.getRegisterTagName(runtime.REGISTER_X, false), dtnY, runtime.getRegisterTagName(runtime.REGISTER_Y, false));
+                            runtime.fmtCStr(runtime.errorMessage, "You cannot use CC or COMPLEX to create a Rectangular complex number with {s}({s}) in X and {s}({s}) in Y!", .{ @as([*:0]const u8, dtnX), @as([*:0]const u8, runtime.getRegisterTagName(runtime.REGISTER_X, false)), @as([*:0]const u8, dtnY), @as([*:0]const u8, runtime.getRegisterTagName(runtime.REGISTER_Y, false)) });
                         } else {
-                            _ = runtime.sprintf(runtime.errorMessage, "You cannot use CC or COMPLEX with %s in X and %s in Y!", dtnX, dtnY);
+                            runtime.fmtCStr(runtime.errorMessage, "You cannot use CC or COMPLEX with {s} in X and {s} in Y!", .{ @as([*:0]const u8, dtnX), @as([*:0]const u8, dtnY) });
                             runtime.moreInfoOnError("In function fnKeyCC:", runtime.errorMessage, null, null);
                         }
                     }

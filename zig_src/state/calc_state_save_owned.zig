@@ -69,7 +69,6 @@ comptime {
 
 // --- libc / core helpers ---
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
-extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
@@ -445,7 +444,20 @@ pub fn writeSaveSections() void {
 // for the value portion (e.g. "%u\n"); args are the already-promoted variadic
 // arguments matching it.
 fn saveField(comptime name: []const u8, comptime value_format: []const u8, args: anytype) void {
-    _ = @call(.auto, sprintf, .{ b(), name ++ "\n" ++ value_format } ++ args);
+    // M24: the only value formats in use are "%u\n"/"%d\n" (plain decimal; args
+    // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n") and
+    // "%f\n" (== "%.6f\n", routed through the byte-exact fixed formatter). A new
+    // spec trips the @compileError rather than silently mis-formatting the save.
+    if (comptime std.mem.eql(u8, value_format, "%f\n")) {
+        var fb: [512]u8 = undefined;
+        abi.fmtCStr(b(), name ++ "\n{s}\n", .{abi.fmtFixedBuf(&fb, 6, args[0])});
+    } else {
+        const zfmt = comptime if (std.mem.eql(u8, value_format, "%u\n") or std.mem.eql(u8, value_format, "%d\n"))
+            "{d}\n"
+        else
+            @compileError("saveField: unhandled value_format \"" ++ value_format ++ "\"");
+        abi.fmtCStr(b(), name ++ "\n" ++ zfmt, args);
+    }
     save(b());
 }
 

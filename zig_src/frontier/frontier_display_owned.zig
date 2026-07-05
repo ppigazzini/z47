@@ -450,7 +450,6 @@ extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 
 // real34 / real arithmetic = decQuad/decNumber (libdecnumber).
 extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;

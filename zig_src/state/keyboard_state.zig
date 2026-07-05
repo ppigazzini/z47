@@ -613,7 +613,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                     } else {
                         runtime.displayCalcErrorMessage(runtime.ERROR_UNDEF_SOURCE_VAR, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                         if (comptime !runtime.is_dmcp_build) {
-                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named variable", funcParam);
+                            runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{@as([*:0]const u8, funcParam)});
                             runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
                         }
                     }
@@ -628,7 +628,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                     } else {
                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                         if (comptime !runtime.is_dmcp_build) {
-                            _ = runtime.sprintf(runtime.errorMessage, "string '%s' is not a named label", funcParam);
+                            runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{@as([*:0]const u8, funcParam)});
                             runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
                         }
                     }

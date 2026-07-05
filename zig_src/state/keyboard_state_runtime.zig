@@ -353,6 +353,9 @@ const softmenuStack_t = abi.SoftmenuStack;
 const softmenu_t = abi.Softmenu;
 const abi = @import("abi"); // L1 shared bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
+/// M24: byte-exact sprintf replacement for the errorMessage hint writers.
+pub const fmtCStr = abi.fmtCStr;
+pub const sliceTo = std.mem.sliceTo;
 
 pub const MNU_TAMALPHA: i16 = 1913;
 pub const MNU_REG: i16 = 2066;
