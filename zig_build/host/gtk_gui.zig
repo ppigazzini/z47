@@ -44,7 +44,7 @@ pub fn addToModule(
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
 
-    // Options consumed by gtk_c47_main_owned.zig (the ported main()): the
+    // Options consumed by gtk_c47_main.zig (the ported main()): the
     // compile-time calc model + the version stamps shown by --help.
     const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const gtk_options = b.addOptions();

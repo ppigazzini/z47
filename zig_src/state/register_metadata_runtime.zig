@@ -1,13 +1,13 @@
 const build_options = @import("register_metadata_build_options");
-const clear_sigma_owned = @import("register_metadata_clear_sigma_owned.zig");
-const descriptor_storage = @import("register_descriptor_storage_owned.zig");
-const named_menu_owned = @import("register_metadata_named_menu_owned.zig");
-const size_owned = @import("register_metadata_size_owned.zig");
+const clear_sigma_owned = @import("register_metadata_clear_sigma.zig");
+const descriptor_storage = @import("register_descriptor_storage.zig");
+const named_menu_owned = @import("register_metadata_named_menu.zig");
+const size_owned = @import("register_metadata_size.zig");
 const stack_runtime = @import("stack_runtime.zig");
-const tables_owned = @import("register_metadata_tables_owned.zig");
-const confirmation_owned = @import("register_metadata_confirmation_owned.zig");
-const error_owned = @import("register_metadata_error_owned.zig");
-const payload_bytes_owned = @import("register_metadata_payload_bytes_owned.zig");
+const tables_owned = @import("register_metadata_tables.zig");
+const confirmation_owned = @import("register_metadata_confirmation.zig");
+const error_owned = @import("register_metadata_error.zig");
+const payload_bytes_owned = @import("register_metadata_payload_bytes.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and

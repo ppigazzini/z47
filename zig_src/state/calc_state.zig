@@ -1,9 +1,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const load_owned = @import("calc_state_load_owned.zig");
+const load_owned = @import("calc_state_load.zig");
 const runtime = @import("calc_state_runtime.zig");
-const save_owned = @import("calc_state_save_owned.zig");
-const restore_owned = @import("calc_state_restore_owned.zig");
+const save_owned = @import("calc_state_save.zig");
+const restore_owned = @import("calc_state_restore.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 

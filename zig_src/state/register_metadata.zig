@@ -1,9 +1,9 @@
-const descriptor_owned = @import("register_metadata_descriptor_owned.zig");
-const local_registers_owned = @import("register_metadata_local_registers_owned.zig");
-const payload_owned = @import("register_metadata_payload_owned.zig");
-const reallocate_owned = @import("register_metadata_reallocate_owned.zig");
+const descriptor_owned = @import("register_metadata_descriptor.zig");
+const local_registers_owned = @import("register_metadata_local_registers.zig");
+const payload_owned = @import("register_metadata_payload.zig");
+const reallocate_owned = @import("register_metadata_reallocate.zig");
 const _registers_compat_exports = @import("registers_compat_exports.zig");
-const variables_owned = @import("register_metadata_variables_owned.zig");
+const variables_owned = @import("register_metadata_variables.zig");
 const runtime = @import("register_metadata_runtime.zig");
 
 comptime {

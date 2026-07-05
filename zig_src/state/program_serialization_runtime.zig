@@ -1,4 +1,4 @@
-const io_owned = @import("program_serialization_io_owned.zig");
+const io_owned = @import("program_serialization_io.zig");
 
 pub const use_fake_harness_surface = io_owned.use_fake_program_serialization_harness_surface;
 

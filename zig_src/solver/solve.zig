@@ -1,14 +1,14 @@
 const runtime = @import("solve_runtime.zig");
 
 comptime {
-    _ = @import("tvm_owned.zig");
-    _ = @import("sumprod_owned.zig");
-    _ = @import("isumprod_owned.zig");
-    _ = @import("differentiate_owned.zig");
+    _ = @import("tvm.zig");
+    _ = @import("sumprod.zig");
+    _ = @import("isumprod.zig");
+    _ = @import("differentiate.zig");
     _ = @import("solve_owned.zig");
-    _ = @import("integrate_owned.zig");
-    _ = @import("equation_owned.zig");
-    _ = @import("graph_owned.zig");
+    _ = @import("integrate.zig");
+    _ = @import("equation.zig");
+    _ = @import("graph.zig");
 }
 
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {

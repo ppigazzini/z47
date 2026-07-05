@@ -1,17 +1,17 @@
-const shortcut_owned = @import("gtk_gui_shortcut_owned.zig");
-const events_owned = @import("gtk_gui_events_owned.zig");
-const setup_owned = @import("gtk_gui_setup_owned.zig");
-const shell_owned = @import("gtk_gui_shell_owned.zig");
-const keymap_owned = @import("gtk_gui_keymap_owned.zig");
-const label_owned = @import("gtk_gui_label_owned.zig");
-const css_owned = @import("gtk_gui_css_owned.zig");
-const display_owned = @import("gtk_gui_display_owned.zig");
-const keypress_owned = @import("gtk_gui_keypress_owned.zig");
-const setup_ui_owned = @import("gtk_gui_setup_ui_owned.zig");
+const shortcut_owned = @import("gtk_gui_shortcut.zig");
+const events_owned = @import("gtk_gui_events.zig");
+const setup_owned = @import("gtk_gui_setup.zig");
+const shell_owned = @import("gtk_gui_shell.zig");
+const keymap_owned = @import("gtk_gui_keymap.zig");
+const label_owned = @import("gtk_gui_label.zig");
+const css_owned = @import("gtk_gui_css.zig");
+const display_owned = @import("gtk_gui_display.zig");
+const keypress_owned = @import("gtk_gui_keypress.zig");
+const setup_ui_owned = @import("gtk_gui_setup_ui.zig");
 // The ported GTK entry point main() + program globals (was c47-gtk.c via the
 // retired gtk_c47_gtk_legacy.c shim).
 comptime {
-    _ = @import("gtk_c47_main_owned.zig");
+    _ = @import("gtk_c47_main.zig");
 }
 
 extern fn gtk_init(argc: *c_int, argv: [*]?[*:0]u8) void;

@@ -1,0 +1,1039 @@
+// SAVE side of the backup.cfg raw RAM dump (saveRestoreCalcState.c saveCalc,
+// ~403-731). Generated faithful port: drives the ~200-field dump sequence in Zig,
+// calling the Zig typed value serializer (saveStateValue, below) + the progmem
+// pointer math. Verified by the parity harness Check C (Zig saveCalc -> C
+// restoreCalc -> state preserved). The restore half stays C this phase.
+
+const abi = @import("abi");
+const std = @import("std");
+const progmem = @import("calc_state_progmem.zig");
+const build_options = @import("calc_state_build_options");
+const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
+
+const FILE_OK: c_int = 1;
+const ioPathBackup: c_int = 4; const ioModeWrite: c_int = 1;
+const BACKUP_VERSION: u32 = 1015; // C saveRestoreBackup.c:14 (FLAG_SIGZEROS bump)
+const INVALID_VARIABLE: i16 = 2199; const CM_CONFIRMATION: u8 = 11;
+const USER_C47: u16 = 46; const USER_DM42: u16 = 45; const USER_R47: u16 = 66;
+const USER_R47f_g: u16=61; const USER_R47fg_g: u16=64; const USER_R47fg_bk: u16=63; const USER_R47bk_fg: u16=62;
+const FREE_MEM_REGION_SIZE: u32 = 4; const REGISTER_HEADER_SIZE: u32 = 4; const NUMBER_OF_GLOBAL_REGISTERS: u32 = 137;
+
+const Font = opaque {};
+extern const tinyFont: Font;
+extern const standardFont: Font;
+extern const numericFont: Font;
+extern var cursorFont: ?*const Font;
+fn cursorFontId() i8 {
+    if (cursorFont == &tinyFont) return 1;
+    if (cursorFont == &standardFont) return 2;
+    if (cursorFont == &numericFont) return 3;
+    return -1;
+}
+extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
+extern fn strlen(s: [*c]const u8) usize;
+extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
+extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
+extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
+extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToString
+extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
+extern fn decQuadIsInfinite(src: [*c]const u8) u32; // real34IsInfinite
+const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
+extern fn ioFileOpen(path: c_int, mode: c_int) c_int; extern fn ioFileClose() void;
+extern fn refreshScreen(source: u16) void;
+extern var calcModel: u8; extern var calcMode: u8; extern var previousCalcMode: u8;
+extern var graphVariabl1: i16;
+extern var freeMemoryRegions: ?*anyopaque; // pointer on host (NEW_HW)
+extern var allocatedMemoryRegions: [4]u8; // array on host (!DMCP_BUILD) -> &[0]
+extern var numberOfFreeMemoryRegions: i32; extern var numberOfAllocatedMemoryRegions: i32;
+extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
+extern var ram: [*c]u32;
+extern var globalFlags: [16]u8;
+// These four are `char *` POINTERS in c47.h (errorMessage/aimBuffer/nimBufferDisplay/
+// tamBuffer), not arrays. They must be declared as pointers so that `&X[0]` in the
+// sv()/rv() calls resolves to the pointer VALUE (the heap buffer C dumps/restores),
+// exactly as C passes the bare pointer. Declaring them as `[N]u8` arrays made `&X[0]`
+// the address of the pointer slot itself, so a 512-byte errorMessage restore wrote
+// across adjacent globals (incl. labelList) and crashed startup. asmBuffer stays an
+// array because c47.h declares `char asmBuffer[5]`.
+extern var errorMessage: [*c]u8;
+extern var aimBuffer: [*c]u8;
+extern var nimBufferDisplay: [*c]u8;
+extern var tamBuffer: [*c]u8;
+extern var asmBuffer: [5]u8;
+extern var oldTime: [8]u8;
+extern var dateTimeString: [12]u8;
+extern var softmenuStack: [64]u8;
+extern var kbd_usr: [666]u8;
+extern var userMenuItems: [360]u8;
+extern var userAlphaItems: [360]u8;
+extern var lastTemp: [16]u8;
+extern var lastStateFileOpened: [32]u8;
+extern var lastI: [2]u8;
+extern var lastJ: [2]u8;
+extern var lastFunc: [2]u8;
+extern var lastParam: [2]u8;
+extern var tam: [64]u8;
+extern var rbrRegister: [2]u8;
+extern var numberOfNamedVariables: [2]u8;
+extern var xCursor: [4]u8;
+extern var yCursor: [4]u8;
+extern var firstGregorianDay: [4]u8;
+extern var denMax: [4]u8;
+extern var lastDenominator: [4]u8;
+extern var currentRegisterBrowserScreen: [2]u8;
+extern var currentFntScr: [1]u8;
+extern var currentFlgScr: [1]u8;
+extern var displayFormat: [1]u8;
+extern var displayFormatDigits: [1]u8;
+extern var timeDisplayFormatDigits: [1]u8;
+extern var shortIntegerWordSize: [1]u8;
+extern var significantDigits: [1]u8;
+extern var fractionDigits: [1]u8;
+extern var shortIntegerMode: [1]u8;
+extern var currentAngularMode: [4]u8;
+extern var scrLock: [1]u8;
+extern var roundingMode: [1]u8;
+extern var nextChar: [1]u8;
+extern var alphaCase: [1]u8;
+extern var hourGlassIconEnabled: [1]u8;
+extern var watchIconEnabled: [1]u8;
+extern var serialIOIconEnabled: [1]u8;
+extern var printerIconEnabled: [1]u8;
+extern var programRunStop: [1]u8;
+extern var entryStatus: [1]u8;
+extern var cursorEnabled: [1]u8;
+extern var rbr1stDigit: [1]u8;
+extern var shiftF: [1]u8;
+extern var shiftG: [1]u8;
+extern var rbrMode: [1]u8;
+extern var showContent: [1]u8;
+extern var numScreensNumericFont: [1]u8;
+extern var numLinesNumericFont: [1]u8;
+extern var numScreensStandardFont: [1]u8;
+extern var numLinesStandardFont: [1]u8;
+extern var numScreensTinyFont: [1]u8;
+extern var numLinesTinyFont: [1]u8;
+extern var lastErrorCode: [1]u8;
+extern var previousErrorCode: [1]u8;
+extern var nimNumberPart: [1]u8;
+extern var displayStack: [1]u8;
+extern var hexDigits: [1]u8;
+extern var errorMessageRegisterLine: [2]u8;
+extern var shortIntegerMask: [8]u8;
+extern var shortIntegerSignBit: [8]u8;
+extern var temporaryInformation: [1]u8;
+extern var glyphNotFound: [24]u8;
+extern var funcOK: [1]u8;
+extern var screenChange: [1]u8;
+extern var exponentSignLocation: [2]u8;
+extern var denominatorLocation: [2]u8;
+extern var imaginaryExponentSignLocation: [2]u8;
+extern var imaginaryMantissaSignLocation: [2]u8;
+extern var lineTWidth: [2]u8;
+extern var lastIntegerBase: [4]u8;
+extern var c47MemInBlocks: [8]u8;
+extern var gmpMemInBytes: [8]u8;
+extern var catalog: [2]u8;
+extern var lastCatalogPosition: [46]u8;
+extern var displayValueX: [80]u8;
+extern var pcg32_global: [16]u8;
+extern var exponentLimit: [2]u8;
+extern var exponentHideLimit: [2]u8;
+extern var keyActionProcessed: [1]u8;
+extern var systemFlags0: [8]u8;
+extern var systemFlags1: [8]u8;
+extern var savedSystemFlags0: [8]u8;
+extern var savedSystemFlags1: [8]u8;
+extern var thereIsSomethingToUndo: [1]u8;
+extern var freeProgramBytes: [2]u8;
+extern var firstDisplayedLocalStepNumber: [2]u8;
+extern var numberOfLabels: [2]u8;
+extern var numberOfPrograms: [2]u8;
+extern var currentLocalStepNumber: [2]u8;
+extern var currentProgramNumber: [2]u8;
+extern var lastProgramListEnd: [1]u8;
+extern var programListEnd: [1]u8;
+extern var allSubroutineLevels: [4]u8;
+extern var pemCursorIsZerothStep: [1]u8;
+extern var skippedStackLines: [1]u8;
+extern var iterations: [1]u8;
+extern var numberOfTamMenusToPop: [2]u8;
+extern var lrSelection: [2]u8;
+extern var lrSelectionUndo: [2]u8;
+extern var amortP1: [2]u8;
+extern var amortP2: [2]u8;
+extern var lrChosen: [2]u8;
+extern var lrChosenUndo: [2]u8;
+extern var lastPlotMode: [2]u8;
+extern var plotSelection: [2]u8;
+extern var graph_dx: [4]u8;
+extern var graph_dy: [4]u8;
+extern var roundedTicks: [1]u8;
+extern var PLOT_INTG: [1]u8;
+extern var PLOT_DIFF: [1]u8;
+extern var PLOT_RMS: [1]u8;
+extern var PLOT_SHADE: [1]u8;
+extern var PLOT_AXIS: [1]u8;
+extern var PLOT_ZMY: [1]u8;
+extern var PLOT_ZOOM: [1]u8;
+extern var plotmode: [1]u8;
+extern var tick_int_x: [4]u8;
+extern var tick_int_y: [4]u8;
+extern var x_min: [4]u8;
+extern var x_max: [4]u8;
+extern var y_min: [4]u8;
+extern var y_max: [4]u8;
+extern var xzero: [4]u8;
+extern var yzero: [4]u8;
+extern var regStatsXY: [2]u8;
+extern var matrixIndex: [2]u8;
+extern var currentViewRegister: [2]u8;
+extern var currentSolverStatus: [2]u8;
+extern var currentSolverProgram: [2]u8;
+extern var currentSolverVariable: [2]u8;
+extern var numberOfFormulae: [2]u8;
+extern var currentFormula: [2]u8;
+extern var numberOfUserMenus: [2]u8;
+extern var currentUserMenu: [2]u8;
+extern var userKeyLabelSize: [2]u8;
+extern var timerCraAndDeciseconds: [1]u8;
+extern var timerValue: [4]u8;
+extern var timerTotalTime: [4]u8;
+extern var currentInputVariable: [2]u8;
+extern var SAVED_SIGMA_LASTX: [60]u8;
+extern var SAVED_SIGMA_LASTY: [60]u8;
+extern var SAVED_SIGMA_lastAddRem: [1]u8;
+extern var currentMvarLabel: [2]u8;
+extern var plotStatMx: [8]u8;
+extern var drawHistogram: [1]u8;
+extern var statMx: [8]u8;
+extern var lrSelectionHistobackup: [2]u8;
+extern var lrChosenHistobackup: [2]u8;
+extern var loBinR: [16]u8;
+extern var nBins: [16]u8;
+extern var hiBinR: [16]u8;
+extern var histElementXorY: [2]u8;
+extern var screenUpdatingMode: [1]u8;
+extern var Norm_Key_00: [64]u8;
+extern var Input_Default: [1]u8;
+extern var T_cursorPos: [2]u8;
+extern var multiEdLines: [1]u8;
+extern var current_cursor_x: [2]u8;
+extern var current_cursor_y: [2]u8;
+extern var xMultiLineEdOffset: [1]u8;
+extern var yMultiLineEdOffset: [1]u8;
+extern var showRegis: [2]u8;
+extern var overrideShowBottomLine: [1]u8;
+extern var displayStackSHOIDISP: [1]u8;
+extern var ListXYposition: [2]u8;
+extern var DRG_Cycling: [1]u8;
+extern var lastFlgScr: [1]u8;
+extern var displayAIMbufferoffset: [2]u8;
+extern var bcdDisplaySign: [1]u8;
+extern var DM_Cycling: [1]u8;
+extern var LongPressM: [1]u8;
+extern var LongPressF: [1]u8;
+extern var currentAsnScr: [1]u8;
+extern var gapItemLeft: [2]u8;
+extern var gapItemRight: [2]u8;
+extern var gapItemRadix: [2]u8;
+extern var lastCenturyHighUsed: [2]u8;
+extern var grpGroupingLeft: [1]u8;
+extern var grpGroupingGr1LeftOverflow: [1]u8;
+extern var grpGroupingGr1Left: [1]u8;
+extern var grpGroupingRight: [1]u8;
+extern var firstDayOfWeek: [1]u8;
+extern var firstWeekOfYearDay: [1]u8;
+extern var dispBase: [1]u8;
+extern var printerState: [64]u8;
+extern var allNamedVariables: [*c]u8;
+extern var allFormulae: [*c]u8;
+extern var userMenus: [*c]u8;
+extern var userKeyLabel: [*c]u8;
+extern var statisticalSumsPointer: [*c]u8;
+extern var savedStatisticalSumsPointer: [*c]u8;
+extern var labelList: [*c]u8;
+extern var programList: [*c]u8;
+extern var currentSubroutineLevelData: [*c]u8;
+extern var currentLocalFlags: [*c]u8;
+extern var currentLocalRegisters: [*c]u8;
+extern var beginOfProgramMemory: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
+extern var firstDisplayedStep: [*c]u8;
+extern var currentStep: [*c]u8;
+
+fn geometry() progmem.Geometry { return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW, .old_hw = state_old_hw }; }
+fn streq(a: [*c]const u8, b: [*c]const u8) bool {
+    return strcmp(a, b) == 0;
+}
+fn rd(comptime T: type, buffer: ?*const anyopaque) T {
+    return @as(*const T, @ptrCast(@alignCast(buffer))).*;
+}
+fn save(bytes: [*c]const u8) void {
+    ioFileWrite(bytes, @intCast(strlen(bytes)));
+}
+// Replace ',' with '.' after the second ':' (locale-independent floats).
+fn changeCommaToPeriod(str: [*c]u8) void {
+    var s = strchr(str, ':') + 1;
+    s = strchr(s, ':') + 1;
+    while (s[0] != 0) : (s += 1) {
+        if (s[0] == ',') s[0] = '.';
+    }
+}
+
+// Typed value serializer (saveRestoreCalcState.c saveStateValue, host-only).
+fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+    var value: [200]u8 = undefined;
+    const v: [*c]u8 = &value[0];
+    const buf: [*c]const u8 = @ptrCast(buffer);
+    if (streq(type_str, "int64")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_long, @intCast(rd(i64, buffer))) });
+        save(v);
+    } else if (streq(type_str, "uint64")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_ulong, @intCast(rd(u64, buffer))) });
+        save(v);
+    } else if (streq(type_str, "int32")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_int, rd(i32, buffer)) });
+        save(v);
+    } else if (streq(type_str, "uint32")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, rd(u32, buffer)) });
+        save(v);
+    } else if (streq(type_str, "int16")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_int, rd(i16, buffer)) });
+        save(v);
+    } else if (streq(type_str, "uint16")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, rd(u16, buffer)) });
+        save(v);
+    } else if (streq(type_str, "int8")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_int, rd(i8, buffer)) });
+        save(v);
+    } else if (streq(type_str, "uint8")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, rd(u8, buffer)) });
+        save(v);
+    } else if (streq(type_str, "float")) {
+        var fb: [64]u8 = undefined;
+        abi.fmtCStr(v, "{s}:{s}:{s}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), abi.fmtExpBuf(&fb, 20, @as(f64, rd(f32, buffer))) });
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "double")) {
+        var fb: [64]u8 = undefined;
+        abi.fmtCStr(v, "{s}:{s}:{s}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), abi.fmtExpBuf(&fb, 20, rd(f64, buffer)) });
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "real")) {
+        abi.fmtCStr(v, "{s}:{s}:", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str) });
+        if (buf[8] & DECINF != 0) {
+            _ = strcpy(v + strlen(v), if (buf[8] & 0x80 != 0) "-9.9e9999999" else "9.9e9999999");
+        } else {
+            _ = decNumberToString(buf, v + strlen(v));
+        }
+        _ = strcat(v, "\n");
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "real34")) {
+        abi.fmtCStr(v, "{s}:{s}:", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str) });
+        if (decQuadIsInfinite(buf) != 0) {
+            _ = strcpy(v + strlen(v), if (buf[15] & 0x80 != 0) "-9.9e9999" else "9.9e9999");
+        } else {
+            _ = decQuadToString(buf, v + strlen(v));
+        }
+        _ = strcat(v, "\n");
+        changeCommaToPeriod(v);
+        save(v);
+    } else if (streq(type_str, "bool")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, rd(u8, buffer)) });
+        save(v);
+    } else if (streq(type_str, "c47Ptr")) {
+        const p = rd(u32, buffer);
+        abi.fmtCStr(v, "{s}:{s}:{d} (0x{x:0>5})\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, p), @as(c_uint, 4 * p) });
+        save(v);
+    } else if (streq(type_str, "hexDump")) {
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_uint, size) });
+        save(v);
+        var addr: u32 = 0;
+        while (addr < size) : (addr += 32) {
+            abi.fmtCStr(v, "{x:0>5}  ", .{ @as(c_uint, addr) });
+            var b: u32 = 0;
+            while (b < 32) : (b += 1) {
+                if (addr + b < size) {
+                    abi.fmtCStr(v + 7 + 3 * b, "{x:0>2} ", .{ @as(c_uint, buf[addr + b]) });
+                } else {
+                    _ = strcpy(v + 7 + 3 * b, "   ");
+                }
+            }
+            _ = strcpy(v + 103, " '");
+            b = 0;
+            while (b < 32) : (b += 1) {
+                if (addr + b < size) {
+                    const ch = buf[addr + b];
+                    abi.fmtCStr(v + 105 + b, "{c}", .{ @as(u8, @intCast(@as(c_int, if (ch >= ' ' and ch != 0x7f) ch else ' '))) });
+                } else {
+                    _ = strcpy(v + 105 + b, " ");
+                }
+            }
+            _ = strcpy(v + 137, "'\n");
+            save(v);
+        }
+    }
+}
+fn c47ptr(p: [*c]const u8) u32 { return progmem.toC47memptr(geometry(), @intFromPtr(p)); }
+fn offWithin(p: [*c]const u8) u32 { return progmem.offsetWithinBlock(geometry(), @intFromPtr(p)); }
+
+pub fn saveCalc() void {
+    const ok = (calc_model_user_id == USER_R47 and (calcModel == USER_R47f_g or calcModel == USER_R47fg_g or calcModel == USER_R47fg_bk or calcModel == USER_R47bk_fg)) or
+        (calc_model_user_id == USER_C47 and (calcModel == USER_C47 or calcModel == USER_DM42));
+    if (!ok) return;
+    if (ioFileOpen(ioPathBackup, ioModeWrite) != FILE_OK) return;
+    if (calcMode == CM_CONFIRMATION) { calcMode = previousCalcMode; refreshScreen(90); }
+    var bv: u32 = BACKUP_VERSION; sv(&bv, 4, "backupVersion", "uint32");
+    var rsib: u32 = geometry().ram_size_in_blocks; sv(&rsib, 4, "ramSizeInBlocks", "uint32");
+    sv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
+    sv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
+    sv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
+    sv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
+    sv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
+    sv(&calcMode, 1, "calcMode", "uint8"); sv(&previousCalcMode, 1, "previousCalcMode", "uint8"); sv(&calcModel, 1, "calcModel", "uint8");
+    sv(&globalFlags[0], 16, "globalFlags", "hexDump");
+    sv(&errorMessage[0], 512, "errorMessage", "hexDump");
+    sv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
+    sv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
+    sv(&tamBuffer[0], 32, "tamBuffer", "hexDump");
+    sv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
+    sv(&oldTime[0], 8, "oldTime", "hexDump");
+    sv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
+    sv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    sv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
+    sv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
+    sv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
+    sv(&lastTemp[0], 16, "lastTemp", "hexDump");
+    sv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    sv(&lastI[0], 2, "lastI", "int16");
+    sv(&lastJ[0], 2, "lastJ", "int16");
+    sv(&lastFunc[0], 2, "lastFunc", "int16");
+    sv(&lastParam[0], 2, "lastParam", "int16");
+    sv(&tam[0], 2, "tam.mode", "uint16");
+    sv(&tam[2], 2, "tam.function", "int16");
+    sv(&tam[4], 1, "tam.alpha", "bool");
+    sv(&tam[6], 2, "tam.currentOperation", "int16");
+    sv(&tam[8], 1, "tam.dot", "bool");
+    sv(&tam[9], 1, "tam.indirect", "bool");
+    sv(&tam[10], 2, "tam.digitsSoFar", "int16");
+    sv(&tam[14], 2, "tam.value", "int16");
+    sv(&tam[16], 2, "tam.min", "int16");
+    sv(&tam[18], 2, "tam.max", "int16");
+    sv(&rbrRegister[0], 2, "rbrRegister", "int16");
+    sv(&numberOfNamedVariables[0], 2, "numberOfNamedVariables", "int16");
+    sv(&xCursor[0], 4, "xCursor", "uint32");
+    sv(&yCursor[0], 4, "yCursor", "uint32");
+    sv(&firstGregorianDay[0], 4, "firstGregorianDay", "uint32");
+    sv(&denMax[0], 4, "denMax", "uint32");
+    sv(&lastDenominator[0], 4, "lastDenominator", "uint32");
+    sv(&currentRegisterBrowserScreen[0], 2, "currentRegisterBrowserScreen", "int16");
+    sv(&currentFntScr[0], 1, "currentFntScr", "uint8");
+    sv(&currentFlgScr[0], 1, "currentFlgScr", "uint8");
+    sv(&displayFormat[0], 1, "displayFormat", "uint8");
+    sv(&displayFormatDigits[0], 1, "displayFormatDigits", "uint8");
+    sv(&timeDisplayFormatDigits[0], 1, "timeDisplayFormatDigits", "uint8");
+    sv(&shortIntegerWordSize[0], 1, "shortIntegerWordSize", "uint8");
+    sv(&significantDigits[0], 1, "significantDigits", "uint8");
+    sv(&fractionDigits[0], 1, "fractionDigits", "uint8");
+    sv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
+    sv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
+    sv(&scrLock[0], 1, "scrLock", "uint8");
+    sv(&roundingMode[0], 1, "roundingMode", "uint8");
+    sv(&nextChar[0], 1, "nextChar", "uint8");
+    sv(&alphaCase[0], 1, "alphaCase", "uint8");
+    sv(&hourGlassIconEnabled[0], 1, "hourGlassIconEnabled", "bool");
+    sv(&watchIconEnabled[0], 1, "watchIconEnabled", "bool");
+    sv(&serialIOIconEnabled[0], 1, "serialIOIconEnabled", "bool");
+    sv(&printerIconEnabled[0], 1, "printerIconEnabled", "bool");
+    sv(&programRunStop[0], 1, "programRunStop", "uint8");
+    sv(&entryStatus[0], 1, "entryStatus", "uint8");
+    sv(&cursorEnabled[0], 1, "cursorEnabled", "uint8");
+    sv(&rbr1stDigit[0], 1, "rbr1stDigit", "bool");
+    sv(&shiftF[0], 1, "shiftF", "bool");
+    sv(&shiftG[0], 1, "shiftG", "bool");
+    sv(&rbrMode[0], 1, "rbrMode", "uint8");
+    sv(&showContent[0], 1, "showContent", "bool");
+    sv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
+    sv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
+    sv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
+    sv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
+    sv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");
+    sv(&numLinesTinyFont[0], 1, "numLinesTinyFont", "uint8");
+    sv(&lastErrorCode[0], 1, "lastErrorCode", "uint8");
+    sv(&previousErrorCode[0], 1, "previousErrorCode", "uint8");
+    sv(&nimNumberPart[0], 1, "nimNumberPart", "uint8");
+    sv(&displayStack[0], 1, "displayStack", "uint8");
+    sv(&hexDigits[0], 1, "hexDigits", "uint8");
+    sv(&errorMessageRegisterLine[0], 2, "errorMessageRegisterLine", "int16");
+    sv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
+    sv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
+    sv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
+    sv(&glyphNotFound[0], 24, "glyphNotFound", "hexDump");
+    sv(&funcOK[0], 1, "funcOK", "bool");
+    sv(&screenChange[0], 1, "screenChange", "bool");
+    sv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
+    sv(&denominatorLocation[0], 2, "denominatorLocation", "int16");
+    sv(&imaginaryExponentSignLocation[0], 2, "imaginaryExponentSignLocation", "int16");
+    sv(&imaginaryMantissaSignLocation[0], 2, "imaginaryMantissaSignLocation", "int16");
+    sv(&lineTWidth[0], 2, "lineTWidth", "int16");
+    sv(&lastIntegerBase[0], 4, "lastIntegerBase", "uint32");
+    sv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
+    sv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
+    sv(&catalog[0], 2, "catalog", "int16");
+    sv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+    sv(&displayValueX[0], 80, "displayValueX", "hexDump");
+    sv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
+    sv(&exponentLimit[0], 2, "exponentLimit", "int16");
+    sv(&exponentHideLimit[0], 2, "exponentHideLimit", "int16");
+    sv(&keyActionProcessed[0], 1, "keyActionProcessed", "bool");
+    sv(&systemFlags0[0], 8, "systemFlags", "uint64");
+    sv(&systemFlags1[0], 8, "systemFlags1", "uint64");
+    sv(&savedSystemFlags0[0], 8, "savedSystemFlags", "uint64");
+    sv(&savedSystemFlags1[0], 8, "savedSystemFlags1", "uint64");
+    sv(&thereIsSomethingToUndo[0], 1, "thereIsSomethingToUndo", "bool");
+    sv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
+    sv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
+    sv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
+    sv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
+    sv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
+    sv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
+    sv(&lastProgramListEnd[0], 1, "lastProgramListEnd", "bool");
+    sv(&programListEnd[0], 1, "programListEnd", "bool");
+    sv(&allSubroutineLevels[0], 4, "allSubroutineLevels", "uint32");
+    sv(&pemCursorIsZerothStep[0], 1, "pemCursorIsZerothStep", "bool");
+    sv(&skippedStackLines[0], 1, "skippedStackLines", "bool");
+    sv(&iterations[0], 1, "iterations", "bool");
+    sv(&numberOfTamMenusToPop[0], 2, "numberOfTamMenusToPop", "int16");
+    sv(&lrSelection[0], 2, "lrSelection", "uint16");
+    sv(&lrSelectionUndo[0], 2, "lrSelectionUndo", "uint16");
+    sv(&amortP1[0], 2, "amortP1", "uint16");
+    sv(&amortP2[0], 2, "amortP2", "uint16");
+    sv(&lrChosen[0], 2, "lrChosen", "uint16");
+    sv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
+    sv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
+    sv(&plotSelection[0], 2, "plotSelection", "uint16");
+    sv(&graph_dx[0], 4, "graph_dx", "float");
+    sv(&graph_dy[0], 4, "graph_dy", "float");
+    sv(&roundedTicks[0], 1, "roundedTicks", "bool");
+    sv(&PLOT_INTG[0], 1, "PLOT_INTG", "bool");
+    sv(&PLOT_DIFF[0], 1, "PLOT_DIFF", "bool");
+    sv(&PLOT_RMS[0], 1, "PLOT_RMS", "bool");
+    sv(&PLOT_SHADE[0], 1, "PLOT_SHADE", "bool");
+    sv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
+    sv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
+    sv(&PLOT_ZOOM[0], 1, "PLOT_ZOOM", "uint8");
+    sv(&plotmode[0], 1, "plotmode", "int8");
+    sv(&tick_int_x[0], 4, "tick_int_x", "float");
+    sv(&tick_int_y[0], 4, "tick_int_y", "float");
+    sv(&x_min[0], 4, "x_min", "float");
+    sv(&x_max[0], 4, "x_max", "float");
+    sv(&y_min[0], 4, "y_min", "float");
+    sv(&y_max[0], 4, "y_max", "float");
+    sv(&xzero[0], 4, "xzero", "uint32");
+    sv(&yzero[0], 4, "yzero", "uint32");
+    sv(&regStatsXY[0], 2, "regStatsXY", "int16");
+    sv(&matrixIndex[0], 2, "matrixIndex", "uint16");
+    sv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
+    sv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
+    sv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
+    sv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
+    sv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
+    sv(&currentFormula[0], 2, "currentFormula", "uint16");
+    sv(&numberOfUserMenus[0], 2, "numberOfUserMenus", "uint16");
+    sv(&currentUserMenu[0], 2, "currentUserMenu", "uint16");
+    sv(&userKeyLabelSize[0], 2, "userKeyLabelSize", "uint16");
+    sv(&timerCraAndDeciseconds[0], 1, "timerCraAndDeciseconds", "uint8");
+    sv(&timerValue[0], 4, "timerValue", "uint32");
+    sv(&timerTotalTime[0], 4, "timerTotalTime", "uint32");
+    sv(&currentInputVariable[0], 2, "currentInputVariable", "uint16");
+    sv(&SAVED_SIGMA_LASTX[0], 60, "SAVED_SIGMA_LASTX", "real");
+    sv(&SAVED_SIGMA_LASTY[0], 60, "SAVED_SIGMA_LASTY", "real");
+    sv(&SAVED_SIGMA_lastAddRem[0], 1, "SAVED_SIGMA_lastAddRem", "int8");
+    sv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
+    sv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
+    sv(&drawHistogram[0], 1, "drawHistogram", "uint8");
+    sv(&statMx[0], 8, "statMx", "hexDump");
+    sv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
+    sv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");
+    sv(&loBinR[0], 16, "loBinR", "real34");
+    sv(&nBins[0], 16, "nBins", "real34");
+    sv(&hiBinR[0], 16, "hiBinR", "real34");
+    sv(&histElementXorY[0], 2, "histElementXorY", "int16");
+    sv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
+    sv(&Norm_Key_00[0], 2, "Norm_Key_00.func", "int16");
+    sv(&Norm_Key_00[2], 16, "Norm_Key_00.funcParam", "hexDump");
+    sv(&Norm_Key_00[18], 1, "Norm_Key_00.used", "bool");
+    sv(&Input_Default[0], 1, "Input_Default", "uint8");
+    sv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
+    sv(&multiEdLines[0], 1, "multiEdLines", "uint8");
+    sv(&current_cursor_x[0], 2, "current_cursor_x", "uint16");
+    sv(&current_cursor_y[0], 2, "current_cursor_y", "uint16");
+    sv(&xMultiLineEdOffset[0], 1, "xMultiLineEdOffset", "uint8");
+    sv(&yMultiLineEdOffset[0], 1, "yMultiLineEdOffset", "uint8");
+    sv(&showRegis[0], 2, "showRegis", "int16");
+    sv(&overrideShowBottomLine[0], 1, "overrideShowBottomLine", "uint8");
+    sv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
+    sv(&ListXYposition[0], 2, "ListXYposition", "int16");
+    sv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
+    sv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
+    sv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
+    sv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");
+    sv(&DM_Cycling[0], 1, "DM_Cycling", "uint8");
+    sv(&LongPressM[0], 1, "LongPressM", "uint8");
+    sv(&LongPressF[0], 1, "LongPressF", "uint8");
+    sv(&currentAsnScr[0], 1, "currentAsnScr", "uint8");
+    sv(&gapItemLeft[0], 2, "gapItemLeft", "uint16");
+    sv(&gapItemRight[0], 2, "gapItemRight", "uint16");
+    sv(&gapItemRadix[0], 2, "gapItemRadix", "uint16");
+    sv(&lastCenturyHighUsed[0], 2, "lastCenturyHighUsed", "uint16");
+    sv(&grpGroupingLeft[0], 1, "grpGroupingLeft", "uint8");
+    sv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
+    sv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
+    sv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
+    sv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
+    sv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
+    sv(&dispBase[0], 1, "dispBase", "uint8");
+    sv(&printerState[0], 1, "printerState.print_on", "bool");
+    sv(&printerState[8], 4, "printerState.printer_model", "uint8");
+    sv(&printerState[12], 2, "printerState.delay", "uint16");
+    { var cf: i8 = cursorFontId(); sv(&cf, 1, "cursorFont", "int8"); }
+    graphVariabl1 = INVALID_VARIABLE; sv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    { var v: u32 = c47ptr(allNamedVariables); sv(&v, 4, "allNamedVariables", "c47Ptr"); }
+    { var v: u32 = c47ptr(allFormulae); sv(&v, 4, "allFormulae", "c47Ptr"); }
+    { var v: u32 = c47ptr(userMenus); sv(&v, 4, "userMenus", "c47Ptr"); }
+    { var v: u32 = c47ptr(userKeyLabel); sv(&v, 4, "userKeyLabel", "c47Ptr"); }
+    { var v: u32 = c47ptr(statisticalSumsPointer); sv(&v, 4, "statisticalSumsPointer", "c47Ptr"); }
+    { var v: u32 = c47ptr(savedStatisticalSumsPointer); sv(&v, 4, "savedStatisticalSumsPointer", "c47Ptr"); }
+    { var v: u32 = c47ptr(labelList); sv(&v, 4, "labelList", "c47Ptr"); }
+    { var v: u32 = c47ptr(programList); sv(&v, 4, "programList", "c47Ptr"); }
+    { var v: u32 = c47ptr(currentSubroutineLevelData); sv(&v, 4, "currentSubroutineLevelData", "c47Ptr"); }
+    { var v: u32 = c47ptr(currentLocalFlags); sv(&v, 4, "currentLocalFlags", "c47Ptr"); }
+    { var v: u32 = c47ptr(currentLocalRegisters); sv(&v, 4, "currentLocalRegisters", "c47Ptr"); }
+    { var v: u32 = c47ptr(beginOfProgramMemory); sv(&v, 4, "beginOfProgramMemory", "c47Ptr"); }
+    { var v: u32 = offWithin(beginOfProgramMemory); sv(&v, 4, "beginOfProgramMemoryOffset", "uint32"); }
+    { var v: u32 = c47ptr(firstFreeProgramByte); sv(&v, 4, "firstFreeProgramByte", "c47Ptr"); }
+    { var v: u32 = offWithin(firstFreeProgramByte); sv(&v, 4, "firstFreeProgramByteOffset", "uint32"); }
+    { var v: u32 = c47ptr(firstDisplayedStep); sv(&v, 4, "firstDisplayedStep", "c47Ptr"); }
+    { var v: u32 = offWithin(firstDisplayedStep); sv(&v, 4, "firstDisplayedStepOffset", "uint32"); }
+    { var v: u32 = c47ptr(currentStep); sv(&v, 4, "currentStep", "c47Ptr"); }
+    { var v: u32 = offWithin(currentStep); sv(&v, 4, "currentStepOffset", "uint32"); }
+    sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    ioFileClose();
+}
+
+// ===================== RESTORE side (Phase A2) =====================
+// labelList/savedStatisticalSumsPointer are pointer globals not declared above.
+// --- backup.cfg parser + typed value deserializer (host-only) ---
+extern fn readLine(line: [*c]u8, maxLen: usize) void;
+extern fn ioEof() c_int;
+extern fn malloc(n: usize) ?*anyopaque;
+extern fn free(p: ?*anyopaque) void;
+extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
+extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal
+extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal34
+extern fn stringToInt64(s: [*c]const u8) i64;
+extern fn stringToUint64(s: [*c]const u8) u64;
+extern fn stringToInt32(s: [*c]const u8) i32;
+extern fn stringToUint32(s: [*c]const u8) u32;
+extern fn stringToInt16(s: [*c]const u8) i16;
+extern fn stringToUint16(s: [*c]const u8) u16;
+extern fn stringToInt8(s: [*c]const u8) i8;
+extern fn stringToUint8(s: [*c]const u8) u8;
+const OpaqueCtx = opaque {};
+extern var ctxtReal34: OpaqueCtx;
+extern var ctxtReal39: OpaqueCtx;
+
+// The config-param list (was the file-static cfgFileParam_t paramHead chain),
+// now Zig-owned. Built from the open backup.cfg, walked by restoreStateValue.
+const CfgParam = extern struct { param: [*c]u8, next: ?*CfgParam };
+var paramHead: ?*CfgParam = null;
+var paramCurrent: ?*CfgParam = null;
+
+fn backupOpenParse() c_int {
+    var oneParam: [200]u8 = undefined;
+    const op: [*c]u8 = &oneParam[0];
+    const ret = ioFileOpen(ioPathBackup, ioModeRead);
+    if (ret != FILE_OK) return ret;
+    readLine(op, oneParam.len);
+    paramHead = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+    paramCurrent = paramHead;
+    paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+    _ = strcpy(paramCurrent.?.param, op);
+    paramCurrent.?.next = null;
+    readLine(op, oneParam.len);
+    while (ioEof() == 0) {
+        paramCurrent.?.next = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
+        paramCurrent = paramCurrent.?.next;
+        paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
+        _ = strcpy(paramCurrent.?.param, op);
+        paramCurrent.?.next = null;
+        readLine(op, oneParam.len);
+    }
+    ioFileClose();
+    return FILE_OK;
+}
+fn backupFreeParams() void {
+    paramCurrent = paramHead;
+    while (paramHead) |h| {
+        paramHead = h.next;
+        free(h.param);
+        free(h);
+        paramCurrent = paramHead;
+    }
+}
+fn hexNibble(c: u8) u8 {
+    return c - (if (c <= '9') @as(u8, '0') else 'a' - 10);
+}
+// Typed value deserializer (saveRestoreCalcState.c restoreStateValue).
+fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+    _ = size;
+    var value: [200]u8 = undefined;
+    const v: [*c]u8 = &value[0];
+    _ = strcpy(v, name);
+    _ = strcat(v, ":");
+    paramCurrent = paramHead;
+    while (paramCurrent) |pc| {
+        if (strncmp(pc.param, v, strlen(v)) == 0) break;
+        paramCurrent = pc.next;
+    }
+    if (paramCurrent == null) return; // default value kept
+    const param = paramCurrent.?.param;
+    const typePtr = strchr(param, ':');
+    if (typePtr == null) return;
+    const tp = typePtr + 1;
+    const valuePtr = strchr(tp, ':');
+    if (valuePtr == null) return;
+    const vp = valuePtr + 1;
+    // extract the type from the line and verify it matches.
+    var i: usize = 0;
+    var p = tp;
+    while (p[0] != ':') : (p += 1) {
+        value[i] = p[0];
+        i += 1;
+    }
+    value[i] = 0;
+    if (strcmp(type_str, v) != 0) return;
+
+    if (streq(type_str, "int64")) {
+        @as(*i64, @ptrCast(@alignCast(buffer))).* = stringToInt64(vp);
+    } else if (streq(type_str, "uint64")) {
+        @as(*u64, @ptrCast(@alignCast(buffer))).* = stringToUint64(vp);
+    } else if (streq(type_str, "int32")) {
+        @as(*i32, @ptrCast(@alignCast(buffer))).* = stringToInt32(vp);
+    } else if (streq(type_str, "uint32")) {
+        @as(*u32, @ptrCast(@alignCast(buffer))).* = stringToUint32(vp);
+    } else if (streq(type_str, "int16")) {
+        @as(*i16, @ptrCast(@alignCast(buffer))).* = stringToInt16(vp);
+    } else if (streq(type_str, "uint16")) {
+        @as(*u16, @ptrCast(@alignCast(buffer))).* = stringToUint16(vp);
+    } else if (streq(type_str, "int8")) {
+        @as(*i8, @ptrCast(buffer)).* = stringToInt8(vp);
+    } else if (streq(type_str, "uint8")) {
+        @as(*u8, @ptrCast(buffer)).* = stringToUint8(vp);
+    } else if (streq(type_str, "float")) {
+        @as(*f32, @ptrCast(@alignCast(buffer))).* = @floatCast(atof(vp));
+    } else if (streq(type_str, "double")) {
+        @as(*f64, @ptrCast(@alignCast(buffer))).* = atof(vp);
+    } else if (streq(type_str, "real")) {
+        _ = decNumberFromString(@ptrCast(buffer), vp, &ctxtReal39);
+    } else if (streq(type_str, "real34")) {
+        _ = decQuadFromString(@ptrCast(buffer), vp, &ctxtReal34);
+    } else if (streq(type_str, "bool")) {
+        @as(*u8, @ptrCast(buffer)).* = if (stringToInt8(vp) != 0) 1 else 0;
+    } else if (streq(type_str, "c47Ptr")) {
+        @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
+    } else if (streq(type_str, "hexDump")) {
+        const numberOfBytes = stringToUint32(vp);
+        var bufp: [*c]u8 = @ptrCast(buffer);
+        var vv: [*c]const u8 = undefined;
+        var count: u32 = 0;
+        while (count < numberOfBytes) : (count += 1) {
+            if (count % 32 == 0) {
+                paramCurrent = paramCurrent.?.next;
+                vv = paramCurrent.?.param + 7;
+            }
+            const hi = hexNibble(vv[0]);
+            vv += 1;
+            const lo = hexNibble(vv[0]);
+            vv += 2;
+            bufp[0] = (hi << 4) | lo;
+            bufp += 1;
+        }
+    }
+}
+extern fn atof(s: [*c]const u8) f64;
+extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong; // c47Ptr: "%u (0x..)" -> stop at space
+extern fn doFnReset(confirmation: u16, auto_sav: bool) void;
+extern fn scanLabelsAndPrograms() void;
+extern fn defineCurrentProgramFromGlobalStepNumber(global_step: i16) void;
+extern fn defineCurrentStep() void;
+extern fn defineFirstDisplayedStep() void;
+extern fn defineCurrentProgramFromCurrentStep() void;
+extern fn getSystemFlag(sf: i32) bool; extern fn setSystemFlag(sf: c_uint) void; extern fn clearSystemFlag(sf: c_uint) void;
+extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
+const ioModeRead: c_int = 0; const CONFIRMED: u16 = 9877; const loadAutoSav: bool = true;
+const FLAG_FRACT: c_uint = 32775; const FLAG_IRFRAC: c_uint = 32839; const MNU_HOME: i16 = 1921;
+const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
+
+fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { restoreStateValue(buffer, size, name, type_str); }
+fn toPcmem(blk: u32) [*c]u8 { return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk))); }
+fn rdU16(p: [*c]const u8) u16 { return @as(u16, p[0]) | (@as(u16, p[1]) << 8); }
+fn programStep(idx: u16) i32 { const base = programList + @as(usize, idx) * 16; return @as(*const i32, @ptrCast(@alignCast(base))).*; }
+
+pub fn restoreCalc() void {
+    doFnReset(CONFIRMED, loadAutoSav);
+    if (backupOpenParse() != FILE_OK) return;
+    var backupVersion: u32 = 0; rv(&backupVersion, 4, "backupVersion", "uint32");
+    var ramSizeInBlocks: u32 = 0; rv(&ramSizeInBlocks, 4, "ramSizeInBlocks", "uint32");
+    if (ramSizeInBlocks != geometry().ram_size_in_blocks) { backupFreeParams(); return; }
+    if (backupVersion == 0 or backupVersion < 1011) { backupFreeParams(); return; }
+    rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+    rv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
+    rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
+    rv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
+    rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
+    rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
+    rv(&calcMode, 1, "calcMode", "uint8"); rv(&previousCalcMode, 1, "previousCalcMode", "uint8"); rv(&calcModel, 1, "calcModel", "uint8");
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "allNamedVariables", "c47Ptr"); allNamedVariables = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "allFormulae", "c47Ptr"); allFormulae = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "userMenus", "c47Ptr"); userMenus = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "userKeyLabel", "c47Ptr"); userKeyLabel = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "statisticalSumsPointer", "c47Ptr"); statisticalSumsPointer = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "savedStatisticalSumsPointer", "c47Ptr"); savedStatisticalSumsPointer = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "labelList", "c47Ptr"); labelList = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "programList", "c47Ptr"); programList = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentSubroutineLevelData", "c47Ptr"); currentSubroutineLevelData = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentLocalFlags", "c47Ptr"); currentLocalFlags = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentLocalRegisters", "c47Ptr"); currentLocalRegisters = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "beginOfProgramMemory", "c47Ptr"); beginOfProgramMemory = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "beginOfProgramMemoryOffset", "uint32"); beginOfProgramMemory += ramPtr; }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstFreeProgramByte", "c47Ptr"); firstFreeProgramByte = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstFreeProgramByteOffset", "uint32"); firstFreeProgramByte += ramPtr; }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstDisplayedStep", "c47Ptr"); firstDisplayedStep = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstDisplayedStepOffset", "uint32"); firstDisplayedStep += ramPtr; }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentStep", "c47Ptr"); currentStep = toPcmem(ramPtr); }
+    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentStepOffset", "uint32"); currentStep += ramPtr; }
+    rv(&globalFlags[0], 16, "globalFlags", "hexDump");
+    rv(&errorMessage[0], 512, "errorMessage", "hexDump");
+    rv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
+    rv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
+    rv(&tamBuffer[0], 32, "tamBuffer", "hexDump");
+    rv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
+    rv(&oldTime[0], 8, "oldTime", "hexDump");
+    rv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
+    rv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    rv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
+    rv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
+    rv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
+    rv(&lastTemp[0], 16, "lastTemp", "hexDump");
+    rv(&lastStateFileOpened[0], 32, "lastStateFileOpened", "hexDump");
+    rv(&lastI[0], 2, "lastI", "int16");
+    rv(&lastJ[0], 2, "lastJ", "int16");
+    rv(&lastFunc[0], 2, "lastFunc", "int16");
+    rv(&lastParam[0], 2, "lastParam", "int16");
+    rv(&tam[0], 2, "tam.mode", "uint16");
+    rv(&tam[2], 2, "tam.function", "int16");
+    rv(&tam[4], 1, "tam.alpha", "bool");
+    rv(&tam[6], 2, "tam.currentOperation", "int16");
+    rv(&tam[8], 1, "tam.dot", "bool");
+    rv(&tam[9], 1, "tam.indirect", "bool");
+    rv(&tam[10], 2, "tam.digitsSoFar", "int16");
+    rv(&tam[14], 2, "tam.value", "int16");
+    rv(&tam[16], 2, "tam.min", "int16");
+    rv(&tam[18], 2, "tam.max", "int16");
+    rv(&rbrRegister[0], 2, "rbrRegister", "int16");
+    rv(&numberOfNamedVariables[0], 2, "numberOfNamedVariables", "int16");
+    rv(&xCursor[0], 4, "xCursor", "uint32");
+    rv(&yCursor[0], 4, "yCursor", "uint32");
+    rv(&firstGregorianDay[0], 4, "firstGregorianDay", "uint32");
+    rv(&denMax[0], 4, "denMax", "uint32");
+    rv(&lastDenominator[0], 4, "lastDenominator", "uint32");
+    rv(&currentRegisterBrowserScreen[0], 2, "currentRegisterBrowserScreen", "int16");
+    rv(&currentFntScr[0], 1, "currentFntScr", "uint8");
+    rv(&currentFlgScr[0], 1, "currentFlgScr", "uint8");
+    rv(&displayFormat[0], 1, "displayFormat", "uint8");
+    rv(&displayFormatDigits[0], 1, "displayFormatDigits", "uint8");
+    rv(&timeDisplayFormatDigits[0], 1, "timeDisplayFormatDigits", "uint8");
+    rv(&shortIntegerWordSize[0], 1, "shortIntegerWordSize", "uint8");
+    rv(&significantDigits[0], 1, "significantDigits", "uint8");
+    rv(&fractionDigits[0], 1, "fractionDigits", "uint8");
+    rv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
+    rv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
+    rv(&scrLock[0], 1, "scrLock", "uint8");
+    rv(&roundingMode[0], 1, "roundingMode", "uint8");
+    rv(&nextChar[0], 1, "nextChar", "uint8");
+    rv(&alphaCase[0], 1, "alphaCase", "uint8");
+    rv(&hourGlassIconEnabled[0], 1, "hourGlassIconEnabled", "bool");
+    rv(&watchIconEnabled[0], 1, "watchIconEnabled", "bool");
+    rv(&serialIOIconEnabled[0], 1, "serialIOIconEnabled", "bool");
+    rv(&printerIconEnabled[0], 1, "printerIconEnabled", "bool");
+    rv(&programRunStop[0], 1, "programRunStop", "uint8");
+    rv(&entryStatus[0], 1, "entryStatus", "uint8");
+    rv(&cursorEnabled[0], 1, "cursorEnabled", "uint8");
+    rv(&rbr1stDigit[0], 1, "rbr1stDigit", "bool");
+    rv(&shiftF[0], 1, "shiftF", "bool");
+    rv(&shiftG[0], 1, "shiftG", "bool");
+    rv(&rbrMode[0], 1, "rbrMode", "uint8");
+    rv(&showContent[0], 1, "showContent", "bool");
+    rv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
+    rv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
+    rv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
+    rv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
+    rv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");
+    rv(&numLinesTinyFont[0], 1, "numLinesTinyFont", "uint8");
+    rv(&lastErrorCode[0], 1, "lastErrorCode", "uint8");
+    rv(&previousErrorCode[0], 1, "previousErrorCode", "uint8");
+    rv(&nimNumberPart[0], 1, "nimNumberPart", "uint8");
+    rv(&displayStack[0], 1, "displayStack", "uint8");
+    rv(&hexDigits[0], 1, "hexDigits", "uint8");
+    rv(&errorMessageRegisterLine[0], 2, "errorMessageRegisterLine", "int16");
+    rv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
+    rv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
+    rv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
+    rv(&glyphNotFound[0], 24, "glyphNotFound", "hexDump");
+    rv(&funcOK[0], 1, "funcOK", "bool");
+    rv(&screenChange[0], 1, "screenChange", "bool");
+    rv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
+    rv(&denominatorLocation[0], 2, "denominatorLocation", "int16");
+    rv(&imaginaryExponentSignLocation[0], 2, "imaginaryExponentSignLocation", "int16");
+    rv(&imaginaryMantissaSignLocation[0], 2, "imaginaryMantissaSignLocation", "int16");
+    rv(&lineTWidth[0], 2, "lineTWidth", "int16");
+    rv(&lastIntegerBase[0], 4, "lastIntegerBase", "uint32");
+    rv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
+    rv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
+    rv(&catalog[0], 2, "catalog", "int16");
+    rv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+    rv(&displayValueX[0], 80, "displayValueX", "hexDump");
+    rv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
+    rv(&exponentLimit[0], 2, "exponentLimit", "int16");
+    rv(&exponentHideLimit[0], 2, "exponentHideLimit", "int16");
+    rv(&keyActionProcessed[0], 1, "keyActionProcessed", "bool");
+    rv(&systemFlags0[0], 8, "systemFlags", "uint64");
+    rv(&systemFlags1[0], 8, "systemFlags1", "uint64");
+    rv(&savedSystemFlags0[0], 8, "savedSystemFlags", "uint64");
+    rv(&savedSystemFlags1[0], 8, "savedSystemFlags1", "uint64");
+    rv(&thereIsSomethingToUndo[0], 1, "thereIsSomethingToUndo", "bool");
+    rv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
+    rv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
+    rv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
+    rv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
+    rv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
+    rv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
+    rv(&lastProgramListEnd[0], 1, "lastProgramListEnd", "bool");
+    rv(&programListEnd[0], 1, "programListEnd", "bool");
+    rv(&allSubroutineLevels[0], 4, "allSubroutineLevels", "uint32");
+    rv(&pemCursorIsZerothStep[0], 1, "pemCursorIsZerothStep", "bool");
+    rv(&skippedStackLines[0], 1, "skippedStackLines", "bool");
+    rv(&iterations[0], 1, "iterations", "bool");
+    rv(&numberOfTamMenusToPop[0], 2, "numberOfTamMenusToPop", "int16");
+    rv(&lrSelection[0], 2, "lrSelection", "uint16");
+    rv(&lrSelectionUndo[0], 2, "lrSelectionUndo", "uint16");
+    rv(&amortP1[0], 2, "amortP1", "uint16");
+    rv(&amortP2[0], 2, "amortP2", "uint16");
+    rv(&lrChosen[0], 2, "lrChosen", "uint16");
+    rv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
+    rv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
+    rv(&plotSelection[0], 2, "plotSelection", "uint16");
+    rv(&graph_dx[0], 4, "graph_dx", "float");
+    rv(&graph_dy[0], 4, "graph_dy", "float");
+    rv(&roundedTicks[0], 1, "roundedTicks", "bool");
+    rv(&PLOT_INTG[0], 1, "PLOT_INTG", "bool");
+    rv(&PLOT_DIFF[0], 1, "PLOT_DIFF", "bool");
+    rv(&PLOT_RMS[0], 1, "PLOT_RMS", "bool");
+    rv(&PLOT_SHADE[0], 1, "PLOT_SHADE", "bool");
+    rv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
+    rv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
+    rv(&PLOT_ZOOM[0], 1, "PLOT_ZOOM", "uint8");
+    rv(&plotmode[0], 1, "plotmode", "int8");
+    rv(&tick_int_x[0], 4, "tick_int_x", "float");
+    rv(&tick_int_y[0], 4, "tick_int_y", "float");
+    rv(&x_min[0], 4, "x_min", "float");
+    rv(&x_max[0], 4, "x_max", "float");
+    rv(&y_min[0], 4, "y_min", "float");
+    rv(&y_max[0], 4, "y_max", "float");
+    rv(&xzero[0], 4, "xzero", "uint32");
+    rv(&yzero[0], 4, "yzero", "uint32");
+    rv(&regStatsXY[0], 2, "regStatsXY", "int16");
+    rv(&matrixIndex[0], 2, "matrixIndex", "uint16");
+    rv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
+    rv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
+    rv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
+    rv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
+    rv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
+    rv(&currentFormula[0], 2, "currentFormula", "uint16");
+    rv(&numberOfUserMenus[0], 2, "numberOfUserMenus", "uint16");
+    rv(&currentUserMenu[0], 2, "currentUserMenu", "uint16");
+    rv(&userKeyLabelSize[0], 2, "userKeyLabelSize", "uint16");
+    rv(&timerCraAndDeciseconds[0], 1, "timerCraAndDeciseconds", "uint8");
+    rv(&timerValue[0], 4, "timerValue", "uint32");
+    rv(&timerTotalTime[0], 4, "timerTotalTime", "uint32");
+    rv(&currentInputVariable[0], 2, "currentInputVariable", "uint16");
+    rv(&SAVED_SIGMA_LASTX[0], 60, "SAVED_SIGMA_LASTX", "real");
+    rv(&SAVED_SIGMA_LASTY[0], 60, "SAVED_SIGMA_LASTY", "real");
+    rv(&SAVED_SIGMA_lastAddRem[0], 1, "SAVED_SIGMA_lastAddRem", "int8");
+    rv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
+    rv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
+    rv(&drawHistogram[0], 1, "drawHistogram", "uint8");
+    rv(&statMx[0], 8, "statMx", "hexDump");
+    rv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
+    rv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");
+    rv(&loBinR[0], 16, "loBinR", "real34");
+    rv(&nBins[0], 16, "nBins", "real34");
+    rv(&hiBinR[0], 16, "hiBinR", "real34");
+    rv(&histElementXorY[0], 2, "histElementXorY", "int16");
+    rv(&screenUpdatingMode[0], 1, "screenUpdatingMode", "uint8");
+    rv(&Norm_Key_00[0], 2, "Norm_Key_00.func", "int16");
+    rv(&Norm_Key_00[2], 16, "Norm_Key_00.funcParam", "hexDump");
+    rv(&Norm_Key_00[18], 1, "Norm_Key_00.used", "bool");
+    rv(&Input_Default[0], 1, "Input_Default", "uint8");
+    rv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
+    rv(&multiEdLines[0], 1, "multiEdLines", "uint8");
+    rv(&current_cursor_x[0], 2, "current_cursor_x", "uint16");
+    rv(&current_cursor_y[0], 2, "current_cursor_y", "uint16");
+    rv(&xMultiLineEdOffset[0], 1, "xMultiLineEdOffset", "uint8");
+    rv(&yMultiLineEdOffset[0], 1, "yMultiLineEdOffset", "uint8");
+    rv(&showRegis[0], 2, "showRegis", "int16");
+    rv(&overrideShowBottomLine[0], 1, "overrideShowBottomLine", "uint8");
+    rv(&displayStackSHOIDISP[0], 1, "displayStackSHOIDISP", "uint8");
+    rv(&ListXYposition[0], 2, "ListXYposition", "int16");
+    rv(&DRG_Cycling[0], 1, "DRG_Cycling", "uint8");
+    rv(&lastFlgScr[0], 1, "lastFlgScr", "uint8");
+    rv(&displayAIMbufferoffset[0], 2, "displayAIMbufferoffset", "int16");
+    rv(&bcdDisplaySign[0], 1, "bcdDisplaySign", "uint8");
+    rv(&DM_Cycling[0], 1, "DM_Cycling", "uint8");
+    rv(&LongPressM[0], 1, "LongPressM", "uint8");
+    rv(&LongPressF[0], 1, "LongPressF", "uint8");
+    rv(&currentAsnScr[0], 1, "currentAsnScr", "uint8");
+    rv(&gapItemLeft[0], 2, "gapItemLeft", "uint16");
+    rv(&gapItemRight[0], 2, "gapItemRight", "uint16");
+    rv(&gapItemRadix[0], 2, "gapItemRadix", "uint16");
+    rv(&lastCenturyHighUsed[0], 2, "lastCenturyHighUsed", "uint16");
+    rv(&grpGroupingLeft[0], 1, "grpGroupingLeft", "uint8");
+    rv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
+    rv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
+    rv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
+    rv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
+    rv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
+    rv(&dispBase[0], 1, "dispBase", "uint8");
+    rv(&printerState[0], 1, "printerState.print_on", "bool");
+    rv(&printerState[8], 4, "printerState.printer_model", "uint8");
+    rv(&printerState[12], 2, "printerState.delay", "uint16");
+    graphVariabl1 = INVALID_VARIABLE; rv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
+    if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreBackup.c:1153-1155
+    if (getSystemFlag(@intCast(FLAG_FRACT))) { setSystemFlag(FLAG_FRACT); } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) { setSystemFlag(FLAG_IRFRAC); }
+    backupFreeParams();
+    scanLabelsAndPrograms();
+    {
+        const cpn = rdU16(&currentProgramNumber[0]);
+        const cls = rdU16(&currentLocalStepNumber[0]);
+        const step = programStep(cpn - 1);
+        const gsn = @as(i32, cls) + (if (step < 0) -step else step) - 1;
+        defineCurrentProgramFromGlobalStepNumber(@intCast(gsn));
+    }
+    defineCurrentStep(); defineFirstDisplayedStep(); defineCurrentProgramFromCurrentStep();
+}

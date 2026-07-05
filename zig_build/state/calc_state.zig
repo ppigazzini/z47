@@ -113,7 +113,7 @@ pub fn addToModule(
 
     // The calc-state save/restore/load path is now fully Zig-owned; the former
     // calc_state_legacy.c bridge is gone. The DMCP ROM-macro shims it once needed
-    // (power_check_screen / sys_timer) are now Zig-owned in state_dmcp_rom_owned.zig.
+    // (power_check_screen / sys_timer) are now Zig-owned in state_dmcp_rom.zig.
     _ = c_flags;
     module.addObject(runtime_object);
 }

@@ -131,7 +131,7 @@ pub fn addSimulator(
 }
 
 // The testSuite HAL (src/testSuite/hal/*: gui/audio/lcd/io/print_ir) is ported
-// to zig_build/tests/testsuite_hal_owned.zig. These helpers drop the ported .c
+// to zig_build/tests/testsuite_hal.zig. These helpers drop the ported .c
 // shims from the collected testSuite C sources and provide the Zig replacement
 // object, used by the main testSuite here and the oracle mini-suites in
 // steps.zig.
@@ -150,7 +150,7 @@ pub fn addTestSuiteHalObject(
     return b.addObject(.{
         .name = b.fmt("{s}-testsuite-hal", .{name_prefix}),
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_build/tests/testsuite_hal_owned.zig"),
+            .root_source_file = b.path("zig_build/tests/testsuite_hal.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,

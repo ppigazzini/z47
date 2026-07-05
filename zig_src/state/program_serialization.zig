@@ -1,6 +1,6 @@
-const header_owned = @import("program_serialization_header_owned.zig");
-const load_apply_owned = @import("program_serialization_load_apply_owned.zig");
-const save_owned = @import("program_serialization_save_owned.zig");
+const header_owned = @import("program_serialization_header.zig");
+const load_apply_owned = @import("program_serialization_load_apply.zig");
+const save_owned = @import("program_serialization_save.zig");
 const runtime = @import("program_serialization_runtime.zig");
 
 pub fn saveProgram(label: u16) void {

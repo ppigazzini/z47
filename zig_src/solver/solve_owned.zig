@@ -391,7 +391,7 @@ inline fn TO_BLOCKS(n: u32) u16 {
     return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK=4, BPB=2
 }
 
-// tvm.c callback (defined in tvm_owned.zig)
+// tvm.c callback (defined in tvm.zig)
 extern fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: ?*real_t) void;
 
 // ===========================================================================

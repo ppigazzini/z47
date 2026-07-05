@@ -296,7 +296,7 @@ pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
 pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
-// The complex dense core (math_matrix_complex_core_owned.zig): in-place inverse
+// The complex dense core (math_matrix_complex_core.zig): in-place inverse
 // and product on interleaved-complex real_t arrays.
 pub extern fn invCpxMat(matrix: [*]real_t, n: u16, real_context: *realContext_t) bool;
 pub extern fn mulCpxMat(y: [*]const real_t, x: [*]const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]real_t, real_context: *realContext_t) void;
@@ -974,7 +974,7 @@ pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
 pub extern fn z47_math_wrappers_do_int_random_i() void;
 
 // Extern surface for the Zig-owned addition/subtraction dispatch cells
-// (math_addition_cells_owned.zig / math_subtraction_cells_owned.zig). These
+// (math_addition_cells.zig / math_subtraction_cells.zig). These
 // resolve against the C product surface still in the dispatch bridge or the
 // frontier/state owners; the cell owners are excluded from the fake-harness
 // parity lanes.

@@ -1,14 +1,14 @@
 const build_options = @import("stack_state_build_options");
-const command_control_owned = @import("stack_runtime_command_control_owned.zig");
-const convert_owned = @import("stack_runtime_convert_owned.zig");
-const descriptor_storage = @import("register_descriptor_storage_owned.zig");
-const long_integer_owned = @import("stack_runtime_long_integer_owned.zig");
-const reg_param_product_owned = @import("stack_runtime_reg_param_product_owned.zig");
-const product_real_owned = @import("stack_runtime_product_real_owned.zig");
-const reg_params_owned = @import("stack_runtime_reg_params_owned.zig");
-const sigma_owned = @import("stack_runtime_sigma_owned.zig");
-const store_owned = @import("stack_runtime_store_owned.zig");
-const swap_descriptor_owned = @import("stack_runtime_swap_descriptor_owned.zig");
+const command_control_owned = @import("stack_runtime_command_control.zig");
+const convert_owned = @import("stack_runtime_convert.zig");
+const descriptor_storage = @import("register_descriptor_storage.zig");
+const long_integer_owned = @import("stack_runtime_long_integer.zig");
+const reg_param_product_owned = @import("stack_runtime_reg_param_product.zig");
+const product_real_owned = @import("stack_runtime_product_real.zig");
+const reg_params_owned = @import("stack_runtime_reg_params.zig");
+const sigma_owned = @import("stack_runtime_sigma.zig");
+const store_owned = @import("stack_runtime_store.zig");
+const swap_descriptor_owned = @import("stack_runtime_swap_descriptor.zig");
 
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and

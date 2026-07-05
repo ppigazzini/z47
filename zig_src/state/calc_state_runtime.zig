@@ -1,4 +1,4 @@
-const io_owned = @import("calc_state_io_owned.zig");
+const io_owned = @import("calc_state_io.zig");
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
