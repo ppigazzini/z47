@@ -298,7 +298,7 @@ pub export fn fnVarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
         displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fnVarMnu:", errorMessage);
         }
     } else {
@@ -313,7 +313,7 @@ pub export fn fn42VarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
         displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fn42VarMnu:", errorMessage);
         }
     } else {
@@ -498,7 +498,7 @@ fn getKeyArg(regist: u16) u16 {
             } else {
                 displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
-                    _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
+                    abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
                     moreInfoOnErr("In function _getKeyArg:", errorMessage);
                 }
                 return 0;
@@ -507,7 +507,7 @@ fn getKeyArg(regist: u16) u16 {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnErr("In function _getKeyArg:", errorMessage);
             }
             return 0;
@@ -551,7 +551,7 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "register {d} is out of range", .{@as(u32, regist)}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "register {d} is out of range", .{@as(u32, regist)});
                 moreInfoOnErr("In function fnKey:", errorMessage);
             }
         }
@@ -586,7 +586,7 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnKeyType:", errorMessage);
             }
             @"__gmpz_clear"(&kt[0]);
@@ -615,37 +615,37 @@ pub export fn fnPutKey(regist: u16) callconv(.c) void {
             btnFnClicked(null, @ptrCast(&kc));
         },
         21, 22, 23, 24, 25, 26 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 21 + 0)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 21 + 0)});
             btnClicked(null, @ptrCast(&kc));
         },
         31, 32, 33, 34, 35, 36 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 31 + 6)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 31 + 6)});
             btnClicked(null, @ptrCast(&kc));
         },
         41, 42, 43, 44, 45 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 41 + 12)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 41 + 12)});
             btnClicked(null, @ptrCast(&kc));
         },
         51, 52, 53, 54, 55 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 51 + 17)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 51 + 17)});
             btnClicked(null, @ptrCast(&kc));
         },
         61, 62, 63, 64, 65 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 61 + 22)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 61 + 22)});
             btnClicked(null, @ptrCast(&kc));
         },
         71, 72, 73, 74, 75 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 71 + 27)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 71 + 27)});
             btnClicked(null, @ptrCast(&kc));
         },
         81, 82, 83, 84, 85 => {
-            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 81 + 32)}) catch unreachable;
+            abi.fmtBufZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 81 + 32)});
             btnClicked(null, @ptrCast(&kc));
         },
         else => {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnPutKey:", errorMessage);
             }
         },

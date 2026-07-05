@@ -306,9 +306,9 @@ pub export fn regInRange(regist: u16) callconv(.c) bool {
         }
         displayCalcErrorMessage(errorType, ERR_REGISTER_LINE, REGISTER_X);
         if (strcmp(regType, "generic") == 0) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "generic", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "generic", .{});
         } else {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "{s} {d:0>4}", .{ regType, offset }) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "{s} {d:0>4}", .{ regType, offset });
         }
         c_moreInfoOnError("In function regInRange:", errorMessage, " is not defined!", null);
     } else {
@@ -324,7 +324,7 @@ fn _checkReadOnlyVariable(regist: u16) bool {
     if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.readOnly == 1) {
         displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "reserved variable {s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName)) + 1)}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "reserved variable {s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName)) + 1)});
             moreInfoOnError("In function _checkReadOnlyVariable:", errorMessage, " is write-protected!");
         }
         return false;
@@ -348,7 +348,7 @@ fn storeElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeElementReal:", errorMessage, null);
         }
         return false;
@@ -374,7 +374,7 @@ fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} in a matrix", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeElementReal:", errorMessage, null);
         }
         return false;
@@ -393,14 +393,14 @@ fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
         } else {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "({d}, {d}) out of range", .{ rows, cols }) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "({d}, {d}) out of range", .{ rows, cols });
                 moreInfoOnError("In function storeIjReal:", errorMessage, null);
             }
         }
     } else if (lastErrorCode == ERROR_NONE) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot store {s} as matrix index", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot store {s} as matrix index", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
             moreInfoOnError("In function storeIjReal:", errorMessage, null);
         }
     }
@@ -475,7 +475,7 @@ pub export fn fn2Sto(regist: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn2Sto:", errorMessage, " is not defined!");
         }
     }
@@ -493,7 +493,7 @@ pub export fn fn3Sto(regist: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn3Sto:", errorMessage, " is not defined!");
         }
     }
@@ -782,13 +782,13 @@ pub export fn fnStoreStack(regist: u16) callconv(.c) void {
     if (@as(i32, regist) + @as(i32, size) >= REGISTER_X and @as(i32, regist) < REGISTER_X) {
         displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot execute STOS, destination register would overlap the stack: {d}", .{@as(i32, regist)}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOS, destination register would overlap the stack: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnStoreStack:", errorMessage, null);
         }
     } else if ((regist >= @as(u16, @intCast(REGISTER_X)) and regist < FIRST_LOCAL_REGISTER) or @as(i32, regist) + @as(i32, size) > @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot execute STOS, destination register is out of range: {d}", .{@as(i32, regist)}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOS, destination register is out of range: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnStoreStack:", errorMessage, null);
         }
     } else {
@@ -815,7 +815,7 @@ pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
     if (!getRegisterAsComplex(REGISTER_X, &rx, &rx) and !getRegisterAsReal(REGISTER_X, &rx)) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "DataType {d}", .{@as(u32, getRegisterDataType(REGISTER_X))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "DataType {d}", .{@as(u32, getRegisterDataType(REGISTER_X))});
             c_moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
         }
         return;
@@ -883,7 +883,7 @@ fn _fnStoreElement(stepForward: bool) void {
     if (matrixIndex == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot execute STOEL without a matrix indexed", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOEL without a matrix indexed", .{});
             moreInfoOnError("In function _fnStoreElement:", errorMessage, null);
         }
     } else {
@@ -910,7 +910,7 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (matrixIndex == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Cannot execute STOIJ without a matrix indexed", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute STOIJ without a matrix indexed", .{});
             moreInfoOnError("In function fnStoreIJ:", errorMessage, null);
         }
     } else {
