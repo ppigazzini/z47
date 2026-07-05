@@ -601,7 +601,7 @@ inline fn getJRegisterAsIntL(asArrayPointer: bool_t) i16 {
 // _resetCursorPos (static in matrixEditor.c). Used by the init-aim helpers.
 fn resetCursorPos() void {
     clearRegisterLine(NIM_REGISTER_LINE, false, true);
-    _ = sprintf(tmpString, "%" ++ "d;%" ++ "d= ", @as(c_int, getRegisterAsInt(false, REGISTER_I)), @as(c_int, getRegisterAsInt(false, REGISTER_J)));
+    abi.fmtBufZ(tmpString[0..2560], "{d};{d}= ", .{ @as(i32, getRegisterAsInt(false, REGISTER_I)), @as(i32, getRegisterAsInt(false, REGISTER_J)) });
     xCursor = showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, true, true) + 1;
     yCursor = Y_POSITION_OF_NIM_LINE;
     cursorEnabled = 1;
@@ -2002,7 +2002,7 @@ pub export fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16,
 
     const hairArg: [*c]const u8 = if (aimBuffer[0] == 0) STD_SPACE_HAIR else "";
     const spaceArg: [*c]const u8 = if (aimBuffer[0] == 0 or aimBuffer[0] == '-') "" else " ";
-    _ = sprintf(tmpString, "%" ++ "d;%" ++ "d=" ++ STD_SPACE_4_PER_EM ++ "%s%s%s", @as(c_int, if (colVector) matSelCol + 1 else matSelRow + 1), @as(c_int, if (colVector) 1 else matSelCol + 1), hairArg, spaceArg, nimBufferDisplay);
+    abi.fmtBufZ(tmpString[0..2560], "{d};{d}=" ++ STD_SPACE_4_PER_EM ++ "{s}{s}{s}", .{ @as(i32, if (colVector) matSelCol + 1 else matSelRow + 1), @as(i32, if (colVector) 1 else matSelCol + 1), std.mem.span(hairArg), std.mem.span(spaceArg), std.mem.span(nimBufferDisplay) });
     width = stringWidth(tmpString, &numericFont, true, true) + 1;
     if (aimBuffer[0] == 0) {
         const selIdx: usize = @intCast(@as(c_int, matSelRow) * @as(c_int, cols) + @as(c_int, matSelCol));

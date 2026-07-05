@@ -276,7 +276,7 @@ pub export fn fnOff(unusedParamButMandatory: u16) callconv(.c) void {
 pub export fn calcModeNormal() callconv(.c) void {
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = sprintf(&tmp, "^^^^### calcModeNormal");
+        abi.fmtBufZ(&tmp, "^^^^### calcModeNormal", .{});
         jm_show_comment(&tmp);
     }
     calcMode = CM_NORMAL;
@@ -302,7 +302,7 @@ pub export fn calcModeAim(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = sprintf(&tmp, "^^^^### calcModeAim");
+        abi.fmtBufZ(&tmp, "^^^^### calcModeAim", .{});
         jm_show_comment(&tmp);
     }
 
@@ -366,7 +366,7 @@ pub export fn enterAsmModeIfMenuIsACatalog(id: i16) callconv(.c) void {
     }
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = sprintf(&tmp, "^^^^### enterAsmMode catalog=%d", @as(c_int, catalog));
+        abi.fmtBufZ(&tmp, "^^^^### enterAsmMode catalog={d}", .{@as(i32, catalog)});
         jm_show_comment(&tmp);
     }
 
@@ -414,7 +414,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = sprintf(&tmp, "^^^^### calcModeNim");
+        abi.fmtBufZ(&tmp, "^^^^### calcModeNim", .{});
         jm_show_comment(&tmp);
     }
     saveForUndo();

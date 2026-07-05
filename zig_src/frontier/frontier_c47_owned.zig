@@ -853,10 +853,10 @@ const dmcp = struct {
             }
 
             if (38 <= key and key <= 43) { // Function key
-                _ = sprintf(&charKey, "%c", key + 11);
+                abi.fmtBufZ(&charKey, "{c}", .{key + 11});
                 btnFnPressed(&charKey);
             } else if (1 <= key and key <= 37) { // Not a function key
-                _ = sprintf(&charKey, "%02u", key - 1);
+                abi.fmtBufZ(&charKey, "{d:0>2}", .{@as(u32, key - 1)});
                 btnPressed(&charKey);
             } else if (key == 0 and charKey[1] == 0) {
                 btnFnReleased(&charKey);

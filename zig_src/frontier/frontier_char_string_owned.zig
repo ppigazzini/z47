@@ -1249,7 +1249,7 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
                 supsub = -1;
                 bb[0] = ('A' +% a2) -% STD_SUB_A[1];
             } else {
-                _ = sprintf(&aa, "\\u%i?", @as(c_int, (@as(i32, a1 & 0x7F) << 8) | @as(i32, a2)));
+                abi.fmtBufZ(&aa, "\\u{d}?", .{@as(i32, (@as(i32, a1 & 0x7F) << 8) | @as(i32, a2))});
                 var j: i16 = 0;
                 while (aa[@intCast(j)] != 0) {
                     ascii[0] = aa[@intCast(j)];
