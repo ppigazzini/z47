@@ -289,17 +289,17 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
 
         line = 0;
 
-        _ = sprintf(lineStr(blk: {
+        abi.fmtCStr(lineStr(blk: {
             const v = line;
             line += 1;
             break :blk v;
-        }), "%u bytes free in RAM.", getFreeRamMemory());
+        }), "{d} bytes free in RAM.", .{@as(u32, @intCast(getFreeRamMemory()))});
 
-        _ = sprintf(lineStr(blk: {
+        abi.fmtCStr(lineStr(blk: {
             const v = line;
             line += 1;
             break :blk v;
-        }), "Global user flags set:");
+        }), "Global user flags set:", .{});
 
         lineStr(line)[0] = 0;
         firstFlag = true;
