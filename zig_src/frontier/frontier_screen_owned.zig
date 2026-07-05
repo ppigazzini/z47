@@ -750,6 +750,13 @@ const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetter
 const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
 const errorMessages = @extern([*c]const [SIZE_OF_EACH_ERROR_MESSAGE]u8, .{ .name = "errorMessages" });
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
+
+// A NUL-terminated view of an errorMessages row for std.fmt {s} (M24). The row
+// pointer inherits `allowzero` from the [*c] blob base, which {s} rejects; one
+// localized cast here yields the plain [:0]const u8 the formatter wants.
+inline fn errMsgRow(idx: anytype) [:0]const u8 {
+    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&errorMessages[idx])), 0);
+}
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const kbd_usr = @extern([*c]const calcKey_t, .{ .name = "kbd_usr" });
 // lcd_buffer is a C47-side `uint8_t *lcd_buffer` POINTER global (NOT ROM): the
@@ -1799,7 +1806,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
+                abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
             }
         }
@@ -1814,7 +1821,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "string '%s' is not a named label", funcParam);
+                abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
             }
         }
@@ -2751,7 +2758,7 @@ fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool
 
         fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, TO_KB_ACTV_MEDIUM);
         if (disp != 0 and blockMonitoring == 0) {
-            _ = sprintf(&tmps, "%s %d  ", txt, loop);
+            abi.fmtBufZ(&tmps, "{s} {d}  ", .{ std.mem.span(txt), loop });
             _ = showString(&tmps, &standardFont, 20, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + @as(i32, modeArg) * 20), vmNormal, 0, 0);
         }
 
@@ -3606,7 +3613,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
         _ = strcpy(&typeStr, if (typeIdx >= 0 and typeIdx <= 9) dRT_typeName[@intCast(typeIdx)] else "?");
         if (typeIdx == 8) {
             var baseSuffix: [24]u8 = undefined;
-            _ = sprintf(&baseSuffix, ", base %d", @as(c_int, angSub * 10 + polRec));
+            abi.fmtBufZ(&baseSuffix, ", base {d}", .{@as(i32, angSub * 10 + polRec)});
             _ = strcat(&typeStr, &baseSuffix);
         } else if (typeIdx == 6) {
             if (polRec == 0 and vecType > 0) {
@@ -3659,18 +3666,18 @@ fn displayTrueFalse(regist: calcRegister_t) bool_t {
     var sss: [10]u8 = undefined;
     if (temporaryInformation == TI_FALSE) {
         if (clearOffset != 0) {
-            _ = sprintf(&sss, "     ");
+            abi.fmtBufZ(&sss, "     ", .{});
             _ = showString(&sss, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_TRUE_FALSE_LINE) + 6 + clearOffset), vmNormal, 1, 1);
         }
-        _ = sprintf(&sss, "false");
+        abi.fmtBufZ(&sss, "false", .{});
         _ = showString(&sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, 1, 1);
         return 1;
     } else if (temporaryInformation == TI_TRUE) {
         if (clearOffset != 0) {
-            _ = sprintf(&sss, "    ");
+            abi.fmtBufZ(&sss, "    ", .{});
             _ = showString(&sss, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_TRUE_FALSE_LINE) + 6 + clearOffset), vmNormal, 1, 1);
         }
-        _ = sprintf(&sss, "true");
+        abi.fmtBufZ(&sss, "true", .{});
         _ = showString(&sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, 1, 1);
         return 1;
     }
@@ -3829,25 +3836,25 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
         if (temporaryInformation == TI_STATISTIC_LR and (getRegisterDataType(REGISTER_X) != dtReal34)) {
             if (regist == REGISTER_X) {
                 if (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING) {
-                    _ = sprintf(tmpString, "L.R. selected to OrthoF");
+                    abi.fmtBufZ(tmpString[0..2560], "L.R. selected to OrthoF", .{});
                 } else {
-                    _ = sprintf(tmpString, "L.R. selected to %03u.", @as(c_uint, lrSelection & 0x01FF));
+                    abi.fmtBufZ(tmpString[0..2560], "L.R. selected to {d:0>3}.", .{@as(u32, lrSelection & 0x01FF)});
                 }
                 if (comptime extra_info) {
-                    _ = sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
+                    abi.fmtBufZ(errorMessage[0..512], "BestF is set, but will not work until REAL data points are used.", .{});
                     moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], null);
                 }
                 w = stringWidth(tmpString, &standardFont, 1, 1);
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
             }
         } else if (temporaryInformation == TI_BATTV and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "V" ++ STD_SPACE_FIGURE ++ "=");
+            abi.fmtBufZ(&prefix, "V" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_BYTES and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "Bytes" ++ STD_SPACE_FIGURE ++ "=");
+            abi.fmtBufZ(&prefix, "Bytes" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_BITS and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "Bits" ++ STD_SPACE_FIGURE ++ "=");
+            abi.fmtBufZ(&prefix, "Bits" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_ARE_YOU_SURE and regist == REGISTER_X) {
             const id = getConfirmationTiId();
@@ -3870,10 +3877,10 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             uInt32ToReal34(firstGregorianDay, &j);
             julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
             dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
-            _ = sprintf(tmpString, "First Gregorian day set: %s", &tmpStr2);
+            abi.fmtBufZ(tmpString[0..2560], "First Gregorian day set: {s}", .{std.mem.sliceTo(&tmpStr2, 0)});
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DISP_WOY) {
-            _ = sprintf(tmpString, "Week of Year rule set: %s.%s", &nameOfWday_en[firstDayOfWeek].itemName, &nameOfWday_en[firstWeekOfYearDay].itemName);
+            abi.fmtBufZ(tmpString[0..2560], "Week of Year rule set: {s}.{s}", .{ std.mem.sliceTo(&nameOfWday_en[firstDayOfWeek].itemName, 0), std.mem.sliceTo(&nameOfWday_en[firstWeekOfYearDay].itemName, 0) });
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DISP_JULIAN_WOY) {
             var j: real34_t = undefined;
@@ -3881,59 +3888,59 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             uInt32ToReal34(firstGregorianDay, &j);
             julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
             dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
-            _ = sprintf(tmpString, "First Gregorian day set: %s", &tmpStr2);
+            abi.fmtBufZ(tmpString[0..2560], "First Gregorian day set: {s}", .{std.mem.sliceTo(&tmpStr2, 0)});
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
-            _ = sprintf(tmpString, "Week of Year rule set: %s.%s", &nameOfWday_en[firstDayOfWeek].itemName, &nameOfWday_en[firstWeekOfYearDay].itemName);
+            abi.fmtBufZ(tmpString[0..2560], "Week of Year rule set: {s}.{s}", .{ std.mem.sliceTo(&nameOfWday_en[firstDayOfWeek].itemName, 0), std.mem.sliceTo(&nameOfWday_en[firstWeekOfYearDay].itemName, 0) });
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_WOY and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "Week of Year" ++ STD_SPACE_FIGURE ++ "=");
+            abi.fmtBufZ(&prefix, "Week of Year" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_WOY_RULE and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s.%s", &nameOfWday_en[firstDayOfWeek].itemName, &nameOfWday_en[firstWeekOfYearDay].itemName);
+            abi.fmtBufZ(&prefix, "{s}.{s}", .{ std.mem.sliceTo(&nameOfWday_en[firstDayOfWeek].itemName, 0), std.mem.sliceTo(&nameOfWday_en[firstWeekOfYearDay].itemName, 0) });
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_KEYS and regist == REGISTER_X) {
             _ = showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (regist == TRUE_FALSE_REGISTER_LINE and displayTrueFalse(regist) != 0) {
             // handled
         } else if (temporaryInformation == TI_RESET and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_data_prgms_cleared]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_data_prgms_cleared)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_SAVED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "Saved");
+            abi.fmtBufZ(&prefix, "Saved", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (ir_printing and temporaryInformation == TI_PRINT_COMPLETE and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "Print completed");
+            abi.fmtBufZ(&prefix, "Print completed", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_DEL_ALL_PRGMS and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_prgms_deleted]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_prgms_deleted)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_FLAGS and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_flags_cleared]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_flags_cleared)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_MENUS and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_menus_cleared]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_menus_cleared)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_VARIABLES and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_vars_cleared]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_vars_cleared)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DEL_ALL_MENUS and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_menus_deleted]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_menus_deleted)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DEL_ALL_VARIABLES and regist == REGISTER_X) {
-            _ = sprintf(tmpString, "%s", &errorMessages[TI_All_user_vars_deleted]);
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_vars_deleted)});
             w = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (!dmcp_build and temporaryInformation == TI_NOT_AVAILABLE and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Not_on_simulator]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Not_on_simulator)});
             displayTemporaryInformationOnX(&prefix);
         } else if (dmcp_build and temporaryInformation == TI_NOT_AVAILABLE and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Only_on_simulator]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Only_on_simulator)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_BACKUP_RESTORED and regist == REGISTER_X) {
             clearRegisterLine(REGISTER_X, true, true);
@@ -3944,33 +3951,33 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             _ = showStringEnhanced(versionStr, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
             _ = showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
         } else if (temporaryInformation == TI_STATEFILE_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_State_file_restored]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_State_file_restored)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_PROGRAMS_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "                                ");
+            abi.fmtBufZ(&prefix, "                                ", .{});
             displayTemporaryInformationOnX(&prefix);
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Saved_programs_and_equations]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Saved_programs_and_equations)});
             _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, 1, 1);
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_appended]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_appended)});
             _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_REGISTERS_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "                                  ");
+            abi.fmtBufZ(&prefix, "                                  ", .{});
             displayTemporaryInformationOnX(&prefix);
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Saved_global_and_local_registers]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Saved_global_and_local_registers)});
             _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, 1, 1);
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_w_local_flags_restored]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_w_local_flags_restored)});
             _ = showString(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_SETTINGS_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Saved_system_settings_restored]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Saved_system_settings_restored)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_SUMS_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Saved_statistic_data_restored]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Saved_statistic_data_restored)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_VARIABLES_RESTORED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Saved_user_variables_restored]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Saved_user_variables_restored)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_PROGRAM_LOADED and regist == REGISTER_X) {
-            _ = sprintf(&prefix, "%s", &errorMessages[TI_Program_file_loaded]);
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Program_file_loaded)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_UNDO_DISABLED and regist == REGISTER_X) {
             _ = showString(&errorMessages[ERROR_TI_UNDO_FAILED], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
@@ -4197,24 +4204,24 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         displayFormatDigits = 19;
 
         {
-            _ = sprintf(tmpString, "X%sY+Z=", PRODUCT_SIGN());
+            abi.fmtBufZ(tmpString[0..2560], "X{s}Y+Z=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
                 real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
-                _ = sprintf(tmpString, "%s ", &errorMessages[ERROR_INVALID_TYPE_XFN]);
+                abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
         }
         if (getSystemFlag(FLAG_SSIZE8) != 0) {
-            _ = sprintf(tmpString, "T%sA+B=", PRODUCT_SIGN());
+            abi.fmtBufZ(tmpString[0..2560], "T{s}A+B=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
                 real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
-                _ = sprintf(tmpString, "%s ", &errorMessages[ERROR_INVALID_TYPE_XFN]);
+                abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
         }
@@ -4242,17 +4249,17 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     if (lastErrorCode != 0 and regist == errorMessageRegisterLine) {
         if (stringWidth(&errorMessages[lastErrorCode], &standardFont, 1, 1) <= SCREEN_WIDTH - 1) {
             if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-                _ = sprintf(tmpString, "%s: %s", &errorMessages[lastErrorCode], errorMessage);
+                abi.fmtBufZ(tmpString[0..2560], "{s}: {s}", .{ errMsgRow(lastErrorCode), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 _ = showString(tmpString, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
             } else {
                 _ = showString(&errorMessages[lastErrorCode], &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
             }
         } else {
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "Error message %u is too wide!", @as(c_uint, lastErrorCode));
+                abi.fmtBufZ(errorMessage[0..512], "Error message {d} is too wide!", .{@as(u32, lastErrorCode)});
                 moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[lastErrorCode], null);
             }
-            _ = sprintf(tmpString, "Error message %u is too wide!", @as(c_uint, lastErrorCode));
+            abi.fmtBufZ(tmpString[0..2560], "Error message {d} is too wide!", .{@as(u32, lastErrorCode)});
             w_p.* = stringWidth(tmpString, &standardFont, 1, 1);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
         }
@@ -4448,7 +4455,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     else if (getRegisterDataType(regist) == dtComplex34Matrix) {
         refreshComplexMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     } else {
-        _ = sprintf(tmpString, "Displaying %s: to be coded!", getRegisterDataTypeName(regist, 1, 0));
+        abi.fmtBufZ(tmpString[0..2560], "Displaying {s}: to be coded!", .{std.mem.span(getRegisterDataTypeName(regist, 1, 0))});
         _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
     }
 }
@@ -6202,7 +6209,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
-                _ = sprintf(tmpString, "x %d = %s:", @as(c_int, regist), errorMessage);
+                abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
             return -1;
@@ -6215,7 +6222,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 longIntegerToAllocatedString(&lgInt[0], errorMessage, ERROR_MESSAGE_LENGTH);
-                _ = sprintf(tmpString, "register %d = %s:", @as(c_int, regist), errorMessage);
+                abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
             longIntegerFree(&lgInt);
@@ -6228,7 +6235,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "register %d is %s:", @as(c_int, regist), getRegisterDataTypeName(regist, 1, 0));
+            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(getRegisterDataTypeName(regist, 1, 0)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
         }
         return -1;
@@ -6328,7 +6335,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "register %d is %s:", @as(c_int, @as(i16, @intCast(regist))), getRegisterDataTypeName(@intCast(regist), 1, 0));
+                abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, @as(i16, @intCast(regist))), std.mem.span(getRegisterDataTypeName(@intCast(regist), 1, 0)) });
                 moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", null);
             }
         }
