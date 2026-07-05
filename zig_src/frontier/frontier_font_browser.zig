@@ -13,6 +13,8 @@
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 
 // ---------------------------------------------------------------------------
@@ -73,9 +75,9 @@ extern const tinyFont: font_t;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn showGlyphCode(charCode: u16, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool, showEndingCols: bool, noPreClear: bool) u32;
-extern fn showString(str: [*:0]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool, showEndingCols: bool) u32;
-extern fn stringWidth(str: [*:0]const u8, font: *const font_t, withLeadingEmptyRows: bool, withEndingEmptyRows: bool) i16;
+
+
+
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn exit(status: c_int) noreturn;
@@ -188,11 +190,11 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (currentFntScr >= 1 and currentFntScr <= numScreensNumericFont) { // Numeric font
         x = 0;
         while (x <= 9) : (x += 1) {
-            _ = showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, @intFromBool(false), @intFromBool(false), @intFromBool(false));
         }
         x = 0;
         while (x <= 5) : (x += 1) {
-            _ = showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, @intFromBool(false), @intFromBool(false), @intFromBool(false));
         }
 
         const mem = getSystemFlag(FLAG_BOLD); // Prevent system BOLD setting from overriding the normal Numeric font with Bold
@@ -201,10 +203,10 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         y = first;
         while (y < minU16(@as(u16, currentFntScr) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN, numLinesNumericFont)) : (y += 1) {
             abi.fmtBufZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)});
-            _ = showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, false, false);
+            _ = frontier_screen.showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, @intFromBool(false), @intFromBool(false));
             x = 0;
             while (x <= 15) : (x += 1) {
-                _ = showGlyphCode(glyphRow[y] +% x, &numericFont, 46 + 20 * x, NUMERIC_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false, false);
+                _ = frontier_screen.showGlyphCode(glyphRow[y] +% x, &numericFont, 46 + 20 * x, NUMERIC_FONT_HEIGHT * (y - first) + 40, vmNormal, 0, 0, 0);
             }
         }
         if (mem) {
@@ -212,101 +214,101 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
 
         if (currentFntScr == 1) {
-            _ = showString("Numeric font. Press " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Numeric font. Press " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         } else {
-            _ = showString("Numeric font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Numeric font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         }
 
         abi.fmtBufZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) });
-        _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
+        _ = frontier_screen.showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, 0, 1);
     } else if (currentFntScr > numScreensNumericFont and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold) { // Numeric font bold
         x = 0;
         while (x <= 9) : (x += 1) {
-            _ = showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
         x = 0;
         while (x <= 5) : (x += 1) {
-            _ = showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
 
         first = @as(u16, numLinesNumericFont) + (@as(u16, currentFntScr) - numScreensNumericFont - 1) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + (@as(u16, currentFntScr) - numScreensNumericFont) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold)) : (y += 1) {
             abi.fmtBufZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)});
-            _ = showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, false, false);
+            _ = frontier_screen.showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, 0, 0);
             x = 0;
             while (x <= 15) : (x += 1) {
-                _ = showGlyphCode(glyphRow[y] +% x, &numericFontBold, 46 + 20 * x, NUMERIC_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false, false);
+                _ = frontier_screen.showGlyphCode(glyphRow[y] +% x, &numericFontBold, 46 + 20 * x, NUMERIC_FONT_HEIGHT * (y - first) + 40, vmNormal, 0, 0, 0);
             }
         }
 
         if (currentFntScr == 1) {
-            _ = showString("Numeric font bold. Press " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Numeric font bold. Press " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         } else {
-            _ = showString("Numeric font bold. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Numeric font bold. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         }
 
         abi.fmtBufZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) });
-        _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
+        _ = frontier_screen.showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, 0, 1);
     } else if (currentFntScr > @as(u16, numScreensNumericFont) + numScreensNumericFontBold and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont) { // Standard font
         x = 0;
         while (x <= 9) : (x += 1) {
-            _ = showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
         x = 0;
         while (x <= 5) : (x += 1) {
-            _ = showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
 
         first = @as(u16, numLinesNumericFont) + numLinesNumericFontBold + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - 1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + numLinesNumericFontBold + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont)) : (y += 1) {
             abi.fmtBufZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)});
-            _ = showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false);
+            _ = frontier_screen.showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, 0, 0);
             x = 0;
             while (x <= 15) : (x += 1) {
-                _ = showGlyphCode(glyphRow[y] +% x, &standardFont, 50 + 20 * x, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false, false);
+                _ = frontier_screen.showGlyphCode(glyphRow[y] +% x, &standardFont, 50 + 20 * x, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, 0, 0, 0);
             }
         }
 
         // NOTE: faithful to C (fontBrowser.c:198) — this "last page" check omits the bold term.
         if (currentFntScr == @as(u16, numScreensNumericFont) + numScreensStandardFont + numScreensTinyFont) {
-            _ = showString("Standard font. Press " ++ STD_UP_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Standard font. Press " ++ STD_UP_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         } else {
-            _ = showString("Standard font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Standard font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         }
 
         abi.fmtBufZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) });
-        _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
+        _ = frontier_screen.showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, 0, 1);
     } else if (currentFntScr > @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) { // Tiny font
         x = 0;
         while (x <= 9) : (x += 1) {
-            _ = showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('0' + x, &standardFont, 50 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
         x = 0;
         while (x <= 5) : (x += 1) {
-            _ = showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, false, false, false);
+            _ = frontier_screen.showGlyphCode('A' + x, &standardFont, 50 + 200 + 20 * x, 20, vmNormal, 0, 0, 0);
         }
 
         first = @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - numScreensStandardFont - 1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - numScreensStandardFont) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + numLinesTinyFont)) : (y += 1) {
             abi.fmtBufZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)});
-            _ = showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false);
+            _ = frontier_screen.showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, 0, 0);
             x = 0;
             while (x <= 15) : (x += 1) {
-                _ = showGlyphCode(glyphRow[y] +% x, &tinyFont, 52 + 20 * x, STANDARD_FONT_HEIGHT * (y - first) + 46, vmNormal, false, false, false);
+                _ = frontier_screen.showGlyphCode(glyphRow[y] +% x, &tinyFont, 52 + 20 * x, STANDARD_FONT_HEIGHT * (y - first) + 46, vmNormal, 0, 0, 0);
             }
         }
 
         if (currentFntScr == @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) {
-            _ = showString("Tiny font. Press " ++ STD_UP_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Tiny font. Press " ++ STD_UP_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         } else {
-            _ = showString("Tiny font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+            _ = frontier_screen.showString("Tiny font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, 0, 0);
         }
 
         abi.fmtBufZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) });
-        _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
+        _ = frontier_screen.showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, 0, 1);
     } else {
         // displayBugScreen(bugScreenShowFonts);
     }

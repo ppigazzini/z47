@@ -40,6 +40,12 @@ const angularMode_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 const font_t = abi.Font;
 
@@ -219,23 +225,23 @@ extern const standardFont: font_t;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn xcopy(dest: *anyopaque, source: *const anyopaque, n: u32) *anyopaque;
+
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn isFunctionOldParam16(func: u16) bool;
-extern fn findKey2ndParam(step: [*c]u8) [*c]u8;
+
+
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool, baseOverride: u8) void;
-extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
-extern fn complex34ToDisplayString(complex34: *const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool) void;
-extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn julianDayToInternalDate(source: *align(1) const real34_t, destination: *align(1) real34_t) void;
-extern fn isItemConversion(itemNr: i16) bool;
-extern fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) void;
+
+
+
+
+
+
+
 extern fn decQuadFromString(r: *align(1) real34_t, s: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
 extern fn abs(x: c_int) c_int;
 
@@ -352,7 +358,7 @@ fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
         stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
     }
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
+    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -526,7 +532,7 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
         PARAM_NUMBER_16 => {
             var func: u16 = (@as(u16, (paramAddress - 3)[0]) << 8) +% @as(u16, (paramAddress - 2)[0]);
             func &= 0x7fff;
-            if (isFunctionOldParam16(func)) { // original Param16 functions without indirection support (little endian parameter)
+            if (frontier_items.isFunctionOldParam16(func) != 0) { // original Param16 functions without indirection support (little endian parameter)
                 abi.fmtBufZ(tmpString[0..2560], "{s} {d}", .{ std.mem.span(op), @as(u32, opParam) + 256 * @as(u32, paramAddress[0]) });
             } else { // new Param16 functions with indirection support (big endian parameter)
                 if (opParam == INDIRECT_REGISTER) {
@@ -573,14 +579,14 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
         },
 
         PARAM_KEYG_KEYX => {
-            const secondParam: [*c]u8 = findKey2ndParam(paramAddress - 3);
+            const secondParam: [*c]u8 = frontier_next_step.findKey2ndParam(paramAddress - 3);
             if (secondParam != null) {
                 decodeOp(secondParam + 1, secondParam[0], @ptrCast(&indexOfItems[secondParam[0]].itemCatalogName), PARAM_LABEL, indexOfItems[secondParam[0]].tamMinMax & TAM_MAX_MASK);
-                _ = xcopy(@ptrCast(tmpString + TMP_STR_LENGTH / 2), @ptrCast(tmpString), @intCast(stringByteLength(tmpString) + 1));
+                _ = frontier_char_string.xcopy(@ptrCast(tmpString + TMP_STR_LENGTH / 2), @ptrCast(tmpString), @intCast(stringByteLength(tmpString) + 1));
                 decodeOp(paramAddress - 1, secondParam[0], op, PARAM_NUMBER_8, 21);
                 tmpString[@intCast(stringByteLength(tmpString) + 1)] = 0;
                 tmpString[@intCast(stringByteLength(tmpString))] = ' ';
-                _ = xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
+                _ = frontier_char_string.xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_KEYG_KEYX, {s} has no valid second key parameter!", .{std.mem.span(op)});
             }
@@ -734,21 +740,21 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
         BINARY_SHORT_INTEGER => {
             reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
-            _ = xcopy(getRegisterDataPointer(TEMP_REGISTER_1), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
-            shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, false, noBaseOverride);
+            _ = frontier_char_string.xcopy(getRegisterDataPointer(TEMP_REGISTER_1), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
+            frontier_display.shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, @intFromBool(false), noBaseOverride);
         },
 
         BINARY_REAL34 => {
             var realLiteral: real34_t = undefined;
-            _ = xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
-            real34ToDisplayString(&realLiteral, amNoneU, tmpString, &standardFont, 9999, 34, false, false, NOIRFRAC);
+            _ = frontier_char_string.xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            frontier_display.real34ToDisplayString(&realLiteral, amNoneU, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC);
         },
 
         BINARY_COMPLEX34 => {
             var complexLiteral: complex34_t = undefined;
-            _ = xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
-            _ = xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
-            complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, false, false, NOIRFRAC, @intCast(@as(u32, @bitCast(currentAngularMode))), getSystemFlag(FLAG_POLAR));
+            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
+            frontier_display.complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, @intFromBool(false), @intFromBool(false), NOIRFRAC, @intCast(@as(u32, @bitCast(currentAngularMode))), @intFromBool(getSystemFlag(FLAG_POLAR)));
         },
 
         STRING_SHORT_INTEGER => {
@@ -896,8 +902,8 @@ fn decodeLiteral(literalAddress_arg: [*c]u8) void {
             getStringLabelOrVariableName(literalAddress);
             reallocateRegister(TEMP_REGISTER_1, dtDate, 0, amNoneU);
             stringToReal34(tmpStringLabelOrVariableName, reg34(TEMP_REGISTER_1));
-            julianDayToInternalDate(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
-            dateToDisplayString(TEMP_REGISTER_1, tmpString);
+            frontier_date_time.julianDayToInternalDate(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
+            frontier_display.dateToDisplayString(TEMP_REGISTER_1, tmpString);
         },
 
         STRING_TIME => {
@@ -1061,7 +1067,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
     }
 
     if (op == 0x7fff) { // .END.
-        _ = xcopy(@ptrCast(tmpString), ".END.", 6);
+        _ = frontier_char_string.xcopy(@ptrCast(tmpString), ".END.", 6);
     } else {
         var nameOp: [36]u8 = undefined;
         nameOp[0] = 0;
@@ -1086,8 +1092,8 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                         _ = strcpy(&nameOp, if (indexOfItems[op].itemCatalogName[0] != 0) @as([*c]const u8, @ptrCast(&indexOfItems[op].itemCatalogName)) else @as([*c]const u8, @ptrCast(&indexOfItems[op].itemSoftmenuName)));
                     }
                 }
-                if (isItemConversion(@intCast(op))) {
-                    fullConvSoftMenuItemNameInclHPCONV(@intCast(op), &nameOp); //Display only the standard display partner, as a program cannot contain a custom conversion
+                if (frontier_conversion_units.isItemConversion(@intCast(op))) {
+                    frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(@intCast(op), &nameOp); //Display only the standard display partner, as a program cannot contain a custom conversion
                 }
                 abi.fmtBufZ(tmpString[0..2560], "{s}{s}", .{ std.mem.span(@as([*c]const u8, if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) "# " else "")), std.mem.span(@as([*c]const u8, &nameOp)) });
             },
