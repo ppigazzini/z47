@@ -1381,13 +1381,13 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             var reduced: real34_t = undefined;
             const rows: u16 = matrixHeader.matrixRows;
             const columns: u16 = matrixHeader.matrixColumns;
-            _ = sprintf(tmpString, "[ %u" ++ "x%u" ++ " Matrix ]", @as(c_uint, rows), @as(c_uint, columns));
+            abi.fmtBufZ(tmpString[0..2560], "[ {d}x{d} Matrix ]", .{ @as(u32, rows), @as(u32, columns) });
             printJustifiedImpl(tmpString);
             var i: u16 = 1;
             while (i <= rows) : (i += 1) {
                 var jj: u16 = 1;
                 while (jj <= columns) : (jj += 1) {
-                    _ = sprintf(tmpString, "%u" ++ ":%u" ++ "=", @as(c_uint, i), @as(c_uint, jj));
+                    abi.fmtBufZ(tmpString[0..2560], "{d}:{d}=", .{ @as(u32, i), @as(u32, jj) });
                     printLineImpl(tmpString, 0);
                     real34Reduce(real34, &reduced);
                     real34 += 1;
@@ -1406,13 +1406,13 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             linkToComplexMatrixRegister(@bitCast(regist), matrix);
             const rows: u16 = matrix.header.matrixRows;
             const cols: u16 = matrix.header.matrixColumns;
-            _ = sprintf(tmpString, "[ %u" ++ "x%u" ++ " Cpx Matrix ]", @as(c_uint, rows), @as(c_uint, cols));
+            abi.fmtBufZ(tmpString[0..2560], "[ {d}x{d} Cpx Matrix ]", .{ @as(u32, rows), @as(u32, cols) });
             printJustifiedImpl(tmpString);
             var i: u16 = 0;
             while (i < rows) : (i += 1) {
                 var jj: u16 = 0;
                 while (jj < cols) : (jj += 1) {
-                    _ = sprintf(tmpString, "%u" ++ ":%u" ++ "=", @as(c_uint, i + 1), @as(c_uint, jj + 1));
+                    abi.fmtBufZ(tmpString[0..2560], "{d}:{d}=", .{ @as(u32, i + 1), @as(u32, jj + 1) });
                     printLineImpl(tmpString, 0);
                     const elem: [*c]const complex34_t = matrix.matrixElements.? + (i * cols + jj);
                     const real34 = @constCast(varReal34(elem));
@@ -1497,7 +1497,7 @@ fn cmdPrintImpl(arg: u16, op: printArgument_t) void {
         if (getSystemFlag(@bitCast(FLAG_PRTEN)) or ((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP))) {
             displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             if (comptime !dmcp_build) {
-                _ = sprintf(errorMessage, "Printing is disabled");
+                abi.fmtBufZ(errorMessage[0..512], "Printing is disabled", .{});
                 moreInfoOnError("In function cmdPrint:", errorMessage, null, null);
             }
         }
@@ -1639,7 +1639,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime !dmcp_build) {
                 _ = real34ToString(reg34(regist), errorMessage);
-                _ = sprintf(tmpString, "x %d = %s:", @as(c_int, regist), errorMessage);
+                abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
             return @bitCast(@as(i16, -1));
@@ -1664,7 +1664,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime !dmcp_build) {
-            _ = sprintf(errorMessage, "register %d is %s:", @as(c_int, regist), getRegisterDataTypeName(regist, true, false));
+            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(getRegisterDataTypeName(regist, true, false)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
         }
         return @bitCast(@as(i16, -1));
@@ -1799,8 +1799,8 @@ pub export fn printTraceTI() callconv(.c) void {
         if ((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP)) {
             tmpString[0] = 0;
             switch (temporaryInformation) {
-                TI_FALSE => _ = sprintf(tmpString, "false"),
-                TI_TRUE => _ = sprintf(tmpString, "true"),
+                TI_FALSE => abi.fmtBufZ(tmpString[0..2560], "false", .{}),
+                TI_TRUE => abi.fmtBufZ(tmpString[0..2560], "true", .{}),
                 else => {},
             }
             if (tmpString[0] != 0) {
@@ -1912,13 +1912,13 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                     if ((tam.mode == TM_VALUE) and !tam.indirect) {
                         const tamMax: u16 = indexOfItems[@intCast(func)].tamMinMax & TAM_MAX_MASK;
                         if (tamMax <= 9) {
-                            _ = sprintf(&traceBuffer, " %u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d}", .{@as(u32, @intCast(param))});
                         } else if (tamMax <= 99) {
-                            _ = sprintf(&traceBuffer, " %02u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(param))});
                         } else if (tamMax <= 999) {
-                            _ = sprintf(&traceBuffer, " %03u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>3}", .{@as(u32, @intCast(param))});
                         } else {
-                            _ = sprintf(&traceBuffer, " %04u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>4}", .{@as(u32, @intCast(param))});
                         }
                     } else if ((func == ITM_OPEN_MENU) and !tam.indirect) {
                         if (param == MNU_DYNAMIC) {
@@ -1927,7 +1927,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             _ = sprintf(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, &indexOfItems[@intCast(tam.value)].itemCatalogName);
                         }
                     } else if (tam.mode == TM_SHUFFLE) {
-                        _ = sprintf(&traceBuffer, " %c%c%c%c", @as(c_int, shuffleReg[param & 0x03]), @as(c_int, shuffleReg[(param & 0x0c) >> 2]), @as(c_int, shuffleReg[(param & 0x30) >> 4]), @as(c_int, shuffleReg[(param & 0xc0) >> 6]));
+                        abi.fmtBufZ(&traceBuffer, " {c}{c}{c}{c}", .{ shuffleReg[param & 0x03], shuffleReg[(param & 0x0c) >> 2], shuffleReg[(param & 0x30) >> 4], shuffleReg[(param & 0xc0) >> 6] });
                     } else if ((param >= FIRST_NAMED_VARIABLE) and (param <= LAST_NAMED_VARIABLE)) {
                         if (!tam.indirect) {
                             _ = strcat(tmpString, " ");
@@ -1944,11 +1944,11 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         _ = strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
                     } else if ((tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or func == ITM_XEQ) and !tam.indirect) {
                         if (param < 99) {
-                            _ = sprintf(&traceBuffer, " %02u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(param))});
                         } else if (param <= LAST_UC_LOCAL_LABEL) {
-                            _ = sprintf(&traceBuffer, " %c", @as(c_int, 'A') + (@as(c_int, param) - 100));
+                            abi.fmtBufZ(&traceBuffer, " {c}", .{@as(u8, @intCast(@as(c_int, 'A') + (@as(c_int, param) - 100)))});
                         } else if (param <= LAST_LOCAL_LABEL) {
-                            _ = sprintf(&traceBuffer, " %c", @as(c_int, 'a') + (@as(c_int, param) - FIRST_LC_LOCAL_LABEL));
+                            abi.fmtBufZ(&traceBuffer, " {c}", .{@as(u8, @intCast(@as(c_int, 'a') + (@as(c_int, param) - FIRST_LC_LOCAL_LABEL)))});
                         } else if ((param >= FIRST_LABEL) and (param <= LAST_LABEL)) {
                             _ = strcat(tmpString, " " ++ STD_LEFT_SINGLE_QUOTE);
                             const strLength: u16 = @intCast(stringByteLength(tmpString));
@@ -1960,15 +1960,15 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         }
                     } else if ((tam.mode == TM_FLAGR or tam.mode == TM_FLAGW) and !tam.indirect) {
                         if (param < FLAG_X) {
-                            _ = sprintf(&traceBuffer, " %02u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(param))});
                         } else if (FLAG_X <= param and param <= FLAG_K) {
-                            _ = sprintf(&traceBuffer, " %c", @as(c_int, registerFlagLetters[@as(usize, param) - @as(usize, @intCast(FLAG_X))]));
+                            abi.fmtBufZ(&traceBuffer, " {c}", .{registerFlagLetters[@as(usize, param) - @as(usize, @intCast(FLAG_X))]});
                         } else if (param <= LAST_LOCAL_FLAG) {
-                            _ = sprintf(&traceBuffer, " .%02d", @as(c_int, param) - FIRST_LOCAL_FLAG);
+                            abi.fmtBufZ(&traceBuffer, " .{d:0>2}", .{@as(u32, @intCast(@as(c_int, param) - FIRST_LOCAL_FLAG))});
                         } else if (param < FLAG_M) {
-                            _ = sprintf(&traceBuffer, " %02u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(param))});
                         } else if (param <= FLAG_W) {
-                            _ = sprintf(&traceBuffer, " %c", @as(c_int, registerFlagLetters[@as(usize, @intCast(@as(c_int, param) - FLAG_M + (FLAG_K - FLAG_X + 1)))]));
+                            abi.fmtBufZ(&traceBuffer, " {c}", .{registerFlagLetters[@as(usize, @intCast(@as(c_int, param) - FLAG_M + (FLAG_K - FLAG_X + 1)))]});
                         } else if (param & 0x8000 != 0) {
                             param &= 0x3fff;
                             if (param < 64) {
@@ -1984,7 +1984,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            _ = sprintf(&traceBuffer, "%02u", @as(c_uint, param));
+                            abi.fmtBufZ(&traceBuffer, "{d:0>2}", .{@as(u32, @intCast(param))});
                         } else if (param <= REGISTER_K) {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
@@ -1999,7 +1999,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            _ = sprintf(&traceBuffer, ".%02d", @as(c_int, param) - @as(c_int, @intCast(FIRST_LOCAL_REGISTER)));
+                            abi.fmtBufZ(&traceBuffer, ".{d:0>2}", .{@as(u32, @intCast(@as(c_int, param) - @as(c_int, @intCast(FIRST_LOCAL_REGISTER))))});
                         }
                     }
                     _ = strcat(tmpString, &traceBuffer);
@@ -2020,7 +2020,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
             decodeOneStep_ALIAS(currentStep);
             if (func == ITM_LBL) {
                 printAdvance(0);
-                _ = sprintf(&traceBuffer, " %02d", @as(c_int, @intCast(currentLocalStepNumber)));
+                abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(currentLocalStepNumber))});
                 _ = strcat(&traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
                 _ = strcat(&traceBuffer, tmpString);
                 printJustifiedImpl(&traceBuffer);
@@ -2092,7 +2092,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
             if (getSystemFlag(FLAG_TRACE)) {
                 printLineImpl(" ", 0);
             }
-            _ = sprintf(tmpString, "00 { %u-Byte Prgm }", @as(c_uint, _getProgramSize()));
+            abi.fmtBufZ(tmpString[0..2560], "00 {{ {d}-Byte Prgm }}", .{@as(u32, _getProgramSize())});
             printLineImpl(tmpString, 1);
             firstLine = 1;
         } else {
@@ -2420,7 +2420,7 @@ pub export fn z47_frontier_program_label_suffix() callconv(.c) [*c]const u8 {
 
 pub export fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) callconv(.c) void {
     if (comptime ir_printing) {
-        _ = sprintf(tmpString, "Prgm #%u/%u", @as(c_uint, program_number), @as(c_uint, total_programs));
+        abi.fmtBufZ(tmpString[0..2560], "Prgm #{d}/{d}", .{ @as(u32, program_number), @as(u32, total_programs) });
         printJustifiedImpl(tmpString);
     }
 }

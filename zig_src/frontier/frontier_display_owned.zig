@@ -2388,7 +2388,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
 
     if (getSystemFlag(FLAG_PROPFR) != 0 and intPart != 0) {
         if (updateDisplayValueX != 0) {
-            _ = sprintf(&displayValueX, "%s%u %u/%u", @as([*c]const u8, if (sign == -1) "-" else ""), @as(u32, @intCast(intPart)), @as(u32, @intCast(numer)), @as(u32, @intCast(denom)));
+            abi.fmtBufZ(&displayValueX, "{s}{d} {d}/{d}", .{ std.mem.span(@as([*:0]const u8, if (sign == -1) "-" else "")), @as(u32, @intCast(intPart)), @as(u32, @intCast(numer)), @as(u32, @intCast(denom)) });
         }
 
         if (sign == -1) {
@@ -2422,7 +2422,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
         endingZero += 2;
     } else {
         if (updateDisplayValueX != 0) {
-            _ = sprintf(&displayValueX, "%s%u/%u", @as([*c]const u8, if (sign == -1) "-" else ""), @as(u32, @intCast(numer)), @as(u32, @intCast(denom)));
+            abi.fmtBufZ(&displayValueX, "{s}{d}/{d}", .{ std.mem.span(@as([*:0]const u8, if (sign == -1) "-" else "")), @as(u32, @intCast(numer)), @as(u32, @intCast(denom)) });
         }
 
         if (sign == -1) {
@@ -3339,7 +3339,7 @@ pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c
     }
 
     if (strLen < stringLen) {
-        _ = sprintf(errorMessage, "In function longIntegerToAllocatedString: the string str (%d bytes) is too small to hold the base 10 representation of lgInt, %d are needed!", strLen, stringLen);
+        abi.fmtBufZ(errorMessage[0..512], "In function longIntegerToAllocatedString: the string str ({d} bytes) is too small to hold the base 10 representation of lgInt, {d} are needed!", .{ strLen, stringLen });
         displayBugScreen(errorMessage);
         return;
     }
@@ -3570,12 +3570,12 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
     tDigits += 1;
     if ((ignoreTDisp == 0) and (timeDisplayFormatDigits == 1 or timeDisplayFormatDigits == 2 or (tDigits) > (if (isValid12hTime) @as(u32, 16) else 18))) {
         m32 = realToUint32C47(&m, null);
-        _ = sprintf(&digitBuf, ":%02u", m32);
+        abi.fmtBufZ(&digitBuf, ":{d:0>2}", .{m32});
         _ = strcat(displayString, &digitBuf);
     } else {
         m32 = realToUint32C47(&m, null);
         s32 = realToUint32C47(&s, null);
-        _ = sprintf(&digitBuf, ":%02u:%02u", m32, s32);
+        abi.fmtBufZ(&digitBuf, ":{d:0>2}:{d:0>2}", .{ m32, s32 });
         _ = strcat(displayString, &digitBuf);
 
         digits = 0;
@@ -3618,7 +3618,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
             }
 
             s32 = realToUint32C47(&value, null);
-            _ = sprintf(&digitBuf, "%u", s32);
+            abi.fmtBufZ(&digitBuf, "{d}", .{s32});
             _ = strcat(displayString, &digitBuf);
             digits += 1;
         }

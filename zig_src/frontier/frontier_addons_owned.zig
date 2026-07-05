@@ -57,6 +57,7 @@
 // are reproduced inline. The DMCP ROM screen/key calls are reached only under
 // `if (comptime dmcp_build)` via LIBRARY_FN_BASE trampolines.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -2470,7 +2471,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
 inline fn invalidDataTypeHint(where: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            _ = sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, 1, 0), getRegisterDataTypeName(REGISTER_X, 1, 0));
+            abi.fmtBufZ(errorMessage[0..512], "invalid data type {s} and {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_Y, 1, 0)), std.mem.span(getRegisterDataTypeName(REGISTER_X, 1, 0)) });
             moreInfoOnError(where, errorMessage, null, null);
         }
     }
@@ -3389,7 +3390,7 @@ pub export fn notSexa() callconv(.c) void {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            _ = sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, 0, 0));
+            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted!", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, 0, 0))});
             moreInfoOnError("In function notSexa:", errorMessage, null, null);
         }
     }
@@ -3523,7 +3524,7 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
                     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         if (comptime !dmcp_build) {
-                            _ = sprintf(errorMessage, "data type %s cannot be converted to a time!", getRegisterDataTypeName(toTimeParamReg[i], 0, 0));
+                            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(getRegisterDataTypeName(toTimeParamReg[i], 0, 0))});
                             moreInfoOnError("In function fnToTime:", errorMessage, null, null);
                         }
                     }
@@ -3534,7 +3535,7 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
                 displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
                     if (comptime !dmcp_build) {
-                        _ = sprintf(errorMessage, "data type %s cannot be converted to a time!", getRegisterDataTypeName(toTimeParamReg[i], 0, 0));
+                        abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(getRegisterDataTypeName(toTimeParamReg[i], 0, 0))});
                         moreInfoOnError("In function fnToTime:", errorMessage, null, null);
                     }
                 }
