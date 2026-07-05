@@ -72,6 +72,22 @@ fn proveNonNegZeroPad(
     }
 }
 
+/// Non-negative signed with a SPACE min-width, migrated via the unsigned cast.
+fn proveNonNegSpacePad(
+    comptime label: []const u8,
+    comptime cspec: [:0]const u8,
+    comptime zfmt: []const u8,
+    values: []const i64,
+) void {
+    var cbuf: [64]u8 = undefined;
+    var zbuf: [64]u8 = undefined;
+    for (values) |v| {
+        const c = cFmt(&cbuf, cspec, @as(c_int, @intCast(v)));
+        const z = std.fmt.bufPrint(&zbuf, zfmt, .{@as(u64, @intCast(v))}) catch unreachable;
+        expectEqualStr(label, cspec, zfmt, c, z, "nonneg-space->unsigned");
+    }
+}
+
 /// Prove an unsigned-decimal / hex translation over a value slice.
 fn proveUnsigned(
     comptime label: []const u8,
@@ -116,6 +132,19 @@ pub fn main() !void {
     proveNonNegZeroPad("02d(nonneg->u)", "%02d", "{d:0>2}", &signed_nonneg);
     proveNonNegZeroPad("03d(nonneg->u)", "%03d", "{d:0>3}", &signed_nonneg);
     proveNonNegZeroPad("04d(nonneg->u)", "%04d", "{d:0>4}", &signed_nonneg);
+
+    // ---- Space-padded (min-width) unsigned: C `%Nu` right-justifies with
+    //      spaces. Zig `{d: >N}` = fill ' ', align right, width N. ----
+    proveUnsigned("2u", "%2u", "{d: >2}", &unsigned_all);
+    proveUnsigned("3u", "%3u", "{d: >3}", &unsigned_all);
+    proveUnsigned("4u", "%4u", "{d: >4}", &unsigned_all);
+    proveUnsigned("10u", "%10u", "{d: >10}", &unsigned_all);
+
+    // ---- Space-padded signed: proven for NON-NEGATIVE only (Zig reserves sign
+    //      space -> `+`; the oracle's negative guard below shows why). The safe
+    //      migration formats the non-negative value as unsigned. ----
+    proveNonNegSpacePad("2d(nonneg->u)", "%2d", "{d: >2}", &signed_nonneg);
+    proveNonNegSpacePad("3d(nonneg->u)", "%3d", "{d: >3}", &signed_nonneg);
 
     // ---- Hex (lower/upper), zero-padded ----
     proveUnsigned("x", "%x", "{x}", &unsigned_all);

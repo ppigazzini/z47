@@ -21,6 +21,7 @@ const consts = abi.constants;
 // input.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -297,7 +298,7 @@ pub export fn fnVarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
         displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "No MVAR menu variable instruction after the label");
+            _ = std.fmt.bufPrintZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{}) catch unreachable;
             moreInfoOnErr("In function fnVarMnu:", errorMessage);
         }
     } else {
@@ -312,7 +313,7 @@ pub export fn fn42VarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
         displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "No MVAR menu variable instruction after the label");
+            _ = std.fmt.bufPrintZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{}) catch unreachable;
             moreInfoOnErr("In function fn42VarMnu:", errorMessage);
         }
     } else {
@@ -497,7 +498,7 @@ fn getKeyArg(regist: u16) u16 {
             } else {
                 displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
-                    _ = sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
+                    _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
                     moreInfoOnErr("In function _getKeyArg:", errorMessage);
                 }
                 return 0;
@@ -506,7 +507,7 @@ fn getKeyArg(regist: u16) u16 {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
+                _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))}) catch unreachable;
                 moreInfoOnErr("In function _getKeyArg:", errorMessage);
             }
             return 0;
@@ -550,7 +551,7 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "register %u is out of range", @as(c_uint, regist));
+                _ = std.fmt.bufPrintZ(errorMessage[0..512], "register {d} is out of range", .{@as(u32, regist)}) catch unreachable;
                 moreInfoOnErr("In function fnKey:", errorMessage);
             }
         }
@@ -585,7 +586,7 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "keycode %u is out of range", @as(c_uint, keyCode));
+                _ = std.fmt.bufPrintZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)}) catch unreachable;
                 moreInfoOnErr("In function fnKeyType:", errorMessage);
             }
             @"__gmpz_clear"(&kt[0]);
@@ -614,37 +615,37 @@ pub export fn fnPutKey(regist: u16) callconv(.c) void {
             btnFnClicked(null, @ptrCast(&kc));
         },
         21, 22, 23, 24, 25, 26 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 21 + 0));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 21 + 0)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         31, 32, 33, 34, 35, 36 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 31 + 6));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 31 + 6)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         41, 42, 43, 44, 45 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 41 + 12));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 41 + 12)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         51, 52, 53, 54, 55 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 51 + 17));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 51 + 17)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         61, 62, 63, 64, 65 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 61 + 22));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 61 + 22)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         71, 72, 73, 74, 75 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 71 + 27));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 71 + 27)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         81, 82, 83, 84, 85 => {
-            _ = sprintf(&kc, "%02u", @as(c_uint, keyCode - 81 + 32));
+            _ = std.fmt.bufPrintZ(&kc, "{d:0>2}", .{@as(u32, keyCode - 81 + 32)}) catch unreachable;
             btnClicked(null, @ptrCast(&kc));
         },
         else => {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "keycode %u is out of range", @as(c_uint, keyCode));
+                _ = std.fmt.bufPrintZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)}) catch unreachable;
                 moreInfoOnErr("In function fnPutKey:", errorMessage);
             }
         },

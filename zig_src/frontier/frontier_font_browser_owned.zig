@@ -10,6 +10,7 @@
 // fontBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -199,7 +200,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         first = (@as(u16, currentFntScr) - 1) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, currentFntScr) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN, numLinesNumericFont)) : (y += 1) {
-            _ = sprintf(tmpString, "%04X", @as(c_uint, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000));
+            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)}) catch unreachable;
             _ = showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, false, false);
             x = 0;
             while (x <= 15) : (x += 1) {
@@ -216,7 +217,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ = showString("Numeric font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
         }
 
-        _ = sprintf(tmpString, "%d/%d", @as(c_int, currentFntScr), @as(c_int, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont));
+        _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) }) catch unreachable;
         _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
     } else if (currentFntScr > numScreensNumericFont and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold) { // Numeric font bold
         x = 0;
@@ -231,7 +232,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         first = @as(u16, numLinesNumericFont) + (@as(u16, currentFntScr) - numScreensNumericFont - 1) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + (@as(u16, currentFntScr) - numScreensNumericFont) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold)) : (y += 1) {
-            _ = sprintf(tmpString, "%04X", @as(c_uint, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000));
+            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)}) catch unreachable;
             _ = showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT * (y - first) + 43, vmNormal, false, false);
             x = 0;
             while (x <= 15) : (x += 1) {
@@ -245,7 +246,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ = showString("Numeric font bold. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
         }
 
-        _ = sprintf(tmpString, "%d/%d", @as(c_int, currentFntScr), @as(c_int, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont));
+        _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) }) catch unreachable;
         _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
     } else if (currentFntScr > @as(u16, numScreensNumericFont) + numScreensNumericFontBold and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont) { // Standard font
         x = 0;
@@ -260,7 +261,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         first = @as(u16, numLinesNumericFont) + numLinesNumericFontBold + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - 1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + numLinesNumericFontBold + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont)) : (y += 1) {
-            _ = sprintf(tmpString, "%04X", @as(c_uint, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000));
+            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)}) catch unreachable;
             _ = showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false);
             x = 0;
             while (x <= 15) : (x += 1) {
@@ -275,7 +276,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ = showString("Standard font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
         }
 
-        _ = sprintf(tmpString, "%d/%d", @as(c_int, currentFntScr), @as(c_int, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont));
+        _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) }) catch unreachable;
         _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
     } else if (currentFntScr > @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont and currentFntScr <= @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) { // Tiny font
         x = 0;
@@ -290,7 +291,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
         first = @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - numScreensStandardFont - 1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
         y = first;
         while (y < minU16(@as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + (@as(u16, currentFntScr) - numScreensNumericFont - numScreensNumericFontBold - numScreensStandardFont) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN, @as(u16, numLinesNumericFont) + numLinesNumericFontBold + numLinesStandardFont + numLinesTinyFont)) : (y += 1) {
-            _ = sprintf(tmpString, "%04X", @as(c_uint, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000));
+            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{X:0>4}", .{@as(u32, if (glyphRow[y] < 0x8000) glyphRow[y] else glyphRow[y] -% 0x8000)}) catch unreachable;
             _ = showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT * (y - first) + 40, vmNormal, false, false);
             x = 0;
             while (x <= 15) : (x += 1) {
@@ -304,7 +305,7 @@ pub export fn fontBrowser(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ = showString("Tiny font. Press " ++ STD_UP_ARROW ++ ", " ++ STD_DOWN_ARROW ++ " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
         }
 
-        _ = sprintf(tmpString, "%d/%d", @as(c_int, currentFntScr), @as(c_int, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont));
+        _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}/{d}", .{ @as(i32, currentFntScr), @as(i32, @as(u16, numScreensNumericFont) + numScreensNumericFontBold + numScreensStandardFont + numScreensTinyFont) }) catch unreachable;
         _ = showString(tmpString, &standardFont, @as(u32, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true))), 220, vmNormal, false, true);
     } else {
         // displayBugScreen(bugScreenShowFonts);
