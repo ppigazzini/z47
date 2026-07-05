@@ -12,6 +12,7 @@
 // registerBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 
 // ---------------------------------------------------------------------------
@@ -203,14 +204,14 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
             if (showContent) {
                 real34ToDisplayString(reg34(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
             } else {
-                _ = sprintf(tmpString, "%d bytes", @as(c_int, REAL34_SIZE_IN_BYTES));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)}) catch unreachable;
             }
         },
         dtComplex34 => {
             if (showContent) {
                 complex34ToDisplayString(regComplex34(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), getComplexRegisterPolarMode(regist) != 0);
             } else {
-                _ = sprintf(tmpString, "%d bytes", @as(c_int, COMPLEX34_SIZE_IN_BYTES));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bytes", .{@as(i32, COMPLEX34_SIZE_IN_BYTES)}) catch unreachable;
             }
         },
         dtLongInteger => {
@@ -225,9 +226,9 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
                 }
             } else {
                 if (regist >= FIRST_RESERVED_VARIABLE) {
-                    _ = sprintf(tmpString, "4 bytes");
+                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "4 bytes", .{}) catch unreachable;
                 } else {
-                    _ = sprintf(tmpString, "%u bits " ++ STD_CORRESPONDS_TO ++ " 4+%u bytes", toBytes(getRegisterMaxDataLengthInBlocks(regist)) * 8, toBytes(getRegisterMaxDataLengthInBlocks(regist)));
+                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bits " ++ STD_CORRESPONDS_TO ++ " 4+{d} bytes", .{ toBytes(getRegisterMaxDataLengthInBlocks(regist)) * 8, toBytes(getRegisterMaxDataLengthInBlocks(regist)) }) catch unreachable;
                 }
             }
         },
@@ -248,21 +249,21 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
                     _ = strcat(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), STD_ELLIPSIS);
                 }
             } else {
-                _ = sprintf(tmpString, "%u character%s " ++ STD_CORRESPONDS_TO ++ " 4+%u bytes", @as(c_uint, @intCast(stringGlyphLength(regStringData(regist)))), if (stringGlyphLength(regStringData(regist)) == 1) @as([*c]const u8, "") else @as([*c]const u8, "s"), toBytes(getRegisterMaxDataLengthInBlocks(regist)));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} character{s} " ++ STD_CORRESPONDS_TO ++ " 4+{d} bytes", .{ @as(u32, @intCast(stringGlyphLength(regStringData(regist)))), std.mem.span(if (stringGlyphLength(regStringData(regist)) == 1) @as([*c]const u8, "") else @as([*c]const u8, "s")), toBytes(getRegisterMaxDataLengthInBlocks(regist)) }) catch unreachable;
             }
         },
         dtTime => {
             if (showContent) {
                 timeToDisplayString(regist, tmpString, true);
             } else {
-                _ = sprintf(tmpString, "%d bytes", @as(c_int, REAL34_SIZE_IN_BYTES));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)}) catch unreachable;
             }
         },
         dtDate => {
             if (showContent) {
                 dateToDisplayString(regist, tmpString);
             } else {
-                _ = sprintf(tmpString, "%d bytes", @as(c_int, REAL34_SIZE_IN_BYTES));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)}) catch unreachable;
             }
         },
         dtReal34Matrix => {
@@ -271,7 +272,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
             } else {
                 const matrixHeader = regMatrixHeader(regist);
                 const elements: u16 = @as(u16, matrixHeader.matrixRows) *% @as(u16, matrixHeader.matrixColumns);
-                _ = sprintf(tmpString, "%u element%s " ++ STD_CORRESPONDS_TO ++ " %u+%u bytes", @as(c_uint, elements), if (elements == 1) @as([*c]const u8, "") else @as([*c]const u8, "s"), @as(c_uint, sizeof_matrixHeader_t), toBytes(@as(u32, elements) * REAL34_SIZE_IN_BLOCKS));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} element{s} " ++ STD_CORRESPONDS_TO ++ " {d}+{d} bytes", .{ @as(u32, elements), std.mem.span(if (elements == 1) @as([*c]const u8, "") else @as([*c]const u8, "s")), sizeof_matrixHeader_t, toBytes(@as(u32, elements) * REAL34_SIZE_IN_BLOCKS) }) catch unreachable;
             }
         },
         dtComplex34Matrix => {
@@ -280,18 +281,18 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
             } else {
                 const matrixHeader = regMatrixHeader(regist);
                 const elements: u16 = @as(u16, matrixHeader.matrixRows) *% @as(u16, matrixHeader.matrixColumns);
-                _ = sprintf(tmpString, "%u element%s " ++ STD_CORRESPONDS_TO ++ " %u+%u bytes", @as(c_uint, elements), if (elements == 1) @as([*c]const u8, "") else @as([*c]const u8, "s"), @as(c_uint, sizeof_matrixHeader_t), toBytes(@as(u32, elements) * COMPLEX34_SIZE_IN_BLOCKS));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} element{s} " ++ STD_CORRESPONDS_TO ++ " {d}+{d} bytes", .{ @as(u32, elements), std.mem.span(if (elements == 1) @as([*c]const u8, "") else @as([*c]const u8, "s")), sizeof_matrixHeader_t, toBytes(@as(u32, elements) * COMPLEX34_SIZE_IN_BLOCKS) }) catch unreachable;
             }
         },
         dtConfig => {
             if (showContent) {
                 _ = strcpy(tmpString, "Configuration data");
             } else {
-                _ = sprintf(tmpString, "%d bytes", @as(c_int, CONFIG_SIZE_IN_BYTES));
+                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} bytes", .{@as(i32, CONFIG_SIZE_IN_BYTES)}) catch unreachable;
             }
         },
         else => {
-            _ = sprintf(tmpString, "Data type %s: to be coded", getDataTypeName(@intCast(getRegisterDataType(regist)), false, true));
+            _ = std.fmt.bufPrintZ(tmpString[0..2560], "Data type {s}: to be coded", .{std.mem.span(getDataTypeName(@intCast(getRegisterDataType(regist)), false, true))}) catch unreachable;
         },
     }
 }
@@ -305,7 +306,7 @@ fn registerName(s: [*c]u8, regist: calcRegister_t) void {
         tmpString[0] = letteredRegisterName(regist);
         _ = strcpy(tmpString + 1, ":");
     } else {
-        _ = sprintf(tmpString, "R%02d:", @as(c_int, regist));
+        _ = std.fmt.bufPrintZ(tmpString[0..2560], "R{d:0>2}:", .{@as(u32, @intCast(regist))}) catch unreachable;
     }
 }
 
@@ -361,7 +362,7 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
             while (row < 10) : (row += 1) {
                 const regist: calcRegister_t = currentRegisterBrowserScreen + row;
                 if (regist < FIRST_LOCAL_REGISTER + @as(i16, currentNumberOfLocalRegisters.get())) {
-                    _ = sprintf(tmpString, "R.%02d:", @as(c_int, regist) - FIRST_LOCAL_REGISTER);
+                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "R.{d:0>2}:", .{@as(u32, @intCast(@as(c_int, regist) - FIRST_LOCAL_REGISTER))}) catch unreachable;
 
                     registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, true, true))));
 
@@ -402,7 +403,7 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                 }
 
                 if (regist <= LAST_RESERVED_VARIABLE) { // Named variables
-                    _ = sprintf(tmpString, "%s:", @as([*c]const u8, @ptrCast(&allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName)) + 1);
+                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "{s}:", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName)) + 1)}) catch unreachable;
 
                     registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, true, true))));
 
