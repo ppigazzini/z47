@@ -1,3 +1,6 @@
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const FLAG_FRACT: c_uint = 0x8007;
 const FLAG_PROPFR: c_uint = 0x8008;
 const FLAG_FRCYC: c_uint = 0x8041;
@@ -79,15 +82,15 @@ fn applyGroupRight(value: u16) void {
 }
 
 fn applyMenuGapL() void {
-    showSoftmenu(-MNU_GAP_L);
+    frontier_softmenus.showSoftmenu(-MNU_GAP_L);
 }
 
 fn applyMenuGapRx() void {
-    showSoftmenu(-MNU_GAP_RX);
+    frontier_softmenus.showSoftmenu(-MNU_GAP_RX);
 }
 
 fn applyMenuGapR() void {
-    showSoftmenu(-MNU_GAP_R);
+    frontier_softmenus.showSoftmenu(-MNU_GAP_R);
 }
 
 fn applyIntegerMode(value: u16) void {
@@ -95,7 +98,7 @@ fn applyIntegerMode(value: u16) void {
         setSystemFlagChanged(SETTING_SINT_MODE);
     }
     shortIntegerMode = @as(u8, @intCast(value));
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 fn applyWho() void {
@@ -136,7 +139,7 @@ fn applyAngularMode(value: u16) void {
         setSystemFlagChanged(SETTING_AMODE);
     }
     currentAngularMode = @as(c_int, @intCast(value));
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 fn applyFractionType() void {
@@ -189,7 +192,7 @@ fn applyHide(value: u16) void {
 fn applyConfirmationYes() void {
     if (calcMode == CM_CONFIRMATION) {
         calcMode = previousCalcMode;
-        popSoftmenu();
+        frontier_softmenus.popSoftmenu();
         if (confirmedFunction) |func| {
             func(CONFIRMED);
         }
@@ -199,20 +202,20 @@ fn applyConfirmationYes() void {
 fn applyConfirmationNo() void {
     if (calcMode == CM_CONFIRMATION) {
         calcMode = previousCalcMode;
-        popSoftmenu();
+        frontier_softmenus.popSoftmenu();
     }
 }
 
 fn applyGetRange() void {
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
+    frontier_config.z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
 }
 
 fn applyGetHide() void {
-    z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
+    frontier_config.z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
 }
 
 fn applyGetLastError() void {
-    z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
+    frontier_config.z47_frontier_push_u32_to_x(@as(u32, previousErrorCode));
 }
 
 pub fn run(command: Command, value: u16) void {
@@ -270,7 +273,6 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn flipSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: c_int) void;
-extern fn fnRefreshState() void;
-extern fn showSoftmenu(menu: i16) void;
-extern fn popSoftmenu() void;
-extern fn z47_frontier_push_u32_to_x(value: u32) void;
+
+
+

@@ -1,3 +1,7 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
 const NOT_CONFIRMED: u16 = 9878;
 
 const ITM_END: u16 = 1458;
@@ -13,7 +17,7 @@ const PGM_RUNNING: u8 = 1;
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 
 fn requestConfirmation() void {
-    setConfirmationMode(&fnClPAll);
+    frontier_config.setConfirmationMode(&frontier.fnClPAll);
 }
 
 fn seedProgramEndMarker() void {
@@ -56,9 +60,9 @@ pub fn run(confirmation: u16) void {
         return;
     }
 
-    removeUserItemAssignments(3, "");
+    frontier_assign.removeUserItemAssignments(3, @constCast(""));
 
-    const was_in_ram = z47_frontier_program_current_program_in_ram();
+    const was_in_ram = frontier_manage.z47_frontier_program_current_program_in_ram();
     resizeProgramMemory(1);
     seedProgramEndMarker();
     initializeProgramPointers();
@@ -68,7 +72,7 @@ pub fn run(confirmation: u16) void {
         restoreActiveProgramPointers();
     }
 
-    scanLabelsAndPrograms();
+    frontier_manage.scanLabelsAndPrograms();
     setTemporaryInformation();
     setScreenUpdatingAuto();
 }
@@ -86,9 +90,8 @@ extern var currentLocalStepNumber: u16;
 extern var beginOfCurrentProgram: [*]u8;
 extern var endOfCurrentProgram: [*]u8;
 
-extern fn fnClPAll(confirmation: u16) void;
-extern fn setConfirmationMode(func: ConfirmedFunction) void;
+
+
 extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
-extern fn scanLabelsAndPrograms() void;
-extern fn removeUserItemAssignments(user_item: i16, user_item_name: [*:0]const u8) void;
-extern fn z47_frontier_program_current_program_in_ram() bool;
+
+

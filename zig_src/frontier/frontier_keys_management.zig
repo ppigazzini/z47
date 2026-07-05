@@ -1,3 +1,6 @@
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const TO_USER: u16 = 29;
 const FROM_USER: u16 = 30;
 
@@ -25,16 +28,16 @@ const FLAG_MYM_TRIPLE: u16 = 0x805f;
 const FLAG_HOME_TRIPLE: u16 = 0x8060;
 
 fn applyToUser() void {
-    z47_frontier_keys_to_user_case();
+    frontier_config.z47_frontier_keys_to_user_case();
 }
 
 fn applyFromUser() void {
-    z47_frontier_keys_from_user_case();
+    frontier_config.z47_frontier_keys_from_user_case();
 }
 
 fn applyKReset(choice: u16) void {
-    fnShowVersion(choice);
-    z47_frontier_keys_user_layout_reset_case();
+    frontier_config.fnShowVersion(choice);
+    frontier_config.z47_frontier_keys_user_layout_reset_case();
 }
 
 fn applyModelChoice(choice: u16) void {
@@ -50,35 +53,35 @@ fn applyModelChoice(choice: u16) void {
         fnClearFlag(FLAG_MYM_TRIPLE);
     }
 
-    fnShowVersion(choice);
+    frontier_config.fnShowVersion(choice);
 }
 
 fn applyHReset(choice: u16) void {
-    createHOME();
-    showSoftmenu(-MNU_HOME);
-    fnShowVersion(choice);
+    _ = frontier_softmenus.createHOME();
+    frontier_softmenus.showSoftmenu(-MNU_HOME);
+    frontier_config.fnShowVersion(choice);
 }
 
 fn applyPReset(choice: u16) void {
-    createPFN();
-    showSoftmenu(-MNU_PFN);
-    fnShowVersion(choice);
+    _ = frontier_softmenus.createPFN();
+    frontier_softmenus.showSoftmenu(-MNU_PFN);
+    frontier_config.fnShowVersion(choice);
 }
 
 fn applyMReset(choice: u16) void {
-    fnRESET_MyM(0);
-    fnShowVersion(choice);
+    frontier_addons.fnRESET_MyM(0);
+    frontier_config.fnShowVersion(choice);
 }
 
 fn applyAReset(choice: u16) void {
-    fnRESET_Mya();
-    fnShowVersion(choice);
+    frontier_addons.fnRESET_Mya();
+    frontier_config.fnShowVersion(choice);
 }
 
 fn applyRibbon(choice: u16) void {
-    fnRESET_MyM(choice);
-    fnShowVersion(choice);
-    showSoftmenu(-MNU_MyMenu);
+    frontier_addons.fnRESET_MyM(choice);
+    frontier_config.fnShowVersion(choice);
+    frontier_softmenus.showSoftmenu(-MNU_MyMenu);
 }
 
 pub fn run(choice: u16) void {
@@ -100,12 +103,11 @@ extern var calcModel: u8;
 
 extern fn fnClearFlag(flag: u16) void;
 extern fn fnSetFlag(flag: u16) void;
-extern fn fnShowVersion(option: u16) void;
-extern fn createHOME() void;
-extern fn showSoftmenu(mnim1: i16) void;
-extern fn createPFN() void;
-extern fn fnRESET_MyM(param: u16) void;
-extern fn fnRESET_Mya() void;
-extern fn z47_frontier_keys_to_user_case() void;
-extern fn z47_frontier_keys_from_user_case() void;
-extern fn z47_frontier_keys_user_layout_reset_case() void;
+
+
+
+
+
+
+
+

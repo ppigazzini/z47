@@ -15,6 +15,9 @@
 
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // ---------------------------------------------------------------------------
@@ -78,15 +81,14 @@ extern var temporaryInformation: u8;
 
 extern fn setSystemFlag(flag: u16) void;
 extern fn clearSystemFlag(flag: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*:0]const u8) void;
+
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 // Provided by the registerValueConversions Zig owner.
-extern fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64, overflow: ?*bool, fractional: ?*bool) bool;
-extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: calcRegister_t) void;
+
+
 // Defined in radioButtonCatalog.c.
-extern fn fnRefreshState() void;
 
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
@@ -101,17 +103,17 @@ fn fnChangeBaseCore(base: u16) error{BaseOutOfRange}!void {
 
     if (base < 2 or base > 16) {
         return error.BaseOutOfRange;
-    } else if (getRegisterAsShortInt(REGISTER_X, &sign, &val, null, null)) {
-        convertUInt64ToShortIntegerRegister(@intFromBool(sign), val, base, REGISTER_X);
+    } else if (frontier_register_value_conversions.getRegisterAsShortInt(REGISTER_X, &sign, &val, null, null)) {
+        frontier_register_value_conversions.convertUInt64ToShortIntegerRegister(@intFromBool(sign), val, base, REGISTER_X);
         lastIntegerBase = base;
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
     }
 }
 
 pub export fn fnChangeBase(base: u16) callconv(.c) void {
     // Single error on REGISTER_T (not X), so the report is inlined in the shim.
     fnChangeBaseCore(base) catch {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
         moreInfoOnError("In function fnChangeBase:", "The base must be from 2 to 16.");
     };
 }
@@ -123,7 +125,7 @@ pub export fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *m
     if (longIntegerBits(opY) + longIntegerBits(opX) <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
         mpz_mul(result, opY, opX);
     } else {
-        displayCalcErrorMessage(if (longIntegerSign(opY) == longIntegerSign(opX)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == longIntegerSign(opX)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function longIntegerMultiply:", "the product would exceed the maximum long integer size!");
     }
 }
@@ -132,7 +134,7 @@ pub export fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) callconv(.
     if (longIntegerBits(op) * 2 <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
         mpz_mul(result, op, op);
     } else {
-        displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function longIntegerSquare:", "the square would exceed the maximum long integer size!");
     }
 }
@@ -141,7 +143,7 @@ pub export fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_st
     if (longIntegerSign(opY) != longIntegerSign(opX) or @max(longIntegerBits(opY), longIntegerBits(opX)) <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
         mpz_add(result, opY, opX);
     } else {
-        displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function longIntegerAdd:", "the sum would exceed the maximum long integer size!");
     }
 }
@@ -150,7 +152,7 @@ pub export fn longIntegerSubtract(opY: *mpz_struct, opX: *mpz_struct, result: *m
     if (longIntegerSign(opY) == longIntegerSign(opX) or @max(longIntegerBits(opY), longIntegerBits(opX)) <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
         mpz_sub(result, opY, opX);
     } else {
-        displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function longIntegerSubtract:", "the difference would exceed the maximum long integer size!");
     }
 }
@@ -191,7 +193,7 @@ fn WP34S_calc_overflow(xv: u64, yv: u64, neg: i32) i32 {
             } else return 0;
         },
         else => {
-            displayBugScreen("WP34S_calc_overflow: bad shortIntegerMode");
+            frontier_error.displayBugScreen("WP34S_calc_overflow: bad shortIntegerMode");
             return 0;
         },
     }
@@ -370,13 +372,13 @@ pub export fn WP34S_intDivide(y: u64, x: u64) callconv(.c) u64 {
 
     if (divisor == 0) {
         if (dividend == 0) {
-            displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function WP34S_intDivide: cannot divide 0 by 0!", null);
         } else if (dividendSign != 0) {
-            displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function WP34S_intDivide: cannot divide a negative short integer by 0!", null);
         } else {
-            displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function WP34S_intDivide: cannot divide a positive short integer by 0!", null);
         }
         return 0;
@@ -464,7 +466,7 @@ pub export fn WP34S_intSqrt(x: u64) callconv(.c) u64 {
     var nn1: u64 = undefined;
 
     if (signValue != 0) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function WP34S_intSqrt: Cannot extract the square root of a negative short integer!", null);
         return 0;
     }
@@ -553,7 +555,7 @@ pub export fn WP34S_intPower(b: u64, e: u64) callconv(.c) u64 {
     const base = WP34S_extract_value(b, &baseSign);
 
     if (exponent == 0 and base == 0) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function WP34S_intPower: Cannot calculate 0^0!", null);
         setSystemFlag(FLAG_OVERFLOW);
         return 0;
@@ -630,7 +632,7 @@ pub export fn WP34S_intLog2(x: u64) callconv(.c) u64 {
     var log2: u32 = 0;
 
     if (value == 0 or signValue != 0) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function WP34S_intLog2: argument must be > 0!", null);
         return 0;
     }
@@ -656,7 +658,7 @@ pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
     var c: i32 = 0;
 
     if (value == 0 or signValue != 0) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function WP34S_intLog10: argument must be > 0!", null);
         return 0;
     }
