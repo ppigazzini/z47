@@ -26,6 +26,9 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_integers = @import("frontier_integers.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -78,14 +81,14 @@ extern var ctxtReal51: realContext_t;
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, pad: bool) [*c]const u8;
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn setSystemFlagChanged(sf: i32) void;
 extern fn getSystemFlag(flag: c_int) bool;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool) u32;
+
 extern fn fractionTolerence(tol: *real_t) void;
-extern fn WP34S_int_gcd(a: u64, b: u64) u64;
+
 extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
@@ -195,7 +198,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
         real34ToReal(reg34(regist), &temp0);
     } else {
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "{s} cannot be shown as a fraction!", .{std.mem.span(getRegisterDataTypeName(regist, true, false))});
+            abi.fmtBufZ(errorMessage[0..512], "{s} cannot be shown as a fraction!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false))});
             moreInfoOnError("In function fraction:", errorMessage);
         }
         sign.* = 0;
@@ -232,7 +235,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
     //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
     //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
     var ip: u32 = undefined;
-    ip = realToUint32C47(&temp0, null);
+    ip = frontier_real_type.realToUint32C47(&temp0, null);
     intPart.* = ip;
     uInt32ToReal(@truncate(intPart.*), &temp3);
     realSubtract(&temp0, &temp3, &temp0, &ctxtReal34);
@@ -287,7 +290,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
         var tt: u32 = 0;
         if (real34IsAnInteger(&factorOfOneOnDenMax34)) {
             tt = @bitCast(real34ToInt32(&factorOfOneOnDenMax34));
-            const gcd: u32 = @truncate(WP34S_int_gcd(tt, denMaxLocal));
+            const gcd: u32 = @truncate(frontier_integers.WP34S_int_gcd(tt, denMaxLocal));
 
             if (getSystemFlag(FLAG_DENANY)) {
                 if (gcd != 0) {
@@ -398,7 +401,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
 
         uInt32ToReal(denMaxLocal, &delta);
         realFMA(&delta, &temp0, const_1on2(), &temp3, &ctxtReal34);
-        ip = realToUint32C47(&temp3, null);
+        ip = frontier_real_type.realToUint32C47(&temp3, null);
         numer.* = ip;
     }
 
@@ -417,7 +420,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
             if (denMaxLocal % i == 0) {
                 uInt32ToReal(i, &temp4);
                 realFMA(&temp4, &temp0, const_1on2(), &temp3, &ctxtReal34);
-                ip = realToUint32C47(&temp3, null);
+                ip = frontier_real_type.realToUint32C47(&temp3, null);
                 numer.* = ip;
 
                 uInt32ToReal(@truncate(numer.*), &temp3);

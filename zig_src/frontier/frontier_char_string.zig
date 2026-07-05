@@ -27,6 +27,8 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
@@ -83,9 +85,8 @@ extern const commonBugScreenMessages: [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EA
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-extern fn findGlyph(font: *const font_t, charCode: u16) i16;
-extern fn generateNotFoundGlyph(font: i16, charCode: u16) void;
-extern fn displayBugScreen(msg: [*c]const u8) void;
+
+
 
 // libc.
 extern fn strlen(s: [*c]const u8) usize;
@@ -484,14 +485,14 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
         }
 
         if (charCode != 1) {
-            glyphId = findGlyph(font, charCode);
+            glyphId = frontier_fonts.findGlyph(font, charCode);
             if (glyphId >= 0) {
                 glyph = &fontGlyphs(font)[@intCast(glyphId)];
             } else if (glyphId == -1) {
-                generateNotFoundGlyph(-1, charCode);
+                frontier_fonts.generateNotFoundGlyph(-1, charCode);
                 glyph = &glyphNotFound;
             } else if (glyphId == -2) {
-                generateNotFoundGlyph(-2, charCode);
+                frontier_fonts.generateNotFoundGlyph(-2, charCode);
                 glyph = &glyphNotFound;
             } else {
                 glyph = null;
@@ -499,7 +500,7 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
 
             if (glyph == null) {
                 abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "_calculateStringWidth", @as(c_int, glyphId) });
-                displayBugScreen(errorMessage);
+                frontier_error.displayBugScreen(errorMessage);
                 width.* = 0;
                 return;
             }

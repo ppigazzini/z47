@@ -78,7 +78,7 @@ const complex34_t = abi.Complex34;
 const decNumberUnit = u16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real_t = abi.Real;
-const realContext_t = opaque {};
+const realContext_t = abi.RealContext;
 const decContext = extern struct {
     digits: i32,
     emax: i32,

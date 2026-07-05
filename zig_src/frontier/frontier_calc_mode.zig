@@ -31,6 +31,11 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 
 const tamState_t = abi.TamState;
@@ -172,13 +177,13 @@ extern const standardFont: font_t;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn popSoftmenu() void;
-extern fn showSoftmenu(id: i16) void;
-extern fn hideCursor() void;
-extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool_t, clearBottom: bool_t) void;
-extern fn resetAlphaSelectionBuffer() void;
-extern fn closeNim() void;
-extern fn fnStopTimerApp() void;
+
+
+
+
+
+
+
 extern fn clearSystemFlag(flag: c_uint) void;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn getSystemFlag(flag: c_int) bool_t;
@@ -187,7 +192,7 @@ extern fn saveForUndo() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 // decQuad real34SetZero(destination) -> decQuadZero(destination).
@@ -247,7 +252,7 @@ pub export fn fnOff(unusedParamButMandatory: u16) callconv(.c) void {
     shiftF = false;
     shiftG = false;
 
-    fnStopTimerApp();
+    frontier_timer.fnStopTimerApp();
 
     if (comptime !dmcp_build) { // PC_BUILD
         if (matrixIndex != INVALID_VARIABLE) {
@@ -281,7 +286,7 @@ pub export fn calcModeNormal() callconv(.c) void {
     }
     calcMode = CM_NORMAL;
     if (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_ALPHA) {
-        popSoftmenu();
+        frontier_softmenus.popSoftmenu();
     }
 
     if (softmenuStack[0].softmenuId == 1) { // MyAlpha
@@ -289,7 +294,7 @@ pub export fn calcModeNormal() callconv(.c) void {
     }
 
     clearSystemFlag(FLAG_ALPHA);
-    hideCursor();
+    frontier_screen.hideCursor();
     cursorEnabled = 0;
 
     calcModeNormalGui();
@@ -315,7 +320,7 @@ pub export fn calcModeAim(unusedButMandatoryParameter: u16) callconv(.c) void {
         calcMode = CM_AIM;
         liftStack();
 
-        clearRegisterLine(AIM_REGISTER_LINE, true, true);
+        frontier_screen.clearRegisterLine(AIM_REGISTER_LINE, true, true);
         xCursor = 1;
         yCursor = Y_POSITION_OF_AIM_LINE + 6;
         cursorFont = &standardFont;
@@ -323,7 +328,7 @@ pub export fn calcModeAim(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 
     if (tam.mode == 0) {
-        showSoftmenu(-MNU_ALPHA);
+        frontier_softmenus.showSoftmenu(-MNU_ALPHA);
     }
 
     if (softmenuStack[0].softmenuId == 0) { // MyMenu
@@ -372,7 +377,7 @@ pub export fn enterAsmModeIfMenuIsACatalog(id: i16) callconv(.c) void {
 
     if (catalog != 0) {
         if (calcMode == CM_NIM) {
-            closeNim();
+            frontier_bufferize.closeNim();
         }
         if (calcMode != CM_PEM or !getSystemFlag(FLAG_ALPHA)) {
             if (calcMode != CM_AIM and calcMode != CM_EIM) {
@@ -383,7 +388,7 @@ pub export fn enterAsmModeIfMenuIsACatalog(id: i16) callconv(.c) void {
             }
 
             clearSystemFlag(FLAG_ALPHA);
-            resetAlphaSelectionBuffer();
+            frontier_bufferize.resetAlphaSelectionBuffer();
 
             if (catalog != CATALOG_MVAR) {
                 calcModeAimGui();
@@ -419,7 +424,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     saveForUndo();
     if (lastErrorCode == ERROR_RAM_FULL) {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         if (comptime !dmcp_build) {
             moreInfoOnError("In function calcModeNim:", "there is not enough memory to save for undo!", null, null);
         }
@@ -437,7 +442,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
     hexDigits = 0;
 
     if (!checkHP()) {
-        clearRegisterLine(NIM_REGISTER_LINE, true, true);
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
     }
     xCursor = 1;
     cursorEnabled = 1;

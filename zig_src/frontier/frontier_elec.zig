@@ -25,6 +25,9 @@ const option_elec: bool = frontier_build_options.option_elec;
 // abi module; only the local spellings are aliased so the ported body is stable.
 // ---------------------------------------------------------------------------
 const abi = @import("abi");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const consts = abi.constants;
 const real_t = abi.Real;
 const real34_t = abi.Real34;
@@ -96,15 +99,15 @@ extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn fnSwapX(regist: u16) void;
 extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(src: calcRegister_t, dst: calcRegister_t) void;
-extern fn displayCalcErrorMessage(code: u8, errMsgRegLine: calcRegister_t, errRegLine: calcRegister_t) void;
-extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
-extern fn convertComplexToResultRegister(real: *align(1) const real_t, imag: *align(1) const real_t, dest: calcRegister_t) void;
-extern fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) void;
+
+
+
+
 extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realSetNaN(value: *real_t) void;
-extern fn realSetZero(value: *real_t) void;
+
+
 extern fn decQuadIsZero(x: *align(1) const real34_t) u32;
 
 // ---------------------------------------------------------------------------
@@ -141,10 +144,10 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 // rt.add/mul/div take a *Complex and thread ctxtReal39.
 const rt = abi.runtime;
 inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
-    _ = getRegisterAsComplex(reg, &c.Real, &c.Imag);
+    _ = frontier_register_value_conversions.getRegisterAsComplex(reg, &c.Real, &c.Imag);
 }
 inline fn putRegCplx(c: *const cplx_t, reg: calcRegister_t) void {
-    convertComplexToResultRegister(&c.Real, &c.Imag, reg);
+    frontier_register_value_conversions.convertComplexToResultRegister(&c.Real, &c.Imag, reg);
 }
 
 // ---------------------------------------------------------------------------
@@ -174,7 +177,7 @@ const Error = error{ArgExceedsDomain};
 
 fn reportError(e: Error) void {
     switch (e) {
-        error.ArgExceedsDomain => displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X),
+        error.ArgExceedsDomain => frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X),
     }
 }
 
@@ -194,8 +197,8 @@ fn checkResults(results: []const *cplx_t) Error!void {
     }
     if (getSystemFlag(FLAG_SPCRES)) {
         for (results) |res| {
-            realSetNaN(&res.Real);
-            realSetZero(&res.Imag);
+            frontier_real_type.realSetNaN(&res.Real);
+            frontier_real_type.realSetZero(&res.Imag);
         }
         return;
     }
@@ -213,10 +216,10 @@ fn elecPutResults(l: *const cplx_t, x: *const cplx_t, y: *const cplx_t, z: *cons
     putRegCplx(x, REGISTER_X);
     putRegCplx(y, REGISTER_Y);
     putRegCplx(z, REGISTER_Z);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_L);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_L);
 }
 
 fn elecSetAOperators(aOp: *cplx_t, aaOp: *cplx_t) void {
@@ -238,8 +241,8 @@ fn flipPolar(regist: calcRegister_t) void {
         var zReal: real_t = undefined;
         var zImag: real_t = undefined;
         if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-            if (getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
-                convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+            if (frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+                frontier_register_value_conversions.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
             }
         } else if (getComplexRegisterPolarMode(REGISTER_X) != amPolar) {
             setComplexRegisterPolarMode(REGISTER_X, amPolar);
@@ -267,9 +270,9 @@ fn elecStoreTriple(base: calcRegister_t, r1: *const cplx_t, r2: *const cplx_t, r
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     putRegCplx(r1, REGISTER_X); // phase 1 into X, phase 2 -> Y, phase 3 -> Z
-    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
     setSystemFlag(FLAG_ASLIFT);
     copySourceRegisterToDestRegister(REGISTER_X, base + 0);
     copySourceRegisterToDestRegister(REGISTER_Y, base + 1);
@@ -564,10 +567,10 @@ fn fnCopyXtoAbcCore() Error!void {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     putRegCplx(&rx, REGISTER_X); // a^2*x into X, a*x -> Y, x -> Z
-    convertComplexRegisterToRealIfZeroImag(REGISTER_X);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
-    convertComplexRegisterToRealIfZeroImag(REGISTER_L);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_X);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Y);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_Z);
+    frontier_register_value_conversions.convertComplexRegisterToRealIfZeroImag(REGISTER_L);
     temporaryInformation = TI_ABC;
 }
 

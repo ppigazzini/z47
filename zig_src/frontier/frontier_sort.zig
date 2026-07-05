@@ -11,6 +11,8 @@
 // TO_QSPI tables in the original sort.c byte-for-byte.
 
 const abi = @import("abi");
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
 
 // Comparison modes (src/c47/defines.h).
 const CMP_BINARY: i32 = 0;
@@ -25,9 +27,8 @@ const font_t = abi.Font;
 
 extern const standardFont: font_t;
 
-extern fn findGlyph(font: *const font_t, charCode: u16) callconv(.c) i16;
-extern fn stringGlyphLength(str: [*c]const u8) callconv(.c) i32;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) callconv(.c) i16;
+
+
 
 const UnSupSubRange = struct {
     low: u16,
@@ -108,8 +109,8 @@ inline fn glyphCodeAt(str: [*c]const u8, pos: i16) u16 {
 }
 
 pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) callconv(.c) i32 {
-    const lga: i32 = stringGlyphLength(stra);
-    const lgb: i32 = stringGlyphLength(strb);
+    const lga: i32 = frontier_char_string.stringGlyphLength(stra);
+    const lgb: i32 = frontier_char_string.stringGlyphLength(strb);
     const shorter: i32 = if (lga < lgb) lga else lgb;
 
     // Compare using charCode only (binary or name ordering).
@@ -128,8 +129,8 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
             const rankb: i16 = @bitCast(cb);
             if (ranka < rankb) return -1;
             if (ranka > rankb) return 1;
-            posa = stringNextGlyph(stra, posa);
-            posb = stringNextGlyph(strb, posb);
+            posa = frontier_char_string.stringNextGlyph(stra, posa);
+            posb = frontier_char_string.stringNextGlyph(strb, posb);
         }
         if (lga < lgb) return -1;
         if (lga > lgb) return 1;
@@ -142,12 +143,12 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
     var posb: i16 = 0;
     var i: i32 = 0;
     while (i < shorter) : (i += 1) {
-        const ranka = glyphs[@intCast(findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank1;
-        const rankb = glyphs[@intCast(findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank1;
+        const ranka = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank1;
+        const rankb = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank1;
         if (ranka < rankb) return -1;
         if (ranka > rankb) return 1;
-        posa = stringNextGlyph(stra, posa);
-        posb = stringNextGlyph(strb, posb);
+        posa = frontier_char_string.stringNextGlyph(stra, posa);
+        posb = frontier_char_string.stringNextGlyph(strb, posb);
     }
     if (lga < lgb) return -1;
     if (lga > lgb) return 1;
@@ -158,12 +159,12 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
         posb = 0;
         i = 0;
         while (i < shorter) : (i += 1) {
-            const ranka = glyphs[@intCast(findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank2;
-            const rankb = glyphs[@intCast(findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank2;
+            const ranka = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank2;
+            const rankb = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank2;
             if (ranka < rankb) return -1;
             if (ranka > rankb) return 1;
-            posa = stringNextGlyph(stra, posa);
-            posb = stringNextGlyph(strb, posb);
+            posa = frontier_char_string.stringNextGlyph(stra, posa);
+            posb = frontier_char_string.stringNextGlyph(strb, posb);
         }
         if (lga < lgb) return -1;
         if (lga > lgb) return 1;
