@@ -338,10 +338,10 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
 
         if (currentNumberOfLocalFlags() == 0) {
             line += 1;
-            _ = sprintf(lineStr(line), "No local flags or registers allocated.");
+            abi.fmtCStr(lineStr(line), "No local flags or registers allocated.", .{});
         } else {
             line += 1;
-            _ = sprintf(lineStr(line), "Local user flags set:");
+            abi.fmtCStr(lineStr(line), "Local user flags set:", .{});
             line += 1;
             lineStr(line)[0] = 0;
             firstFlag = true;

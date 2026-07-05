@@ -28,6 +28,7 @@
 //     cairo surface and gdk-pixbuf APIs and are dead on firmware (gated by
 //     comptime !dmcp_build; GTK/cairo are not linked into the DMCP build).
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 
@@ -294,7 +295,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
             var reduced: real34_t = undefined;
             const rows: u32 = matrixHeader.matrixRows;
             const columns: u32 = matrixHeader.matrixColumns;
-            _ = sprintf(buf, "%ux%u", rows, columns);
+            abi.fmtCStr(buf, "{d}x{d}", .{ rows, columns });
 
             var i: u32 = 0;
             while (i < rows * columns) : (i += 1) {
@@ -317,7 +318,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
             var reduced: real34_t = undefined;
             const rows: u32 = matrixHeader.matrixRows;
             const columns: u32 = matrixHeader.matrixColumns;
-            _ = sprintf(buf, "%ux%u", rows, columns);
+            abi.fmtCStr(buf, "{d}x{d}", .{ rows, columns });
 
             var i: u32 = 0;
             while (i < rows * columns) : (i += 1) {
@@ -336,12 +337,12 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
                 const imagPart: *const real34_t = @ptrCast(@as([*]u8, @ptrCast(&complex34[0])) + REAL34_SIZE_IN_BYTES);
                 real34Reduce(imagPart, &reduced);
                 if (real34IsNegative(&reduced)) {
-                    _ = sprintf(buf + len, " - %sx", complexUnit());
+                    abi.fmtCStr(buf + len, " - {s}x", .{ @as([*:0]const u8, complexUnit()) });
                     len += 5;
                     real34SetPositiveSign(&reduced);
                     real34ToString(&reduced, buf + len);
                 } else {
-                    _ = sprintf(buf + len + strlen(buf + len), " + %sx", complexUnit());
+                    abi.fmtCStr(buf + len + strlen(buf + len), " + {s}x", .{ @as([*:0]const u8, complexUnit()) });
                     len += 5;
                     real34ToString(&reduced, buf + len);
                 }
@@ -360,9 +361,9 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 
             var n: i32 = ERROR_MESSAGE_LENGTH - 100;
             if (forPrinter != 0) {
-                _ = sprintf(errorMessage + @as(usize, @intCast(n)), "#%d", @as(c_int, @intCast(base)));
+                abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d}", .{ @as(c_int, @intCast(base)) });
             } else {
-                _ = sprintf(errorMessage + @as(usize, @intCast(n)), "#%d (word size = %u)", @as(c_int, @intCast(base)), @as(c_uint, shortIntegerWordSize));
+                abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d} (word size = {d})", .{ @as(c_int, @intCast(base)), @as(c_uint, shortIntegerWordSize) });
             }
             n -= 1;
 
@@ -411,12 +412,12 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
             // Imaginary part
             real34Reduce(regImag34(regist), &reduced);
             if (real34IsNegative(&reduced)) {
-                _ = sprintf(buf, "%s - %sx", tmp, complexUnit());
+                abi.fmtCStr(buf, "{s} - {s}x", .{ @as([*:0]const u8, tmp), @as([*:0]const u8, complexUnit()) });
                 len += 5;
                 real34SetPositiveSign(&reduced);
                 real34ToString(&reduced, buf + len);
             } else {
-                _ = sprintf(buf, "%s + %sx", tmp, complexUnit());
+                abi.fmtCStr(buf, "{s} + {s}x", .{ @as([*:0]const u8, tmp), @as([*:0]const u8, complexUnit()) });
                 len += 5;
                 real34ToString(&reduced, buf + len);
             }
@@ -434,7 +435,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
         },
 
         else => {
-            _ = sprintf(buf, "In function copyRegisterXToClipboard, the data type %u is unknown! Please try to reproduce and submit a bug.", getRegisterDataType(regist));
+            abi.fmtCStr(buf, "In function copyRegisterXToClipboard, the data type {d} is unknown! Please try to reproduce and submit a bug.", .{ getRegisterDataType(regist) });
         },
     }
 

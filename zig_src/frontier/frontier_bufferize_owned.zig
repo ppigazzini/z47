@@ -2647,7 +2647,7 @@ pub export fn closeNim() callconv(.c) void {
                                     longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
                                     longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
                                     abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(getShortIntegerModeName(shortIntegerMode)) });
-                                    _ = sprintf(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from %s to %s!", &strMin, &strMax);
+                                    abi.fmtCStr(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from {s} to {s}!", .{ std.mem.sliceTo(&strMin, 0), std.mem.sliceTo(&strMax, 0) });
                                     moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH / 2, null);
                                 }
                             }
@@ -2771,7 +2771,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
     var item = item_in;
     if (comptime !dmcp_build) {
         var tmp: [200]u8 = undefined;
-        _ = sprintf(&tmp, "bufferize.c:addItemToBuffer item=%d tam.mode=%d\n", @as(c_int, @bitCast(@as(u32, item))), @as(c_int, tam.mode));
+        abi.fmtBufZ(&tmp, "bufferize.c:addItemToBuffer item={d} tam.mode={d}\n", .{ @as(c_int, @bitCast(@as(u32, item))), @as(c_int, tam.mode) });
         jm_show_calc_state(&tmp);
     }
 

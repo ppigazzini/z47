@@ -918,7 +918,7 @@ pub export fn supNumberToDisplayString(supNumber_in: i32, displayString_in: [*c]
     var supNumber = supNumber_in;
     var displayString = displayString_in;
     if (displayValueString != null) {
-        _ = sprintf(displayValueString, "%d", supNumber);
+        abi.fmtCStr(displayValueString, "{d}", .{ supNumber });
     }
 
     if (supNumber == 0) {
@@ -968,7 +968,7 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
     var subNumber = subNumber_in;
     var displayString = displayString_in;
     if (displayValueString != null) {
-        _ = sprintf(displayValueString, "%d", subNumber);
+        abi.fmtCStr(displayValueString, "{d}", .{ subNumber });
     }
 
     if (subNumber < 0) {
@@ -1130,7 +1130,7 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
             tt[1] = 0;
         }
 
-        _ = sprintf(displayString, "%s%s" ++ STD_DEGREE ++ "%s%u" ++ STD_RIGHT_SINGLE_QUOTE ++ "%s%u%s%02u" ++ STD_RIGHT_DOUBLE_QUOTE, @as([*c]const u8, if (sign != 0) "-" else " "), @as([*c]const u8, &degStr), @as([*c]const u8, if (m < 10) " " else ""), m, @as([*c]const u8, if (s < 10) " " else ""), s, @as([*c]const u8, &tt), fs);
+        abi.fmtCStr(displayString, "{s}{s}" ++ STD_DEGREE ++ "{s}{d}" ++ STD_RIGHT_SINGLE_QUOTE ++ "{s}{d}{s}{d:0>2}" ++ STD_RIGHT_DOUBLE_QUOTE, .{ @as([*:0]const u8, @as([*c]const u8, if (sign != 0) "-" else " ")), @as([*:0]const u8, @as([*c]const u8, &degStr)), @as([*:0]const u8, @as([*c]const u8, if (m < 10) " " else "")), m, @as([*:0]const u8, @as([*c]const u8, if (s < 10) " " else "")), s, @as([*:0]const u8, @as([*c]const u8, &tt)), fs });
     } else if (mode == amMultPi) {
         real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, @intFromBool(mode == amSecond), frontSpace, isReal, limitIrfrac);
         _ = strcat(displayString, STD_SUP_pir);
@@ -2358,11 +2358,11 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
     if (getSystemFlag(FLAG_FRCSRN) != 0) {
         const xyzt = "xyzt";
         if (lessEqualGreater == -1) {
-            _ = sprintf(displayString, "%c" ++ STD_SPACE_PUNCTUATION ++ ">" ++ STD_SPACE_PUNCTUATION, @as(c_int, xyzt[@intCast(regist - REGISTER_X)]));
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ ">" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
         } else if (lessEqualGreater == 0) {
-            _ = sprintf(displayString, "%c" ++ STD_SPACE_PUNCTUATION ++ "=" ++ STD_SPACE_PUNCTUATION, @as(c_int, xyzt[@intCast(regist - REGISTER_X)]));
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "=" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
         } else if (lessEqualGreater == 1) {
-            _ = sprintf(displayString, "%c" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, @as(c_int, xyzt[@intCast(regist - REGISTER_X)]));
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
             _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
@@ -2370,11 +2370,11 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
         }
     } else if (prependFraction) {
         if (lessEqualGreater == -1) {
-            _ = sprintf(displayString, ">" ++ STD_SPACE_PUNCTUATION);
+            abi.fmtCStr(displayString, ">" ++ STD_SPACE_PUNCTUATION, .{});
         } else if (lessEqualGreater == 0) {
             displayString[0] = 0;
         } else if (lessEqualGreater == 1) {
-            _ = sprintf(displayString, "<" ++ STD_SPACE_PUNCTUATION);
+            abi.fmtCStr(displayString, "<" ++ STD_SPACE_PUNCTUATION, .{});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
             _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
@@ -3313,7 +3313,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         _ = strcat(displayString, &exponentString);
 
         if (updateDisplayValueX != 0) {
-            _ = sprintf(@as([*c]u8, &displayValueX) + strlen(&displayValueX), "e%d", @as(c_int, tenExponent));
+            abi.fmtCStr(@as([*c]u8, &displayValueX) + strlen(&displayValueX), "e{d}", .{ @as(c_int, tenExponent) });
         }
     }
 }
@@ -3395,11 +3395,11 @@ pub export fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8)
     yearval64 = (@as(u64, real34ToUInt32(&yy)) << 32) | @as(u64, real34ToUInt32(&y));
 
     if (getSystemFlag(FLAG_DMY_v) != 0) {
-        _ = sprintf(displayString, "%02u.%02u.%s%04u", real34ToUInt32(&d), real34ToUInt32(&m), @as([*c]const u8, &sign), @as(u32, @intCast(yearval64)));
+        abi.fmtCStr(displayString, "{d:0>2}.{d:0>2}.{s}{d:0>4}", .{ real34ToUInt32(&d), real34ToUInt32(&m), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)) });
     } else if (getSystemFlag(FLAG_MDY_v) != 0) {
-        _ = sprintf(displayString, "%02u/%02u/%s%04u", real34ToUInt32(&m), real34ToUInt32(&d), @as([*c]const u8, &sign), @as(u32, @intCast(yearval64)));
+        abi.fmtCStr(displayString, "{d:0>2}/{d:0>2}/{s}{d:0>4}", .{ real34ToUInt32(&m), real34ToUInt32(&d), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)) });
     } else {
-        _ = sprintf(displayString, "%s%04u-%02u-%02u", @as([*c]const u8, &sign), @as(u32, @intCast(yearval64)), real34ToUInt32(&m), real34ToUInt32(&d));
+        abi.fmtCStr(displayString, "{s}{d:0>4}-{d:0>2}-{d:0>2}", .{ @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)), real34ToUInt32(&m), real34ToUInt32(&d) });
     }
 }
 
@@ -3667,20 +3667,20 @@ inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
 pub export fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
     if (comptime option_vector) {
         if (isRegisterMatrix2dVector(regist)) {
-            _ = sprintf(displayString, "[2D Vector]%s", @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolar) STD_SPACE_HAIR ++ STD_SUP_p else ""));
+            abi.fmtCStr(displayString, "[2D Vector]{s}", .{ @as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolar) STD_SPACE_HAIR ++ STD_SUP_p else "")) });
             return;
         } else if (isRegisterMatrix3dVector(regist)) {
-            _ = sprintf(displayString, "[3D Vector]%s", @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolarSPH) STD_SPACE_HAIR ++ STD_SUP_s else if (getVectorRegisterPolarMode(regist) == amPolarCYL) STD_SPACE_HAIR ++ STD_SUP_c else ""));
+            abi.fmtCStr(displayString, "[3D Vector]{s}", .{ @as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolarSPH) STD_SPACE_HAIR ++ STD_SUP_s else if (getVectorRegisterPolarMode(regist) == amPolarCYL) STD_SPACE_HAIR ++ STD_SUP_c else "")) });
             return;
         }
     }
     const matrixHeader = regMatrixHeader(regist);
-    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u Matrix]", @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns));
+    abi.fmtCStr(displayString, "[{d}" ++ STD_CROSS ++ "{d} Matrix]", .{ @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns) });
 }
 
 pub export fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
     const matrixHeader = regMatrixHeader(regist);
-    _ = sprintf(displayString, "[%u" ++ STD_CROSS ++ "%u " ++ STD_COMPLEX_C ++ " Matrix]", @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns));
+    abi.fmtCStr(displayString, "[{d}" ++ STD_CROSS ++ "{d} " ++ STD_COMPLEX_C ++ " Matrix]", .{ @as(c_uint, matrixHeader.matrixRows), @as(c_uint, matrixHeader.matrixColumns) });
 }
 
 pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) bool_t {
@@ -3692,7 +3692,7 @@ pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u
             var matrix: real34Matrix_t = undefined;
             linkToRealMatrixRegister(regist, &matrix);
             showRealMatrix(&matrix, 0, @intFromBool(toDisplayVectorMatrix == 0), regXp);
-            _ = sprintf(displayString, "%s", errorMessage);
+            abi.fmtCStr(displayString, "{s}", .{ @as([*:0]const u8, errorMessage) });
             return 1;
         }
     }
@@ -3997,7 +3997,7 @@ pub export fn realToSci(num: *const real_t, dispString: [*c]u8) callconv(.c) voi
     exp = realGetExponent(num);
     realToString(num, dispString + 1500);
     if (realIsZeroB(num)) {
-        _ = sprintf(dispString, "0%s0", radix);
+        abi.fmtCStr(dispString, "0{s}0", .{ @as([*:0]const u8, radix) });
         return;
     }
 
@@ -4066,7 +4066,7 @@ pub export fn realToSci(num: *const real_t, dispString: [*c]u8) callconv(.c) voi
     dispString[@intCast(mi)] = 0;
     var tt: [32]u8 = undefined;
     exponentToDisplayString(exp, &tt, null, 0);
-    _ = sprintf(dispString + @as(usize, @intCast(mi)), "%s", @as([*c]const u8, &tt));
+    abi.fmtCStr(dispString + @as(usize, @intCast(mi)), "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &tt)) });
 }
 
 fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16, numLines: i16, showName: bool) void {
@@ -4545,7 +4545,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, @intCast(showRegis));
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
-                    _ = sprintf(errorMessage, "cannot SHOW %s%s", tmpString + 2100, getRegisterDataTypeName(@intCast(showRegis), 1, 0));
+                    abi.fmtBufZ(errorMessage[0..512], "cannot SHOW {s}{s}", .{ @as([*:0]const u8, tmpString + 2100), @as([*:0]const u8, getRegisterDataTypeName(@intCast(showRegis), 1, 0)) });
                     moreInfoOnError("In function fnC47Show:", errorMessage, null, null);
                 }
             }
