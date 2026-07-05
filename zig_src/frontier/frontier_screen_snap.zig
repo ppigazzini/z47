@@ -11,7 +11,7 @@
 //     version.h (git describe + date), so no C preprocessor stamp is needed.
 //
 //  2. fnSNAP backup helpers (z47_frontier_snap_*) — the message-buffer xcopy
-//     dance around fnScreenDump() on host / standardScreenDump() on firmware,
+//     dance around frontier_screen.fnScreenDump() on host / standardScreenDump() on firmware,
 //     plus the TAM-buffer save/restore.
 //
 //  3. copyRegisterToClipboardString (+ the file-local angularUnitToString) —
@@ -41,6 +41,10 @@ const angularMode_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
@@ -143,7 +147,7 @@ extern var ctxtReal34: realContext_t;
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetters" });
 
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -153,15 +157,14 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: [*c]mpz_struct) void;
-extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) void;
+
+
 extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, ignoreTDisp: bool_t) void;
-extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) void;
-extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
+
+
+
+
 extern fn standardScreenDump() void;
-extern fn fnScreenDump(unusedButMandatoryParameter: u16) void;
 
 // decimal helpers (decQuad/decNumber macros in C).
 extern fn decQuadReduce(r: *real34_t, op: *const real34_t, ctx: *realContext_t) *real34_t;
@@ -221,18 +224,18 @@ pub export fn z47_frontier_snap_screenshot_with_message_backup() callconv(.c) vo
         standardScreenDump();
     } else {
         const len = AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH + @as(u32, @intCast(ERROR_MESSAGE_LENGTH));
-        _ = xcopy(tmpString, errorMessage, len);
-        fnScreenDump(0);
-        _ = xcopy(errorMessage, tmpString, len);
+        _ = frontier_char_string.xcopy(tmpString, errorMessage, len);
+        frontier_screen.fnScreenDump(0);
+        _ = frontier_char_string.xcopy(errorMessage, tmpString, len);
     }
 }
 
 pub export fn z47_frontier_snap_backup_tam(dst: [*c]u8) callconv(.c) void {
-    _ = xcopy(dst, tamBuffer, TAM_BUFFER_LENGTH);
+    _ = frontier_char_string.xcopy(dst, tamBuffer, TAM_BUFFER_LENGTH);
 }
 
 pub export fn z47_frontier_snap_restore_tam(src: [*c]const u8) callconv(.c) void {
-    _ = xcopy(tamBuffer, src, TAM_BUFFER_LENGTH);
+    _ = frontier_char_string.xcopy(tamBuffer, src, TAM_BUFFER_LENGTH);
 }
 
 // ---------------------------------------------------------------------------
@@ -267,24 +270,24 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
     switch (getRegisterDataType(regist)) {
         dtLongInteger => {
             var lgInt: longInteger_t = undefined;
-            convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
-            longIntegerToAllocatedString(&lgInt[0], buf, @intCast(CLIPSTR));
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+            frontier_display.longIntegerToAllocatedString(&lgInt[0], buf, @intCast(CLIPSTR));
             longIntegerFree(&lgInt[0]);
         },
 
         dtTime => {
-            timeToDisplayString(regist, buf, 0);
+            frontier_display.timeToDisplayString(regist, buf, 0);
         },
 
         dtDate => {
-            dateToDisplayString(regist, buf);
+            frontier_display.dateToDisplayString(regist, buf);
         },
 
         dtString => {
             const regData = getRegisterDataPointer(regist);
             if (regData != null) {
                 const regStr = regStringData(regist);
-                _ = xcopy(buf, regStr, @intCast(stringByteLength(regStr) + 1));
+                _ = frontier_char_string.xcopy(buf, regStr, @intCast(stringByteLength(regStr) + 1));
             }
         },
 
@@ -355,7 +358,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
         dtShortInteger => {
             var sign: i16 = undefined;
             var shortInt: u64 = undefined;
-            convertShortIntegerRegisterToUInt64(regist, &sign, &shortInt);
+            frontier_register_value_conversions.convertShortIntegerRegisterToUInt64(regist, &sign, &shortInt);
             const base: u64 = getRegisterShortIntegerBase(regist);
 
             var n: i32 = ERROR_MESSAGE_LENGTH - 100;
@@ -427,9 +430,9 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 
         dtConfig => {
             if (forPrinter != 0) {
-                _ = xcopy(buf, "Config. data", 13);
+                _ = frontier_char_string.xcopy(buf, "Config. data", 13);
             } else {
-                _ = xcopy(buf, "Configuration data", 19);
+                _ = frontier_char_string.xcopy(buf, "Configuration data", 19);
             }
         },
 
@@ -441,7 +444,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
     if (forPrinter != 0) {
         _ = strcpy(clipboardString, buf);
     } else {
-        stringToUtf8(buf, clipboardString);
+        frontier_char_string.stringToUtf8(buf, clipboardString);
     }
 }
 
@@ -603,7 +606,7 @@ pub export fn copyAllRegistersToClipboard() callconv(.c) void {
 
             abi.fmtCStr(ptr, LINEBREAK ++ "SR{d:0>2} = ", .{@as(u32, @intCast(sum))});
             ptr += strlen(ptr);
-            stringToUtf8(&sumName, ptr);
+            frontier_char_string.stringToUtf8(&sumName, ptr);
             ptr += strlen(ptr);
             _ = strcpy(ptr, " = ");
             ptr += strlen(ptr);

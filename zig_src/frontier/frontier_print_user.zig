@@ -1,4 +1,6 @@
 const std = @import("std");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
 
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
@@ -73,7 +75,7 @@ const PrintUserContext = struct {
 
     fn initialize(self: *PrintUserContext) void {
         currentKeyCode = 255;
-        self.step = z47_frontier_program_begin();
+        self.step = frontier_print.z47_frontier_program_begin();
         self.program_number = 1;
         self.first_program_label = true;
         self.user_variable_found = false;
@@ -83,7 +85,7 @@ const PrintUserContext = struct {
         _ = self;
         if (!printUserPrinterEnabled()) {
             if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or printUserRunStateAllowsPrint()) {
-                displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             }
             return false;
         }
@@ -91,16 +93,16 @@ const PrintUserContext = struct {
     }
 
     fn loadLabel(self: *PrintUserContext, idx: u16) bool {
-        return z47_frontier_named_variable_label(idx, &self.label, self.label.len);
+        return frontier_print.z47_frontier_named_variable_label(idx, &self.label, self.label.len);
     }
 
     fn shouldSkipLabel(self: *PrintUserContext) bool {
-        return z47_frontier_user_variable_should_skip(@ptrCast(&self.label));
+        return frontier_print.z47_frontier_user_variable_should_skip(@ptrCast(&self.label));
     }
 
     fn printVariableLine(self: *PrintUserContext) void {
-        const variable = z47_frontier_find_named_variable_register(@ptrCast(&self.label));
-        printReg(variable, @ptrCast(&self.label), true, LINE_FULL, false);
+        const variable = frontier_print.z47_frontier_find_named_variable_register(@ptrCast(&self.label));
+        frontier_print.printReg(@intCast(variable), @ptrCast(&self.label), true, LINE_FULL, false);
         self.user_variable_found = true;
     }
 
@@ -116,51 +118,51 @@ const PrintUserContext = struct {
             }
 
             self.printVariableLine();
-            if (z47_frontier_print_exit_pressed()) {
+            if (frontier_print.z47_frontier_print_exit_pressed()) {
                 return false;
             }
         }
 
         if (self.user_variable_found) {
-            print_lf();
+            frontier_print.print_lf();
         }
 
         return true;
     }
 
     fn programHasNext(self: PrintUserContext) bool {
-        return !z47_frontier_programs_end(self.step);
+        return !frontier_print.z47_frontier_programs_end(self.step);
     }
 
     fn advanceProgramStep(self: *PrintUserContext) [*]u8 {
-        return z47_frontier_program_next_step(self.step);
+        return frontier_print.z47_frontier_program_next_step(self.step);
     }
 
     fn printProgramLabel(self: *PrintUserContext) void {
-        printLine(z47_frontier_program_label_prefix(), 0);
-        printLine(@ptrCast(&self.label), 0);
-        printLine(z47_frontier_program_label_suffix(), if (self.first_program_label) 0 else 1);
+        frontier_print.printLine(frontier_print.z47_frontier_program_label_prefix(), 0);
+        frontier_print.printLine(@ptrCast(&self.label), 0);
+        frontier_print.printLine(frontier_print.z47_frontier_program_label_suffix(), if (self.first_program_label) 0 else 1);
 
         if (self.first_program_label) {
-            z47_frontier_print_program_counter(self.program_number, numberOfPrograms);
+            frontier_print.z47_frontier_print_program_counter(self.program_number, numberOfPrograms);
             self.first_program_label = false;
         }
     }
 
     fn handleProgramGlobalLabel(self: *PrintUserContext) void {
-        if (z47_frontier_program_global_label(self.step, &self.label, self.label.len)) {
+        if (frontier_print.z47_frontier_program_global_label(self.step, &self.label, self.label.len)) {
             self.printProgramLabel();
         }
     }
 
     fn handleProgramEnd(self: *PrintUserContext) void {
-        if (!z47_frontier_program_step_is_end(self.step)) {
+        if (!frontier_print.z47_frontier_program_step_is_end(self.step)) {
             return;
         }
 
-        printLine("END", if (self.first_program_label) 0 else 1);
+        frontier_print.printLine("END", if (self.first_program_label) 0 else 1);
         if (self.first_program_label) {
-            z47_frontier_print_program_counter(self.program_number, numberOfPrograms);
+            frontier_print.z47_frontier_print_program_counter(self.program_number, numberOfPrograms);
         }
         self.program_number += 1;
         self.first_program_label = true;
@@ -174,7 +176,7 @@ const PrintUserContext = struct {
             self.handleProgramEnd();
 
             self.step = next_step;
-            if (z47_frontier_print_exit_pressed()) {
+            if (frontier_print.z47_frontier_print_exit_pressed()) {
                 return false;
             }
         }
@@ -237,7 +239,7 @@ const PrintUserRunner = struct {
             .print_user_variables => self.ctx.scanVariables(),
             .print_program_listing => self.ctx.scanPrograms(),
             .print_trailer => blk: {
-                printLine(".END.", 1);
+                frontier_print.printLine(".END.", 1);
                 break :blk true;
             },
         };
@@ -276,19 +278,18 @@ extern var numberOfNamedVariables: u16;
 extern var numberOfPrograms: u16;
 
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn print_lf() void;
-extern fn printLine(buff: [*:0]const u8, with_lf: c_int) void;
-extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
-extern fn z47_frontier_print_exit_pressed() bool;
-extern fn z47_frontier_named_variable_label(index: u16, buffer: [*]u8, buffer_size: u16) bool;
-extern fn z47_frontier_user_variable_should_skip(label: [*:0]const u8) bool;
-extern fn z47_frontier_find_named_variable_register(label: [*:0]const u8) u16;
-extern fn z47_frontier_program_begin() [*]u8;
-extern fn z47_frontier_programs_end(step: [*]u8) bool;
-extern fn z47_frontier_program_next_step(step: [*]u8) [*]u8;
-extern fn z47_frontier_program_global_label(step: [*]u8, label: [*]u8, label_size: u16) bool;
-extern fn z47_frontier_program_step_is_end(step: [*]u8) bool;
-extern fn z47_frontier_program_label_prefix() [*:0]const u8;
-extern fn z47_frontier_program_label_suffix() [*:0]const u8;
-extern fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) void;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

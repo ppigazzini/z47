@@ -1,3 +1,4 @@
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const DSP_MAX: u16 = 19;
 const FLAG_FRACT: c_uint = 0x8007;
 
@@ -88,7 +89,7 @@ pub fn run(command: Command, display_format_n: u16) void {
     applyCommand(command, clamped_digits);
 
     if (shouldRefresh(command)) {
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
     }
 }
 
@@ -98,4 +99,3 @@ extern var timeDisplayFormatDigits: u8;
 extern var DM_Cycling: u8;
 
 extern fn clearSystemFlag(sf: c_uint) void;
-extern fn fnRefreshState() void;

@@ -1,3 +1,5 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
 pub const Kind = enum {
     insert_row_before,
     insert_row_after,
@@ -8,25 +10,24 @@ pub const Kind = enum {
 };
 
 pub fn run(kind: Kind) void {
-    mimEnter(false);
-    defer mimEnter(true);
+    frontier.mimEnter(false);
+    defer frontier.mimEnter(true);
 
     apply(kind);
 }
 
 fn apply(kind: Kind) void {
     switch (kind) {
-        .insert_row_before => z47_frontier_matrix_insert_row(false),
-        .insert_row_after => z47_frontier_matrix_insert_row(true),
-        .insert_col_before => z47_frontier_matrix_insert_col(false),
-        .insert_col_after => z47_frontier_matrix_insert_col(true),
-        .delete_row => z47_frontier_matrix_delete_row(),
-        .delete_col => z47_frontier_matrix_delete_col(),
+        .insert_row_before => frontier_matrix_editor.z47_frontier_matrix_insert_row(false),
+        .insert_row_after => frontier_matrix_editor.z47_frontier_matrix_insert_row(true),
+        .insert_col_before => frontier_matrix_editor.z47_frontier_matrix_insert_col(false),
+        .insert_col_after => frontier_matrix_editor.z47_frontier_matrix_insert_col(true),
+        .delete_row => frontier_matrix_editor.z47_frontier_matrix_delete_row(),
+        .delete_col => frontier_matrix_editor.z47_frontier_matrix_delete_col(),
     }
 }
 
-extern fn mimEnter(commit: bool) void;
-extern fn z47_frontier_matrix_insert_row(add: bool) void;
-extern fn z47_frontier_matrix_insert_col(add: bool) void;
-extern fn z47_frontier_matrix_delete_row() void;
-extern fn z47_frontier_matrix_delete_col() void;
+
+
+
+

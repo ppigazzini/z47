@@ -36,6 +36,10 @@ const angularMode_t = c_int;
 const videoMode_t = c_int;
 const font_t = abi.Font;
 const abi = @import("abi"); // L1 shared bindings
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 
@@ -279,18 +283,17 @@ extern fn clearSystemFlag(sf: c_uint) void;
 extern fn didSystemFlagChange(sf: i32) bool_t;
 extern fn setSystemFlagChanged(sf: i32) void;
 extern fn setAllSystemFlagChanged() void;
-extern fn getTimeString(timeString: [*c]u8) void;
-extern fn getDateString(dateString: [*c]u8) void;
-extern fn getWeekOfYearString(weekOfYearString: [*c]u8) void;
+
+
+
 extern fn showShiftState() void;
 extern fn refreshModeGui() void;
-extern fn force_refresh(mode: u8) void;
-extern fn force_SBrefresh(mode: u8) void;
-extern fn fnTimerGetStatus(nr: u8) u8;
-extern fn getStringBounds(string: [*c]const u8, font: *const font_t, col: *u32, row: *u32) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showGlyph(ch: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) u32;
-extern fn plotline2(xo: i16, yo: i16, xn: i16, yn: i16) void;
+
+
+
+
+
+
 
 // libc.
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
@@ -476,7 +479,7 @@ pub export fn forceSBupdate() callconv(.c) void {
 // ===========================================================================
 pub export fn timeChanged() callconv(.c) bool_t {
     var timeString: [8]u8 = undefined;
-    getTimeString(&timeString);
+    frontier_date_time.getTimeString(&timeString);
     if (strcmp(&timeString, &oldTime) != 0 or oldTime[0] == 0) {
         _ = strcpy(&oldTime, &timeString);
         return true; // timeHasChanged
@@ -504,24 +507,24 @@ pub export fn showDateTime() callconv(.c) bool_t {
     lcd_fill_rect(0, 0, x - 0, 20, LCD_SET_VALUE);
 
     if (sbDate() or sbWoY()) {
-        getDateString(&dateTimeString);
+        frontier_date_time.getDateString(&dateTimeString);
     }
 
     if (dateTimeString[0] >= '0' and dateTimeString[0] <= '9') {
         if (sbDate()) {
-            x = showString(&dateTimeString, &standardFont, x, 0, vmNormal, true, true);
+            x = frontier_screen.showString(&dateTimeString, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true));
         } else {
             lcd_fill_rect(x, 0, @intCast(X_TIME - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
             x = @intCast(X_TIME);
         }
         if (sbTime()) {
-            x = showGlyph(if (getSystemFlag(FLAG_TDM24)) " " else STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
-            x = showString(&oldTime, &standardFont, x, 0, vmNormal, true, false);
+            x = frontier_screen.showGlyph(if (getSystemFlag(FLAG_TDM24)) " " else STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
+            x = frontier_screen.showString(&oldTime, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false));
         }
         if (sbWoY()) {
-            x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
-            getWeekOfYearString(&dateTimeString);
-            x = showString(&dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+            x = frontier_screen.showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
+            frontier_date_time.getWeekOfYearString(&dateTimeString);
+            x = frontier_screen.showString(&dateTimeString, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false));
         }
     }
 
@@ -542,7 +545,7 @@ fn showRealComplexResult() void {
     }
     var x: i32 = X_REAL_COMPLEX;
     if (didSystemFlagChange(FLAG_CPXRES_REAL)) {
-        x = @intCast(showGlyph(if (getSystemFlag(FLAG_CPXRES_REAL)) STD_COMPLEX_C else STD_REAL_R, &standardFont, @intCast(x), 0, vmNormal, true, false, false));
+        x = @intCast(frontier_screen.showGlyph(if (getSystemFlag(FLAG_CPXRES_REAL)) STD_COMPLEX_C else STD_REAL_R, &standardFont, @intCast(x), 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false)));
         lcd_fill_rect(@intCast(x), 0, @intCast((if (sbComplexResult()) X_COMPLEX_MODE else X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x), 20, LCD_SET_VALUE);
     }
 }
@@ -556,7 +559,7 @@ fn showComplexMode() void {
     }
     var x: i32 = if (sbComplexResult()) X_COMPLEX_MODE else X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
     if (didSystemFlagChange(FLAG_POLAR)) {
-        x = @intCast(showGlyph(if (getSystemFlag(FLAG_POLAR)) STD_SUN else STD_RIGHT_ANGLE, &standardFont, @intCast(x), 0, vmNormal, true, true, false));
+        x = @intCast(frontier_screen.showGlyph(if (getSystemFlag(FLAG_POLAR)) STD_SUN else STD_RIGHT_ANGLE, &standardFont, @intCast(x), 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false)));
         lcd_fill_rect(@intCast(x), 0, @intCast(X_ANGULAR_MODE - x), 20, LCD_SET_VALUE);
     }
 }
@@ -572,27 +575,27 @@ fn showAngularMode() void {
     var x: u32 = @intCast(X_ANGULAR_MODE);
     if (didSystemFlagChange(SETTING_AMODE)) {
         if (sbAngularModeBasic()) {
-            x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false);
+            x = frontier_screen.showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
         }
 
         switch (currentAngularMode) {
             amRadian => {
-                x = showGlyph(STD_SUP_BOLD_r, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_SUP_BOLD_r, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
             amMultPi => {
-                x = showGlyph(STD_SUP_pir, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_SUP_pir, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
             amGrad => {
-                x = showGlyph(STD_SUP_BOLD_g, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_SUP_BOLD_g, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
             amDegree => {
-                x = showGlyph(STD_DEGREE, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_DEGREE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
             amDMS => {
-                x = showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
             else => {
-                x = showGlyph(STD_QUESTION_MARK, &standardFont, x, 0, vmNormal, true, false, false);
+                x = frontier_screen.showGlyph(STD_QUESTION_MARK, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
             },
         }
         lcd_fill_rect(x, 0, @intCast(X_FRAC_MODE - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
@@ -619,11 +622,11 @@ fn showBaseMode() bool_t {
         var x: u32 = @intCast(X_BASE_MODE);
         if (lastIntegerBase >= 2) {
             if (getSystemFlag(FLAG_TOPHEX)) {
-                x = showString("#KEY", &standardFont, x, 0, vmNormal, true, true);
+                x = frontier_screen.showString("#KEY", &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true));
                 lcd_fill_rect(x, 0, 26, 20, LCD_SET_VALUE);
                 x = showStringY(STD_SUB_A ++ STD_SUB_MINUS ++ STD_SUB_F, &standardFont, x, -4, vmNormal, true, true);
             } else {
-                x = showString("#BASE", &standardFont, x, 0, vmNormal, true, true);
+                x = frontier_screen.showString("#BASE", &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true));
             }
             lcd_fill_rect(x, 0, @intCast(X_INT_MX_TVM_MODE - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
             return true;
@@ -635,10 +638,10 @@ fn showBaseMode() bool_t {
 // showString takes uint32_t y in the C prototype, but statusBar passes negative y
 // (e.g. -4) which wraps in the unsigned arg. Reproduce with a 2's-complement cast.
 inline fn showStringY(str: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t) u32 {
-    return showString(str, font, x, @bitCast(y), video, lead, end_);
+    return frontier_screen.showString(str, font, x, @bitCast(y), video, @intFromBool(lead), @intFromBool(end_));
 }
 inline fn showGlyphY(ch: [*c]const u8, font: *const font_t, x: u32, y: i32, video: videoMode_t, lead: bool_t, end_: bool_t, npc: bool_t) u32 {
-    return showGlyph(ch, font, x, @bitCast(y), video, lead, end_, npc);
+    return frontier_screen.showGlyph(ch, font, x, @bitCast(y), video, @intFromBool(lead), @intFromBool(end_), @intFromBool(npc));
 }
 
 // ===========================================================================
@@ -728,7 +731,7 @@ pub export fn showFracMode() callconv(.c) void {
             lcd_fill_rect(@intCast(x), 0, @intCast(X_INT_MX_TVM_MODE - x), 20, LCD_SET_VALUE);
         }
 
-        plotline2(@intCast(xxSlash), 18, @intCast(xxSlash + 9), 0);
+        frontier_plotstat.plotline2(@intCast(xxSlash), 18, @intCast(xxSlash + 9), 0);
     }
 }
 
@@ -743,9 +746,9 @@ fn showStringAndClear(str: [*c]const u8, font: *const font_t, x: u32, y: i32, dx
 
     var col: u32 = undefined;
     var row: u32 = undefined;
-    getStringBounds(str, font, &col, &row);
+    frontier_screen.getStringBounds(str, font, &col, &row);
 
-    const xx: u32 = showString(str, font, x, @bitCast(y), videoMode, showLeadingCols, showEndingCols);
+    const xx: u32 = frontier_screen.showString(str, font, x, @bitCast(y), videoMode, @intFromBool(showLeadingCols), @intFromBool(showEndingCols));
     // The trailing clear region (split into a noinline helper to keep the thumb
     // register allocator from running out of registers on this function).
     showStringAndClearTail(x, y, dx, dy, xx, row);
@@ -1072,7 +1075,7 @@ pub export fn showHideHourGlass() callconv(.c) void {
         // lcd_fill_rect clamps to the screen. @bitCast reproduces that wrap;
         // @intCast would reject the negative value.
         _ = showStringAndClear(&statusMessage, &standardFont, @intCast(xx + offs), yoffs, @bitCast(xxx - xx), 20, vmNormal, false, false);
-        force_SBrefresh(force);
+        frontier_screen.force_SBrefresh(force);
     }
 }
 
@@ -1100,7 +1103,7 @@ pub export fn light_ASB_icon() callconv(.c) void {
         _ = showStringAndClear(&asmBuffer, &standardFont, @intCast(X_ASM), 0, @intCast(X_SERIAL_IO - X_ASM), 20, vmNormal, true, false);
     }
     if (programRunStop != PGM_RUNNING) {
-        force_SBrefresh(force);
+        frontier_screen.force_SBrefresh(force);
     }
 }
 
@@ -1116,7 +1119,7 @@ pub export fn kill_ASB_icon() callconv(.c) void {
         lcd_fill_rect(@intCast(X_ASM), 0, @intCast(X_SERIAL_IO - X_ASM), 20, LCD_SET_VALUE);
     }
     if (programRunStop != PGM_RUNNING) {
-        force_SBrefresh(force);
+        frontier_screen.force_SBrefresh(force);
     }
 }
 
@@ -1214,12 +1217,12 @@ fn showHideUsbLowBatteryImpl() callconv(.c) void {
         return;
     }
     if (getSystemFlag(FLAG_USB)) {
-        _ = showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
+        _ = frontier_screen.showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
     } else {
         if (sbBatVoltage()) {
             drawBattery(@intCast(minI(get_vbat(), vbatVIntegrated)));
         } else if (getSystemFlag(FLAG_LOWBAT)) {
-            _ = showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
+            _ = frontier_screen.showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
         } else {
             lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
         }
@@ -1272,7 +1275,7 @@ pub export fn refreshStatusBar() callconv(.c) void {
     showHideHourGlass();
     showStackSize();
     showHideWatch();
-    if (fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING and (plainTextMode() or labelText() or catalog != 0)) {
+    if (frontier_timer.fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING and (plainTextMode() or labelText() or catalog != 0)) {
         light_ASB_icon();
     } else {
         kill_ASB_icon();
@@ -1388,15 +1391,15 @@ fn mockupSBImpl() callconv(.c) void {
     forceSBupdate();
     _ = printf("CLEARFULLSCREEN Macro %u\n", @as(c_uint, 100));
 
-    getTimeString(&oldTime);
-    getDateString(&dateTimeString);
+    frontier_date_time.getTimeString(&oldTime);
+    frontier_date_time.getDateString(&dateTimeString);
     x = showStringY(&dateTimeString, &standardFont, x, L1, vmNormal, true, true);
     xx = x;
     x = showGlyphY(if (getSystemFlag(FLAG_TDM24)) " " else STD_SPACE_3_PER_EM, &standardFont, x, L2, vmNormal, true, true, false);
     x = showStringY(&oldTime, &standardFont, x, L2, vmNormal, true, false);
 
     x = showGlyphY(STD_SPACE_3_PER_EM, &standardFont, xx, L3, vmNormal, true, true, false);
-    getWeekOfYearString(&dateTimeString);
+    frontier_date_time.getWeekOfYearString(&dateTimeString);
     x = showStringY(&dateTimeString, &standardFont, x, L3, vmNormal, true, false);
 
     _ = showGlyphY(STD_MODE_F, &standardFont, @intCast(xShift()), L0, vmNormal, true, true, false);

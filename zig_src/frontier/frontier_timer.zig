@@ -38,6 +38,13 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
@@ -151,29 +158,29 @@ const const34_1 = consts.q16312();
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
 extern fn liftStack() void;
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) void;
+
+
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn refreshScreen(source: u16) void;
+
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn clearRegister(regist: calcRegister_t) void;
-extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool_t, clearBottom: bool_t) void;
-extern fn fnStatSum(sum: u16) void;
+
+
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
-extern fn fnSigmaAddRem(plusMinus: u16) void;
+
 extern fn fnBeep(unusedButMandatoryParameter: u16) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: i32) void;
-extern fn showSoftmenu(id: i16) void;
-extern fn popSoftmenu() void;
-extern fn displayShiftAndTamBuffer() void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
+
+
+
+
+
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(s: [*c]const u8) usize;
 
@@ -193,7 +200,6 @@ extern fn decNumberGetBCD(src: *align(1) const real_t, bcd: [*c]u8) *real_t;
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
 extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadAdd(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
 
 // libc.
 fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
@@ -332,7 +338,7 @@ pub export fn fnTicks(unusedButMandatoryParameter: u16) callconv(.c) void {
     liftStack();
     longIntegerInit(&lgInt[0]);
     uInt32ToLongInteger(tim, &lgInt[0]);
-    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt[0]);
 }
 
@@ -372,7 +378,7 @@ pub export fn fnLastT(unusedButMandatoryParameter: u16) callconv(.c) void {
     liftStack();
     longIntegerInit(&lgInt[0]);
     uInt32ToLongInteger(timeLastOp, &lgInt[0]);
-    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt[0]);
 }
 
@@ -481,7 +487,7 @@ pub export fn fnTimerEndOfActivity(param: u16) callconv(.c) void {
         if (skippedStackLines) {
             screenUpdatingMode = SCRUPD_AUTO | SCRUPD_MANUAL_MENU;
             skippedStackLines = false;
-            refreshScreen(32);
+            frontier_screen.refreshScreen(32);
         }
     }
 }
@@ -666,7 +672,7 @@ fn realToUInt32(re: *const real_t, mode: c_int, value32: *u32, overflow: *bool_t
     var real: real_t = undefined;
     var lgInt: longInteger_t = undefined;
 
-    realToIntegralValue(re, &real, mode, &ctxtReal75);
+    frontier_register_value_conversions.realToIntegralValue(re, &real, mode, &ctxtReal75);
     const sign: u8 = real.bits & 0x80;
     realGetCoefficient(&real, &bcd);
 
@@ -723,15 +729,15 @@ pub export fn inputHelper(regist: u16, val: *u32, overflow: *bool_t) callconv(.c
             realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, val, overflow);
         },
         dtLongInteger => {
-            convertLongIntegerRegisterToReal(@bitCast(regist), &tmp, &ctxtReal39);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal(@bitCast(regist), &tmp, &ctxtReal39);
             realMultiply(&tmp, const_3600, &tmp, &ctxtReal39);
             tmp.exponent += 3;
             realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, val, overflow);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot recall {s} to the stopwatch", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))});
+                abi.fmtBufZ(errorMessage[0..512], "cannot recall {s} to the stopwatch", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@bitCast(regist), true, false))});
                 moreInfoOnErr("In function inputHelper:", errorMessage);
             }
             return false;
@@ -814,12 +820,12 @@ pub export fn fnStopTimerApp() callconv(.c) void {
 pub export fn fnShowTimerApp() callconv(.c) void {
     if (calcMode == CM_TIMER) {
         const msec: u32 = getTimerValue();
-        clearRegisterLine(REGISTER_T, true, true);
+        frontier_screen.clearRegisterLine(REGISTER_T, true, true);
 
         var remainingMsec: i64 = 0;
         if (remainingMsecCountdown > 0) {
             remainingMsec = @as(i64, remainingMsecCountdown) - @as(i64, msec);
-            clearRegisterLine(REGISTER_Z, true, true);
+            frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
         }
 
         tmpString[0] = 0;
@@ -851,7 +857,7 @@ pub export fn fnShowTimerApp() callconv(.c) void {
         } else {
             abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "[{d}" ++ STD_CURSOR ++ "]", .{@as(i32, aimBuffer[AIM_BUFFER_LENGTH / 2]) - '0'});
         }
-        _ = showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, true, true);
+        _ = frontier_screen.showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, @intFromBool(true), @intFromBool(true));
 
         if (remainingMsecCountdown > 0) {
             if (remainingMsec > 0) {
@@ -861,7 +867,7 @@ pub export fn fnShowTimerApp() callconv(.c) void {
                 } else {
                     abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_HOURGLASS_WH ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000 });
                 }
-                _ = showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_Z_LINE, vmNormal, true, true);
+                _ = frontier_screen.showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_Z_LINE, vmNormal, @intFromBool(true), @intFromBool(true));
             } else if (remainingMsec < 0) {
                 remainingMsec = 0;
                 remainingMsecCountdown = 0;
@@ -878,7 +884,7 @@ pub export fn fnShowTimerApp() callconv(.c) void {
             }
         }
         if (!timerMenu) {
-            showSoftmenu(-MNU_TIMERF);
+            frontier_softmenus.showSoftmenu(-MNU_TIMERF);
         }
         if (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_TIMERF) {
             if (comptime !dmcp_build) {
@@ -894,7 +900,7 @@ pub export fn fnShowTimerApp() callconv(.c) void {
 pub export fn fnUpdateTimerApp() callconv(.c) void {
     if (calcMode == CM_TIMER) {
         fnShowTimerApp();
-        displayShiftAndTamBuffer();
+        frontier_screen.displayShiftAndTamBuffer();
         if (comptime dmcp_build) {
             refreshLcd();
             lcd_refresh();
@@ -965,7 +971,7 @@ pub export fn fnAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void 
     tmp.exponent -= 1;
     realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 
-    fnStatSum(0);
+    frontier_stats.fnStatSum(0);
     if (lastErrorCode != ERROR_NONE) {
         liftStack();
         clearRegister(REGISTER_X);
@@ -975,9 +981,9 @@ pub export fn fnAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void 
     liftStack();
     realToReal34(&tmp, reg34(REGISTER_X));
     fnSwapXY(NOPARAM);
-    fnSigmaAddRem(SIGMA_PLUS);
+    frontier_stats.fnSigmaAddRem(SIGMA_PLUS);
 
-    refreshScreen(30);
+    frontier_screen.refreshScreen(30);
 }
 
 // ===========================================================================
@@ -993,7 +999,7 @@ pub export fn fnAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
     tmp.exponent -= 1;
     realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 
-    fnStatSum(0);
+    frontier_stats.fnStatSum(0);
     if (lastErrorCode != ERROR_NONE) {
         liftStack();
         clearRegister(REGISTER_X);
@@ -1003,7 +1009,7 @@ pub export fn fnAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
     liftStack();
     realToReal34(&tmp, reg34(REGISTER_X));
     fnSwapXY(NOPARAM);
-    fnSigmaAddRem(SIGMA_PLUS);
+    frontier_stats.fnSigmaAddRem(SIGMA_PLUS);
 
     if (timerTotalTime > 0) {
         timerTotalTime += msec - timerValue;
@@ -1016,7 +1022,7 @@ pub export fn fnAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
         fnTimerStartImpl(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
     }
 
-    refreshScreen(31);
+    frontier_screen.refreshScreen(31);
 }
 
 // ===========================================================================
@@ -1067,9 +1073,9 @@ pub export fn fnRecallTimerApp(regist: u16) callconv(.c) void {
         return;
     }
     if (overflow) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "the {s} does not fit to uint32_t", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))});
+            abi.fmtBufZ(errorMessage[0..512], "the {s} does not fit to uint32_t", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@bitCast(regist), true, false))});
             moreInfoOnErr("In function fnRecallTimerApp:", errorMessage);
         }
     } else {
@@ -1098,7 +1104,7 @@ pub export fn fnBackspaceTimerApp() callconv(.c) void {
 // fnLeaveTimerApp
 // ===========================================================================
 pub export fn fnLeaveTimerApp() callconv(.c) void {
-    popSoftmenu();
+    frontier_softmenus.popSoftmenu();
     rbr1stDigit = true;
     calcMode = previousCalcMode;
     if (watchIconEnabled != (timerStartTime != TIMER_APP_STOPPED)) {

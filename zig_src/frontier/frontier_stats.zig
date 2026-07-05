@@ -35,6 +35,10 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -177,7 +181,7 @@ extern var ctxtReal75: realContext_t;
 // Function externs
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -191,20 +195,20 @@ extern fn clearRegister(regist: calcRegister_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
-extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
+
 extern fn saveLastX() bool;
 extern fn liftStack() void;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn getSystemFlag(flag: c_int) bool;
-extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
-extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn badTypeError(reg: calcRegister_t) void;
-extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) void;
+
+
+
+
+
 extern fn WP34S_Ln(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
-extern fn realSetZero(r: *real_t) void;
-extern fn realSetPlusInfinity(r: *real_t) void;
-extern fn realSetMinusInfinity(r: *real_t) void;
+
+
+
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
@@ -554,7 +558,7 @@ fn subSigma(x: *const real_t, y: *const real_t) void {
 // ===========================================================================
 pub export fn checkMinimumDataPoints(n: *align(1) const real_t) callconv(.c) bool {
     if (statisticalSumsPointer == null) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             moreInfoOnError("In function checkMinimumDataPoints:", "There is no statistical data available!");
         }
@@ -562,7 +566,7 @@ pub export fn checkMinimumDataPoints(n: *align(1) const real_t) callconv(.c) boo
     }
 
     if (realCompareLessThan(sigma(0), n)) {
-        displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             moreInfoOnError("In function checkMinimumDataPoints:", "There is insufficient statistical data available!");
         }
@@ -587,12 +591,12 @@ pub export fn clearStatisticalSums() callconv(.c) void {
     if (statisticalSumsPointer != null) {
         var sum: i32 = 0;
         while (sum < NUMBER_OF_STATISTICAL_SUMS - 4) : (sum += 1) {
-            realSetZero(sigma(@intCast(sum)));
+            frontier_real_type.realSetZero(sigma(@intCast(sum)));
         }
-        realSetPlusInfinity(sigma(SUM_XMIN));
-        realSetPlusInfinity(sigma(SUM_YMIN));
-        realSetMinusInfinity(sigma(SUM_XMAX));
-        realSetMinusInfinity(sigma(SUM_YMAX));
+        frontier_real_type.realSetPlusInfinity(sigma(SUM_XMIN));
+        frontier_real_type.realSetPlusInfinity(sigma(SUM_YMIN));
+        frontier_real_type.realSetMinusInfinity(sigma(SUM_XMAX));
+        frontier_real_type.realSetMinusInfinity(sigma(SUM_YMAX));
     }
 }
 
@@ -603,7 +607,7 @@ pub export fn initStatisticalSums() callconv(.c) void {
             clearStatisticalSums();
             _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
         } else {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         }
     }
 }
@@ -612,8 +616,8 @@ pub export fn initStatisticalSums() callconv(.c) void {
 // calcMax / calcMin / calcSigma
 // ===========================================================================
 fn calcMax(maxOffset: u16) void {
-    realSetMinusInfinity(sigma(SUM_XMAX));
-    realSetMinusInfinity(sigma(SUM_YMAX));
+    frontier_real_type.realSetMinusInfinity(sigma(SUM_XMAX));
+    frontier_real_type.realSetMinusInfinity(sigma(SUM_YMAX));
 
     const regStats: calcRegister_t = findNamedVariable(&statMx);
     if (regStats != INVALID_VARIABLE) {
@@ -634,8 +638,8 @@ fn calcMax(maxOffset: u16) void {
 }
 
 fn calcMin(maxOffset: u16) void {
-    realSetPlusInfinity(sigma(SUM_XMIN));
-    realSetPlusInfinity(sigma(SUM_YMIN));
+    frontier_real_type.realSetPlusInfinity(sigma(SUM_XMIN));
+    frontier_real_type.realSetPlusInfinity(sigma(SUM_YMIN));
 
     const regStats: calcRegister_t = findNamedVariable(&statMx);
     if (regStats != INVALID_VARIABLE) {
@@ -672,13 +676,13 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
             abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*c]const u8, @ptrCast(&errorMessages[RECALC_SUMS]))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
-            printStatus(0, &aa, timed);
+            frontier_graph_text.printStatus(0, &aa, timed);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);
             addSigma(&x, &y);
         }
     }
-    printStatus(0, " ", force);
+    frontier_graph_text.printStatus(0, " ", force);
 }
 
 // ===========================================================================
@@ -697,7 +701,7 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
         real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols]), x);
         real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols + 1]), y);
     } else {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "STATS matrix not found", .{});
             moreInfoOnError("In function getLastRowStatsMatrix:", errorMessage);
@@ -728,7 +732,7 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) void {
         realToReal34(x, @ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols]));
         realToReal34(y, @ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
     } else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function AddtoStatsMatrix:", errorMessage);
@@ -740,7 +744,7 @@ fn removeLastRowFromStatsMatrix() void {
     var rows: u16 = 0;
     _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     if (!isStatsMatrix(&rows, &statMx)) {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "no STATS matrix", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
@@ -758,7 +762,7 @@ fn removeLastRowFromStatsMatrix() void {
         }
     }
     if (regStats == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "matrix/line not removed", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
@@ -773,7 +777,7 @@ fn fnClHisto(deleteVariable: bool) calcRegister_t {
         regHisto = findNamedVariable("HISTO");
     }
     if (regHisto == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "HISTO matrix not created", .{});
             moreInfoOnError("In function fnClHisto:", errorMessage);
@@ -830,7 +834,7 @@ pub export fn fnClSigma(unusedButMandatoryParameter: u16) callconv(.c) void {
         regStats = findNamedVariable(&statMx);
     }
     if (regStats == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "STATS matrix not created", .{});
             moreInfoOnError("In function fnClSigma:", errorMessage);
@@ -858,7 +862,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
     lrChosen = 0;
 
     if (plusMinusSelection == SIGMA_PLUS) { // SIGMA+
-        if (getRegisterAsRealQuiet(REGISTER_X, &x) and getRegisterAsRealQuiet(REGISTER_Y, &y)) {
+        if (frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_X, &x) and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_Y, &y)) {
             if (statisticalSumsUpdate and statisticalSumsPointer == null) {
                 initStatisticalSums();
                 if (lastErrorCode != ERROR_NONE) {
@@ -910,20 +914,20 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
                 }
 
                 liftStack();
-                convertRealToResultRegister(&y, REGISTER_Y, amNone);
-                convertRealToResultRegister(&x, REGISTER_X, amNone);
+                frontier_register_value_conversions.convertRealToResultRegister(&y, REGISTER_Y, amNone);
+                frontier_register_value_conversions.convertRealToResultRegister(&x, REGISTER_X, amNone);
                 if (statisticalSumsPointer != null) {
                     temporaryInformation = TI_STATISTIC_SUMS;
                 }
             } else {
-                displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+                frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
                 if (comptime extra_info) {
                     abi.fmtBufZ(errorMessage[0..512], "cannot use {d}\x80\xd7{d}-matrix as statistical data!", .{ @as(u32, @as(u16, matrix.header.matrixRows)), @as(i32, @as(u16, matrix.header.matrixColumns)) });
                     moreInfoOnError("In function fnSigmaAddRem:", errorMessage);
                 }
             }
         } else {
-            badTypeError(REGISTER_X);
+            frontier_register_value_conversions.badTypeError(REGISTER_X);
         }
     } else if (plusMinusSelection == SIGMA_MINUS) { // SIGMA-
         if (checkMinimumDataPoints(const_1())) {
@@ -939,8 +943,8 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             liftStack();
-            convertRealToResultRegister(&x, REGISTER_X, amNone);
-            convertRealToResultRegister(&y, REGISTER_Y, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&x, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&y, REGISTER_Y, amNone);
 
             realCopy(&x, &SAVED_SIGMA_LASTX);
             realCopy(&y, &SAVED_SIGMA_LASTY);
@@ -955,7 +959,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
 pub export fn fnStatSum(sum: u16) callconv(.c) void {
     if (checkMinimumDataPoints(const_1())) {
         liftStack();
-        convertRealToResultRegister(sigma(sum), REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(sum), REGISTER_X, amNone);
     }
 }
 
@@ -966,8 +970,8 @@ pub export fn fnSumXY(unusedButMandatoryParameter: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        convertRealToResultRegister(sigma(SUM_X), REGISTER_X, amNone);
-        convertRealToResultRegister(sigma(SUM_Y), REGISTER_Y, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_X), REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_Y), REGISTER_Y, amNone);
 
         temporaryInformation = TI_SUMX_SUMY;
     }
@@ -980,8 +984,8 @@ pub export fn fnXmin(unusedButMandatoryParameter: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        convertRealToResultRegister(sigma(SUM_XMIN), REGISTER_X, amNone);
-        convertRealToResultRegister(sigma(SUM_YMIN), REGISTER_Y, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_XMIN), REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_YMIN), REGISTER_Y, amNone);
 
         temporaryInformation = TI_XMIN_YMIN;
     }
@@ -994,8 +998,8 @@ pub export fn fnXmax(unusedButMandatoryParameter: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        convertRealToResultRegister(sigma(SUM_XMAX), REGISTER_X, amNone);
-        convertRealToResultRegister(sigma(SUM_YMAX), REGISTER_Y, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_XMAX), REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(sigma(SUM_YMAX), REGISTER_Y, amNone);
 
         temporaryInformation = TI_XMAX_YMAX;
     }
@@ -1011,10 +1015,10 @@ pub export fn fnRangeXY(unusedButMandatoryParameter: u16) callconv(.c) void {
         liftStack();
 
         realSubtract(sigma(SUM_XMAX), sigma(SUM_XMIN), &t, &ctxtReal39);
-        convertRealToResultRegister(&t, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(&t, REGISTER_X, amNone);
 
         realSubtract(sigma(SUM_YMAX), sigma(SUM_YMIN), &t, &ctxtReal39);
-        convertRealToResultRegister(&t, REGISTER_Y, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(&t, REGISTER_Y, amNone);
 
         temporaryInformation = TI_RANGEX_RANGEY;
     }
@@ -1064,7 +1068,7 @@ fn initHistoMatrix(s: *real_t) void {
         realToReal34(s, @ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols]));
         real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
     } else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function initHistoMatrix:", errorMessage);
@@ -1080,7 +1084,7 @@ pub export fn fnSetLoBin(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    if (!getRegisterAsReal(REGISTER_X, &x)) {
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
 
@@ -1096,7 +1100,7 @@ pub export fn fnSetHiBin(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    if (!getRegisterAsReal(REGISTER_X, &x)) {
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
 
@@ -1112,7 +1116,7 @@ pub export fn fnSetNBins(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    if (!getRegisterAsReal(REGISTER_X, &x)) {
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
 
@@ -1145,13 +1149,13 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
             real34ToReal(&hiBinR, &hb);
             realCopy(sigma(0), &nn);
             realSquareRoot(&nn, &nb, &ctxtReal39);
-            realToIntegralValue(&nb, &nb, DEC_ROUND_CEILING, &ctxtReal39); // number of bins are defaulted to square root of data points  nb = CEIL (sqrt(SIGMA_N))
+            frontier_register_value_conversions.realToIntegralValue(&nb, &nb, DEC_ROUND_CEILING, &ctxtReal39); // number of bins are defaulted to square root of data points  nb = CEIL (sqrt(SIGMA_N))
             realToReal34(&nb, &nBins); // set up the user variables from auto estimates from the data
 
             convertStatsMatrixToHistoMatrix(statsVariableToHistogram);
         }
     } else {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function fnConvertStatsToHisto:", errorMessage);
@@ -1177,7 +1181,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         return;
     }
     if (statMx[0] != 'S') {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
@@ -1240,12 +1244,12 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             liftStack();
-            convertRealToResultRegister(&nb, REGISTER_Z, amNone);
-            convertRealToResultRegister(&lb, REGISTER_Y, amNone);
-            convertRealToResultRegister(&hb, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&nb, REGISTER_Z, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&lb, REGISTER_Y, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&hb, REGISTER_X, amNone);
             temporaryInformation = TI_STATISTIC_HISTO;
         } else {
-            displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+            frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
                 moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
@@ -1253,7 +1257,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
             return;
         }
     } else {
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], " invalid STATS or HISTO variable!", .{});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);

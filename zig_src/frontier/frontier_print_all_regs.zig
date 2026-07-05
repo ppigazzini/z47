@@ -1,4 +1,8 @@
 const std = @import("std");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
 
 const CM_NORMAL: u8 = 0;
 const CM_NO_UNDO: u8 = 16;
@@ -113,7 +117,7 @@ const PrintAllRegsContext = struct {
     }
 
     fn cacheLocalCount(self: *PrintAllRegsContext) void {
-        self.local_count = z47_frontier_current_number_of_local_registers();
+        self.local_count = frontier_print.z47_frontier_current_number_of_local_registers();
     }
 
     fn prepareCsvFilename(self: *PrintAllRegsContext) void {
@@ -121,7 +125,7 @@ const PrintAllRegsContext = struct {
             return;
         }
 
-        create_filename(".REGS.TSV");
+        frontier_graph_text.create_filename(".REGS.TSV");
         self.cacheLocalCount();
     }
 
@@ -131,7 +135,7 @@ const PrintAllRegsContext = struct {
             return true;
         }
 
-        displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return false;
     }
 
@@ -178,7 +182,7 @@ const PrintAllRegsContext = struct {
 
     fn printerOptionXr(self: *PrintAllRegsContext) void {
         _ = self;
-        printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_FULL, false);
+        frontier_print.printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_FULL, false);
     }
 
     fn printerOptionStack(self: *PrintAllRegsContext) void {
@@ -197,7 +201,7 @@ const PrintAllRegsContext = struct {
             return;
         }
 
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
 
     fn executeCsvOption(self: *PrintAllRegsContext) void {
@@ -322,23 +326,23 @@ fn isPrintableScalarType(dt: u32) bool {
 }
 
 fn printAllRegsPrintRangeOrReturn(first: u16, last: u16) bool {
-    return z47_frontier_print_reg_range(first, last);
+    return frontier_print.z47_frontier_print_reg_range(first, last);
 }
 
 fn printAllRegsPrinterEmitTemp1Pair(left_index: u32, right_index: u32, complex: bool) void {
     if (complex) {
-        z47_frontier_x_complex_matrix_element_to_temp1(left_index);
+        frontier_print.z47_frontier_x_complex_matrix_element_to_temp1(left_index);
     } else {
-        z47_frontier_x_real_matrix_element_to_temp1(left_index);
+        frontier_print.z47_frontier_x_real_matrix_element_to_temp1(left_index);
     }
-    printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
+    frontier_print.printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
 
     if (complex) {
-        z47_frontier_x_complex_matrix_element_to_temp1(right_index);
+        frontier_print.z47_frontier_x_complex_matrix_element_to_temp1(right_index);
     } else {
-        z47_frontier_x_real_matrix_element_to_temp1(right_index);
+        frontier_print.z47_frontier_x_real_matrix_element_to_temp1(right_index);
     }
-    printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+    frontier_print.printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
 }
 
 fn printAllRegsPrinterXYrScalar() bool {
@@ -349,18 +353,18 @@ fn printAllRegsPrinterXYrScalar() bool {
 
     const y_type = getRegisterDataType(REGISTER_Y);
     if (!isPrintableScalarType(y_type)) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
         return true;
     }
 
-    printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_LEFT, false);
-    printReg(@as(u16, @intCast(REGISTER_Y)), null, false, LINE_RIGHT, false);
+    frontier_print.printReg(@as(u16, @intCast(REGISTER_X)), null, false, LINE_LEFT, false);
+    frontier_print.printReg(@as(u16, @intCast(REGISTER_Y)), null, false, LINE_RIGHT, false);
     return true;
 }
 
 fn printAllRegsPrinterXYrRealMatrixCols2() bool {
-    const rows = z47_frontier_x_real_matrix_rows();
-    const cols = z47_frontier_x_real_matrix_cols();
+    const rows = frontier_print.z47_frontier_x_real_matrix_rows();
+    const cols = frontier_print.z47_frontier_x_real_matrix_cols();
     if (cols != 2) {
         return false;
     }
@@ -374,8 +378,8 @@ fn printAllRegsPrinterXYrRealMatrixCols2() bool {
 }
 
 fn printAllRegsPrinterXYrRealMatrixRows2() bool {
-    const rows = z47_frontier_x_real_matrix_rows();
-    const cols = z47_frontier_x_real_matrix_cols();
+    const rows = frontier_print.z47_frontier_x_real_matrix_rows();
+    const cols = frontier_print.z47_frontier_x_real_matrix_cols();
     if (rows != 2) {
         return false;
     }
@@ -388,8 +392,8 @@ fn printAllRegsPrinterXYrRealMatrixRows2() bool {
 }
 
 fn printAllRegsPrinterXYrComplexMatrixCols2() bool {
-    const rows = z47_frontier_x_complex_matrix_rows();
-    const cols = z47_frontier_x_complex_matrix_cols();
+    const rows = frontier_print.z47_frontier_x_complex_matrix_rows();
+    const cols = frontier_print.z47_frontier_x_complex_matrix_cols();
     if (cols != 2) {
         return false;
     }
@@ -403,8 +407,8 @@ fn printAllRegsPrinterXYrComplexMatrixCols2() bool {
 }
 
 fn printAllRegsPrinterXYrComplexMatrixRows2() bool {
-    const rows = z47_frontier_x_complex_matrix_rows();
-    const cols = z47_frontier_x_complex_matrix_cols();
+    const rows = frontier_print.z47_frontier_x_complex_matrix_rows();
+    const cols = frontier_print.z47_frontier_x_complex_matrix_cols();
     if (rows != 2) {
         return false;
     }
@@ -421,14 +425,14 @@ fn printAllRegsPrinterXYrMatrix() bool {
     if (x_type == dtReal34Matrix) {
         if (printAllRegsPrinterXYrRealMatrixCols2()) return true;
         if (printAllRegsPrinterXYrRealMatrixRows2()) return true;
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
         return true;
     }
 
     if (x_type == dtComplex34Matrix) {
         if (printAllRegsPrinterXYrComplexMatrixCols2()) return true;
         if (printAllRegsPrinterXYrComplexMatrixRows2()) return true;
-        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
         return true;
     }
 
@@ -436,7 +440,7 @@ fn printAllRegsPrinterXYrMatrix() bool {
 }
 
 fn printAllRegsCsvOut(first: i16, last: i16, one_line: bool) void {
-    stackregister_csv_out(first, last, one_line);
+    frontier_textfiles.stackregister_csv_out(first, last, one_line);
 }
 
 fn printAllRegsUseTelemetryPipeline() bool {
@@ -455,17 +459,16 @@ extern var lastErrorCode: u8;
 extern var numberOfNamedVariables: u16;
 
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
+
 extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
-extern fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) bool;
-extern fn z47_frontier_current_number_of_local_registers() u16;
+
+
+
 extern fn getRegisterDataType(regist: i16) u32;
-extern fn z47_frontier_x_real_matrix_rows() u16;
-extern fn z47_frontier_x_real_matrix_cols() u16;
-extern fn z47_frontier_x_complex_matrix_rows() u16;
-extern fn z47_frontier_x_complex_matrix_cols() u16;
-extern fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) void;
-extern fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) void;
-extern fn create_filename(file_suffix: [*:0]const u8) void;
-extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, one_line: bool) void;
+
+
+
+
+
+
+

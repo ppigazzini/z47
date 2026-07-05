@@ -1,3 +1,7 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
 const FLAG_GROW: c_uint = 0x801d;
 
 const CM_MIM: u8 = 12;
@@ -17,8 +21,8 @@ pub fn goToElement() void {
         return;
     }
 
-    mimEnter(false);
-    runFunction(ITM_M_GOTO_ROW);
+    frontier.mimEnter(false);
+    frontier_items.runFunction(ITM_M_GOTO_ROW);
 }
 
 pub fn goToRow(row: u16) void {
@@ -39,11 +43,11 @@ pub fn goToColumn(col: u16) void {
     // error branch and the success branch (it dismisses the GOTO input overlay
     // either way); only the register commit is gated on the bounds check.
     if (validateBounds(row, col)) {
-        z47_frontier_matrix_commit_open_to_register();
-        setIRegisterAsInt(false, @as(i16, @intCast(row)));
-        setJRegisterAsInt(false, @as(i16, @intCast(col)));
+        frontier_matrix_editor.z47_frontier_matrix_commit_open_to_register();
+        frontier.setIRegisterAsInt(false, @as(i16, @intCast(row)));
+        frontier.setJRegisterAsInt(false, @as(i16, @intCast(col)));
     }
-    z47_frontier_matrix_calc_mode_normal_gui();
+    frontier_matrix_editor.z47_frontier_matrix_calc_mode_normal_gui();
 }
 
 pub fn setGrowMode(grow_flag: u16) void {
@@ -59,16 +63,16 @@ fn ensureEditorMode() bool {
         return true;
     }
 
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
     return false;
 }
 
 fn validateBounds(row: u16, col: u16) bool {
-    const rows = z47_frontier_matrix_open_rows();
-    const cols = z47_frontier_matrix_open_cols();
+    const rows = frontier_matrix_editor.z47_frontier_matrix_open_rows();
+    const cols = frontier_matrix_editor.z47_frontier_matrix_open_cols();
 
     if (row == 0 or row > rows or col == 0 or col > cols) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         return false;
     }
 
@@ -80,12 +84,11 @@ extern var tmpRow: u16;
 
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlag(sf: c_uint) void;
-extern fn z47_frontier_matrix_open_rows() u16;
-extern fn z47_frontier_matrix_open_cols() u16;
-extern fn z47_frontier_matrix_commit_open_to_register() void;
-extern fn z47_frontier_matrix_calc_mode_normal_gui() void;
-extern fn mimEnter(commit: bool) void;
-extern fn runFunction(func: i16) void;
-extern fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
-extern fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+
+
+
+
+
+
+
+

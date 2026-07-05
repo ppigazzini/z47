@@ -25,6 +25,12 @@ const bool_t = u32;
 const angularMode_t = c_int;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;
@@ -133,19 +139,19 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
-extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: calcRegister_t) void;
-extern fn composeJulianDay(year: *align(1) const real34_t, month: *align(1) const real34_t, day: *align(1) const real34_t, jd: *align(1) real34_t) void;
-extern fn julianDayToInternalDate(source: *align(1) const real34_t, destination: *align(1) real34_t) void;
+
+
+
+
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn xcopy(dest: *anyopaque, source: *const anyopaque, n: u32) *anyopaque;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-extern fn findNextStep(step: [*c]u8) [*c]u8;
-extern fn findKey2ndParam(step: [*c]u8) [*c]u8;
-extern fn isFunctionOldParam16(func: u16) bool;
+
+
+
 extern fn decQuadZero(r: *align(1) real34_t) *align(1) real34_t;
 
 // ---------------------------------------------------------------------------
@@ -174,7 +180,7 @@ fn _clearVar(regist: calcRegister_t) void {
         dtLongInteger => {
             var l: mpz_struct = undefined;
             mpz_init(&l);
-            convertLongIntegerToLongIntegerRegister(&l, regist);
+            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&l, regist);
             mpz_clear(&l);
         },
 
@@ -188,8 +194,8 @@ fn _clearVar(regist: calcRegister_t) void {
         },
 
         dtDate => {
-            composeJulianDay(const34_0(), const34_1(), const34_1(), reg34(regist));
-            julianDayToInternalDate(reg34(regist), reg34(regist));
+            frontier_date_time.composeJulianDay(const34_0(), const34_1(), const34_1(), reg34(regist));
+            frontier_date_time.julianDayToInternalDate(reg34(regist), reg34(regist));
         },
 
         dtString => {
@@ -218,7 +224,7 @@ fn _clearVar(regist: calcRegister_t) void {
         },
 
         dtShortInteger => {
-            convertUInt64ToShortIntegerRegister(0, 0, getRegisterTag(regist), regist);
+            frontier_register_value_conversions.convertUInt64ToShortIntegerRegister(0, 0, getRegisterTag(regist), regist);
         },
 
         dtConfig => {},
@@ -244,7 +250,7 @@ fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
         stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
     }
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
+    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -332,7 +338,7 @@ fn _processOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         PARAM_NUMBER_16 => {
             var func: u16 = (@as(u16, (paramAddress - 3)[0]) << 8) +% @as(u16, (paramAddress - 2)[0]);
             func &= 0x7fff;
-            if (isFunctionOldParam16(func)) { // original Param16 functions without indirection support (little endian parameter)
+            if (frontier_items.isFunctionOldParam16(func) != 0) { // original Param16 functions without indirection support (little endian parameter)
                 // nothing to do
             } else { // new Param16 functions with indirection support (big endian parameter)
                 const opParam16: u16 = (@as(u16, opParam) << 8) +% @as(u16, paramAddress[0]);
@@ -407,13 +413,13 @@ fn _processOneStep(step_arg: [*c]u8) bool {
             },
 
             PTP_DISABLED => {
-                displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
                 moreInfoOnError("In function _processOneStep:", "non-programmable function", @ptrCast(&indexOfItems[op].itemCatalogName), "appeared in the program!");
                 return false;
             },
 
             PTP_KEYG_KEYX => {
-                const secondParam: [*c]u8 = findKey2ndParam(step - 2);
+                const secondParam: [*c]u8 = frontier_next_step.findKey2ndParam(step - 2);
                 _processOp(step, op, PARAM_NUMBER_8);
                 if (secondParam != null) { // findKey2ndParam returns NULL on a malformed/.END. step
                     _processOp(secondParam, secondParam[0], PARAM_LABEL);
@@ -437,6 +443,6 @@ pub export fn fnClCVar(unusedButMandatoryParameter: u16) callconv(.c) void {
     var ptr: [*c]u8 = beginOfCurrentProgram;
 
     while (_processOneStep(ptr)) {
-        ptr = findNextStep(ptr);
+        ptr = frontier_next_step.findNextStep(ptr);
     }
 }

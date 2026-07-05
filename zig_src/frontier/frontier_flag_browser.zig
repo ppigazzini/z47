@@ -51,6 +51,9 @@ const calcRegister_t = i16;
 const videoMode_t = c_int;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 
 const item_t = abi.Item;
@@ -191,21 +194,18 @@ var line: i16 = 0;
 extern fn getFlag(flag: u16) bool_t;
 extern fn getSystemFlag(flag: c_int) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
-extern fn hideCursor() void;
-extern fn refreshScreen(source: u16) void;
+
+
 extern fn getFreeRamMemory() u32;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
-extern fn supNumberToDisplayString(supNumber: i32, displayString: [*c]u8, displayValueString: [*c]u8, insertGap: bool_t) void;
 
-extern fn showString(str: [*:0]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn stringWidth(str: [*:0]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
+
 
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
 
 // decQuad (real34) helpers (the real34 macros).
 extern fn decQuadIsInfinite(r: *align(1) const real34_t) u32;
@@ -265,7 +265,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
 
     if (calcMode != CM_FLAG_BROWSER) {
         if (calcMode == CM_AIM) {
-            hideCursor();
+            frontier_screen.hideCursor();
             cursorEnabled = 0;
         }
 
@@ -273,7 +273,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
         calcMode = CM_FLAG_BROWSER;
         clearSystemFlag(FLAG_ALPHA);
         currentFlgScr = @intCast(init);
-        refreshScreen(190);
+        frontier_screen.refreshScreen(190);
     }
 
     if (currentFlgScr < FIRST_SCREEN) {
@@ -322,7 +322,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     flagNumber[1] = 0;
                 }
 
-                if (@as(i32, stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
+                if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
                     if (!firstFlag) {
                         _ = strcat(lineStr(line), " ");
                     } else {
@@ -331,7 +331,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     _ = strcat(lineStr(line), &flagNumber);
                 } else {
                     line += 1;
-                    _ = xcopy(lineStr(line), &flagNumber, 4);
+                    _ = frontier_char_string.xcopy(lineStr(line), &flagNumber, 4);
                 }
             }
         }
@@ -357,7 +357,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                         flagNumber[2] = 0;
                     }
 
-                    if (@as(i32, stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
+                    if (@as(i32, frontier_char_string.stringWidth(lineStr(line), &standardFont, true, true)) + @as(i32, frontier_char_string.stringWidth(@ptrCast(&flagNumber), &standardFont, true, false)) <= SCREEN_WIDTH - 1 - 8) {
                         if (!firstFlag) {
                             _ = strcat(lineStr(line), " ");
                         } else {
@@ -366,7 +366,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                         _ = strcat(lineStr(line), &flagNumber);
                     } else {
                         line += 1;
-                        _ = xcopy(lineStr(line), &flagNumber, 4);
+                        _ = frontier_char_string.xcopy(lineStr(line), &flagNumber, 4);
                     }
                 }
             }
@@ -421,7 +421,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                         real34Subtract(&x34, reg34(REGISTER_X), &x34);
                     }
                     _ = strcat(lineStr(line), "  ULP of reg X = 10");
-                    supNumberToDisplayString(real34GetExponent(&x34), lineStr(line) + strlen(lineStr(line)), null, false);
+                    frontier_display.supNumberToDisplayString(real34GetExponent(&x34), lineStr(line) + strlen(lineStr(line)), null, @intFromBool(false));
                 }
             },
             else => {},
@@ -433,7 +433,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
     if (currentFlgScr == STATUS_SCREEN) {
         f = 0;
         while (f < minI(9, line)) : (f += 1) {
-            _ = showString(lineStr(f), &standardFont, 1, @intCast(22 * @as(i32, f) + 43), vmNormal, true, false);
+            _ = frontier_screen.showString(lineStr(f), &standardFont, 1, @intCast(22 * @as(i32, f) + 43), vmNormal, @intFromBool(true), @intFromBool(false));
         }
     }
 
@@ -464,7 +464,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                 );
             }
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[systemFlag].itemCatalogName)))});
-            _ = showString(tmpString, &standardFont, @intCast(@divTrunc(@as(i32, x1) + x2 - stringWidth(tmpString, &standardFont, false, false), 2)), y1, if (getSystemFlag(@intCast(param))) vmReverse else vmNormal, true, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(@divTrunc(@as(i32, x1) + x2 - frontier_char_string.stringWidth(tmpString, &standardFont, false, false), 2)), y1, if (getSystemFlag(@intCast(param))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
         }
     }
 
@@ -475,31 +475,31 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                 lcdFillRect(@intCast(40 * @rem(@as(i32, f), 10) + 1), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44), @intCast(40 * @rem(@as(i32, f), 10) + 39 - (40 * @rem(@as(i32, f), 10) + 1)), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 + 20 - 1 - 44 - (22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44) + 1), LCD_EMPTY_VALUE);
             }
             abi.fmtBufZ(tmpString[0..2560], "{d}", .{@as(i32, f)});
-            _ = showString(tmpString, &standardFont, @intCast(40 * @rem(@as(i32, f), 10) + 19 - @divTrunc(@as(i32, stringWidth(tmpString, &standardFont, false, false)), 2)), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44), if (getFlag(@bitCast(f))) vmReverse else vmNormal, true, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(40 * @rem(@as(i32, f), 10) + 19 - @divTrunc(@as(i32, frontier_char_string.stringWidth(tmpString, &standardFont, false, false)), 2)), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44), if (getFlag(@bitCast(f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
         }
     }
 
     if (currentFlgScr == LETTERED_AND_LOCAL_FLAGS_SCREEN) { // Lettered flags, local registers and flags
-        _ = showString("Global flag status (continued):", &standardFont, 1, 22 - 1, vmNormal, true, true);
+        _ = frontier_screen.showString("Global flag status (continued):", &standardFont, 1, 22 - 1, vmNormal, @intFromBool(true), @intFromBool(true));
 
         // Lettered flags
         f = FLAG_X;
         while (f <= FLAG_W) : (f += 1) {
             f = if (f == FLAG_K + 1) FLAG_M else f; // Skip from FLAG_K (111) to FLAG_M (211)
             i = if (f <= FLAG_K) f - FLAG_X else f - FLAG_X - 99; // Index in the flag display table
-            _ = showString(letteredFlagDisplay[@intCast(i)].txt, &standardFont, @intCast(letteredFlagDisplay[@intCast(i)].position), 43, if (getFlag(@bitCast(f))) vmReverse else vmNormal, true, true);
+            _ = frontier_screen.showString(letteredFlagDisplay[@intCast(i)].txt, &standardFont, @intCast(letteredFlagDisplay[@intCast(i)].position), 43, if (getFlag(@bitCast(f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
         }
 
-        _ = showString("[" ++ STD_SPACE_6_PER_EM ++ "  100..108   " ++ STD_SPACE_3_PER_EM ++ STD_SPACE_6_PER_EM ++ "109..111  " ++ STD_SPACE_3_PER_EM ++ "211..216  217..220" ++ STD_SPACE_6_PER_EM ++ " 221..224]", &standardFont, 1, 44 + 66 - 1 - 44, vmNormal, true, true);
+        _ = frontier_screen.showString("[" ++ STD_SPACE_6_PER_EM ++ "  100..108   " ++ STD_SPACE_3_PER_EM ++ STD_SPACE_6_PER_EM ++ "109..111  " ++ STD_SPACE_3_PER_EM ++ "211..216  217..220" ++ STD_SPACE_6_PER_EM ++ " 221..224]", &standardFont, 1, 44 + 66 - 1 - 44, vmNormal, @intFromBool(true), @intFromBool(true));
 
         if (currentNumberOfLocalFlags() == 0) {
             abi.fmtBufZ(tmpString[0..2560], "No local flags or registers allocated.", .{});
-            _ = showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, 1, 109, vmNormal, @intFromBool(true), @intFromBool(true));
         } else {
             // Local Registers
             abi.fmtBufZ(tmpString[0..2560], "{d} local register{s} allocated.", .{ @as(u32, currentNumberOfLocalRegisters()), if (currentNumberOfLocalRegisters() > 1) @as([*c]const u8, "s") else @as([*c]const u8, "") });
-            _ = showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
-            _ = showString("Local flag status:", &standardFont, 1, 153, vmNormal, true, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, 1, 109, vmNormal, @intFromBool(true), @intFromBool(true));
+            _ = frontier_screen.showString("Local flag status:", &standardFont, 1, 153, vmNormal, @intFromBool(true), @intFromBool(true));
 
             // Local Flags
             f = 0;
@@ -509,7 +509,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                 }
 
                 abi.fmtBufZ(tmpString[0..2560], "{d}", .{@as(i32, f)});
-                _ = showString(tmpString, &standardFont, @intCast(25 * @rem(@as(i32, f), 16) + 5 + 4 * @as(i32, @intFromBool(f <= 9)), ), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), if (getFlag(@bitCast(FIRST_LOCAL_FLAG + f))) vmReverse else vmNormal, true, true);
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(25 * @rem(@as(i32, f), 16) + 5 + 4 * @as(i32, @intFromBool(f <= 9)), ), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), if (getFlag(@bitCast(FIRST_LOCAL_FLAG + f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
             }
         }
     }

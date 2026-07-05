@@ -1,3 +1,4 @@
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
 const CM_MIM: u8 = 12;
 
 const ITM_CHS: i16 = 97;
@@ -32,7 +33,7 @@ const ItemClass = enum {
 
 pub fn run(item: i16) void {
     const class = classify(item);
-    if (z47_frontier_matrix_aim_is_empty()) {
+    if (frontier_matrix_editor.z47_frontier_matrix_aim_is_empty()) {
         handleAimEmpty(class, item);
         return;
     }
@@ -53,15 +54,15 @@ fn classify(item: i16) ItemClass {
 }
 
 fn enqueue(item: i16) void {
-    z47_frontier_matrix_add_item_to_nim_buffer(item);
+    frontier_matrix_editor.z47_frontier_matrix_add_item_to_nim_buffer(item);
     calcMode = CM_MIM;
 }
 
 fn initAim(class: ItemClass) void {
     switch (class) {
-        .exponent => z47_frontier_matrix_init_aim_exponent(),
-        .period => z47_frontier_matrix_init_aim_period(),
-        .digit => z47_frontier_matrix_init_aim_digit(),
+        .exponent => frontier_matrix_editor.z47_frontier_matrix_init_aim_exponent(),
+        .period => frontier_matrix_editor.z47_frontier_matrix_init_aim_period(),
+        .digit => frontier_matrix_editor.z47_frontier_matrix_init_aim_digit(),
         else => {},
     }
 }
@@ -72,10 +73,10 @@ fn handleAimEmpty(class: ItemClass, item: i16) void {
             initAim(class);
             enqueue(item);
         },
-        .backspace => z47_frontier_matrix_zero_current_element(),
-        .sign => z47_frontier_matrix_change_sign_current_element(),
-        .imaginary_unit => z47_frontier_matrix_make_j_element(),
-        .pi => z47_frontier_matrix_set_current_to_pi(),
+        .backspace => frontier_matrix_editor.z47_frontier_matrix_zero_current_element(),
+        .sign => frontier_matrix_editor.z47_frontier_matrix_change_sign_current_element(),
+        .imaginary_unit => frontier_matrix_editor.z47_frontier_matrix_make_j_element(),
+        .pi => frontier_matrix_editor.z47_frontier_matrix_set_current_to_pi(),
         .unsupported => {},
     }
 }
@@ -84,14 +85,14 @@ fn handleAimNonEmpty(class: ItemClass, item: i16) void {
     switch (class) {
         .exponent, .period, .digit, .sign, .imaginary_unit => enqueue(item),
         .backspace => {
-            if (z47_frontier_matrix_aim_is_single_plus_digit()) {
-                z47_frontier_matrix_aim_clear_single_plus_digit();
+            if (frontier_matrix_editor.z47_frontier_matrix_aim_is_single_plus_digit()) {
+                frontier_matrix_editor.z47_frontier_matrix_aim_clear_single_plus_digit();
             }
             enqueue(item);
         },
         .pi => {
-            if (z47_frontier_matrix_can_append_pi_literal()) {
-                z47_frontier_matrix_append_pi_literal_and_enter();
+            if (frontier_matrix_editor.z47_frontier_matrix_can_append_pi_literal()) {
+                frontier_matrix_editor.z47_frontier_matrix_append_pi_literal_and_enter();
             }
         },
         .unsupported => {},
@@ -100,16 +101,15 @@ fn handleAimNonEmpty(class: ItemClass, item: i16) void {
 
 extern var calcMode: u8;
 
-extern fn z47_frontier_matrix_aim_is_empty() bool;
-extern fn z47_frontier_matrix_init_aim_exponent() void;
-extern fn z47_frontier_matrix_init_aim_period() void;
-extern fn z47_frontier_matrix_init_aim_digit() void;
-extern fn z47_frontier_matrix_zero_current_element() void;
-extern fn z47_frontier_matrix_aim_is_single_plus_digit() bool;
-extern fn z47_frontier_matrix_aim_clear_single_plus_digit() void;
-extern fn z47_frontier_matrix_change_sign_current_element() void;
-extern fn z47_frontier_matrix_make_j_element() void;
-extern fn z47_frontier_matrix_set_current_to_pi() void;
-extern fn z47_frontier_matrix_can_append_pi_literal() bool;
-extern fn z47_frontier_matrix_append_pi_literal_and_enter() void;
-extern fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void;
+
+
+
+
+
+
+
+
+
+
+
+
