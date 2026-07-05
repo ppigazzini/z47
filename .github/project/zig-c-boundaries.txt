@@ -120,12 +120,10 @@ zig_src/frontier/frontier_display_format.zig
 zig_src/frontier/frontier_frontend_settings.zig
 zig_src/frontier/frontier_keys_management.zig
 zig_src/frontier/frontier_matrix_editor_entry.zig
-zig_src/frontier/frontier_matrix_editor_refresh.zig
 zig_src/frontier/frontier_matrix_goto_grow.zig
 zig_src/frontier/frontier_matrix_lifecycle.zig
 zig_src/frontier/frontier_matrix_mim_add.zig
 zig_src/frontier/frontier_matrix_mim_run.zig
-zig_src/frontier/frontier_matrix_mutation.zig
 zig_src/frontier/frontier_matrix_nav.zig
 zig_src/frontier/frontier_plot_regression.zig
 zig_src/frontier/frontier_plot_stat.zig
