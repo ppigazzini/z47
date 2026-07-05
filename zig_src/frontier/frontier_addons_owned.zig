@@ -1129,9 +1129,9 @@ pub export fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, l
     fraction(regist, &sign, &intPart, &numer, &denom, lessEqualGreater);
 
     if (getSystemFlag(FLAG_PROPFR) != 0) { // a b/c
-        _ = sprintf(displayString, "%s%u %u/%u", if (sign == -1) @as([*c]const u8, "-") else @as([*c]const u8, "+"), @as(u32, @truncate(intPart)), @as(u32, @truncate(numer)), @as(u32, @truncate(denom)));
+        abi.fmtCStr(displayString, "{s}{d} {d}/{d}", .{ @as([*:0]const u8, if (sign == -1) @as([*c]const u8, "-") else @as([*c]const u8, "+")), @as(u32, @truncate(intPart)), @as(u32, @truncate(numer)), @as(u32, @truncate(denom)) });
     } else { // FT_IMPROPER d/
-        _ = sprintf(displayString, "%s0 %u/%u", if (sign == -1) @as([*c]const u8, "-") else @as([*c]const u8, "+"), @as(u32, @truncate(numer)), @as(u32, @truncate(denom)));
+        abi.fmtCStr(displayString, "{s}0 {d}/{d}", .{ @as([*:0]const u8, if (sign == -1) @as([*c]const u8, "-") else @as([*c]const u8, "+")), @as(u32, @truncate(numer)), @as(u32, @truncate(denom)) });
     }
 }
 
@@ -3773,7 +3773,7 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
                 useMixedNumbersSep[1] = sign[1];
                 useMixedNumbersSep[2] = 0;
                 if (wholeInteger == 1) {
-                    _ = sprintf(&wholePart, "%s%s", &cStr, &useMixedNumbersSep); // "e+"
+                    abi.fmtBufZ(&wholePart, "{s}{s}", .{ std.mem.sliceTo(&cStr, 0), std.mem.sliceTo(&useMixedNumbersSep, 0) }); // "e+"
                 } else {
                     changeToWholeString(wholeInteger, &wholePart, productSign());
                     _ = strcat(&wholePart, &cStr);
@@ -3788,13 +3788,13 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
             } else {
                 return 0;
             }
-            _ = sprintf(&resultingIntStr, "%s%s", &wholePart, &tmpstr); // "1 1"
+            abi.fmtBufZ(&resultingIntStr, "{s}{s}", .{ std.mem.sliceTo(&wholePart, 0), std.mem.sliceTo(&tmpstr, 0) }); // "1 1"
         } else { // constant
             if (multipleOfNewConstantInteger == 1) {
-                _ = sprintf(&resultingIntStr, "%s", &wholePart); // "e+" or "2xe+"
+                abi.fmtBufZ(&resultingIntStr, "{s}", .{ std.mem.sliceTo(&wholePart, 0) }); // "e+" or "2xe+"
             } else {
-                _ = sprintf(&tmpstr, "%d%s", multipleOfNewConstantInteger, productSign());
-                _ = sprintf(&resultingIntStr, "%s%s", &wholePart, &tmpstr); // "e+1" or "2xe+1"
+                abi.fmtBufZ(&tmpstr, "{d}{s}", .{ multipleOfNewConstantInteger, @as([*:0]const u8, productSign()) });
+                abi.fmtBufZ(&resultingIntStr, "{s}{s}", .{ std.mem.sliceTo(&wholePart, 0), std.mem.sliceTo(&tmpstr, 0) }); // "e+1" or "2xe+1"
             }
         }
     } else {

@@ -40,6 +40,7 @@
 // like fnDumpMenus/fnMenuDump), /* */-commented bodies. EXTRA_INFO_ON_CALC_ERROR
 // hints use the extra_info build option.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1384,13 +1385,13 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
         if (getSystemFlag(FLAG_IGN1ER) != 0) {
             clearSystemFlag(FLAG_IGN1ER);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "Page Number %u is not a valid page for the menuArg %u", @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg));
+                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menuArg {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", null);
             }
         } else {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "Page Number %u is not a valid page for the menuArg %u", @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg));
+                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menuArg {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
             }
         }
@@ -2170,7 +2171,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         ((tmpF >= 0 and tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 100000.0) else @as(f32, 1000000.0))) or
             (tmpF < 0 and -tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 10000.0) else @as(f32, 100000.0)))))
     {
-        _ = sprintf(tmpS, "%i", @as(c_int, @intFromFloat(tmpF)));
+        abi.fmtCStr(tmpS, "{d}", .{ @as(c_int, @intFromFloat(tmpF)) });
     } else {
         if (tmpF > 0 and tmpF < 1.0e-34) {
             _ = strcpy(tmpS, concat2(STD_GAUSS_WHITE_R, STD_SUB_0));
@@ -2212,7 +2213,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
     if (stringByteLength(tmpSS) < 4) {
         _ = sprintf(tmpS, concat2(STD_SPACE_3_PER_EM, "%s"), tmpSS);
     } else {
-        _ = sprintf(tmpS, "%s", tmpSS);
+        abi.fmtCStr(tmpS, "{s}", .{ @as([*:0]const u8, tmpSS) });
     }
     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), tmpSS_via(tmpS));
 }
@@ -2427,7 +2428,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     _ = sprintf(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), concat2(STD_SPACE_3_PER_EM, "%s"), stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName));
                 },
                 PRINTER_MARTEL => {
-                    _ = sprintf(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "%s", stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName));
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{ @as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName)) });
                 },
                 PRINTER_OTHER => {
                     _ = sprintf(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), concat2(STD_SPACE_3_PER_EM, "%s"), stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName));
@@ -3519,12 +3520,12 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         if (newFilenameformat == 2) {
             stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
             stringToFileNameChars(&asciiMenuName, &asciiString, 0);
-            _ = sprintf(&bmpFileName, "%s.%d.bmp", &asciiString, @as(c_int, @intCast(@divTrunc(item, 18) + 1)));
+            abi.fmtBufZ(&bmpFileName, "{s}.{d}.bmp", .{ std.mem.sliceTo(&asciiString, 0), @as(c_int, @intCast(@divTrunc(item, 18) + 1)) });
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         } else if (newFilenameformat == 1) {
             stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
             stringToFileNameChars(&asciiMenuName, &asciiString, 0);
-            _ = sprintf(&bmpFileName, "Menu_%03d_p%d_%s.bmp", @as(c_int, menu_arg), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), &asciiString);
+            abi.fmtBufZ(&bmpFileName, "Menu_{d:0>3}_p{d}_{s}.bmp", .{ @as(u32, @intCast(@as(c_int, menu_arg))), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), std.mem.sliceTo(&asciiString, 0) });
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         }
 

@@ -351,6 +351,15 @@ extern const standardFont: font_t;
 
 // C ARRAY symbols: bind by address with @extern (not pointer-typed extern).
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+
+// NUL views of indexOfItems name fields for std.fmt {s} -- the [*c] blob base
+// makes &indexOfItems[i].field allowzero, which {s} rejects (M24).
+inline fn itemSoftName(idx: usize) [:0]const u8 {
+    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[idx].itemSoftmenuName)), 0);
+}
+inline fn itemCatName(idx: usize) [:0]const u8 {
+    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[idx].itemCatalogName)), 0);
+}
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const shuffleReg = @extern([*c]const u8, .{ .name = "shuffleReg" });
@@ -1427,7 +1436,7 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             var shortInt: u64 = regShortInt(@bitCast(regist)).* & shortIntegerMask;
             const base: i16 = @intCast(getRegisterShortIntegerBase(@bitCast(regist)));
             var n: i16 = @as(i16, @intCast(ERROR_MESSAGE_LENGTH)) - 100;
-            _ = sprintf(errorMessage + @as(usize, @intCast(n)), "#%02d", @as(c_int, base));
+            abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d:0>2}", .{ @as(u32, @intCast(@as(c_int, base))) });
             n -= 1;
             if (shortInt == 0) {
                 errorMessage[@intCast(n)] = '0';
@@ -1619,13 +1628,13 @@ fn _getRegisterLabel(registerNo: u16, label: [*c]u8) void {
         label[0] = letteredRegisterName(@bitCast(registerNo));
         label[1] = 0;
     } else if (registerNo < REGISTER_X) {
-        _ = sprintf(label, "R%02d", @as(c_int, registerNo));
+        abi.fmtCStr(label, "R{d:0>2}", .{ @as(u32, @intCast(@as(c_int, registerNo))) });
     } else if (FIRST_LOCAL_REGISTER <= registerNo and registerNo <= LAST_LOCAL_REGISTER) {
-        _ = sprintf(label, "R.%03d", @as(c_int, registerNo) - 100);
+        abi.fmtCStr(label, "R.{d:0>3}", .{ @as(u32, @intCast(@as(c_int, registerNo) - 100)) });
     } else if (FIRST_NAMED_VARIABLE <= registerNo and registerNo <= LAST_NAMED_VARIABLE) {
-        _ = sprintf(label, "%s", @as([*c]u8, &allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName) + 1);
+        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]u8, &allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName) + 1) });
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= registerNo and registerNo <= LAST_RESERVED_VARIABLE) {
-        _ = sprintf(label, "%s", @as([*c]const u8, &allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1);
+        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1) });
     }
 }
 
@@ -1922,9 +1931,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         }
                     } else if ((func == ITM_OPEN_MENU) and !tam.indirect) {
                         if (param == MNU_DYNAMIC) {
-                            _ = sprintf(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, &buffer);
+                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.sliceTo(&buffer, 0) });
                         } else {
-                            _ = sprintf(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, &indexOfItems[@intCast(tam.value)].itemCatalogName);
+                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemCatName(@intCast(tam.value)) });
                         }
                     } else if (tam.mode == TM_SHUFFLE) {
                         abi.fmtBufZ(&traceBuffer, " {c}{c}{c}{c}", .{ shuffleReg[param & 0x03], shuffleReg[(param & 0x0c) >> 2], shuffleReg[(param & 0x30) >> 4], shuffleReg[(param & 0xc0) >> 6] });
@@ -1972,9 +1981,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         } else if (param & 0x8000 != 0) {
                             param &= 0x3fff;
                             if (param < 64) {
-                                _ = sprintf(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, &indexOfItems[@as(usize, @intCast(@as(c_int, param) + SFL_TDM24))].itemSoftmenuName);
+                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_TDM24))) });
                             } else {
-                                _ = sprintf(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, &indexOfItems[@as(usize, @intCast(@as(c_int, param) + SFL_MONIT - 64))].itemSoftmenuName);
+                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_MONIT - 64))) });
                             }
                         }
                     } else if ((tam.mode == TM_CMP) and (param == TEMP_REGISTER_1) and !tam.indirect) {
@@ -1989,12 +1998,12 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            _ = sprintf(&traceBuffer, "%s", &indexOfItems[@as(usize, @intCast(ITM_REG_X + @as(c_int, param) - REGISTER_X))].itemSoftmenuName);
+                            abi.fmtBufZ(&traceBuffer, "{s}", .{ itemSoftName(@as(usize, @intCast(ITM_REG_X + @as(c_int, param) - REGISTER_X))) });
                         } else if (param <= REGISTER_W) {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            _ = sprintf(&traceBuffer, "%s", &indexOfItems[@as(usize, @intCast(ITM_REG_M + @as(c_int, param) - REGISTER_M))].itemSoftmenuName);
+                            abi.fmtBufZ(&traceBuffer, "{s}", .{ itemSoftName(@as(usize, @intCast(ITM_REG_M + @as(c_int, param) - REGISTER_M))) });
                         } else if ((param >= FIRST_LOCAL_REGISTER) and (param <= LAST_LOCAL_REGISTER)) {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
@@ -2121,7 +2130,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
                     printAdvance(0);
                 }
                 printAdvance(0);
-                _ = sprintf(tmpString, " %02d", @as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)));
+                abi.fmtBufZ(tmpString[0..2560], " {d:0>2}", .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
                 _ = strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
                 printLineImpl(tmpString, 0);
             } else if (!startOfLine) {
@@ -2132,7 +2141,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
                 }
             }
         } else {
-            _ = sprintf(tmpString, "%02d", @as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)));
+            abi.fmtBufZ(tmpString[0..2560], "{d:0>2}", .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
             _ = strcat(tmpString, if (isLabel) STD_BLACK_RIGHT_TRIANGLE else " ");
             printLineImpl(tmpString, 0);
         }
@@ -2434,13 +2443,13 @@ pub export fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8
         label[0] = letteredRegisterName(@bitCast(register_no));
         label[1] = 0;
     } else if (register_no < REGISTER_X) {
-        _ = snprintf(label, label_size, "R%02u", @as(c_uint, register_no));
+        abi.fmtCStr(label, "R{d:0>2}", .{ @as(c_uint, register_no) });
     } else if (FIRST_LOCAL_REGISTER <= register_no and register_no <= LAST_LOCAL_REGISTER) {
-        _ = snprintf(label, label_size, "R.%03u", @as(c_uint, register_no) - 100);
+        abi.fmtCStr(label, "R.{d:0>3}", .{ @as(c_uint, register_no) - 100 });
     } else if (FIRST_NAMED_VARIABLE <= register_no and register_no <= LAST_NAMED_VARIABLE) {
-        _ = snprintf(label, label_size, "%s", @as([*c]u8, &allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName) + 1);
+        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]u8, &allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName) + 1) });
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= register_no and register_no <= LAST_RESERVED_VARIABLE) {
-        _ = snprintf(label, label_size, "%s", @as([*c]const u8, &allReservedVariables[register_no - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1);
+        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &allReservedVariables[register_no - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1) });
     }
 }
 

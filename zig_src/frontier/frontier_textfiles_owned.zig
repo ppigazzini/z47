@@ -134,7 +134,7 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
             if (@as(u32, rows) * @as(u32, columns) * 46 < TMP_STR_LENGTH) {
                 copyRegisterToClipboardString(regist, clipboardString, false);
             } else {
-                _ = sprintf(clipboardString, "%s%ux%u%s", clipMsg(0), @as(c_uint, rows), @as(c_uint, columns), clipMsg(1)); // Real matrix   too large for transfer
+                abi.fmtCStr(clipboardString, "{s}{d}x{d}{s}", .{ @as([*:0]const u8, clipMsg(0)), @as(c_uint, rows), @as(c_uint, columns), @as([*:0]const u8, clipMsg(1)) }); // Real matrix   too large for transfer
             }
         },
 
@@ -145,7 +145,7 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
             if (@as(u32, rows) * @as(u32, columns) * 92 < TMP_STR_LENGTH) {
                 copyRegisterToClipboardString(regist, clipboardString, false);
             } else {
-                _ = sprintf(clipboardString, "%s%ux%u%s", clipMsg(2), @as(c_uint, rows), @as(c_uint, columns), clipMsg(1)); // Complex matrix   too large for transfer
+                abi.fmtCStr(clipboardString, "{s}{d}x{d}{s}", .{ @as([*:0]const u8, clipMsg(2)), @as(c_uint, rows), @as(c_uint, columns), @as([*:0]const u8, clipMsg(1)) }); // Complex matrix   too large for transfer
             }
         },
 

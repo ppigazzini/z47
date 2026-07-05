@@ -881,11 +881,11 @@ fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32,
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;
-    _ = snprintf(tmpString, bufLen, "  y %8s/tick  ", radixProcess(&buff, formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)));
+    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{ @as([*:0]const u8, radixProcess(&buff, formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50))) });
     convertDigits(smallE(&buff, tmpString), &outstr);
     _ = showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, true, true);
 
-    _ = snprintf(tmpString, bufLen, "  x %8s/tick  ", radixProcess(&buff, formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)));
+    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{ @as([*:0]const u8, radixProcess(&buff, formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50))) });
     convertDigits(smallE(&buff, tmpString), &outstr);
     _ = showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, true, true);
 }
@@ -935,7 +935,7 @@ pub export fn graph_text() callconv(.c) void {
             abi.fmtBufZ(tmpString[0..bufLen], "  x-axis y 0", .{});
         },
         3 => {
-            _ = snprintf(tmpString, bufLen, "  axis 0%s0 ", radixProcess(&tmpbuf, "."));
+            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{ @as([*:0]const u8, radixProcess(&tmpbuf, ".")) });
         },
         else => {},
     }
@@ -1670,8 +1670,8 @@ pub export fn fnStatList() callconv(.c) void {
             ixx = statnum - ix - 1 + ListXYposition;
             var tmpBuf: [100]u8 = undefined;
 
-            _ = sprintf(&tmpstr1, "[%3d] x%4s%14s, ", @as(c_int, ixx + 1), @as([*:0]const u8, ""), formatCore(@as(f64, grf_x(@intCast(ixx))), 10, false, &tmpBuf, 150));
-            _ = sprintf(&tmpstr2, "y%4s%14s, ", @as([*:0]const u8, ""), formatCore(@as(f64, grf_y(@intCast(ixx))), 10, false, &tmpBuf, 150));
+            abi.fmtBufZ(&tmpstr1, "[{d}] x{s}{s}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, formatCore(@as(f64, grf_x(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
+            abi.fmtBufZ(&tmpstr2, "y{s}{s}, ", .{ @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, formatCore(@as(f64, grf_y(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
             _ = strcat(&tmpstr1, &tmpstr2);
 
             print_numberstr(&tmpstr1, false);

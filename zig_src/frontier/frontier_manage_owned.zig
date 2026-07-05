@@ -1003,7 +1003,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     line = firstLine;
     while (line < 7) : (line += 1) {
         nextStep = findNextStep(step);
-        _ = sprintf(tmpString, "%04d:" ++ STD_SPACE_4_PER_EM, @as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)));
+        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
         if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber))) {
             tamOverPemYPos = @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line));
             _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse, false, true);
@@ -1034,7 +1034,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         if (line >= 7) {
                             break;
                         }
-                        _ = sprintf(tmpString, "%04d:" ++ STD_SPACE_4_PER_EM, @as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)));
+                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
                         _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, true);
                     }
                 } else if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) and lblOrEnd and (step[0] != ITM_LBL)) {
@@ -1046,7 +1046,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         if (line >= 7) {
                             break;
                         }
-                        _ = sprintf(tmpString, "%04d:" ++ STD_SPACE_4_PER_EM, @as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)));
+                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
                         _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, true);
                     }
                 }

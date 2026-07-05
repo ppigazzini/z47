@@ -1176,7 +1176,7 @@ pub export fn formatCore(value_in: f64, digits: c_int, handle_zero: bool_t, buf:
     }
 
     if (handle_zero and value == 0.0) {
-        _ = sprintf(buf, "%s0.0", sign);
+        abi.fmtCStr(buf, "{s}0.0", .{ @as([*:0]const u8, sign) });
     } else {
         var value34: real34_t = undefined;
         var valueR: real_t = undefined;
@@ -1197,7 +1197,7 @@ pub export fn formatCore(value_in: f64, digits: c_int, handle_zero: bool_t, buf:
 pub export fn grphNumFormatter(s02: [*c]u8, s01: [*c]const u8, inreal: f64, digits: i8, s05: [*c]const u8) callconv(.c) void {
     var format_buf: [64]u8 = undefined;
     _ = formatCore(inreal, digits, false, &format_buf, 70);
-    _ = sprintf(s02, "%s%s%s", s01, @as([*c]const u8, &format_buf), s05);
+    abi.fmtCStr(s02, "{s}{s}{s}", .{ @as([*:0]const u8, s01), @as([*:0]const u8, @as([*c]const u8, &format_buf)), @as([*:0]const u8, s05) });
     nanCheck(s02);
 }
 
@@ -1657,7 +1657,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
     if (isValidDraw) {
         if (softmenuMenuItem0() != -MNU_PLOT_SCATR) {
-            _ = sprintf(&ss, "%u", @as(c_uint, NN));
+            abi.fmtBufZ(&ss, "{d}", .{ @as(c_uint, NN) });
             _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
             _ = sprintf(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=");
             _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
@@ -1770,7 +1770,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
         } else if (NN < minLRDataPoints(selection)) {
             _ = showString("insufficient data", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
             index += 1;
-            _ = sprintf(&ss, " %u < %u", @as(c_uint, NN), @as(c_uint, minLRDataPoints(selection)));
+            abi.fmtBufZ(&ss, " {d} < {d}", .{ @as(c_uint, NN), @as(c_uint, minLRDataPoints(selection)) });
             _ = showString(&ss, &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
             index += 1;
         } else if (selection == 0) {
