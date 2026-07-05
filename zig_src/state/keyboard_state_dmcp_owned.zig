@@ -6,6 +6,7 @@
 // ROM surfaces), so they are verified by build/link across the firmware targets +
 // faithful-port review, then exported onto the DMCP lanes while the bridge renames
 // the C copies away.
+const abi = @import("abi");
 const std = @import("std");
 const builtin = @import("builtin");
 
@@ -43,7 +44,7 @@ fn execAutoRepeat(key: u16) callconv(.c) void {
     const f = shiftF;
     const g = shiftG;
     const orig_screen_updating_mode = screenUpdatingMode;
-    _ = sprintf(&char_key[0], "%02d", @as(c_int, key) - 1);
+    abi.fmtBufZ(char_key[0..6], "{d:0>2}", .{@as(u32, @intCast(@as(c_int, key) - 1))});
 
     fnTimerStart(TO_AUTO_REPEAT, key, KEY_AUTOREPEAT_PERIOD);
 

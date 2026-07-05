@@ -12,6 +12,7 @@
 // programmableMenu.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -206,7 +207,7 @@ fn _indirectRegister(paramAddress: [*c]u8) u16 {
             return @bitCast(realParam);
         }
     } else {
-        _ = sprintf(tmpString, "\nIn function _indirectRegister: " ++ STD_RIGHT_ARROW ++ " %u is not a valid parameter!", @as(c_uint, opParam));
+        abi.fmtBufZ(tmpString[0..2560], "\nIn function _indirectRegister: " ++ STD_RIGHT_ARROW ++ " {d} is not a valid parameter!", .{@as(u32, opParam)});
     }
     return INVALID_VARIABLE;
 }
@@ -225,7 +226,7 @@ fn _indirectVariable(stringAddress: [*c]u8) u16 {
     } else {
         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
+            abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(tmpStringLabelOrVariableName)});
             moreInfoOnError("In function _indirectVariable:", errorMessage);
         }
     }
@@ -250,7 +251,7 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
         } else {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "string '%s' is not a named label", tmpStringLabelOrVariableName);
+                abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(tmpStringLabelOrVariableName)});
                 moreInfoOnError("In function _get2ndParamOfKey:", errorMessage);
             }
         }
@@ -260,7 +261,7 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
         return _indirectVariable(paramAddress);
     } else {
         if (comptime extra_info) {
-            _ = sprintf(tmpString, "\nIn function _get2ndParamOfKey: %u is not a valid parameter!", @as(c_uint, opParam));
+            abi.fmtBufZ(tmpString[0..2560], "\nIn function _get2ndParamOfKey: {d} is not a valid parameter!", .{@as(u32, opParam)});
         }
     }
     return INVALID_VARIABLE;
