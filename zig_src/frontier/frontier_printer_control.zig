@@ -1,4 +1,6 @@
 const abi = @import("abi");
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
 
 const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;
@@ -100,24 +102,24 @@ fn applyDelay(delay: u16) void {
 }
 
 fn applyAdvance() void {
-    print_lf();
+    frontier_print.print_lf();
 }
 
 fn applyList(lines: u16) void {
-    printProgram(true, lines);
+    frontier_print.printProgram(true, lines);
 }
 
 fn applyByte(byte: u16) void {
-    cmdPrint(byte, PRINT_BYTE);
+    frontier_print.cmdPrint(byte, PRINT_BYTE);
 }
 
 fn applyChar(register_no: u16) void {
-    const character = z47_frontier_print_get_unicode_value(@as(i16, @intCast(register_no)));
-    cmdPrint(character, PRINT_CHAR);
+    const character = frontier_print.z47_frontier_print_get_unicode_value(@as(i16, @intCast(register_no)));
+    frontier_print.cmdPrint(character, PRINT_CHAR);
 }
 
 fn applyTab(column: u16) void {
-    cmdPrint(column, PRINT_TAB);
+    frontier_print.cmdPrint(column, PRINT_TAB);
 }
 
 fn applyLcd(unused_but_mandatory_parameter: u16) void {
@@ -125,16 +127,16 @@ fn applyLcd(unused_but_mandatory_parameter: u16) void {
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
         return;
     }
-    fnSNAP(9876);
+    frontier.fnSNAP(9876);
 }
 
 pub fn run(command: Command, value: u16) void {
     const use_sbi = needsSbi(command);
     if (use_sbi) {
-        z47_frontier_print_set_printer_sbi(true);
+        frontier_print.z47_frontier_print_set_printer_sbi(true);
     }
     defer if (use_sbi) {
-        z47_frontier_print_set_printer_sbi(false);
+        frontier_print.z47_frontier_print_set_printer_sbi(false);
     };
 
     switch (command) {
@@ -159,9 +161,8 @@ extern fn getSystemFlag(sf: c_int) bool;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn setLineDelay(delay: u16) void;
-extern fn print_lf() void;
-extern fn printProgram(list: bool, lines: u16) void;
-extern fn cmdPrint(arg: u16, op: c_int) void;
-extern fn z47_frontier_print_set_printer_sbi(status: bool) void;
-extern fn z47_frontier_print_get_unicode_value(regist: i16) u16;
-extern fn fnSNAP(unused_but_mandatory_parameter: u16) void;
+
+
+
+
+

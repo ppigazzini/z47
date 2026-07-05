@@ -35,6 +35,10 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -116,17 +120,17 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, c: *real_t) bool_t;
-extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
+
+
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn saveForUndo() void;
 extern fn liftStack() void;
 extern fn setSystemFlag(flag: u16) void;
-extern fn fnRefreshState() void;
+
 extern fn fnClearFlag(flag: u16) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 // fn* item handlers: all have the void(uint16_t) C ABI.
@@ -138,8 +142,8 @@ const FnU16 = *const fn (p: u16) callconv(.c) void;
 const c_fnSwapX = @extern(FnU16, .{ .name = "fnSwapX" });
 const c_fnRCL = @extern(FnU16, .{ .name = "fnRCL" });
 const c_fn3Sto = @extern(FnU16, .{ .name = "fn3Sto" });
-extern fn fn_cnst_op_a(p: u16) void;
-extern fn fn_cnst_op_aa(p: u16) void;
+
+
 extern fn fnToRect2(p: u16) void;
 
 // These three are called with register codes (int/int16); the C ABI param is
@@ -229,11 +233,11 @@ pub export fn fnSigmaAssign(sigmaAssign: u16) callconv(.c) void {
         Norm_Key_00.func = tt -% 16384;
         Norm_Key_00.funcParam[0] = 0;
         Norm_Key_00.used = Norm_Key_00.func != kbdStd()[@intCast(normKey00Key())].primary;
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
         fnClearFlag(FLAG_USER);
     } else {
         Norm_Key_00.used = false;
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         moreInfoOnErr("In function fnSigmaAssign: ", "the NRM key is not available.");
     }
 }
@@ -245,10 +249,10 @@ pub export fn flipPolar() callconv(.c) void {
     var zReal: real_t = undefined;
     var zImag: real_t = undefined;
     if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-        if (!getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
+        if (!frontier_register_value_conversions.getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
             return;
         }
-        convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+        frontier_register_value_conversions.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
         return;
     }
 
@@ -350,11 +354,11 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
         fnAdd(0);
 
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_a(0);
+        frontier_addons.fn_cnst_op_a(0);
         fnRCL(JM_TEMP_I);
         fnMultiply(0);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_aa(0);
+        frontier_addons.fn_cnst_op_aa(0);
         fnRCL(JM_TEMP_J);
         fnMultiply(0);
         fnAdd(0);
@@ -362,11 +366,11 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
         fnAdd(0);
 
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_aa(0);
+        frontier_addons.fn_cnst_op_aa(0);
         fnRCL(JM_TEMP_I);
         fnMultiply(0);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_a(0);
+        frontier_addons.fn_cnst_op_a(0);
         fnRCL(JM_TEMP_J);
         fnMultiply(0);
         fnAdd(0);
@@ -392,11 +396,11 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
         fnDivide(0);
 
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_a(0);
+        frontier_addons.fn_cnst_op_a(0);
         fnRCL(JM_TEMP_J);
         fnMultiply(0);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_aa(0);
+        frontier_addons.fn_cnst_op_aa(0);
         fnRCL(JM_TEMP_I);
         fnMultiply(0);
         fnAdd(0);
@@ -406,11 +410,11 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
         fnDivide(0);
 
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_aa(0);
+        frontier_addons.fn_cnst_op_aa(0);
         fnRCL(JM_TEMP_J);
         fnMultiply(0);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_a(0);
+        frontier_addons.fn_cnst_op_a(0);
         fnRCL(JM_TEMP_I);
         fnMultiply(0);
         fnAdd(0);
@@ -465,12 +469,12 @@ pub export fn fnJM(JM_OPCODE: u16) callconv(.c) void {
 
         fnRCL(JM_TEMP_I);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_a(0);
+        frontier_addons.fn_cnst_op_a(0);
         fnMultiply(0);
 
         fnRCL(JM_TEMP_I);
         setSystemFlag(FLAG_ASLIFT);
-        fn_cnst_op_aa(0);
+        frontier_addons.fn_cnst_op_aa(0);
         copySourceRegisterToDestRegister(REGISTER_X, JM_TEMP_J);
         fnMultiply(0);
 

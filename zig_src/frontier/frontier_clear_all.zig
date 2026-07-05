@@ -1,3 +1,9 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
 const CONFIRMED: u16 = 9877;
 const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;
@@ -18,16 +24,16 @@ const PGM_WAITING: u8 = 2;
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 
 fn requestConfirmation() void {
-    setConfirmationMode(&fnClAll);
+    frontier_config.setConfirmationMode(&frontier.fnClAll);
 }
 
 fn clearPrograms() void {
-    fnClPAll(CONFIRMED);
+    frontier.fnClPAll(CONFIRMED);
 }
 
 fn clearSigma() void {
-    fnClSigma(CONFIRMED);
-    z47_frontier_release_saved_statistical_sums();
+    frontier_stats.fnClSigma(CONFIRMED);
+    frontier_config.z47_frontier_release_saved_statistical_sums();
 }
 
 fn clearRegisters() void {
@@ -44,24 +50,24 @@ fn clearUndoState() void {
 }
 
 fn resetMenus() void {
-    fnExitAllMenus(NOPARAM);
-    fnDeleteUserMenus(CONFIRMED);
+    frontier_softmenus.fnExitAllMenus(NOPARAM);
+    frontier_assign.fnDeleteUserMenus(CONFIRMED);
 }
 
 fn resetRibbons() void {
-    const ribbon = if (z47_frontier_is_r47_fam()) ITM_RIBBON_R47 else ITM_RIBBON_C47;
-    fnRESET_MyM(ribbon);
-    fnRESET_Mya();
+    const ribbon = if (frontier_config.z47_frontier_is_r47_fam()) ITM_RIBBON_R47 else ITM_RIBBON_C47;
+    frontier_addons.fnRESET_MyM(ribbon);
+    frontier_addons.fnRESET_Mya();
 }
 
 fn rebuildCoreMenus() void {
-    createHOME();
-    createPFN();
+    _ = frontier_softmenus.createHOME();
+    _ = frontier_softmenus.createPFN();
 }
 
 fn resetKeysAndVariables() void {
-    fnKeysManagement(USER_KRESET);
-    initUserKeyArgument();
+    frontier.fnKeysManagement(USER_KRESET);
+    frontier_assign.initUserKeyArgument();
     fnDeleteAllVariables(CONFIRMED);
     fnClFAll(CONFIRMED);
 }
@@ -94,21 +100,20 @@ extern var temporaryInformation: u8;
 extern var programRunStop: u8;
 extern var thereIsSomethingToUndo: bool;
 
-extern fn fnClAll(confirmation: u16) void;
-extern fn setConfirmationMode(func: ConfirmedFunction) void;
-extern fn fnClPAll(confirmation: u16) void;
-extern fn fnClSigma(unused_but_mandatory_parameter: u16) void;
+
+
+
+
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;
-extern fn fnExitAllMenus(unused_but_mandatory_parameter: u16) void;
-extern fn fnDeleteUserMenus(confirmation: u16) void;
-extern fn fnRESET_MyM(param: u16) void;
-extern fn fnRESET_Mya() void;
-extern fn createHOME() void;
-extern fn createPFN() void;
-extern fn fnKeysManagement(choice: u16) void;
-extern fn initUserKeyArgument() void;
+
+
+
+
+
+
+
+
 extern fn fnDeleteAllVariables(confirmation: u16) void;
 extern fn fnClFAll(confirmation: u16) void;
-extern fn z47_frontier_release_saved_statistical_sums() void;
-extern fn z47_frontier_is_r47_fam() bool;
+

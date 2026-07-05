@@ -32,6 +32,11 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const calcRegister_t = i16;
@@ -147,23 +152,23 @@ var s_aa2: real_t = undefined;
 // ---------------------------------------------------------------------------
 extern fn liftStack() void;
 extern fn setSystemFlag(flag: c_uint) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-extern fn getCurveFitModeNames(selection: u16) [*c]const u8;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
-extern fn convertRealToResultRegister(x: *align(1) const real_t, dest: calcRegister_t, angle: angularMode_t) void;
-extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn checkMinimumDataPoints(n: *align(1) const real_t) bool;
+
+
+
+
+
 extern fn fnStatR(RR: *real_t, SXY: *real_t, SX: *real_t, SY: *real_t) void;
 extern fn fnStatSMI(SMI: *real_t) void;
-extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool) i32;
-extern fn realSetZero(r: *real_t) void;
+
+
 extern fn realExp(rhs: *align(1) const real_t, res: *real_t, set: *realContext_t) void;
 extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn xthRootReal(yy: *real_t, xx: *real_t, real_context: *realContext_t) void;
 extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) void;
-extern fn realToFloat(vv: *const real_t, v: *f32) void;
+
 extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 
@@ -239,7 +244,7 @@ pub export fn fnCurveFitting(curveFitting_arg: u16) callconv(.c) void {
         } else {
             _ = printf("Use the best fitting model out of\n");
         }
-        _ = printf("%s", getCurveFitModeNames(curveFitting));
+        _ = printf("%s", frontier_debug.getCurveFitModeNames(curveFitting));
         if (numberOfOnes == 1) {
             _ = printf(" fitting model.\n");
         } else {
@@ -300,7 +305,7 @@ pub export fn fnCurveFitting_T(curveFitting_arg: u16) callconv(.c) void {
         } else {
             _ = printf("Use the best fitting model out of\n");
         }
-        _ = printf("%s", getCurveFitModeNames(curveFitting));
+        _ = printf("%s", frontier_debug.getCurveFitModeNames(curveFitting));
         if (numberOfOnes == 1) {
             _ = printf(" fitting model.\n");
         } else {
@@ -318,7 +323,7 @@ pub export fn fnCurveFittingLR(unusedButMandatoryParameter: u16) callconv(.c) vo
     liftStack();
     mpz_init(&lr);
     mpz_set_ui(&lr, lrSelection & 0x01FF); // Input mask 01 1111 1111 EXCLUDES 10 0000 0000, which is ORTHOF, as it is not in the OM
-    convertLongIntegerToLongIntegerRegister(&lr, REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lr, REGISTER_X);
     mpz_clear(&lr);
 }
 
@@ -347,12 +352,12 @@ pub export fn minLRDataPoints(selection: u16) callconv(.c) u16 {
 fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
     var NN: real_t = undefined;
 
-    const nn: i32 = realToInt32C47(sigma(0), null);
-    realSetZero(&s_aa0);
-    realSetZero(&s_aa1);
-    realSetZero(&s_aa2);
+    const nn: i32 = frontier_real_type.realToInt32C47(sigma(0), null);
+    frontier_real_type.realSetZero(&s_aa0);
+    frontier_real_type.realSetZero(&s_aa1);
+    frontier_real_type.realSetZero(&s_aa2);
     if (comptime extra_info) {
-        _ = printf("Processing for best fit: %s\n", getCurveFitModeNames(curveFitting));
+        _ = printf("Processing for best fit: %s\n", frontier_debug.getCurveFitModeNames(curveFitting));
     }
     realCopy(const__4(), &s_RRMAX);
     var s: u16 = 0; // default
@@ -362,7 +367,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
         jx = curveFitting & (@as(u16, 1) << ix);
         if (jx != 0) {
             if (comptime extra_info) {
-                _ = printf("processCurvefitSelection curveFitting:%u sweep:%u %s\n", @as(c_uint, curveFitting), @as(c_uint, jx), getCurveFitModeNames(jx));
+                _ = printf("processCurvefitSelection curveFitting:%u sweep:%u %s\n", @as(c_uint, curveFitting), @as(c_uint, jx), frontier_debug.getCurveFitModeNames(jx));
             }
 
             if (nn >= @as(i32, minLRDataPoints(jx))) {
@@ -382,7 +387,7 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
 
     if (comptime extra_info) {
         if (s != 0) {
-            _ = printf("Found best fit: %u %s\n", @as(c_uint, s), getCurveFitModeNames(s));
+            _ = printf("Found best fit: %u %s\n", @as(c_uint, s), frontier_debug.getCurveFitModeNames(s));
         } else {
             _ = printf("Found no fit: %u\n", @as(c_uint, s));
         }
@@ -407,36 +412,36 @@ fn fnProcessLRfind(curveFitting: u16, resultType: u16) void {
             if (resultType & 4 != 0) {
                 liftStack();
                 setSystemFlag(FLAG_ASLIFT);
-                convertRealToResultRegister(&s_aa2, REGISTER_X, amNone);
+                frontier_register_value_conversions.convertRealToResultRegister(&s_aa2, REGISTER_X, amNone);
             }
         } else if (resultType == 4) {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertRealToResultRegister(const_0(), REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(const_0(), REGISTER_X, amNone);
         }
         if (resultType & 2 != 0) {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertRealToResultRegister(&s_aa1, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&s_aa1, REGISTER_X, amNone);
         }
         if (resultType & 1 != 0) {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertRealToResultRegister(&s_aa0, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&s_aa0, REGISTER_X, amNone);
         }
     } else {
         if (minLRDataPoints(s) == 65535) {
-            displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnProcessLRfind:", "There is insufficient statistical data to do L.R., possibly due to data manipulation!");
         } else {
             uInt32ToReal(minLRDataPoints(s), &NN);
-            _ = checkMinimumDataPoints(&NN); // Report an error
+            _ = frontier_stats.checkMinimumDataPoints(&NN); // Report an error
         }
     }
 }
 
 pub export fn fnProcessLR(resultType: u16) callconv(.c) void {
-    if (checkMinimumDataPoints(const_2())) {
+    if (frontier_stats.checkMinimumDataPoints(const_2())) {
         fnProcessLRfind(lrSelection, resultType);
     }
 }
@@ -1001,7 +1006,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
     var TT: real_t = undefined;
     var UU: real_t = undefined;
 
-    realSetZero(YY);
+    frontier_real_type.realSetZero(YY);
     if (USEFLOAT == useREAL4) {
         realContextForecast = &ctxtReal4;
     } else {
@@ -1016,7 +1021,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             } else {
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realAdd(&UU, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1027,7 +1032,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realExp(&UU, &UU, realContextForecast.?);
                 realMultiply(&UU, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1038,7 +1043,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 WP34S_Ln(XX, &SS, realContextForecast.?);
                 realMultiply(&SS, aa1, &UU, realContextForecast.?);
                 realAdd(&UU, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1048,7 +1053,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             } else {
                 realPower(XX, aa1, &SS, realContextForecast.?);
                 realMultiply(&SS, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1059,7 +1064,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realDivide(const_1(), XX, &SS, realContextForecast.?);
                 realPower(aa1, &SS, &SS, realContextForecast.?); // very very slow with a1=0.9982, probably in the 0.4 < x < 1.0 area
                 realMultiply(&SS, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1070,7 +1075,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realAdd(&UU, aa0, &TT, realContextForecast.?);
                 realDivide(const_1(), &TT, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1083,7 +1088,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realAdd(&TT, &UU, &TT, realContextForecast.?);
                 realAdd(&TT, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1096,7 +1101,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realDivide(&TT, aa2, &TT, realContextForecast.?);
                 realExp(&TT, &TT, realContextForecast.?);
                 realMultiply(&TT, aa0, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
         },
@@ -1109,7 +1114,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 realMultiply(&TT, aa0, &TT, realContextForecast.?);
                 realAdd(&TT, aa2, &TT, realContextForecast.?);
                 realDivide(const_1(), &TT, YY, realContextForecast.?);
-                realToFloat(YY, &yf);
+                frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
             // C falls through into the (empty) default here.
@@ -1136,21 +1141,21 @@ pub export fn fnYIsFnx(unusedButMandatoryParameter: u16) callconv(.c) void {
     const a1: f64 = -99;
     const a2: f64 = -99;
 
-    if (!getRegisterAsReal(REGISTER_X, &XX)) {
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &XX)) {
         return;
     }
 
-    realSetZero(&aa0);
-    realSetZero(&aa1);
-    realSetZero(&aa2);
-    if (checkMinimumDataPoints(const_2())) {
+    frontier_real_type.realSetZero(&aa0);
+    frontier_real_type.realSetZero(&aa1);
+    frontier_real_type.realSetZero(&aa2);
+    if (frontier_stats.checkMinimumDataPoints(const_2())) {
         if (lrChosen == 0) { // if lrChosen contains something, the stat data exists, otherwise set it to linear.
             lrChosen = CF_LINEAR_FITTING;
         }
         processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
 
         yIsFnx(useREAL39, lrChosen, x, &y, a0, a1, a2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
-        convertRealToResultRegister(&YY, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(&YY, REGISTER_X, amNone);
 
         setSystemFlag(FLAG_ASLIFT);
         temporaryInformation = TI_CALCY;
@@ -1167,7 +1172,7 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
     var TT: real_t = undefined;
     var UU: real_t = undefined;
 
-    realSetZero(XX);
+    frontier_real_type.realSetZero(XX);
     realContextForecast = &ctxtReal39;
     switch (orOrtho(selection)) {
         CF_LINEAR_FITTING, CF_ORTHOGONAL_FITTING => {
@@ -1192,7 +1197,7 @@ pub export fn xIsFny(selection: u16, rootNo: u8, XX: *real_t, YY: *real_t, RR: *
         CF_POWER_FITTING => {
             realDivide(YY, aa0, &UU, realContextForecast.?);
             xthRootReal(&UU, aa1, realContextForecast.?); // Note X-register gets written here
-            if (!getRegisterAsReal(REGISTER_X, XX)) {
+            if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, XX)) {
                 return;
             }
             temporaryInformation = TI_CALCX;
@@ -1277,27 +1282,27 @@ pub export fn fnXIsFny(unusedButMandatoryParameter: u16) callconv(.c) void {
     var aa1: real_t = undefined;
     var aa2: real_t = undefined;
 
-    if (!getRegisterAsReal(REGISTER_X, &YY)) {
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &YY)) {
         return;
     }
 
-    realSetZero(&aa0);
-    realSetZero(&aa1);
-    realSetZero(&aa2);
-    if (checkMinimumDataPoints(const_2())) {
+    frontier_real_type.realSetZero(&aa0);
+    frontier_real_type.realSetZero(&aa1);
+    frontier_real_type.realSetZero(&aa2);
+    if (frontier_stats.checkMinimumDataPoints(const_2())) {
         if (lrChosen == 0) { // if lrChosen contains something, the stat data exists, otherwise set it to linear.
             lrChosen = CF_LINEAR_FITTING;
         }
         processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
 
         xIsFny(lrChosen, 1, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
-        convertRealToResultRegister(&XX, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(&XX, REGISTER_X, amNone);
 
         if (lrChosen == CF_PARABOLIC_FITTING or lrChosen == CF_GAUSS_FITTING or lrChosen == CF_CAUCHY_FITTING) {
             xIsFny(lrChosen, 2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertRealToResultRegister(&XX, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(&XX, REGISTER_X, amNone);
         }
 
         setSystemFlag(FLAG_ASLIFT);
