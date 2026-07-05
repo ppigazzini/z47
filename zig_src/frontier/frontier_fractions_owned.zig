@@ -17,6 +17,7 @@ const const_1on2 = consts.const_1on2;
 // fractions.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -194,7 +195,7 @@ pub export fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer:
         real34ToReal(reg34(regist), &temp0);
     } else {
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "%s cannot be shown as a fraction!", getRegisterDataTypeName(regist, true, false));
+            abi.fmtBufZ(errorMessage[0..512], "{s} cannot be shown as a fraction!", .{std.mem.span(getRegisterDataTypeName(regist, true, false))});
             moreInfoOnError("In function fraction:", errorMessage);
         }
         sign.* = 0;

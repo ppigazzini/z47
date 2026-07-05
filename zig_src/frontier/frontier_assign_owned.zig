@@ -1342,7 +1342,7 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
         } else {
             displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "the name %s", name);
+                abi.fmtBufZ(errorMessage[0..512], "the name {s}", .{std.mem.span(name)});
                 if (comptime !dmcp_build) moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", null);
             }
         }

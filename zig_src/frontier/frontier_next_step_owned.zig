@@ -16,6 +16,7 @@ const const34_1 = consts.const34_1;
 // carry no control flow and are dropped, like the sibling owners. Warm code
 // (program editor / executor) — stays in main .text.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -494,7 +495,7 @@ fn _showStep() void {
     const xPos: i16 = if (lblOrEnd) 42 else 62;
     var maxWidth: i16 = SCREEN_WIDTH - xPos;
 
-    _ = sprintf(tmpString, "%04u:" ++ "\xa0\x05", @as(c_uint, currentLocalStepNumber));
+    abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ "\xa0\x05", .{@as(u32, currentLocalStepNumber)});
     _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
 
     decodeOneStep(tmpStep);
@@ -714,7 +715,7 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
     if (!handled) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
             c_moreInfoOnError("In function fnCase:", errorMessage, null, null);
         }
         return;

@@ -883,7 +883,7 @@ pub export fn use_base_glyphs(tmp1: [*c]u8, xx: i16) callconv(.c) void {
         add_digitglyph_to_tmp2(&tmp2, @rem(@rem(@rem(xx, 1000), 100), 10));
         _ = stringCopy(tmp1 + @as(usize, @intCast(stringByteLength(tmp1))), &tmp2);
     } else {
-        _ = snprintf(tmp1, 12, "%d", @as(c_int, xx));
+        abi.fmtBufZ(tmp1[0..12], "{d}", .{@as(i32, xx)});
     }
 }
 
