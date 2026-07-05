@@ -19,6 +19,7 @@ const consts = abi.constants;
 // tam.c is not reachable from the testSuite; verification is build/link across
 // every target plus the boundary gates.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1298,7 +1299,7 @@ fn _tamProcessInput(item: u16) void {
                     } else {
                         displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
                         if (comptime extra_info) {
-                            _ = sprintf(errorMessage, "string '%s' is not a named variable", buffer);
+                            _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                             moreInfoErr("In function _tamProcessInput:", errorMessage, null);
                         }
                     }
@@ -1326,7 +1327,7 @@ fn _tamProcessInput(item: u16) void {
                     if (!tam.indirect) {
                         displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         if (comptime extra_info) {
-                            _ = sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
+                            _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is neither a named label nor a function name", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                             moreInfoErr("In function _tamProcessInput:", errorMessage, null);
                         }
                     }
@@ -1336,13 +1337,13 @@ fn _tamProcessInput(item: u16) void {
                 if (calcMode != CM_PEM and getSystemFlag(FLAG_IGN1ER)) {
                     clearSystemFlag(FLAG_IGN1ER);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a named label", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set");
                     }
                 } else if (calcMode != CM_PEM or tam.function != ITM_GTO) {
                     displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a named label", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);
                     }
                 }
@@ -1362,13 +1363,13 @@ fn _tamProcessInput(item: u16) void {
                 if (getSystemFlag(FLAG_IGN1ER)) {
                     clearSystemFlag(FLAG_IGN1ER);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a menu name", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a menu name", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set");
                     }
                 } else {
                     displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a menu name", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a menu name", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);
                     }
                 }
@@ -1379,13 +1380,13 @@ fn _tamProcessInput(item: u16) void {
                 if (getSystemFlag(FLAG_IGN1ER)) {
                     clearSystemFlag(FLAG_IGN1ER);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a named variable", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set");
                     }
                 } else {
                     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
-                        _ = sprintf(errorMessage, "string '%s' is not a named variable", buffer);
+                        _ = std.fmt.bufPrintZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(@as([*c]const u8, @ptrCast(buffer)))}) catch unreachable;
                         moreInfoErr("In function _tamProcessInput:", errorMessage, null);
                     }
                 }
