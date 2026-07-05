@@ -9,6 +9,7 @@
 CONTRIBUTING.md
 ZIG-README.md
 build.zig
+build.zig.zon
 zig_bridge
 zig_build
 zig_docs

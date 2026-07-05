@@ -30,11 +30,11 @@ const std = @import("std");
 const LIMBS = 96;
 
 const Big = struct {
-    l: [LIMBS]u32 = [_]u32{0} ** LIMBS,
+    l: [LIMBS]u32 = @splat(0),
     n: usize = 0,
 
     fn setU64(self: *Big, v: u64) void {
-        self.l = [_]u32{0} ** LIMBS;
+        self.l = @splat(0);
         self.l[0] = @truncate(v);
         self.l[1] = @truncate(v >> 32);
         self.n = if (v >> 32 != 0) 2 else if (v != 0) 1 else 0;
