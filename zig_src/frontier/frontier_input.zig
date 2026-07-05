@@ -37,6 +37,15 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_recall = @import("frontier_recall.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
@@ -114,10 +123,10 @@ const const34_65535 = consts.const34_65535();
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-extern fn fnRecall(r: u16) void;
-extern fn showSoftmenu(id: i16) void;
-extern fn refreshScreen(source: u16) void;
-extern fn leaveTamModeIfEnabled() void;
+
+
+
+
 extern fn dmcpResetAutoOff() void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 extern fn setLastKeyCode(key: c_int) void;
@@ -128,18 +137,18 @@ extern fn resetKeytimers() void;
 extern fn emptyKeyBuffer() bool_t;
 extern fn outKeyBuffer(outKey: *u8) bool_t;
 extern fn getSystemFlag(flag: c_int) bool_t;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
-extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) void;
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
+
+
+
 extern fn liftStack() void;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool_t;
-extern fn findNextStep(step: [*c]u8) [*c]u8;
+
+
 extern var labelList: [*c]align(4) labelList_t;
 
 // GMP.
@@ -156,7 +165,7 @@ extern fn real34CompareGreaterEqual(a: *align(1) const real34_t, b: *align(1) co
 // GTK / glib (host only). Referenced under !dmcp_build.
 const gpointer = ?*anyopaque;
 const GSourceFunc = *const fn (gpointer) callconv(.c) c_int;
-extern fn refreshLcd(unusedData: gpointer) c_int;
+
 extern fn gtk_events_pending() c_int;
 extern fn gtk_main_iteration() c_int;
 extern fn g_source_remove(tag: c_uint) c_int;
@@ -272,12 +281,12 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
     if (programRunStop == PGM_RUNNING) {
         programRunStop = PGM_WAITING;
         currentInputVariable = regist;
-        fnRecall(regist);
-        refreshScreen(10);
+        frontier_recall.fnRecall(regist);
+        frontier_screen.refreshScreen(10);
         if (comptime dmcp_build) {
             lcd_refresh();
         } else {
-            _ = refreshLcd(null);
+            _ = frontier_screen.refreshLcd(null);
         }
         // IR_PRINTING printInputPrompt omitted (never defined for z47).
     }
@@ -288,15 +297,15 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
 // ===========================================================================
 fn _isVarMenu(label: u16) bool_t {
     var step: [*c]u8 = labelList[@as(usize, label - FIRST_LABEL)].instructionPointer;
-    while (checkOpCodeOfStep(step, ITM_REM)) {
-        step = findNextStep(step);
+    while (frontier_manage.checkOpCodeOfStep(step, ITM_REM)) {
+        step = frontier_next_step.findNextStep(step);
     }
-    return checkOpCodeOfStep(step, ITM_MVAR);
+    return frontier_manage.checkOpCodeOfStep(step, ITM_MVAR);
 }
 
 pub export fn fnVarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
-        displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fnVarMnu:", errorMessage);
@@ -304,14 +313,14 @@ pub export fn fnVarMnu(label: u16) callconv(.c) void {
     } else {
         currentMvarLabel = label;
         varMenu42 = false;
-        showSoftmenu(-MNU_MVAR);
+        frontier_softmenus.showSoftmenu(-MNU_MVAR);
     }
 }
 
 // fn42VarMnu (42S variable menu) — NEW upstream op (master fd83b4a4).
 pub export fn fn42VarMnu(label: u16) callconv(.c) void {
     if (!_isVarMenu(label)) {
-        displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "No MVAR menu variable instruction after the label", .{});
             moreInfoOnErr("In function fn42VarMnu:", errorMessage);
@@ -319,7 +328,7 @@ pub export fn fn42VarMnu(label: u16) callconv(.c) void {
     } else {
         currentMvarLabel = label;
         varMenu42 = true;
-        showSoftmenu(-MNU_MVAR);
+        frontier_softmenus.showSoftmenu(-MNU_MVAR);
     }
 }
 
@@ -377,13 +386,13 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
     programRunStop = PGM_PAUSED;
 
     if (previousProgramRunStop != PGM_RUNNING) {
-        leaveTamModeIfEnabled();
+        frontier_tam.leaveTamModeIfEnabled();
     }
 
     if (comptime dmcp_build) {
         if (previousProgramRunStop != PGM_RUNNING and dur != 99) {
             screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-            refreshScreen(12);
+            frontier_screen.refreshScreen(12);
         }
         lcd_refresh();
         wait_for_key_release(0);
@@ -436,7 +445,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
         }
         if (dur != 0 and (dur == 99 or previousProgramRunStop != PGM_RUNNING)) {
             screenUpdatingMode = SCRUPD_AUTO;
-            refreshScreen(1201);
+            frontier_screen.refreshScreen(1201);
             lcd_refresh();
         }
     } else { // PC_BUILD
@@ -451,7 +460,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
             gRemoveTimer = false;
 
             gTimerId = g_timeout_add(100, &gTimer, null);
-            _ = refreshLcd(null);
+            _ = frontier_screen.refreshLcd(null);
             var i: i32 = 1;
             while (gTime <= duration and (programRunStop == PGM_PAUSED or programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) {
                 _ = g_main_context_iteration(g_main_context_default(), if (duration == 0) 0 else 1);
@@ -459,8 +468,8 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
                     i += 1;
                     if (previousProgramRunStop != PGM_RUNNING and programRunStop != PGM_PAUSED) {
                         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-                        refreshScreen(12);
-                        _ = refreshLcd(null);
+                        frontier_screen.refreshScreen(12);
+                        _ = frontier_screen.refreshLcd(null);
                     }
                 }
             }
@@ -473,11 +482,11 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
     programRunStop = previousProgramRunStop;
     if (programRunStop != PGM_RUNNING) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-        refreshScreen(13);
+        frontier_screen.refreshScreen(13);
         if (comptime dmcp_build) {
             lcd_refresh();
         } else {
-            _ = refreshLcd(null);
+            _ = frontier_screen.refreshLcd(null);
         }
     }
 }
@@ -490,24 +499,24 @@ fn getKeyArg(regist: u16) u16 {
 
     switch (getRegisterDataType(@bitCast(regist))) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34(@bitCast(regist), &arg);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34(@bitCast(regist), &arg);
         },
         dtReal34 => {
             if (getRegisterAngularMode(@bitCast(regist)) == amNone) {
                 real34ToIntegralValue(reg34(@bitCast(regist)), &arg, DEC_ROUND_DOWN);
             } else {
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
-                    abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
+                    abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                     moreInfoOnErr("In function _getKeyArg:", errorMessage);
                 }
                 return 0;
             }
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
+                abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnErr("In function _getKeyArg:", errorMessage);
             }
             return 0;
@@ -545,11 +554,11 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
             var kc: longInteger_t = undefined;
             @"__gmpz_init"(&kc[0]);
             @"__gmpz_set_ui"(&kc[0], lastKeyCode);
-            convertLongIntegerToLongIntegerRegister(&kc[0], @bitCast(regist));
+            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&kc[0], @bitCast(regist));
             @"__gmpz_clear"(&kc[0]);
             lastKeyCode = 0;
         } else {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "register {d} is out of range", .{@as(u32, regist)});
                 moreInfoOnErr("In function fnKey:", errorMessage);
@@ -584,7 +593,7 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
         11, 12, 13, 14, 15, 16 => @"__gmpz_set_ui"(&kt[0], 13),
         21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 41, 42, 45, 51, 55, 61, 65, 75, 81, 84, 85 => @"__gmpz_set_ui"(&kt[0], 12),
         else => {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnKeyType:", errorMessage);
@@ -595,7 +604,7 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
     }
     if (!ok) return;
     liftStack();
-    convertLongIntegerToLongIntegerRegister(&kt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&kt[0], REGISTER_X);
     @"__gmpz_clear"(&kt[0]);
 }
 
@@ -643,7 +652,7 @@ pub export fn fnPutKey(regist: u16) callconv(.c) void {
             btnClicked(null, @ptrCast(&kc));
         },
         else => {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnPutKey:", errorMessage);

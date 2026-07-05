@@ -29,6 +29,15 @@ const angularMode_t = c_int;
 
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_decode = @import("frontier_decode.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 const font_t = abi.Font;
 
@@ -165,26 +174,26 @@ extern const standardFont: font_t;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn isFunctionOldParam16(func: u16) bool;
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
-extern fn isAtEndOfPrograms(step: [*c]const u8) bool;
-extern fn getNumberOfSteps() u16;
-extern fn pemCloseAlphaInput() void;
-extern fn pemCloseNumberInput() void;
-extern fn scrollPemBackwards() void;
+
+
+
+
+
+
+
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
-extern fn fnStore(r: u16) void;
-extern fn decodeOneStep(step: [*c]u8) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, with_leading: bool, with_ending: bool) i16;
-extern fn refreshRegisterLine(regist: calcRegister_t) void;
+
+
+
+
+
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, pad: bool) [*c]const u8;
-extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
+
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
@@ -200,7 +209,7 @@ inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
 }
 inline fn isAtEndOfProgram(step: [*c]const u8) bool {
-    return checkOpCodeOfStep(step, ITM_END);
+    return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
 const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
@@ -303,7 +312,7 @@ pub export fn countOpBytes(step_arg: [*c]u8, paramMode: u16) callconv(.c) [*c]u8
         PARAM_NUMBER_16 => {
             var func: u16 = (@as(u16, (step - 3)[0]) << 8) +% @as(u16, (step - 2)[0]);
             func &= 0x7fff;
-            if (isFunctionOldParam16(func)) { // original Param16 without indirection support (little endian)
+            if (frontier_items.isFunctionOldParam16(func) != 0) { // original Param16 without indirection support (little endian)
                 return step + 1;
             } else { // new Param16 with indirection support (big endian)
                 if (opParam == INDIRECT_REGISTER) {
@@ -402,7 +411,7 @@ pub export fn findNextStep(step: [*c]u8) callconv(.c) [*c]u8 {
         // !DMCP_BUILD printf diagnostic dropped.
         return null;
     }
-    if (checkOpCodeOfStep(step, ITM_KEY) or checkOpCodeOfStep(step, ITM_42KEY)) {
+    if (frontier_manage.checkOpCodeOfStep(step, ITM_KEY) or frontier_manage.checkOpCodeOfStep(step, ITM_42KEY)) {
         const afterFirst: [*c]u8 = findKey2ndParam(step);
         if (afterFirst == null) {
             return null;
@@ -491,19 +500,19 @@ pub export fn findPreviousStep(step: [*c]u8) callconv(.c) [*c]u8 {
 // ===========================================================================
 fn _showStep() void {
     const tmpStep: [*c]u8 = currentStep;
-    const lblOrEnd: bool = checkOpCodeOfStep(tmpStep, ITM_LBL) or isAtEndOfProgram(tmpStep) or isAtEndOfPrograms(tmpStep);
+    const lblOrEnd: bool = frontier_manage.checkOpCodeOfStep(tmpStep, ITM_LBL) or isAtEndOfProgram(tmpStep) or frontier_manage.isAtEndOfPrograms(tmpStep);
     const xPos: i16 = if (lblOrEnd) 42 else 62;
     var maxWidth: i16 = SCREEN_WIDTH - xPos;
 
     abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ "\xa0\x05", .{@as(u32, currentLocalStepNumber)});
-    _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
+    _ = frontier_screen.showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, @intFromBool(true), @intFromBool(true));
 
-    decodeOneStep(tmpStep);
-    if (stringWidth(tmpString, &standardFont, true, true) >= maxWidth) {
+    frontier_decode.decodeOneStep(tmpStep);
+    if (frontier_char_string.stringWidth(tmpString, &standardFont, true, true) >= maxWidth) {
         var xstr: [*c]u8 = tmpString;
         var xstrOrig: [*c]u8 = tmpString;
         const glyph: [*c]u8 = tmpString + TMP_STR_LENGTH - 4;
-        maxWidth -= stringWidth(STD_ELLIPSIS, &standardFont, true, true);
+        maxWidth -= frontier_char_string.stringWidth(STD_ELLIPSIS, &standardFont, true, true);
         while (maxWidth > 0) {
             xstrOrig = xstr;
             glyph[0] = xstr[0];
@@ -515,13 +524,13 @@ fn _showStep() void {
             } else {
                 glyph[1] = 0;
             }
-            maxWidth -= stringWidth(glyph, &standardFont, true, true);
+            maxWidth -= frontier_char_string.stringWidth(glyph, &standardFont, true, true);
         }
         xstrOrig[0] = STD_ELLIPSIS[0];
         xstrOrig[1] = STD_ELLIPSIS[1];
         xstrOrig[2] = 0;
     }
-    _ = showString(tmpString, &standardFont, @intCast(xPos), Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
+    _ = frontier_screen.showString(tmpString, &standardFont, @intCast(xPos), Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, @intFromBool(true), @intFromBool(true));
 }
 
 // ===========================================================================
@@ -538,7 +547,7 @@ fn _bstInPem() void {
         firstDisplayedLocalStepNumber = 0;
         pemCursorIsZerothStep = true;
     } else {
-        const numberOfSteps: u16 = getNumberOfSteps();
+        const numberOfSteps: u16 = frontier_manage.getNumberOfSteps();
         currentLocalStepNumber = numberOfSteps;
         pemCursorIsZerothStep = false;
         if (numberOfSteps <= 6) {
@@ -556,17 +565,17 @@ pub export fn fnBst(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (calcMode == CM_PEM) {
         if (aimBuffer[0] != 0) {
             if (getSystemFlag(FLAG_ALPHA)) {
-                pemCloseAlphaInput();
+                frontier_manage.pemCloseAlphaInput();
             } else if (nimNumberPart == NP_INT_BASE) {
                 return;
             } else {
-                pemCloseNumberInput();
+                frontier_manage.pemCloseNumberInput();
             }
             aimBuffer[0] = 0;
             currentLocalStepNumber -= 1;
             currentStep = findPreviousStep(currentStep);
             if (!programListEnd) {
-                scrollPemBackwards();
+                frontier_manage.scrollPemBackwards();
             }
         }
     }
@@ -582,7 +591,7 @@ pub export fn fnBst(unusedButMandatoryParameter: u16) callconv(.c) void {
 // _sstInPem (static) / showStep / fnSst
 // ===========================================================================
 fn _sstInPem() void {
-    const numberOfSteps: u16 = getNumberOfSteps();
+    const numberOfSteps: u16 = frontier_manage.getNumberOfSteps();
 
     if (currentLocalStepNumber == 1 and pemCursorIsZerothStep) {
         currentLocalStepNumber = 1;
@@ -615,8 +624,8 @@ fn _sstInPem() void {
 
 pub export fn showStep() callconv(.c) void {
     temporaryInformation = TI_NO_INFO;
-    refreshRegisterLine(REGISTER_T); // Clear previous VIEW or AVIEW data, if any
-    refreshRegisterLine(REGISTER_Z); // Clear previous test result, if any
+    frontier_screen.refreshRegisterLine(REGISTER_T); // Clear previous VIEW or AVIEW data, if any
+    frontier_screen.refreshRegisterLine(REGISTER_Z); // Clear previous test result, if any
     _showStep();
 }
 
@@ -626,17 +635,17 @@ pub export fn fnSst(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (calcMode == CM_PEM) {
         if (aimBuffer[0] != 0) {
             if (getSystemFlag(FLAG_ALPHA)) {
-                pemCloseAlphaInput();
+                frontier_manage.pemCloseAlphaInput();
             } else if (nimNumberPart == NP_INT_BASE) {
                 return;
             } else {
-                pemCloseNumberInput();
+                frontier_manage.pemCloseNumberInput();
             }
             aimBuffer[0] = 0;
             currentLocalStepNumber -= 1;
             currentStep = findPreviousStep(currentStep);
             if (!programListEnd) {
-                scrollPemBackwards();
+                frontier_manage.scrollPemBackwards();
             }
         }
         currentInputVariable = INVALID_VARIABLE;
@@ -647,7 +656,7 @@ pub export fn fnSst(unusedButMandatoryParameter: u16) callconv(.c) void {
             if (currentInputVariable & 0x8000 != 0) {
                 fnDropY(NOPARAM);
             }
-            fnStore(currentInputVariable & 0x3fff);
+            frontier_store.fnStore(currentInputVariable & 0x3fff);
             currentInputVariable = INVALID_VARIABLE;
         }
         dynamicMenuItem = -1;
@@ -676,7 +685,7 @@ pub export fn fnSkip(numberOfSteps: u16) callconv(.c) void {
     var i: u16 = 0;
     while (i <= numberOfSteps) : (i +%= 1) { // '<=' is intended here because the pointer must be moved at least by 1 step
         const tmpStep: [*c]u8 = currentStep;
-        if (!isAtEndOfProgram(tmpStep) and !isAtEndOfPrograms(tmpStep)) {
+        if (!isAtEndOfProgram(tmpStep) and !frontier_manage.isAtEndOfPrograms(tmpStep)) {
             const next: [*c]u8 = findNextStep(currentStep);
             if (next == null) {
                 // !DMCP_BUILD printf diagnostic dropped.
@@ -699,7 +708,7 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
 
     switch (getRegisterDataType(@bitCast(regist))) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34(@bitCast(regist), &arg);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34(@bitCast(regist), &arg);
             handled = true;
         },
         dtReal34 => {
@@ -713,9 +722,9 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
     }
 
     if (!handled) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false))});
+            abi.fmtBufZ(errorMessage[0..512], "cannot use {s} for the parameter of CASE", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
             c_moreInfoOnError("In function fnCase:", errorMessage, null, null);
         }
         return;

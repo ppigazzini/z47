@@ -4,9 +4,9 @@
     "cptr_files": 89,
     "ptrcast_sites": 819,
     "callconv_c_sites": 2909,
-    "extern_fn_sites": 4804,
+    "extern_fn_sites": 4702,
     "printf_family_files": 47,
-    "anyopaque_files": 91,
+    "anyopaque_files": 89,
     "off_offset_sites": 77,
     "constants_blob_sites": 1,
     "qspi_section_files": 26

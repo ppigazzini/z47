@@ -24,6 +24,11 @@ const std = @import("std");
 // across every target plus the boundary gates.
 
 const frontier_build_options = @import("frontier_build_options");
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 
@@ -87,16 +92,15 @@ pub export var t_line_y: u32 = 0;
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-extern fn getUptimeMs() u32;
-extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool_t, clearBottom: bool_t) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn force_refresh(mode: u8) void;
-extern fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardString: [*c]u8) void;
-extern fn addStrBothSides(str: [*c]u8, str_b: [*c]u8, str_e: [*c]u8) void;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
+
+
+
+
+
+
+
+
+
 
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -125,7 +129,7 @@ inline fn stringByteLength(s: [*c]const u8) i32 {
 // preventFilenameTimeout (both builds)
 // ===========================================================================
 pub export fn preventFilenameTimeout() callconv(.c) void {
-    const tmp__32: u32 = getUptimeMs();
+    const tmp__32: u32 = frontier_timer.getUptimeMs();
     mem__32 = tmp__32;
     cancelFilename = false;
 }
@@ -146,14 +150,14 @@ pub export fn printStatus(row: u8, line1: [*c]const u8, forced: u8) callconv(.c)
     line_y = Y_POSITION_OF_REGISTER_T_LINE; // 20
     line_x = 20 * @as(i16, row);
 
-    clearRegisterLine(REGISTER_T, true, true);
+    frontier_screen.clearRegisterLine(REGISTER_T, true, true);
 
-    line_x = @intCast(showString(line1, &standardFont, @intCast(line_x), @intCast(line_y), vmNormal, true, true));
+    line_x = @intCast(frontier_screen.showString(line1, &standardFont, @intCast(line_x), @intCast(line_y), vmNormal, @intFromBool(true), @intFromBool(true)));
 
     if (forced == force) {
-        force_refresh(force);
+        frontier_screen.force_refresh(force);
     } else {
-        force_refresh(timed);
+        frontier_screen.force_refresh(timed);
     }
 }
 
@@ -172,17 +176,17 @@ pub export fn print_linestr(line1: [*c]const u8, line_init: bool_t) callconv(.c)
     }
     _ = strcat(&l1, "-");
     ixx = @intCast(stringByteLength(line1));
-    while (ix < ixx and ix < 98 and stringWidth(&l1, &standardFont, true, true) < SCREEN_WIDTH - 12 - g_line_x) {
-        _ = xcopy(&l1, line1, @intCast(ix + 1));
+    while (ix < ixx and ix < 98 and frontier_char_string.stringWidth(&l1, &standardFont, true, true) < SCREEN_WIDTH - 12 - g_line_x) {
+        _ = frontier_char_string.xcopy(&l1, line1, @intCast(ix + 1));
         l1[@intCast(ix + 1 + 1)] = 0;
-        ix = stringNextGlyph(line1, ix);
+        ix = frontier_char_string.stringNextGlyph(line1, ix);
     }
-    while (stringByteLength(&l1) < 200 and stringWidth(&l1, &standardFont, true, true) < SCREEN_WIDTH - 12 - g_line_x) {
+    while (stringByteLength(&l1) < 200 and frontier_char_string.stringWidth(&l1, &standardFont, true, true) < SCREEN_WIDTH - 12 - g_line_x) {
         _ = strcat(&l1, ".");
     }
 
     if (g_line_y < SCREEN_HEIGHT) {
-        ixx = @intCast(showString(&l1, &standardFont, @intCast(g_line_x), @intCast(g_line_y), vmNormal, true, true));
+        ixx = @intCast(frontier_screen.showString(&l1, &standardFont, @intCast(g_line_x), @intCast(g_line_y), vmNormal, @intFromBool(true), @intFromBool(true)));
     }
     if (!line_init) {
         g_line_y += 20;
@@ -191,7 +195,7 @@ pub export fn print_linestr(line1: [*c]const u8, line_init: bool_t) callconv(.c)
         g_line_y = 40;
         g_line_x += 4;
     }
-    force_refresh(timed);
+    frontier_screen.force_refresh(timed);
     if (comptime dmcp_build) {
         lcd_refresh_wait();
     }
@@ -212,12 +216,12 @@ pub export fn print_numberstr(line1: [*c]const u8, line_init: bool_t) callconv(.
         while (line1[@intCast(cnt)] != 0 and g_line_x < SCREEN_WIDTH - 8 + 1) {
             tt[0] = line1[@intCast(cnt)];
             tt[1] = 0;
-            g_line_x = @intCast(showString(&tt, &standardFont, @as(u32, @intCast(cnt)) * 8, @intCast(g_line_y), vmNormal, true, true));
+            g_line_x = @intCast(frontier_screen.showString(&tt, &standardFont, @as(u32, @intCast(cnt)) * 8, @intCast(g_line_y), vmNormal, @intFromBool(true), @intFromBool(true)));
             cnt += 1;
         }
     }
     g_line_x = 0;
-    force_refresh(timed);
+    frontier_screen.force_refresh(timed);
     if (comptime dmcp_build) {
         lcd_refresh_wait();
     }
@@ -232,19 +236,19 @@ pub export fn print_inlinestr(line1: [*c]const u8, endline: bool_t) callconv(.c)
     var ix: i16 = 0;
     var ixx: i16 = undefined;
     ixx = @intCast(stringByteLength(line1));
-    while (ix < ixx and ix < 98 and t_line_x + @as(u32, @intCast(@as(i32, stringWidth(&l1, &standardFont, true, true)))) < SCREEN_WIDTH - 12) {
-        _ = xcopy(&l1, line1, @intCast(ix + 1));
+    while (ix < ixx and ix < 98 and t_line_x + @as(u32, @intCast(@as(i32, frontier_char_string.stringWidth(&l1, &standardFont, true, true)))) < SCREEN_WIDTH - 12) {
+        _ = frontier_char_string.xcopy(&l1, line1, @intCast(ix + 1));
         l1[@intCast(ix + 1)] = 0;
-        ix = stringNextGlyph(line1, ix);
+        ix = frontier_char_string.stringNextGlyph(line1, ix);
     }
     if (t_line_y < SCREEN_HEIGHT) {
-        t_line_x = showString(&l1, &standardFont, t_line_x, t_line_y, vmNormal, true, true);
+        t_line_x = frontier_screen.showString(&l1, &standardFont, t_line_x, t_line_y, vmNormal, @intFromBool(true), @intFromBool(true));
     }
     if (endline) {
         t_line_y += 20;
         t_line_x = 0;
     }
-    force_refresh(force);
+    frontier_screen.force_refresh(force);
     if (comptime dmcp_build) {
         lcd_refresh_wait();
     }
@@ -256,8 +260,8 @@ pub export fn print_inlinestr(line1: [*c]const u8, endline: bool_t) callconv(.c)
 pub export fn print_Register_line(regist: calcRegister_t, before: [*c]u8, after: [*c]u8, line_init: bool_t) callconv(.c) void {
     var str: [TMP_STR_LENGTH]u8 = undefined;
 
-    copyRegisterToClipboardString2(regist, &str);
-    addStrBothSides(&str, before, after);
+    frontier_textfiles.copyRegisterToClipboardString2(regist, &str);
+    frontier_char_string.addStrBothSides(&str, before, after);
 
     print_numberstr(&str, line_init);
 }
@@ -267,8 +271,8 @@ pub export fn print_Register_line(regist: calcRegister_t, before: [*c]u8, after:
 // ===========================================================================
 pub export fn create_filename(fn_arg: [*c]const u8) callconv(.c) void {
     if (comptime dmcp_build) {
-        const tmp__32: u32 = getUptimeMs();
-        if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
+        const tmp__32: u32 = frontier_timer.getUptimeMs();
+        if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and frontier_sort.compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
             _ = check_create_dir("DATA");
             make_date_filename(&filename_csv, "DATA\\", fn_arg);
             _ = check_create_dir("DATA");
@@ -277,11 +281,11 @@ pub export fn create_filename(fn_arg: [*c]const u8) callconv(.c) void {
         cancelFilename = false;
     } else {
         // PC-only guard (C: present in PC create_filename, absent in the DMCP body)
-        if (stringByteLength(&filename_csv) > 9 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 8)], ".T47.TSV", CMP_NAME) == 0) {
+        if (stringByteLength(&filename_csv) > 9 and frontier_sort.compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 8)], ".T47.TSV", CMP_NAME) == 0) {
             return; // already a .T47.TSV name; file management is done in the DSL
         }
-        const tmp__32: u32 = getUptimeMs();
-        if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
+        const tmp__32: u32 = frontier_timer.getUptimeMs();
+        if (cancelFilename or (mem__32 == 0) or (tmp__32 > mem__32 + 120000) or (stringByteLength(&filename_csv) > 10 and frontier_sort.compareString(&filename_csv[@intCast(stringByteLength(&filename_csv) - 9)], fn_arg, CMP_NAME) != 0)) {
             var rawTime: time_t = undefined;
             _ = time(&rawTime);
             const timeInfo: *tm = localtime(&rawTime);
@@ -453,7 +457,7 @@ pub export fn export_append_line(inputstring: [*c]const u8) callconv(.c) i16 {
         const linesize: i32 = 128;
 
         while (stringByteLength(inputstring + @as(usize, @intCast(ix))) > linesize) {
-            _ = xcopy(&buf, inputstring + @as(usize, @intCast(ix)), @intCast(linesize));
+            _ = frontier_char_string.xcopy(&buf, inputstring + @as(usize, @intCast(ix)), @intCast(linesize));
             buf[@intCast(linesize)] = 0;
             fr = export_append_line_short(&buf);
             if (fr != 0) {

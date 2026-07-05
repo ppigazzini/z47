@@ -37,6 +37,13 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_integers = @import("frontier_integers.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -167,30 +174,29 @@ extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
 extern fn adjustResult(result: calcRegister_t, drop_y: bool, set_cpx: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn saveLastX() bool;
 extern fn liftStack() void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*:0]const u8) void;
+
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-extern fn WP34S_intChs(x: u64) u64;
-extern fn WP34S_build_value(x: u64, sign: i32) i64;
+
+
 extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linked: *real34Matrix_t) void;
-extern fn internalDateToJulianDay(source: *const real34_t, destination: *real34_t) void;
-extern fn isValidDay(year: *const real34_t, month: *const real34_t, day: *const real34_t) bool;
-extern fn composeJulianDay(year: *const real34_t, month: *const real34_t, day: *const real34_t, jd: *real34_t) void;
-extern fn decomposeJulianDay(jd: *const real34_t, year: *real34_t, month: *real34_t, day: *real34_t) void;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
+
+
+
+
+
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
 extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn clearSystemFlag(flag: c_uint) void;
-extern fn longIntegerToAllocatedString(lg_int: *const mpz_struct, str: [*c]u8, str_len: i32) void;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, pad: bool) [*c]const u8;
+
 
 // real linkable helpers.
-extern fn realSetZero(value: *real_t) void;
+
 extern fn realIsAnInteger(x: *const real_t) bool;
 extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
@@ -460,7 +466,7 @@ pub export fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, 
     const sizeInBytes: u16 = longIntegerSizeInBytes(lgInt);
 
     reallocateRegister(regist, dtLongInteger, toBlocks(sizeInBytes), longIntegerSignTag(lgInt));
-    _ = xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
+    _ = frontier_char_string.xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
 }
 
 pub export fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void {
@@ -468,7 +474,7 @@ pub export fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lg
 
     mpz_init2(lgInt, 8 * @as(c_ulong, @max(sizeInBytes, LIMB_SIZE)));
 
-    _ = xcopy(@ptrCast(lgInt._mp_d), @ptrCast(regLongIntData(regist)), sizeInBytes);
+    _ = frontier_char_string.xcopy(@ptrCast(lgInt._mp_d), @ptrCast(regLongIntData(regist)), sizeInBytes);
 
     // Trim trailing zero limbs.
     while (sizeInBytes >= LIMB_SIZE and lgInt._mp_d[sizeInBytes / LIMB_SIZE - 1] == 0) {
@@ -486,7 +492,7 @@ pub export fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t,
     var lgInt: mpz_struct = undefined;
 
     convertLongIntegerRegisterToLongInteger(source, &lgInt);
-    longIntegerToAllocatedString(&lgInt, tmpString, TMP_STR_LENGTH);
+    frontier_display.longIntegerToAllocatedString(&lgInt, tmpString, TMP_STR_LENGTH);
     mpz_clear(&lgInt);
     reallocateRegister(destination, dtReal34, REAL34_SIZE_IN_BLOCKS, amNoneU);
     stringToReal34(tmpString, reg34(destination));
@@ -496,7 +502,7 @@ pub export fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destina
     var lgInt: mpz_struct = undefined;
 
     convertLongIntegerRegisterToLongInteger(source, &lgInt);
-    longIntegerToAllocatedString(&lgInt, tmpString, TMP_STR_LENGTH);
+    frontier_display.longIntegerToAllocatedString(&lgInt, tmpString, TMP_STR_LENGTH);
     mpz_clear(&lgInt);
     stringToReal34(tmpString, destination);
 }
@@ -510,12 +516,12 @@ pub export fn convertLongIntegerRegisterToReal(source: calcRegister_t, destinati
 }
 
 pub export fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
-    longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+    frontier_display.longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
     stringToReal(tmpString, destination, ctxt);
 }
 
 pub export fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) callconv(.c) void {
-    longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+    frontier_display.longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
     stringToReal34(tmpString, destination);
 }
 
@@ -544,7 +550,7 @@ pub export fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base:
 
         if (longIntegerIsNegative(lgInt)) {
             clearSystemFlag(@bitCast(FLAG_OVERFLOW));
-            regShortInt(destination).* = WP34S_intChs(regShortInt(destination).*);
+            regShortInt(destination).* = frontier_integers.WP34S_intChs(regShortInt(destination).*);
         }
 
         if (overflow and !getSystemFlag(FLAG_OVERFLOW)) {
@@ -613,7 +619,7 @@ pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: 
             } else if (shortIntegerMode == SIM_SIGNMT) {
                 value.* -%= shortIntegerSignBit;
             } else {
-                displayBugScreen("convertShortIntegerRegisterToUInt64: bad shortIntegerMode");
+                frontier_error.displayBugScreen("convertShortIntegerRegisterToUInt64: bad shortIntegerMode");
                 sign.* = 0;
                 value.* = 0;
             }
@@ -658,7 +664,7 @@ pub export fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, bas
         } else if (shortIntegerMode == SIM_SIGNMT) {
             value +%= shortIntegerSignBit;
         } else {
-            displayBugScreen("convertUInt64ToShortIntegerRegister: bad shortIntegerMode");
+            frontier_error.displayBugScreen("convertUInt64ToShortIntegerRegister: bad shortIntegerMode");
             value = 0;
         }
     }
@@ -821,8 +827,8 @@ pub export fn convertDateRegisterToReal34Register(source: calcRegister_t, destin
     var j: real34_t = undefined;
     var isNegative: bool = undefined;
 
-    internalDateToJulianDay(reg34(source), &j);
-    decomposeJulianDay(&j, &y, &m, &d);
+    frontier_date_time.internalDateToJulianDay(reg34(source), &j);
+    frontier_date_time.decomposeJulianDay(&j, &y, &m, &d);
     isNegative = real34IsNegative(&y);
     real34SetPositiveSign(&y);
 
@@ -947,11 +953,11 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         }
     }
 
-    if ((getSystemFlag(FLAG_YMD) and !isValidDay(&part1, &part2, &part3)) or
-        (getSystemFlag(FLAG_MDY) and !isValidDay(&part3, &part1, &part2)) or
-        (getSystemFlag(FLAG_DMY) and !isValidDay(&part3, &part2, &part1)))
+    if ((getSystemFlag(FLAG_YMD) and !frontier_date_time.isValidDay(&part1, &part2, &part3)) or
+        (getSystemFlag(FLAG_MDY) and !frontier_date_time.isValidDay(&part3, &part1, &part2)) or
+        (getSystemFlag(FLAG_DMY) and !frontier_date_time.isValidDay(&part3, &part2, &part1)))
     {
-        displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.");
         return;
     }
@@ -963,11 +969,11 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
 
     reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNoneU);
     if (getSystemFlag(FLAG_YMD)) {
-        composeJulianDay(&part1, &part2, &part3, reg34(destination));
+        frontier_date_time.composeJulianDay(&part1, &part2, &part3, reg34(destination));
     } else if (getSystemFlag(FLAG_MDY)) {
-        composeJulianDay(&part3, &part1, &part2, reg34(destination));
+        frontier_date_time.composeJulianDay(&part3, &part1, &part2, reg34(destination));
     } else if (getSystemFlag(FLAG_DMY)) {
-        composeJulianDay(&part3, &part2, &part1, reg34(destination));
+        frontier_date_time.composeJulianDay(&part3, &part2, &part1, reg34(destination));
     }
 
     real34Multiply(reg34(destination), const34_86400(), reg34(destination));
@@ -982,10 +988,10 @@ pub export fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, 
 
     if (realMatrixInit(matrix, matrixHeader.matrixRows, matrixHeader.matrixColumns)) {
         if (matrix.matrixElements) |elems| {
-            _ = xcopy(@ptrCast(elems), @ptrCast(regRealMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(elems), @ptrCast(regRealMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES);
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
 
@@ -993,8 +999,8 @@ pub export fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Mat
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * REAL34_SIZE_IN_BYTES;
     reallocateRegister(regist, dtReal34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
-        _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
-        _ = xcopy(@ptrCast(regRealMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
+        _ = frontier_char_string.xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
+        _ = frontier_char_string.xcopy(@ptrCast(regRealMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
     }
 }
 
@@ -1003,10 +1009,10 @@ pub export fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegist
 
     if (complexMatrixInit(matrix, matrixHeader.matrixRows, matrixHeader.matrixColumns)) {
         if (matrix.matrixElements) |elems| {
-            _ = xcopy(@ptrCast(elems), @ptrCast(regComplexMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(elems), @ptrCast(regComplexMatrixElems(regist)), (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
 
@@ -1014,8 +1020,8 @@ pub export fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const com
     const neededSizeInBytes: u32 = (@as(u32, matrix.header.matrixColumns) * matrix.header.matrixRows) * COMPLEX34_SIZE_IN_BYTES;
     reallocateRegister(regist, dtComplex34Matrix, toBlocks(neededSizeInBytes), amNoneU);
     if (lastErrorCode != ERROR_RAM_FULL) {
-        _ = xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
-        _ = xcopy(@ptrCast(regComplexMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
+        _ = frontier_char_string.xcopy(@ptrCast(regMatrixHeader(regist)), @ptrCast(matrix), 4);
+        _ = frontier_char_string.xcopy(@ptrCast(regComplexMatrixElems(regist)), @ptrCast(matrix.matrixElements.?), neededSizeInBytes);
     }
 }
 
@@ -1030,7 +1036,7 @@ pub export fn convertReal34MatrixToComplex34Matrix(source: *const real34Matrix_t
             }
         }
     } else {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
 
@@ -1300,9 +1306,9 @@ fn typeIsNumber(t: u32, cmplx: ?*bool) bool {
 }
 
 pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
     if (comptime extra_info) {
-        const name = getRegisterDataTypeName(reg, true, false);
+        const name = frontier_debug.getRegisterDataTypeName(reg, true, false);
         const slice = bufPrintZ(errorMessageBuf(), "cannot convert Register {d} from {s}", .{ reg, std.mem.span(name) }) catch return;
         c_moreInfoOnError("In function badTypeError:", slice.ptr, null, null);
     }
@@ -1315,7 +1321,7 @@ inline fn errorMessageBuf() []u8 {
 
 pub export fn badDomainError(reg: calcRegister_t) callconv(.c) void {
     _ = reg;
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
+    frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
     moreInfoOnError("In function badDomainError:", "The input value is outside of the domain.");
 }
 
@@ -1345,7 +1351,7 @@ pub export fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) 
             return false;
         },
     }
-    realSetZero(i);
+    frontier_real_type.realSetZero(i);
     return true;
 }
 
@@ -1362,7 +1368,7 @@ pub export fn getRegisterAsComplexOrAnyRealQuiet(reg: calcRegister_t, r: *real_t
         },
         else => return false,
     }
-    realSetZero(i);
+    frontier_real_type.realSetZero(i);
     return true;
 }
 
@@ -1559,7 +1565,7 @@ pub export fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u
             badDomainError(reg);
             return false;
         }
-        v = @bitCast(WP34S_build_value(v, @intFromBool(sign)));
+        v = @bitCast(frontier_integers.WP34S_build_value(v, @intFromBool(sign)));
         b = if (lastIntegerBase != 0) lastIntegerBase else 10;
     }
     if (base) |bp| {
@@ -1611,7 +1617,7 @@ pub export fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, f
 pub export fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) callconv(.c) bool {
     const err = getRegisterAsLongIntQuiet(reg, val, fractional);
     if (err != ERROR_NONE) {
-        displayCalcErrorMessage(@intCast(err), ERR_REGISTER_LINE, REGISTER_T);
+        frontier_error.displayCalcErrorMessage(@intCast(err), ERR_REGISTER_LINE, REGISTER_T);
     }
     return err == ERROR_NONE;
 }
@@ -1641,7 +1647,7 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 convertLongIntegerRegisterToLongInteger(regist, &angle);
 
                 if (longIntegerBase10Digits(&angle) > 1000) {
-                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.");
                     mpz_clear(&angle);
                     return;
@@ -1701,7 +1707,7 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
                 xAngularMode.* = currentAngularMode;
             }
             if (xAngularMode.* == amRadian and realGetExponent(val) > 999) {
-                displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 moreInfoOnError("In function getRegisterAsRealAngle:", "Invalid real input size for angle reduction in radians: exponent too large.");
                 return false;
             }
