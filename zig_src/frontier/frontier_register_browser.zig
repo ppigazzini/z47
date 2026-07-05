@@ -29,7 +29,7 @@ const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const matrixHeader_t = abi.MatrixHeader;
-const font_t = opaque {};
+const font_t = abi.Font;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)

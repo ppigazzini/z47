@@ -66,7 +66,7 @@ const calcRegister_t = i16;
 const angularMode_t = c_int;
 const videoMode_t = c_int;
 const irfracOption_t = c_int;
-const font_t = opaque {};
+const font_t = abi.Font;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)

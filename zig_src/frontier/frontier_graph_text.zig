@@ -34,7 +34,7 @@ const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const calcRegister_t = i16;
-const font_t = opaque {};
+const font_t = abi.Font;
 
 // ---------------------------------------------------------------------------
 // Constants (verified via C probe against the sim build)

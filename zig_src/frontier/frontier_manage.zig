@@ -50,7 +50,7 @@ else
 const bool_t = bool;
 const calcRegister_t = i16;
 const real34_t = abi.Real34;
-const font_t = opaque {};
+const font_t = abi.Font;
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 const item_t = abi.Item;

@@ -62,7 +62,7 @@ const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
-const font_t = opaque {};
+const font_t = abi.Font;
 
 // glyph / font structs (typeDefinitions.h)
 const glyphPrinter_t = abi.GlyphPrinter;

@@ -43,7 +43,7 @@ const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
-const font_t = opaque {};
+const font_t = abi.Font;
 const TimerFn = ?*const fn (u16) callconv(.c) void;
 
 // kb_timer_t: timer_will_expire is gint64 (i64) on PC, uint32_t on DMCP.

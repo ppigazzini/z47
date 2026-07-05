@@ -44,7 +44,7 @@ const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 const complex34Matrix_t = abi.Complex34Matrix;
 
-const font_t = opaque {};
+const font_t = abi.Font;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)

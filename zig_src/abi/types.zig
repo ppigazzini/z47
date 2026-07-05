@@ -336,6 +336,11 @@ pub const Font = extern struct {
     id: i8,
     numberOfGlyphs: u16,
     glyphs: [0]Glyph,
+    /// glyphs[] begins at offset 8 (the [0]Glyph align-8 field). Single-source
+    /// accessor so every owner's font_t == abi.Font (M-callconv type unification).
+    pub inline fn glyphsPtr(self: *const Font) [*]const Glyph {
+        return @ptrCast(&self.glyphs);
+    }
 };
 
 /// Programmable-menu descriptor (programmableMenu_t): 332 bytes, align 2.
