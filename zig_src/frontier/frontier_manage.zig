@@ -26,7 +26,7 @@
 // EXTRA_INFO_ON_CALC_ERROR console hint in fnClP is gated on extra_info && !dmcp_build
 // and reduced to the host moreInfoOnError call as in the sibling owners. The PC-only
 // printf trace in insertStepInProgram (GTOP) is host-only. clearScreen expands to
-// lcd_fill_rect(...) + forceSBupdate(); lcd_fill_rect is the DMCP fixed-address ROM
+// lcd_fill_rect(...) + frontier_status_bar.forceSBupdate(); lcd_fill_rect is the DMCP fixed-address ROM
 // call (LIBRARY_FN_BASE+60) on firmware and a real symbol on host (idiom copied from
 // the error owner). IR_PRINTING/DEBUG_PGM/MONITOR_CLRSCR are never defined here.
 
@@ -61,6 +61,22 @@ const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_decode = @import("frontier_decode.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 
 // ---------------------------------------------------------------------------
@@ -410,60 +426,53 @@ extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
-extern fn stringLastGlyph(str: [*c]const u8) i16;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringAfterPixels(str: [*c]const u8, font: *const font_t, width: i16, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) [*c]u8;
+
+
+
+
 
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
-extern fn removeUserItemAssignments(item: i16, userItemName: [*c]const u8) void;
 
-extern fn findNextStep(step: [*c]u8) [*c]u8;
-extern fn findPreviousStep(step: [*c]u8) [*c]u8;
-extern fn defineFirstDisplayedStep() void;
-extern fn decodeOneStep(step: [*c]u8) void;
 
-extern fn fnReturn(skip: u16) void;
-extern fn fnGoto(label: u16) void;
-extern fn fnGotoDot(globalStepNumber: u16) void;
-extern fn goToPgmStep(program: u16, step: u16) void;
-extern fn goToGlobalStep(step: i32) void;
-extern fn fnBst(unusedButMandatoryParameter: u16) void;
-extern fn fnSst(unusedButMandatoryParameter: u16) void;
+
+
+
+
+
+
+
+
+
+
 extern fn fnFlipFlag(flag: u16) void;
-extern fn leaveAsmMode() void;
 
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
-extern fn showSoftmenu(id: i16) void;
-extern fn popSoftmenu() void;
-extern fn showSoftmenuCurrentPart() void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn refreshScreen(source: u16) void;
-extern fn refreshRegisterLine(regist: calcRegister_t) void;
+
+
+
+
+
 
 extern fn getSystemFlag(sf: i32) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn resetShiftState() void;
 
-extern fn insertAlphaCursor(startAt: u16) void;
-extern fn addItemToBuffer(item: u16) void;
-extern fn addItemToNimBuffer(item: i16) void;
+
+
+
 extern fn numlockReplacements(id: u16, item: i16, NL: bool_t, SHFT: bool_t, GSHFT: bool_t) u16;
-extern fn convertItemToSubOrSup(item: u16, subOrSup: i16) u16;
+
 extern fn fnT_ARROW(command: u16) void;
 extern fn SetSetting(jmConfig: u16) void;
-extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn convertReal34RegisterToDateRegister(source: calcRegister_t, destination: calcRegister_t, handleYY: bool_t) void;
-extern fn internalDateToJulianDay(source: *const real34_t, destination: *real34_t) void;
+
 
 // findOrAllocateNamedVariable / findNamedVariable / findMenu are not used here.
 
@@ -479,7 +488,6 @@ const c_fnT_ARROW = @extern(FnPtr, .{ .name = "fnT_ARROW" });
 
 // The canonical fnClPAll symbol (provided by frontier.zig). We reference its
 // address for setConfirmationMode and call it from _clearProgram / insertStepInProgram.
-extern fn fnClPAll(confirmation: u16) void;
 
 // ---------------------------------------------------------------------------
 // Small helpers mirroring c47.h macros / libc idioms.
@@ -541,10 +549,10 @@ inline fn regCtoKS(regC: i16) u8 {
     return @truncate(@as(u32, @bitCast(r)));
 }
 
-// clearScreen(cnt): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); forceSBupdate();
+// clearScreen(cnt): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); frontier_status_bar.forceSBupdate();
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
-extern fn forceSBupdate() void;
+
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
         const f: LcdFillRectFn = @ptrFromInt(0x08000201 + 60);
@@ -555,7 +563,7 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 }
 inline fn clearScreen() void {
     lcdFillRect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 
 // calcMode* GUI hooks are no-op macros on firmware, real externs on host.
@@ -632,7 +640,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         if (step[0] == ITM_LBL) { // LBL
             numberOfLabels += 1;
         }
-        nextStep = findNextStep(step);
+        nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
             break; // malformed program: a step runs past program memory
         }
@@ -665,7 +673,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     numberOfPrograms = 1;
     stepNumber = 1;
     while (!isAtEndOfPrograms(step)) { // .END.
-        nextStep = findNextStep(step);
+        nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
             break; // malformed program: stop before walking past program memory
         }
@@ -700,7 +708,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     freeProgramBytes = @intCast((@intFromPtr(ramEnd()) - @intFromPtr(firstFreeProgramByte)) - 2);
 
     defineCurrentProgramFromCurrentStep();
-    defineFirstDisplayedStep();
+    frontier_next_step.defineFirstDisplayedStep();
 }
 
 // ===========================================================================
@@ -709,7 +717,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 pub export fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) callconv(.c) void {
     const opSize: u16 = @intCast(@intFromPtr(to) - @intFromPtr(from));
 
-    _ = xcopy(from, to, @intCast((@intFromPtr(firstFreeProgramByte) - @intFromPtr(to)) + 2));
+    _ = frontier_char_string.xcopy(from, to, @intCast((@intFromPtr(firstFreeProgramByte) - @intFromPtr(to)) + 2));
     firstFreeProgramByte -= opSize;
     freeProgramBytes += opSize;
     scanLabelsAndPrograms();
@@ -722,9 +730,9 @@ fn _removeLabelsAssignments() void {
     while (i < numberOfLabels) : (i += 1) {
         if ((labelList[@intCast(i)].program == currentProgramNumber) and (labelList[@intCast(i)].step > 0)) {
             const labelLength = boundProgramNameLength(labelList[@intCast(i)].labelPointer + 1, labelList[@intCast(i)].labelPointer[0]);
-            _ = xcopy(&label, labelList[@intCast(i)].labelPointer + 1, labelLength);
+            _ = frontier_char_string.xcopy(&label, labelList[@intCast(i)].labelPointer + 1, labelLength);
             label[labelLength] = 0;
-            removeUserItemAssignments(ITM_XEQ, &label); // Remove label assignments
+            frontier_assign.removeUserItemAssignments(ITM_XEQ, &label); // Remove label assignments
         }
     }
 }
@@ -740,7 +748,7 @@ fn _removeLabelsAssignments() void {
 // _clearProgram (static) -> int
 fn _clearProgram() c_int {
     if (beginOfCurrentProgram == beginOfProgramMemory and (@intFromPtr(endOfCurrentProgram) >= @intFromPtr(firstFreeProgramByte) or (endOfCurrentProgram[0] == 255 and endOfCurrentProgram[1] == 255))) { // There is only one program in memory
-        fnClPAll(CONFIRMED);
+        frontier.fnClPAll(CONFIRMED);
         return 1;
     } else {
         // Remove assignments of global labels in the program being deleted, before deleting the program
@@ -748,7 +756,7 @@ fn _clearProgram() c_int {
 
         const savedCurrentProgramNumber = currentProgramNumber;
 
-        goToPgmStep(currentProgramNumber, 1); // [DL] work around for crash when label deleted is not at the beginning of the program
+        frontier_lbl_gto_xeq.goToPgmStep(currentProgramNumber, 1); // [DL] work around for crash when label deleted is not at the beginning of the program
         firstDisplayedLocalStepNumber = 0; // ditto
 
         deleteStepsFromTo(beginOfCurrentProgram, endOfCurrentProgram - (if (currentProgramNumber == numberOfPrograms) @as(usize, 2) else @as(usize, 0)));
@@ -756,9 +764,9 @@ fn _clearProgram() c_int {
         // unlikely fails
 
         if (savedCurrentProgramNumber >= numberOfPrograms) { // The last program
-            goToPgmStep(numberOfPrograms, 1);
+            frontier_lbl_gto_xeq.goToPgmStep(numberOfPrograms, 1);
         } else { // Not the last program
-            goToPgmStep(savedCurrentProgramNumber, 1);
+            frontier_lbl_gto_xeq.goToPgmStep(savedCurrentProgramNumber, 1);
         }
         return 0;
     }
@@ -772,29 +780,29 @@ pub export fn fnClP(label: u16) callconv(.c) void {
     var savedCurrentProgramNumber = currentProgramNumber;
 
     while (currentSubroutineLevel() > 0) { // drop subroutine stack before deleting a program
-        fnReturn(0);
+        frontier_lbl_gto_xeq.fnReturn(0);
     }
-    fnReturn(0); // 1 more time to clean local registers
+    frontier_lbl_gto_xeq.fnReturn(0); // 1 more time to clean local registers
 
-    goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
+    frontier_lbl_gto_xeq.goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
 
     if (label == 0 and !tam.alpha and tam.digitsSoFar == 0) {
         const innerSaved = currentProgramNumber;
         const result = _clearProgram();
         if (result == 1 and innerSaved <= 1) {
-            fnGotoDot(1);
+            frontier_lbl_gto_xeq.fnGotoDot(1);
         }
     } else if (label >= FIRST_LABEL and label <= LAST_LABEL) {
-        fnGoto(label);
+        frontier_lbl_gto_xeq.fnGoto(label);
         const programNumberToDelete = currentProgramNumber;
         const result = _clearProgram();
         switch (result) {
             2 => {
-                goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
+                frontier_lbl_gto_xeq.goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
             },
             1 => {
                 if (savedCurrentProgramNumber <= 1) { // RAM
-                    fnGotoDot(1);
+                    frontier_lbl_gto_xeq.fnGotoDot(1);
                 }
             },
             0 => {
@@ -802,13 +810,13 @@ pub export fn fnClP(label: u16) callconv(.c) void {
                     if (programNumberToDelete < savedCurrentProgramNumber) {
                         savedCurrentProgramNumber -= 1;
                     }
-                    goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
+                    frontier_lbl_gto_xeq.goToPgmStep(savedCurrentProgramNumber, savedCurrentLocalStepNumber);
                 }
             },
             else => {},
         }
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "label {d} is not a global label", .{@as(u32, label)});
             moreInfoErr("In function fnClP:", errorMessage, null);
@@ -823,7 +831,7 @@ pub export fn _getProgramSize() callconv(.c) u32 {
     if (currentProgramNumber == numberOfPrograms) {
         var step: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
         while (!(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
-            step = findNextStep(step);
+            step = frontier_next_step.findNextStep(step);
         }
         return @intCast((@intFromPtr(step) - @intFromPtr(programList[currentProgramNumber - 1].instructionPointer)) + 2);
     } else {
@@ -880,14 +888,14 @@ pub export fn scrollPemBackwards() callconv(.c) void {
     if (firstDisplayedLocalStepNumber > 0) {
         firstDisplayedLocalStepNumber -= 1;
     }
-    defineFirstDisplayedStep();
+    frontier_next_step.defineFirstDisplayedStep();
 }
 
 pub export fn scrollPemForwards() callconv(.c) void {
     if (getNumberOfSteps() > 6) {
         if (currentLocalStepNumber > 3) {
             firstDisplayedLocalStepNumber += 1;
-            firstDisplayedStep = findNextStep(firstDisplayedStep);
+            firstDisplayedStep = frontier_next_step.findNextStep(firstDisplayedStep);
         } else if (currentLocalStepNumber == 3) {
             firstDisplayedLocalStepNumber = 1;
         }
@@ -959,19 +967,19 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     if (calcMode != CM_PEM) {
         calcMode = CM_PEM;
-        showSoftmenu(-MNU_PFN);
+        frontier_softmenus.showSoftmenu(-MNU_PFN);
         screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         hourGlassIconEnabled = false;
         aimBuffer[0] = 0;
         // currentInputVariable = INVALID_VARIABLE; (not referenced elsewhere here)
         setCurrentInputVariableInvalid();
-        refreshScreen(227);
+        frontier_screen.refreshScreen(227);
         return;
     }
 
     if (currentLocalStepNumber < firstDisplayedLocalStepNumber) {
         firstDisplayedLocalStepNumber = currentLocalStepNumber;
-        defineFirstDisplayedStep();
+        frontier_next_step.defineFirstDisplayedStep();
     }
 
     if (currentLocalStepNumber == 0) {
@@ -989,9 +997,9 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     lastProgramListEnd = false;
 
     if (firstDisplayedLocalStepNumber == 0) {
-        _ = showString("0000:" ++ STD_SPACE_4_PER_EM, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE), if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0)) vmReverse else vmNormal, false, true);
+        _ = frontier_screen.showString("0000:" ++ STD_SPACE_4_PER_EM, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE), if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0)) vmReverse else vmNormal, 0, 1);
         abi.fmtBufZ(tmpString[0..2560], "{{Prgm #{d}/{d}: {d} bytes / {d} step{s}}}", .{ @as(u32, currentProgramNumber), @as(u32, numberOfPrograms), @as(u32, _getProgramSize()), @as(u32, numberOfSteps), if (numberOfSteps == 1) @as([*:0]const u8, "") else @as([*:0]const u8, "s") });
-        _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vmNormal, false, false);
+        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42), @intCast(Y_POSITION_OF_REGISTER_T_LINE), vmNormal, 0, 0);
         firstLine = 1;
     } else {
         firstLine = 0;
@@ -1002,14 +1010,14 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     line = firstLine;
     while (line < 7) : (line += 1) {
-        nextStep = findNextStep(step);
+        nextStep = frontier_next_step.findNextStep(step);
         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
         if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber))) {
             tamOverPemYPos = @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line));
-            _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse, false, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse, @intFromBool(false), @intFromBool(true));
             currentStep = step;
         } else {
-            _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, true);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
         }
 
         // Automatically, when on battery (low processor) skip long processing register printing.
@@ -1030,35 +1038,35 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         line += 1;
                         lineOffset += 1;
                         lineOffsetTam += 1;
-                        _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, false, true);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
                         if (line >= 7) {
                             break;
                         }
                         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
-                        _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, true);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 } else if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) and lblOrEnd and (step[0] != ITM_LBL)) {
                     if (tam.mode != 0) {
                         line += 1;
                         lineOffset += 1;
                         lineOffsetTam += 1;
-                        _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, false, true);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, vmReverse, @intFromBool(false), @intFromBool(true));
                         if (line >= 7) {
                             break;
                         }
                         abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
-                        _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, true);
+                        _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 }
             }
-            decodeOneStep(step);
+            frontier_decode.decodeOneStep(step);
             if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) and tam.mode == 0) {
                 if (getSystemFlag(FLAG_ALPHA)) {
                     const tmpChar = tmpString[4];
                     tmpString[4] = 0;
                     const cursorInString: i16 = if (strcmp(tmpString, "REM ") == 0) T_cursorPos + 4 else if (strcmp(tmpString, "42" ++ STD_alpha) == 0 or strcmp(tmpString, "42" ++ STD_RIGHT_TACK) == 0) T_cursorPos + 5 else T_cursorPos;
                     tmpString[4] = tmpChar;
-                    _ = xcopy(tmpString + 2 + @as(usize, @intCast(cursorInString)) + 2, tmpString + 2 + @as(usize, @intCast(cursorInString)), @intCast(stringByteLength(tmpString + 2 + @as(usize, @intCast(cursorInString))) + 1));
+                    _ = frontier_char_string.xcopy(tmpString + 2 + @as(usize, @intCast(cursorInString)) + 2, tmpString + 2 + @as(usize, @intCast(cursorInString)), @intCast(stringByteLength(tmpString + 2 + @as(usize, @intCast(cursorInString))) + 1));
                     tmpString[2 + @as(usize, @intCast(cursorInString))] = STD_CURSOR[0];
                     tmpString[2 + @as(usize, @intCast(cursorInString)) + 1] = STD_CURSOR[1];
                 } else if (aimBuffer[0] != 0) {
@@ -1099,11 +1107,11 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
             var offset: i32 = 0;
             var endStr: [*c]const u8 = undefined;
             while (offset <= 1500) {
-                endStr = stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, 337, false, false);
+                endStr = frontier_char_string.stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, 337, false, false);
                 if (endStr[0] == 0) break;
                 const lineByteLength: i32 = @intCast(@intFromPtr(endStr) - @intFromPtr(tmpString + @as(usize, @intCast(offset))));
                 numberOfExtraLines += 1;
-                _ = xcopy(tmpString + @as(usize, @intCast(offset + 300)), tmpString + @as(usize, @intCast(offset + lineByteLength)), @intCast(stringByteLength(endStr) + 1));
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(offset + 300)), tmpString + @as(usize, @intCast(offset + lineByteLength)), @intCast(stringByteLength(endStr) + 1));
                 tmpString[@as(usize, @intCast(offset + lineByteLength))] = 0;
                 offset += 300;
             }
@@ -1112,11 +1120,11 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                 linesOfCurrentStep += @intCast(numberOfExtraLines);
             }
 
-            _ = showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 42) else if (gto) @as(i32, 82) else @as(i32, 62))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, false);
+            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 42) else if (gto) @as(i32, 82) else @as(i32, 62))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
             offset = 300;
             while (numberOfExtraLines != 0 and line <= 5) {
                 line += 1;
-                _ = showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 62), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, false, false);
+                _ = frontier_screen.showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 62), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
                 numberOfExtraLines -= 1;
                 offset += 300;
                 lineOffset += 1;
@@ -1138,7 +1146,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 
     if (lastErrorCode != ERROR_NONE) {
-        refreshRegisterLine(errorMessageRegisterLine);
+        frontier_screen.refreshRegisterLine(errorMessageRegisterLine);
     }
 
     if (aimBuffer[0] != 0 and linesOfCurrentStep > 4) { // Limited to 4 lines so as not to cause crash or freeze
@@ -1149,7 +1157,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
 
         clearScreen();
-        showSoftmenuCurrentPart();
+        frontier_softmenus.showSoftmenuCurrentPart();
         fnPem(NOPARAM);
     }
     if ((@as(i32, currentLocalStepNumber) + (if (inTamMode) (if (currentLocalStepNumber < numberOfSteps) @as(i32, 2) else @as(i32, 1)) else @as(i32, 0))) >= (@as(i32, firstDisplayedLocalStepNumber) + @as(i32, stepsThatWouldBeDisplayed))) {
@@ -1158,9 +1166,9 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
             firstDisplayedLocalStepNumber += 1;
         }
 
-        defineFirstDisplayedStep();
+        frontier_next_step.defineFirstDisplayedStep();
         clearScreen();
-        showSoftmenuCurrentPart();
+        frontier_softmenus.showSoftmenuCurrentPart();
         fnPem(NOPARAM);
     }
 }
@@ -1249,7 +1257,7 @@ fn _insertInProgram(dat_in: [*c]const u8, size: u16) void {
     globalStepNumber = @intCast(@as(i32, currentLocalStepNumber) + programList[currentProgramNumber - 1].step - 1);
     scanLabelsAndPrograms();
     dynamicMenuItem = -1;
-    goToGlobalStep(globalStepNumber);
+    frontier_lbl_gto_xeq.goToGlobalStep(globalStepNumber);
     dynamicMenuItem = _dynamicMenuItem;
 }
 
@@ -1259,12 +1267,12 @@ fn _closeAlphaMenus() void {
     while (i < SOFTMENU_STACK_SIZE) : (i += 1) {
         switch (-softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem) {
             MNU_ALPHAINTL, MNU_ALPHAintl, MNU_ALPHAMATH, MNU_ALPHA_OMEGA, MNU_alpha_omega, MNU_ALPHA => {
-                popSoftmenu();
+                frontier_softmenus.popSoftmenu();
             },
             MNU_MyAlpha => {
                 switch (-softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem) {
                     MNU_ALPHAINTL, MNU_ALPHAintl, MNU_ALPHAMATH, MNU_ALPHA_OMEGA, MNU_alpha_omega, MNU_ALPHA => {
-                        popSoftmenu();
+                        frontier_softmenus.popSoftmenu();
                     },
                     else => {
                         softmenuStack[0].softmenuId = 0; // MyMenu
@@ -1302,20 +1310,20 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         }
 
         tam.function = aimFunc;
-        decodeOneStep(currentStep);
+        frontier_decode.decodeOneStep(currentStep);
         const ll = stringByteLength(tmpString);
         if (aimFunc == ITM_LITERAL) { // literal
-            _ = xcopy(aimBuffer, tmpString + 2, @intCast(ll)); // purposely overshoot aimbuffer
+            _ = frontier_char_string.xcopy(aimBuffer, tmpString + 2, @intCast(ll)); // purposely overshoot aimbuffer
             aimBuffer[@intCast(ll - 2 - 2)] = 0;
-            T_cursorPos = stringLastGlyph(aimBuffer) + 1;
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            T_cursorPos = frontier_char_string.stringLastGlyph(aimBuffer) + 1;
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             editCommand = true;
             item = 0;
         } else if (aimFunc == ITM_REM) { // REM
-            _ = xcopy(aimBuffer, tmpString + 6, @intCast(ll));
+            _ = frontier_char_string.xcopy(aimBuffer, tmpString + 6, @intCast(ll));
             aimBuffer[@intCast(ll - 2 - 6)] = 0;
-            T_cursorPos = stringLastGlyph(aimBuffer) + 1;
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            T_cursorPos = frontier_char_string.stringLastGlyph(aimBuffer) + 1;
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             tam.function = aimFunc;
             editCommand = true;
             item = aimFunc;
@@ -1333,7 +1341,7 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
             aimBuffer[0] = 0;
         }
 
-        showSoftmenu(-MNU_ALPHA);
+        frontier_softmenus.showSoftmenu(-MNU_ALPHA);
         setSystemFlag(FLAG_ALPHA);
         if (comptime !dmcp_build) calcModeAimGui();
 
@@ -1350,7 +1358,7 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
             _insertInProgram(tmpString, 4);
         }
         currentLocalStepNumber -= 1;
-        currentStep = findPreviousStep(currentStep);
+        currentStep = frontier_next_step.findPreviousStep(currentStep);
     }
     if (indexOfItems[@intCast(item)].func == c_addItemToBuffer) {
         const len = stringByteLength(aimBuffer);
@@ -1362,17 +1370,17 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         }
 
         if ((nextChar == NC_NORMAL) or ((item != ITM_DOWN_ARROW) and (item != ITM_UP_ARROW))) {
-            item = @bitCast(convertItemToSubOrSup(@bitCast(item), nextChar));
+            item = @bitCast(frontier_bufferize.convertItemToSubOrSup(@bitCast(item), nextChar));
             const inputCharLength = stringByteLength(&indexOfItems[@intCast(item)].itemSoftmenuName);
-            if (len < (256 - inputCharLength) and stringGlyphLength(aimBuffer) < 196) {
-                _ = xcopy(aimBuffer + @as(usize, @intCast(T_cursorPos)) + @as(usize, @intCast(inputCharLength)), aimBuffer + @as(usize, @intCast(T_cursorPos)), @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(T_cursorPos))) + 1));
-                _ = xcopy(aimBuffer + @as(usize, @intCast(T_cursorPos)), &indexOfItems[@intCast(item)].itemSoftmenuName, @intCast(inputCharLength));
+            if (len < (256 - inputCharLength) and frontier_char_string.stringGlyphLength(aimBuffer) < 196) {
+                _ = frontier_char_string.xcopy(aimBuffer + @as(usize, @intCast(T_cursorPos)) + @as(usize, @intCast(inputCharLength)), aimBuffer + @as(usize, @intCast(T_cursorPos)), @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(T_cursorPos))) + 1));
+                _ = frontier_char_string.xcopy(aimBuffer + @as(usize, @intCast(T_cursorPos)), &indexOfItems[@intCast(item)].itemSoftmenuName, @intCast(inputCharLength));
                 T_cursorPos += @intCast(inputCharLength);
             }
         }
     } else if (item == ITM_BACKSPACE) {
         if (aimBuffer[0] == 0) {
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             clearSystemFlag(FLAG_ALPHA);
             calcModeNormalGuiCall();
             _closeAlphaMenus();
@@ -1382,14 +1390,14 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         } else {
             const cursorByte = aimBuffer[@intCast(T_cursorPos)];
             aimBuffer[@intCast(T_cursorPos)] = 0;
-            const lastGlyphPos = stringLastGlyph(aimBuffer);
+            const lastGlyphPos = frontier_char_string.stringLastGlyph(aimBuffer);
             aimBuffer[@intCast(T_cursorPos)] = cursorByte;
-            _ = xcopy(aimBuffer + @as(usize, @intCast(lastGlyphPos)), aimBuffer + @as(usize, @intCast(T_cursorPos)), @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(T_cursorPos))) + 1));
+            _ = frontier_char_string.xcopy(aimBuffer + @as(usize, @intCast(lastGlyphPos)), aimBuffer + @as(usize, @intCast(T_cursorPos)), @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(T_cursorPos))) + 1));
             T_cursorPos = lastGlyphPos;
         }
     } else if (item == ITM_ENTER) {
         pemCloseAlphaInput();
-        defineFirstDisplayedStep();
+        frontier_next_step.defineFirstDisplayedStep();
         _closeAlphaMenus();
         return;
     } else if (item == ITM_USERMODE) {
@@ -1439,23 +1447,23 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         aimFunc2 |= currentStep[1];
     }
 
-    deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
     if (aimFunc2 < 128) { // literal
         tmpString[0] = @intCast(aimFunc2);
         tmpString[1] = STRING_LABEL_VARIABLE;
         tmpString[2] = @intCast(stringByteLength(aimBuffer));
-        _ = xcopy(tmpString + 3, aimBuffer, @intCast(stringByteLength(aimBuffer)));
+        _ = frontier_char_string.xcopy(tmpString + 3, aimBuffer, @intCast(stringByteLength(aimBuffer)));
         _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 3));
     } else { // rem
         tmpString[0] = @intCast((@as(u16, @bitCast(aimFunc2)) >> 8) | 0x80);
         tmpString[1] = @intCast(@as(u16, @bitCast(aimFunc2)) & 0x7f);
         tmpString[2] = STRING_LABEL_VARIABLE;
         tmpString[3] = @intCast(stringByteLength(aimBuffer));
-        _ = xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
+        _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
         _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 4));
     }
     currentLocalStepNumber -= 1;
-    currentStep = findPreviousStep(currentStep);
+    currentStep = frontier_next_step.findPreviousStep(currentStep);
     if (!programListEnd) {
         scrollPemBackwards();
     }
@@ -1469,13 +1477,13 @@ pub export fn pemCloseAlphaInput() callconv(.c) void {
     clearSystemFlag(FLAG_ALPHA);
     calcModeNormalGuiCall();
     currentLocalStepNumber += 1;
-    currentStep = findNextStep(currentStep);
+    currentStep = frontier_next_step.findNextStep(currentStep);
     // C: if((getNumberOfSteps() - currentLocalStepNumber) > 4) — the display window
     // only advances when there are >4 steps below the cursor. The subtraction is
     // signed int in C (uint16 promote), so an underflow goes negative, not wrapping.
     if ((@as(i32, getNumberOfSteps()) - @as(i32, currentLocalStepNumber)) > 4) {
         firstDisplayedLocalStepNumber += 1;
-        firstDisplayedStep = findNextStep(firstDisplayedStep);
+        firstDisplayedStep = frontier_next_step.findNextStep(firstDisplayedStep);
     }
     _closeAlphaMenus();
 }
@@ -1514,7 +1522,7 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
         _insertInProgram(tmpString, 3);
         _ = memset(nimBufferDisplay, 0, NIM_BUFFER_LENGTH);
         currentLocalStepNumber -= 1;
-        currentStep = findPreviousStep(currentStep);
+        currentStep = frontier_next_step.findPreviousStep(currentStep);
         switch (@as(u16, @bitCast(item))) {
             ITM_EXPONENT => {
                 aimBuffer[0] = '+';
@@ -1543,16 +1551,16 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
     if (item == ITM_BACKSPACE and ((aimBuffer[0] == '+' and aimBuffer[1] != 0 and aimBuffer[2] == 0) or aimBuffer[1] == 0)) {
         aimBuffer[0] = 0;
     } else {
-        addItemToNimBuffer(item);
+        frontier_bufferize.addItemToNimBuffer(item);
         if (stringByteLength(aimBuffer) > 255) {
-            addItemToNimBuffer(ITM_BACKSPACE);
+            frontier_bufferize.addItemToNimBuffer(ITM_BACKSPACE);
         }
     }
     clearSystemFlag(FLAG_ALPHA);
 
     if (aimBuffer[0] != '!') {
         if (doInsertInProgram) {
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
         }
         if (aimBuffer[0] != 0) {
             var tmpPtr: [*c]u8 = tmpString;
@@ -1591,11 +1599,11 @@ pub export fn pemAddNumber(item: i16, doInsertInProgram: bool) callconv(.c) void
             }
             tmpPtr[0] = @intCast(stringByteLength(numBuffer));
             tmpPtr += 1;
-            _ = xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
+            _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
             if (doInsertInProgram) {
                 _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + offset));
                 currentLocalStepNumber -= 1;
-                currentStep = findPreviousStep(currentStep);
+                currentStep = frontier_next_step.findPreviousStep(currentStep);
                 if (!programListEnd) {
                     scrollPemBackwards();
                 }
@@ -1625,7 +1633,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
         }
         return;
     }
-    deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
     if (aimBuffer[0] != 0) {
         const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
         var tmpPtr: [*c]u8 = tmpString;
@@ -1769,7 +1777,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
         if (!doneWithBinaryLiteral) {
             tmpPtr[0] = @intCast(inputLength);
             tmpPtr += 1;
-            _ = xcopy(tmpPtr, numBuffer, inputLength);
+            _ = frontier_char_string.xcopy(tmpPtr, numBuffer, inputLength);
             _insertInProgram(tmpString, @intCast(@as(i64, @intCast(inputLength)) + @as(i64, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
             pemCursorIsZerothStep = false;
         }
@@ -1784,7 +1792,7 @@ pub export fn pemCloseNumberInput() callconv(.c) void {
 fn _pemCloseTimeInput() void {
     switch (nimNumberPart) {
         NP_INT_10, NP_REAL_FLOAT_PART => {
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (aimBuffer[0] != 0) {
                 const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
                 var tmpPtr: [*c]u8 = tmpString;
@@ -1794,7 +1802,7 @@ fn _pemCloseTimeInput() void {
                 tmpPtr += 1;
                 tmpPtr[0] = @intCast(stringByteLength(numBuffer));
                 tmpPtr += 1;
-                _ = xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
+                _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
                 _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
             }
             aimBuffer[0] = '!';
@@ -1806,7 +1814,7 @@ fn _pemCloseTimeInput() void {
 // _pemCloseDateInput (static)
 fn _pemCloseDateInput() void {
     if (nimNumberPart == NP_REAL_FLOAT_PART) {
-        deleteStepsFromTo(currentStep, findNextStep(currentStep));
+        deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
         if (aimBuffer[0] != 0) {
             const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
             var tmpPtr: [*c]u8 = tmpString;
@@ -1817,8 +1825,8 @@ fn _pemCloseDateInput() void {
 
             reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
             stringToReal34(numBuffer, reg34(TEMP_REGISTER_1));
-            convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
-            internalDateToJulianDay(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
+            frontier_register_value_conversions.convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, false);
+            frontier_date_time.internalDateToJulianDay(reg34(TEMP_REGISTER_1), reg34(TEMP_REGISTER_1));
 
             real34ToString(reg34(TEMP_REGISTER_1), tmpPtr + 1);
             tmpPtr[0] = @intCast(stringByteLength(tmpPtr + 1));
@@ -1834,7 +1842,7 @@ fn _pemCloseDateInput() void {
 fn _pemCloseAngleInput(item: c_int) void {
     switch (nimNumberPart) {
         NP_INT_10, NP_REAL_FLOAT_PART => {
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (aimBuffer[0] != 0) {
                 const numBuffer: [*c]u8 = if (aimBuffer[0] == '+') aimBuffer + 1 else aimBuffer;
                 var tmpPtr: [*c]u8 = tmpString;
@@ -1862,7 +1870,7 @@ fn _pemCloseAngleInput(item: c_int) void {
                 }
                 tmpPtr[0] = @intCast(stringByteLength(numBuffer));
                 tmpPtr += 1;
-                _ = xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
+                _ = frontier_char_string.xcopy(tmpPtr, numBuffer, @intCast(stringByteLength(numBuffer)));
                 _insertInProgram(tmpString, @intCast(stringByteLength(numBuffer) + @as(i32, @intCast(@intFromPtr(tmpPtr) - @intFromPtr(tmpString)))));
             }
             editingLiteralType = 0;
@@ -1897,8 +1905,8 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
             aimBuffer[0] = 0;
         }
         if (catalog != 0) { // exit catalog and Asm Mode
-            leaveAsmMode();
-            popSoftmenu();
+            frontier_calc_mode.leaveAsmMode();
+            frontier_softmenus.popSoftmenu();
         }
         tam.function = @intCast(ITM_REM);
         pemAlpha(func);
@@ -1909,7 +1917,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
         tmpString[1] = @truncate(@as(u16, @bitCast(func)) & 0xff);
         tmpString[2] = @intCast(STRING_LABEL_VARIABLE);
         tmpString[3] = @intCast(stringByteLength(aimBuffer));
-        _ = xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
+        _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));
         _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 4));
         aimBuffer[0] = 0;
         return;
@@ -1982,7 +1990,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
     }
 
     var buffer: [16]u8 = undefined;
-    _ = xcopy(&buffer, tmpString, 16); // Save tmpString content for dynamic menus
+    _ = frontier_char_string.xcopy(&buffer, tmpString, 16); // Save tmpString content for dynamic menus
 
     if (func < 128) {
         tmpString[0] = @intCast(func);
@@ -2003,7 +2011,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                         const nameLength: u16 = @intCast(stringByteLength(aimBuffer + @as(usize, @intCast(@divTrunc(AIM_BUFFER_LENGTH, 2)))));
                         tmpString[2] = INDIRECT_VARIABLE;
                         tmpString[3] = @intCast(nameLength);
-                        _ = xcopy(tmpString + 4, aimBuffer + @as(usize, @intCast(@divTrunc(AIM_BUFFER_LENGTH, 2))), nameLength);
+                        _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer + @as(usize, @intCast(@divTrunc(AIM_BUFFER_LENGTH, 2))), nameLength);
                         opLen = nameLength + 4;
                     } else if (tam.keyIndirect) {
                         tmpString[2] = INDIRECT_REGISTER;
@@ -2019,7 +2027,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                         const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
                         tmpString[opLen + 1] = if (tam.indirect) INDIRECT_VARIABLE else STRING_LABEL_VARIABLE;
                         tmpString[opLen + 2] = @intCast(nameLength);
-                        _ = xcopy(tmpString + opLen + 3, aimBuffer, nameLength);
+                        _ = frontier_char_string.xcopy(tmpString + opLen + 3, aimBuffer, nameLength);
                         _insertInProgram(tmpString, @intCast(nameLength + opLen + 3));
                     } else if (tam.indirect) {
                         tmpString[opLen + 1] = INDIRECT_REGISTER;
@@ -2032,18 +2040,18 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                 },
                 ITM_GTOP => {
                     if (comptime !dmcp_build) {
-                        stringToUtf8(&indexOfItems[@intCast(func)].itemCatalogName, tmpString);
+                        frontier_char_string.stringToUtf8(&indexOfItems[@intCast(func)].itemCatalogName, tmpString);
                         _ = printf("insertStepInProgram: %s\n", tmpString);
                     }
                 },
                 ITM_DELPALL => {
-                    fnClPAll(NOT_CONFIRMED);
+                    frontier.fnClPAll(NOT_CONFIRMED);
                 },
                 ITM_BST => {
-                    fnBst(NOPARAM);
+                    frontier_next_step.fnBst(NOPARAM);
                 },
                 ITM_SST => {
-                    fnSst(NOPARAM);
+                    frontier_next_step.fnSst(NOPARAM);
                 },
                 VAR_ACC => {
                     tmpString[0] = @intCast(ITM_STO);
@@ -2126,7 +2134,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
             }
         },
         PTP_NUMBER_16 => {
-            if (isFunctionOldParam16(ufunc)) { // little-endian param
+            if (frontier_items.isFunctionOldParam16(ufunc) != 0) { // little-endian param
                 tmpString[2] = @intCast(@as(u16, @bitCast(tam.value)) & 0xff);
                 tmpString[3] = @intCast(@as(u16, @bitCast(tam.value)) >> 8);
                 _insertInProgram(tmpString, 4);
@@ -2135,7 +2143,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                     const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
                     tmpString[opBytes] = INDIRECT_VARIABLE;
                     tmpString[opBytes + 1] = @intCast(nameLength);
-                    _ = xcopy(tmpString + opBytes + 2, aimBuffer, nameLength);
+                    _ = frontier_char_string.xcopy(tmpString + opBytes + 2, aimBuffer, nameLength);
                     _insertInProgram(tmpString, @intCast(nameLength + opBytes + 2));
                 } else if (tam.indirect) {
                     tmpString[opBytes] = INDIRECT_REGISTER;
@@ -2175,19 +2183,19 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                 if (tam.value == MNU_DYNAMIC) {
                     nameLength = @intCast(stringByteLength(&buffer));
                     tmpString[opBytes2 + 1] = @intCast(nameLength);
-                    _ = xcopy(tmpString + opBytes2 + 2, &buffer, nameLength);
+                    _ = frontier_char_string.xcopy(tmpString + opBytes2 + 2, &buffer, nameLength);
                     _insertInProgram(tmpString, @intCast(nameLength + opBytes2 + 2));
                 } else {
                     nameLength = @intCast(stringByteLength(&indexOfItems[@intCast(tam.value)].itemCatalogName));
                     tmpString[opBytes2 + 1] = @intCast(nameLength);
-                    _ = xcopy(tmpString + opBytes2 + 2, &indexOfItems[@intCast(tam.value)].itemCatalogName, nameLength);
+                    _ = frontier_char_string.xcopy(tmpString + opBytes2 + 2, &indexOfItems[@intCast(tam.value)].itemCatalogName, nameLength);
                     _insertInProgram(tmpString, @intCast(nameLength + opBytes2 + 2));
                 }
             } else if (tam.alpha) {
                 const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
                 tmpString[opBytes2] = if (tam.indirect) INDIRECT_VARIABLE else STRING_LABEL_VARIABLE;
                 tmpString[opBytes2 + 1] = @intCast(nameLength);
-                _ = xcopy(tmpString + opBytes2 + 2, aimBuffer, nameLength);
+                _ = frontier_char_string.xcopy(tmpString + opBytes2 + 2, aimBuffer, nameLength);
                 _insertInProgram(tmpString, @intCast(nameLength + opBytes2 + 2));
             } else if (tam.indirect) {
                 tmpString[opBytes2] = INDIRECT_REGISTER;
@@ -2206,7 +2214,6 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
 }
 
 // isFunctionOldParam16: cross-owner extern (real function).
-extern fn isFunctionOldParam16(func: u16) bool_t;
 
 // ===========================================================================
 // insertUserItemInProgram (public)
@@ -2216,7 +2223,7 @@ pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) callconv(.c)
     const nameLength: u16 = @intCast(stringByteLength(funcParam));
 
     if ((!pemCursorIsZerothStep) and ((aimBuffer[0] == 0 and !getSystemFlag(FLAG_ALPHA)) or tam.mode != 0) and !isAtEndOfProgram(currentStep) and !isAtEndOfPrograms(currentStep)) {
-        currentStep = findNextStep(currentStep);
+        currentStep = frontier_next_step.findNextStep(currentStep);
         currentLocalStepNumber += 1;
     }
     if (func < 128) {
@@ -2231,10 +2238,10 @@ pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) callconv(.c)
 
     tmpString[opBytes] = STRING_LABEL_VARIABLE;
     tmpString[opBytes + 1] = @intCast(nameLength);
-    _ = xcopy(tmpString + opBytes + 2, funcParam, nameLength);
+    _ = frontier_char_string.xcopy(tmpString + opBytes + 2, funcParam, nameLength);
     _insertInProgram(tmpString, @intCast(nameLength + opBytes + 2));
 
-    currentStep = findPreviousStep(currentStep);
+    currentStep = frontier_next_step.findPreviousStep(currentStep);
     if (currentLocalStepNumber > 1) {
         currentLocalStepNumber -= 1;
     }
@@ -2249,12 +2256,12 @@ pub export fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) callconv(.c)
 // ===========================================================================
 pub export fn addStepInProgram(func: i16) callconv(.c) void {
     if ((!pemCursorIsZerothStep) and ((aimBuffer[0] == 0 and !getSystemFlag(FLAG_ALPHA)) or tam.mode != 0) and !isAtEndOfProgram(currentStep) and !isAtEndOfPrograms(currentStep)) {
-        currentStep = findNextStep(currentStep);
+        currentStep = frontier_next_step.findNextStep(currentStep);
         currentLocalStepNumber += 1;
     }
     insertStepInProgram(func);
     if ((aimBuffer[0] == 0 and !getSystemFlag(FLAG_ALPHA)) or tam.mode != 0) {
-        currentStep = findPreviousStep(currentStep);
+        currentStep = frontier_next_step.findPreviousStep(currentStep);
         if (currentLocalStepNumber > 1) {
             currentLocalStepNumber -= 1;
         }
@@ -2289,9 +2296,9 @@ pub export fn findNamedLabelWithDuplicate(labelName: [*c]const u8, dupNumIn: i16
     while (lbl < numberOfLabels) : (lbl += 1) {
         if (labelList[lbl].step > 0) {
             const lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
-            _ = xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+            _ = frontier_char_string.xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
             tmpString[lblNameLen] = 0;
-            if (compareString(tmpString, labelName, CMP_BINARY) == 0) {
+            if (frontier_sort.compareString(tmpString, labelName, CMP_BINARY) == 0) {
                 if (dupNum <= 0) {
                     return @intCast(@as(i32, lbl) + FIRST_LABEL);
                 } else {
@@ -2312,7 +2319,7 @@ pub export fn getNumberOfSteps() callconv(.c) u16 {
         var step: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
         while (!(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
             numberOfSteps += 1;
-            step = findNextStep(step);
+            step = frontier_next_step.findNextStep(step);
         }
         return numberOfSteps;
     } else {
