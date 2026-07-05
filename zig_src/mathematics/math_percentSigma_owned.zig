@@ -67,7 +67,6 @@ inline fn SIGMA_X() *real_t {
 }
 
 // Blob constants.
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 const cstR = abi.constants.cstRAligned;
 
 pub export fn percentSigma(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {

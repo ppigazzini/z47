@@ -135,7 +135,6 @@ inline fn SIGMA_ln2Y() *real_t {
 }
 
 // Blob constants.
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 const cstR = abi.constants.cstRAligned;
 
 // Standard deviations and standard errors. The computation involves

@@ -138,11 +138,7 @@ inline fn SET_TI_TRUE_FALSE(condition: bool) void {
     runtime.temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
-// Blob constants (real34).
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
-inline fn cst34(comptime off: u32) *const real34_t {
-    return @ptrCast(@alignCast(constants + off));
-}
+// Blob constants (real34) routed through the abi typed accessors (M22).
 inline fn const34_1() *const real34_t {
     return consts.q16312();
 }
