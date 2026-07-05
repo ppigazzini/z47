@@ -1459,21 +1459,21 @@ pub export fn getDateString(dateString: [*]u8) linksection(code_section) callcon
         rtc_read(&timeInfo, &dateInfo);
         if (!getSystemFlag(FLAG_TDM24)) { // 2 digit year
             if (getSystemFlag(FLAG_DMY)) {
-                _ = sprintf(dateString, "%02d.%02d.%02d", @as(c_int, dateInfo.day), @as(c_int, dateInfo.month), @as(c_int, @intCast(dateInfo.year % 100)));
+                abi.fmtBufZ(dateString[0..11], "{d:0>2}.{d:0>2}.{d:0>2}", .{ @as(u32, @intCast(dateInfo.day)), @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.year % 100)) });
             } else if (getSystemFlag(FLAG_YMD)) {
-                _ = sprintf(dateString, "%02d-%02d-%02d", @as(c_int, @intCast(dateInfo.year % 100)), @as(c_int, dateInfo.month), @as(c_int, dateInfo.day));
+                abi.fmtBufZ(dateString[0..11], "{d:0>2}-{d:0>2}-{d:0>2}", .{ @as(u32, @intCast(dateInfo.year % 100)), @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.day)) });
             } else if (getSystemFlag(FLAG_MDY)) {
-                _ = sprintf(dateString, "%02d/%02d/%02d", @as(c_int, dateInfo.month), @as(c_int, dateInfo.day), @as(c_int, @intCast(dateInfo.year % 100)));
+                abi.fmtBufZ(dateString[0..11], "{d:0>2}/{d:0>2}/{d:0>2}", .{ @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.day)), @as(u32, @intCast(dateInfo.year % 100)) });
             } else {
                 _ = strcpy(dateString, "?? ?? ????");
             }
         } else { // 4 digit year
             if (getSystemFlag(FLAG_DMY)) {
-                _ = sprintf(dateString, "%02d.%02d.%04d", @as(c_int, dateInfo.day), @as(c_int, dateInfo.month), @as(c_int, dateInfo.year));
+                abi.fmtBufZ(dateString[0..11], "{d:0>2}.{d:0>2}.{d:0>4}", .{ @as(u32, @intCast(dateInfo.day)), @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.year)) });
             } else if (getSystemFlag(FLAG_YMD)) {
-                _ = sprintf(dateString, "%04d-%02d-%02d", @as(c_int, dateInfo.year), @as(c_int, dateInfo.month), @as(c_int, dateInfo.day));
+                abi.fmtBufZ(dateString[0..11], "{d:0>4}-{d:0>2}-{d:0>2}", .{ @as(u32, @intCast(dateInfo.year)), @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.day)) });
             } else if (getSystemFlag(FLAG_MDY)) {
-                _ = sprintf(dateString, "%02d/%02d/%04d", @as(c_int, dateInfo.month), @as(c_int, dateInfo.day), @as(c_int, dateInfo.year));
+                abi.fmtBufZ(dateString[0..11], "{d:0>2}/{d:0>2}/{d:0>4}", .{ @as(u32, @intCast(dateInfo.month)), @as(u32, @intCast(dateInfo.day)), @as(u32, @intCast(dateInfo.year)) });
             } else {
                 _ = strcpy(dateString, "?? ?? ????");
             }
@@ -1514,14 +1514,14 @@ pub export fn getTimeString(timeString: [*]u8) linksection(code_section) callcon
 
         rtc_read(&timeInfo, &dateInfo);
         if (!getSystemFlag(FLAG_TDM24)) {
-            _ = sprintf(timeString, "%02d:%02d", @as(c_int, if ((timeInfo.hour % 12) == 0) 12 else timeInfo.hour % 12), @as(c_int, timeInfo.min));
+            abi.fmtBufZ(timeString[0..8], "{d:0>2}:{d:0>2}", .{ @as(u32, @intCast(if ((timeInfo.hour % 12) == 0) 12 else timeInfo.hour % 12)), @as(u32, @intCast(timeInfo.min)) });
             if (timeInfo.hour >= 12) {
                 _ = strcat(timeString, "pm");
             } else {
                 _ = strcat(timeString, "am");
             }
         } else {
-            _ = sprintf(timeString, "%02d:%02d", @as(c_int, timeInfo.hour), @as(c_int, timeInfo.min));
+            abi.fmtBufZ(timeString[0..8], "{d:0>2}:{d:0>2}", .{ @as(u32, @intCast(timeInfo.hour)), @as(u32, @intCast(timeInfo.min)) });
         }
     } else {
         const epoch: i64 = time(null);
@@ -1568,7 +1568,7 @@ pub export fn getWeekOfYearString(weekOfYearString: [*]u8) linksection(code_sect
     const woy: u32 = getWeekOfYear(&jd);
     var dow: i32 = @intCast(julianDayToDayOfWeek(&jd));
     dow = modulo((dow + 7) - firstDayOfWeek, 7) + 1;
-    _ = sprintf(weekOfYearString, "W%02d-%d", @as(c_int, @intCast(woy)), @as(c_int, dow));
+    abi.fmtBufZ(weekOfYearString[0..12], "W{d:0>2}-{d}", .{ woy, dow });
 }
 
 comptime {
