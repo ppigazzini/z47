@@ -203,6 +203,28 @@ pub fn main() !void {
         check_count += 1;
     }
 
+    // ---- Float guard-rail: C printf %e and Zig std.fmt {e} are NOT byte-equal
+    //      (different dtoa: C emits the exact decimal expansion with C rounding
+    //      and a signed >=2-digit exponent; Zig emits a differently-rounded
+    //      mantissa and a bare exponent). This is asserted, not assumed, so the
+    //      float sprintf sites are provably outside any oracle-green translation
+    //      -- migrating them needs a bespoke C-printf-compatible formatter, a
+    //      separate effort. If a future Zig makes these agree, this guard flips
+    //      and we can migrate. ----
+    {
+        var cbuf: [80]u8 = undefined;
+        var zbuf: [80]u8 = undefined;
+        const c = cFmt(&cbuf, "%.16e", @as(f64, -3.14159));
+        const z = std.fmt.bufPrint(&zbuf, "{e:.16}", .{@as(f64, -3.14159)}) catch unreachable;
+        if (std.mem.eql(u8, c, z)) {
+            std.debug.print("  UNEXPECTED: C %.16e and Zig {{e:.16}} now agree (\"{s}\") -- float is migratable\n", .{c});
+            fail_count += 1;
+        } else {
+            std.debug.print("  guard confirmed: C %.16e=\"{s}\" != Zig {{e:.16}}=\"{s}\" -> float stays sprintf (no byte-exact std.fmt)\n", .{ c, z });
+        }
+        check_count += 1;
+    }
+
     std.debug.print("format-equivalence oracle: {d} checks, {d} mismatches\n", .{ check_count, fail_count });
     if (fail_count != 0) {
         std.debug.print("FAIL: {d} proven-unsafe translations\n", .{fail_count});
