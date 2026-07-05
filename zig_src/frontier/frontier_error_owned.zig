@@ -444,12 +444,11 @@ pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: cal
     // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577 ("Fixed blank X register"); its
     // 100..103 validation was removed too. Param kept (not dropped) due to ~924 call sites.
     _ = disUsedCanBeRemoved;
-    const bugFmt: [*:0]const u8 = @ptrCast(&commonBugScreenMessages[bugMsgValueFor]);
     if (errorCode >= NUMBER_OF_ERROR_CODES or errorCode == 0) {
-        _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errorCode), "errorCode");
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errorCode), "errorCode" });
         displayBugScreen(@ptrCast(errorMessage));
     } else if (errMessageRegisterLine > REGISTER_T or errMessageRegisterLine < REGISTER_X) {
-        _ = sprintf(errorMessage, bugFmt, "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine");
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine" });
         abi.fmtBufZ(errorMessage[strlen(errorMessage)..512], "Must be from 100 (register X) to 103 (register T)", .{});
         displayBugScreen(@ptrCast(errorMessage));
     } else {

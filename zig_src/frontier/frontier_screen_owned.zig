@@ -2115,7 +2115,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     }
 
     if (glyph == null) {
-        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "showGlyphCode", glyphId);
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "showGlyphCode", glyphId });
         displayBugScreen(errorMessage);
         return 0;
     }
@@ -2211,7 +2211,7 @@ pub export fn showGlyph(ch: [*c]const u8, font: *const font_t, x: u32, y: u32, v
 noinline fn getGlyphBounds(ch: [*c]const u8, offset: ?*u16, font: *const font_t, col: *u32, row: *u32) void {
     const glyphId = findGlyph(font, charCodeFromString(ch, offset));
     if (glyphId < 0) {
-        _ = sprintf(errorMessage, &commonBugScreenMessages[bugMsgValueReturnedByFindGlyph], "getGlyphBounds", glyphId);
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "getGlyphBounds", glyphId });
         displayBugScreen(errorMessage);
         return;
     }

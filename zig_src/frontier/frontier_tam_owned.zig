@@ -1589,7 +1589,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         },
         else => {
-            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
+            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode" });
             displayBugScreen(errorMessage);
             return;
         },

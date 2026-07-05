@@ -1659,7 +1659,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
         if (softmenuMenuItem0() != -MNU_PLOT_SCATR) {
             abi.fmtBufZ(&ss, "{d}", .{ @as(c_uint, NN) });
             _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
-            _ = sprintf(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=");
+            abi.fmtBufZ(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=", .{});
             _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
             index += 1;
         }
