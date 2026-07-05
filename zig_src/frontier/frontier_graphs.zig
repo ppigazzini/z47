@@ -29,9 +29,9 @@ const std = @import("std");
 // pointer-bearing tables do not apply).
 //
 // PLATFORM SPLIT: fnPlotSQ's screen kick is `lcd_refresh()` on DMCP (fixed-
-// address ROM trampoline LIBRARY_FN_BASE + 48, lft_ifc.h:58) vs `refreshLcd(NULL)`
+// address ROM trampoline LIBRARY_FN_BASE + 48, lft_ifc.h:58) vs `frontier_screen.refreshLcd(NULL)`
 // on host (a real linkable symbol). clearScreen(1) in fnStatList is a host/
-// firmware macro -> lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE)+forceSBupdate();
+// firmware macro -> lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE)+frontier_status_bar.forceSBupdate();
 // lcd_fill_rect is the ROM trampoline LIBRARY_FN_BASE + 60 (lft_ifc.h:61) on
 // firmware and a real GTK symbol on host.
 //
@@ -65,9 +65,20 @@ const code_section = if (dmcp_build and old_hw) ".qspi_data" else if (builtin.ta
 const bool_t = bool;
 const calcRegister_t = i16;
 const videoMode_t = c_int;
-const font_t = opaque {};
+const font_t = frontier_screen.font_t; // M-callconv: unify font type with the definer (was local opaque)
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 
 // GMP mpz_struct. Limb width == pointer width on every z47 target. longInteger_t
@@ -165,8 +176,8 @@ const NO_Show: u8 = 1;
 const DO_Show: u8 = 0;
 const NO_Bold: u8 = 0;
 const DO_Bold: u8 = 1;
-const NO_LF: bool_t = false;
-const DO_LF: bool_t = true;
+const NO_LF: u8 = 0; // M-callconv: showStringEnhanced lf param is u8 (was bool_t)
+const DO_LF: u8 = 1;
 
 const bufLen: usize = 40;
 
@@ -242,51 +253,45 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn flipSystemFlag(sf: c_uint) void;
 
 extern fn fnClDrawMx(origin: u8) void;
-extern fn fnRefreshState() void;
+
 extern fn fnEqSolvGraph(func: u16) void;
-extern fn showSoftmenu(id: i16) void;
-extern fn menu(n: u8) i16;
-extern fn showHideHourGlass() void;
-extern fn refreshStatusBar() void;
-extern fn clearScreenOld(clearStatusBar: bool_t, clearRegisterLines: bool_t, clearSoftkeys: bool_t) void;
-extern fn clearScreenGraphs(source: u8, clearTextArea: bool_t, clearGraphArea: bool_t) void;
-extern fn graph_axis() void;
+
+
+
+
+
+
+
 extern fn drawMxN() i32;
-extern fn statMxN() i32;
-extern fn forceSBupdate() void;
 
-extern fn grf_x(i: c_int) f32;
-extern fn grf_y(i: c_int) f32;
-extern fn screen_window_x(x_min_: f32, x: f32, x_max_: f32) i16;
-extern fn screen_window_y(y_min_: f32, y: f32, y_max_: f32) i16;
-extern fn screen_window_y_nolimit(y_min_: f32, y: f32, y_max_: f32) i16;
 
-extern fn plotline1(xo: i16, yo: i16, xn: i16, yn: i16) void;
-extern fn plotline2(xo: i16, yo: i16, xn: i16, yn: i16) void;
-extern fn plotline3(xo: i16, yo: i16, xn: i16, yn: i16, first_time: bool_t, final_segment: bool_t) void;
-extern fn plotrect(a: i16, b: i16, c: i16, d: i16) void;
-extern fn placePixel(x: u32, y: u32) void;
-extern fn plotPointGeneric(xn: i16, yn: i16, xo: i16, yo: i16, PLOT_CROSS: bool_t, PLOT_BOXFAT: bool_t, PLOT_BOX: bool_t, PLOT_PLUS: bool_t, PLOT_LINE: bool_t) void;
 
-extern fn radixProcess(output: [*c]u8, ss: [*c]const u8) [*c]u8;
-extern fn formatCore(value: f64, digits: c_int, handle_zero: bool, buf: [*c]u8, widthLimit: c_int) [*c]u8;
-extern fn smallE(output: [*c]u8, ss: [*c]const u8) [*c]u8;
-extern fn convertDigits(refstr: [*c]u8, outstr: [*c]u8) void;
-extern fn padEquals(output: [*c]u8, ss: [*c]const u8) [*c]u8;
-extern fn grphNumFormatter(s02: [*c]u8, s01: [*c]const u8, inreal: f64, digits: i8, s05: [*c]const u8) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showStringEnhanced(string: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, compress1: u8, raise1: u8, noShow1: u8, boldString1: u8, lf: bool_t) u32;
 
-extern fn convertRegisterToDouble(regist: calcRegister_t) f64;
-extern fn exitKeyWaiting() bool_t;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn force_refresh(mode: u8) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
-extern fn fnStatSum(sum: u16) void;
+
+
 
 // graph_text / fnStatList shared text helpers
-extern fn print_linestr(line1: [*c]const u8, line_init: bool_t) void;
-extern fn print_numberstr(line1: [*c]const u8, line_init: bool_t) void;
+
 
 // real34 macros: real34SetZero(d) == decQuadZero(d); real34IsZero(s) == decQuadIsZero(s)
 extern fn decQuadZero(d: *real34_t) *real34_t;
@@ -294,7 +299,7 @@ extern fn decQuadIsZero(s: *align(1) const real34_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 // longInteger (GMP) helpers
-extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
+
 extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long; // longIntegerToInt32
 extern fn @"__gmpz_clear"(op: *mpz_struct) void; // longIntegerFree
 
@@ -309,7 +314,6 @@ extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
 extern fn pow(base: f64, exp: f64) f64;
 
 // host-only screen refresh (referenced under !dmcp_build).
-extern fn refreshLcd(unused: ?*anyopaque) void;
 
 // ---------------------------------------------------------------------------
 // DMCP-ROM trampolines (fixed-address on firmware; verified in lft_ifc.h).
@@ -333,10 +337,10 @@ inline fn lcd_refresh() void {
     }
 }
 
-// clearScreen(cnt) macro: lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); forceSBupdate();
+// clearScreen(cnt) macro: lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); frontier_status_bar.forceSBupdate();
 inline fn clearScreen() void {
     lcd_fill_rect(0, 0, @intCast(SCREEN_WIDTH), 240, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 
 // real34 macro helpers
@@ -416,7 +420,7 @@ pub export fn fnClGrf(unusedButMandatoryParameter: u16) callconv(.c) void {
     graph_reset();
     fnClDrawMx(2);
     _ = strcpy(&plotStatMx, "DrwMX");
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 // ===========================================================================
@@ -431,7 +435,7 @@ pub export fn fnPline(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (!getSystemFlag(FLAG_PLINE)) {
         clearSystemFlag(FLAG_PCURVE);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -445,7 +449,7 @@ pub export fn fnPcros(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
         setSystemFlag(FLAG_PLINE);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -459,7 +463,7 @@ pub export fn fnPplus(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
         setSystemFlag(FLAG_PLINE);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -473,7 +477,7 @@ pub export fn fnPbox(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
         setSystemFlag(FLAG_PLINE);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -483,7 +487,7 @@ pub export fn fnPcurve(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (getSystemFlag(FLAG_PCURVE)) {
         setSystemFlag(FLAG_PLINE);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -498,7 +502,7 @@ pub export fn fnPintg(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     clearSystemFlag(FLAG_VECT);
     clearSystemFlag(FLAG_NVECT);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -507,7 +511,7 @@ pub export fn fnPdiff(unusedButMandatoryParameter: u16) callconv(.c) void {
     PLOT_DIFF = !PLOT_DIFF;
     clearSystemFlag(FLAG_VECT);
     clearSystemFlag(FLAG_NVECT);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -516,7 +520,7 @@ pub export fn fnPrms(unusedButMandatoryParameter: u16) callconv(.c) void {
     PLOT_RMS = !PLOT_RMS;
     clearSystemFlag(FLAG_VECT);
     clearSystemFlag(FLAG_NVECT);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -550,7 +554,7 @@ pub export fn fnPMzoom(param: u16) callconv(.c) void {
             } else if (PLOT_ZMY < zoomRangeLo) {
                 PLOT_ZMY = zoomRangeHi;
             }
-            fnRefreshState();
+            frontier_radio_button_catalog.fnRefreshState();
             fnPlotSQ(0);
         },
         else => {},
@@ -565,7 +569,7 @@ pub export fn fnPlotZoom(unusedButMandatoryParameter: u16) callconv(.c) void {
     var x: longInteger_t = undefined;
     var ii: i32 = undefined;
 
-    if (getRegisterAsLongInt(REGISTER_X, &x[0], null)) {
+    if (frontier_register_value_conversions.getRegisterAsLongInt(REGISTER_X, &x[0], null)) {
         ii = @truncate(@"__gmpz_get_si"(&x[0])); // longIntegerToInt32(x, ii)
         // the ZOOM command from outside the PLOT mode only works for PLSTAT
         PLOT_ZMY = @truncate(ii);
@@ -613,7 +617,7 @@ pub export fn fnPvect(unusedButMandatoryParameter: u16) callconv(.c) void {
     PLOT_DIFF = false;
     PLOT_RMS = false;
     PLOT_SHADE = false;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -627,14 +631,14 @@ pub export fn fnPNvect(unusedButMandatoryParameter: u16) callconv(.c) void {
     PLOT_DIFF = false;
     PLOT_RMS = false;
     PLOT_SHADE = false;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnScale(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_SCALE);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -646,7 +650,7 @@ pub export fn fnPshade(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     clearSystemFlag(FLAG_VECT);
     clearSystemFlag(FLAG_NVECT);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -656,7 +660,7 @@ pub export fn fnPshade(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnComplexPlot(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_CPXPLOT);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnEqSolvGraph(EQ_PLOT_LU);
     fnPlotSQ(0);
 }
@@ -664,14 +668,14 @@ pub export fn fnComplexPlot(unusedButMandatoryParameter: u16) callconv(.c) void 
 pub export fn fnPx(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_SHOWX);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPy(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_SHOWY);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -682,7 +686,7 @@ pub export fn fnPlotReset(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     graph_reset();
     if (GRAPHMODE()) {
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
         fnPlotSQ(0);
     }
 }
@@ -695,7 +699,7 @@ pub export fn fnPlotSQ(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (comptime dmcp_build) {
         lcd_refresh();
     } else {
-        refreshLcd(null);
+        _ = frontier_screen.refreshLcd(null);
     }
 
     PLOT_AXIS = true;
@@ -704,18 +708,18 @@ pub export fn fnPlotSQ(unusedButMandatoryParameter: u16) callconv(.c) void {
         previousCalcMode = CM_NORMAL;
     } else {
         previousCalcMode = calcMode;
-        clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys); // Change over hourglass to the left side
+        frontier_screen.clearScreenOld(@intFromBool(clrStatusBar), @intFromBool(!clrRegisterLines), @intFromBool(!clrSoftkeys)); // Change over hourglass to the left side
     }
 
     calcMode = CM_GRAPH;
     hourGlassIconEnabled = true; // clear the current portion of statusbar
-    showHideHourGlass();
-    refreshStatusBar();
+    frontier_status_bar.showHideHourGlass();
+    frontier_status_bar.refreshStatusBar();
 
-    if (menu(0) != -MNU_PLOT_FUNC and plotStatMx[0] == 'D') {
-        showSoftmenu(-MNU_PLOT_FUNC);
-    } else if (menu(0) != -MNU_PLOT_STAT and plotStatMx[0] == 'S') {
-        showSoftmenu(-MNU_PLOT_STAT);
+    if (frontier_softmenus.menu(0) != -MNU_PLOT_FUNC and plotStatMx[0] == 'D') {
+        frontier_softmenus.showSoftmenu(-MNU_PLOT_FUNC);
+    } else if (frontier_softmenus.menu(0) != -MNU_PLOT_STAT and plotStatMx[0] == 'S') {
+        frontier_softmenus.showSoftmenu(-MNU_PLOT_STAT);
     }
 }
 
@@ -755,13 +759,13 @@ fn plotarrow(xo: i16, yo: i16, xn: i16, yn: i16) void {
     dy = dydx * (zzz / zz);
     dx = ddx * (zzz / zz);
     if (!(xo == xn and yo == yn)) {
-        plotline1(xn + fToI16(-3 * dx + dy), yn + fToI16(-3 * dy - dx), xn, yn);
-        plotline1(xn + fToI16(-3 * dx - dy), yn + fToI16(-3 * dy + dx), xn, yn);
+        frontier_plotstat.plotline1(xn + fToI16(-3 * dx + dy), yn + fToI16(-3 * dy - dx), xn, yn);
+        frontier_plotstat.plotline1(xn + fToI16(-3 * dx - dy), yn + fToI16(-3 * dy + dx), xn, yn);
     } else {
-        placePixel(@intCast(xn), @intCast(yn));
+        frontier_plotstat.placePixel(@intCast(xn), @intCast(yn));
     }
 }
-// C implicitly truncates the float argument to int16_t in plotline1(int16_t,...).
+// C implicitly truncates the float argument to int16_t in frontier_plotstat.plotline1(int16_t,...).
 inline fn fToI16(v: f32) i16 {
     return @intFromFloat(@trunc(v));
 }
@@ -787,7 +791,7 @@ fn plotdeltabig(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaBig[@intCast(ii)].valid == 1) {
         const e = tabDeltaBig[@intCast(ii)];
-        plotline1(xn + @as(i16, e.xd1), yn + @as(i16, e.yd1), xn + @as(i16, e.xd2), yn + @as(i16, e.yd2));
+        frontier_plotstat.plotline1(xn + @as(i16, e.xd1), yn + @as(i16, e.yd1), xn + @as(i16, e.xd2), yn + @as(i16, e.yd2));
         ii += 1;
     }
 }
@@ -811,7 +815,7 @@ fn plotdelta(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDelta[@intCast(ii)].valid == 1) {
         const e = tabDelta[@intCast(ii)];
-        placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
         ii += 1;
     }
 }
@@ -829,7 +833,7 @@ fn plotintbig(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaIntBig[@intCast(ii)].valid == 1) {
         const e = tabDeltaIntBig[@intCast(ii)];
-        plotline1(xn + @as(i16, e.xd1), yn + @as(i16, e.yd1), xn + @as(i16, e.xd2), yn + @as(i16, e.yd2));
+        frontier_plotstat.plotline1(xn + @as(i16, e.xd1), yn + @as(i16, e.yd1), xn + @as(i16, e.xd2), yn + @as(i16, e.yd2));
         ii += 1;
     }
 }
@@ -848,7 +852,7 @@ fn plotint(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaInt[@intCast(ii)].valid == 1) {
         const e = tabDeltaInt[@intCast(ii)];
-        placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
         ii += 1;
     }
 }
@@ -869,7 +873,7 @@ fn plotrms(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaRms[@intCast(ii)].valid == 1) {
         const e = tabDeltaRms[@intCast(ii)];
-        placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
         ii += 1;
     }
 }
@@ -881,13 +885,13 @@ fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32,
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;
-    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{ @as([*:0]const u8, radixProcess(&buff, formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50))) });
-    convertDigits(smallE(&buff, tmpString), &outstr);
-    _ = showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, true, true);
+    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50))) });
+    frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
+    _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
 
-    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{ @as([*:0]const u8, radixProcess(&buff, formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50))) });
-    convertDigits(smallE(&buff, tmpString), &outstr);
-    _ = showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, true, true);
+    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50))) });
+    frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
+    _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
 }
 
 // ===========================================================================
@@ -900,18 +904,18 @@ pub export fn graph_text() callconv(.c) void {
     var tt: [100]u8 = undefined;
     var tmpbuf: [PLOT_TMP_BUF_SIZE]u8 = undefined;
     var n: i32 = undefined;
-    grphNumFormatter(&ss, "(", @floatCast(x_max), 2, "");
-    const ssw: u16 = @truncate(showStringEnhanced(padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
-    grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), @floatCast(y_max), 2, ")");
-    const ttw: u16 = @truncate(showStringEnhanced(padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
+    frontier_plotstat.grphNumFormatter(&ss, "(", @floatCast(x_max), 2, "");
+    const ssw: u16 = @truncate(frontier_screen.showStringEnhanced(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
+    frontier_plotstat.grphNumFormatter(&tt, frontier_plotstat.radixProcess(&tmpbuf, "#"), @floatCast(y_max), 2, ")");
+    const ttw: u16 = @truncate(frontier_screen.showStringEnhanced(frontier_plotstat.padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
     ypos += 38;
-    n = @bitCast(showString(padEquals(&tmpbuf, &ss), &standardFont, @bitCast(@as(i32, 160) - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), ypos, vmNormal, false, false));
-    _ = showString(padEquals(&tmpbuf, &tt), &standardFont, @bitCast(n + 3), ypos, vmNormal, false, false);
-    grphNumFormatter(&ss, "(", @floatCast(x_min), 2, "");
+    n = @bitCast(frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, @bitCast(@as(i32, 160) - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), ypos, vmNormal, 0, 0));
+    _ = frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &tt), &standardFont, @bitCast(n + 3), ypos, vmNormal, 0, 0);
+    frontier_plotstat.grphNumFormatter(&ss, "(", @floatCast(x_min), 2, "");
     ypos += 19;
-    n = @bitCast(showString(padEquals(&tmpbuf, &ss), &standardFont, 1, ypos, vmNormal, false, false));
-    grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), @floatCast(y_min), 2, ")");
-    _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @bitCast(n + 3), ypos, vmNormal, false, false);
+    n = @bitCast(frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, 1, ypos, vmNormal, 0, 0));
+    frontier_plotstat.grphNumFormatter(&ss, frontier_plotstat.radixProcess(&tmpbuf, "#"), @floatCast(y_min), 2, ")");
+    _ = frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, @bitCast(n + 3), ypos, vmNormal, 0, 0);
     ypos -%= 38;
     showGraphTickText1(tick_int_x, tick_int_y, 1, @bitCast(ypos), @bitCast(ypos -% 12), 3);
     ypos -%= 24;
@@ -935,39 +939,39 @@ pub export fn graph_text() callconv(.c) void {
             abi.fmtBufZ(tmpString[0..bufLen], "  x-axis y 0", .{});
         },
         3 => {
-            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{ @as([*:0]const u8, radixProcess(&tmpbuf, ".")) });
+            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&tmpbuf, ".")) });
         },
         else => {},
     }
 
     // Change to the small characters and fabricate a small = char.
     // (gt_outstr is graph_text's file-local `static char outstr[bufLen]`.)
-    convertDigits(tmpString, &gt_outstr);
+    frontier_char_string.convertDigits(tmpString, &gt_outstr);
 
-    ii = @bitCast(@as(u16, @truncate(showString(&gt_outstr, &standardFont, 1, ypos, vmNormal, true, true))));
+    ii = @bitCast(@as(u16, @truncate(frontier_screen.showString(&gt_outstr, &standardFont, 1, ypos, vmNormal, 1, 1))));
     if (tmpString[@intCast(stringByteLength(tmpString) - 1)] == '0') {
         const sp: i16 = 15;
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
-        plotline1(ii - 17, yp + 2 + sp, ii - 11, yp + 2 + sp);
-        plotline1(ii - 17, yp + 1 + sp, ii - 11, yp + 1 + sp);
-        plotline1(ii - 17, yp - 1 + sp, ii - 11, yp - 1 + sp);
-        plotline1(ii - 17, yp - 2 + sp, ii - 11, yp - 2 + sp);
+        frontier_plotstat.plotline1(ii - 17, yp + 2 + sp, ii - 11, yp + 2 + sp);
+        frontier_plotstat.plotline1(ii - 17, yp + 1 + sp, ii - 11, yp + 1 + sp);
+        frontier_plotstat.plotline1(ii - 17, yp - 1 + sp, ii - 11, yp - 1 + sp);
+        frontier_plotstat.plotline1(ii - 17, yp - 2 + sp, ii - 11, yp - 2 + sp);
     }
     ypos +%= 48 + 2 * 19;
 
     if (PLOT_INTG and !invalid_intg) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Trapezoid integral", .{});
-        _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+        _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
 
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
         plotintbig(5, yp + 4 + 4 - 2 - 4);
-        plotrect(5 + 4 - 1, (yp + 4 + 4 - 2 + 2) - 1 - 4, 5 + 4 + 2, (yp + 4 + 4 - 2 + 2) + 2 - 4);
+        frontier_plotstat.plotrect(5 + 4 - 1, (yp + 4 + 4 - 2 + 2) - 1 - 4, 5 + 4 + 2, (yp + 4 + 4 - 2 + 2) + 2 - 4);
         ypos += 20;
     }
 
     if (PLOT_DIFF and !invalid_diff) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Numerical slope", .{});
-        _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+        _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
         plotdeltabig(6, yp + 4 + 4 - 2 - 4);
         ypos += 20;
@@ -975,14 +979,14 @@ pub export fn graph_text() callconv(.c) void {
 
     if (PLOT_RMS and !invalid_rms) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Root Mean Square RMS", .{});
-        _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+        _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
         plotrms(6, yp + 4 + 4 - 2 - 3);
-        plotrect(6 - 1, (yp + 4 + 4 - 2) - 1 - 3, 6 + 2, (yp + 4 + 4 - 2) + 2 - 3);
+        frontier_plotstat.plotrect(6 - 1, (yp + 4 + 4 - 2) - 1 - 3, 6 + 2, (yp + 4 + 4 - 2) + 2 - 3);
         ypos += 20;
     }
 
-    force_refresh(timed);
+    frontier_screen.force_refresh(timed);
 }
 
 // ===========================================================================
@@ -1076,8 +1080,8 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
             // PLOT_ZMY = 18, special case to allow Ylo Yhi
             // _LY _UY override only if ZOOM is not set, AND Yup and Ylo are not zero
             if (@abs(plotzoomx - 1) < 0.00001 and @abs(plotzoomy - 1) < 0.00001 and !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) and real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))) {
-                y_min = @floatCast(convertRegisterToDouble(RESERVED_VARIABLE_LY));
-                y_max = @floatCast(convertRegisterToDouble(RESERVED_VARIABLE_UY));
+                y_min = @floatCast(frontier_register_value_conversions.convertRegisterToDouble(RESERVED_VARIABLE_LY));
+                y_max = @floatCast(frontier_register_value_conversions.convertRegisterToDouble(RESERVED_VARIABLE_UY));
             } else {
                 y_min = -10;
                 y_max = 10;
@@ -1124,11 +1128,11 @@ pub export fn graph_plotmem() callconv(.c) void {
     // SAVE_SPACE_DM42_13GRF_JM is NOT defined -> this whole body is LIVE.
 
     if (!reDraw) {
-        clearScreenGraphs(1, clrTextArea, !clrGraphArea);
+        frontier_screen.clearScreenGraphs(1, @intFromBool(clrTextArea), @intFromBool(!clrGraphArea));
         graph_text();
         return;
     } else {
-        clearScreenGraphs(2, !clrTextArea, clrGraphArea);
+        frontier_screen.clearScreenGraphs(2, @intFromBool(!clrTextArea), @intFromBool(clrGraphArea));
         reDraw = false; // draw now and block reDraw in the next round
     }
 
@@ -1162,9 +1166,9 @@ pub export fn graph_plotmem() callconv(.c) void {
 
     statnum = 0;
 
-    if ((if (plotStatMx[0] == 'S') statMxN() >= 2 else false) or (if (plotStatMx[0] == 'D') drawMxN() >= 2 else false)) {
+    if ((if (plotStatMx[0] == 'S') frontier_plotstat.statMxN() >= 2 else false) or (if (plotStatMx[0] == 'D') drawMxN() >= 2 else false)) {
         if (plotStatMx[0] == 'S') {
-            statnum = @intCast(statMxN());
+            statnum = @intCast(frontier_plotstat.statMxN());
         } else {
             statnum = @intCast(drawMxN());
         }
@@ -1173,7 +1177,7 @@ pub export fn graph_plotmem() callconv(.c) void {
     if (statnum >= 2) {
         // GRAPH SETUP
         roundedTicks = true;
-        graph_axis(); // Draw the axis on any uncontrolled scale to start.
+        frontier_plotstat.graph_axis(); // Draw the axis on any uncontrolled scale to start.
         if (PLOT_AXIS) {
             graph_text();
         }
@@ -1185,10 +1189,10 @@ pub export fn graph_plotmem() callconv(.c) void {
         }
 
         if (PLOT_INTG) {
-            rmsy = @abs(grf_y(0));
+            rmsy = @abs(frontier_plotstat.grf_y(0));
             ix = 0;
             while (ix < statnum) : (ix += 1) {
-                rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + grf_y(@intCast(ix)) * grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
+                rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
             }
             inty_off = rmsy;
         }
@@ -1208,13 +1212,13 @@ pub export fn graph_plotmem() callconv(.c) void {
             if (PLOT_DIFF or PLOT_INTG or PLOT_RMS) {
                 inty = inty_off; // integral starting constant co-incides with graph
                 if (PLOT_RMS) {
-                    rmsy = @abs(grf_y(0));
+                    rmsy = @abs(frontier_plotstat.grf_y(0));
                 }
 
                 ix = 0;
                 while (ix < statnum) : (ix += 1) {
                     if (ix != 0) {
-                        ddx = grf_x(@intCast(ix)) - grf_x(@intCast(ix - 1)); // used in DIFF and INT
+                        ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1)); // used in DIFF and INT
                         if (ddx <= 0) { // Cannot get slope or area if x is not growing positively
                             x_min = FLoatingMax;
                             x_max = FLoatingMin;
@@ -1225,19 +1229,19 @@ pub export fn graph_plotmem() callconv(.c) void {
                             invalid_rms = true;
                             break;
                         } else {
-                            if (grf_x(@intCast(ix)) < x_min) {
-                                x_min = grf_x(@intCast(ix));
+                            if (frontier_plotstat.grf_x(@intCast(ix)) < x_min) {
+                                x_min = frontier_plotstat.grf_x(@intCast(ix));
                             }
-                            if (grf_x(@intCast(ix)) > x_max) {
-                                x_max = grf_x(@intCast(ix));
+                            if (frontier_plotstat.grf_x(@intCast(ix)) > x_max) {
+                                x_max = frontier_plotstat.grf_x(@intCast(ix));
                             }
                             if (PLOT_DIFF) {
                                 // Differential
                                 if (ddx != 0) {
                                     if (ix == 1) { // only two samples available
-                                        dydx = (grf_y(@intCast(ix)) - grf_y(@intCast(ix - 1))) / ddx;
+                                        dydx = (frontier_plotstat.grf_y(@intCast(ix)) - frontier_plotstat.grf_y(@intCast(ix - 1))) / ddx;
                                     } else if (ix >= 2) { // three samples available 0 1 2
-                                        dydx = @floatCast((@as(f64, grf_y(@intCast(ix - 2))) - 4.0 * @as(f64, grf_y(@intCast(ix - 1))) + 3.0 * @as(f64, grf_y(@intCast(ix)))) / 2.0 / @as(f64, ddx));
+                                        dydx = @floatCast((@as(f64, frontier_plotstat.grf_y(@intCast(ix - 2))) - 4.0 * @as(f64, frontier_plotstat.grf_y(@intCast(ix - 1))) + 3.0 * @as(f64, frontier_plotstat.grf_y(@intCast(ix)))) / 2.0 / @as(f64, ddx));
                                     }
                                 } else {
                                     dydx = FLoatingMax;
@@ -1251,7 +1255,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                                 }
                             }
                             if (PLOT_INTG) {
-                                inty = inty + (grf_y(@intCast(ix)) + grf_y(@intCast(ix - 1))) / 2 * ddx;
+                                inty = inty + (frontier_plotstat.grf_y(@intCast(ix)) + frontier_plotstat.grf_y(@intCast(ix - 1))) / 2 * ddx;
                                 if (inty < y_min) {
                                     y_min = inty;
                                 }
@@ -1260,7 +1264,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                                 }
                             }
                             if (PLOT_RMS) {
-                                rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + grf_y(@intCast(ix)) * grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
+                                rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
                                 if (rmsy < y_min) {
                                     y_min = rmsy;
                                 }
@@ -1270,7 +1274,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                             }
                         }
                     }
-                    if (exitKeyWaiting()) {
+                    if (frontier_addons.exitKeyWaiting() != 0) {
                         return;
                     }
                 }
@@ -1297,19 +1301,19 @@ pub export fn graph_plotmem() callconv(.c) void {
                 // pre-loop to cover trivial cases of symmetrical axis
                 cnt = 0;
                 while (cnt < statnum) : (cnt += 1) {
-                    if (grf_x(@intCast(cnt)) < x_min) {
-                        x_min = grf_x(@intCast(cnt));
+                    if (frontier_plotstat.grf_x(@intCast(cnt)) < x_min) {
+                        x_min = frontier_plotstat.grf_x(@intCast(cnt));
                     }
-                    if (grf_x(@intCast(cnt)) > x_max) {
-                        x_max = grf_x(@intCast(cnt));
+                    if (frontier_plotstat.grf_x(@intCast(cnt)) > x_max) {
+                        x_max = frontier_plotstat.grf_x(@intCast(cnt));
                     }
-                    if (grf_y(@intCast(cnt)) < y_min) {
-                        y_min = grf_y(@intCast(cnt));
+                    if (frontier_plotstat.grf_y(@intCast(cnt)) < y_min) {
+                        y_min = frontier_plotstat.grf_y(@intCast(cnt));
                     }
-                    if (grf_y(@intCast(cnt)) > y_max) {
-                        y_max = grf_y(@intCast(cnt));
+                    if (frontier_plotstat.grf_y(@intCast(cnt)) > y_max) {
+                        y_max = frontier_plotstat.grf_y(@intCast(cnt));
                     }
-                    scaleRmsy = @sqrt((scaleRmsy * scaleRmsy * @as(f32, @floatFromInt(cnt)) + grf_y(@intCast(cnt)) * grf_y(@intCast(cnt))) / (@as(f32, @floatFromInt(cnt)) + 1.0));
+                    scaleRmsy = @sqrt((scaleRmsy * scaleRmsy * @as(f32, @floatFromInt(cnt)) + frontier_plotstat.grf_y(@intCast(cnt)) * frontier_plotstat.grf_y(@intCast(cnt))) / (@as(f32, @floatFromInt(cnt)) + 1.0));
                 }
 
                 // pre-loop to cover trivial quasi symmetrical axis
@@ -1334,7 +1338,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                         a3 = a2;
                         a2 = a1;
                         a1 = a0;
-                        a0 = grf_y(@intCast(cnt));
+                        a0 = frontier_plotstat.grf_y(@intCast(cnt));
                         if (cnt < 8) {
                             aa = a0;
                         } else {
@@ -1370,7 +1374,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                             y_maxcnt = 0;
                         }
 
-                        if (exitKeyWaiting()) {
+                        if (frontier_addons.exitKeyWaiting() != 0) {
                             return;
                         }
                     }
@@ -1381,8 +1385,8 @@ pub export fn graph_plotmem() callconv(.c) void {
             sy = 0;
             cnt = 0;
             while (cnt < statnum) : (cnt += 1) { // ### Note XXX E- will stuff up statnum!
-                sx = sx + (if (!getSystemFlag(FLAG_NVECT)) grf_x(@intCast(cnt)) else grf_y(@intCast(cnt)));
-                sy = sy + (if (!getSystemFlag(FLAG_NVECT)) grf_y(@intCast(cnt)) else grf_x(@intCast(cnt)));
+                sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(cnt)) else frontier_plotstat.grf_y(@intCast(cnt)));
+                sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(cnt)) else frontier_plotstat.grf_x(@intCast(cnt)));
                 if (sx < x_min) {
                     x_min = sx;
                 }
@@ -1395,7 +1399,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                 if (sy > y_max) {
                     y_max = sy;
                 }
-                if (exitKeyWaiting()) {
+                if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
                 }
             }
@@ -1405,19 +1409,19 @@ pub export fn graph_plotmem() callconv(.c) void {
         graph_Include0(!PLOTSTAT, 0);
 
         roundedTicks = true;
-        graph_axis();
+        frontier_plotstat.graph_axis();
         if (PLOT_AXIS) {
             graph_text();
         }
 
         if (plotmode != _VECT) {
-            yn = screen_window_y(y_min, grf_y(0), y_max);
-            xn = screen_window_x(x_min, grf_x(0), x_max);
+            yn = frontier_plotstat.screen_window_y(y_min, frontier_plotstat.grf_y(0), y_max);
+            xn = frontier_plotstat.screen_window_x(x_min, frontier_plotstat.grf_x(0), x_max);
             xN1 = xn;
             yN1 = yn;
         } else {
-            yn = screen_window_y(y_min, 0, y_max);
-            xn = screen_window_x(x_min, 0, x_max);
+            yn = frontier_plotstat.screen_window_y(y_min, 0, y_max);
+            xn = frontier_plotstat.screen_window_x(x_min, 0, x_max);
             xN1 = xn;
             yN1 = yn;
         }
@@ -1429,14 +1433,14 @@ pub export fn graph_plotmem() callconv(.c) void {
         inty = inty_off; // integral starting constant co-incides with graph
         rmsy = 0;
         if (PLOT_RMS) {
-            rmsy = @abs(grf_y(0));
+            rmsy = @abs(frontier_plotstat.grf_y(0));
         }
 
         // ###### MAIN GRAPH LOOP ######
         const plotInCurves: bool_t = getSystemFlag(FLAG_PCURVE);
 
         if (plotInCurves) {
-            plotline3(0, 0, 0, 0, true, false); // reset
+            frontier_plotstat.plotline3(0, 0, 0, 0, true, false); // reset
         }
         ix = 0;
         while (ix < statnum) : (ix += 1) {
@@ -1445,32 +1449,32 @@ pub export fn graph_plotmem() callconv(.c) void {
                 y = 0;
 
                 if (ix != 0 and ((PLOT_DIFF and !invalid_diff) or (PLOT_INTG and !invalid_intg) or (PLOT_RMS and !invalid_rms))) {
-                    ddx = grf_x(@intCast(ix)) - grf_x(@intCast(ix - 1));
+                    ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1));
                     if (PLOT_DIFF and ddx != 0) {
-                        if (ix == 1 or (@abs(((grf_x(@intCast(ix)) - grf_x(@intCast(ix - 1))) / (grf_x(@intCast(ix - 1)) - grf_x(@intCast(ix - 2)))) - 1) > 0.0001)) { // only two samples available
-                            dydx = (grf_y(@intCast(ix)) - grf_y(@intCast(ix - 1))) / ddx; // Differential
-                            dxx = (grf_x(@intCast(ix)) + grf_x(@intCast(ix - 1))) / 2;
+                        if (ix == 1 or (@abs(((frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1))) / (frontier_plotstat.grf_x(@intCast(ix - 1)) - frontier_plotstat.grf_x(@intCast(ix - 2)))) - 1) > 0.0001)) { // only two samples available
+                            dydx = (frontier_plotstat.grf_y(@intCast(ix)) - frontier_plotstat.grf_y(@intCast(ix - 1))) / ddx; // Differential
+                            dxx = (frontier_plotstat.grf_x(@intCast(ix)) + frontier_plotstat.grf_x(@intCast(ix - 1))) / 2;
                         } else { // ix >= 2 three samples available 0 1 2
-                            dydx = @floatCast((@as(f64, grf_y(@intCast(ix - 2))) - 4.0 * @as(f64, grf_y(@intCast(ix - 1))) + 3.0 * @as(f64, grf_y(@intCast(ix)))) / 2.0 / @as(f64, ddx));
-                            dxx = grf_x(@intCast(ix));
+                            dydx = @floatCast((@as(f64, frontier_plotstat.grf_y(@intCast(ix - 2))) - 4.0 * @as(f64, frontier_plotstat.grf_y(@intCast(ix - 1))) + 3.0 * @as(f64, frontier_plotstat.grf_y(@intCast(ix)))) / 2.0 / @as(f64, ddx));
+                            dxx = frontier_plotstat.grf_x(@intCast(ix));
                         }
                     } else {
                         dydx = FLoatingMax;
                     }
 
                     if (PLOT_RMS) {
-                        rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + grf_y(@intCast(ix)) * grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
+                        rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
                     }
                     if (PLOT_INTG) {
-                        inty = inty + (grf_y(@intCast(ix)) + grf_y(@intCast(ix - 1))) / 2 * ddx;
+                        inty = inty + (frontier_plotstat.grf_y(@intCast(ix)) + frontier_plotstat.grf_y(@intCast(ix - 1))) / 2 * ddx;
                     }
                 }
 
-                x = grf_x(@intCast(ix));
-                y = grf_y(@intCast(ix));
+                x = frontier_plotstat.grf_x(@intCast(ix));
+                y = frontier_plotstat.grf_y(@intCast(ix));
             } else { // _VECT
-                sx = sx + (if (!getSystemFlag(FLAG_NVECT)) grf_x(@intCast(ix)) else grf_y(@intCast(ix)));
-                sy = sy + (if (!getSystemFlag(FLAG_NVECT)) grf_y(@intCast(ix)) else grf_x(@intCast(ix)));
+                sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(ix)) else frontier_plotstat.grf_y(@intCast(ix)));
+                sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(ix)) else frontier_plotstat.grf_x(@intCast(ix)));
                 x = sx;
                 y = sy;
             }
@@ -1478,8 +1482,8 @@ pub export fn graph_plotmem() callconv(.c) void {
             yo = yN1;
             yN0 = gpm_prev_y_unclipped;
 
-            xN1 = screen_window_x(x_min, x, x_max);
-            yN1 = screen_window_y_nolimit(y_min, y, y_max);
+            xN1 = frontier_plotstat.screen_window_x(x_min, x, x_max);
+            yN1 = frontier_plotstat.screen_window_y_nolimit(y_min, y, y_max);
             const current_y_unclipped: i16 = yN1;
 
             if (ix == 0) {
@@ -1552,7 +1556,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                 xn = xN1;
 
                 if (plotmode != _VECT) {
-                    plotPointGeneric(xn, yn, xo, yo, getSystemFlag(FLAG_PCROS), // cross
+                    frontier_plotstat.plotPointGeneric(xn, yn, xo, yo, getSystemFlag(FLAG_PCROS), // cross
                         false, // fatbox
                         getSystemFlag(FLAG_PBOX), // box
                         getSystemFlag(FLAG_PPLUS), // plus
@@ -1560,16 +1564,16 @@ pub export fn graph_plotmem() callconv(.c) void {
                     );
 
                     if (PLOT_DIFF and !invalid_diff and ix != 0) {
-                        plotdelta(screen_window_x(x_min, dxx, x_max), screen_window_y(y_min, dydx, y_max));
+                        plotdelta(frontier_plotstat.screen_window_x(x_min, dxx, x_max), frontier_plotstat.screen_window_y(y_min, dydx, y_max));
                     }
 
                     if (PLOT_RMS and !invalid_rms and ix != 0) {
-                        plotrms(screen_window_x(x_min, x - ddx / 2, x_max), screen_window_y(y_min, rmsy, y_max));
+                        plotrms(frontier_plotstat.screen_window_x(x_min, x - ddx / 2, x_max), frontier_plotstat.screen_window_y(y_min, rmsy, y_max));
                     }
 
                     if (PLOT_INTG and !invalid_intg and ix != 0) {
-                        const xN0: i16 = screen_window_x(x_min, grf_x(@intCast(ix - 1)), x_max);
-                        const yNintg: i16 = screen_window_y(y_min, inty, y_max);
+                        const xN0: i16 = frontier_plotstat.screen_window_x(x_min, frontier_plotstat.grf_x(@intCast(ix - 1)), x_max);
+                        const yNintg: i16 = frontier_plotstat.screen_window_y(y_min, inty, y_max);
                         const xAvg: i16 = @intCast((@as(i32, xN0) + @as(i32, xN1)) >> 1);
 
                         // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6
@@ -1577,25 +1581,25 @@ pub export fn graph_plotmem() callconv(.c) void {
                         if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                             plotint(xAvg, yNintg);
                         } else {
-                            plotrect(xAvg - 1, yNintg - 1, xAvg + 1, yNintg + 1);
+                            frontier_plotstat.plotrect(xAvg - 1, yNintg - 1, xAvg + 1, yNintg + 1);
                         }
 
                         // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6/4
                         // (absolute pixel gap), not the old (xN1-xN0) >= 6/4.
                         if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
-                            plotline1(xN1, yNintg, xAvg + 2, yNintg);
-                            plotline1(xAvg - 2, yNintg, xN0, yNintg);
+                            frontier_plotstat.plotline1(xN1, yNintg, xAvg + 2, yNintg);
+                            frontier_plotstat.plotline1(xAvg - 2, yNintg, xN0, yNintg);
                         } else if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 4) {
-                            plotline1(xN1, yNintg, xAvg + 2, yNintg);
-                            plotline1(xAvg - 2, yNintg, xN0, yNintg);
+                            frontier_plotstat.plotline1(xN1, yNintg, xAvg + 2, yNintg);
+                            frontier_plotstat.plotline1(xAvg - 2, yNintg, xN0, yNintg);
                         }
 
                         if (PLOT_SHADE) {
-                            const yNoff: i16 = screen_window_y(y_min, 0, y_max);
-                            plotrect(xN0, yN0, xN1, yN1);
-                            plotrect(xN0, yNoff, xN1, yN0);
+                            const yNoff: i16 = frontier_plotstat.screen_window_y(y_min, 0, y_max);
+                            frontier_plotstat.plotrect(xN0, yN0, xN1, yN1);
+                            frontier_plotstat.plotrect(xN0, yNoff, xN1, yN0);
                             if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
-                                plotline1(xN0, yN0, xN1, yN1);
+                                frontier_plotstat.plotline1(xN0, yN0, xN1, yN1);
                             }
                         }
                     }
@@ -1605,15 +1609,15 @@ pub export fn graph_plotmem() callconv(.c) void {
 
                 if (getSystemFlag(FLAG_PLINE)) {
                     if (plotInCurves) {
-                        plotline3(xo, yo, xn, yn, false, false);
+                        frontier_plotstat.plotline3(xo, yo, xn, yn, false, false);
                     } else {
-                        plotline2(xo, yo, xn, yn);
+                        frontier_plotstat.plotline2(xo, yo, xn, yn);
                     }
                 }
             }
             // else branch is PC_BUILD-only diagnostic printf -> omitted.
 
-            if (exitKeyWaiting()) {
+            if (frontier_addons.exitKeyWaiting() != 0) {
                 return;
             }
 
@@ -1621,10 +1625,10 @@ pub export fn graph_plotmem() callconv(.c) void {
         }
         // ###### end main graph loop ######
         if (getSystemFlag(FLAG_PLINE) and plotInCurves) {
-            plotline3(0, 0, 0, 0, false, true); // last line segment
+            frontier_plotstat.plotline3(0, 0, 0, 0, false, true); // last line segment
         }
     } else {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
@@ -1651,13 +1655,13 @@ pub export fn fnStatList() callconv(.c) void {
     var statnum: i16 = undefined;
 
     clearScreen(); // clearScreen(1) macro
-    refreshStatusBar();
+    frontier_status_bar.refreshStatusBar();
 
     if (regStatsXY != INVALID_VARIABLE and (if (plotStatMx[0] == 'D') drawMxN() >= 1 else false)) {
         statnum = @intCast(drawMxN());
-        fnStatSum(0);
+        frontier_stats.fnStatSum(0);
         abi.fmtBufZ(tmpString[0..2560], "Graph data: N = {d}", .{@as(i32, statnum)});
-        print_linestr(tmpString, true);
+        frontier_graph_text.print_linestr(tmpString, true);
 
         if (ListXYposition > 0) {
             ListXYposition = 0;
@@ -1670,11 +1674,11 @@ pub export fn fnStatList() callconv(.c) void {
             ixx = statnum - ix - 1 + ListXYposition;
             var tmpBuf: [100]u8 = undefined;
 
-            abi.fmtBufZ(&tmpstr1, "[{d}] x{s}{s}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, formatCore(@as(f64, grf_x(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
-            abi.fmtBufZ(&tmpstr2, "y{s}{s}, ", .{ @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, formatCore(@as(f64, grf_y(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
+            abi.fmtBufZ(&tmpstr1, "[{d}] x{s}{s}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, frontier_plotstat.formatCore(@as(f64, frontier_plotstat.grf_x(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
+            abi.fmtBufZ(&tmpstr2, "y{s}{s}, ", .{ @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, frontier_plotstat.formatCore(@as(f64, frontier_plotstat.grf_y(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
             _ = strcat(&tmpstr1, &tmpstr2);
 
-            print_numberstr(&tmpstr1, false);
+            frontier_graph_text.print_numberstr(&tmpstr1, false);
         }
     }
 }
