@@ -41,6 +41,9 @@ else
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -116,7 +119,6 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn clearSystemFlag(flag: c_uint) void;
-extern fn hideCursor() void;
 
 // lcd_fill_rect is a DMCP SDK fixed-address library call on firmware
 // (LIBRARY_FN_BASE+60); on host it is a real symbol from the GTK layer.
@@ -130,13 +132,11 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
-extern fn showString(str: [*:0]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
-extern fn stringWidth(str: [*:0]const u8, font: *const font_t, with_leading: bool, with_ending: bool) i16;
-extern fn stringToUtf8(src: [*:0]const u8, dst: [*]u8) void;
+
+
 
 // from the now-Zig register-value-conversions owner.
-extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
-extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) void;
+
 
 // real34 compares (mathematics/comparisonReals.c).
 extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
@@ -350,25 +350,25 @@ fn moreInfoOnErrorImpl(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8
     var utf8m4: [2000]u8 = undefined;
 
     if (@intFromPtr(m1) == 0) {
-        stringToUtf8("No error message available!", &utf8m1);
+        frontier_char_string.stringToUtf8("No error message available!", &utf8m1);
         _ = printf("\n%s\n", &utf8m1);
     } else if (m2 == null) {
-        stringToUtf8(m1, &utf8m1);
+        frontier_char_string.stringToUtf8(m1, &utf8m1);
         _ = printf("\n%s\n\n", &utf8m1);
     } else if (m3 == null) {
-        stringToUtf8(m1, &utf8m1);
-        stringToUtf8(m2.?, &utf8m2);
+        frontier_char_string.stringToUtf8(m1, &utf8m1);
+        frontier_char_string.stringToUtf8(m2.?, &utf8m2);
         _ = printf("\n%s\n%s\n\n", &utf8m1, &utf8m2);
     } else if (m4 == null) {
-        stringToUtf8(m1, &utf8m1);
-        stringToUtf8(m2.?, &utf8m2);
-        stringToUtf8(m3.?, &utf8m3);
+        frontier_char_string.stringToUtf8(m1, &utf8m1);
+        frontier_char_string.stringToUtf8(m2.?, &utf8m2);
+        frontier_char_string.stringToUtf8(m3.?, &utf8m3);
         _ = printf("\n%s\n%s\n%s\n\n", &utf8m1, &utf8m2, &utf8m3);
     } else {
-        stringToUtf8(m1, &utf8m1);
-        stringToUtf8(m2.?, &utf8m2);
-        stringToUtf8(m3.?, &utf8m3);
-        stringToUtf8(m4.?, &utf8m4);
+        frontier_char_string.stringToUtf8(m1, &utf8m1);
+        frontier_char_string.stringToUtf8(m2.?, &utf8m2);
+        frontier_char_string.stringToUtf8(m3.?, &utf8m3);
+        frontier_char_string.stringToUtf8(m4.?, &utf8m4);
         _ = printf("\n%s\n%s\n%s\n%s\n\n", &utf8m1, &utf8m2, &utf8m3, &utf8m4);
     }
 }
@@ -402,7 +402,7 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34(REGISTER_X, &r);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, &r);
         },
         dtReal34 => {
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
@@ -470,7 +470,7 @@ pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: c
         displayCalcErrorMessage(errorCode, errMessageRegisterLine, disUsedCanBeRemoved);
     }
     if (spcres) {
-        convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     }
 }
 
@@ -508,7 +508,7 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         previousCalcMode = calcMode;
         calcMode = CM_BUG_ON_SCREEN;
         clearSystemFlag(FLAG_ALPHA);
-        hideCursor();
+        frontier_screen.hideCursor();
         cursorEnabled = 0;
 
         const lineZ: [*:0]const u8 = @ptrCast(&line);
@@ -517,7 +517,7 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         lcdFillRect(0, 20, @intCast(SCREEN_WIDTH), 220, LCD_SET_VALUE);
 
         y = 20;
-        _ = showString("This is most likely a bug in the firmware!", &standardFont, 1, @intCast(y), vmNormal, true, false);
+        _ = frontier_screen.showString("This is most likely a bug in the firmware!", &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
         y += 20;
 
         _ = strcpy(&message, msg);
@@ -529,8 +529,8 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
 
         nextWord(&message, &pos, &word);
         while (word[0] != 0) {
-            if (@as(c_int, stringWidth(lineZ, &standardFont, true, true)) + (if (firstWordOfLine) @as(c_int, 0) else @as(c_int, 4)) + @as(c_int, stringWidth(wordZ, &standardFont, true, true)) >= SCREEN_WIDTH) { // 4 is the width of STD_SPACE_PUNCTUATION
-                _ = showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, true, false);
+            if (@as(c_int, frontier_char_string.stringWidth(lineZ, &standardFont, true, true)) + (if (firstWordOfLine) @as(c_int, 0) else @as(c_int, 4)) + @as(c_int, frontier_char_string.stringWidth(wordZ, &standardFont, true, true)) >= SCREEN_WIDTH) { // 4 is the width of STD_SPACE_PUNCTUATION
+                _ = frontier_screen.showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
                 y += 20;
                 line[0] = 0;
                 firstWordOfLine = true;
@@ -548,7 +548,7 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         }
 
         if (line[0] != 0) {
-            _ = showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, true, false);
+            _ = frontier_screen.showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
         }
     }
 }

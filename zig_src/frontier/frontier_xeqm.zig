@@ -1,3 +1,7 @@
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/c47Extensions/xeqm.c: fnXSWAP, the X<>alpha-buffer
@@ -70,20 +74,19 @@ extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
+
 extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
+
 extern fn resetShiftState() void;
-extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
-extern fn showSoftmenu(id: i16) void;
+
+
 extern fn liftStack() void;
-extern fn refreshRegisterLine(regist: calcRegister_t) void;
-extern fn refreshScreen(source: u16) void;
+
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -126,7 +129,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             tmp[0] = 0;
             const len: i16 = @intCast(stringByteLength(&tmp) + 1);
             reallocateRegister(REGISTER_Y, dtString, toBlocks(len), amNone); // Make blank string in Y
-            _ = xcopy(regString(REGISTER_Y), &tmp, @intCast(len));
+            _ = frontier_char_string.xcopy(regString(REGISTER_Y), &tmp, @intCast(len));
             addition[type_x][getRegisterDataType(REGISTER_Y)].?(); // Convert X (number) to string in X
             adjustResult(REGISTER_X, false, false, -1, -1, -1);
 
@@ -145,7 +148,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             // Save aimbuffer to TEMP1 as a string register
             const len: i16 = @intCast(stringByteLength(aimBuffer) + 1);
             reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(len), amNone);
-            _ = xcopy(regString(TEMP_REGISTER_1), aimBuffer, @intCast(len));
+            _ = frontier_char_string.xcopy(regString(TEMP_REGISTER_1), aimBuffer, @intCast(len));
         }
         // In essence, after conversions,
         // If X is string shorter than buffer max, copy X to aimbuffer
@@ -166,11 +169,11 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
                         fnDrop(NOPARAM);
                     }
                 } else { // EIM
-                    xCursor = @intCast(stringGlyphLength(aimBuffer));
+                    xCursor = @intCast(frontier_char_string.stringGlyphLength(aimBuffer));
                 }
-                refreshRegisterLine(REGISTER_X); // make sure that the multi line editor check is done
+                frontier_screen.refreshRegisterLine(REGISTER_X); // make sure that the multi line editor check is done
                 last_CM = 253;
-                refreshScreen(64);
+                frontier_screen.refreshScreen(64);
             }
         }
         clearRegister(TEMP_REGISTER_1);
@@ -183,8 +186,8 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             T_cursorPos = @intCast(stringByteLength(aimBuffer));
             fnDrop(NOPARAM);
             resetShiftState();
-            calcModeAim(NOPARAM); // Alpha Input Mode
-            showSoftmenu(-MNU_ALPHA);
+            frontier_calc_mode.calcModeAim(NOPARAM); // Alpha Input Mode
+            frontier_softmenus.showSoftmenu(-MNU_ALPHA);
         }
     } else if (calcMode == CM_NORMAL and getRegisterDataType(REGISTER_X) != dtString) {
         var line1: [TMP_STR_LENGTH]u8 = undefined;
@@ -201,7 +204,7 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
     }
 
     last_CM = 252;
-    refreshScreen(63);
+    frontier_screen.refreshScreen(63);
     last_CM = 251;
-    refreshScreen(0);
+    frontier_screen.refreshScreen(0);
 }

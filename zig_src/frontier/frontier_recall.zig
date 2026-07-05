@@ -20,6 +20,15 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
+const frontier_string_funcs = @import("frontier_string_funcs.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;
@@ -165,36 +174,36 @@ extern var timeDisplayFormatDigits: u8;
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, pad: bool) [*c]const u8;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
+
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
-extern fn regInRange(regist: u16) bool;
+
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn truncateAlphaRegisterTo44Char() void;
+
 extern fn liftStack() void;
 extern fn saveLastX() bool;
 extern fn fnRollUp(unusedButMandatoryParameter: u16) void;
-extern fn fnSkip(numberOfSteps: u16) void;
+
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
-extern fn fnStore(r: u16) void;
+
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
-extern fn forceSBupdate() void;
+
+
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
-extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
-extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
-extern fn setIRegisterAsInt(asArrayPointer: bool, toStore: i16) void;
-extern fn setJRegisterAsInt(asArrayPointer: bool, toStore: i16) void;
+
+
+
+
 extern fn getMatrixDims(regist: calcRegister_t, funcName: [*:0]const u8, rows: *u16, cols: *u16) bool;
-extern fn fnIncDecJ(mode: u16) void;
+
 extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
-extern fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, roundingMode: c_int) void;
+
+
 extern fn @"__gmpz_init"(p: *mpz_struct) void;
 extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 
@@ -230,8 +239,8 @@ inline fn complex34Copy(src: *align(1) const complex34_t, dst: *align(1) complex
 // Indexed-matrix element recall callbacks (static in the C)
 // ===========================================================================
 fn recallElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    const i: i16 = frontier.getIRegisterAsInt(true);
+    const j: i16 = frontier.getJRegisterAsInt(true);
 
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -241,8 +250,8 @@ fn recallElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
 }
 
 fn recallElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    const i: i16 = frontier.getIRegisterAsInt(true);
+    const j: i16 = frontier.getJRegisterAsInt(true);
 
     liftStack();
     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
@@ -255,7 +264,7 @@ fn recallElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 // fnRecall
 // ===========================================================================
 pub export fn fnRecall(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (@as(u16, @intCast(REGISTER_X)) <= regist and regist <= @as(u16, @intCast(getStackTop()))) {
             copySourceRegisterToDestRegister(@intCast(regist), TEMP_REGISTER_1);
             liftStack();
@@ -282,7 +291,7 @@ pub export fn fn2Rcl(regist: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         fnRecall(regist + 0);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!");
@@ -302,7 +311,7 @@ pub export fn fn3Rcl(regist: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         fnRecall(regist + 0);
     } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!");
@@ -317,14 +326,14 @@ pub export fn fnLastX(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnRecallPlusSkip(regist: u16) callconv(.c) void {
     fnRecall(regist);
-    fnSkip(0);
+    frontier_next_step.fnSkip(0);
 }
 
 // ===========================================================================
 // Recall arithmetic
 // ===========================================================================
 pub export fn fnRecallAdd(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -352,7 +361,7 @@ pub export fn fnRecallAdd(regist: u16) callconv(.c) void {
 }
 
 pub export fn fnRecallSub(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -380,7 +389,7 @@ pub export fn fnRecallSub(regist: u16) callconv(.c) void {
 }
 
 pub export fn fnRecallMult(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -408,7 +417,7 @@ pub export fn fnRecallMult(regist: u16) callconv(.c) void {
 }
 
 pub export fn fnRecallDiv(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -437,7 +446,7 @@ pub export fn fnRecallDiv(regist: u16) callconv(.c) void {
 
 pub export fn fnRecallMin(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -457,7 +466,7 @@ pub export fn fnRecallMin(regist_arg: u16) callconv(.c) void {
 
 pub export fn fnRecallMax(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (programRunStop == PGM_RUNNING and regist == @as(u16, @intCast(REGISTER_L))) {
             copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);
             if (lastErrorCode != ERROR_NONE) {
@@ -502,7 +511,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         roundingMode = configToRecall.roundingMode;
         systemFlags0 = configToRecall.systemFlags0;
         systemFlags1 = configToRecall.systemFlags1;
-        _ = xcopy(@ptrCast(&kbd_usr), @ptrCast(&configToRecall.kbd_usr), @sizeOf(@TypeOf(kbd_usr)));
+        _ = frontier_char_string.xcopy(@ptrCast(&kbd_usr), @ptrCast(&configToRecall.kbd_usr), @sizeOf(@TypeOf(kbd_usr)));
         // Spare/compatibility slots: the C reads these into unused locals.
         _ = configToRecall.compatibility_byte1;
         _ = configToRecall.compatibility_byte19;
@@ -519,7 +528,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_float1; // spare
         _ = configToRecall.compatibility_float2; // spare
         Norm_Key_00.func = configToRecall.Norm_Key_00.func;
-        _ = xcopy(@ptrCast(&Norm_Key_00.funcParam), @ptrCast(&configToRecall.Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
+        _ = frontier_char_string.xcopy(@ptrCast(&Norm_Key_00.funcParam), @ptrCast(&configToRecall.Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
         Norm_Key_00.used = configToRecall.Norm_Key_00.used;
         _ = configToRecall.compatibility_byte2;
         _ = configToRecall.compatibility_byte3;
@@ -560,13 +569,13 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_byte27;
         timeDisplayFormatDigits = configToRecall.timeDisplayFormatDigits;
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used to recall a configuration!", .{std.mem.span(getRegisterDataTypeName(@intCast(regist), false, false))});
+            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used to recall a configuration!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), false, false))});
             moreInfoOnError("In function fnRecallConfig:", errorMessage, null);
         }
     }
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 
 // ===========================================================================
@@ -576,13 +585,13 @@ pub export fn fnRecallStack(regist: u16) callconv(.c) void {
     const size: u16 = if (getSystemFlag(FLAG_SSIZE8)) 8 else 4;
 
     if (@as(i32, REGISTER_X) - @as(i32, size) <= @as(i32, regist) and @as(i32, regist) < REGISTER_X) {
-        displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register would overlap the stack: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
         }
     } else if ((@as(u16, @intCast(REGISTER_X)) <= regist and regist < FIRST_LOCAL_REGISTER) or @as(i32, regist) + @as(i32, size) > @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register is out of range: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
@@ -609,18 +618,18 @@ pub export fn fnRecallStack(regist: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnRecallVElement(ix: u16) callconv(.c) void {
     const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = getIRegisterAsInt(true);
-    const jBak: i16 = getJRegisterAsInt(true);
+    const iBak: i16 = frontier.getIRegisterAsInt(true);
+    const jBak: i16 = frontier.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (getMatrixDims(REGISTER_X, "In function fnRecallVElement:", &rows, &cols)) {
         // C int promotion: (ix-1)/cols is signed int arithmetic.
-        setIRegisterAsInt(false, @intCast(@divTrunc(@as(i32, ix) - 1, @as(i32, cols)) + 1));
-        setJRegisterAsInt(false, @intCast(@rem(@as(i32, ix) - 1, @as(i32, cols)) + 1));
+        frontier.setIRegisterAsInt(false, @intCast(@divTrunc(@as(i32, ix) - 1, @as(i32, cols)) + 1));
+        frontier.setJRegisterAsInt(false, @intCast(@rem(@as(i32, ix) - 1, @as(i32, cols)) + 1));
         matrixIndex = @intCast(REGISTER_X);
         _fnRecallElement(false);
-        setIRegisterAsInt(false, iBak);
-        setJRegisterAsInt(false, jBak);
+        frontier.setIRegisterAsInt(false, iBak);
+        frontier.setJRegisterAsInt(false, jBak);
         matrixIndex = matrixIndexBak;
     }
 }
@@ -628,8 +637,8 @@ pub export fn fnRecallVElement(ix: u16) callconv(.c) void {
 pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
     const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = getIRegisterAsInt(true);
-    const jBak: i16 = getJRegisterAsInt(true);
+    const iBak: i16 = frontier.getIRegisterAsInt(true);
+    const jBak: i16 = frontier.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnRecallVector:", &rows, &cols)) {
@@ -638,17 +647,17 @@ pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
     matrixIndex = @intCast(REGISTER_X);
     var ix: u16 = 1;
     while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
-        setIRegisterAsInt(false, @intCast((ix - 1) / cols + 1));
-        setJRegisterAsInt(false, @intCast((ix - 1) % cols + 1));
+        frontier.setIRegisterAsInt(false, @intCast((ix - 1) / cols + 1));
+        frontier.setJRegisterAsInt(false, @intCast((ix - 1) % cols + 1));
         _fnRecallElement(false);
         if (lastErrorCode != 0) {
             return;
         }
         if (regist > @as(u16, @intCast(REGISTER_X)) and regist < @as(u16, @intCast(getStackTop()))) {
-            fnStore(1 +% regist);
+            frontier_store.fnStore(1 +% regist);
             regist +%= 1;
         } else {
-            fnStore(regist);
+            frontier_store.fnStore(regist);
             regist +%= 1;
         }
         if (lastErrorCode != 0) {
@@ -656,8 +665,8 @@ pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
         }
         fnDrop(NOPARAM);
     }
-    setIRegisterAsInt(false, iBak);
-    setJRegisterAsInt(false, jBak);
+    frontier.setIRegisterAsInt(false, iBak);
+    frontier.setJRegisterAsInt(false, jBak);
     matrixIndex = matrixIndexBak;
 }
 
@@ -673,7 +682,7 @@ pub export fn fnRecallElement(unusedButMandatoryParameter: u16) callconv(.c) voi
 
 fn _fnRecallElement(stepForward: bool) void {
     if (matrixIndex == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLEL without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallElement:", errorMessage, null);
@@ -681,7 +690,7 @@ fn _fnRecallElement(stepForward: bool) void {
     } else {
         callByIndexedMatrix(recallElementReal, recallElementComplex);
         if (stepForward) {
-            fnIncDecJ(INC_FLAG);
+            frontier.fnIncDecJ(INC_FLAG);
         }
     }
 }
@@ -692,7 +701,7 @@ fn _fnRecallElement(stepForward: bool) void {
 pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (matrixIndex == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLIJ without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallIJ:", errorMessage, null);
@@ -710,23 +719,23 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        if (matrixIndex == INVALID_VARIABLE or !regInRange(matrixIndex) or !((getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix) or (getRegisterDataType(@intCast(matrixIndex)) == dtComplex34Matrix))) {
-            convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_Y);
-            convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_X);
+        if (matrixIndex == INVALID_VARIABLE or !frontier_store.regInRange(matrixIndex) or !((getRegisterDataType(@intCast(matrixIndex)) == dtReal34Matrix) or (getRegisterDataType(@intCast(matrixIndex)) == dtComplex34Matrix))) {
+            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_Y);
+            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_X);
         } else {
             if (getRegisterDataType(REGISTER_I) == dtLongInteger) {
                 copySourceRegisterToDestRegister(REGISTER_I, REGISTER_Y);
             } else if (getRegisterDataType(REGISTER_I) == dtReal34) {
-                convertReal34ToLongIntegerRegister(reg34(REGISTER_I), REGISTER_Y, DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongIntegerRegister(reg34(REGISTER_I), REGISTER_Y, DEC_ROUND_DOWN);
             } else {
-                convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_Y);
+                frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_Y);
             }
             if (getRegisterDataType(REGISTER_J) == dtLongInteger) {
                 copySourceRegisterToDestRegister(REGISTER_J, REGISTER_X);
             } else if (getRegisterDataType(REGISTER_J) == dtReal34) {
-                convertReal34ToLongIntegerRegister(reg34(REGISTER_J), REGISTER_X, DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongIntegerRegister(reg34(REGISTER_J), REGISTER_X, DEC_ROUND_DOWN);
             } else {
-                convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_X);
+                frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&zero[0], REGISTER_X);
             }
         }
 
@@ -741,7 +750,7 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
 // register via the type-dispatched addition[][] table, then restores X/Y.
 // ===========================================================================
 pub export fn fn42AlphaRecall(regist: u16) callconv(.c) void {
-    if (regInRange(regist)) {
+    if (frontier_store.regInRange(regist)) {
         if (getRegisterDataType(@intCast(alphaRegister)) == dtString) {
             if (programRunStop == PGM_RUNNING) {
                 copySourceRegisterToDestRegister(REGISTER_Y, SAVED_REGISTER_Y);
@@ -758,12 +767,12 @@ pub export fn fn42AlphaRecall(regist: u16) callconv(.c) void {
             addition[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)].?();
 
             copySourceRegisterToDestRegister(REGISTER_X, @intCast(alphaRegister));
-            truncateAlphaRegisterTo44Char();
+            frontier_string_funcs.truncateAlphaRegisterTo44Char();
 
             copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
             copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+            frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         }
     }
 }

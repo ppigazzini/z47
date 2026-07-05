@@ -1,3 +1,11 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
 const FLAG_SCALE: c_uint = 0x8052;
 
 const CM_NORMAL: u8 = 0;
@@ -54,23 +62,23 @@ fn classifyMode(mode: u16) PlotStatModeClass {
 
 fn configureRegressionPreset() void {
     drawHistogram = 0;
-    z47_frontier_plot_set_plotstatmx_stats();
+    frontier_plotstat.z47_frontier_plot_set_plotstatmx_stats();
 }
 
 fn configureHistogramPreset() void {
     drawHistogram = 1;
-    z47_frontier_plot_set_plotstatmx_histo();
+    frontier_plotstat.z47_frontier_plot_set_plotstatmx_histo();
 }
 
 fn configureHistogramNormPreset(ctx: *PlotStatContext) void {
     drawHistogram = 1;
-    z47_frontier_plot_set_statmx_histo();
-    calcSigma(0);
+    frontier_plotstat.z47_frontier_plot_set_statmx_histo();
+    frontier_stats.calcSigma(0);
     ctx.effective_mode = PLOT_LR;
     lastPlotMode = PLOT_START;
     lrSelectionHistobackup = lrSelection;
     lrChosenHistobackup = lrChosen;
-    fnCurveFitting(CF_GAUSS_FITTING);
+    frontier_curve_fitting.fnCurveFitting(CF_GAUSS_FITTING);
 }
 
 fn configureModePre(ctx: *PlotStatContext) void {
@@ -88,18 +96,18 @@ fn needGraphEntryClear() bool {
 
 fn ensureGraphEntryState() void {
     if (needGraphEntryClear()) {
-        z47_frontier_plot_clear_screen_for_graph_entry();
+        frontier_plotstat.z47_frontier_plot_clear_screen_for_graph_entry();
     }
 }
 
 fn activateHourglass() void {
     hourGlassIconEnabled = true;
-    showHideHourGlass();
-    refreshStatusBar();
+    frontier_status_bar.showHideHourGlass();
+    frontier_status_bar.refreshStatusBar();
 }
 
 fn validateSource() bool {
-    return z47_frontier_plot_has_source_data();
+    return frontier_plotstat.z47_frontier_plot_has_source_data();
 }
 
 fn normalizeEffectiveModeFromLast(ctx: *PlotStatContext) void {
@@ -112,7 +120,7 @@ fn prepareRuntime(ctx: *PlotStatContext) void {
     clearSystemFlag(FLAG_SCALE);
     normalizeEffectiveModeFromLast(ctx);
     calcMode = CM_PLOT_STAT;
-    statGraphReset();
+    frontier_plotstat.statGraphReset();
 }
 
 fn applyModeSelection(ctx: *PlotStatContext) void {
@@ -134,23 +142,23 @@ fn applyModeSelection(ctx: *PlotStatContext) void {
 }
 
 fn refreshPlotLcd() void {
-    refreshLcd(null);
+    _ = frontier_screen.refreshLcd(null);
 }
 
 fn showSoftmenuForMode(ctx: PlotStatContext) void {
     switch (ctx.effective_mode) {
-        H_PLOT, H_NORM => showSoftmenu(-MNU_HPLOT),
+        H_PLOT, H_NORM => frontier_softmenus.showSoftmenu(-MNU_HPLOT),
         PLOT_LR => {
             if (drawHistogram == 0) {
-                showSoftmenu(-MNU_PLOT_ASSESS);
+                frontier_softmenus.showSoftmenu(-MNU_PLOT_ASSESS);
             } else {
-                showSoftmenu(-MNU_HPLOT);
+                frontier_softmenus.showSoftmenu(-MNU_HPLOT);
             }
         },
-        PLOT_NXT, PLOT_REV => showSoftmenu(-MNU_PLOT_ASSESS),
+        PLOT_NXT, PLOT_REV => frontier_softmenus.showSoftmenu(-MNU_PLOT_ASSESS),
         PLOT_ORTHOF, PLOT_START => {
             setSystemFlag(FLAG_SCALE);
-            showSoftmenu(-MNU_PLOT_SCATR);
+            frontier_softmenus.showSoftmenu(-MNU_PLOT_SCATR);
         },
         PLOT_NOTHING => {},
         else => {},
@@ -159,7 +167,7 @@ fn showSoftmenuForMode(ctx: PlotStatContext) void {
 
 fn updateRegressionLine(ctx: *PlotStatContext) void {
     if (ctx.effective_mode != PLOT_START and ctx.effective_mode != H_PLOT and ctx.effective_mode != H_NORM) {
-        fnPlotRegressionLine(ctx.effective_mode);
+        frontier.fnPlotRegressionLine(ctx.effective_mode);
     } else {
         lastPlotMode = ctx.effective_mode;
     }
@@ -167,7 +175,7 @@ fn updateRegressionLine(ctx: *PlotStatContext) void {
 
 fn finishFailure() void {
     calcMode = CM_NORMAL;
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn run(plot_mode: u16) void {
@@ -202,17 +210,16 @@ extern var lrChosenHistobackup: u16;
 
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlag(sf: c_uint) void;
-extern fn showSoftmenu(menu: i16) void;
-extern fn refreshLcd(surface: ?*anyopaque) void;
-extern fn calcSigma(max_offset: u16) void;
-extern fn fnCurveFitting(curve_fitting: u16) void;
-extern fn showHideHourGlass() void;
-extern fn refreshStatusBar() void;
-extern fn statGraphReset() void;
-extern fn z47_frontier_plot_set_plotstatmx_stats() void;
-extern fn z47_frontier_plot_set_plotstatmx_histo() void;
-extern fn z47_frontier_plot_set_statmx_histo() void;
-extern fn z47_frontier_plot_has_source_data() bool;
-extern fn z47_frontier_plot_clear_screen_for_graph_entry() void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
-extern fn fnPlotRegressionLine(plot_mode: u16) void;
+
+
+
+
+
+
+
+
+
+
+
+
+

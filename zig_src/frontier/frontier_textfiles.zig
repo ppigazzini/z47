@@ -32,6 +32,9 @@ const bool_t = bool;
 const matrixHeader_t = abi.MatrixHeader;
 const registerHeader_t = abi.RegisterHeader;
 const abi = @import("abi"); // L1 shared bindings
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen_snap = @import("frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
 const namedVariableHeader_t = abi.NamedVariableHeader;
 
 // ---------------------------------------------------------------------------
@@ -75,13 +78,13 @@ extern var allNamedVariables: [*c]namedVariableHeader_t;
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardString: [*c]u8, forPrinter: bool_t) void;
-extern fn addChrBothSides(t: u8, str: [*c]u8) void;
-extern fn addStrBothSides(str: [*c]u8, str_b: [*c]u8, str_e: [*c]u8) void;
-extern fn letteredRegisterName(regist: calcRegister_t) u8;
-extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
-extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
-extern fn export_append_line(inputstring: [*c]const u8) i16;
+
+
+
+
+
+
+
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
@@ -123,8 +126,8 @@ inline fn clipMsg(n: usize) [*c]const u8 {
 pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardString: [*c]u8) callconv(.c) void {
     switch (getRegisterDataType(regist)) {
         dtLongInteger, dtTime, dtDate, dtString, dtShortInteger => {
-            copyRegisterToClipboardString(regist, clipboardString, false);
-            addChrBothSides(34, clipboardString); // JMCSV
+            frontier_screen_snap.copyRegisterToClipboardString(regist, clipboardString, @intFromBool(false));
+            frontier_char_string.addChrBothSides(34, clipboardString); // JMCSV
         },
 
         dtReal34Matrix => {
@@ -132,7 +135,7 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
             const rows: u16 = matrixHeader.matrixRows;
             const columns: u16 = matrixHeader.matrixColumns;
             if (@as(u32, rows) * @as(u32, columns) * 46 < TMP_STR_LENGTH) {
-                copyRegisterToClipboardString(regist, clipboardString, false);
+                frontier_screen_snap.copyRegisterToClipboardString(regist, clipboardString, @intFromBool(false));
             } else {
                 abi.fmtCStr(clipboardString, "{s}{d}x{d}{s}", .{ @as([*:0]const u8, clipMsg(0)), @as(c_uint, rows), @as(c_uint, columns), @as([*:0]const u8, clipMsg(1)) }); // Real matrix   too large for transfer
             }
@@ -143,14 +146,14 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
             const rows: u16 = matrixHeader.matrixRows;
             const columns: u16 = matrixHeader.matrixColumns;
             if (@as(u32, rows) * @as(u32, columns) * 92 < TMP_STR_LENGTH) {
-                copyRegisterToClipboardString(regist, clipboardString, false);
+                frontier_screen_snap.copyRegisterToClipboardString(regist, clipboardString, @intFromBool(false));
             } else {
                 abi.fmtCStr(clipboardString, "{s}{d}x{d}{s}", .{ @as([*:0]const u8, clipMsg(2)), @as(c_uint, rows), @as(c_uint, columns), @as([*:0]const u8, clipMsg(1)) }); // Complex matrix   too large for transfer
             }
         },
 
         else => {
-            copyRegisterToClipboardString(regist, clipboardString, false);
+            frontier_screen_snap.copyRegisterToClipboardString(regist, clipboardString, @intFromBool(false));
         },
     }
 }
@@ -169,7 +172,7 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
         tmp_e[0] = 0;
         if (REGISTER_X <= ix and ix <= REGISTER_W) {
             tmp_b[1] = 0;
-            tmp_b[0] = letteredRegisterName(ix);
+            tmp_b[0] = frontier_screen_snap.letteredRegisterName(ix);
             _ = strcat(&tmp_b, CSV_TAB);
         } else if (FIRST_GLOBAL_REGISTER <= ix and ix < REGISTER_X) {
             abi.fmtBufZ(&tmp_b, CSV_STR ++ "R{d:0>2}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(ix))});
@@ -181,8 +184,8 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
 
         var tmpString2: [TMP_STR_LENGTH]u8 = undefined;
         copyRegisterToClipboardString2(ix, tmpString);
-        utf8ToString(tmpString, &tmpString2);
-        stringToASCII(&tmpString2, tmpString);
+        frontier_char_string.utf8ToString(tmpString, &tmpString2);
+        frontier_char_string.stringToASCII(&tmpString2, tmpString);
 
         if (!oneLine or ix == reg_e) { // use tabs, except at the last register, use newline
             _ = strcat(&tmp_e, CSV_NEWLINE);
@@ -190,9 +193,9 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
             _ = strcat(&tmp_e, CSV_TAB);
         }
 
-        addStrBothSides(tmpString, &tmp_b, &tmp_e);
+        frontier_char_string.addStrBothSides(tmpString, &tmp_b, &tmp_e);
 
-        _ = export_append_line(tmpString); // Output append to CSV file
+        _ = frontier_graph_text.export_append_line(tmpString); // Output append to CSV file
 
         ix += 1;
     }
@@ -202,12 +205,12 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
 // tmpString_csv_out
 // ===========================================================================
 pub export fn tmpString_csv_out(nn: u8) callconv(.c) void {
-    _ = export_append_line(CSV_STR); // Output append to CSV file
-    _ = export_append_line(clipMsg(nn)); // "Alpha buffer: " //Output append to CSV file
-    _ = export_append_line(CSV_STR); // Output append to CSV file
-    _ = export_append_line(CSV_TAB); // Output append to CSV file
-    _ = export_append_line(CSV_STR); // Output append to CSV file
-    _ = export_append_line(tmpString); // Output append to CSV file    //aimBuffer now in tmpString
-    _ = export_append_line(CSV_STR); // Output append to CSV file
-    _ = export_append_line(CSV_NEWLINE); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(CSV_STR); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(clipMsg(nn)); // "Alpha buffer: " //Output append to CSV file
+    _ = frontier_graph_text.export_append_line(CSV_STR); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(CSV_TAB); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(CSV_STR); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(tmpString); // Output append to CSV file    //aimBuffer now in tmpString
+    _ = frontier_graph_text.export_append_line(CSV_STR); // Output append to CSV file
+    _ = frontier_graph_text.export_append_line(CSV_NEWLINE); // Output append to CSV file
 }

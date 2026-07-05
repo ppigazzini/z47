@@ -27,6 +27,10 @@ const bool_t = bool;
 const videoMode_t = c_int;
 
 const abi = @import("abi"); // L1 shared bindings
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
 const item_t = abi.Item;
@@ -114,22 +118,21 @@ const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn showSoftmenuCurrentPart() void;
-extern fn showString(str: [*:0]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showKey(label: [*:0]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) void;
+
+
+
 extern fn getSystemFlag(flag: c_int) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
+
 extern fn strlen(s: [*c]const u8) usize;
 // stringCopy (charString.c): stpcpy semantics — copy incl. NUL, return ptr to NUL.
 fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     const l: u32 = @intCast(strlen(source));
-    return @as([*c]u8, @ptrCast(xcopy(dest, source, l + 1))) + l;
+    return @as([*c]u8, @ptrCast(frontier_char_string.xcopy(dest, source, l + 1))) + l;
 }
-extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn forceSBupdate() void;
+
 
 // lcd_fill_rect / bitblt24 are DMCP SDK fixed-address library calls on firmware
 // (LIBRARY_FN_BASE + offset); on host they are real symbols.
@@ -171,7 +174,7 @@ inline fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 inline fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) void {
-    _ = showString(str, &standardFont, x, y, videoMode, showLeadingCols, showEndingCols);
+    _ = frontier_screen.showString(str, &standardFont, x, y, videoMode, @intFromBool(showLeadingCols), @intFromBool(showEndingCols));
 }
 
 // kbd_std model-selection macro (c47.h). The E47/D47/V47/N47 variants are only
@@ -227,11 +230,11 @@ fn fnAsnDisplay(page: u8) void {
         }
     }
 
-    // clearScreen(12): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE) + forceSBupdate().
+    // clearScreen(12): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE) + frontier_status_bar.forceSBupdate().
     lcdFillRect(0, 0, @intCast(SCREEN_WIDTH), 240, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 
-    showSoftmenuCurrentPart();
+    frontier_softmenus.showSoftmenuCurrentPart();
     showStr(if (asnDisplayUSER()) "(USER KEYS)" else "(STD KEYS)", 280, YOFF, vmNormal, false, false);
     switch (page) {
         1 => showStr("unshifted keyboard mapping", 30, YOFF, vmNormal, false, false),
@@ -297,9 +300,9 @@ fn fnAsnDisplay(page: u8) void {
                 _ = strcpy(&Name, &Norm_Key_00.funcParam); // name of a user menu, program or variable assigned to the Norm key
             }
         } else {
-            const funcParam: [*c]u8 = getNthString(userKeyLabel, key * 6 + (@as(i16, page) - 1));
+            const funcParam: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, key * 6 + (@as(i16, page) - 1));
             if ((funcParam[0] != 0) and ((strcmp(&Name, "DYNMNU") == 0) or (strcmp(&Name, "XEQ") == 0) or (strcmp(&Name, "RCL") == 0))) {
-                _ = strcpy(&Name, getNthString(userKeyLabel, key * 6 + (@as(i16, page) - 1))); // name of a user menu, program or variable assigned to a key
+                _ = strcpy(&Name, frontier_softmenus.getNthString(userKeyLabel, key * 6 + (@as(i16, page) - 1))); // name of a user menu, program or variable assigned to a key
             }
         }
 
@@ -313,7 +316,7 @@ fn fnAsnDisplay(page: u8) void {
             _ = stringCopy(&Name, &tmp3);
         }
         const videoMode: videoMode_t = if (!Norm_Key_00_used) (if (((kk > 0 or Name[0] == 0) and tmp3[0] == 0)) vmNormal else vmReverse) else vmReverse;
-        showKey(@ptrCast(&Name), x1, x2, YOFF + yy * SOFTMENU_HEIGHT, YOFF + (yy + 1) * SOFTMENU_HEIGHT, videoMode, true, true, NOVAL, NOVAL, "");
+        frontier_softmenus.showKey(@ptrCast(&Name), x1, x2, YOFF + yy * SOFTMENU_HEIGHT, YOFF + (yy + 1) * SOFTMENU_HEIGHT, videoMode, @intFromBool(true), @intFromBool(true), NOVAL, NOVAL, "");
 
         if (asnDisplayUSER() and
             (((page == 1) and (kbd_std[@intCast(key)].primary == kbd_usr[@intCast(key)].primary)) or
