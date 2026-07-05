@@ -463,7 +463,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     LCD_EMPTY_VALUE,
                 );
             }
-            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[systemFlag].itemCatalogName)))}) catch unreachable;
+            abi.fmtBufZ(tmpString[0..2560], "{s}", .{std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[systemFlag].itemCatalogName)))});
             _ = showString(tmpString, &standardFont, @intCast(@divTrunc(@as(i32, x1) + x2 - stringWidth(tmpString, &standardFont, false, false), 2)), y1, if (getSystemFlag(@intCast(param))) vmReverse else vmNormal, true, true);
         }
     }
@@ -474,7 +474,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
             if (getFlag(@bitCast(f))) {
                 lcdFillRect(@intCast(40 * @rem(@as(i32, f), 10) + 1), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44), @intCast(40 * @rem(@as(i32, f), 10) + 39 - (40 * @rem(@as(i32, f), 10) + 1)), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 + 20 - 1 - 44 - (22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44) + 1), LCD_EMPTY_VALUE);
             }
-            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}", .{@as(i32, f)}) catch unreachable;
+            abi.fmtBufZ(tmpString[0..2560], "{d}", .{@as(i32, f)});
             _ = showString(tmpString, &standardFont, @intCast(40 * @rem(@as(i32, f), 10) + 19 - @divTrunc(@as(i32, stringWidth(tmpString, &standardFont, false, false)), 2)), @intCast(22 * @divTrunc(@as(i32, f), 10) + 66 - 1 - 44), if (getFlag(@bitCast(f))) vmReverse else vmNormal, true, true);
         }
     }
@@ -493,11 +493,11 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
         _ = showString("[" ++ STD_SPACE_6_PER_EM ++ "  100..108   " ++ STD_SPACE_3_PER_EM ++ STD_SPACE_6_PER_EM ++ "109..111  " ++ STD_SPACE_3_PER_EM ++ "211..216  217..220" ++ STD_SPACE_6_PER_EM ++ " 221..224]", &standardFont, 1, 44 + 66 - 1 - 44, vmNormal, true, true);
 
         if (currentNumberOfLocalFlags() == 0) {
-            _ = std.fmt.bufPrintZ(tmpString[0..2560], "No local flags or registers allocated.", .{}) catch unreachable;
+            abi.fmtBufZ(tmpString[0..2560], "No local flags or registers allocated.", .{});
             _ = showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
         } else {
             // Local Registers
-            _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d} local register{s} allocated.", .{ @as(u32, currentNumberOfLocalRegisters()), if (currentNumberOfLocalRegisters() > 1) @as([*c]const u8, "s") else @as([*c]const u8, "") }) catch unreachable;
+            abi.fmtBufZ(tmpString[0..2560], "{d} local register{s} allocated.", .{ @as(u32, currentNumberOfLocalRegisters()), if (currentNumberOfLocalRegisters() > 1) @as([*c]const u8, "s") else @as([*c]const u8, "") });
             _ = showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
             _ = showString("Local flag status:", &standardFont, 1, 153, vmNormal, true, true);
 
@@ -508,7 +508,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                     lcdFillRect(@intCast(25 * @rem(@as(i32, f), 16) + 1), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), 22, 21, LCD_EMPTY_VALUE);
                 }
 
-                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d}", .{@as(i32, f)}) catch unreachable;
+                abi.fmtBufZ(tmpString[0..2560], "{d}", .{@as(i32, f)});
                 _ = showString(tmpString, &standardFont, @intCast(25 * @rem(@as(i32, f), 16) + 5 + 4 * @as(i32, @intFromBool(f <= 9)), ), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), if (getFlag(@bitCast(FIRST_LOCAL_FLAG + f))) vmReverse else vmNormal, true, true);
             }
         }

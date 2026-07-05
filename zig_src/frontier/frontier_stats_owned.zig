@@ -671,7 +671,7 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
         var aa: [100]u8 = undefined;
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
-            _ = std.fmt.bufPrintZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*c]const u8, @ptrCast(&errorMessages[RECALC_SUMS]))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) }) catch unreachable;
+            abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*c]const u8, @ptrCast(&errorMessages[RECALC_SUMS]))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
             printStatus(0, &aa, timed);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);
@@ -699,7 +699,7 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
     } else {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "STATS matrix not found", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "STATS matrix not found", .{});
             moreInfoOnError("In function getLastRowStatsMatrix:", errorMessage);
         }
     }
@@ -730,7 +730,7 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) void {
     } else {
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function AddtoStatsMatrix:", errorMessage);
         }
     }
@@ -742,7 +742,7 @@ fn removeLastRowFromStatsMatrix() void {
     if (!isStatsMatrix(&rows, &statMx)) {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "no STATS matrix", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "no STATS matrix", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
         }
         return;
@@ -760,7 +760,7 @@ fn removeLastRowFromStatsMatrix() void {
     if (regStats == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "matrix/line not removed", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "matrix/line not removed", .{});
             moreInfoOnError("In function removeLastRowFromStatsMatrix:", errorMessage);
         }
     }
@@ -775,7 +775,7 @@ fn fnClHisto(deleteVariable: bool) calcRegister_t {
     if (regHisto == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "HISTO matrix not created", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "HISTO matrix not created", .{});
             moreInfoOnError("In function fnClHisto:", errorMessage);
         }
         return INVALID_VARIABLE;
@@ -832,7 +832,7 @@ pub export fn fnClSigma(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (regStats == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "STATS matrix not created", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "STATS matrix not created", .{});
             moreInfoOnError("In function fnClSigma:", errorMessage);
         }
     }
@@ -918,7 +918,7 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
             } else {
                 displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
                 if (comptime extra_info) {
-                    _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot use {d}\x80\xd7{d}-matrix as statistical data!", .{ @as(u32, @as(u16, matrix.header.matrixRows)), @as(i32, @as(u16, matrix.header.matrixColumns)) }) catch unreachable;
+                    abi.fmtBufZ(errorMessage[0..512], "cannot use {d}\x80\xd7{d}-matrix as statistical data!", .{ @as(u32, @as(u16, matrix.header.matrixRows)), @as(i32, @as(u16, matrix.header.matrixColumns)) });
                     moreInfoOnError("In function fnSigmaAddRem:", errorMessage);
                 }
             }
@@ -1066,7 +1066,7 @@ fn initHistoMatrix(s: *real_t) void {
     } else {
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "additional matrix line not added; rows = {d}", .{@as(i32, rows)});
             moreInfoOnError("In function initHistoMatrix:", errorMessage);
         }
     }
@@ -1153,7 +1153,7 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
     } else {
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function fnConvertStatsToHisto:", errorMessage);
         }
         return;
@@ -1179,7 +1179,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     if (statMx[0] != 'S') {
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "Wrong statistical matrix is selected: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
         }
         return;
@@ -1247,7 +1247,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         } else {
             displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], " Matrix columns not right: {s}!", .{std.mem.span(@as([*c]const u8, @ptrCast(&statMx)))});
                 moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
             }
             return;
@@ -1255,7 +1255,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     } else {
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], " invalid STATS or HISTO variable!", .{}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], " invalid STATS or HISTO variable!", .{});
             moreInfoOnError("In function convertStatsMatrixToHistoMatrix:", errorMessage);
         }
         return;

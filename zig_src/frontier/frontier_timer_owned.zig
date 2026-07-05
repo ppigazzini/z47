@@ -731,7 +731,7 @@ pub export fn inputHelper(regist: u16, val: *u32, overflow: *bool_t) callconv(.c
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = std.fmt.bufPrintZ(errorMessage[0..512], "cannot recall {s} to the stopwatch", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))}) catch unreachable;
+                abi.fmtBufZ(errorMessage[0..512], "cannot recall {s} to the stopwatch", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))});
                 moreInfoOnErr("In function inputHelper:", errorMessage);
             }
             return false;
@@ -832,24 +832,24 @@ pub export fn fnShowTimerApp() callconv(.c) void {
             }
 
             if ((timerCraAndDeciseconds & 0x80) != 0) {
-                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_SUP_BOLD_T ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000, tmsec % 1000 / 100 }) catch unreachable;
+                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_SUP_BOLD_T ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000, tmsec % 1000 / 100 });
             } else {
-                _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SUP_BOLD_T ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000 }) catch unreachable;
+                abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SUP_BOLD_T ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ tmsec / 3600000, tmsec % 3600000 / 60000, tmsec % 60000 / 1000 });
             }
         }
 
         if ((timerCraAndDeciseconds & 0x80) != 0) {
-            _ = std.fmt.bufPrintZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d} ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000, msec % 1000 / 100 }) catch unreachable;
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d} ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000, msec % 1000 / 100 });
         } else {
-            _ = std.fmt.bufPrintZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ " ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000 }) catch unreachable;
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ " ", .{ msec / 3600000, msec % 3600000 / 60000, msec % 60000 / 1000 });
         }
 
         if (rbr1stDigit) {
-            _ = std.fmt.bufPrintZ(tmpString[strlen(tmpString)..2560], "[{d:0>2}]", .{@as(u32, timerCraAndDeciseconds & 0x7f)}) catch unreachable;
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "[{d:0>2}]", .{@as(u32, timerCraAndDeciseconds & 0x7f)});
         } else if (aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
-            _ = std.fmt.bufPrintZ(tmpString[strlen(tmpString)..2560], "[" ++ STD_CURSOR ++ STD_SPACE_FIGURE ++ "]", .{}) catch unreachable;
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "[" ++ STD_CURSOR ++ STD_SPACE_FIGURE ++ "]", .{});
         } else {
-            _ = std.fmt.bufPrintZ(tmpString[strlen(tmpString)..2560], "[{d}" ++ STD_CURSOR ++ "]", .{@as(i32, aimBuffer[AIM_BUFFER_LENGTH / 2]) - '0'}) catch unreachable;
+            abi.fmtBufZ(tmpString[strlen(tmpString)..2560], "[{d}" ++ STD_CURSOR ++ "]", .{@as(i32, aimBuffer[AIM_BUFFER_LENGTH / 2]) - '0'});
         }
         _ = showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, true, true);
 
@@ -857,9 +857,9 @@ pub export fn fnShowTimerApp() callconv(.c) void {
             if (remainingMsec > 0) {
                 tmpString[0] = 0;
                 if ((timerCraAndDeciseconds & 0x80) != 0) {
-                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_HOURGLASS_WH ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000, @as(u32, @intCast(remainingMsec)) % 1000 / 100 }) catch unreachable;
+                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}.{d}" ++ STD_HOURGLASS_WH ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000, @as(u32, @intCast(remainingMsec)) % 1000 / 100 });
                 } else {
-                    _ = std.fmt.bufPrintZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_HOURGLASS_WH ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000 }) catch unreachable;
+                    abi.fmtBufZ(tmpString[0..2560], "{d: >2}:{d:0>2}:{d:0>2}" ++ STD_HOURGLASS_WH ++ STD_SPACE_PUNCTUATION ++ STD_SPACE_FIGURE ++ "  ", .{ @as(u32, @intCast(remainingMsec)) / 3600000, @as(u32, @intCast(remainingMsec)) % 3600000 / 60000, @as(u32, @intCast(remainingMsec)) % 60000 / 1000 });
                 }
                 _ = showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_Z_LINE, vmNormal, true, true);
             } else if (remainingMsec < 0) {
@@ -1069,7 +1069,7 @@ pub export fn fnRecallTimerApp(regist: u16) callconv(.c) void {
     if (overflow) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = std.fmt.bufPrintZ(errorMessage[0..512], "the {s} does not fit to uint32_t", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))}) catch unreachable;
+            abi.fmtBufZ(errorMessage[0..512], "the {s} does not fit to uint32_t", .{std.mem.span(getRegisterDataTypeName(@bitCast(regist), true, false))});
             moreInfoOnErr("In function fnRecallTimerApp:", errorMessage);
         }
     } else {

@@ -556,3 +556,14 @@ pub const matrixRealElems = registers.matrixRealElems;
 pub const matrixConstRealElems = registers.matrixConstRealElems;
 pub const matrixComplexElems = registers.matrixComplexElems;
 pub const matrixConstComplexElems = registers.matrixConstComplexElems;
+
+/// Format `args` into `buf` with a trailing NUL, like C `sprintf`/`snprintf`
+/// (M24). Built on the stable `std.fmt.bufPrint` -- NOT `bufPrintZ`, which Zig
+/// 0.17-dev removed -- so the migrated call sites survive a toolchain bump and a
+/// future std.fmt change is absorbed in this single place. `buf` must fit the
+/// output (proven per call site by the format-equivalence oracle over a bounded
+/// scratch buffer), matching the C sprintf "caller guarantees the size" contract.
+pub fn fmtBufZ(buf: []u8, comptime fmt: []const u8, args: anytype) void {
+    const written = std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args) catch unreachable;
+    buf[written.len] = 0;
+}
