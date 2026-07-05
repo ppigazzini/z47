@@ -6,6 +6,7 @@
 // filled in for the caller).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const complex34_t = runtime.complex34_t;
@@ -15,9 +16,7 @@ const nim_register_line = runtime.REGISTER_X;
 
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
-inline fn complexElems(matrix: anytype) [*]complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const complexElems = abi.matrixComplexElems;
 
 fn samePtr(a: anytype, b: anytype) bool {
     return @intFromPtr(a) == @intFromPtr(b);

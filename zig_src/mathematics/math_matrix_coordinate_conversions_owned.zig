@@ -15,6 +15,7 @@
 // math_matrix_determinant), so no runtime helper is needed.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -23,13 +24,8 @@ const realContext_t = runtime.realContext_t;
 const angularMode_t = runtime.angularMode_t;
 const amRadian = runtime.amRadian;
 
-fn readElements(matrix: *const real34Matrix_t) [*]const real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-
-fn writeElements(matrix: *real34Matrix_t) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const readElements = abi.matrixConstRealElems;
+const writeElements = abi.matrixRealElems;
 
 pub export fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctxtRealDisplay: *realContext_t) callconv(.c) void {
     var x: real_t = undefined;

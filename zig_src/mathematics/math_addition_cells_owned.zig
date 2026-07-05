@@ -13,6 +13,7 @@
 // the fake-harness parity lanes, where the C oracle compiles addition.c.
 
 const std = @import("std");
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 // trimLeadingSpace (stringFuncs owner) — master fd83b4a4 strips the leading
@@ -93,11 +94,11 @@ fn significantDigitsOr34() i32 {
 }
 
 fn realElem(matrix: *runtime.real34Matrix_t, index: i32) *runtime.real34_t {
-    return &@as([*]runtime.real34_t, @ptrCast(matrix.matrixElements))[@intCast(index)];
+    return &abi.matrixRealElems(matrix)[@intCast(index)];
 }
 
 fn cplxElem(matrix: *runtime.complex34Matrix_t, index: i32) *runtime.complex34_t {
-    return &@as([*]runtime.complex34_t, @ptrCast(matrix.matrixElements))[@intCast(index)];
+    return &abi.matrixComplexElems(matrix)[@intCast(index)];
 }
 
 // const34_86400: generated constant pointer in C; same decimal value built

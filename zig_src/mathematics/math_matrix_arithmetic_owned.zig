@@ -6,6 +6,7 @@
 // until the later B clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -20,23 +21,11 @@ const nim_register_line = runtime.REGISTER_X;
 extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 
-const RealElems = [*]real34_t;
-const ConstRealElems = [*]const real34_t;
-const ComplexElems = [*]complex34_t;
-const ConstComplexElems = [*]const complex34_t;
 
-inline fn realElems(matrix: anytype) RealElems {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constRealElems(matrix: anytype) ConstRealElems {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) ComplexElems {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constComplexElems(matrix: anytype) ConstComplexElems {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
+const constRealElems = abi.matrixConstRealElems;
+const complexElems = abi.matrixComplexElems;
+const constComplexElems = abi.matrixConstComplexElems;
 
 inline fn samePtr(a: anytype, b: anytype) bool {
     return @intFromPtr(a) == @intFromPtr(b);

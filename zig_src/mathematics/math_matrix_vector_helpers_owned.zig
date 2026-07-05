@@ -9,6 +9,7 @@
 // fnToCylindrical / fnToPolar / fnVectorAngleMode / CPXexV commands).
 
 const std = @import("std");
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
@@ -73,7 +74,7 @@ pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
         runtime.copySourceRegisterToDestRegister(runtime.REGISTER_X, TEMP_REGISTER_1);
         runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);
         runtime.linkToRealMatrixRegister(TEMP_REGISTER_1, &matrix);
-        const elements: [*]const real34_t = @ptrCast(matrix.matrixElements);
+        const elements: [*]const real34_t = abi.matrixConstRealElems(matrix);
         runtime.registerReal34Data(runtime.REGISTER_X).* = elements[0];
         runtime.registerImag34Data(runtime.REGISTER_X).* = elements[1];
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
@@ -91,7 +92,7 @@ pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
         }
         runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &matrix);
-        const elements: [*]real34_t = @ptrCast(matrix.matrixElements);
+        const elements: [*]real34_t = abi.matrixRealElems(matrix);
         elements[0] = runtime.registerReal34Data(TEMP_REGISTER_1).*;
         elements[1] = runtime.registerImag34Data(TEMP_REGISTER_1).*;
         runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);

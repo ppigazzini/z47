@@ -5,6 +5,7 @@
 // rest of the engine stay in the matrix bridge until the later B clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -13,18 +14,10 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-inline fn constRealElems(matrix: anytype) [*]const real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constComplexElems(matrix: anytype) [*]const runtime.complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]runtime.complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const constRealElems = abi.matrixConstRealElems;
+const constComplexElems = abi.matrixConstComplexElems;
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
 
 fn reportRamFull(comptime function_name: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);

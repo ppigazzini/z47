@@ -6,6 +6,7 @@
 // bridge until the later B clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -29,26 +30,14 @@ extern fn decQuadFromInt32(result: *real34_t, source: i32) callconv(.c) *real34_
 
 // matrixElements is a C ([*c], allowzero) pointer; the helpers below take a
 // plain many-item pointer derived once the allocation is known non-null.
-const RealElems = [*]real34_t;
-const ConstRealElems = [*]const real34_t;
-const ComplexElems = [*]complex34_t;
-const ConstComplexElems = [*]const complex34_t;
 
-inline fn realElems(matrix: anytype) RealElems {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
 
-inline fn constRealElems(matrix: anytype) ConstRealElems {
-    return @ptrCast(matrix.matrixElements);
-}
+const constRealElems = abi.matrixConstRealElems;
 
-inline fn complexElems(matrix: anytype) ComplexElems {
-    return @ptrCast(matrix.matrixElements);
-}
+const complexElems = abi.matrixComplexElems;
 
-inline fn constComplexElems(matrix: anytype) ConstComplexElems {
-    return @ptrCast(matrix.matrixElements);
-}
+const constComplexElems = abi.matrixConstComplexElems;
 
 inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);

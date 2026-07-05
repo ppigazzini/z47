@@ -7,6 +7,7 @@
 // it and packs/unpacks the real34/complex34 matrices.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -19,18 +20,10 @@ const nim_register_line = runtime.REGISTER_X;
 // REAL_SIZE_IN_BLOCKS(75) == 15.
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
-inline fn constRealElems(matrix: anytype) [*]const real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn constComplexElems(matrix: anytype) [*]const complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const constRealElems = abi.matrixConstRealElems;
+const realElems = abi.matrixRealElems;
+const constComplexElems = abi.matrixConstComplexElems;
+const complexElems = abi.matrixComplexElems;
 
 inline fn distinctFromRes(y: anytype, x: anytype, res: anytype) bool {
     return @intFromPtr(y) != @intFromPtr(res) and @intFromPtr(x) != @intFromPtr(res);

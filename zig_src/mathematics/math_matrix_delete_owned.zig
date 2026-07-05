@@ -6,6 +6,7 @@
 // B clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -20,12 +21,8 @@ extern fn realMatrixFree(matrix: *real34Matrix_t) callconv(.c) void;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) callconv(.c) void;
 
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
 
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
     destination.* = source.*;

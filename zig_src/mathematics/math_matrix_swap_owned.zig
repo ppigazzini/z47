@@ -6,6 +6,7 @@
 // stays in the matrix bridge until the later B clusters land.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -18,12 +19,8 @@ const nim_register_line = runtime.REGISTER_X;
 extern fn copyRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void;
 extern fn copyComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void;
 
-inline fn realElems(matrix: anytype) [*]real34_t {
-    return @ptrCast(matrix.matrixElements);
-}
-inline fn complexElems(matrix: anytype) [*]complex34_t {
-    return @ptrCast(matrix.matrixElements);
-}
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
 
 inline fn samePtr(a: anytype, b: anytype) bool {
     return @intFromPtr(a) == @intFromPtr(b);
