@@ -49,6 +49,7 @@ const const_1 = consts.const_1;
 // plotstat.c is not reachable from the testSuite; verification is build/link
 // across every target plus the boundary gates.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1031,7 +1032,7 @@ pub export fn smallE(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
 // ===========================================================================
 fn checkWidthWithPrefix(itemName: [*c]const u8, numStr: [*c]const u8, max_width: u32) c_int {
     var test_buffer: [128]u8 = undefined;
-    _ = snprintf(&test_buffer, @sizeOf(@TypeOf(test_buffer)), "%s%s", itemName, numStr);
+    abi.fmtBufZ(&test_buffer, "{s}{s}", .{ std.mem.span(itemName), std.mem.span(numStr) });
     // C passes `!nocompress` (LOGICAL not -> 1), not `~nocompress` (BITWISE not
     // -> -1). The bitwise value made stringWidthC47 mis-measure every graph tick/
     // coordinate number so checkWidthWithPrefix never fit -> formatDoubleWidth fell
@@ -1447,7 +1448,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
-                _ = sprintf(errorMessage, "There is no statistical data available!");
+                abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
                 moreInfoOnError("In function graphPlotstat:", errorMessage, null, null);
             }
         }
@@ -1463,7 +1464,7 @@ fn scalePlusInfinity() void {
     displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            _ = sprintf(errorMessage, "Plus Infinity encountered!");
+            abi.fmtBufZ(errorMessage[0..512], "Plus Infinity encountered!", .{});
             moreInfoOnError("In function graphPlotstat:", errorMessage, null, null);
         }
     }
@@ -1473,7 +1474,7 @@ fn scaleMinusInfinity() void {
     displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            _ = sprintf(errorMessage, "Minus Infinity encountered!");
+            abi.fmtBufZ(errorMessage[0..512], "Minus Infinity encountered!", .{});
             moreInfoOnError("In function graphPlotstat:", errorMessage, null, null);
         }
     }

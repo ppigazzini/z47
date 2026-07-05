@@ -18,6 +18,8 @@
 // debug.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const abi = @import("abi");
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -284,7 +286,7 @@ pub export fn getRegisterTagName(regist: calcRegister_t, padWithBlanks: bool_t) 
             }
         },
         dtShortInteger => {
-            _ = sprintf(&getRegisterTagName_base, "base %2u ", getRegisterTag(regist));
+            abi.fmtBufZ(&getRegisterTagName_base, "base {d: >2} ", .{@as(u32, getRegisterTag(regist))});
             return &getRegisterTagName_base;
         },
         else => {

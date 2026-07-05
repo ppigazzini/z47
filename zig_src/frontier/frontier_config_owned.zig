@@ -1459,7 +1459,7 @@ pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
         roundingMode = @intCast(RM);
         ctxtReal34.round = roundingModeTable[RM];
     } else {
-        _ = sprintf(errorMessage, "Value %u for RM is out of range. ", @as(c_uint, RM));
+        abi.fmtBufZ(errorMessage[0..512], "Value {d} for RM is out of range. ", .{@as(u32, RM)});
         _ = strcat(errorMessage, "Must be from 0 to 6");
         displayBugScreen(errorMessage);
     }

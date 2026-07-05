@@ -12,6 +12,7 @@
 // recall.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -283,7 +284,7 @@ pub export fn fn2Rcl(regist: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "%04d", @as(c_int, regist));
+            abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn2Rcl:", errorMessage, " is not defined!");
         }
     }
@@ -303,7 +304,7 @@ pub export fn fn3Rcl(regist: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "%04d", @as(c_int, regist));
+            abi.fmtBufZ(errorMessage[0..512], "{d:0>4}", .{@as(u32, @intCast(regist))});
             moreInfoOnError("In function fn3Rcl:", errorMessage, " is not defined!");
         }
     }
@@ -561,7 +562,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "data type %s cannot be used to recall a configuration!", getRegisterDataTypeName(@intCast(regist), false, false));
+            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used to recall a configuration!", .{std.mem.span(getRegisterDataTypeName(@intCast(regist), false, false))});
             moreInfoOnError("In function fnRecallConfig:", errorMessage, null);
         }
     }
@@ -577,13 +578,13 @@ pub export fn fnRecallStack(regist: u16) callconv(.c) void {
     if (@as(i32, REGISTER_X) - @as(i32, size) <= @as(i32, regist) and @as(i32, regist) < REGISTER_X) {
         displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "Cannot execute RCLS, destination register would overlap the stack: %d", @as(c_int, regist));
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register would overlap the stack: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
         }
     } else if ((@as(u16, @intCast(REGISTER_X)) <= regist and regist < FIRST_LOCAL_REGISTER) or @as(i32, regist) + @as(i32, size) > @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "Cannot execute RCLS, destination register is out of range: %d", @as(c_int, regist));
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLS, destination register is out of range: {d}", .{@as(i32, regist)});
             moreInfoOnError("In function fnRecallStack:", errorMessage, null);
         }
     } else {
@@ -674,7 +675,7 @@ fn _fnRecallElement(stepForward: bool) void {
     if (matrixIndex == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "Cannot execute RCLEL without a matrix indexed");
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLEL without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallElement:", errorMessage, null);
         }
     } else {
@@ -693,7 +694,7 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (matrixIndex == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "Cannot execute RCLIJ without a matrix indexed");
+            abi.fmtBufZ(errorMessage[0..512], "Cannot execute RCLIJ without a matrix indexed", .{});
             moreInfoOnError("In function fnRecallIJ:", errorMessage, null);
         }
     } else {
