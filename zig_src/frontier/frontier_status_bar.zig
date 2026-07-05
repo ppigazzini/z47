@@ -1217,12 +1217,12 @@ fn showHideUsbLowBatteryImpl() callconv(.c) void {
         return;
     }
     if (getSystemFlag(FLAG_USB)) {
-        _ = frontier_screen.showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
+        _ = frontier_screen.showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
     } else {
         if (sbBatVoltage()) {
             drawBattery(@intCast(minI(get_vbat(), vbatVIntegrated)));
         } else if (getSystemFlag(FLAG_LOWBAT)) {
-            _ = frontier_screen.showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, true, false, false);
+            _ = frontier_screen.showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
         } else {
             lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
         }

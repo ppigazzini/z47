@@ -850,7 +850,7 @@ fn findMartelGlyph(font: *const martelFont24_t, charCode: u16) u16 {
 
 fn _exitKeyPressed() bool_t {
     if (comptime dmcp_build) {
-        const key: c_int = frontier_addons.C47PopKeyNoBuffer(!(DISPLAY_WAIT_FOR_RELEASE != 0)) + 1;
+        const key: c_int = frontier_addons.C47PopKeyNoBuffer(@intFromBool(!(DISPLAY_WAIT_FOR_RELEASE != 0))) + 1;
         if (key == 36 or key == 33) { // R/S or EXIT
             _ = key_pop();
             clearKeyBuffer();
