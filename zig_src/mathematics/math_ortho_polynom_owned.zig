@@ -61,7 +61,6 @@ extern fn WP34S_OrthoPoly(kind: u16, x: *const real_t, n: *const real_t, param: 
 extern var ctxtReal39: realContext_t;
 
 // Blob constants.
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 const cstR = abi.constants.cstRAligned;
 
 fn getOrthoPolyParam(regist: calcRegister_t, val: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {

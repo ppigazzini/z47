@@ -711,7 +711,6 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 // const34_* : constantPointers.h macros over the `constants` blob.
 // ---------------------------------------------------------------------------
-const constants = @extern([*]align(@alignOf(real_t)) const u8, .{ .name = "constants" });
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_1000 = constR(5380);

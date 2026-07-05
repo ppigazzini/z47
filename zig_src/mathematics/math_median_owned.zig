@@ -107,7 +107,6 @@ extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn qsort(base: ?*anyopaque, nmemb: usize, size: usize, compar: *const fn (?*const anyopaque, ?*const anyopaque) callconv(.c) c_int) void;
 
 // Blob constants.
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 const cstR = abi.constants.cstRAligned;
 
 const REAL_SIZE_IN_BYTES_75: usize = 60;

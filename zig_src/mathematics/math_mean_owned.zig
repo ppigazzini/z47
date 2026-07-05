@@ -93,7 +93,6 @@ inline fn SIGMA_1onY() *real_t {
 }
 
 // Blob constants.
-const constants = @extern([*]align(4) const u8, .{ .name = "constants" });
 const cstR = abi.constants.cstRAligned;
 
 const TransformFn = ?*const fn (operand: *const real_t, result: *real_t) callconv(.c) void;
