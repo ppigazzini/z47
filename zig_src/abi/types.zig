@@ -567,3 +567,17 @@ pub fn fmtBufZ(buf: []u8, comptime fmt: []const u8, args: anytype) void {
     const written = std.fmt.bufPrint(buf[0 .. buf.len - 1], fmt, args) catch unreachable;
     buf[written.len] = 0;
 }
+
+/// Like fmtBufZ but for a raw C `[*c]u8` destination whose backing size is not
+/// known at the call site (a caller-provided display/scratch buffer, or a moving
+/// write pointer like the save-file writer). Formats into a local staging buffer
+/// and copies exactly content+NUL to `dst` -- byte-identical to what
+/// `sprintf(dst, fmt, args)` would write, so it honours the same "caller
+/// guarantees the buffer is big enough" contract as the C it replaces. The 512B
+/// stage covers every display/label/save-line these sites produce (asserted).
+pub fn fmtCStr(dst: [*c]u8, comptime fmt: []const u8, args: anytype) void {
+    var stage: [512]u8 = undefined;
+    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    @memcpy(dst[0..s.len], s);
+    dst[s.len] = 0;
+}

@@ -2841,15 +2841,15 @@ fn stats_param_display(name: [*c]const u8, reg: calcRegister_t, prefix: [*c]u8, 
     clearRegisterLine(rowReg, true, true);
 
     if (reg == RESERVED_VARIABLE_UEST) {
-        _ = sprintf(prefix, "Upper =");
+        abi.fmtCStr(prefix, "Upper =", .{});
         _ = strcpy(&regS, name);
     } else if (reg == RESERVED_VARIABLE_LEST) {
-        _ = sprintf(prefix, "Lower =");
+        abi.fmtCStr(prefix, "Lower =", .{});
         _ = strcpy(&regS, name);
     } else {
         _ = strcpy(&regS, "Reg_");
         regS[3] = letteredRegisterName(reg);
-        _ = sprintf(prefix, "= %s =", name);
+        abi.fmtCStr(prefix, "= {s} =", .{ @as([*:0]const u8, name) });
     }
     _ = showString(&regS, &standardFont, 19, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1);
     prefixWidth = @intCast(showString(prefix, &standardFont, 19 + (17 + 28), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1));
@@ -3018,11 +3018,11 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
     }
 
     if (regist < REGISTER_X) {
-        _ = sprintf(prefix, "%sR%02u" ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, funcNameOffset_str(), @as(c_uint, @intCast(regist)), endChar);
+        abi.fmtCStr(prefix, "{s}R{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(c_uint, @intCast(regist)), @as([*:0]const u8, endChar) });
     } else if (regist <= LAST_SPARE_REGISTER) {
-        _ = sprintf(prefix, "%s%c" ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, funcNameOffset_str(), @as(c_int, letteredRegisterName(regist)), endChar);
+        abi.fmtCStr(prefix, "{s}{c}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(u8, @intCast(@as(c_int, letteredRegisterName(regist)))), @as([*:0]const u8, endChar) });
     } else if (regist >= FIRST_LOCAL_REGISTER and regist <= LAST_LOCAL_REGISTER) {
-        _ = sprintf(prefix, "%sR.%02u" ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, funcNameOffset_str(), @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), endChar);
+        abi.fmtCStr(prefix, "{s}R.{d:0>2}" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, funcNameOffset_str()), @as(c_uint, @intCast(regist - FIRST_LOCAL_REGISTER)), @as([*:0]const u8, endChar) });
     } else if (FIRST_NAMED_VARIABLE <= regist and regist <= LAST_NAMED_VARIABLE) {
         if (isShiftOffset()) {
             _ = strcpy(prefix, "  ");
@@ -3032,7 +3032,7 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
         const nv = &allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)];
         const off2: usize = if (isShiftOffset()) 4 else 2;
         _ = memcpy(prefix + off2, &nv.variableName[1], nv.variableName[0]);
-        _ = sprintf(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, endChar);
+        abi.fmtCStr(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
     } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE) {
         if (isShiftOffset()) {
             _ = strcpy(prefix, "  ");
@@ -3042,9 +3042,9 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
         const rv = &allReservedVariables[@intCast(regist - FIRST_RESERVED_VARIABLE)];
         const off2: usize = if (isShiftOffset()) 4 else 2;
         _ = memcpy(prefix + off2, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
-        _ = sprintf(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, endChar);
+        abi.fmtCStr(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
     } else {
-        _ = sprintf(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "%s" ++ STD_SPACE_4_PER_EM, endChar);
+        abi.fmtCStr(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
     }
     prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
 }
@@ -3171,11 +3171,11 @@ fn elecTI(regist: i16, prefix: [*c]u8, prefixWidth: *i16) void {
 fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
     const civ: u16 = currentInputVariable & 0x3fff;
     if (civ < REGISTER_X) {
-        _ = sprintf(prefix, " R%02u?", @as(c_uint, civ));
+        abi.fmtCStr(prefix, " R{d:0>2}?", .{ @as(c_uint, civ) });
     } else if (civ <= LAST_SPARE_REGISTER) {
-        _ = sprintf(prefix, " %c?", @as(c_int, letteredRegisterName(@intCast(civ))));
+        abi.fmtCStr(prefix, " {c}?", .{ @as(u8, @intCast(@as(c_int, letteredRegisterName(@intCast(civ))))) });
     } else if ((civ >= FIRST_LOCAL_REGISTER) and civ <= LAST_LOCAL_REGISTER) {
-        _ = sprintf(prefix, " R.%02u?", @as(c_uint, civ - FIRST_LOCAL_REGISTER));
+        abi.fmtCStr(prefix, " R.{d:0>2}?", .{ @as(c_uint, civ - FIRST_LOCAL_REGISTER) });
     } else if (FIRST_NAMED_VARIABLE <= civ and civ <= LAST_NAMED_VARIABLE) {
         const nv = &allNamedVariables[@intCast(civ - FIRST_NAMED_VARIABLE)];
         _ = memcpy(prefix, &nv.variableName[1], nv.variableName[0]);
@@ -3185,7 +3185,7 @@ fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
         _ = memcpy(prefix, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
         _ = strcpy(prefix + rv.reservedVariableName[0], "?");
     } else {
-        _ = sprintf(prefix, "??");
+        abi.fmtCStr(prefix, "??", .{});
     }
     prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
 }
@@ -3382,16 +3382,16 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
             var tmp: [16]u8 = undefined;
             nameRegis(@intCast(matrixIndex), &tmp);
             if (regist == REGISTER_X and temporaryInformation == TI_MIJEQ) {
-                _ = sprintf(prefix, STD_MU ++ "[I" ++ STD_SUB_r ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "]=%s[%u" ++ STD_SPACE_3_PER_EM ++ "%u]%s", &tmp, @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))), if (temporaryInformation == TI_MIJEQ) @as([*c]const u8, "=") else @as([*c]const u8, ""));
+                abi.fmtCStr(prefix, STD_MU ++ "[I" ++ STD_SUB_r ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "]={s}[{d}" ++ STD_SPACE_3_PER_EM ++ "{d}]{s}", .{ std.mem.sliceTo(&tmp, 0), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))), @as([*:0]const u8, if (temporaryInformation == TI_MIJEQ) @as([*c]const u8, "=") else @as([*c]const u8, "")) });
             } else if (regist == REGISTER_X and temporaryInformation == TI_MIJ) {
-                _ = sprintf(prefix, STD_MU ++ "[I" ++ STD_SUB_r ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "]=%s[%u" ++ STD_SPACE_3_PER_EM ++ "%u]", &tmp, @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))));
+                abi.fmtCStr(prefix, STD_MU ++ "[I" ++ STD_SUB_r ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "]={s}[{d}" ++ STD_SPACE_3_PER_EM ++ "{d}]", .{ std.mem.sliceTo(&tmp, 0), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))) });
             } else if (regist == REGISTER_X and ((iii != 0 and temporaryInformation == TI_I) or (jji != 0 and temporaryInformation == TI_J))) {
-                _ = sprintf(prefix, "%s[I" ++ STD_SUB_r ++ "=%u" ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "=%u]%s", &tmp, @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))), if (temporaryInformation == TI_I) @as([*c]const u8, ": I" ++ STD_SUB_r ++ "=") else @as([*c]const u8, ": J" ++ STD_SUB_c ++ "="));
+                abi.fmtCStr(prefix, "{s}[I" ++ STD_SUB_r ++ "={d}" ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "={d}]{s}", .{ std.mem.sliceTo(&tmp, 0), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))), @as([*:0]const u8, if (temporaryInformation == TI_I) @as([*c]const u8, ": I" ++ STD_SUB_r ++ "=") else @as([*c]const u8, ": J" ++ STD_SUB_c ++ "=")) });
             } else if (iii != 0 and jji != 0) {
                 if (regist == REGISTER_Y) {
-                    _ = sprintf(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "%s:I" ++ STD_SUB_r ++ "=", &tmp);
+                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:I" ++ STD_SUB_r ++ "=", .{ std.mem.sliceTo(&tmp, 0) });
                 } else if (regist == REGISTER_X) {
-                    _ = sprintf(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "%s:J" ++ STD_SUB_c ++ "=", &tmp);
+                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:J" ++ STD_SUB_c ++ "=", .{ std.mem.sliceTo(&tmp, 0) });
                 }
             }
             prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
@@ -3428,85 +3428,85 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
     if (temporaryInformation == TI_VECTORCOMP_3DSPH and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         if (getSystemFlag(FLAG_3DPHYS) != 0) {
             switch (regist) {
-                REGISTER_Z => _ = snprintf(prefix, 50, "[%s  ] =", STD_rho),
-                REGISTER_Y => _ = snprintf(prefix, 50, "[ %s%s ] =", STD_phi_m, _e2()),
-                REGISTER_X => _ = snprintf(prefix, 50, "[  %s%s%s] =", STD_theta_m, _e0(), _e1()),
+                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ STD_rho }),
+                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s} ] =", .{ STD_phi_m, @as([*:0]const u8, _e2()) }),
+                REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}{s}] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
                 else => {},
             }
         } else {
             switch (regist) {
-                REGISTER_Z => _ = snprintf(prefix, 50, "[%s  ] =", STD_rho),
-                REGISTER_Y => _ = snprintf(prefix, 50, "[ %s%s%s ] =", STD_theta_m, _e0(), _e1()),
-                REGISTER_X => _ = snprintf(prefix, 50, "[  %s%s] =", STD_phi_m, _e2()),
+                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ STD_rho }),
+                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
+                REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}] =", .{ STD_phi_m, @as([*:0]const u8, _e2()) }),
                 else => {},
             }
         }
     } else if (temporaryInformation == TI_VECTORCOMP_3DCYL and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         switch (regist) {
-            REGISTER_Z => _ = snprintf(prefix, 50, "[r  ] ="),
-            REGISTER_Y => _ = snprintf(prefix, 50, "[ %s%s%s ] =", STD_theta_m, _e0(), _e1()),
-            REGISTER_X => _ = snprintf(prefix, 50, "[  %s] =", e2()),
+            REGISTER_Z => abi.fmtCStr(prefix, "[r  ] =", .{}),
+            REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
+            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{ @as([*:0]const u8, e2()) }),
             else => {},
         }
     } else if (temporaryInformation == TI_VECTORCOMP_3DRECT and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         switch (regist) {
-            REGISTER_Z => _ = snprintf(prefix, 50, "[%s  ] =", e0()),
-            REGISTER_Y => _ = snprintf(prefix, 50, "[ %s ] =", e1()),
-            REGISTER_X => _ = snprintf(prefix, 50, "[  %s] =", e2()),
+            REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ @as([*:0]const u8, e0()) }),
+            REGISTER_Y => abi.fmtCStr(prefix, "[ {s} ] =", .{ @as([*:0]const u8, e1()) }),
+            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{ @as([*:0]const u8, e2()) }),
             else => {},
         }
     } else if (temporaryInformation == TI_VECTORCOMP_2DPOLAR and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Y) {
         switch (regist) {
-            REGISTER_Y => _ = snprintf(prefix, 50, "[r ] ="),
-            REGISTER_X => _ = snprintf(prefix, 50, "[ %s%s%s] =", STD_theta_m, _e0(), _e1()),
+            REGISTER_Y => abi.fmtCStr(prefix, "[r ] =", .{}),
+            REGISTER_X => abi.fmtCStr(prefix, "[ {s}{s}{s}] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
             else => {},
         }
     } else if (temporaryInformation == TI_VECTORCOMP_2DRECT and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Y) {
         switch (regist) {
-            REGISTER_Y => _ = snprintf(prefix, 50, "[%s ] =", e0()),
-            REGISTER_X => _ = snprintf(prefix, 50, "[ %s] =", e1()),
+            REGISTER_Y => abi.fmtCStr(prefix, "[{s} ] =", .{ @as([*:0]const u8, e0()) }),
+            REGISTER_X => abi.fmtCStr(prefix, "[ {s}] =", .{ @as([*:0]const u8, e1()) }),
             else => {},
         }
     } else if (isRegisterMatrix3dVector(regist) != 0) {
         if (getVectorRegisterPolarMode(regist) == amPolarSPH) {
             if (getSystemFlag(FLAG_3DPHYS) != 0) {
                 if (shrt != 0) {
-                    _ = snprintf(prefix, 50, "%s%s%s", STD_rho, STD_phi_m, STD_theta_m);
+                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ STD_rho, STD_phi_m, STD_theta_m });
                 } else {
-                    _ = snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" ++ STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());
+                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_P, .{ STD_rho, interspace, STD_phi_m, @as([*:0]const u8, _e2()), interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) });
                 }
             } else {
                 if (shrt != 0) {
-                    _ = snprintf(prefix, 50, "%s%s%s", STD_rho, STD_theta_m, STD_phi_m);
+                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ STD_rho, STD_theta_m, STD_phi_m });
                 } else {
-                    _ = snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" ++ STD_SUB_M, STD_rho, interspace, STD_theta_m, _e0(), _e1(), interspace, STD_phi_m, _e2());
+                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_M, .{ STD_rho, interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()), interspace, STD_phi_m, @as([*:0]const u8, _e2()) });
                 }
             }
         } else if (getVectorRegisterPolarMode(regist) == amPolarCYL) {
             if (shrt != 0) {
-                _ = snprintf(prefix, SCREEN_WIDTH, "%s%s%s", "r", STD_theta_m, e2());
+                abi.fmtCStr(prefix, "{s}{s}{s}", .{ "r", STD_theta_m, @as([*:0]const u8, e2()) });
             } else {
-                _ = snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());
+                abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}]", .{ "r", interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()), interspace, @as([*:0]const u8, e2()) });
             }
         } else {
             if (shrt != 0) {
-                _ = snprintf(prefix, SCREEN_WIDTH, "%s%s%s", e0(), e1(), e2());
+                abi.fmtCStr(prefix, "{s}{s}{s}", .{ @as([*:0]const u8, e0()), @as([*:0]const u8, e1()), @as([*:0]const u8, e2()) });
             } else {
-                _ = snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", e0(), interspace, e1(), interspace, e2());
+                abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}]", .{ @as([*:0]const u8, e0()), interspace, @as([*:0]const u8, e1()), interspace, @as([*:0]const u8, e2()) });
             }
         }
     } else if (isRegisterMatrix2dVector(regist) != 0) {
         if (getVectorRegisterPolarMode(regist) != amPolar) {
             if (shrt != 0) {
-                _ = snprintf(prefix, SCREEN_WIDTH, "%s%s", e0(), e1());
+                abi.fmtCStr(prefix, "{s}{s}", .{ @as([*:0]const u8, e0()), @as([*:0]const u8, e1()) });
             } else {
-                _ = snprintf(prefix, SCREEN_WIDTH, "[%s%s%s]", e0(), interspace, e1());
+                abi.fmtCStr(prefix, "[{s}{s}{s}]", .{ @as([*:0]const u8, e0()), interspace, @as([*:0]const u8, e1()) });
             }
         } else {
             if (shrt != 0) {
-                _ = snprintf(prefix, SCREEN_WIDTH, "%s%s", "r", STD_theta_m);
+                abi.fmtCStr(prefix, "{s}{s}", .{ "r", STD_theta_m });
             } else {
-                _ = snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1());
+                abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}]", .{ "r", interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) });
             }
         }
     } else {
@@ -3582,7 +3582,7 @@ const noLine: bool_t = 0;
 fn _displaySigmaPlus(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, doLine: bool_t) void {
     const w: i32 = realToInt32C47(SIGMA_N.ptr(), null);
     if (regist == REGISTER_X) {
-        _ = sprintf(prefix, "%03d data point", @as(c_int, w));
+        abi.fmtCStr(prefix, "{d:0>3} data point", .{ @as(u32, @intCast(@as(c_int, w))) });
         if (w > 1) {
             _ = stringCopy(prefix + @as(usize, @intCast(stringByteLength(prefix))), "s");
         }
@@ -3655,7 +3655,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
                 _ = strcat(&typeStr, dRT_angleSuffix[@intCast(angSub - 1)]);
             }
         }
-        _ = sprintf(prefix, "%s", &typeStr);
+        abi.fmtCStr(prefix, "{s}", .{ std.mem.sliceTo(&typeStr, 0) });
         prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
     }
 }
@@ -4869,9 +4869,9 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_STATISTIC_LR) {
         if (regist == REGISTER_X) {
             if (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING) {
-                _ = sprintf(prefix, "L.R. selected to OrthoF");
+                abi.fmtCStr(prefix, "L.R. selected to OrthoF", .{});
             } else {
-                _ = sprintf(prefix, "L.R. selected to %03u", @as(c_uint, lrSelection & 0x01FF));
+                abi.fmtCStr(prefix, "L.R. selected to {d:0>3}", .{ @as(c_uint, lrSelection & 0x01FF) });
             }
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
@@ -4881,37 +4881,37 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _displaySolverInput(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_ELLIPSE_K) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "eccentricity e=k=" ++ STD_SQUARE_ROOT ++ "m" ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, "eccentricity e=k=" ++ STD_SQUARE_ROOT ++ "m" ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_ELLIPSE_M) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "modulus m=k" ++ STD_SUP_2 ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, "modulus m=k" ++ STD_SUP_2 ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_ELLIPSE_Theta) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "eccentricity angle " ++ STD_theta_m ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, "eccentricity angle " ++ STD_theta_m ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_ACC) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "ACC" ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, "ACC" ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_ULIM) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, STD_UP_ARROW ++ " Upper limit" ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, STD_UP_ARROW ++ " Upper limit" ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_LLIM) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, STD_DOWN_ARROW ++ " Lower limit" ++ STD_SPACE_FIGURE ++ ":");
+            abi.fmtCStr(prefix, STD_DOWN_ARROW ++ " Lower limit" ++ STD_SPACE_FIGURE ++ ":", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_INTEGRAL) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, STD_INTEGRAL ++ STD_ALMOST_EQUAL);
+            abi.fmtCStr(prefix, STD_INTEGRAL ++ STD_ALMOST_EQUAL, .{});
             prefixWidth_p.* = stringWidth(prefix, &numericFont, 1, 1) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "Accuracy " ++ STD_ALMOST_EQUAL);
@@ -4919,17 +4919,17 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         }
     } else if (temporaryInformation == TI_FUNCTION) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "f =");
+            abi.fmtCStr(prefix, "f =", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_1ST_DERIVATIVE) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "%sf'" ++ STD_ALMOST_EQUAL, errorMessage);
+            abi.fmtCStr(prefix, "{s}f'" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_2ND_DERIVATIVE) {
         if (regist == REGISTER_X) {
-            _ = sprintf(prefix, "%sf\"" ++ STD_ALMOST_EQUAL, errorMessage);
+            abi.fmtCStr(prefix, "{s}f\"" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
@@ -4967,11 +4967,11 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _ = strcpy(prefix, "Balance remaining =");
         prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_PRN and regist == REGISTER_X) {
-        _ = sprintf(prefix, "%s", STD_SIGMA);
+        abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
         _ = strcat(prefix, " of principal to P2 =");
         prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_INT and regist == REGISTER_X) {
-        _ = sprintf(prefix, "%s", STD_SIGMA);
+        abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
         _ = strcat(prefix, " of interest to P2 =");
         prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
@@ -5213,13 +5213,13 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
     if (regist == REGISTER_X and (temporaryInformation == TI_DATA_LOSS or temporaryInformation == TI_DATA_NEG_OVRFL)) {
         shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
         if (temporaryInformation == TI_DATA_LOSS) {
-            _ = sprintf(prefix, "Ovrfl>%ubits:", @as(c_uint, shortIntegerWordSize));
+            abi.fmtCStr(prefix, "Ovrfl>{d}bits:", .{ @as(c_uint, shortIntegerWordSize) });
         } else if (temporaryInformation == TI_DATA_NEG_OVRFL) {
-            _ = sprintf(prefix, "Ovrfl<0:");
+            abi.fmtCStr(prefix, "Ovrfl<0:", .{});
         }
         prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         if (prefixWidth_p.* + stringWidth(tmpString, fontForShortInteger.?, 1, 1) + 1 > SCREEN_WIDTH) {
-            _ = sprintf(prefix, "OF");
+            abi.fmtCStr(prefix, "OF", .{});
             prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
