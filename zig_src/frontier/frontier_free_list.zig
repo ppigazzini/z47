@@ -15,6 +15,8 @@
 const std = @import("std");
 const abi = @import("abi");
 const build_options = @import("frontier_build_options");
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
 
 const dmcp_build: bool = build_options.dmcp_build;
 const old_hw: bool = build_options.old_hw;
@@ -31,8 +33,7 @@ const freeMemoryRegion_t = abi.FreeMemoryRegion;
 
 extern var ram: [*c]u32;
 extern var numberOfFreeMemoryRegions: i32;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn backToSystem(confirmation: u16) void;
+
 
 inline fn freeRegions() [*c]freeMemoryRegion_t {
     if (comptime free_regions_is_array) {
@@ -89,7 +90,7 @@ fn untrackAllocation(c47RamPtr: u16) ?u16 {
         if (ar[idx].blockAddress == c47RamPtr) {
             const recorded = ar[idx].sizeInBlocks;
             if (allocated.numberOfAllocatedMemoryRegions - region - 1 != 0) {
-                _ = xcopy(@ptrCast(ar + idx), @ptrCast(ar + idx + 1), regionBytes(allocated.numberOfAllocatedMemoryRegions - region - 1));
+                _ = frontier_char_string.xcopy(@ptrCast(ar + idx), @ptrCast(ar + idx + 1), regionBytes(allocated.numberOfAllocatedMemoryRegions - region - 1));
             }
             allocated.numberOfAllocatedMemoryRegions -= 1;
             return recorded;
@@ -115,7 +116,7 @@ pub export fn freeListAlloc(sizeInBlocksArg: usize) callconv(.c) ?*anyopaque {
         const idx: usize = @intCast(i);
         if (fr[idx].sizeInBlocks == sizeInBlocks) {
             const pcMemPtr = toPcMemPtr(fr[idx].blockAddress);
-            _ = xcopy(@ptrCast(fr + idx), @ptrCast(fr + idx + 1), regionBytes(numberOfFreeMemoryRegions - i - 1));
+            _ = frontier_char_string.xcopy(@ptrCast(fr + idx), @ptrCast(fr + idx + 1), regionBytes(numberOfFreeMemoryRegions - i - 1));
             numberOfFreeMemoryRegions -= 1;
             if (comptime track_allocations) trackAllocation(pcMemPtr, sizeInBlocks);
             return pcMemPtr;
@@ -155,7 +156,7 @@ pub export fn freeListRealloc(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, 
 
     const newMemPtr = freeListAlloc(newSizeInBlocks);
     if (newMemPtr != null) {
-        _ = xcopy(newMemPtr, pcMemPtr, toBytes(@intCast(@min(newSizeInBlocks, oldSizeInBlocks))));
+        _ = frontier_char_string.xcopy(newMemPtr, pcMemPtr, toBytes(@intCast(@min(newSizeInBlocks, oldSizeInBlocks))));
         freeListFree(pcMemPtr, oldSizeInBlocks);
         return newMemPtr;
     }
@@ -258,7 +259,7 @@ pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callco
             fr[idx].sizeInBlocks += @as(u16, @intCast(sizeInBlocks));
             if (done) {
                 const jdx: usize = @intCast(j);
-                _ = xcopy(@ptrCast(fr + jdx), @ptrCast(fr + jdx + 1), regionBytes(numberOfFreeMemoryRegions - j - 1));
+                _ = frontier_char_string.xcopy(@ptrCast(fr + jdx), @ptrCast(fr + jdx + 1), regionBytes(numberOfFreeMemoryRegions - j - 1));
                 numberOfFreeMemoryRegions -= 1;
             } else {
                 done = true;
@@ -279,7 +280,7 @@ fn insertFreeBlock(c47RamPtr: u16, sizeInBlocks: u16) void {
 
     if (numberOfFreeMemoryRegions == MAX_FREE_REGIONS) {
         if (comptime dmcp_build) {
-            backToSystem(NOPARAM);
+            frontier_config.backToSystem(NOPARAM);
         } else {
             std.debug.print("\n* The maximum number of free memory blocks has been exceeded! *\n", .{});
             std.process.exit(254); // exit(-2) truncated to a process exit code
@@ -291,7 +292,7 @@ fn insertFreeBlock(c47RamPtr: u16, sizeInBlocks: u16) void {
 
     if (i < numberOfFreeMemoryRegions) {
         const idx: usize = @intCast(i);
-        _ = xcopy(@ptrCast(fr + idx + 1), @ptrCast(fr + idx), regionBytes(numberOfFreeMemoryRegions - i));
+        _ = frontier_char_string.xcopy(@ptrCast(fr + idx + 1), @ptrCast(fr + idx), regionBytes(numberOfFreeMemoryRegions - i));
     }
 
     const idx: usize = @intCast(i);

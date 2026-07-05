@@ -23,6 +23,9 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const real34_t = abi.Real34;
@@ -59,16 +62,16 @@ extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterDataPointer(reg: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(reg: calcRegister_t) u32;
 extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
-extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+
+
 const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
-extern fn realSetZero(value: *real_t) void;
-extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realSetMinusInfinity(value: *real_t) void;
+
+
+
+
 extern fn decContextClearStatus(ctx: *realContext_t, mask: u32) *realContext_t;
 
 extern fn decNumberMultiply(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -133,7 +136,7 @@ fn cannotConvertError(reg: calcRegister_t, where: [*:0]const u8, hint: [*:0]cons
     // The upstream EXTRA_INFO path also sprintf()s a getRegisterDataTypeName()
     // line; that host-only console hint is dropped here (the testSuite checks
     // computed values, not the hint text), matching the conversionUnits owner.
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
     moreInfoOnError(where, hint);
 }
 
@@ -142,7 +145,7 @@ pub export fn fnCvtToCurrentAngularMode(from_angular_mode: u16) callconv(.c) voi
     const from: angularMode_t = @intCast(from_angular_mode);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
             convertAngle34FromTo(reg34(REGISTER_X), from, currentAngularMode);
             setRegisterAngularMode(REGISTER_X, currentAngularMode);
         },
@@ -159,7 +162,7 @@ pub export fn fnCvtFromCurrentAngularModeRegister(regist1: calcRegister_t, to_an
     const to: angularMode_t = @intCast(to_angular_mode);
     switch (getRegisterDataType(regist1)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34Register(regist1, regist1);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(regist1, regist1);
             convertAngle34FromTo(reg34(regist1), currentAngularMode, to);
             setRegisterAngularMode(regist1, to);
         },
@@ -272,11 +275,11 @@ pub export fn checkDms34(angle34_dms: *real34_t) callconv(.c) void {
     const sign: i16 = if (realIsNegative(&angle_dms)) -1 else 1;
     realSetPositiveSign(&angle_dms);
 
-    realToIntegralValue(&angle_dms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle_dms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
     realSubOp(&angle_dms, &degrees, &angle_dms, &ctxtReal39);
 
     angle_dms.exponent += 2; // * 100
-    realToIntegralValue(&angle_dms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle_dms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
     realSubOp(&angle_dms, &minutes, &angle_dms, &ctxtReal39);
 
     realMul(&angle_dms, consts.c7532(), &seconds, &ctxtReal39);
@@ -316,14 +319,14 @@ pub export fn getInfiniteComplexAngle(x: *real_t, y: *real_t) callconv(.c) u32 {
 
 pub export fn setInfiniteComplexAngle(angle: u32, x: *real_t, y: *real_t) callconv(.c) void {
     switch (angle) {
-        3, 4, 5 => realSetMinusInfinity(x),
-        2, 6 => realSetZero(x),
-        else => realSetPlusInfinity(x),
+        3, 4, 5 => frontier_real_type.realSetMinusInfinity(x),
+        2, 6 => frontier_real_type.realSetZero(x),
+        else => frontier_real_type.realSetPlusInfinity(x),
     }
     switch (angle) {
-        5, 6, 7 => realSetMinusInfinity(y),
-        0, 4 => realSetZero(y),
-        else => realSetPlusInfinity(y),
+        5, 6, 7 => frontier_real_type.realSetMinusInfinity(y),
+        0, 4 => frontier_real_type.realSetZero(y),
+        else => frontier_real_type.realSetPlusInfinity(y),
     }
 }
 
@@ -337,12 +340,12 @@ pub export fn real34FromDmsToDeg(angle_dms: *const real34_t, angle_dec: *real34_
     realSetPositiveSign(&angle);
 
     _ = decContextClearStatus(&ctxtReal34, DEC_Invalid_operation);
-    realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &degrees, &angle, &ctxtReal39);
     angle.exponent += 2; // * 100
 
-    realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &minutes, &angle, &ctxtReal39);
     realMul(&angle, consts.c7532(), &seconds, &ctxtReal39);
@@ -377,12 +380,12 @@ pub export fn real34FromDegToDms(angle_dec: *const real34_t, angle_dms: *real34_
     real34ToReal(angle_dec, &angle);
     realSetPositiveSign(&angle);
 
-    realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &degrees, &angle, &ctxtReal39);
     realMul(&angle, consts.c5296(), &angle, &ctxtReal39);
 
-    realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     realSubOp(&angle, &minutes, &angle, &ctxtReal39);
     realMul(&angle, consts.c5296(), &seconds, &ctxtReal39);
