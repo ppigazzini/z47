@@ -172,11 +172,11 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
             tmp_b[0] = letteredRegisterName(ix);
             _ = strcat(&tmp_b, CSV_TAB);
         } else if (FIRST_GLOBAL_REGISTER <= ix and ix < REGISTER_X) {
-            _ = sprintf(&tmp_b, "%sR%02d%s%s", CSV_STR, @as(c_int, ix), CSV_STR, CSV_TAB);
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "R{d:0>2}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(ix))});
         } else if (FIRST_LOCAL_REGISTER <= ix and ix <= LAST_LOCAL_REGISTER) {
-            _ = sprintf(&tmp_b, "%sR.%03d%s%s", CSV_STR, @as(c_int, ix) - 100, CSV_STR, CSV_TAB);
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "R.{d:0>3}" ++ CSV_STR ++ CSV_TAB, .{@as(u32, @intCast(@as(c_int, ix) - 100))});
         } else if (FIRST_NAMED_VARIABLE <= ix and ix <= LAST_NAMED_VARIABLE) {
-            _ = sprintf(&tmp_b, "%sN%03d%s%s%s%s%s%s", CSV_STR, @as(c_int, ix) - 100, CSV_STR, CSV_TAB, CSV_STR, @as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1, CSV_STR, CSV_TAB);
+            abi.fmtBufZ(&tmp_b, CSV_STR ++ "N{d:0>3}" ++ CSV_STR ++ CSV_TAB ++ CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{ @as(u32, @intCast(@as(c_int, ix) - 100)), std.mem.span(@as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1) });
         }
 
         var tmpString2: [TMP_STR_LENGTH]u8 = undefined;
