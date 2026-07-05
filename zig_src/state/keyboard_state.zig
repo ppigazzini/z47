@@ -7,8 +7,8 @@ const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 // that the module and its per-model build option compile on every lane ahead of
 // the wiring slice that renames the C copies and exports the Zig ones.
 comptime {
-    _ = @import("keyboard_state_ringbuffer_owned.zig");
-    _ = @import("keyboard_state_dmcp_owned.zig");
+    _ = @import("keyboard_state_ringbuffer.zig");
+    _ = @import("keyboard_state_dmcp.zig");
 }
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;

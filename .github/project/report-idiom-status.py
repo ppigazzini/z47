@@ -56,7 +56,10 @@ def scan(repo_root: Path) -> dict:
             n = (1 if matches else 0) if mode == "file" else len(matches)
             row[label] = n
             totals[label] += n
-        if path.name.endswith("_owned.zig"):
+        # "Owner" = an idiomatic core file. The historical `_owned` role suffix was
+        # dropped in M25 (project structure), so count every zig_src file that is
+        # not an L3 C-ABI runtime/shared shim.
+        if not path.name.endswith(("_runtime.zig", "_shared.zig")):
             owner_count += 1
         if any(row.values()):
             per_owner[rel] = row

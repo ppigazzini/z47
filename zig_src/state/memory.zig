@@ -1,8 +1,8 @@
-const block_availability_owned = @import("memory_block_availability_owned.zig");
-const c47_alloc_owned = @import("memory_c47_alloc_owned.zig");
-const debug_owned = @import("memory_debug_owned.zig");
-const gmp_alloc_owned = @import("memory_gmp_alloc_owned.zig");
-const resize_program_owned = @import("memory_resize_program_owned.zig");
+const block_availability_owned = @import("memory_block_availability.zig");
+const c47_alloc_owned = @import("memory_c47_alloc.zig");
+const debug_owned = @import("memory_debug.zig");
+const gmp_alloc_owned = @import("memory_gmp_alloc.zig");
+const resize_program_owned = @import("memory_resize_program.zig");
 const runtime = @import("memory_runtime.zig");
 
 fn toBlocks(byte_count: usize) usize {

@@ -6,7 +6,7 @@
 // referenced only by the `distribution_parity` build step; the product build
 // reaches the owners through frontier.zig and never imports this aggregator.
 
-pub const exponential = @import("frontier_exponential_owned.zig");
-pub const pareto = @import("frontier_pareto_owned.zig");
-pub const uniform = @import("frontier_uniform_owned.zig");
-pub const gev = @import("frontier_gev_owned.zig");
+pub const exponential = @import("frontier_exponential.zig");
+pub const pareto = @import("frontier_pareto.zig");
+pub const uniform = @import("frontier_uniform.zig");
+pub const gev = @import("frontier_gev.zig");

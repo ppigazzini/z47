@@ -651,7 +651,7 @@ pub extern fn isAlphaSubmenu(n: u8) bool_t;
 // are reconstructed lane-aware here so handlers that reach clearScreen / the
 // telltale (keyExit, keyBackspace) can run on the DMCP lanes. This mirrors the
 // established, build/link-verified frontier ROM-trampoline pattern (cf.
-// frontier_status_bar_owned.zig, same +60 offset and LIBRARY_FN_BASE).
+// frontier_status_bar.zig, same +60 offset and LIBRARY_FN_BASE).
 const LIBRARY_FN_BASE: usize = if (builtin.target.cpu.model == &std.Target.arm.cpu.cortex_m4) 0x08000201 else 0x08000301;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = if (!is_dmcp_build) @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" }) else {};

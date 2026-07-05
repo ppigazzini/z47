@@ -1,4 +1,4 @@
-const gtk_io_owned = @import("gtk_io_owned.zig");
+const gtk_io_owned = @import("gtk_io.zig");
 
 const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 
