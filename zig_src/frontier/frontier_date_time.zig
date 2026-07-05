@@ -42,6 +42,10 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -185,32 +189,31 @@ extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
+
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn saveLastX() bool;
 extern fn liftStack() void;
 extern fn undo() void;
 extern fn fnSwapXY(p: u16) void;
 extern fn fnDropY(p: u16) void;
-extern fn addItemToNimBuffer(item: i16) void;
+
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn timeToReal34(hms: u16) void;
+
 extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn clearSystemFlag(flag: c_uint) void;
 
 // Register conversions provided (exported) by the registerValueConversions owner.
-extern fn convertReal34RegisterToDateRegister(source: calcRegister_t, destination: calcRegister_t, handleYY: bool) void;
-extern fn convertReal34ToLongIntegerRegister(real34: *align(1) const real34_t, dest: calcRegister_t, roundingMode: c_int) void;
-extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destination: *real34_t) void;
-extern fn convertLongIntegerRegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertReal34RegisterToTimeRegister(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertTimeRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
+
+
+
+
+
+
+
+
+
 
 // real34 comparison functions (linkable real externs).
 extern fn real34CompareEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
@@ -407,7 +410,7 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
         dtReal34 => {
             if (getRegisterAngularMode(regist) == amNone) {
                 reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNoneU); // make sure TEMP_REGISTER_1 is not of dtDate type here
-                convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, false); //no !YYsystem needed here
+                frontier_register_value_conversions.convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, false); //no !YYsystem needed here
                 if (getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
                     return false; // invalid date
                 }
@@ -415,12 +418,12 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
                 return true;
             }
             // fallthrough
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function checkDateArgument:", "data type cannot be converted to date!");
             return false;
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function checkDateArgument:", "data type cannot be converted to date!");
             return false;
         },
@@ -680,7 +683,7 @@ pub export fn getJulianDayOfWeek(regist: calcRegister_t) linksection(code_sectio
 
 pub export fn checkDateRange(date34: *const real34_t) linksection(code_section) callconv(.c) void {
     if (real34CompareGreaterEqual(date34, const34_maxDate) or real34IsNegative(date34)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function checkDateRange:", "value of date type is too large");
         return;
     }
@@ -731,7 +734,7 @@ pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) 
 
     real34CopyAbs(time34, &t);
     if (real34CompareGreaterEqual(&t, const34_maxTime)) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function checkTimeRange:", "value of time type is too large");
         return;
     }
@@ -780,7 +783,7 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
             liftStack();
-            convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
             julianDayToInternalDate(reg34(REGISTER_Y), &date);
             reallocateRegister(REGISTER_Y, dtDate, 0, amNoneU);
             real34Copy(&date, reg34(REGISTER_Y));
@@ -806,7 +809,7 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             realSubtract(&x, &y, &x, &ctxtReal39); // FP = Org - IP
             realMultiply(&x, const_86400, &x, &ctxtReal39); // (3600*24*(FP))          // round seconds
             x.exponent += 3; // x = x * 1000            // to 0.001s
-            realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39); // round (3600*24*1000*(FP))
+            frontier_register_value_conversions.realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39); // round (3600*24*1000*(FP))
             realDivide(&x, const_86400, &x, &ctxtReal39); // (round (3600*24*1000*(FP))) / (3600*24)
             x.exponent -= 3; // x = x / 1000
 
@@ -819,7 +822,7 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             var tmp: real_t = undefined;
             realMultiply(const_86400, &x, &tmp, &ctxtReal39); // tmp is now seconds
             reallocateRegister(REGISTER_X, dtTime, 0, amNoneU); // this must be in front of the next line, otherwise accuracy is gone
-            convertRealToReal34ResultRegister(&tmp, REGISTER_X);
+            frontier_register_value_conversions.convertRealToReal34ResultRegister(&tmp, REGISTER_X);
         },
         else => return error.JulianBadType,
     }
@@ -834,7 +837,7 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
 pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnJulianToDateTimeCore() catch {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function fnJulianToDateTime:", "data type cannot be converted to date!");
     };
 }
@@ -848,7 +851,7 @@ pub export fn fnDateToJulian(unusedButMandatoryParameter: u16) linksection(code_
     }
 
     if (checkDateArgument(REGISTER_X, &jd34)) {
-        convertReal34ToLongIntegerRegister(&jd34, REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&jd34, REGISTER_X, DEC_ROUND_FLOOR);
     }
 }
 
@@ -867,9 +870,9 @@ pub export fn fnDateTimeToJulian(unusedButMandatoryParameter: u16) linksection(c
     }
 
     if (checkDateArgument(REGISTER_Y, &jd34) and getRegisterDataType(REGISTER_X) == dtTime) {
-        convertReal34ToLongIntegerRegister(&jd34, REGISTER_Y, DEC_ROUND_DOWN); //Y is truncated date in real
-        convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-        timeToReal34(3); //X is now Real seconds
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&jd34, REGISTER_Y, DEC_ROUND_DOWN); //Y is truncated date in real
+        frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
+        frontier_addons.timeToReal34(3); //X is now Real seconds
         real34Divide(reg34(REGISTER_X), const34_86400, reg34(REGISTER_X)); //X is now in days
         real34Add(reg34(REGISTER_X), reg34(REGISTER_Y), reg34(REGISTER_X));
         real34Subtract(reg34(REGISTER_X), const34_1on2, reg34(REGISTER_X)); //handle 0.5 offset
@@ -921,7 +924,7 @@ fn fnSetFirstGregorianDayCore(param: u16) error{ SetFgdDisabled, SetFgdBadType }
 
 pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
     fnSetFirstGregorianDayCore(param) catch |e| {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) switch (e) {
             error.SetFgdDisabled => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type is disabled as input because of complicated Julian-Gregorian issue!", null, null),
             error.SetFgdBadType => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type cannot be interpreted as a date!", null, null),
@@ -960,7 +963,7 @@ fn fnXToDateRegisterCore(regist: calcRegister_t) error{XToDateBadType}!void {
         },
         dtReal34 => {
             if (getRegisterAngularMode(regist) == amNone) {
-                convertReal34RegisterToDateRegister(regist, regist, false); //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
+                frontier_register_value_conversions.convertReal34RegisterToDateRegister(regist, regist, false); //no !YYsystem needed here; //change this "false" to "YYSystem" to make [x->D] respect YY
                 checkDateRange(reg34(regist));
                 temporaryInformation = TI_DAY_OF_WEEK;
                 if (lastErrorCode != 0) {
@@ -978,7 +981,7 @@ pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section
     // The error register is the dynamic `regist` argument, so the report is
     // inlined in the shim rather than a shared reporter.
     fnXToDateRegisterCore(regist) catch {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
         moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
     };
 }
@@ -1001,7 +1004,7 @@ pub export fn fnYear(unusedButMandatoryParameter: u16) linksection(code_section)
 
     if (checkDateArgument(REGISTER_X, &j)) {
         decomposeJulianDay(&j, &y, &m, &d);
-        convertReal34ToLongIntegerRegister(&y, REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&y, REGISTER_X, DEC_ROUND_FLOOR);
     }
 }
 
@@ -1018,7 +1021,7 @@ pub export fn fnMonth(unusedButMandatoryParameter: u16) linksection(code_section
 
     if (checkDateArgument(REGISTER_X, &j)) {
         decomposeJulianDay(&j, &y, &m, &d);
-        convertReal34ToLongIntegerRegister(&m, REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&m, REGISTER_X, DEC_ROUND_FLOOR);
     }
 }
 
@@ -1035,7 +1038,7 @@ pub export fn fnDay(unusedButMandatoryParameter: u16) linksection(code_section) 
 
     if (checkDateArgument(REGISTER_X, &j)) {
         decomposeJulianDay(&j, &y, &m, &d);
-        convertReal34ToLongIntegerRegister(&d, REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&d, REGISTER_X, DEC_ROUND_FLOOR);
     }
 }
 
@@ -1051,7 +1054,7 @@ pub export fn fnWday(unusedButMandatoryParameter: u16) linksection(code_section)
     if (dayOfWeek != 0) {
         longIntegerInit(&result);
         uInt32ToLongInteger(dayOfWeek, &result);
-        convertLongIntegerToLongIntegerRegister(&result, REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&result, REGISTER_X);
         longIntegerFree(&result);
         temporaryInformation = TI_DAY_OF_WEEK;
     }
@@ -1073,9 +1076,9 @@ pub export fn fnDateTo(unusedButMandatoryParameter: u16) linksection(code_sectio
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
         decomposeJulianDay(&j, &y, &m, &d);
-        convertReal34ToLongIntegerRegister(&y, if (getSystemFlag(FLAG_YMD)) REGISTER_Z else REGISTER_X, DEC_ROUND_FLOOR);
-        convertReal34ToLongIntegerRegister(&m, if (getSystemFlag(FLAG_MDY)) REGISTER_Z else REGISTER_Y, DEC_ROUND_FLOOR);
-        convertReal34ToLongIntegerRegister(&d, if (getSystemFlag(FLAG_DMY)) REGISTER_Z else if (getSystemFlag(FLAG_MDY)) REGISTER_Y else REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&y, if (getSystemFlag(FLAG_YMD)) REGISTER_Z else REGISTER_X, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&m, if (getSystemFlag(FLAG_MDY)) REGISTER_Z else REGISTER_Y, DEC_ROUND_FLOOR);
+        frontier_register_value_conversions.convertReal34ToLongIntegerRegister(&d, if (getSystemFlag(FLAG_DMY)) REGISTER_Z else if (getSystemFlag(FLAG_MDY)) REGISTER_Y else REGISTER_X, DEC_ROUND_FLOOR);
     }
 }
 
@@ -1084,11 +1087,11 @@ const DateError = error{ ToDateBadType, ToDateInvalidDate };
 fn reportDateError(e: DateError) void {
     switch (e) {
         error.ToDateBadType => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnToDate:", "data type cannot be converted to a real34!");
         },
         error.ToDateInvalidDate => {
-            displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             moreInfoOnError("In function fnToDate:", "Invalid date input like 30 Feb.");
         },
     }
@@ -1126,7 +1129,7 @@ fn fnToDateCore() DateError!void {
         const idx: usize = @intCast(i);
         switch (getRegisterDataType(r[idx])) {
             dtLongInteger => {
-                convertLongIntegerRegisterToReal34(r[idx], part[idx]);
+                frontier_register_value_conversions.convertLongIntegerRegisterToReal34(r[idx], part[idx]);
             },
             dtReal34 => {
                 if (getRegisterAngularMode(r[idx]) == amNone) {
@@ -1175,7 +1178,7 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
 const TimeError = error{ ToHrBadType, HMStoTMBadType, HRtoTMBadType };
 
 fn reportTimeError(e: TimeError) void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     switch (e) {
         error.ToHrBadType => moreInfoOnError("In function fnToHr:", "data type cannot be converted to a real34!"),
         error.HMStoTMBadType => moreInfoOnError("In function fnHMStoTM:", "data type cannot be converted to time!"),
@@ -1188,7 +1191,7 @@ fn fnToHrCore() TimeError!void {
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtTime => {
-            convertTimeRegisterToReal34Register(REGISTER_X, REGISTER_X);
+            frontier_register_value_conversions.convertTimeRegisterToReal34Register(REGISTER_X, REGISTER_X);
         },
         else => return error.ToHrBadType,
     }
@@ -1204,7 +1207,7 @@ fn fnHMStoTMCore() TimeError!void {
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
         },
         dtTime => {
             // already in hours: do nothing
@@ -1233,7 +1236,7 @@ pub export fn fnHMStoTM(unusedButMandatoryParameter: u16) linksection(code_secti
 fn fnHRtoTMCore() TimeError!void {
     switch (calcMode) { //JM vv
         CM_NIM => {
-            addItemToNimBuffer(ITM_HRtoTM);
+            frontier_bufferize.addItemToNimBuffer(ITM_HRtoTM);
         },
         else => { //JM ^^
             if (!saveLastX()) {
@@ -1244,14 +1247,14 @@ fn fnHRtoTMCore() TimeError!void {
 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToTimeRegister(REGISTER_X, REGISTER_X);
+            frontier_register_value_conversions.convertLongIntegerRegisterToTimeRegister(REGISTER_X, REGISTER_X);
         },
         dtTime => {
             // already in hours: do nothing
         },
         dtReal34 => {
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
-                convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
+                frontier_register_value_conversions.convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
             } else {
                 return error.HRtoTMBadType;
             }
@@ -1355,7 +1358,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
 
         if (getRegisterDataType(REGISTER_X) == dtTime) {
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_86400)) {
-                displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
             } else {
                 rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_100, &time34);
@@ -1372,7 +1375,7 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
             }
         } else if (getRegisterDataType(REGISTER_X) == dtReal34) {
             if (real34IsNegative(reg34(REGISTER_X)) or real34IsNaN(reg34(REGISTER_X)) or real34CompareGreaterEqual(reg34(REGISTER_X), const34_24)) {
-                displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
             } else {
                 rtc_read(&timeInfo, &dateInfo);
                 real34Multiply(reg34(REGISTER_X), const34_1e6, &time34);
@@ -1388,11 +1391,11 @@ pub export fn fnSetTime(unusedButMandatoryParameter: u16) linksection(code_secti
                 if (timeInfo.sec <= 59 and timeInfo.min <= 59 and timeInfo.hour <= 23) {
                     rtc_write(&timeInfo, &dateInfo);
                 } else {
-                    displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
                 }
             }
         } else {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         }
     }
 }
@@ -1410,7 +1413,7 @@ pub export fn fnWeekOfYear(unusedButMandatoryParameter: u16) linksection(code_se
         var li: mpz_struct = undefined;
         longIntegerInit(&li);
         uInt32ToLongInteger(woy, &li);
-        convertLongIntegerToLongIntegerRegister(&li, REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&li, REGISTER_X);
         temporaryInformation = TI_WOY;
         longIntegerFree(&li);
     }

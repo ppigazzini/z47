@@ -57,6 +57,29 @@ const printArgument_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_decode = @import("frontier_decode.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen_snap = @import("frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
@@ -372,75 +395,69 @@ const glyphNotFound = @extern(*glyph_t, .{ .name = "glyphNotFound" });
 const tamState_t = abi.TamState;
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
+
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: i32) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
-extern fn refreshStatusBar() void;
-extern fn refreshScreen(source: u16) void;
+
+
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
-extern fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) c_int;
-extern fn fnTimerGetStatus(nr: u8) u8;
+
+
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
 extern fn sendByteIR(byte: u8) void;
 extern fn getLineDelay() u32;
 extern fn setLineDelay(delay: u16) void;
 
-extern fn findGlyph(font: *const font_t, charCode: u16) i16;
-extern fn generateNotFoundGlyph(font: i16, charCode: u16) void;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn addChrBothSides(t: u8, str: [*c]u8) void;
-extern fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardString: [*c]u8, forPrinter: bool_t) void;
+
+
+
+
+
 
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
-extern fn letteredRegisterName(regist: calcRegister_t) u8;
-extern fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, matrix: *real34Matrix_t) void;
-extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
+
+
+
+
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
-extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: u32) void;
+
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegParam(f: ?*bool_t, s: *u16, n: *u16, d: ?*u16) u8;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
-extern fn getIRegisterAsInt(asArrayPointer: bool_t) i16;
-extern fn getJRegisterAsInt(asArrayPointer: bool_t) i16;
 
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
+
+
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn fnStopProgram(unusedButMandatoryParameter: u16) void;
-extern fn fnSNAP(unusedButMandatoryParameter: u16) void;
-extern fn leaveTamModeIfEnabled() void;
 
-extern fn create_filename(fileSuffix: [*c]const u8) void;
-extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) void;
-extern fn tmpString_csv_out(nn: u8) void;
 
-extern fn getTimeString(timeString: [*c]u8) void;
-extern fn getDateString(dateString: [*c]u8) void;
-extern fn defineFirstDisplayedStep() void;
-extern fn findNextStep(step: [*c]u8) [*c]u8;
-extern fn isAtEndOfPrograms(step: [*c]const u8) bool_t;
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool_t;
-// isAtEndOfProgram is a static inline in manage.h: checkOpCodeOfStep(step, ITM_END).
+
+
+
+
+
+
+
+
+
+
+// isAtEndOfProgram is a static inline in manage.h: frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
 inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
-    return checkOpCodeOfStep(step, ITM_END);
+    return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
-extern fn decodeOneStep_ALIAS(step: [*c]u8) void;
-extern fn _getProgramSize() u32;
+
 
 // renamed-away in the bridge; owned by other owners. Extern, NOT re-exported.
-extern fn fnP_Regs(registerNo: u16) void;
-extern fn fnP_PrintAllItems(unusedButMandatoryParameter: u16) void;
+
 
 // real34 / decimal helpers. int32ToReal34 / real34ToString / real34IsZero are
 // decQuad* macros in C; bind the underlying decQuad symbols and wrap.
@@ -458,9 +475,8 @@ inline fn real34ToString(source: *const real34_t, destination: [*c]u8) [*c]u8 {
 inline fn real34IsZero(source: *const real34_t) u32 {
     return decQuadIsZero(source);
 }
-extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int) void;
+
 extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, realContext: *realContext_t) void;
-extern fn convertAngleFromTo(angle: *real_t, fromAngularMode: u32, toAngularMode: u32, realContext: *realContext_t) void;
 
 // decQuad / decimal128 (behind real34 macros)
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
@@ -474,8 +490,7 @@ extern fn @"__gmpz_clear"(p: *mpz_struct) void;
 extern fn @"__gmpz_get_ui"(p: *const mpz_struct) c_ulong;
 extern fn @"__gmpz_cmp_ui"(p: *const mpz_struct, v: c_ulong) c_int;
 extern fn @"__gmpz_set_si"(p: *mpz_struct, v: c_long) void;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, longInteger: *mpz_struct) void;
-extern fn convertShortIntegerRegisterToLongInteger(source: calcRegister_t, lgInt: *mpz_struct) void;
+
 
 // complex34Copy(source, dest): macro = real34Copy two halves. dest is a complex34
 // register data pointer (real34_t* in our reg34 typing); copy 32 bytes.
@@ -490,7 +505,7 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn memmove(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn memset(dst: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
@@ -835,7 +850,7 @@ fn findMartelGlyph(font: *const martelFont24_t, charCode: u16) u16 {
 
 fn _exitKeyPressed() bool_t {
     if (comptime dmcp_build) {
-        const key: c_int = C47PopKeyNoBuffer(!(DISPLAY_WAIT_FOR_RELEASE != 0)) + 1;
+        const key: c_int = frontier_addons.C47PopKeyNoBuffer(!(DISPLAY_WAIT_FOR_RELEASE != 0)) + 1;
         if (key == 36 or key == 33) { // R/S or EXIT
             _ = key_pop();
             clearKeyBuffer();
@@ -853,7 +868,7 @@ fn _exitKeyPressed() bool_t {
 fn setPrinterSBI(status: bool_t) void {
     printerIconEnabled = status;
     setSystemFlagChanged(SETTING_PRINTERICON);
-    refreshStatusBar();
+    frontier_status_bar.refreshStatusBar();
 }
 const SETTING_PRINTERICON: i32 = 134; // defines.h:935 0x86 (was 130; status bar reads 134)
 
@@ -923,7 +938,7 @@ fn printIR(c: u8) void {
     } else {
         sendByteIR(c);
     }
-    if (fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING) {
+    if (frontier_timer.fnTimerGetStatus(TO_CL_DROP) == TMR_RUNNING) {
         fnTimerStart(TO_CL_DROP, TO_CL_DROP, JM_CLRDROP_TIMER);
     }
 }
@@ -1047,17 +1062,17 @@ fn printMartelGlyph(charCode: u16) void {
 fn printGlyph24(charCode: u16, font: *const font_t) void {
     var graphic: [42]u8 = undefined;
     _ = memset(&graphic, 0, 42);
-    const glyphId = findGlyph(font, charCode);
+    const glyphId = frontier_fonts.findGlyph(font, charCode);
 
     var glyph: *glyph_t = undefined;
     if (glyphId >= 0) {
         const glyphs: [*]glyph_t = @ptrFromInt(@intFromPtr(font) + 4); // font_t header (id:i8 + numberOfGlyphs:u16 padded to 4)
         glyph = &glyphs[@intCast(glyphId)];
     } else if (glyphId == -1) {
-        generateNotFoundGlyph(-1, charCode);
+        frontier_fonts.generateNotFoundGlyph(-1, charCode);
         glyph = glyphNotFound;
     } else if (glyphId == -2) {
-        generateNotFoundGlyph(-2, charCode);
+        frontier_fonts.generateNotFoundGlyph(-2, charCode);
         glyph = glyphNotFound;
     } else {
         glyph = undefined; // C NULL deref would crash; preserved structurally
@@ -1157,7 +1172,7 @@ fn printLineImpl(buff_in: [*c]const u8, with_lf: c_int) void {
 fn printJustifiedImpl(buff: [*c]const u8) void {
     const pmode = printerState.print_mode;
     var len: u16 = if (pmode == PMODE_DEFAULT)
-        @as(u16, @intCast(stringGlyphLength(buff))) * 7 - 1
+        @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
     else
         @intCast(pixel_length(buff, @intFromBool(pmode == PMODE_SMALLGRAPHICS)));
     const paperWidth: u16 = @intCast(PAPER_WIDTH);
@@ -1174,7 +1189,7 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
 fn printJustifiedLeft(buff: [*c]const u8) void {
     const pmode = printerState.print_mode;
     var len: u16 = if (pmode == PMODE_DEFAULT)
-        @as(u16, @intCast(stringGlyphLength(buff))) * 7 - 1
+        @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
     else
         @intCast(pixel_length(buff, @intFromBool(pmode == PMODE_SMALLGRAPHICS)));
     const paperWidth: u16 = (@as(u16, @intCast(PAPER_WIDTH)) / 2) - 7;
@@ -1191,7 +1206,7 @@ fn printJustifiedLeft(buff: [*c]const u8) void {
 fn _realStringToPrint(realString: [*c]u8, max_len: i16) void {
     const len: u16 = @intCast(strlen(realString));
     var k: u16 = 0;
-    if (stringGlyphLength(realString) > max_len) {
+    if (frontier_char_string.stringGlyphLength(realString) > max_len) {
         var i: u16 = 0;
         while (i < len) : (i += 1) {
             if ((realString[i] == 'e') or (realString[i] == 'E')) {
@@ -1200,7 +1215,7 @@ fn _realStringToPrint(realString: [*c]u8, max_len: i16) void {
                 var pos: u16 = 1;
                 var j: i32 = 0;
                 while (j < @as(i32, max_len) - @as(i32, @intCast(expLen)) - 1) : (j += 1) {
-                    pos = @intCast(stringNextGlyph(realString, @intCast(pos)));
+                    pos = @intCast(frontier_char_string.stringNextGlyph(realString, @intCast(pos)));
                 }
                 const to = realString + pos;
                 _ = memmove(to, from, expLen + 1);
@@ -1223,7 +1238,7 @@ fn _real34ToPrintString(real34: *real34_t, amMode: u16, realString: [*c]u8, maxW
 
     grpGroupingLeft = 0;
     grpGroupingRight = 0;
-    real34ToDisplayString(real34, amMode, realString, &standardFont, maxWidth, 16, true, false, 1);
+    frontier_display.real34ToDisplayString(real34, amMode, realString, &standardFont, maxWidth, 16, @intFromBool(true), @intFromBool(false), 1);
     grpGroupingRight = grpGroupingRightOld;
     grpGroupingLeft = grpGroupingLeftOld;
     const len: u16 = @intCast(strlen(realString));
@@ -1324,7 +1339,7 @@ fn _complex34ToPrintString(registReal34: *real34_t, registImag34: *real34_t, tag
         c.digits = if (showMode()) 39 else cMax(i32, 0, maxExponent) + numberOfDisplayRealContextDigits() + 2;
         realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c);
         c.digits = if (showMode()) 39 else 3 + numberOfDisplayRealContextDigits();
-        convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
+        frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, tagAngle, &c);
 
         realToReal34(&real, &real34);
         realToReal34(&imagIc, &imag34);
@@ -1370,7 +1385,7 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
         dtString => {
             _ = strcpy(tmpString, regString(@bitCast(regist)));
             if (where == LINE_FULL) {
-                addChrBothSides(34, tmpString);
+                frontier_char_string.addChrBothSides(34, tmpString);
             }
         },
         dtReal34 => {
@@ -1452,12 +1467,12 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             _ = strcpy(tmpString, errorMessage + @as(usize, @intCast(n)));
         },
         else => {
-            copyRegisterToClipboardString(@bitCast(regist), tmpString, true);
+            frontier_screen_snap.copyRegisterToClipboardString(@bitCast(regist), tmpString, @intFromBool(true));
         },
     }
 
     if (label == null and (where == LINE_FULL or where == LINE_NOLF)) {
-        var glen: u16 = @intCast(stringGlyphLength(tmpString));
+        var glen: u16 = @intCast(frontier_char_string.stringGlyphLength(tmpString));
         if ((where == LINE_NOLF) and (glen < 17)) {
             const padding: u16 = 17 - glen;
             printTabImpl(padding * 7 - 1);
@@ -1504,7 +1519,7 @@ fn cmdPrintImpl(arg: u16, op: printArgument_t) void {
 
     if (!getSystemFlag(FLAG_PRTACT)) {
         if (getSystemFlag(@bitCast(FLAG_PRTEN)) or ((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP))) {
-            displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "Printing is disabled", .{});
                 moreInfoOnError("In function cmdPrint:", errorMessage, null, null);
@@ -1603,7 +1618,7 @@ fn _printRegRange(firstRegisterNo: u16, lastRegisterNo: u16) bool_t {
     if (firstRegisterNo <= lastRegisterNo) {
         var regist: u16 = firstRegisterNo;
         while (regist <= lastRegisterNo) : (regist += 1) {
-            fnP_Regs(regist);
+            frontier.fnP_Regs(regist);
             if (_exitKeyPressed()) {
                 return true;
             }
@@ -1611,7 +1626,7 @@ fn _printRegRange(firstRegisterNo: u16, lastRegisterNo: u16) bool_t {
     } else {
         var regist: u16 = firstRegisterNo;
         while (regist >= lastRegisterNo) : (regist -= 1) {
-            fnP_Regs(regist);
+            frontier.fnP_Regs(regist);
             if (_exitKeyPressed()) {
                 return true;
             }
@@ -1625,7 +1640,7 @@ fn _printRegRange(firstRegisterNo: u16, lastRegisterNo: u16) bool_t {
 fn _getRegisterLabel(registerNo: u16, label: [*c]u8) void {
     label[0] = 0;
     if (REGISTER_X <= registerNo and registerNo <= REGISTER_W) {
-        label[0] = letteredRegisterName(@bitCast(registerNo));
+        label[0] = frontier_screen_snap.letteredRegisterName(@bitCast(registerNo));
         label[1] = 0;
     } else if (registerNo < REGISTER_X) {
         abi.fmtCStr(label, "R{d:0>2}", .{ @as(u32, @intCast(@as(c_int, registerNo))) });
@@ -1645,7 +1660,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         var maxValue34: real34_t = undefined;
         int32ToReal34(0x8000, &maxValue34);
         if (real34CompareLessThan(reg34(regist), const34_0()) or real34CompareLessEqual(&maxValue34, reg34(regist))) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime !dmcp_build) {
                 _ = real34ToString(reg34(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -1656,9 +1671,9 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         value = real34ToInt32(reg34(regist));
     } else if (getRegisterDataType(regist) == dtLongInteger) {
         var lgInt: longInteger_t = undefined;
-        convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+        frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
         if (longIntegerCompareUInt(&lgInt[0], 0) < 0 or longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             longIntegerFree(&lgInt[0]);
             return @bitCast(@as(i16, -1));
         }
@@ -1667,13 +1682,13 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
     } else if (getRegisterDataType(regist) == dtShortInteger) {
         var lgInt: longInteger_t = undefined;
         // convertShortIntegerRegisterToLongInteger initialises lgInt; do not double-init (leak).
-        convertShortIntegerRegisterToLongInteger(regist, &lgInt[0]);
+        frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(regist, &lgInt[0]);
         value = @bitCast(longIntegerToUInt32(&lgInt[0]));
         longIntegerFree(&lgInt[0]);
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime !dmcp_build) {
-            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(getRegisterDataTypeName(regist, true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
         }
         return @bitCast(@as(i16, -1));
@@ -1717,7 +1732,7 @@ pub export fn printTraceErrorFunction(func: i16, errorString: [*c]u8) callconv(.
         _ = strcat(tmpString, " ");
         _ = strcat(tmpString, errorString);
         printJustifiedImpl(tmpString);
-        leaveTamModeIfEnabled();
+        frontier_tam.leaveTamModeIfEnabled();
         if (comptime !dmcp_build) {
             _ = printf("**[DL]** Trace: %s\n", tmpString);
             _ = fflush(null);
@@ -1755,18 +1770,18 @@ pub export fn printTraceX(where: u16) callconv(.c) void {
 pub export fn printTraceMatElement(where: u16) callconv(.c) void {
     if (comptime !ir_printing) return;
     if (getSystemFlag(FLAG_TRACE) and getSystemFlag(FLAG_PRTACT)) {
-        const i: i16 = getIRegisterAsInt(true);
-        const j: i16 = getJRegisterAsInt(true);
+        const i: i16 = frontier.getIRegisterAsInt(true);
+        const j: i16 = frontier.getJRegisterAsInt(true);
         if (getRegisterDataType(matrixIndexReg()) == dtReal34Matrix) {
             var mat: real34Matrix_t = undefined;
             const matrix = &mat;
-            convertReal34MatrixRegisterToReal34Matrix(matrixIndexReg(), &mat);
+            frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(matrixIndexReg(), &mat);
             reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
             real34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
         } else {
             var mat: complex34Matrix_t = undefined;
             const matrix = &mat;
-            convertComplex34MatrixRegisterToComplex34Matrix(matrixIndexReg(), &mat);
+            frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(matrixIndexReg(), &mat);
             reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
             complex34Copy(&matrix.matrixElements.?[@as(usize, @intCast(i)) * matrix.header.matrixColumns + @as(usize, @intCast(j))], reg34(TEMP_REGISTER_1));
         }
@@ -1787,7 +1802,7 @@ pub export fn printTraceString(string: [*c]u8, where: u16) callconv(.c) void {
     const lenInBytes: i16 = @intCast(stringByteLength(string) + 1);
     if ((getSystemFlag(FLAG_TRACE) or getSystemFlag(@bitCast(FLAG_NORM))) and getSystemFlag(FLAG_PRTACT)) {
         reallocateRegister(TEMP_REGISTER_1, dtString, toBlocks(@intCast(lenInBytes)), amNone);
-        _ = xcopy(regString(TEMP_REGISTER_1), string, @intCast(lenInBytes));
+        _ = frontier_char_string.xcopy(regString(TEMP_REGISTER_1), string, @intCast(lenInBytes));
         printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, @intCast(where), false);
         if (comptime !dmcp_build) {
             _ = printf("**[DL]** printTraceString Trace: %s\n", tmpString);
@@ -1877,7 +1892,7 @@ pub export fn printViewAview(func: u16, regist: u16) callconv(.c) void {
         }
     } else {
         if (getSystemFlag(@bitCast(FLAG_PRTEN)) and (programRunStop == PGM_RUNNING)) {
-            fnStopProgram(NOPARAM);
+            frontier_lbl_gto_xeq.fnStopProgram(NOPARAM);
         }
     }
 }
@@ -1910,7 +1925,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                 }
             } else if ((func != ITM_PRINTERADV) and (func != ITM_PRINTERX)) {
                 var buffer: [16]u8 = undefined;
-                _ = xcopy(&buffer, tmpString, 16);
+                _ = frontier_char_string.xcopy(&buffer, tmpString, 16);
                 nameAlias(@bitCast(func), tmpString);
                 if ((indexOfItems[@intCast(func)].func != addItemToBufferFn) and (indexOfItems[@intCast(func)].param != NOPARAM) and ((indexOfItems[@intCast(func)].status & PTP_STATUS) != PTP_NONE)) {
                     traceBuffer[0] = 0;
@@ -1962,8 +1977,8 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             _ = strcat(tmpString, " " ++ STD_LEFT_SINGLE_QUOTE);
                             const strLength: u16 = @intCast(stringByteLength(tmpString));
                             const lp = labelList[@as(usize, param) - @as(usize, @intCast(FIRST_LABEL))].labelPointer;
-                            const lblNameLen = boundProgramNameLength(lp + 1, lp[0]);
-                            _ = xcopy(tmpString + strLength, lp + 1, lblNameLen);
+                            const lblNameLen = frontier_manage.boundProgramNameLength(lp + 1, lp[0]);
+                            _ = frontier_char_string.xcopy(tmpString + strLength, lp + 1, lblNameLen);
                             tmpString[strLength + lblNameLen] = 0;
                             _ = strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
                         }
@@ -2013,9 +2028,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                     }
                     _ = strcat(tmpString, &traceBuffer);
                 } else if ((func == ITM_MENU) and (dynamicMenuItem >= 0)) {
-                    _ = xcopy(tmpString, &programmableMenu.itemName[@intCast(dynamicMenuItem)], 16);
+                    _ = frontier_char_string.xcopy(tmpString, &programmableMenu.itemName[@intCast(dynamicMenuItem)], 16);
                 }
-                const width: u16 = @as(u16, @intCast(stringGlyphLength(tmpString))) * 7 - 1;
+                const width: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(tmpString))) * 7 - 1;
                 if (@as(c_int, printerColumn) + width > PAPER_WIDTH) {
                     printAdvance(0);
                 }
@@ -2026,7 +2041,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                 }
             }
         } else if (getSystemFlag(FLAG_TRACE)) {
-            decodeOneStep_ALIAS(currentStep);
+            frontier_decode.decodeOneStep_ALIAS(currentStep);
             if (func == ITM_LBL) {
                 printAdvance(0);
                 abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(currentLocalStepNumber))});
@@ -2047,8 +2062,8 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
         }
     }
 }
-extern fn addItemToBuffer(item: u16) callconv(.c) void;
-const addItemToBufferFn: ItemFn = &addItemToBuffer;
+
+const addItemToBufferFn: ItemFn = &frontier_bufferize.addItemToBuffer;
 
 pub export fn nameAlias(op: u16, nameOp: [*c]u8) callconv(.c) void {
     if (comptime !ir_printing) return;
@@ -2073,7 +2088,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
 
     firstDisplayedLocalStepNumber = 0;
     if (!list) {
-        defineFirstDisplayedStep();
+        frontier_next_step.defineFirstDisplayedStep();
         step = firstDisplayedStep;
     } else {
         step = currentStep;
@@ -2090,10 +2105,10 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
         if (getSystemFlag(FLAG_TRACE)) {
             printLineImpl(" ", 0);
         }
-        getTimeString(tmpString);
+        frontier_date_time.getTimeString(tmpString);
         printLineImpl(tmpString, 0);
         printLineImpl(" ", 0);
-        getDateString(tmpString);
+        frontier_date_time.getDateString(tmpString);
         printLineImpl(tmpString, 1);
         print_lfImpl();
 
@@ -2101,7 +2116,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
             if (getSystemFlag(FLAG_TRACE)) {
                 printLineImpl(" ", 0);
             }
-            abi.fmtBufZ(tmpString[0..2560], "00 {{ {d}-Byte Prgm }}", .{@as(u32, _getProgramSize())});
+            abi.fmtBufZ(tmpString[0..2560], "00 {{ {d}-Byte Prgm }}", .{@as(u32, frontier_manage._getProgramSize())});
             printLineImpl(tmpString, 1);
             firstLine = 1;
         } else {
@@ -2121,7 +2136,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
 
     var line: u16 = firstLine;
     while (line <= lastLine) : (line += 1) {
-        const nextStep = findNextStep(step);
+        const nextStep = frontier_next_step.findNextStep(step);
         isLabel = (step[0] == ITM_LBL);
 
         if (getSystemFlag(FLAG_TRACE)) {
@@ -2146,10 +2161,10 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
             printLineImpl(tmpString, 0);
         }
 
-        decodeOneStep_ALIAS(step);
+        frontier_decode.decodeOneStep_ALIAS(step);
 
         if (getSystemFlag(FLAG_TRACE)) {
-            if (@as(c_int, printerColumn) + stringGlyphLength(tmpString) * 7 > PAPER_WIDTH + 2) {
+            if (@as(c_int, printerColumn) + frontier_char_string.stringGlyphLength(tmpString) * 7 > PAPER_WIDTH + 2) {
                 printAdvance(0);
             }
             printLineImpl(tmpString, @intFromBool(isLabel));
@@ -2199,12 +2214,11 @@ pub export fn fnP_GetDelay(unusedButMandatoryParameter: u16) callconv(.c) void {
         liftStack();
         longIntegerInit(&delay[0]);
         @"__gmpz_set_si"(&delay[0], @intCast(getLineDelay()));
-        convertLongIntegerToLongIntegerRegister(&delay[0], REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&delay[0], REGISTER_X);
         longIntegerFree(&delay[0]);
     }
 }
 extern fn liftStack() void;
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
 
 // fnP_Regs is owned elsewhere (renamed away in the bridge), so we do NOT define
 // it here; it is externed above and used by _printRegRange.
@@ -2290,7 +2304,7 @@ pub export fn z47_frontier_sigma_name(index: u16) callconv(.c) [*c]const u8 {
 
 pub export fn z47_frontier_print_sigma_line(index: u16) callconv(.c) void {
     if (comptime ir_printing) {
-        convertRealToResultRegister(statisticalSumsPointer + index, TEMP_REGISTER_1, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(statisticalSumsPointer + index, TEMP_REGISTER_1, amNone);
         printRegImpl(@bitCast(TEMP_REGISTER_1), &summationRegisterName[index].name, true, LINE_FULL, true);
     }
 }
@@ -2318,38 +2332,38 @@ pub export fn z47_frontier_print_get_unicode_value(regist: calcRegister_t) callc
 
 pub export fn z47_frontier_x_real_matrix_rows() callconv(.c) u16 {
     var x: real34Matrix_t = undefined;
-    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     return x.header.matrixRows;
 }
 
 pub export fn z47_frontier_x_real_matrix_cols() callconv(.c) u16 {
     var x: real34Matrix_t = undefined;
-    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     return x.header.matrixColumns;
 }
 
 pub export fn z47_frontier_x_complex_matrix_rows() callconv(.c) u16 {
     var x: complex34Matrix_t = undefined;
-    convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     return x.header.matrixRows;
 }
 
 pub export fn z47_frontier_x_complex_matrix_cols() callconv(.c) u16 {
     var x: complex34Matrix_t = undefined;
-    convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     return x.header.matrixColumns;
 }
 
 pub export fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) callconv(.c) void {
     var x: real34Matrix_t = undefined;
-    convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
     real34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
 
 pub export fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) callconv(.c) void {
     var x: complex34Matrix_t = undefined;
-    convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
+    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
     complex34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
@@ -2362,7 +2376,7 @@ pub export fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buff
     if (length >= buffer_size) {
         length = buffer_size - 1;
     }
-    _ = xcopy(buffer, @as([*c]u8, &allNamedVariables[index].variableName) + 1, length);
+    _ = frontier_char_string.xcopy(buffer, @as([*c]u8, &allNamedVariables[index].variableName) + 1, length);
     buffer[length] = 0;
     return true;
 }
@@ -2371,11 +2385,11 @@ pub export fn z47_frontier_user_variable_should_skip(label: [*c]const u8) callco
     if (label == null) {
         return true;
     }
-    return compareString(label, "STATS", CMP_NAME) == 0 or
-        compareString(label, "HISTO", CMP_NAME) == 0 or
-        compareString(label, "Mat_A", CMP_NAME) == 0 or
-        compareString(label, "Mat_B", CMP_NAME) == 0 or
-        compareString(label, "Mat_X", CMP_NAME) == 0;
+    return frontier_sort.compareString(label, "STATS", CMP_NAME) == 0 or
+        frontier_sort.compareString(label, "HISTO", CMP_NAME) == 0 or
+        frontier_sort.compareString(label, "Mat_A", CMP_NAME) == 0 or
+        frontier_sort.compareString(label, "Mat_B", CMP_NAME) == 0 or
+        frontier_sort.compareString(label, "Mat_X", CMP_NAME) == 0;
 }
 
 pub export fn z47_frontier_find_named_variable_register(label: [*c]const u8) callconv(.c) calcRegister_t {
@@ -2387,18 +2401,18 @@ pub export fn z47_frontier_program_begin() callconv(.c) [*c]u8 {
 }
 
 pub export fn z47_frontier_programs_end(step: [*c]u8) callconv(.c) bool_t {
-    return isAtEndOfPrograms(step);
+    return frontier_manage.isAtEndOfPrograms(step);
 }
 
 pub export fn z47_frontier_program_next_step(step: [*c]u8) callconv(.c) [*c]u8 {
-    return findNextStep(step);
+    return frontier_next_step.findNextStep(step);
 }
 
 pub export fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, label_size: u16) callconv(.c) bool_t {
     if (step == null or label == null or label_size == 0) {
         return false;
     }
-    if (!checkOpCodeOfStep(step, ITM_LBL)) {
+    if (!frontier_manage.checkOpCodeOfStep(step, ITM_LBL)) {
         return false;
     }
     if (step[1] <= LAST_LOCAL_LABEL) {
@@ -2406,11 +2420,11 @@ pub export fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, lab
     }
     // Clamp to the program-memory end (upstream boundProgramNameLength) so a
     // corrupt step cannot read past program memory, then to the caller buffer.
-    var length: u16 = boundProgramNameLength(step + 3, step[2]);
+    var length: u16 = frontier_manage.boundProgramNameLength(step + 3, step[2]);
     if (length >= label_size) {
         length = label_size - 1;
     }
-    _ = xcopy(label, step + 3, length);
+    _ = frontier_char_string.xcopy(label, step + 3, length);
     label[length] = 0;
     return true;
 }
@@ -2440,7 +2454,7 @@ pub export fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8
     }
     label[0] = 0;
     if (REGISTER_X <= register_no and register_no <= REGISTER_W) {
-        label[0] = letteredRegisterName(@bitCast(register_no));
+        label[0] = frontier_screen_snap.letteredRegisterName(@bitCast(register_no));
         label[1] = 0;
     } else if (register_no < REGISTER_X) {
         abi.fmtCStr(label, "R{d:0>2}", .{ @as(c_uint, register_no) });
@@ -2466,11 +2480,11 @@ pub export fn z47_frontier_last_item() callconv(.c) u16 {
 }
 
 pub export fn z47_frontier_print_backup_aim_message_area() callconv(.c) void {
-    _ = xcopy(tmpString, aimBuffer, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(tmpString, aimBuffer, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
 }
 
 pub export fn z47_frontier_print_restore_aim_message_area() callconv(.c) void {
-    _ = xcopy(aimBuffer, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(aimBuffer, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
 }
 
 // Reference otherwise-unused public symbols so they are emitted even when the

@@ -1,4 +1,6 @@
 const matrix_nav = @import("frontier_matrix_nav.zig");
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
 
 const Geometry = struct {
     rows: i16,
@@ -23,8 +25,8 @@ pub fn run() void {
 }
 
 fn loadGeometry() Geometry {
-    var rows: i16 = @as(i16, @intCast(z47_frontier_matrix_open_rows()));
-    var cols: i16 = @as(i16, @intCast(z47_frontier_matrix_open_cols()));
+    var rows: i16 = @as(i16, @intCast(frontier_matrix_editor.z47_frontier_matrix_open_rows()));
+    var cols: i16 = @as(i16, @intCast(frontier_matrix_editor.z47_frontier_matrix_open_cols()));
     var col_vector = false;
 
     if (cols == 1 and rows > 1) {
@@ -37,11 +39,11 @@ fn loadGeometry() Geometry {
 }
 
 fn ensureSoftmenu() void {
-    if (!z47_frontier_matrix_softmenu_has_m_edit()) {
-        z47_frontier_matrix_show_m_edit_softmenu();
+    if (!frontier_matrix_editor.z47_frontier_matrix_softmenu_has_m_edit()) {
+        frontier_matrix_editor.z47_frontier_matrix_show_m_edit_softmenu();
     }
-    if (z47_frontier_matrix_softmenu_top_is_m_edit()) {
-        z47_frontier_matrix_calc_mode_normal_gui();
+    if (frontier_matrix_editor.z47_frontier_matrix_softmenu_top_is_m_edit()) {
+        frontier_matrix_editor.z47_frontier_matrix_calc_mode_normal_gui();
     }
 }
 
@@ -53,15 +55,15 @@ fn wrapCoordinates(geometry: Geometry) bool {
 
 fn applyWrapGrowthIfNeeded(geometry: Geometry) void {
     if (wrapCoordinates(geometry)) {
-        z47_frontier_matrix_insert_row(false);
-        z47_frontier_matrix_commit_open_to_register();
+        frontier_matrix_editor.z47_frontier_matrix_insert_row(false);
+        frontier_matrix_editor.z47_frontier_matrix_commit_open_to_register();
     }
 }
 
 fn readSelection(geometry: Geometry) Selection {
     return .{
-        .row = if (geometry.col_vector) getJRegisterAsInt(true) else getIRegisterAsInt(true),
-        .col = if (geometry.col_vector) getIRegisterAsInt(true) else getJRegisterAsInt(true),
+        .row = if (geometry.col_vector) frontier.getJRegisterAsInt(true) else frontier.getIRegisterAsInt(true),
+        .col = if (geometry.col_vector) frontier.getIRegisterAsInt(true) else frontier.getJRegisterAsInt(true),
     };
 }
 
@@ -82,25 +84,24 @@ fn computeScrollRow(rows: i16, selected_row: i16, current_scroll_row: i16) i16 {
 }
 
 fn updateScrollRow(geometry: Geometry, selection: Selection) void {
-    const existing: i16 = @as(i16, @intCast(z47_frontier_matrix_scroll_row_get()));
+    const existing: i16 = @as(i16, @intCast(frontier_matrix_editor.z47_frontier_matrix_scroll_row_get()));
     const next = computeScrollRow(geometry.rows, selection.row, existing);
-    z47_frontier_matrix_scroll_row_set(@as(u16, @intCast(next)));
+    frontier_matrix_editor.z47_frontier_matrix_scroll_row_set(@as(u16, @intCast(next)));
 }
 
 fn render(geometry: Geometry, selection: Selection) void {
-    z47_frontier_matrix_render_editor_body(geometry.col_vector, geometry.rows, geometry.cols, selection.row, selection.col);
+    frontier_matrix_editor.z47_frontier_matrix_render_editor_body(geometry.col_vector, geometry.rows, geometry.cols, selection.row, selection.col);
 }
 
-extern fn getIRegisterAsInt(as_array_pointer: bool) i16;
-extern fn getJRegisterAsInt(as_array_pointer: bool) i16;
-extern fn z47_frontier_matrix_open_rows() u16;
-extern fn z47_frontier_matrix_open_cols() u16;
-extern fn z47_frontier_matrix_softmenu_has_m_edit() bool;
-extern fn z47_frontier_matrix_show_m_edit_softmenu() void;
-extern fn z47_frontier_matrix_softmenu_top_is_m_edit() bool;
-extern fn z47_frontier_matrix_calc_mode_normal_gui() void;
-extern fn z47_frontier_matrix_insert_row(add_after: bool) void;
-extern fn z47_frontier_matrix_commit_open_to_register() void;
-extern fn z47_frontier_matrix_scroll_row_get() u16;
-extern fn z47_frontier_matrix_scroll_row_set(row: u16) void;
-extern fn z47_frontier_matrix_render_editor_body(col_vector: bool, rows: i16, cols: i16, selected_row: i16, selected_col: i16) void;
+
+
+
+
+
+
+
+
+
+
+
+

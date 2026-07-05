@@ -1,4 +1,5 @@
 const std = @import("std");
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
@@ -41,26 +42,26 @@ const PrintAllItemsContext = struct {
 
     fn printHeader(self: *PrintAllItemsContext) void {
         _ = self;
-        printLine("item catname  menuname", 1);
+        frontier_print.printLine("item catname  menuname", 1);
     }
 
     fn printCurrent(self: *PrintAllItemsContext) void {
-        const catalog_name = z47_frontier_item_catalog_name(self.item);
-        const softmenu_name = z47_frontier_item_softmenu_name(self.item);
+        const catalog_name = frontier_print.z47_frontier_item_catalog_name(self.item);
+        const softmenu_name = frontier_print.z47_frontier_item_softmenu_name(self.item);
 
         const left = bufPrintZ(&self.line_buf, "{d: >4} {s}", .{ self.item, catalog_name }) catch return;
-        printLine(left, 0);
-        printTab(97);
+        frontier_print.printLine(left, 0);
+        frontier_print.printTab(97);
 
         const right = bufPrintZ(&self.line_buf, "{s} ", .{softmenu_name}) catch return;
-        printLine(right, 1);
+        frontier_print.printLine(right, 1);
     }
 
     fn iterateItems(self: *PrintAllItemsContext) void {
-        const last_item = z47_frontier_last_item();
+        const last_item = frontier_print.z47_frontier_last_item();
         while (self.item < last_item) : (self.item += 1) {
             self.printCurrent();
-            if (z47_frontier_print_exit_pressed()) {
+            if (frontier_print.z47_frontier_print_exit_pressed()) {
                 break;
             }
         }
@@ -115,9 +116,8 @@ extern var currentKeyCode: u8;
 extern var temporaryInformation: u8;
 
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn printLine(buff: [*:0]const u8, with_lf: c_int) void;
-extern fn printTab(tab_type: c_int) void;
-extern fn z47_frontier_item_catalog_name(item: u16) [*:0]const u8;
-extern fn z47_frontier_item_softmenu_name(item: u16) [*:0]const u8;
-extern fn z47_frontier_last_item() u16;
-extern fn z47_frontier_print_exit_pressed() bool;
+
+
+
+
+

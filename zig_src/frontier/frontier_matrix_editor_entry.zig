@@ -1,3 +1,9 @@
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
 const NOPARAM: u16 = 9876;
 
 const CM_MIM: u8 = 12;
@@ -21,12 +27,12 @@ pub fn edit(regist: u16) void {
     const reg: u16 = if (regist == NOPARAM) @as(u16, @intCast(REGISTER_X)) else regist;
     const dt = getRegisterDataType(@as(i16, @intCast(reg)));
 
-    if (z47_frontier_matrix_is_register_matrix_vector(reg) and z47_frontier_matrix_vector_polar_mode(reg) != 0) {
+    if (frontier_matrix_editor.z47_frontier_matrix_is_register_matrix_vector(reg) and frontier_matrix_editor.z47_frontier_matrix_vector_polar_mode(reg) != 0) {
         reportInvalidDataType();
         return;
     }
 
-    leaveTamModeIfEnabled();
+    frontier_tam.leaveTamModeIfEnabled();
     saveStatsMatrix();
 
     if (dt != dtReal34Matrix and dt != dtComplex34Matrix) {
@@ -38,16 +44,16 @@ pub fn edit(regist: u16) void {
     matrixIndex = reg;
     getMatrixFromRegister(reg);
 
-    setIRegisterAsInt(true, 0);
-    setJRegisterAsInt(true, 0);
+    frontier.setIRegisterAsInt(true, 0);
+    frontier.setJRegisterAsInt(true, 0);
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
     scrollRow = 0;
     scrollColumn = 0;
 
-    showMatrixEditor();
-    refreshScreen(MATRIX_EDITOR_REFRESH_SOURCE);
-    printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
+    frontier.showMatrixEditor();
+    frontier_screen.refreshScreen(MATRIX_EDITOR_REFRESH_SOURCE);
+    frontier_print.printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
 }
 
 pub fn reloadOld() void {
@@ -58,16 +64,16 @@ pub fn reloadOld() void {
 
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
-    z47_frontier_matrix_hide_cursor();
-    z47_frontier_matrix_reload_open_matrix_from_register();
+    frontier_matrix_editor.z47_frontier_matrix_hide_cursor();
+    frontier_matrix_editor.z47_frontier_matrix_reload_open_matrix_from_register();
 }
 
 fn reportInvalidDataType() void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 fn reportOperationUndefined() void {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 extern var calcMode: u8;
@@ -77,17 +83,16 @@ extern var nimBufferDisplay: [*]u8;
 extern var scrollRow: u16;
 extern var scrollColumn: u16;
 
-extern fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool;
-extern fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16;
-extern fn z47_frontier_matrix_hide_cursor() void;
-extern fn z47_frontier_matrix_reload_open_matrix_from_register() void;
-extern fn leaveTamModeIfEnabled() void;
+
+
+
+
+
 extern fn saveStatsMatrix() void;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getMatrixFromRegister(regist: u16) void;
-extern fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
-extern fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) void;
-extern fn showMatrixEditor() void;
-extern fn refreshScreen(source: u16) void;
-extern fn printTraceMatElement(where: u16) void;
-extern fn displayCalcErrorMessage(error_code: u8, line1: i16, line2: i16) void;
+
+
+
+
+

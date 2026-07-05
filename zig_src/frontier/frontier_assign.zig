@@ -41,6 +41,16 @@ else
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const abi = @import("abi"); // L1 shared bindings
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
@@ -210,36 +220,35 @@ const STD_SUP_BOLD_g = "\x9d\x4d";
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-extern fn isItemConversion(itemNr: i16) bool_t;
-extern fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) void;
-extern fn expandAbbreviations(msg1: [*c]u8) void;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+
+
+
+
+
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn refreshScreen(source: u16) void;
-extern fn showSoftmenu(id: i16) void;
-extern fn popSoftmenu() void;
-extern fn removeUserMenuFromStack(userMenuId: i16) void;
-extern fn createHOME() bool_t;
-extern fn createPFN() bool_t;
-extern fn setConfirmationMode(func: *const fn (u16) callconv(.c) void) void;
+
+
+
+
+
+
+
 extern fn validateName(name: [*c]const u8) bool_t;
 extern fn isUniqueMenuName(name: [*c]const u8) bool_t;
-extern fn insertAlphaCursor(startAt: u16) void;
+
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: i32) bool_t;
-extern fn tamEnterMode(func: i16) void;
-extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
-extern fn leaveTamModeIfEnabled() void;
-extern fn findNamedLabel(labelName: [*c]const u8) i16;
-extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn stringToUtf8(str: [*c]const u8, utf8: [*c]u8) void;
+
+
+
+
+
+
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn reallocC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn reduceC47Blocks(pcMemPtr: ?*anyopaque, oldSizeInBlocks: usize, newSizeInBlocks: usize) void;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 
 // host-only GUI (no-op macros on firmware).
 extern fn calcModeNormalGui() void;
@@ -732,12 +741,12 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
         var i: usize = 0;
         while (i < 18) : (i += 1) {
             if ((userMenuItems[i].item == userItem) and (userMenuItems[i].argumentName[0] != 0) and
-                (deleteAllItems or compareString(&userMenuItems[i].argumentName, userItemName, CMP_NAME) == 0))
+                (deleteAllItems or frontier_sort.compareString(&userMenuItems[i].argumentName, userItemName, CMP_NAME) == 0))
             {
                 assignToMyMenu(@intCast(i));
             }
             if ((userAlphaItems[i].item == userItem) and (userAlphaItems[i].argumentName[0] != 0) and
-                (deleteAllItems or (compareString(&userAlphaItems[i].argumentName, userItemName, CMP_NAME) == 0)))
+                (deleteAllItems or (frontier_sort.compareString(&userAlphaItems[i].argumentName, userItemName, CMP_NAME) == 0)))
             {
                 assignToMyAlpha(@intCast(i));
             }
@@ -750,7 +759,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
             var j: usize = 0;
             while (j < 18) : (j += 1) {
                 if ((userMenus[i].menuItem[j].item == userItem) and (userMenus[i].menuItem[j].argumentName[0] != 0) and
-                    (deleteAllItems or (compareString(&userMenus[i].menuItem[j].argumentName, userItemName, CMP_NAME) == 0)))
+                    (deleteAllItems or (frontier_sort.compareString(&userMenus[i].menuItem[j].argumentName, userItemName, CMP_NAME) == 0)))
                 {
                     _assignItem(@ptrCast(&userMenus[i].menuItem[j]));
                 }
@@ -771,24 +780,24 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
             kc[1] = @intCast((i % 10) + '0');
             kc[2] = 0;
             if (key.*.primary == userItem) {
-                stringToUtf8(getNthString(userKeyLabel, @intCast(i * 6)), &lbl);
-                if ((lbl[0] != 0) and (deleteAllItems or (compareString(&lbl, userItemName, CMP_NAME) == 0))) {
+                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6)), &lbl);
+                if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = false;
                     shiftG = false;
                     assignToKey(&kc);
                 }
             }
             if (key.*.fShifted == userItem) {
-                stringToUtf8(getNthString(userKeyLabel, @intCast(i * 6 + 1)), &lbl);
-                if ((lbl[0] != 0) and (deleteAllItems or (compareString(&lbl, userItemName, CMP_NAME) == 0))) {
+                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6 + 1)), &lbl);
+                if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = true;
                     shiftG = false;
                     assignToKey(&kc);
                 }
             }
             if (key.*.gShifted == userItem) {
-                stringToUtf8(getNthString(userKeyLabel, @intCast(i * 6 + 2)), &lbl);
-                if ((lbl[0] != 0) and (deleteAllItems or (compareString(&lbl, userItemName, CMP_NAME) == 0))) {
+                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6 + 2)), &lbl);
+                if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = false;
                     shiftG = true;
                     assignToKey(&kc);
@@ -805,18 +814,18 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
 // ===========================================================================
 pub export fn fnDeleteMenu(id: u16) callconv(.c) void {
     if (id >= numberOfUserMenus) {
-        displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return;
     } else {
         removeUserItemAssignments(-MNU_DYNAMIC, &userMenus[id].menuName);
-        removeUserMenuFromStack(@intCast(id));
+        frontier_softmenus.removeUserMenuFromStack(@intCast(id));
         if (numberOfUserMenus == 1) {
             freeC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU));
             userMenus = null;
             numberOfUserMenus = 0;
         } else if (numberOfUserMenus > 1) {
             if (id < numberOfUserMenus - 1) {
-                _ = xcopy(userMenus + id, userMenus + id + 1, @intCast(SIZEOF_USERMENU * (numberOfUserMenus - id - 1)));
+                _ = frontier_char_string.xcopy(userMenus + id, userMenus + id + 1, @intCast(SIZEOF_USERMENU * (numberOfUserMenus - id - 1)));
             }
             reduceC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus, TO_BLOCKS(SIZEOF_USERMENU) * (numberOfUserMenus - 1));
             numberOfUserMenus -= 1;
@@ -825,8 +834,8 @@ pub export fn fnDeleteMenu(id: u16) callconv(.c) void {
     if (currentUserMenu > id) {
         currentUserMenu -= 1;
     } else if (currentUserMenu == id) {
-        showSoftmenu(-MNU_DYNAMIC);
-        popSoftmenu();
+        frontier_softmenus.showSoftmenu(-MNU_DYNAMIC);
+        frontier_softmenus.popSoftmenu();
     }
 }
 
@@ -835,15 +844,15 @@ pub export fn fnDeleteMenu(id: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnDeleteUserMenus(confirmation: u16) callconv(.c) void {
     if ((confirmation == NOT_CONFIRMED) and (programRunStop != PGM_RUNNING)) {
-        setConfirmationMode(&fnDeleteUserMenus);
+        frontier_config.setConfirmationMode(&fnDeleteUserMenus);
     } else {
         removeUserItemAssignments(-MNU_DYNAMIC, @constCast(""));
-        removeUserMenuFromStack(@intCast(numberOfUserMenus));
+        frontier_softmenus.removeUserMenuFromStack(@intCast(numberOfUserMenus));
         freeC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus);
         userMenus = null;
         numberOfUserMenus = 0;
-        _ = createHOME();
-        _ = createPFN();
+        _ = frontier_softmenus.createHOME();
+        _ = frontier_softmenus.createPFN();
         if (programRunStop != PGM_RUNNING) {
             temporaryInformation = TI_DEL_ALL_MENUS;
         } else {
@@ -858,14 +867,14 @@ pub export fn fnDeleteUserMenus(confirmation: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnClearUserMenus(confirmation: u16) callconv(.c) void {
     if ((confirmation == NOT_CONFIRMED) and (programRunStop != PGM_RUNNING)) {
-        setConfirmationMode(&fnClearUserMenus);
+        frontier_config.setConfirmationMode(&fnClearUserMenus);
     } else {
         var i: usize = 0;
         while (i < numberOfUserMenus) : (i += 1) {
             _ = memset(&userMenus[i].menuItem, 0, 18 * SIZEOF_USERMENUITEM);
         }
-        _ = createHOME();
-        _ = createPFN();
+        _ = frontier_softmenus.createHOME();
+        _ = frontier_softmenus.createPFN();
         if (programRunStop != PGM_RUNNING) {
             temporaryInformation = TI_CLEAR_ALL_MENUS;
         } else {
@@ -889,7 +898,7 @@ pub export fn updateAssignTamBuffer() callconv(.c) void {
                 tbPtr = stringCopy(tbPtr, STD_CURSOR);
             } else {
                 _ = stringCopy(tmpString, aimBuffer);
-                insertAlphaCursor(0);
+                frontier_screen.insertAlphaCursor(0);
                 tbPtr = stringCopy(tbPtr, tmpString);
                 tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
             }
@@ -914,10 +923,10 @@ pub export fn updateAssignTamBuffer() callconv(.c) void {
         tbPtr = stringCopy(tbPtr, @ptrCast(&allNamedVariables[@intCast(itemToBeAssigned - ASSIGN_NAMED_VARIABLES)].variableName[1]));
     } else if (itemToBeAssigned <= ASSIGN_USER_MENU) {
         tbPtr = stringCopy(tbPtr, &userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName);
-    } else if (isItemConversion(itemToBeAssigned)) {
+    } else if (frontier_conversion_units.isItemConversion(itemToBeAssigned)) {
         var tb: [64]u8 = undefined;
-        fullConvSoftMenuItemNameInclHPCONV(itemToBeAssigned, &tb);
-        expandAbbreviations(&tb);
+        frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(itemToBeAssigned, &tb);
+        frontier_char_string.expandAbbreviations(&tb);
         tbPtr = stringCopy(tbPtr, &tb);
     } else if (itemToBeAssigned < 0) {
         tbPtr = stringCopy(tbPtr, &indexOfItems[@intCast(-itemToBeAssigned)].itemCatalogName);
@@ -934,7 +943,7 @@ pub export fn updateAssignTamBuffer() callconv(.c) void {
             tbPtr = stringCopy(tbPtr, STD_CURSOR);
         } else {
             _ = stringCopy(tmpString, aimBuffer);
-            insertAlphaCursor(0);
+            frontier_screen.insertAlphaCursor(0);
             tbPtr = stringCopy(tbPtr, tmpString);
             tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
         }
@@ -968,7 +977,7 @@ pub export fn _assignItem(menuItem: *userMenuItem_t) callconv(.c) void {
     } else if (itemToBeAssigned <= ASSIGN_USER_MENU) {
         lblPtr = @ptrCast(&userMenus[@intCast(-(itemToBeAssigned - ASSIGN_USER_MENU))].menuName);
         menuItem.item = -MNU_DYNAMIC;
-        _ = xcopy(&menuItem.argumentName, lblPtr, @intCast(stringByteLength(lblPtr) + 1));
+        _ = frontier_char_string.xcopy(&menuItem.argumentName, lblPtr, @intCast(stringByteLength(lblPtr) + 1));
         lblPtr = null;
     } else {
         menuItem.item = itemToBeAssigned;
@@ -977,7 +986,7 @@ pub export fn _assignItem(menuItem: *userMenuItem_t) callconv(.c) void {
     if (lblPtr != null) {
         l = lblPtr[0];
         lblPtr += 1;
-        _ = xcopy(&menuItem.argumentName, lblPtr, l);
+        _ = frontier_char_string.xcopy(&menuItem.argumentName, lblPtr, l);
         menuItem.argumentName[l] = 0;
     }
 }
@@ -990,7 +999,7 @@ pub export fn assignToMyMenu(position: u16) callconv(.c) void {
         _assignItem(&userMenuItems[position]);
     }
     cachedDynamicMenu = 0;
-    refreshScreen(20);
+    frontier_screen.refreshScreen(20);
 }
 
 // ===========================================================================
@@ -1001,7 +1010,7 @@ pub export fn assignToMyAlpha(position: u16) callconv(.c) void {
         _assignItem(&userAlphaItems[position]);
     }
     cachedDynamicMenu = 0;
-    refreshScreen(21);
+    frontier_screen.refreshScreen(21);
 }
 
 // ===========================================================================
@@ -1012,7 +1021,7 @@ pub export fn assignToUserMenu(position: u16) callconv(.c) void {
         _assignItem(@ptrCast(&userMenus[currentUserMenu].menuItem[position]));
     }
     cachedDynamicMenu = 0;
-    refreshScreen(22);
+    frontier_screen.refreshScreen(22);
 }
 
 // ===========================================================================
@@ -1292,20 +1301,20 @@ inline fn TO_BYTES(n: usize) usize {
 // setUserKeyArgument
 // ===========================================================================
 pub export fn setUserKeyArgument(position: u16, name: [*c]const u8) callconv(.c) void {
-    const userKeyLabelPtr1: [*c]u8 = getNthString(userKeyLabel, @intCast(position));
-    const userKeyLabelPtr2: [*c]u8 = getNthString(userKeyLabel, @intCast(position + 1));
-    const userKeyLabelPtr3: [*c]u8 = getNthString(userKeyLabel, 37 * 6);
+    const userKeyLabelPtr1: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, @intCast(position));
+    const userKeyLabelPtr2: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, @intCast(position + 1));
+    const userKeyLabelPtr3: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, 37 * 6);
     const newUserKeyLabelSize: u16 = userKeyLabelSize -% @as(u16, @intCast(stringByteLength(userKeyLabelPtr1))) +% @as(u16, @intCast(stringByteLength(name)));
     const newUserKeyLabel: [*c]u8 = @ptrCast(allocC47Blocks(TO_BLOCKS(newUserKeyLabelSize)));
     var newUserKeyLabelPtr: [*c]u8 = newUserKeyLabel;
 
-    _ = xcopy(newUserKeyLabelPtr, userKeyLabel, @intCast(@as(c_int, @intCast(@intFromPtr(userKeyLabelPtr1) - @intFromPtr(userKeyLabel)))));
+    _ = frontier_char_string.xcopy(newUserKeyLabelPtr, userKeyLabel, @intCast(@as(c_int, @intCast(@intFromPtr(userKeyLabelPtr1) - @intFromPtr(userKeyLabel)))));
     newUserKeyLabelPtr += @intFromPtr(userKeyLabelPtr1) - @intFromPtr(userKeyLabel);
-    _ = xcopy(newUserKeyLabelPtr, name, @intCast(stringByteLength(name)));
+    _ = frontier_char_string.xcopy(newUserKeyLabelPtr, name, @intCast(stringByteLength(name)));
     newUserKeyLabelPtr += @as(usize, @intCast(stringByteLength(name)));
     newUserKeyLabelPtr[0] = 0;
     newUserKeyLabelPtr += 1;
-    _ = xcopy(newUserKeyLabelPtr, userKeyLabelPtr2, @intCast(@as(c_int, @intCast(@intFromPtr(userKeyLabelPtr3) - @intFromPtr(userKeyLabelPtr2)))));
+    _ = frontier_char_string.xcopy(newUserKeyLabelPtr, userKeyLabelPtr2, @intCast(@as(c_int, @intCast(@intFromPtr(userKeyLabelPtr3) - @intFromPtr(userKeyLabelPtr2)))));
     newUserKeyLabelPtr += @intFromPtr(userKeyLabelPtr3) - @intFromPtr(userKeyLabelPtr2);
     newUserKeyLabelPtr[0] = 0;
     newUserKeyLabelPtr += 1;
@@ -1337,17 +1346,17 @@ pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
                     abortfHost(&tmp);
                 }
             }
-            _ = xcopy(&userMenus[numberOfUserMenus].menuName, name, @intCast(stringByteLength(name) + 1));
+            _ = frontier_char_string.xcopy(&userMenus[numberOfUserMenus].menuName, name, @intCast(stringByteLength(name) + 1));
             numberOfUserMenus += 1;
         } else {
-            displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "the name {s}", .{std.mem.span(name)});
                 if (comptime !dmcp_build) moreInfoOnError("In function createMenu:", errorMessage, "is already in use!", null);
             }
         }
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) moreInfoOnError("In function createMenu:", "the menu", name, "does not follow the naming convention");
         }
@@ -1372,8 +1381,8 @@ pub export fn assignEnterAlpha() callconv(.c) void {
     tam.alpha = true;
     setSystemFlag(FLAG_ALPHA);
     aimBuffer[0] = 0;
-    tamEnterMode(ITM_ASSIGN);
-    calcModeAim(NOPARAM);
+    frontier_tam.tamEnterMode(ITM_ASSIGN);
+    frontier_calc_mode.calcModeAim(NOPARAM);
 }
 
 // ===========================================================================
@@ -1382,7 +1391,7 @@ pub export fn assignEnterAlpha() callconv(.c) void {
 pub export fn assignLeaveAlpha() callconv(.c) void {
     tam.alpha = false;
     clearSystemFlag(FLAG_ALPHA);
-    leaveTamModeIfEnabled();
+    frontier_tam.leaveTamModeIfEnabled();
     alphaCursor = 0;
     if (comptime !dmcp_build) {
         calcModeNormalGui();
@@ -1393,17 +1402,17 @@ pub export fn assignLeaveAlpha() callconv(.c) void {
 // assignGetName1
 // ===========================================================================
 pub export fn assignGetName1() callconv(.c) void {
-    if (compareString(aimBuffer, "ENTER", CMP_NAME) == 0) {
+    if (frontier_sort.compareString(aimBuffer, "ENTER", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_ENTER;
-    } else if (compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_EXIT1;
-    } else if (compareString(aimBuffer, "USER", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "USER", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_USERMODE;
-    } else if (compareString(aimBuffer, "UP", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "UP", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_UP1;
-    } else if (compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_DOWN1;
-    } else if (compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
         itemToBeAssigned = ITM_BACKSPACE;
     } else if (aimBuffer[0] == 0) {
         itemToBeAssigned = ITM_NULL;
@@ -1413,7 +1422,7 @@ pub export fn assignGetName1() callconv(.c) void {
         // user-defined menus
         var i: i32 = 0;
         while (i < numberOfUserMenus) : (i += 1) {
-            if (compareString(aimBuffer, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
+            if (frontier_sort.compareString(aimBuffer, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
                 itemToBeAssigned = ASSIGN_USER_MENU - @as(i16, @intCast(i));
                 break;
             }
@@ -1423,7 +1432,7 @@ pub export fn assignGetName1() callconv(.c) void {
         if (itemToBeAssigned == ASSIGN_CLEAR) {
             var k: usize = 0;
             while (softmenu[k].menuItem != 0) : (k += 1) {
-                if (compareString(aimBuffer, &indexOfItems[@intCast(-softmenu[k].menuItem)].itemCatalogName, CMP_NAME) == 0) {
+                if (frontier_sort.compareString(aimBuffer, &indexOfItems[@intCast(-softmenu[k].menuItem)].itemCatalogName, CMP_NAME) == 0) {
                     itemToBeAssigned = softmenu[k].menuItem;
                     break;
                 }
@@ -1432,7 +1441,7 @@ pub export fn assignGetName1() callconv(.c) void {
 
         // programs
         if (itemToBeAssigned == ASSIGN_CLEAR) {
-            itemToBeAssigned = findNamedLabel(aimBuffer);
+            itemToBeAssigned = frontier_manage.findNamedLabel(aimBuffer);
             if (itemToBeAssigned == INVALID_VARIABLE) {
                 itemToBeAssigned = ASSIGN_CLEAR;
             } else {
@@ -1444,7 +1453,7 @@ pub export fn assignGetName1() callconv(.c) void {
         if (itemToBeAssigned == ASSIGN_CLEAR) {
             var j: i32 = 0;
             while (j < LAST_ITEM) : (j += 1) {
-                if ((indexOfItems[@intCast(j)].status & CAT_STATUS) == CAT_FNCT and compareString(aimBuffer, &indexOfItems[@intCast(j)].itemCatalogName, CMP_NAME) == 0) {
+                if ((indexOfItems[@intCast(j)].status & CAT_STATUS) == CAT_FNCT and frontier_sort.compareString(aimBuffer, &indexOfItems[@intCast(j)].itemCatalogName, CMP_NAME) == 0) {
                     itemToBeAssigned = @intCast(j);
                     break;
                 }
@@ -1474,7 +1483,7 @@ fn _assignToKey(keyFunc: i16) bool_t {
                 0 => kf = key.primary,
                 else => {},
             }
-            if (keyFunc == kf and (!getSystemFlag(FLAG_USER) or getNthString(userKeyLabel, @intCast(j * 6 + @as(i32, keyStateCode) + i))[0] == 0)) {
+            if (keyFunc == kf and (!getSystemFlag(FLAG_USER) or frontier_softmenus.getNthString(userKeyLabel, @intCast(j * 6 + @as(i32, keyStateCode) + i))[0] == 0)) {
                 var kc: [4]u8 = std.mem.zeroes([4]u8);
                 kc[0] = @intCast(@divTrunc(j, 10) + '0');
                 kc[1] = @intCast(@rem(j, 10) + '0');
@@ -1495,26 +1504,26 @@ const FLAG_USER: i32 = 32788;
 // ===========================================================================
 pub export fn assignGetName2() callconv(.c) void {
     var result: bool_t = false;
-    if (compareString(aimBuffer, "ENTER", CMP_NAME) == 0) {
+    if (frontier_sort.compareString(aimBuffer, "ENTER", CMP_NAME) == 0) {
         result = _assignToKey(ITM_ENTER);
-    } else if (compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "EXIT", CMP_NAME) == 0) {
         result = _assignToKey(ITM_EXIT1);
-    } else if (compareString(aimBuffer, "USER", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "USER", CMP_NAME) == 0) {
         result = _assignToKey(ITM_USERMODE);
-    } else if (compareString(aimBuffer, "UP", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "UP", CMP_NAME) == 0) {
         result = _assignToKey(ITM_UP1);
-    } else if (compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "DOWN", CMP_NAME) == 0) {
         result = _assignToKey(ITM_DOWN1);
-    } else if (compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
+    } else if (frontier_sort.compareString(aimBuffer, "BKSPC", CMP_NAME) == 0) {
         result = _assignToKey(ITM_BACKSPACE);
     }
     calcMode = previousCalcMode;
     shiftF = false;
     shiftG = false;
-    refreshScreen(23);
+    frontier_screen.refreshScreen(23);
 
     if (!result) {
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         if (comptime extra_info) {
             if (comptime !dmcp_build) moreInfoOnError("In function assignGetName2:", aimBuffer, "is invalid name.", null);
         }

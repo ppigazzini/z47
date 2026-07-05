@@ -57,6 +57,8 @@ pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 pub const real_t = abi.Real;
 
 pub const realContext_t = abi.RealContext;
@@ -91,15 +93,15 @@ extern fn PowerReal(y: *const real_t, x: *const real_t, result: *real_t, real_co
 
 extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn realSetZero(value: *real_t) void;
-extern fn realSetOne(value: *real_t) void;
-extern fn realSetPlusInfinity(value: *real_t) void;
+
+
+
 extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
-extern fn realSetNaN(value: *real_t) void;
+
 extern fn realIsAnInteger(value: *const real_t) bool;
-extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
+
 extern fn linpol(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void;
 
 pub extern fn C47_WP34S_Atan(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
@@ -199,16 +201,16 @@ pub inline fn powerReal(y: *const real_t, x: *const real_t, result: *real_t, rea
     PowerReal(y, x, result, real_context);
 }
 pub inline fn setZero(value: *real_t) void {
-    realSetZero(value);
+    frontier_real_type.realSetZero(value);
 }
 pub inline fn setOne(value: *real_t) void {
-    realSetOne(value);
+    frontier_real_type.realSetOne(value);
 }
 pub inline fn setPlusInfinity(value: *real_t) void {
-    realSetPlusInfinity(value);
+    frontier_real_type.realSetPlusInfinity(value);
 }
 pub inline fn setNaN(value: *real_t) void {
-    realSetNaN(value);
+    frontier_real_type.realSetNaN(value);
 }
 
 pub inline fn realIsSpecial(value: *const real_t) bool {
@@ -245,7 +247,7 @@ pub inline fn isAnInteger(value: *const real_t) bool {
     return realIsAnInteger(value);
 }
 pub inline fn toIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void {
-    realToIntegralValue(source, destination, mode, real_context);
+    frontier_register_value_conversions.realToIntegralValue(source, destination, mode, real_context);
 }
 pub inline fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
     linpol(a, b, p, res);

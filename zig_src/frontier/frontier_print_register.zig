@@ -1,4 +1,8 @@
 const std = @import("std");
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
 
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
@@ -44,7 +48,7 @@ fn printEnabledWhileProgramRuns() bool {
 
 fn runAlpha(register_no: u16) void {
     if (printerActive()) {
-        z47_frontier_print_alpha_register(register_no);
+        frontier_print.z47_frontier_print_alpha_register(register_no);
         return;
     }
 
@@ -52,17 +56,17 @@ fn runAlpha(register_no: u16) void {
         return;
     }
 
-    z47_frontier_print_backup_aim_message_area();
-    create_filename(".REGS.TSV");
-    tmpString_csv_out(5);
-    z47_frontier_print_restore_aim_message_area();
+    frontier_print.z47_frontier_print_backup_aim_message_area();
+    frontier_graph_text.create_filename(".REGS.TSV");
+    frontier_textfiles.tmpString_csv_out(5);
+    frontier_print.z47_frontier_print_restore_aim_message_area();
 }
 
 fn runRegister(register_no: u16) void {
     if (printerActive()) {
         var label: [32]u8 = std.mem.zeroes([32]u8);
-        z47_frontier_format_register_label(register_no, &label, label.len);
-        printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
+        frontier_print.z47_frontier_format_register_label(register_no, &label, label.len);
+        frontier_print.printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
         return;
     }
 
@@ -70,16 +74,16 @@ fn runRegister(register_no: u16) void {
         return;
     }
 
-    create_filename(".REGS.TSV");
-    stackregister_csv_out(@as(i16, @intCast(register_no)), @as(i16, @intCast(register_no)), false);
+    frontier_graph_text.create_filename(".REGS.TSV");
+    frontier_textfiles.stackregister_csv_out(@as(i16, @intCast(register_no)), @as(i16, @intCast(register_no)), false);
 }
 
 fn reportPrintingDisabled() void {
-    displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 fn reportMissingSigmaData() void {
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 fn runSigma() void {
@@ -101,8 +105,8 @@ fn runSigma() void {
 
     var register_index: u16 = 0;
     while (register_index < SIGMA_REGISTER_COUNT) : (register_index += 1) {
-        z47_frontier_print_sigma_line(register_index);
-        if (z47_frontier_print_exit_pressed()) {
+        frontier_print.z47_frontier_print_sigma_line(register_index);
+        if (frontier_print.z47_frontier_print_exit_pressed()) {
             return;
         }
     }
@@ -114,14 +118,13 @@ extern var currentKeyCode: u8;
 extern var statisticalSumsPointer: ?*anyopaque;
 
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
-extern fn z47_frontier_print_exit_pressed() bool;
-extern fn z47_frontier_print_sigma_line(index: u16) void;
-extern fn z47_frontier_print_alpha_register(register_no: u16) void;
-extern fn create_filename(file_suffix: [*:0]const u8) void;
-extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, one_line: bool) void;
-extern fn z47_frontier_format_register_label(register_no: u16, label: [*]u8, label_size: u16) void;
-extern fn z47_frontier_print_backup_aim_message_area() void;
-extern fn z47_frontier_print_restore_aim_message_area() void;
-extern fn tmpString_csv_out(nn: u8) void;
+
+
+
+
+
+
+
+
+
+

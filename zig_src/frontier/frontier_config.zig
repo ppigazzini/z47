@@ -81,6 +81,29 @@ const DECNUMUNITS = 25;
 
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_font_browser = @import("frontier_font_browser.zig"); // M-callconv: Zig-to-Zig
+const frontier_fractions = @import("frontier_fractions.zig"); // M-callconv: Zig-to-Zig
+const frontier_graphs = @import("frontier_graphs.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_programmable_menu = @import("frontier_programmable_menu.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_recall = @import("frontier_recall.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
@@ -600,7 +623,7 @@ const kbd_std_D47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kb
 const kbd_std_V47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_V47" }) else {};
 const kbd_std_N47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_N47" }) else {};
 
-// kbd_std_C47[37] size for the xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47)) calls.
+// kbd_std_C47[37] size for the frontier_char_string.xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47)) calls.
 const SIZEOF_KBD_STD: u32 = 37 * @sizeOf(calcKey_t);
 
 extern var Norm_Key_00: normKey_t;
@@ -780,14 +803,13 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 
 // decNumber primitives behind int32ToReal / realToReal34 / real34SetZero / realSetZero.
 extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
 // realToReal34/decQuadFromNumber are macros over decimal128FromNumber.
 extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadZero(dst: *real34_t) *real34_t;
-extern fn realSetZero(value: *real_t) void;
+
 extern fn decContextDefault(ctx: *realContext_t, kind: c_int) *realContext_t;
 
 // PRNG seed (pcg32_srandom(uint64_t, uint64_t)).
@@ -803,7 +825,7 @@ extern fn fnClearFlag(flag: u16) void;
 extern fn setSystemFlagChanged(sf: i32) void;
 
 // register / long-integer helpers
-extern fn fnIntInputLongint(inp1: i32) void;
+
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -815,9 +837,8 @@ extern fn allocateLocalRegisters(numberOfRegistersToAllocate: u16) void;
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
-extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool_t) bool_t;
-extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) void;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
+
+
 
 // GMP mpz_struct (limb width == pointer width on every z47 target).
 const mpz_struct = abi.Mpz;
@@ -833,19 +854,19 @@ const mpz_get_ui = @"__gmpz_get_ui";
 const mpz_get_si = @"__gmpz_get_si";
 
 // other engine functions
-extern fn fnSetWeekOfYearRule(param: u16) void;
-extern fn fnRefreshState() void;
-extern fn refreshScreen(source: u16) void;
-extern fn refreshStatusBar() void;
-extern fn forceSBupdate() void;
+
+
+
+
+
 extern fn showShiftState() void;
 extern fn refreshModeGui() void;
-extern fn showSoftmenu(id: i16) void;
-extern fn showSoftmenuCurrentPart() void;
-extern fn popSoftmenu() void;
-extern fn fnExitAllMenus(unusedButMandatoryParameter: u16) void;
-extern fn fnClearMenu(unusedButMandatoryParameter: u16) void;
-extern fn calcModeNormal() void;
+
+
+
+
+
+
 extern fn fnKeyExit(unusedButMandatoryParameter: u16) void;
 extern fn fnKeyBackspace(unusedButMandatoryParameter: u16) void;
 extern fn fnDisplayStack(numberOfStackLines: u16) void;
@@ -853,45 +874,43 @@ extern fn fnClearStack(unusedButMandatoryParameter: u16) void;
 extern fn fnPi(unusedButMandatoryParameter: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn fnSquare(unusedButMandatoryParameter: u16) void;
-extern fn fnStoreConfig(r: u16) void;
-extern fn fnRecallConfig(r: u16) void;
-extern fn fnStore(r: u16) void;
-extern fn fnStrtoX(buffer: [*c]const u8) void;
-extern fn fnStrInputLongint(inp1: [*c]u8) void;
+
+
+
+
+
 extern fn resetKeytimers() void;
-extern fn getDateString(dateString: [*c]u8) void;
-extern fn assignToMyMenu(position: u16) void;
-extern fn addItemToBuffer(item: u16) void;
-extern fn runFunction(func: i16) void;
+
+
+
+
 extern var alphaRegister: u16;
 extern var varMenu42: bool;
 extern fn liftStack() void;
 extern fn getFreeRamMemory() u32;
-extern fn scanLabelsAndPrograms() void;
-extern fn graph_reset() void;
-extern fn initFontBrowser() void;
-extern fn resetAlphaSelectionBuffer() void;
-extern fn mimFinalize() void;
-extern fn calcSigma(maxOffset: u16) void;
-extern fn initUserKeyArgument() void;
-extern fn setUserKeyArgument(position: u16, name: [*c]const u8) void;
-extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn displayBugScreen(msg: [*c]const u8) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+
+
+
+
+
+
+
+
+
+
 
 // Cross-owner canonical symbols (renamed away by the retired shim, owned by
 // frontend_settings / clear_all / keys_management) -> extern, called by name.
-extern fn fnSetGapChar(charParam: u16) void;
-extern fn fnAngularMode(am: u16) void;
-extern fn fnKeysManagement(choice: u16) void;
+
+
 
 // Engine functions config.c calls (owned elsewhere, not by this file).
-extern fn fnDenMax(D: u16) void;
-extern fn fnDisplayFormatDsp(displayFormatN: u16) void;
-extern fn fnInDefault(in: u16) void;
-extern fn fnDisplayFormatSigFig(displayFormatN: u16) void;
-extern fn fnDisplayFormatAll(displayFormatN: u16) void;
-extern fn fnDisplayFormatFix(displayFormatN: u16) void;
+
+
+
+
+
+
 extern fn SetSetting(jmConfig: u16) void;
 
 // ---------------------------------------------------------------------------
@@ -988,7 +1007,7 @@ pub export fn z47_frontier_push_u32_to_x(value: u32) callconv(.c) void {
     liftStack();
     mpz_init(&tmp);
     mpz_set_ui(&tmp, value);
-    convertLongIntegerToLongIntegerRegister(&tmp, REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&tmp, REGISTER_X);
     mpz_clear(&tmp);
 }
 
@@ -1008,12 +1027,12 @@ pub export fn z47_frontier_keys_to_user_case() callconv(.c) void {
     if (normKey00Key() != -1) {
         const k: usize = @intCast(normKey00Key());
         kbd_usr[k].primary = Norm_Key_00.func;
-        setUserKeyArgument(@intCast(@as(i32, @intCast(k)) * 6), &Norm_Key_00.funcParam);
-        fnRefreshState();
+        frontier_assign.setUserKeyArgument(@intCast(@as(i32, @intCast(k)) * 6), &Norm_Key_00.funcParam);
+        frontier_radio_button_catalog.fnRefreshState();
         fnSetFlag(FLAG_USER_u16);
     } else {
         Norm_Key_00.used = false;
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
 const FLAG_USER_u16: u16 = 32788;
@@ -1030,24 +1049,24 @@ pub export fn z47_frontier_keys_from_user_case() callconv(.c) void {
         Norm_Key_00.func = kbd_usr[k].primary;
         Norm_Key_00.funcParam[0] = 0;
         Norm_Key_00.used = Norm_Key_00.func != kbdStd()[k].primary;
-        const funcParam = getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6));
+        const funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6));
         if ((funcParam[0] != 0) and ((Norm_Key_00.func == -MNU_DYNAMIC) or (Norm_Key_00.func == ITM_XEQ) or (Norm_Key_00.func == ITM_RCL))) {
-            _ = strcpy(&Norm_Key_00.funcParam, getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6)));
+            _ = strcpy(&Norm_Key_00.funcParam, frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6)));
         }
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
         fnClearFlag(FLAG_USER_u16);
     } else {
         Norm_Key_00.used = false;
-        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
 
 pub export fn z47_frontier_keys_user_layout_reset_case() callconv(.c) void {
-    _ = xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
+    _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
     Norm_Key_00.func = normKey00ItemInLayout();
     Norm_Key_00.funcParam[0] = 0;
     Norm_Key_00.used = false;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     fnClearFlag(FLAG_USER_u16);
 }
 
@@ -1107,16 +1126,16 @@ pub export fn configCommon(idx: u16) callconv(.c) void {
     forceSystemFlag(FLAG_MDY, @intCast(cs.mdy));
     forceSystemFlag(FLAG_YMD, @intCast(cs.ymd));
     firstGregorianDay = cs.gregorianDay;
-    fnSetWeekOfYearRule(@intCast(cs.woy));
+    frontier_date_time.fnSetWeekOfYearRule(@intCast(cs.woy));
     temporaryInformation = TI_DISP_JULIAN_WOY;
 
-    fnSetGapChar(@intCast(0 + cs.gapl));
+    frontier.fnSetGapChar(@intCast(0 + cs.gapl));
     grpGroupingLeft = @intCast(cs.gprl);
     grpGroupingGr1LeftOverflow = @intCast(cs.gpr1x);
     grpGroupingGr1Left = @intCast(cs.gpr1);
     grpGroupingRight = @intCast(cs.gprr);
-    fnSetGapChar(@intCast(32768 + cs.gapr));
-    fnSetGapChar(@intCast(49152 + cs.gaprx));
+    frontier.fnSetGapChar(@intCast(32768 + cs.gapr));
+    frontier.fnSetGapChar(@intCast(49152 + cs.gaprx));
     forceSystemFlag(FLAG_US, @intCast(cs.us));
 }
 
@@ -1143,10 +1162,10 @@ fn Sett(grp: i16) void {
             const opcode = Settings[base + 0];
             const value = Settings[base + 1 + grpU];
             switch (opcode) {
-                op_InputDefaultDataType => fnInDefault(@intCast(value)),
-                op_SigFigNumberOfDigits => fnDisplayFormatSigFig(@intCast(value)),
-                op_AllNumberOfDigits => fnDisplayFormatAll(@intCast(value)),
-                op_FixNumberOfDigits => fnDisplayFormatFix(@intCast(value)),
+                op_InputDefaultDataType => frontier_addons.fnInDefault(@intCast(value)),
+                op_SigFigNumberOfDigits => frontier.fnDisplayFormatSigFig(@intCast(value)),
+                op_AllNumberOfDigits => frontier.fnDisplayFormatAll(@intCast(value)),
+                op_FixNumberOfDigits => frontier.fnDisplayFormatFix(@intCast(value)),
                 op_RNG => exponentLimit = @intCast(value),
                 op_SDIGS => significantDigits = @intCast(value),
                 op_FDIGS => fractionDigits = @intCast(value),
@@ -1183,7 +1202,7 @@ fn Sett(grp: i16) void {
 
                 2 => SetSetting(@intCast(value)),
                 3 => forceSystemFlag(@intCast(@as(u32, @bitCast(value))), Settings[base + 1]),
-                4 => fnSetGapChar(@intCast(@as(u32, @bitCast(value)) & 0xFFFF)),
+                4 => frontier.fnSetGapChar(@intCast(@as(u32, @bitCast(value)) & 0xFFFF)),
                 else => {},
             }
         }
@@ -1196,11 +1215,11 @@ const xxx: i32 = -10001;
 // ===========================================================================
 pub export fn fnSetHP35(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    getDateString(&lastStateFileOpened);
+    frontier_date_time.getDateString(&lastStateFileOpened);
     _ = strcat(&lastStateFileOpened, ": HP35 defaults");
     fnKeyExit(0);
     fnClrMod(0);
-    fnStoreConfig(35);
+    frontier_store.fnStoreConfig(35);
 
     fnClearStack(0);
     fnPi(0);
@@ -1208,52 +1227,52 @@ pub export fn fnSetHP35(unusedButMandatoryParameter: u16) callconv(.c) void {
     Sett(_HP35);
 
     temporaryInformation = TI_NO_INFO;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(160);
+    frontier_screen.refreshScreen(160);
 }
 
 pub export fn fnSetJM(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnDrop(NOPARAM);
     resetOtherConfigurationStuff(true);
-    getDateString(&lastStateFileOpened);
+    frontier_date_time.getDateString(&lastStateFileOpened);
     _ = strcat(&lastStateFileOpened, ": Jaco defaults");
 
     Sett(_JM);
 
     roundingMode = RM_HALF_UP;
     if (!isR47FAM()) {
-        fnKeysManagement(ITM_RIBBON_C47PL);
+        frontier.fnKeysManagement(ITM_RIBBON_C47PL);
     } else {
-        fnKeysManagement(ITM_RIBBON_R47PL);
+        frontier.fnKeysManagement(ITM_RIBBON_R47PL);
     }
 
     itemToBeAssigned = ITM_op_j;
-    assignToMyMenu(10);
+    frontier_assign.assignToMyMenu(10);
     itemToBeAssigned = ITM_op_j_pol;
-    assignToMyMenu(11);
+    frontier_assign.assignToMyMenu(11);
     itemToBeAssigned = -MNU_RIBBONS;
-    assignToMyMenu(9);
+    frontier_assign.assignToMyMenu(9);
     itemToBeAssigned = ITM_BOLD;
-    assignToMyMenu(8);
+    frontier_assign.assignToMyMenu(8);
     itemToBeAssigned = -MNU_DEV;
-    assignToMyMenu(7);
+    frontier_assign.assignToMyMenu(7);
     itemToBeAssigned = -MNU_EE;
-    assignToMyMenu(6);
+    frontier_assign.assignToMyMenu(6);
 
     cachedDynamicMenu = 0;
 
     temporaryInformation = TI_NO_INFO;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(161);
+    frontier_screen.refreshScreen(161);
 }
 
 pub export fn fnSetRJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     resetOtherConfigurationStuff(true);
-    getDateString(&lastStateFileOpened);
+    frontier_date_time.getDateString(&lastStateFileOpened);
     _ = strcat(&lastStateFileOpened, ": RJvM defaults");
 
     Sett(_RJ);
@@ -1261,42 +1280,42 @@ pub export fn fnSetRJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     fnKeyExit(0);
     fnDrop(NOPARAM);
     fnSquare(0);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(165);
+    frontier_screen.refreshScreen(165);
 }
 
 // _fnSetC47 (file-local)
 fn _fnSetC47(unusedButMandatoryParameter: u16) void {
     _ = unusedButMandatoryParameter;
     fnKeyExit(0);
-    addItemToBuffer(ITM_EXIT1);
-    getDateString(&lastStateFileOpened);
+    frontier_bufferize.addItemToBuffer(ITM_EXIT1);
+    frontier_date_time.getDateString(&lastStateFileOpened);
     _ = strcat(&lastStateFileOpened, ": C47 defaults");
 
     Sett(_C47);
 
     temporaryInformation = TI_NO_INFO;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 
     fnDrop(NOPARAM);
     fnDrop(NOPARAM);
-    runFunction(ITM_SQUARE);
+    frontier_items.runFunction(ITM_SQUARE);
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(162);
+    frontier_screen.refreshScreen(162);
 }
 
 pub export fn fnSetC47(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     fnKeyExit(0);
-    addItemToBuffer(ITM_EXIT1);
+    frontier_bufferize.addItemToBuffer(ITM_EXIT1);
     fnClrMod(0);
     _fnSetC47(0);
-    fnRecallConfig(35);
+    frontier_recall.fnRecallConfig(35);
     lastErrorCode = 0;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(167);
+    frontier_screen.refreshScreen(167);
 }
 
 // ===========================================================================
@@ -1320,7 +1339,7 @@ pub export fn fnClrMod(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
     fnKeyExit(0);
     fnKeyExit(0);
-    popSoftmenu();
+    frontier_softmenus.popSoftmenu();
     lastIntegerBase = 0;
     decodedIntegerBase = 0;
     editingLiteralType = 0;
@@ -1328,15 +1347,15 @@ pub export fn fnClrMod(unusedButMandatoryParameter: u16) callconv(.c) void {
     lastErrorCode = 0;
     currentInputVariable = INVALID_VARIABLE;
     dispBase = 0;
-    fnExitAllMenus(0);
+    frontier_softmenus.fnExitAllMenus(0);
     if (!checkHP()) {
         fnDisplayStack(4);
     } else {
         _fnSetC47(0);
-        fnRecallConfig(35);
+        frontier_recall.fnRecallConfig(35);
         lastErrorCode = 0;
     }
-    calcModeNormal();
+    frontier_calc_mode.calcModeNormal();
     hourGlassIconEnabled = false;
     screenUpdatingMode = SCRUPD_AUTO;
     shiftF = false;
@@ -1346,10 +1365,10 @@ pub export fn fnClrMod(unusedButMandatoryParameter: u16) callconv(.c) void {
     showShiftState();
     refreshModeGui();
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    refreshStatusBar();
+    frontier_status_bar.refreshStatusBar();
     screenUpdatingMode = SCRUPD_AUTO;
-    forceSBupdate();
-    refreshScreen(166);
+    frontier_status_bar.forceSBupdate();
+    frontier_screen.refreshScreen(166);
 }
 extern var editingLiteralType: u8;
 
@@ -1364,7 +1383,7 @@ pub export fn fnFreeMemory(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnGetRoundingMode(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(roundingMode));
+    frontier_addons.fnIntInputLongint(@intCast(roundingMode));
 }
 
 pub export fn fnGetWordSize(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1412,7 +1431,7 @@ pub export fn fnSetWordSize(WS_in: u16) callconv(.c) void {
         }
     }
 
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 const dtShortInteger: u32 = 8;
 const REGISTER_L: calcRegister_t = 108;
@@ -1437,7 +1456,7 @@ pub export fn fnBatteryVoltage(unusedButMandatoryParameter: u16) callconv(.c) vo
 
     temporaryInformation = TI_BATTV;
     value.exponent -= 3; // value = value / 1000
-    convertRealToResultRegister(&value, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(&value, REGISTER_X, amNone);
 }
 
 pub export fn getFreeFlash() callconv(.c) u32 {
@@ -1446,12 +1465,12 @@ pub export fn getFreeFlash() callconv(.c) u32 {
 
 pub export fn fnGetSignificantDigits(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(if (significantDigits == 0) @as(i32, 34) else @as(i32, @intCast(significantDigits))));
+    frontier_addons.fnIntInputLongint(@intCast(if (significantDigits == 0) @as(i32, 34) else @as(i32, @intCast(significantDigits))));
 }
 
 pub export fn fnGetFractionDigits(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(if (fractionDigits == 0) @as(i32, 34) else @as(i32, @intCast(fractionDigits))));
+    frontier_addons.fnIntInputLongint(@intCast(if (fractionDigits == 0) @as(i32, 34) else @as(i32, @intCast(fractionDigits))));
 }
 
 pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
@@ -1461,38 +1480,38 @@ pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
     } else {
         abi.fmtBufZ(errorMessage[0..512], "Value {d} for RM is out of range. ", .{@as(u32, RM)});
         _ = strcat(errorMessage, "Must be from 0 to 6");
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
     }
 }
 
 pub export fn fnGetADM(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(currentAngularMode));
+    frontier_addons.fnIntInputLongint(@intCast(currentAngularMode));
 }
 
 pub export fn fnSetADM(regist: u16) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
     mpz_init(&lgInt);
-    if (!getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
     if (value < amNone) {
-        fnAngularMode(@intCast(value));
+        frontier.fnAngularMode(@intCast(value));
     }
     mpz_clear(&lgInt);
 }
 
 pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(shortIntegerModeValue());
+    frontier_addons.fnIntInputLongint(shortIntegerModeValue());
 }
 
 pub export fn fnSetISM(regist: u16) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
     mpz_init(&lgInt);
-    if (!getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
     }
@@ -1508,30 +1527,30 @@ pub export fn fnSetISM(regist: u16) callconv(.c) void {
 
 pub export fn fnGetDMX(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(@as(i32, @bitCast(denMax))));
+    frontier_addons.fnIntInputLongint(@intCast(@as(i32, @bitCast(denMax))));
 }
 
 pub export fn fnSetDMX(regist: u16) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
     mpz_init(&lgInt);
-    if (!getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    fnDenMax(@intCast(value & 0xFFFF));
+    frontier_fractions.fnDenMax(@intCast(value & 0xFFFF));
     mpz_clear(&lgInt);
 }
 
 pub export fn fnGetREALDF(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(displayFormat));
+    frontier_addons.fnIntInputLongint(@intCast(displayFormat));
 }
 
 pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
     mpz_init(&lgInt);
-    if (!getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
     }
@@ -1544,18 +1563,18 @@ pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
 
 pub export fn fnGetNDEC(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnIntInputLongint(@intCast(displayFormatDigits));
+    frontier_addons.fnIntInputLongint(@intCast(displayFormatDigits));
 }
 
 pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
     mpz_init(&lgInt);
-    if (!getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    fnDisplayFormatDsp(@intCast(value & 0xFFFF));
+    frontier.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
     mpz_clear(&lgInt);
 }
 
@@ -1612,7 +1631,7 @@ pub export fn setConfirmationMode(func: ConfirmedFn) callconv(.c) void {
     clearSystemFlag(FLAG_ALPHA);
     confirmedFunction = func;
     temporaryInformation = TI_ARE_YOU_SURE;
-    showSoftmenu(-MNU_YESNO);
+    frontier_softmenus.showSoftmenu(-MNU_YESNO);
 }
 const FLAG_ALPHA: c_uint = 32782;
 
@@ -1777,7 +1796,7 @@ pub export fn restoreStats() callconv(.c) void {
     _ = strcpy(&statMx, "STATS");
     lrSelectionHistobackup = 65535;
     lrChosenHistobackup = 65535;
-    calcSigma(0);
+    frontier_stats.calcSigma(0);
 }
 
 // ===========================================================================
@@ -1893,7 +1912,7 @@ fn addTestPrograms() void {
             firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
             freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - numberOfBytesUsed);
         }
-        scanLabelsAndPrograms();
+        frontier_manage.scanLabelsAndPrograms();
     } else {
         const testPgmsOpt = fopen("res/testPgms/testPgms.bin", "rb");
         if (testPgmsOpt == null) {
@@ -1920,7 +1939,7 @@ fn addTestPrograms() void {
 
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
 
-        scanLabelsAndPrograms();
+        frontier_manage.scanLabelsAndPrograms();
         leavePem();
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
     }
@@ -2007,14 +2026,14 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         beginOfProgramMemory[3] = 255;
         freeProgramBytes = 0;
 
-        scanLabelsAndPrograms();
+        frontier_manage.scanLabelsAndPrograms();
 
         if (glyphNotFound.data == null) {
             glyphNotFound.data = @ptrCast(malloc(38));
         }
-        _ = xcopy(glyphNotFound.data, &msg2[0].str2, 38);
+        _ = frontier_char_string.xcopy(glyphNotFound.data, &msg2[0].str2, 38);
 
-        _ = xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
+        _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
 
         // 9 real34 reserved variables: ACC..PV
         {
@@ -2117,8 +2136,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         lastPlotMode = PLOT_NOTHING;
         plotSelection = 0;
         drawHistogram = 0;
-        realSetZero(&SAVED_SIGMA_LASTX);
-        realSetZero(&SAVED_SIGMA_LASTY);
+        frontier_real_type.realSetZero(&SAVED_SIGMA_LASTX);
+        frontier_real_type.realSetZero(&SAVED_SIGMA_LASTY);
         SAVED_SIGMA_lastAddRem = SIGMA_NONE;
 
         plotStatMx[0] = 0;
@@ -2164,7 +2183,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         ctxtReal34.round = DEC_ROUND_HALF_EVEN;
 
-        initFontBrowser();
+        frontier_font_browser.initFontBrowser();
         currentAsnScr = 1;
         currentFlgScr = NO_SCREEN;
         lastFlgScr = NO_SCREEN;
@@ -2177,14 +2196,14 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         lastErrorCode = 0;
         previousErrorCode = 0;
 
-        resetAlphaSelectionBuffer();
+        frontier_bufferize.resetAlphaSelectionBuffer();
 
         if (calcMode == CM_MIM) {
-            mimFinalize();
+            frontier.mimFinalize();
         }
 
         clearScreen(10);
-        calcModeNormal();
+        frontier_calc_mode.calcModeNormal();
 
         if (comptime !dmcp_build) {
             forceTamAlpha = false;
@@ -2210,19 +2229,19 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         numberOfUserMenus = 0;
         currentUserMenu = 0;
 
-        initUserKeyArgument();
+        frontier_assign.initUserKeyArgument();
 
-        fnClearMenu(NOPARAM);
+        frontier_programmable_menu.fnClearMenu(NOPARAM);
 
-        calcModeNormal();
+        frontier_calc_mode.calcModeNormal();
         if (getSystemFlag(FLAG_BASE_HOME)) {
-            showSoftmenu(-MNU_HOME);
+            frontier_softmenus.showSoftmenu(-MNU_HOME);
         }
 
         showRegis = 9999;
         overrideShowBottomLine = 0;
 
-        graph_reset();
+        frontier_graphs.graph_reset();
 
         ListXYposition = 0;
 
@@ -2236,22 +2255,22 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         current_cursor_y = 0;
         lastT_cursorPos = 0;
 
-        fnKeysManagement(USER_PRESET);
-        fnKeysManagement(USER_HRESET);
-        fnKeysManagement(USER_ARESET);
-        fnKeysManagement(USER_MRESET);
+        frontier.fnKeysManagement(USER_PRESET);
+        frontier.fnKeysManagement(USER_HRESET);
+        frontier.fnKeysManagement(USER_ARESET);
+        frontier.fnKeysManagement(USER_MRESET);
 
         if (isR47FAM()) {
-            fnKeysManagement(ITM_RIBBON_R47);
+            frontier.fnKeysManagement(ITM_RIBBON_R47);
         } else {
-            fnKeysManagement(ITM_RIBBON_C47);
+            frontier.fnKeysManagement(ITM_RIBBON_C47);
         }
 
-        showSoftmenu(-MNU_MyMenu);
-        fnKeysManagement(USER_KRESET);
+        frontier_softmenus.showSoftmenu(-MNU_MyMenu);
+        frontier.fnKeysManagement(USER_KRESET);
         temporaryInformation = TI_NO_INFO;
         screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(163);
+        frontier_screen.refreshScreen(163);
 
         // !SAVE_SPACE_DM42_14 (never defined here)
         addTestPrograms();
@@ -2284,11 +2303,11 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             var i: usize = 0;
             while (i < n) : (i += 1) {
                 if (indexOfStrings[i].itemType == 0) {
-                    fnStrtoX(indexOfStrings[i].itemName);
+                    frontier_addons.fnStrtoX(indexOfStrings[i].itemName);
                 } else if (indexOfStrings[i].itemType == 1) {
-                    fnStrInputLongint(@constCast(indexOfStrings[i].itemName));
+                    frontier_addons.fnStrInputLongint(@constCast(indexOfStrings[i].itemName));
                 }
-                fnStore(indexOfStrings[i].count);
+                frontier_store.fnStore(indexOfStrings[i].count);
                 fnDrop(NOPARAM);
             }
         }
@@ -2300,7 +2319,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         printerState_printer_model(PRINTER_HP);
         printerState_delay(getLineDelay());
 
-        runFunction(ITM_VERS);
+        frontier_items.runFunction(ITM_VERS);
 
         // Initialize default alpha register (C: alphaRegister = REGISTER_K; varMenu42 = false;)
         alphaRegister = REGISTER_K;
@@ -2312,13 +2331,13 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             }
         }
 
-        showSoftmenuCurrentPart();
+        frontier_softmenus.showSoftmenuCurrentPart();
         doRefreshSoftMenu = true;
         screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(164);
+        frontier_screen.refreshScreen(164);
 
         fnClearFlag(FLAG_USER_u16);
-        fnRefreshState();
+        frontier_radio_button_catalog.fnRefreshState();
     }
 }
 
@@ -2371,7 +2390,7 @@ inline fn freeRegion0() *freeMemoryRegion_t {
     }
 }
 
-// clearScreen(cnt): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); forceSBupdate();
+// clearScreen(cnt): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); frontier_status_bar.forceSBupdate();
 const SCREEN_WIDTH: u32 = 400;
 const LCD_SET_VALUE: c_int = 0;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
@@ -2387,7 +2406,7 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
 inline fn clearScreen(cnt: u16) void {
     _ = cnt;
     lcdFillRect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 
 // IR_PRINTING getLineDelay() — firmware HAL fn (host-side too, real symbol).
@@ -2563,14 +2582,13 @@ pub export fn backToSystem(confirmation: u16) callconv(.c) void {
     } else {
         cancelFilename = true;
         if (comptime !dmcp_build) {
-            fnOff(NOPARAM);
+            frontier_calc_mode.fnOff(NOPARAM);
         }
         if (comptime dmcp_build) {
             backToDMCP = true;
         }
     }
 }
-extern fn fnOff(unusedButMandatoryParameter: u16) void;
 
 pub export fn runDMCPmenu(confirmation: u16) callconv(.c) void {
     // Whole body is DMCP_BUILD-only; on host it is an empty function.
