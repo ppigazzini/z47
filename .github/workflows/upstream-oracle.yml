@@ -362,6 +362,9 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Format-equivalence oracle (M24): every migrated sprintf->std.fmt
+          # translation must stay byte-identical to libc.
+          zig build format_parity
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
@@ -891,6 +894,9 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Format-equivalence oracle (M24): every migrated sprintf->std.fmt
+          # translation must stay byte-identical to libc.
+          zig build format_parity
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
@@ -1122,6 +1128,9 @@ jobs:
           zig build calc_state_parity
           zig build math_command_wrappers_parity
           zig build math_random_parity
+          # Format-equivalence oracle (M24): every migrated sprintf->std.fmt
+          # translation must stay byte-identical to libc.
+          zig build format_parity
           # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
           # typed accessor's blob offset must match the C constantPointers.h ground
           # truth, so the offset-crash class stays caught after each pin advance.
