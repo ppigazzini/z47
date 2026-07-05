@@ -30,6 +30,7 @@
 //     counts appear in this file, so there are no ROM trampolines or OS32/OS64
 //     splits here.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -2592,7 +2593,7 @@ pub export fn closeNim() callconv(.c) void {
                                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                                 if (comptime extra_info) {
                                     if (comptime !dmcp_build) {
-                                        _ = sprintf(errorMessage, "digit %c is not allowed in base %d!", @as(c_int, aimBuffer[@intCast(ii)]), base);
+                                        abi.fmtBufZ(errorMessage[0..512], "digit {c} is not allowed in base {d}!", .{ aimBuffer[@intCast(ii)], @as(i32, base) });
                                         moreInfoOnError("In function closeNIM:", errorMessage, null, null);
                                     }
                                 }
@@ -2645,7 +2646,7 @@ pub export fn closeNim() callconv(.c) void {
                                     var strMax: [22]u8 = undefined;
                                     longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
                                     longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
-                                    _ = sprintf(errorMessage, "For word size of %d bit%s and integer mode %s,", @as(c_int, shortIntegerWordSize), if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, ""), getShortIntegerModeName(shortIntegerMode));
+                                    abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(getShortIntegerModeName(shortIntegerMode)) });
                                     _ = sprintf(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from %s to %s!", &strMin, &strMax);
                                     moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH / 2, null);
                                 }
@@ -2786,7 +2787,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
             if (tam.alpha) {
                 insertAlphaCharacter(item, &alphaCursor);
             } else if (stringByteLength(aimBuffer) + (if (item == ITM_poly_SIGN) @as(i32, 24) else stringByteLength(&indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) {
-                _ = sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", @as(c_int, AIM_BUFFER_LENGTH));
+                abi.fmtBufZ(errorMessage[0..512], "In function addItemToBuffer:the AIM input buffer is full! {d} bytes for now", .{@as(i32, AIM_BUFFER_LENGTH)});
                 displayBugScreen(errorMessage);
             } else if (calcMode == CM_EIM) {
                 const addChar0: [*c]const u8 = if (item == ITM_EEXCHR) "E" else if (item == ITM_PAIR_OF_PARENTHESES) "()" else if (item == ITM_VERTICAL_BAR) "||" else if (item == ITM_MAGNITUDE) "||" else if (item == ITM_ROOT_SIGN) STD_SQUARE_ROOT ++ "()" else if (item == ITM_SQUAREROOTX) STD_SQUARE_ROOT ++ "()" else if (item == ITM_CUBEROOT) STD_CUBE_ROOT ++ "()" else if (item == ITM_XTHROOT) STD_xTH_ROOT ++ "(:)" else if (item == ITM_EXP) STD_EulerE ++ "^()" else if (item == ITM_ALOG_SIGN) STD_EulerE ++ "^()" else if (item == ITM_LG_SIGN) "LOG()" else if (item == ITM_LN_SIGN) "LN()" else if (item == ITM_LOG2) "LB()" else if (item == ITM_SIN_SIGN) "SIN()" else if (item == ITM_COS_SIGN) "COS()" else if (item == ITM_TAN_SIGN) "TAN()" else if (item == ITM_OBELUS) STD_SLASH else if (item == ITM_poly_SIGN) "a4" ++ STD_DOT ++ "x^4+a3" ++ STD_DOT ++ "x^3+a2" ++ STD_DOT ++ "x^2+a1" ++ STD_DOT ++ "x+a0" else if (item == ITM_op_j_SIGN) complexUnit() else if (item == ITM_zetaX) STD_zeta ++ "()" else if (item == ITM_GAMMAX) STD_GAMMA ++ "()" else if (item == ITM_XFACT) "!" else if (item == ITM_M1X) "(-1)^()" else if (item == ITM_COMB) "COMB(:)" else if (item == ITM_PERM) "PERM(:)" else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) @as([*c]const u8, &indexOfItems[item].itemCatalogName) else if (item >= ITM_SUP_0 and item <= ITM_SUP_9) @as([*c]const u8, &NumMsg[item - ITM_SUP_0].noStr) else "";
@@ -3071,7 +3072,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 nimNumberPart = NP_EMPTY;
             },
             else => {
-                _ = sprintf(errorMessage, "In function addItemToNimBuffer:%d is an unexpected item value when initializing NIM!", @as(c_int, item));
+                abi.fmtBufZ(errorMessage[0..512], "In function addItemToNimBuffer:{d} is an unexpected item value when initializing NIM!", .{@as(i32, item)});
                 displayBugScreen(errorMessage);
                 return;
             },
@@ -3815,7 +3816,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     }
                 },
                 else => {
-                    _ = sprintf(errorMessage, "In function addItemToNimBuffer: %d is an unexpected nimNumberPart value while converting buffer to display!", @as(c_int, nimNumberPart));
+                    abi.fmtBufZ(errorMessage[0..512], "In function addItemToNimBuffer: {d} is an unexpected nimNumberPart value while converting buffer to display!", .{@as(i32, nimNumberPart)});
                     displayBugScreen(errorMessage);
                 },
             }

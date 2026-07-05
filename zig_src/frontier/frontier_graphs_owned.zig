@@ -929,10 +929,10 @@ pub export fn graph_text() callconv(.c) void {
             _ = strcpy(tmpString, "            ");
         },
         1 => {
-            _ = snprintf(tmpString, bufLen, "  y-axis x 0");
+            abi.fmtBufZ(tmpString[0..bufLen], "  y-axis x 0", .{});
         },
         2 => {
-            _ = snprintf(tmpString, bufLen, "  x-axis y 0");
+            abi.fmtBufZ(tmpString[0..bufLen], "  x-axis y 0", .{});
         },
         3 => {
             _ = snprintf(tmpString, bufLen, "  axis 0%s0 ", radixProcess(&tmpbuf, "."));
@@ -956,7 +956,7 @@ pub export fn graph_text() callconv(.c) void {
     ypos +%= 48 + 2 * 19;
 
     if (PLOT_INTG and !invalid_intg) {
-        _ = snprintf(tmpString, bufLen, "  Trapezoid integral");
+        abi.fmtBufZ(tmpString[0..bufLen], "  Trapezoid integral", .{});
         _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
 
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
@@ -966,7 +966,7 @@ pub export fn graph_text() callconv(.c) void {
     }
 
     if (PLOT_DIFF and !invalid_diff) {
-        _ = snprintf(tmpString, bufLen, "  Numerical slope");
+        abi.fmtBufZ(tmpString[0..bufLen], "  Numerical slope", .{});
         _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
         plotdeltabig(6, yp + 4 + 4 - 2 - 4);
@@ -974,7 +974,7 @@ pub export fn graph_text() callconv(.c) void {
     }
 
     if (PLOT_RMS and !invalid_rms) {
-        _ = snprintf(tmpString, bufLen, "  Root Mean Square RMS");
+        abi.fmtBufZ(tmpString[0..bufLen], "  Root Mean Square RMS", .{});
         _ = showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
         plotrms(6, yp + 4 + 4 - 2 - 3);
@@ -1627,7 +1627,7 @@ pub export fn graph_plotmem() callconv(.c) void {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
-                _ = sprintf(errorMessage, "There is no statistical data available!");
+                abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
                 moreInfoOnError("In function graph_plotmem:", errorMessage, null, null);
             }
         }
@@ -1656,7 +1656,7 @@ pub export fn fnStatList() callconv(.c) void {
     if (regStatsXY != INVALID_VARIABLE and (if (plotStatMx[0] == 'D') drawMxN() >= 1 else false)) {
         statnum = @intCast(drawMxN());
         fnStatSum(0);
-        _ = sprintf(tmpString, "Graph data: N = %d", @as(c_int, statnum));
+        abi.fmtBufZ(tmpString[0..2560], "Graph data: N = {d}", .{@as(i32, statnum)});
         print_linestr(tmpString, true);
 
         if (ListXYposition > 0) {
