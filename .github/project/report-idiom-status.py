@@ -31,6 +31,12 @@ PATTERNS = [
     ("cptr_files", re.compile(r"\[\*c\]"), "file"),
     ("ptrcast_sites", re.compile(r"@(?:ptrCast|alignCast)\("), "site"),
     ("callconv_c_sites", re.compile(r"callconv\(\.c\)"), "site"),
+    # Zig-to-Zig `extern fn` redeclarations are transliteration debt: an owner
+    # calling another owner's Zig-defined symbol through an untyped C-ABI extern
+    # instead of a typed @import. Ratcheted down as owners convert to @import
+    # (M-callconv). Floor is the genuine C boundary (GMP/decNumber/DMCP SDK) +
+    # cross-module externs pending build-graph module wiring.
+    ("extern_fn_sites", re.compile(r"\bextern fn "), "site"),
     ("printf_family_files", re.compile(r"\bs?n?printf\("), "file"),
     ("anyopaque_files", re.compile(r"anyopaque"), "file"),
     ("off_offset_sites", re.compile(r"\bOFF_[A-Za-z0-9_]+"), "site"),

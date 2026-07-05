@@ -75,7 +75,7 @@ const realContext_t = abi.RealContext;
 
 // glyph_t: 24 bytes. byte fields at 2..7, data ptr at 16.
 const glyph_t = abi.Glyph;
-const font_t = extern struct {
+pub const font_t = extern struct {
     id: u16,
     numberOfGlyphs: u16,
     _pad: [4]u8,
