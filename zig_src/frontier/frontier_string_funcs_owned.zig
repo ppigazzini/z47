@@ -13,6 +13,7 @@ const const34_1e6 = consts.const34_1e6;
 // stringFuncs.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -193,7 +194,7 @@ pub export fn fnAlphaLeng(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot get the \x83\xb1LENG? from %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot get the \x83\xb1LENG? from {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaLeng:", errorMessage);
         }
         return;
@@ -220,7 +221,7 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1\xa1\x92x on %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaToX:", errorMessage);
         }
         return;
@@ -229,7 +230,7 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
     if (stringByteLength(regString(@intCast(regist))) == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1\xa1\x92x on an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on an empty string", .{});
             moreInfoOnError("In function fnAlphaToX:", errorMessage);
         }
         return;
@@ -280,7 +281,7 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
             if (stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
                 displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
-                    _ = sprintf(errorMessage, "the resulting string would be %d (%d + %d) characters long. Maximum is %d", stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)), stringGlyphLength(tmpString), stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING);
+                    abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} ({d} + {d}) characters long. Maximum is {d}", .{ stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)), stringGlyphLength(tmpString), stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING });
                     moreInfoOnError("In function fnXToAlpha:", errorMessage);
                 }
             } else {
@@ -306,7 +307,7 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot x\xa1\x92\x83\xb1 when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -343,7 +344,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot x\xa1\x92\x83\xb1 when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -354,7 +355,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = %u", @as(u32, @truncate(lgInt[0]._mp_d[0]))); // OK for 32 and 64 bit limbs
+            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function fnXToAlpha:", errorMessage);
         }
         return;
@@ -390,7 +391,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1POS? on %s (reg %u)", getRegisterDataTypeName(@intCast(regist), true, false), @as(c_uint, regist));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg {d})", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)), @as(c_uint, regist) });
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
@@ -399,7 +400,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     if (getRegisterDataType(REGISTER_X) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1POS? on %s (reg X)", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
@@ -408,7 +409,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     if (stringGlyphLength(regString(@intCast(regist))) == 0 or stringGlyphLength(regString(REGISTER_X)) == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1POS? on or with an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on or with an empty string", .{});
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
@@ -457,7 +458,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1RR on %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaRR:", errorMessage);
         }
         return;
@@ -467,7 +468,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     if (stringGlyphLen == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1RR on an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on an empty string", .{});
             moreInfoOnError("In function fnAlphaRR:", errorMessage);
         }
         return;
@@ -495,7 +496,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot \x83\xb1RR when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaRR:", errorMessage);
             }
             return;
@@ -546,7 +547,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1RL on %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaRL:", errorMessage);
         }
         return;
@@ -556,7 +557,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     if (stringGlyphLen == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1RL on an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on an empty string", .{});
             moreInfoOnError("In function fnAlphaRL:", errorMessage);
         }
         return;
@@ -584,7 +585,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot \x83\xb1RL when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaRL:", errorMessage);
             }
             return;
@@ -623,7 +624,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1SR on %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaSR:", errorMessage);
         }
         return;
@@ -633,7 +634,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
     if (stringGlyphLen == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1SR on an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on an empty string", .{});
             moreInfoOnError("In function fnAlphaSR:", errorMessage);
         }
         return;
@@ -657,7 +658,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot \x83\xb1SR when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaSR:", errorMessage);
             }
             return;
@@ -696,7 +697,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1SL on %s", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaSL:", errorMessage);
         }
         return;
@@ -707,7 +708,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     if (stringGlyphLen == 0) {
         displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use \x83\xb1SL on an empty string");
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on an empty string", .{});
             moreInfoOnError("In function fnAlphaSL:", errorMessage);
         }
         return;
@@ -731,7 +732,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot \x83\xb1SL when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaSL:", errorMessage);
             }
             return;
@@ -807,7 +808,7 @@ pub export fn fn42AlphaShift(unusedButMandatoryParameter: u16) callconv(.c) void
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
         displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use 42ASHF on %s", getRegisterDataTypeName(@intCast(alphaRegister), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42ASHF on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
             moreInfoOnError("In function fn42AlphaShift:", errorMessage);
         }
         return;
@@ -840,7 +841,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
         displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot use 42AROT on %s", getRegisterDataTypeName(@intCast(alphaRegister), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42AROT on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
             moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
         }
         return;
@@ -855,7 +856,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot 42AROT when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot 42AROT when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -979,7 +980,7 @@ pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot \x83\xb1IP when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1IP when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaIP:", errorMessage);
             }
             return;
@@ -1154,7 +1155,7 @@ pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot convert %s to Lower Case", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Lower Case", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaLower:", errorMessage);
         }
         return;
@@ -1168,7 +1169,7 @@ pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "cannot convert %s to Upper Case", getRegisterDataTypeName(@intCast(regist), true, false));
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Upper Case", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaUpper:", errorMessage);
         }
         return;
@@ -1296,7 +1297,7 @@ pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
     if (strlen(ptrString) > @as(usize, @intCast(TMP_STR_LENGTH))) {
         displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "string in regist %d is too long, size %d bytes doesn't fit in tmpString (%d bytes max)", @as(c_int, @intCast(regist)), @as(c_uint, @truncate(strlen(ptrString))), @as(c_int, TMP_STR_LENGTH));
+            abi.fmtBufZ(errorMessage[0..512], "string in regist {d} is too long, size {d} bytes doesn't fit in tmpString ({d} bytes max)", .{ @as(c_int, @intCast(regist)), @as(c_uint, @truncate(strlen(ptrString))), @as(c_int, TMP_STR_LENGTH) });
             moreInfoOnError("In function fnAlphaRev:", errorMessage);
         }
         return;
@@ -1390,7 +1391,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         else => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                _ = sprintf(errorMessage, "cannot x\xa1\x92\x83\xb1 when X is %s", getRegisterDataTypeName(REGISTER_X, true, false));
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function _doXToAlpha:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -1402,7 +1403,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = %u", @as(u32, @truncate(lgInt[0]._mp_d[0]))); // OK for 32 and 64 bit limbs
+            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
         }
         longIntegerFree(&lgInt[0]);
@@ -1431,7 +1432,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
     if (stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
         displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "the resulting string would be %d characters long. Maximum is %d", stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING);
+            abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} characters long. Maximum is {d}", .{ stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING });
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
         }
     } else {
@@ -1470,7 +1471,7 @@ pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
     if (lgString != 1) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            _ = sprintf(errorMessage, "for \x83\xb1TRIM, X must be a single character. Here X = %s", ptrString);
+            abi.fmtBufZ(errorMessage[0..512], "for \x83\xb1TRIM, X must be a single character. Here X = {s}", .{ std.mem.span(ptrString) });
             moreInfoOnError("In function fnAlphaTrim:", errorMessage);
         }
         copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // Restore register X
