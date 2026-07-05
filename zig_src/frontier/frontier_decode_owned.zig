@@ -17,6 +17,7 @@
 // flow and are dropped, matching the sibling owners. Not reachable from the
 // testSuite; verified by build/link on every target plus the boundary gates.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -358,15 +359,15 @@ fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
 fn getIndirectRegister(paramAddress: [*c]u8, op: [*c]const u8) void {
     const opParam: u8 = paramAddress[0];
     if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
-        _ = sprintf(tmpString, "%s " ++ STD_RIGHT_ARROW ++ "%02u", op, @as(c_uint, opParam));
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
     } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-        _ = sprintf(tmpString, "%s " ++ STD_RIGHT_ARROW ++ "%s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)));
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
     } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
-        _ = sprintf(tmpString, "%s " ++ STD_RIGHT_ARROW ++ ".%02d", op, @as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE);
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ ".{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
     } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-        _ = sprintf(tmpString, "%s " ++ STD_RIGHT_ARROW ++ "%s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)));
+        abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_RIGHT_ARROW ++ "{s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
     } else {
-        _ = sprintf(tmpString, "\nIn function getIndirectRegister: %s " ++ STD_RIGHT_ARROW ++ " %u is not a valid parameter!", op, @as(c_uint, opParam));
+        abi.fmtBufZ(tmpString[0..2560], "\nIn function getIndirectRegister: {s} " ++ STD_RIGHT_ARROW ++ " {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
     }
 }
 
@@ -387,11 +388,11 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
     switch (paramMode) {
         PARAM_DECLARE_LABEL => {
             if (opParam <= 99) { // Local label from 00 to 99
-                _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, 'A') + (@as(c_int, opParam) - 100));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'A') + (@as(c_int, opParam) - 100))) });
             } else if (opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL))) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -400,17 +401,17 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 str = stringCopy(str, tmpStringLabelOrVariableName);
                 str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp case PARAM_DECLARE_LABEL: opParam %u is not a valid label!\n", @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp case PARAM_DECLARE_LABEL: opParam {d} is not a valid label!\n", .{@as(u32, opParam)});
             }
         },
 
         PARAM_LABEL => {
             if (opParam <= 99) { // Local label from 00 to 99
-                _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, 'A') + (@as(c_int, opParam) - 100));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'A') + (@as(c_int, opParam) - 100))) });
             } else if (opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL))) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -423,19 +424,19 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_LABEL, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_LABEL, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
         PARAM_REGISTER => {
             if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
-                _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-                _ = sprintf(tmpString, "%s %s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
             } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
-                _ = sprintf(tmpString, "%s .%02d", op, @as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE);
+                abi.fmtBufZ(tmpString[0..2560], "{s} .{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
             } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-                _ = sprintf(tmpString, "%s %s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -448,77 +449,77 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_REGISTER, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_REGISTER, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
         PARAM_FLAG => {
             if (opParam < FLAG_X) { // Global flag from 00 to 99
-                _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (FLAG_X <= opParam and opParam <= FLAG_K) { // Lettered flag from X to K
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, registerFlagLetters[opParam - FLAG_X]));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), registerFlagLetters[opParam - FLAG_X] });
             } else if (opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
-                _ = sprintf(tmpString, "%s .%02d", op, @as(c_int, opParam) - FIRST_LOCAL_FLAG);
+                abi.fmtBufZ(tmpString[0..2560], "{s} .{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_FLAG)) });
             } else if (opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_FLAG, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= FLAG_W) { // Lettered flag from M to S and E to W
-                _ = sprintf(tmpString, "%s %c", op, @as(c_int, registerFlagLetters[opParam - FLAG_M + (FLAG_K - FLAG_X + 1)]));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), registerFlagLetters[opParam - FLAG_M + (FLAG_K - FLAG_X + 1)] });
             } else if (opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_FLAG, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam == SYSTEM_FLAG_NUMBER) {
                 if (paramAddress[0] < 64) {
-                    _ = sprintf(tmpString, "%s " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, op, @as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_TDM24].itemSoftmenuName)));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_TDM24].itemSoftmenuName))) });
                 } else {
-                    _ = sprintf(tmpString, "%s " ++ STD_LEFT_SINGLE_QUOTE ++ "%s" ++ STD_RIGHT_SINGLE_QUOTE, op, @as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_MONIT - 64].itemSoftmenuName)));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[@as(u16, paramAddress[0]) + SFL_MONIT - 64].itemSoftmenuName))) });
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_FLAG, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
         PARAM_NUMBER_8 => {
             if (opParam <= tamMax) { // Value from 0 to 99
                 if (tamMax <= 9) {
-                    _ = sprintf(tmpString, "%s %u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else if (tamMax <= 99) {
-                    _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else if (tamMax <= 999) {
-                    _ = sprintf(tmpString, "%s %03u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else {
-                    _ = sprintf(tmpString, "%s %04u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>4}", .{ std.mem.span(op), @as(u32, opParam) });
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_NUMBER, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_NUMBER, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
         PARAM_NUMBER_8_16 => {
             if (opParam <= 249) { // Value from 0 to 249
                 if (tamMax <= 9) {
-                    _ = sprintf(tmpString, "%s %u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else if (tamMax <= 99) {
-                    _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else if (tamMax <= 999) {
-                    _ = sprintf(tmpString, "%s %03u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), @as(u32, opParam) });
                 } else {
-                    _ = sprintf(tmpString, "%s %04u", op, @as(c_uint, opParam));
+                    abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>4}", .{ std.mem.span(op), @as(u32, opParam) });
                 }
             } else if (opParam == CNST_BEYOND_250) { // Value from 250 to 499
-                _ = sprintf(tmpString, "%s %03u", op, 250 + @as(c_uint, paramAddress[0]));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), 250 + @as(u32, paramAddress[0]) });
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_NUMBER, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_NUMBER, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
@@ -526,7 +527,7 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             var func: u16 = (@as(u16, (paramAddress - 3)[0]) << 8) +% @as(u16, (paramAddress - 2)[0]);
             func &= 0x7fff;
             if (isFunctionOldParam16(func)) { // original Param16 functions without indirection support (little endian parameter)
-                _ = sprintf(tmpString, "%s %u", op, @as(c_uint, opParam) + 256 * @as(c_uint, paramAddress[0]));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d}", .{ std.mem.span(op), @as(u32, opParam) + 256 * @as(u32, paramAddress[0]) });
             } else { // new Param16 functions with indirection support (big endian parameter)
                 if (opParam == INDIRECT_REGISTER) {
                     getIndirectRegister(paramAddress, op);
@@ -534,9 +535,9 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                     getIndirectVariable(paramAddress, op);
                 } else {
                     if (opCode == ITM_PNORM and (@as(u32, opParam) * 256) + paramAddress[0] == ITM_INFINITY) {
-                        _ = sprintf(tmpString, "%s %s", op, @as([*c]const u8, STD_INFINITY));
+                        abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, STD_INFINITY)) });
                     } else {
-                        _ = sprintf(tmpString, "%s %u", op, (@as(c_uint, opParam) * 256) + @as(c_uint, paramAddress[0]));
+                        abi.fmtBufZ(tmpString[0..2560], "{s} {d}", .{ std.mem.span(op), (@as(u32, opParam) * 256) + @as(u32, paramAddress[0]) });
                     }
                 }
             }
@@ -544,13 +545,13 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
 
         PARAM_COMPARE => {
             if (opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
-                _ = sprintf(tmpString, "%s %02u", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>2}", .{ std.mem.span(op), @as(u32, opParam) });
             } else if (opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
-                _ = sprintf(tmpString, "%s %s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName)));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName))) });
             } else if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
-                _ = sprintf(tmpString, "%s .%02d", op, @as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE);
+                abi.fmtBufZ(tmpString[0..2560], "{s} .{d:0>2}", .{ std.mem.span(op), @as(u32, @intCast(@as(c_int, opParam) - FIRST_LOCAL_REGISTER_IN_KS_CODE)) });
             } else if (opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
-                _ = sprintf(tmpString, "%s %s", op, @as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName)));
+                abi.fmtBufZ(tmpString[0..2560], "{s} {s}", .{ std.mem.span(op), std.mem.span(@as([*c]const u8, @ptrCast(&indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName))) });
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
@@ -559,15 +560,15 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 str = stringCopy(str, tmpStringLabelOrVariableName);
                 str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
             } else if (opParam == VALUE_0) {
-                _ = sprintf(tmpString, "%s 0.", op);
+                abi.fmtBufZ(tmpString[0..2560], "{s} 0.", .{std.mem.span(op)});
             } else if (opParam == VALUE_1) {
-                _ = sprintf(tmpString, "%s 1.", op);
+                abi.fmtBufZ(tmpString[0..2560], "{s} 1.", .{std.mem.span(op)});
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_COMPARE, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_COMPARE, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
@@ -581,16 +582,16 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 tmpString[@intCast(stringByteLength(tmpString))] = ' ';
                 _ = xcopy(@ptrCast(tmpString + @as(usize, @intCast(stringByteLength(tmpString)))), @ptrCast(tmpString + TMP_STR_LENGTH / 2), @intCast(stringByteLength(tmpString + TMP_STR_LENGTH / 2) + 1));
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_KEYG_KEYX, %s has no valid second key parameter!", op);
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_KEYG_KEYX, {s} has no valid second key parameter!", .{std.mem.span(op)});
             }
         },
 
         PARAM_SKIP_BACK => {
-            _ = sprintf(tmpString, "%s %03u", op, @as(c_uint, opParam));
+            abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), @as(u32, opParam) });
         },
 
         PARAM_SHUFFLE => {
-            _ = sprintf(tmpString, "%s %c%c%c%c", op, @as(c_int, shuffleReg[opParam & 0x03]), @as(c_int, shuffleReg[(opParam & 0x0c) >> 2]), @as(c_int, shuffleReg[(opParam & 0x30) >> 4]), @as(c_int, shuffleReg[(opParam & 0xc0) >> 6]));
+            abi.fmtBufZ(tmpString[0..2560], "{s} {c}{c}{c}{c}", .{ std.mem.span(op), shuffleReg[opParam & 0x03], shuffleReg[(opParam & 0x0c) >> 2], shuffleReg[(opParam & 0x30) >> 4], shuffleReg[(opParam & 0xc0) >> 6] });
         },
 
         PARAM_MENU => {
@@ -606,12 +607,12 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
             } else if (opParam == INDIRECT_VARIABLE) {
                 getIndirectVariable(paramAddress, op);
             } else {
-                _ = sprintf(tmpString, "\nIn function decodeOp: case PARAM_MENU, %s  %u is not a valid parameter!", op, @as(c_uint, opParam));
+                abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: case PARAM_MENU, {s}  {d} is not a valid parameter!", .{ std.mem.span(op), @as(u32, opParam) });
             }
         },
 
         else => {
-            _ = sprintf(tmpString, "\nIn function decodeOp: paramMode %u is not valid!\n", @as(c_uint, paramMode));
+            abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp: paramMode {d} is not valid!\n", .{@as(u32, paramMode)});
         },
     }
 }
@@ -1067,16 +1068,16 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
         switch (indexOfItems[op].status & PTP_STATUS) {
             PTP_NONE => {
                 if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) {
-                    _ = sprintf(&nameOp, "%2i", @as(c_int, op) - FIRST_CONSTANT + 1);
+                    abi.fmtBufZ(&nameOp, "{d: >2}", .{@as(u32, @intCast(@as(c_int, op) - FIRST_CONSTANT + 1))});
                     _ = strcat(&nameOp, " ");
                     _ = strcat(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
                     _ = strcat(&nameOp, " ");
                     _ = strcat(&nameOp, @ptrCast(&indexOfItems[op].itemSoftmenuName));
                 }
                 if (op == ITM_op_j) {
-                    _ = sprintf(&nameOp, "op_%s", complexUnit());
+                    abi.fmtBufZ(&nameOp, "op_{s}", .{std.mem.span(complexUnit())});
                 } else if (op == ITM_op_j_pol) {
-                    _ = sprintf(&nameOp, "op_%s" ++ "\xa2\x9a", complexUnit());
+                    abi.fmtBufZ(&nameOp, "op_{s}" ++ "\xa2\x9a", .{std.mem.span(complexUnit())});
                 }
                 if (nameOp[0] == 0) {
                     if (textVersion == MODE_ALIAS) {
@@ -1088,7 +1089,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                 if (isItemConversion(@intCast(op))) {
                     fullConvSoftMenuItemNameInclHPCONV(@intCast(op), &nameOp); //Display only the standard display partner, as a program cannot contain a custom conversion
                 }
-                _ = sprintf(tmpString, "%s%s", @as([*c]const u8, if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) "# " else ""), @as([*c]const u8, &nameOp));
+                abi.fmtBufZ(tmpString[0..2560], "{s}{s}", .{ std.mem.span(@as([*c]const u8, if (FIRST_CONSTANT <= op and op <= LAST_CONSTANT) "# " else "")), std.mem.span(@as([*c]const u8, &nameOp)) });
             },
 
             PTP_DISABLED => {
