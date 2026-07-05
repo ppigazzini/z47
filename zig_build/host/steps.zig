@@ -757,6 +757,13 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
             .target = context.host_target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{
+                .{ .name = "float_format", .module = b.createModule(.{
+                    .root_source_file = b.path("zig_src/abi/float_format.zig"),
+                    .target = context.host_target,
+                    .optimize = optimize,
+                }) },
+            },
         }),
     });
     const run_format_parity = b.addRunArtifact(format_parity_exe);

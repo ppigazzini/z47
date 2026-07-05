@@ -18,11 +18,24 @@
 // Run: `zig build format_parity`. Exit 1 on any mismatch.
 
 const std = @import("std");
+const float_format = @import("float_format");
 
 extern fn snprintf(buf: [*]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
 
 fn cFmt(buf: []u8, comptime cfmt: [:0]const u8, arg: anytype) []u8 {
     const n = snprintf(buf.ptr, buf.len, cfmt.ptr, arg);
+    return buf[0..@intCast(n)];
+}
+
+/// libc `%.*e` (runtime precision) -- the ground truth for the float formatter.
+fn cFmtFloat(buf: []u8, precision: c_int, value: f64) []u8 {
+    const n = snprintf(buf.ptr, buf.len, "%.*e", precision, value);
+    return buf[0..@intCast(n)];
+}
+
+/// libc `%.*f` (runtime precision) -- the ground truth for the fixed formatter.
+fn cFmtFixed(buf: []u8, precision: c_int, value: f64) []u8 {
+    const n = snprintf(buf.ptr, buf.len, "%.*f", precision, value);
     return buf[0..@intCast(n)];
 }
 
@@ -204,25 +217,134 @@ pub fn main() !void {
     }
 
     // ---- Float guard-rail: C printf %e and Zig std.fmt {e} are NOT byte-equal
-    //      (different dtoa: C emits the exact decimal expansion with C rounding
-    //      and a signed >=2-digit exponent; Zig emits a differently-rounded
-    //      mantissa and a bare exponent). This is asserted, not assumed, so the
-    //      float sprintf sites are provably outside any oracle-green translation
-    //      -- migrating them needs a bespoke C-printf-compatible formatter, a
-    //      separate effort. If a future Zig makes these agree, this guard flips
-    //      and we can migrate. ----
+    //      (different dtoa: C emits the exact decimal expansion with round-half-
+    //      to-even and a signed >=2-digit exponent; Zig emits the shortest round-
+    //      trip mantissa zero-padded, with a bare exponent). Asserted, not
+    //      assumed, so std.fmt is provably NOT a valid float translation. ----
     {
         var cbuf: [80]u8 = undefined;
         var zbuf: [80]u8 = undefined;
         const c = cFmt(&cbuf, "%.16e", @as(f64, -3.14159));
         const z = std.fmt.bufPrint(&zbuf, "{e:.16}", .{@as(f64, -3.14159)}) catch unreachable;
         if (std.mem.eql(u8, c, z)) {
-            std.debug.print("  UNEXPECTED: C %.16e and Zig {{e:.16}} now agree (\"{s}\") -- float is migratable\n", .{c});
+            std.debug.print("  UNEXPECTED: C %.16e and Zig {{e:.16}} now agree (\"{s}\") -- revisit float path\n", .{c});
             fail_count += 1;
         } else {
-            std.debug.print("  guard confirmed: C %.16e=\"{s}\" != Zig {{e:.16}}=\"{s}\" -> float stays sprintf (no byte-exact std.fmt)\n", .{ c, z });
+            std.debug.print("  guard confirmed: C %.16e=\"{s}\" != Zig {{e:.16}}=\"{s}\" -> std.fmt is not the float path\n", .{ c, z });
         }
         check_count += 1;
+    }
+
+    // ---- Float SOLUTION: abi.fmtExpBuf (abi/float_format.zig) IS the byte-exact
+    //      C `%.Pe` reproduction (big-int exact decimal, round-half-to-even). It
+    //      is what the migrated %.1e/%.16e/%.20e display/CSV/backup sites call.
+    //      Prove it byte-identical to libc `%.*e` over a fuzz matrix: the exact
+    //      precisions the sites use (1, 16, 20) plus 0/2/6, across edge values
+    //      (0, +-0, subnormals, floatMin/TrueMin/Max, the 0.1/0.2/0.3 hard cases)
+    //      and 4000 deterministic random f64 bit patterns per precision. ----
+    {
+        var cbuf: [128]u8 = undefined;
+        var zbuf: [128]u8 = undefined;
+        const precs = [_]usize{ 1, 16, 20, 0, 2, 6 };
+        const edges = [_]f64{
+            0.0,                          -0.0,
+            1.0,                          -1.0,
+            0.1,                          0.2,
+            0.3,                          3.14159,
+            1e-34,                        9.999999e-35,
+            2.5e100,                      6.022e23,
+            1234567890123.456,            std.math.floatMin(f64),
+            std.math.floatTrueMin(f64),   std.math.floatMax(f64),
+            1.0 / 3.0,                    -7.77e-12,
+            9.999999999999999e99,
+        };
+        var prng = std.Random.DefaultPrng.init(0xC47F10A7);
+        const rnd = prng.random();
+        for (precs) |p| {
+            for (edges) |v| {
+                const c = cFmtFloat(&cbuf, @intCast(p), v);
+                const z = float_format.fmtExpBuf(&zbuf, p, v);
+                expectEqualStr("exp-edge", "%.*e", "fmtExpBuf", c, z, "float-exact");
+            }
+            var i: usize = 0;
+            while (i < 4000) : (i += 1) {
+                const v: f64 = @bitCast(rnd.int(u64));
+                if (std.math.isNan(v) or std.math.isInf(v)) continue;
+                const c = cFmtFloat(&cbuf, @intCast(p), v);
+                const z = float_format.fmtExpBuf(&zbuf, p, v);
+                expectEqualStr("exp-rand", "%.*e", "fmtExpBuf", c, z, "float-exact");
+            }
+        }
+    }
+
+    // ---- Fixed-notation float: abi.fmtFixedBuf reproduces C `%.Pf` byte-exact
+    //      (the save-file graph_dx/graph_dy `%f` == `%.6f` sites). Fuzz over the
+    //      save precision (6) plus 0/2, edges + 4000 random f64 per precision.
+    //      Random f64 spans huge magnitudes -> 512B target for the ~309-digit
+    //      integer part of floatMax; the save call sites use small plot deltas. ----
+    {
+        var cbuf: [512]u8 = undefined;
+        var zbuf: [512]u8 = undefined;
+        const precs = [_]usize{ 6, 0, 2 };
+        const edges = [_]f64{
+            0.0,             -0.0,
+            1.0,             -1.0,
+            0.5,             1.5,
+            0.001,           0.0000005,
+            123.456,         -123.456,
+            0.1,             0.2,
+            0.3,             1.0 / 3.0,
+            2.0 / 3.0,       9999999.9999995,
+            std.math.floatMin(f64),
+        };
+        var prng = std.Random.DefaultPrng.init(0xF13ED0);
+        const rnd = prng.random();
+        for (precs) |p| {
+            for (edges) |v| {
+                const c = cFmtFixed(&cbuf, @intCast(p), v);
+                const z = float_format.fmtFixedBuf(&zbuf, p, v);
+                expectEqualStr("fixed-edge", "%.*f", "fmtFixedBuf", c, z, "float-fixed");
+            }
+            var i: usize = 0;
+            while (i < 4000) : (i += 1) {
+                const v: f64 = @bitCast(rnd.int(u64));
+                if (std.math.isNan(v) or std.math.isInf(v)) continue;
+                const c = cFmtFixed(&cbuf, @intCast(p), v);
+                const z = float_format.fmtFixedBuf(&zbuf, p, v);
+                expectEqualStr("fixed-rand", "%.*f", "fmtFixedBuf", c, z, "float-fixed");
+            }
+        }
+    }
+
+    // ---- %g/%G: abi.fmtGBuf reproduces C `%5.G` byte-exact (the softmenus plot-
+    //      zoom label -- the sole %g site). It formats POSITIVE finite values
+    //      (tmpF in (0,1] at the site). Prove over its constrained range + broad
+    //      positive fuzz (30000 random positive f64). ----
+    {
+        var cbuf: [64]u8 = undefined;
+        var zbuf: [64]u8 = undefined;
+        const edges = [_]f64{
+            1e-34,   9.9e-35, 1.0,    0.9999,
+            0.5,     0.1,     0.05,   0.01,
+            0.001,   1e-4,    9.9e-5, 1e-5,
+            0.123,   0.15,    0.25,   0.35,
+            0.55,    0.95,    0.099,  0.15e-30,
+        };
+        for (edges) |v| {
+            const c = cFmt(&cbuf, "%5.G", v);
+            const z = float_format.fmtGBuf(&zbuf, 5, 0, true, v);
+            expectEqualStr("g-edge", "%5.G", "fmtGBuf", c, z, "float-g");
+        }
+        var prng = std.Random.DefaultPrng.init(0x6C0DE9);
+        const rnd = prng.random();
+        var i: usize = 0;
+        while (i < 30000) : (i += 1) {
+            const v: f64 = @bitCast(rnd.int(u64));
+            if (std.math.isNan(v) or std.math.isInf(v) or !(v > 0)) continue;
+            const c = cFmt(&cbuf, "%5.G", v);
+            const z = float_format.fmtGBuf(&zbuf, 5, 0, true, v);
+            expectEqualStr("g-rand", "%5.G", "fmtGBuf", c, z, "float-g");
+        }
     }
 
     std.debug.print("format-equivalence oracle: {d} checks, {d} mismatches\n", .{ check_count, fail_count });

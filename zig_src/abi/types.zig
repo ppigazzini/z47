@@ -581,3 +581,41 @@ pub fn fmtCStr(dst: [*c]u8, comptime fmt: []const u8, args: anytype) void {
     @memcpy(dst[0..s.len], s);
     dst[s.len] = 0;
 }
+
+/// Like fmtCStr but returns the number of bytes written (excluding the NUL),
+/// matching C `sprintf`'s return value -- for a moving write pointer that the
+/// caller advances by the length (e.g. the clipboard/CSV stream writers).
+pub fn fmtCStrN(dst: [*c]u8, comptime fmt: []const u8, args: anytype) usize {
+    var stage: [512]u8 = undefined;
+    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    @memcpy(dst[0..s.len], s);
+    dst[s.len] = 0;
+    return s.len;
+}
+
+// ---------------------------------------------------------------------------
+// Byte-exact C `%.<precision>e` float formatter (M24 float axis). Lives in a
+// std-only, extern-free sibling so the format oracle can import and prove the
+// EXACT shipping code byte-identical to libc `%.Pe`. See abi/float_format.zig.
+const float_format = @import("float_format.zig");
+pub const fmtExpBuf = float_format.fmtExpBuf;
+pub const fmtFixedBuf = float_format.fmtFixedBuf;
+pub const fmtGBuf = float_format.fmtGBuf;
+
+/// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
+/// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
+/// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
+pub fn fmtExpC(dst: [*c]u8, precision: usize, value: f64) void {
+    var stage: [512]u8 = undefined;
+    const s = float_format.fmtExpBuf(&stage, precision, value);
+    @memcpy(dst[0..s.len], s);
+    dst[s.len] = 0;
+}
+
+/// Byte-exact C `%<width>.<P>g/G` written to a raw C pointer + trailing NUL.
+pub fn fmtGC(dst: [*c]u8, width: usize, precision: usize, upper: bool, value: f64) void {
+    var stage: [512]u8 = undefined;
+    const s = float_format.fmtGBuf(&stage, width, precision, upper, value);
+    @memcpy(dst[0..s.len], s);
+    dst[s.len] = 0;
+}
