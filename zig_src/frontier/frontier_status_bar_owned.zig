@@ -21,6 +21,7 @@
 // statusBar.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -681,9 +682,9 @@ pub export fn showFracMode() callconv(.c) void {
 
         compressString = 1;
         if (denMax == 0 or denMax > MAX_DENMAX) {
-            _ = sprintf(&statusMessage, "max");
+            _ = std.fmt.bufPrintZ(&statusMessage, "max", .{}) catch unreachable;
         } else {
-            _ = sprintf(&statusMessage, "%u", denMax);
+            _ = std.fmt.bufPrintZ(&statusMessage, "{d}", .{denMax}) catch unreachable;
         }
         const xx: i32 = x;
         x = @intCast(showStringY(&statusMessage, &standardFont, @intCast(x), lowerUnderLine(), vmNormal, false, true));
@@ -813,7 +814,7 @@ fn showIntegerMode() bool_t {
         reInstateIntegerModeDisplay = false;
         var statusMessage: [10]u8 = undefined;
         const modeChar: u8 = if (shortIntegerMode == SIM_1COMPL) '1' else if (shortIntegerMode == SIM_2COMPL) '2' else if (shortIntegerMode == SIM_UNSIGN) 'u' else if (shortIntegerMode == SIM_SIGNMT) 's' else '?';
-        _ = sprintf(&statusMessage, "%s%u:%c", @as([*:0]const u8, if (shortIntegerWordSize <= 9) " " else ""), @as(c_uint, shortIntegerWordSize), @as(c_int, modeChar));
+        _ = std.fmt.bufPrintZ(&statusMessage, "{s}{d}:{c}", .{ @as([*:0]const u8, if (shortIntegerWordSize <= 9) " " else ""), @as(u32, shortIntegerWordSize), modeChar }) catch unreachable;
         // strcat(statusMessage, " ")
         const l = strlenZ(&statusMessage);
         statusMessage[l] = ' ';
@@ -1443,7 +1444,7 @@ fn mockupSBImpl() callconv(.c) void {
     lcd_fill_rect(xx, 0, x -% xx, @intCast(lowerUnderLine() - 1), LCD_SET_VALUE);
 
     compressString = 1;
-    _ = sprintf(&statusMessage, "max");
+    _ = std.fmt.bufPrintZ(&statusMessage, "max", .{}) catch unreachable;
     xx = x;
     x = showStringY(&statusMessage, &standardFont, x, lowerUnderLine(), vmNormal, false, true);
     raiseString = 3;
@@ -1451,7 +1452,7 @@ fn mockupSBImpl() callconv(.c) void {
     x = showStringY(STD_SUB_f, &standardFont, x, lowerUnderLine(), vmNormal, true, true);
 
     compressString = 1;
-    _ = sprintf(&statusMessage, "%u", @as(c_uint, 9999));
+    _ = std.fmt.bufPrintZ(&statusMessage, "{d}", .{@as(u32, 9999)}) catch unreachable;
     x = showStringY(&statusMessage, &standardFont, xx, L1 + lowerUnderLine(), vmNormal, false, true);
     compressString = 1;
     x = showStringY(&statusMessage, &standardFont, xx, L2 + lowerUnderLine(), vmNormal, false, true);
@@ -1479,7 +1480,7 @@ fn mockupSBImpl() callconv(.c) void {
     x = showStringY(STD_ALMOST_EQUAL, &standardFont, x -% 1, 0, vmNormal, true, false);
 
     const modeChar: u8 = if (shortIntegerMode == SIM_1COMPL) '1' else if (shortIntegerMode == SIM_2COMPL) '2' else if (shortIntegerMode == SIM_UNSIGN) 'u' else if (shortIntegerMode == SIM_SIGNMT) 's' else '?';
-    _ = sprintf(&statusMessage, "%s%u:%c", @as([*:0]const u8, if (shortIntegerWordSize <= 9) " " else ""), @as(c_uint, shortIntegerWordSize), @as(c_int, modeChar));
+    _ = std.fmt.bufPrintZ(&statusMessage, "{s}{d}:{c}", .{ @as([*:0]const u8, if (shortIntegerWordSize <= 9) " " else ""), @as(u32, shortIntegerWordSize), modeChar }) catch unreachable;
     x = showStringY(&statusMessage, &standardFont, @intCast(X_INT_MX_TVM_MODE), 0, vmNormal, true, true);
 
     x = @intCast(X_INT_MX_TVM_MODE);
