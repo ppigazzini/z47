@@ -1,4 +1,5 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
@@ -6,9 +7,7 @@ const dyadic_integer_add: u8 = 0;
 const dyadic_integer_subtract: u8 = 1;
 const dyadic_integer_multiply: u8 = 2;
 
-fn shortIntegerData(regist: runtime.calcRegister_t) *align(1) u64 {
-    return @as(*align(1) u64, @ptrCast(runtime.getRegisterDataPointer(regist).?));
-}
+const shortIntegerData = abi.registerShortInteger;
 
 fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);

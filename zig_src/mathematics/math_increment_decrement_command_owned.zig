@@ -1,4 +1,5 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi");
 const legacy = runtime.legacy;
 
 const Operation = enum {
@@ -17,9 +18,7 @@ fn isOwnedStackRegister(regist: u16) bool {
     };
 }
 
-fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
-    return @as(*runtime.real34_t, @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?)));
-}
+const real34DataPointer = abi.registerReal34Aligned;
 
 fn incDecError(regist: runtime.calcRegister_t) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, regist);
