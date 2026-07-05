@@ -8,6 +8,8 @@
 // harness). The C statics still exist for the C DMCP retained path; these are
 // independent Zig copies for the host owners.
 
+const std = @import("std");
+const abi = @import("abi");
 extern fn strtol(nptr: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
 extern fn strtoul(nptr: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
@@ -73,8 +75,8 @@ pub fn ui64ToString(value: u64, out: [*c]u8) void {
     const v0: u32 = @truncate(value & 0xffffffff);
     const v1: u32 = @truncate(value >> 32);
     if (v1 != 0) {
-        _ = sprintf(out, "0x%x%08x", @as(c_uint, v1), @as(c_uint, v0));
+        abi.fmtCStr(out, "0x{x}{x:0>8}", .{ @as(c_uint, v1), @as(c_uint, v0) });
     } else {
-        _ = sprintf(out, "0x%x", @as(c_uint, v0));
+        abi.fmtCStr(out, "0x{x}", .{ @as(c_uint, v0) });
     }
 }

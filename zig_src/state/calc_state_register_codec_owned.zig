@@ -287,7 +287,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
             var yy: [25]u8 = undefined;
             text.ui64ToString(value, &yy[0]);
             const sep: u8 = if (dataFileMode) '#' else ' '; // data-file packs base after '#'
-            _ = sprintf(trs, "%c%s%c%u", @as(c_int, if (sign != 0) '-' else '+'), &yy[0], @as(c_int, sep), @as(c_uint, base));
+            abi.fmtCStr(trs, "{c}{s}{c}{d}", .{ @as(u8, @intCast(@as(c_int, if (sign != 0) '-' else '+'))), std.mem.sliceTo(yy[0..], 0), @as(u8, @intCast(@as(c_int, sep))), @as(c_uint, base) });
             _ = strcpy(aim(), "ShoI");
         },
         dtReal34 => {
@@ -310,7 +310,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
                 } else if (imStr[0] == '+') {
                     imValue += 1;
                 }
-                _ = sprintf(trs, "(%s%ci%s)", &reStr[0], @as(c_int, imSign), imValue);
+                abi.fmtCStr(trs, "({s}{c}i{s})", .{ std.mem.sliceTo(reStr[0..], 0), @as(u8, @intCast(@as(c_int, imSign))), @as([*:0]const u8, imValue) });
             } else {
                 _ = decQuadToString(regReal34Data(regist), trs);
                 _ = strcat(trs, " ");
@@ -363,7 +363,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
 fn matrixToSaveString(regist: i16, is_complex: bool) void {
     const trs = regValueBuf();
     const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
-    _ = sprintf(trs, "%u %u", @as(c_uint, hdr.matrixRows), @as(c_uint, hdr.matrixColumns));
+    abi.fmtCStr(trs, "{d} {d}", .{ @as(c_uint, hdr.matrixRows), @as(c_uint, hdr.matrixColumns) });
     if (!is_complex) {
         _ = strcpy(aim(), "Rema");
         const is_vec = isRegisterMatrixVector(regist);
@@ -418,7 +418,7 @@ pub fn saveMatrixElements(regist: i16) void {
                 }
                 // parenthesised so element boundaries are unambiguous under
                 // free-form whitespace
-                _ = sprintf(mb, "(%s%ci%s)", &reStr[0], @as(c_int, imSign), imValue);
+                abi.fmtCStr(mb, "({s}{c}i{s})", .{ std.mem.sliceTo(reStr[0..], 0), @as(u8, @intCast(@as(c_int, imSign))), @as([*:0]const u8, imValue) });
                 _ = strcat(mb, if ((element % cols) == (cols - 1)) "\n" else "\t");
             } else {
                 _ = decQuadToString(elem, mb);
@@ -436,7 +436,7 @@ fn configToSaveString(regist: i16) void {
     const cfg: [*c]u8 = getRegisterDataPointer(regist);
     var i: usize = 0;
     while (i < CONFIG_DESCRIPTOR_SIZE) : (i += 1) {
-        _ = sprintf(trs + i * 2, "%02X", @as(c_uint, cfg[i]));
+        abi.fmtCStr(trs + i * 2, "{X:0>2}", .{ @as(c_uint, cfg[i]) });
     }
     _ = strcpy(aim(), "Conf");
 }
@@ -513,7 +513,7 @@ fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
     var ip: usize = 0;
     while (work[ip] != 'i') : (ip += 1) {} // guaranteed present (isIform)
     if (ip == 0) {
-        _ = sprintf(dest, "0 +%s", &work[1]); // leading 'i' (e.g. "i4" == 0+i4)
+        abi.fmtCStr(dest, "0 +{s}", .{ std.mem.sliceTo(work[1..], 0) }); // leading 'i' (e.g. "i4" == 0+i4)
         return;
     }
     var imSign: u8 = work[ip - 1]; // sign sits right before 'i'
@@ -526,7 +526,7 @@ fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
     var realStr: [200]u8 = undefined;
     _ = xcopy(&realStr[0], &work[0], @intCast(realLen));
     realStr[realLen] = 0;
-    _ = sprintf(dest, "%s %c%s", &realStr[0], @as(c_int, imSign), imMag);
+    abi.fmtCStr(dest, "{s} {c}{s}", .{ std.mem.sliceTo(realStr[0..], 0), @as(u8, @intCast(@as(c_int, imSign))), @as([*:0]const u8, imMag) });
 }
 
 // Parse one register value (the inverse of registerToSaveString). `type_str`
@@ -665,7 +665,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
             _ = memcpy(cfg, &config_pre_10000008_defaults[0], config_pre_10000008_defaults.len);
         }
     } else {
-        _ = sprintf(errorMessage, "In function restoreRegister: Data: Reg %d, type %s, value %s to be coded!", @as(c_int, regist), type_str, value);
+        abi.fmtBufZ(errorMessage[0..512], "In function restoreRegister: Data: Reg {d}, type {s}, value {s} to be coded!", .{ @as(c_int, regist), @as([*:0]const u8, type_str), @as([*:0]const u8, value) });
         displayBugScreen(errorMessage);
     }
 }
