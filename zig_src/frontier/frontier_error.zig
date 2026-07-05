@@ -45,7 +45,7 @@ const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
 // Opaque font handle; the bug screen only takes its address.
-const font_t = opaque {};
+const font_t = abi.Font;
 
 const calcRegister_t = i16;
 const angularMode_t = c_int;

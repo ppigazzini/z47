@@ -65,7 +65,7 @@ const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const realContext_t = abi.RealContext;
 
-const font_t = opaque {};
+const font_t = abi.Font;
 
 const item_t = abi.Item;
 

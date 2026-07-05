@@ -60,7 +60,7 @@ const letteredFlagDisplay_t = extern struct {
     txt: [*:0]const u8,
     position: i16,
 };
-const font_t = opaque {};
+const font_t = abi.Font;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified via C probe)

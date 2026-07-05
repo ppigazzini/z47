@@ -84,7 +84,7 @@ const bool_t = u8;
 const calcRegister_t = i16;
 const dataType_t = u32;
 const videoMode_t = c_int;
-const font_t = opaque {};
+const font_t = abi.Font;
 
 const softmenu_t = abi.Softmenu;
 const dynamicSoftmenu_t = abi.DynamicSoftmenu;

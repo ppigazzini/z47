@@ -89,7 +89,7 @@ extern var userKeyLabel: [*c]u8;
 extern var tam: tamState_t;
 extern var Norm_Key_00: normKey_t;
 
-const font_t = opaque {};
+const font_t = abi.Font;
 extern const standardFont: font_t;
 
 extern const KEY_X: [7]c_int;

@@ -88,7 +88,7 @@ const decContext = extern struct {
     status: u32,
     clamp: u8,
 };
-const font_t = opaque {};
+const font_t = abi.Font;
 
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;

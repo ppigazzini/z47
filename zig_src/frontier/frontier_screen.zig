@@ -75,16 +75,10 @@ const realContext_t = abi.RealContext;
 
 // glyph_t: 24 bytes. byte fields at 2..7, data ptr at 16.
 const glyph_t = abi.Glyph;
-pub const font_t = extern struct {
-    id: u16,
-    numberOfGlyphs: u16,
-    _pad: [4]u8,
-    // glyphs[] is at offset 8; access via glyphsPtr().
-    inline fn glyphsPtr(self: *const font_t) [*]const glyph_t {
-        const base: [*]const u8 = @ptrCast(self);
-        return @ptrCast(@alignCast(base + 8));
-    }
-};
+// M-callconv type unification: font_t is the abi single-source (same layout --
+// numberOfGlyphs@2, glyphs@8; .id is never read here so the i8-vs-u16 owner
+// difference is inert). glyphsPtr() lives on abi.Font.
+const font_t = abi.Font;
 
 const item_t = abi.Item;
 

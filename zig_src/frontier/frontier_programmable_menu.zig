@@ -20,7 +20,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const calcRegister_t = i16;
-const font_t = opaque {};
+const font_t = abi.Font;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
