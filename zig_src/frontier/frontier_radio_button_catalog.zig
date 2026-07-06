@@ -43,6 +43,10 @@ const printerModel_t = c_int; // enum, 4 bytes
 const printerState_t = abi.PrinterState;
 const ItemFn = ?*const fn (u16) callconv(.c) void;
 const abi = @import("abi"); // L1 shared bindings
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
 const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
@@ -287,14 +291,9 @@ pub export var tmp: [16]u8 = undefined;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn itemNotAvail(itemNr: i16) bool_t;
-extern fn isConfigCommon(id: u16) bool_t;
 extern fn getSystemFlag(flag: i32) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
-extern fn realToUint32C47(r: *const anyopaque, err: ?*bool_t) u32;
 extern fn getBeepVolume() u16;
-extern fn compressConversionName(msg1: [*c]u8) void;
-extern fn itemToBeCoded(unusedButMandatoryParameter: u16) void;
 fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     var d = dst;
     var s = src;
@@ -608,7 +607,7 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
     var result: i8 = NOVAL;
     const itemNr: i16 = @max(item, -%item);
 
-    if (itemNotAvail(item)) {
+    if (frontier_items.itemNotAvail(item) != 0) {
         return result;
     }
 
@@ -689,7 +688,7 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                         ITM_U32 => cb_param = shortIntegerWordSize == 32 and shortIntegerMode == SIM_UNSIGN,
                         ITM_S64 => cb_param = shortIntegerWordSize == 64 and shortIntegerMode == SIM_2COMPL,
                         ITM_U64 => cb_param = shortIntegerWordSize == 64 and shortIntegerMode == SIM_UNSIGN,
-                        ITM_SETCHN, ITM_SETEUR, ITM_SETIND, ITM_SETJPN, ITM_SETUK, ITM_SETUSA, ITM_SETDFLT => cb_param = isConfigCommon(param),
+                        ITM_SETCHN, ITM_SETEUR, ITM_SETIND, ITM_SETJPN, ITM_SETUK, ITM_SETUSA, ITM_SETDFLT => cb_param = frontier_config.isConfigCommon(param),
                         else => {},
                     }
                 },
@@ -824,11 +823,11 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_HASH_JM => if (lastIntegerBase != 0) {
             result = @intCast(lastIntegerBase);
         },
-        ITM_TIMER_SIGMA_L, ITM_TIMER_SIGMA_T => result = if (statisticalSumsPointer == null) 0 else @intCast(realToUint32C47(@ptrCast(statisticalSumsPointer.?), null)),
+        ITM_TIMER_SIGMA_L, ITM_TIMER_SIGMA_T => result = if (statisticalSumsPointer == null) 0 else @intCast(frontier_real_type.realToUint32C47(@ptrCast(@alignCast(statisticalSumsPointer.?)), null)),
         ITM_TIMER_R_L, ITM_TIMER_R_T => result = timerCraAndDeciseconds & 0x7F,
         ITM_VOL, ITM_VOLPLUS, ITM_VOLMINUS => result = @intCast(getBeepVolume()),
         ITM_PRINTERDLAY => result = @intCast(printerState.delay),
-        else => if (indexOfItems[itemNr].func == &itemToBeCoded) {
+        else => if (indexOfItems[itemNr].func == &frontier_items.itemToBeCoded) {
             result = ITEM_NOT_CODED;
         },
     }
@@ -985,6 +984,6 @@ pub export fn figlabel(label: [*c]const u8, showText: [*c]const u8, showValueIn:
             ii += 1;
         }
     }
-    compressConversionName(&tmp);
+    frontier_char_string.compressConversionName(&tmp);
     return &tmp;
 }

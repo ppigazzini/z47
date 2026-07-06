@@ -22,6 +22,11 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const videoMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen_snap = @import("frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 
@@ -125,31 +130,14 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn hideCursor() void;
 extern fn clearSystemFlag(flag: c_uint) void;
-extern fn drawSinglePixelFullWidthLine(y: c_int) void;
-extern fn letteredRegisterName(regist: calcRegister_t) u8;
-extern fn getDataTypeName(dt: u16, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
 
-extern fn showString(str: [*:0]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn stringWidth(str: [*:0]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn stringAfterPixels(str: [*:0]const u8, font: *const font_t, width: i16, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) [*c]u8;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
 
-extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int) void;
-extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool_t) void;
-extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, maxExp: i16, allowLARGELI: bool_t) void;
-extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8) void;
-extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, ignoreTDisp: bool_t) void;
-extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
 
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
 // stringCopy (charString.h): stpcpy semantics — copy incl. NUL, return ptr to NUL.
 fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     const l: u32 = @intCast(strlen(source));
-    return @as([*c]u8, @ptrCast(xcopy(dest, source, l + 1))) + l;
+    return @as([*c]u8, @ptrCast(frontier_char_string.xcopy(dest, source, l + 1))) + l;
 }
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -202,14 +190,14 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
     switch (getRegisterDataType(regist)) {
         dtReal34 => {
             if (showContent) {
-                real34ToDisplayString(reg34(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
+                frontier_display.real34ToDisplayString(reg34(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, @intFromBool(!LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)});
             }
         },
         dtComplex34 => {
             if (showContent) {
-                complex34ToDisplayString(regComplex34(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, !LIMITEXP, !FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), getComplexRegisterPolarMode(regist) != 0);
+                frontier_display.complex34ToDisplayString(regComplex34(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, @intFromBool(!LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) != 0));
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{d} bytes", .{@as(i32, COMPLEX34_SIZE_IN_BYTES)});
             }
@@ -218,11 +206,11 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
             if (showContent) {
                 if (regist >= FIRST_RESERVED_VARIABLE) {
                     copySourceRegisterToDestRegister(regist, 135); // TEMP_REGISTER_1
-                    longIntegerRegisterToDisplayString(135, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 1 - registerNameWidth, 50, false);
+                    frontier_display.longIntegerRegisterToDisplayString(135, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 1 - registerNameWidth, 50, 0);
                 } else if (getRegisterLongIntegerSign(regist) == LI_NEGATIVE) {
-                    longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 1 - registerNameWidth, 50, false);
+                    frontier_display.longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 1 - registerNameWidth, 50, 0);
                 } else {
-                    longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 9 - registerNameWidth, 50, false);
+                    frontier_display.longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - 9 - registerNameWidth, 50, 0);
                 }
             } else {
                 if (regist >= FIRST_RESERVED_VARIABLE) {
@@ -234,7 +222,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
         },
         dtShortInteger => {
             if (showContent) {
-                shortIntegerToDisplayString(regist, tmpString, false, noBaseOverride);
+                frontier_display.shortIntegerToDisplayString(regist, tmpString, 0, noBaseOverride);
             } else {
                 _ = strcpy(tmpString, "64 bits " ++ STD_CORRESPONDS_TO ++ " 8 bytes");
             }
@@ -244,31 +232,31 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
                 _ = strcpy(tmpString, STD_LEFT_SINGLE_QUOTE);
                 _ = strncat(tmpString, regStringData(regist), @intCast(stringByteLength(regStringData(regist)) + 1));
                 _ = strcat(tmpString, STD_RIGHT_SINGLE_QUOTE);
-                if (stringWidth(tmpString, &standardFont, false, true) >= SCREEN_WIDTH - 12 - registerNameWidth) { // 12 is the width of STD_ELLIPSIS
-                    stringAfterPixels(tmpString, &standardFont, SCREEN_WIDTH - 12 - registerNameWidth, false, true)[0] = 0;
+                if (frontier_char_string.stringWidth(tmpString, &standardFont, false, true) >= SCREEN_WIDTH - 12 - registerNameWidth) { // 12 is the width of STD_ELLIPSIS
+                    frontier_char_string.stringAfterPixels(tmpString, &standardFont, SCREEN_WIDTH - 12 - registerNameWidth, false, true)[0] = 0;
                     _ = strcat(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), STD_ELLIPSIS);
                 }
             } else {
-                abi.fmtBufZ(tmpString[0..2560], "{d} character{s} " ++ STD_CORRESPONDS_TO ++ " 4+{d} bytes", .{ @as(u32, @intCast(stringGlyphLength(regStringData(regist)))), std.mem.span(if (stringGlyphLength(regStringData(regist)) == 1) @as([*c]const u8, "") else @as([*c]const u8, "s")), toBytes(getRegisterMaxDataLengthInBlocks(regist)) });
+                abi.fmtBufZ(tmpString[0..2560], "{d} character{s} " ++ STD_CORRESPONDS_TO ++ " 4+{d} bytes", .{ @as(u32, @intCast(frontier_char_string.stringGlyphLength(regStringData(regist)))), std.mem.span(if (frontier_char_string.stringGlyphLength(regStringData(regist)) == 1) @as([*c]const u8, "") else @as([*c]const u8, "s")), toBytes(getRegisterMaxDataLengthInBlocks(regist)) });
             }
         },
         dtTime => {
             if (showContent) {
-                timeToDisplayString(regist, tmpString, true);
+                frontier_display.timeToDisplayString(regist, tmpString, 1);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)});
             }
         },
         dtDate => {
             if (showContent) {
-                dateToDisplayString(regist, tmpString);
+                frontier_display.dateToDisplayString(regist, tmpString);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{d} bytes", .{@as(i32, REAL34_SIZE_IN_BYTES)});
             }
         },
         dtReal34Matrix => {
             if (showContent) {
-                real34MatrixToDisplayString(regist, tmpString);
+                frontier_display.real34MatrixToDisplayString(regist, tmpString);
             } else {
                 const matrixHeader = regMatrixHeader(regist);
                 const elements: u16 = @as(u16, matrixHeader.matrixRows) *% @as(u16, matrixHeader.matrixColumns);
@@ -277,7 +265,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
         },
         dtComplex34Matrix => {
             if (showContent) {
-                complex34MatrixToDisplayString(regist, tmpString);
+                frontier_display.complex34MatrixToDisplayString(regist, tmpString);
             } else {
                 const matrixHeader = regMatrixHeader(regist);
                 const elements: u16 = @as(u16, matrixHeader.matrixRows) *% @as(u16, matrixHeader.matrixColumns);
@@ -292,7 +280,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
             }
         },
         else => {
-            abi.fmtBufZ(tmpString[0..2560], "Data type {s}: to be coded", .{std.mem.span(getDataTypeName(@intCast(getRegisterDataType(regist)), false, true))});
+            abi.fmtBufZ(tmpString[0..2560], "Data type {s}: to be coded", .{std.mem.span(frontier_debug.getDataTypeName(@intCast(getRegisterDataType(regist)), false, true))});
         },
     }
 }
@@ -303,7 +291,7 @@ fn showRegisterInRbr(regist: calcRegister_t, registerNameWidth: i16) void {
 fn registerName(s: [*c]u8, regist: calcRegister_t) void {
     _ = s; // C passes tmpString but writes the global tmpString directly
     if (REGISTER_X <= regist and regist <= REGISTER_W) {
-        tmpString[0] = letteredRegisterName(regist);
+        tmpString[0] = frontier_screen_snap.letteredRegisterName(regist);
         _ = strcpy(tmpString + 1, ":");
     } else {
         abi.fmtBufZ(tmpString[0..2560], "R{d:0>2}:", .{@as(u32, @intCast(regist))});
@@ -321,7 +309,7 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
 
     if (calcMode != CM_REGISTER_BROWSER) {
         if (calcMode == CM_AIM) {
-            hideCursor();
+            frontier_screen.hideCursor();
             cursorEnabled = 0;
         }
 
@@ -345,15 +333,15 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
             if (regist <= LAST_SPARE_REGISTER) {
                 registerName(tmpString, regist);
 
-                registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, false, true))));
+                registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 0, 1))));
 
                 if ((regist < REGISTER_X and @rem(regist, 5) == 4) or (regist >= REGISTER_X and @rem(regist, 4) == 3)) {
-                    drawSinglePixelFullWidthLine(218 - 22 * row);
+                    frontier_screen.drawSinglePixelFullWidthLine(218 - 22 * row);
                 }
 
                 showRegisterInRbr(regist, registerNameWidth);
 
-                _ = showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true) - 1), @intCast(219 - 22 * row), vmNormal, false, true);
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true) - 1), @intCast(219 - 22 * row), vmNormal, 0, 1);
             }
         }
     } else if (rbrMode == RBR_LOCAL) { // Local registers
@@ -364,15 +352,15 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                 if (regist < FIRST_LOCAL_REGISTER + @as(i16, currentNumberOfLocalRegisters.get())) {
                     abi.fmtBufZ(tmpString[0..2560], "R.{d:0>2}:", .{@as(u32, @intCast(@as(c_int, regist) - FIRST_LOCAL_REGISTER))});
 
-                    registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, true, true))));
+                    registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
 
                     if (@rem(regist, 5) == 1) {
-                        drawSinglePixelFullWidthLine(218 - 22 * row);
+                        frontier_screen.drawSinglePixelFullWidthLine(218 - 22 * row);
                     }
 
                     showRegisterInRbr(regist, registerNameWidth);
 
-                    _ = showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, false, true);
+                    _ = frontier_screen.showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, 0, 1);
                 }
             }
         } else { // no local register allocated
@@ -387,15 +375,15 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                 _ = stringCopy(tmpString, @as([*c]u8, @ptrCast(&allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)].variableName)) + 1);
                 _ = stringCopy(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), ":");
 
-                registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, true, true))));
+                registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
 
                 if ((@rem(regist, 5) == 1) or (regist == FIRST_NAMED_VARIABLE + @as(i16, @bitCast(numberOfNamedVariables)) - 1)) {
-                    drawSinglePixelFullWidthLine(218 - 22 * row);
+                    frontier_screen.drawSinglePixelFullWidthLine(218 - 22 * row);
                 }
 
                 showRegisterInRbr(regist, registerNameWidth);
 
-                _ = showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, false, true);
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, 0, 1);
             } else { // Reserved variables
                 if (regist < FIRST_RESERVED_VARIABLE) {
                     regist -= FIRST_NAMED_VARIABLE + @as(i16, @bitCast(numberOfNamedVariables));
@@ -405,15 +393,15 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                 if (regist <= LAST_RESERVED_VARIABLE) { // Named variables
                     abi.fmtBufZ(tmpString[0..2560], "{s}:", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName)) + 1)});
 
-                    registerNameWidth = @truncate(@as(i32, @bitCast(showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, true, true))));
+                    registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
 
                     if (@rem(regist, 5) == 1) {
-                        drawSinglePixelFullWidthLine(218 - 22 * row);
+                        frontier_screen.drawSinglePixelFullWidthLine(218 - 22 * row);
                     }
 
                     showRegisterInRbr(regist, registerNameWidth);
 
-                    _ = showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, false, true);
+                    _ = frontier_screen.showString(tmpString, &standardFont, @intCast(SCREEN_WIDTH - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(219 - 22 * row), vmNormal, 0, 1);
                 }
             }
         }
