@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -16,10 +17,6 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 
 // Owned by math_matrix_lifecycle.zig (B1).
-extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
-extern fn realMatrixFree(matrix: *real34Matrix_t) callconv(.c) void;
-extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
-extern fn complexMatrixFree(matrix: *complex34Matrix_t) callconv(.c) void;
 extern fn decQuadZero(result: *real34_t) callconv(.c) *real34_t;
 
 const realElems = abi.matrixRealElems;
@@ -50,7 +47,7 @@ pub export fn insRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16, add:
     const before: usize = if (add) rows else before_row_no;
 
     var new_mat: real34Matrix_t = undefined;
-    if (realMatrixInit(&new_mat, rows + 1, cols)) {
+    if (math_matrix_lifecycle.realMatrixInit(&new_mat, rows + 1, cols)) {
         const src = realElems(matrix);
         const dst = realElems(&new_mat);
         var i: usize = 0;
@@ -65,7 +62,7 @@ pub export fn insRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16, add:
         while (i < @as(usize, cols) * rows) : (i += 1) {
             real34Copy(&src[i], &dst[i + cols]);
         }
-        realMatrixFree(matrix);
+        math_matrix_lifecycle.realMatrixFree(matrix);
         matrix.header.matrixRows = new_mat.header.matrixRows;
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
@@ -80,7 +77,7 @@ pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add:
     const before: usize = if (add) cols else before_col_no;
 
     var new_mat: real34Matrix_t = undefined;
-    if (realMatrixInit(&new_mat, rows, cols + 1)) {
+    if (math_matrix_lifecycle.realMatrixInit(&new_mat, rows, cols + 1)) {
         const src = realElems(matrix);
         const dst = realElems(&new_mat);
         var j: usize = 0;
@@ -101,7 +98,7 @@ pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add:
                 real34Copy(&src[j + i * cols], &dst[(j + 1) + i * (cols + 1)]);
             }
         }
-        realMatrixFree(matrix);
+        math_matrix_lifecycle.realMatrixFree(matrix);
         matrix.header.matrixRows = new_mat.header.matrixRows;
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
@@ -116,7 +113,7 @@ pub export fn insRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
     const before: usize = if (add) rows else before_row_no;
 
     var new_mat: complex34Matrix_t = undefined;
-    if (complexMatrixInit(&new_mat, rows + 1, cols)) {
+    if (math_matrix_lifecycle.complexMatrixInit(&new_mat, rows + 1, cols)) {
         const src = complexElems(matrix);
         const dst = complexElems(&new_mat);
         var i: usize = 0;
@@ -132,7 +129,7 @@ pub export fn insRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
         while (i < @as(usize, cols) * rows) : (i += 1) {
             complex34Copy(&src[i], &dst[i + cols]);
         }
-        complexMatrixFree(matrix);
+        math_matrix_lifecycle.complexMatrixFree(matrix);
         matrix.header.matrixRows = new_mat.header.matrixRows;
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;
@@ -147,7 +144,7 @@ pub export fn insColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16
     const before: usize = if (add) cols else before_col_no;
 
     var new_mat: complex34Matrix_t = undefined;
-    if (complexMatrixInit(&new_mat, rows, cols + 1)) {
+    if (math_matrix_lifecycle.complexMatrixInit(&new_mat, rows, cols + 1)) {
         const src = complexElems(matrix);
         const dst = complexElems(&new_mat);
         var j: usize = 0;
@@ -169,7 +166,7 @@ pub export fn insColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16
                 complex34Copy(&src[j + i * cols], &dst[(j + 1) + i * (cols + 1)]);
             }
         }
-        complexMatrixFree(matrix);
+        math_matrix_lifecycle.complexMatrixFree(matrix);
         matrix.header.matrixRows = new_mat.header.matrixRows;
         matrix.header.matrixColumns = new_mat.header.matrixColumns;
         matrix.matrixElements = new_mat.matrixElements;

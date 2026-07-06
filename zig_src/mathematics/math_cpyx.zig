@@ -9,6 +9,9 @@
 // strings (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -41,12 +44,7 @@ inline fn const_1() *const real_t {
 }
 
 // realExp and WP34S_LnGamma / WP34S_ComplexLnGamma / expComplex cross-domain.
-extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ComplexLnGamma(zinReal: *const real_t, zinImag: *const real_t, resReal: *real_t, resImag: *real_t, real_context: *realContext_t) void;
-extern fn expComplex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 
 // Long integer <-> real / register conversions.
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
@@ -104,13 +102,13 @@ inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
 pub export fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t) callconv(.c) void {
     realSubtract(y, x, result, realContext);
     realAdd(result, const_1(), result, realContext);
-    WP34S_LnGamma(result, result, realContext); // r = ln((y-x)!)
+    math_wp34s.WP34S_LnGamma(result, result, realContext); // r = ln((y-x)!)
 
     realAdd(x, const_1(), x, realContext);
-    WP34S_LnGamma(x, x, realContext); // x = ln(x!)
+    math_wp34s.WP34S_LnGamma(x, x, realContext); // x = ln(x!)
 
     realAdd(y, const_1(), y, realContext);
-    WP34S_LnGamma(y, y, realContext); // y = ln(y!)
+    math_wp34s.WP34S_LnGamma(y, y, realContext); // y = ln(y!)
 
     realSubtract(y, result, result, realContext);
     realSubtract(result, x, result, realContext); // r = ln(y!) - ln((y-x)!) - ln(x!)
@@ -121,7 +119,7 @@ fn cyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t)
 
     logCyxReal(y, x, result, realContext);
 
-    realExp(result, result, realContext); // r = y! / ((y-x)! x x!)
+    math_command_wrappers.realExp(result, result, realContext); // r = y! / ((y-x)! x x!)
 
     if (inputAreIntegers and !realIsAnInteger(result)) {
         realToIntegralValue(result, result, DEC_ROUND_HALF_UP, realContext);
@@ -156,18 +154,18 @@ fn cyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
 
         realSubtract(&yReal, &xReal, &resultReal, &runtime.ctxtReal75);
         realAdd(&resultReal, const_1(), &resultReal, &runtime.ctxtReal75);
-        WP34S_LnGamma(&resultReal, &resultReal, &runtime.ctxtReal75); // r = ln((y-x)!)
+        math_wp34s.WP34S_LnGamma(&resultReal, &resultReal, &runtime.ctxtReal75); // r = ln((y-x)!)
 
         realAdd(&xReal, const_1(), &xReal, &runtime.ctxtReal75);
-        WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal75); // x = ln(x!)
+        math_wp34s.WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal75); // x = ln(x!)
 
         realAdd(&yReal, const_1(), &yReal, &runtime.ctxtReal75);
-        WP34S_LnGamma(&yReal, &yReal, &runtime.ctxtReal75); // y = ln(y!)
+        math_wp34s.WP34S_LnGamma(&yReal, &yReal, &runtime.ctxtReal75); // y = ln(y!)
 
         realSubtract(&yReal, &resultReal, &resultReal, &runtime.ctxtReal75);
         realSubtract(&resultReal, &xReal, &resultReal, &runtime.ctxtReal75); // r = ln(y!) - ln((y-x)!) - ln(x!)
 
-        realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / ((y-x)! x x!)
+        math_command_wrappers.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / ((y-x)! x x!)
 
         convertRealToLongInteger(&resultReal, result, DEC_ROUND_HALF_UP);
     }
@@ -178,13 +176,13 @@ fn cyxCplx(yReal: *real_t, yImag: *real_t, xReal: *real_t, xImag: *real_t, rReal
     realSubtract(yImag, xImag, rImag, realContext);
 
     realAdd(rReal, const_1(), rReal, realContext); // r = t + 1
-    WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
+    math_wp34s.WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
 
     realAdd(xReal, const_1(), xReal, realContext); // x = x + 1
-    WP34S_ComplexLnGamma(xReal, xImag, xReal, xImag, realContext); // x = lnGamma(x + 1) = ln(x!)
+    math_wp34s.WP34S_ComplexLnGamma(xReal, xImag, xReal, xImag, realContext); // x = lnGamma(x + 1) = ln(x!)
 
     realAdd(yReal, const_1(), yReal, realContext); // y = y + 1
-    WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
+    math_wp34s.WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
 
     realSubtract(yReal, rReal, rReal, realContext); // r = ln(y!) - ln((y - x)!)
     realSubtract(yImag, rImag, rImag, realContext);
@@ -192,7 +190,7 @@ fn cyxCplx(yReal: *real_t, yImag: *real_t, xReal: *real_t, xImag: *real_t, rReal
     realSubtract(rReal, xReal, rReal, realContext); // r = ln(y!) - ln((y - x)!) - ln(x!)
     realSubtract(rImag, xImag, rImag, realContext);
 
-    expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / ((y-x)! x x!)
+    math_command_wrappers.expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / ((y-x)! x x!)
 }
 
 fn pyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t) void {
@@ -200,14 +198,14 @@ fn pyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t)
 
     realSubtract(y, x, result, realContext);
     realAdd(result, const_1(), result, realContext);
-    WP34S_LnGamma(result, result, realContext); // r = ln((y-x)!)
+    math_wp34s.WP34S_LnGamma(result, result, realContext); // r = ln((y-x)!)
 
     realAdd(y, const_1(), y, realContext);
-    WP34S_LnGamma(y, y, realContext); // y = ln(y!)
+    math_wp34s.WP34S_LnGamma(y, y, realContext); // y = ln(y!)
 
     realSubtract(y, result, result, realContext); // r = ln(y!) - ln((y-x)!)
 
-    realExp(result, result, realContext); // r = y! / (y-x)!
+    math_command_wrappers.realExp(result, result, realContext); // r = y! / (y-x)!
 
     if (inputAreIntegers and !realIsAnInteger(result)) {
         realToIntegralValue(result, result, DEC_ROUND_HALF_UP, realContext);
@@ -241,14 +239,14 @@ fn pyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
 
         realSubtract(&yReal, &xReal, &resultReal, &runtime.ctxtReal75);
         realAdd(&resultReal, const_1(), &resultReal, &runtime.ctxtReal75);
-        WP34S_LnGamma(&resultReal, &resultReal, &runtime.ctxtReal75); // r = ln((y-x)!)
+        math_wp34s.WP34S_LnGamma(&resultReal, &resultReal, &runtime.ctxtReal75); // r = ln((y-x)!)
 
         realAdd(&yReal, const_1(), &yReal, &runtime.ctxtReal75);
-        WP34S_LnGamma(&yReal, &yReal, &runtime.ctxtReal75); // y = ln(y!)
+        math_wp34s.WP34S_LnGamma(&yReal, &yReal, &runtime.ctxtReal75); // y = ln(y!)
 
         realSubtract(&yReal, &resultReal, &resultReal, &runtime.ctxtReal75); // r = ln(y!) - ln((y-x)!)
 
-        realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / (y-x)!
+        math_command_wrappers.realExp(&resultReal, &resultReal, &runtime.ctxtReal75); // r = y! / (y-x)!
 
         convertRealToLongInteger(&resultReal, result, DEC_ROUND_HALF_UP);
     }
@@ -259,15 +257,15 @@ fn pyxCplx(yReal: *real_t, yImag: *real_t, xReal: *real_t, xImag: *real_t, rReal
     realSubtract(yImag, xImag, rImag, realContext);
 
     realAdd(rReal, const_1(), rReal, realContext); // r = t + 1
-    WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
+    math_wp34s.WP34S_ComplexLnGamma(rReal, rImag, rReal, rImag, realContext); // r = lnGamma(t + 1) = ln((y - x)!)
 
     realAdd(yReal, const_1(), yReal, realContext); // y = y + 1
-    WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
+    math_wp34s.WP34S_ComplexLnGamma(yReal, yImag, yReal, yImag, realContext); // y = lnGamma(y + 1) = ln(y!)
 
     realSubtract(yReal, rReal, rReal, realContext); // r = ln(y!) - ln((y - x)!)
     realSubtract(yImag, rImag, rImag, realContext);
 
-    expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / (y-x)!
+    math_command_wrappers.expComplex(rReal, rImag, rReal, rImag, realContext); // r = y! / (y-x)!
 }
 
 fn cpyxLonI(combOrPerm: u16) void {
@@ -307,7 +305,7 @@ fn cpyxReal(combOrPerm: u16) void {
         return;
     }
 
-    if (realIsNegative(&x) or realIsNegative(&y) or realCompareGreaterThan(&x, &y)) {
+    if (realIsNegative(&x) or realIsNegative(&y) or math_comparison_reals.realCompareGreaterThan(&x, &y)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function cpyxRealReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.", null, null);
     } else {

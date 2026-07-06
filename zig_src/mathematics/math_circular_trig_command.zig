@@ -1,56 +1,39 @@
 const circular_trig_owned = @import("math_circular_trig.zig");
 const real_trig_owned = @import("math_real_trig.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
-extern fn sinCosReal(trig_type: runtime.trigType_t) callconv(.c) void;
-extern fn sinCosCplx(trig_type: runtime.trigType_t) callconv(.c) void;
-extern fn sinhCoshReal(trig_type: runtime.trigType_t) callconv(.c) void;
-extern fn sinhCoshCplx(trig_type: runtime.trigType_t) callconv(.c) void;
-extern fn TanComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) u8;
-extern fn TanhComplex(
-    x_real: *const runtime.real_t,
-    x_imag: *const runtime.real_t,
-    r_real: *runtime.real_t,
-    r_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) u8;
 
 fn coshReal() callconv(.c) void {
-    sinhCoshReal(runtime.trigCos);
+    math_command_wrappers.sinhCoshReal(runtime.trigCos);
 }
 
 fn coshCplx() callconv(.c) void {
-    sinhCoshCplx(runtime.trigCos);
+    math_command_wrappers.sinhCoshCplx(runtime.trigCos);
 }
 
 fn sinReal() callconv(.c) void {
-    sinCosReal(runtime.trigSin);
+    math_command_wrappers.sinCosReal(runtime.trigSin);
 }
 
 fn sinCplx() callconv(.c) void {
-    sinCosCplx(runtime.trigSin);
+    math_command_wrappers.sinCosCplx(runtime.trigSin);
 }
 
 fn cosReal() callconv(.c) void {
-    sinCosReal(runtime.trigCos);
+    math_command_wrappers.sinCosReal(runtime.trigCos);
 }
 
 fn cosCplx() callconv(.c) void {
-    sinCosCplx(runtime.trigCos);
+    math_command_wrappers.sinCosCplx(runtime.trigCos);
 }
 
 fn sinhReal() callconv(.c) void {
-    sinhCoshReal(runtime.trigSin);
+    math_command_wrappers.sinhCoshReal(runtime.trigSin);
 }
 
 fn sinhCplx() callconv(.c) void {
-    sinhCoshCplx(runtime.trigSin);
+    math_command_wrappers.sinhCoshCplx(runtime.trigSin);
 }
 
 fn tanhReal() callconv(.c) void {
@@ -79,7 +62,7 @@ fn tanhCplx() callconv(.c) void {
         return;
     }
 
-    _ = TanhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
+    _ = math_command_wrappers.TanhComplex(&x_real, &x_imag, &r_real, &r_imag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&r_real, &r_imag, runtime.REGISTER_X);
 }
 
@@ -122,7 +105,7 @@ fn tanCplx() callconv(.c) void {
         return;
     }
 
-    _ = TanComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal51);
+    _ = math_command_wrappers.TanComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal51);
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
 }
 

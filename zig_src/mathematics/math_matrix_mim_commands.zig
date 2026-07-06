@@ -7,6 +7,10 @@
 // the public commands are bridge-renamed.
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_euclidean_norm_command = @import("math_matrix_euclidean_norm_command.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_swap = @import("math_matrix_swap.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -34,15 +38,8 @@ const any34Matrix_t = extern union {
 };
 extern var openMatrixMIMPointer: any34Matrix_t;
 
-extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
 extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
 extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
-extern fn _fnEuclideanNorm(p_param: u16) void;
-extern fn realCompareLessEqual(n1: *const real_t, n2: *const real_t) bool;
-extern fn realCompareGreaterThan(n1: *const real_t, n2: *const real_t) bool;
-extern fn complexMatrixSwapRows(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, a: u16, b: u16) void;
-extern fn complexMatrixSwapColumns(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, a: u16, b: u16) void;
-extern fn realMatrixSwapColumns(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b: u16) void;
 // realCopy / realIsPositive are decNumber macros (not linkable symbols).
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
@@ -97,12 +94,12 @@ fn _swapReal(matrix: *real34Matrix_t, isRow: bool) bool {
     if (!getArg(REGISTER_Y, &ry) or !getArg(REGISTER_X, &rx)) return false;
     const a = truncToU16(runtime.realToInt32C47(&ry, null));
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
-    if (realIsPositive(&rx) and realIsPositive(&ry) and realCompareLessEqual(&rx, &rlimit) and realCompareLessEqual(&ry, &rlimit)) {
+    if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rlimit) and math_comparison_reals.realCompareLessEqual(&ry, &rlimit)) {
         if (!runtime.realCompareEqual(&ry, &rx)) {
             if (isRow) {
                 runtime.realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
             } else {
-                realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
             }
         }
     } else {
@@ -120,12 +117,12 @@ fn _swapComplex(matrix: *complex34Matrix_t, isRow: bool) bool {
     if (!getArg(REGISTER_Y, &ry) or !getArg(REGISTER_X, &rx)) return false;
     const a = truncToU16(runtime.realToInt32C47(&ry, null));
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
-    if (realIsPositive(&rx) and realIsPositive(&ry) and realCompareLessEqual(&rx, &rlimit) and realCompareLessEqual(&ry, &rlimit)) {
+    if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rlimit) and math_comparison_reals.realCompareLessEqual(&ry, &rlimit)) {
         if (!runtime.realCompareEqual(&ry, &rx)) {
             if (isRow) {
-                complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
             } else {
-                complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
             }
         }
     } else {
@@ -172,7 +169,7 @@ fn getMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
     if (!getArg(REGISTER_Y, &ry) or !getArg(REGISTER_X, &rx)) return false;
     const a = truncToU16(runtime.realToInt32C47(&ry, null));
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
-    if (realIsPositive(&rx) and realIsPositive(&ry) and realCompareLessEqual(&rx, &rcols) and realCompareLessEqual(&ry, &rrows)) {
+    if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rcols) and math_comparison_reals.realCompareLessEqual(&ry, &rrows)) {
         var mat: real34Matrix_t = undefined;
         runtime.fnDropY(runtime.NOPARAM);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
@@ -210,7 +207,7 @@ fn getMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     if (!getArg(REGISTER_Y, &ry) or !getArg(REGISTER_X, &rx)) return false;
     const a = truncToU16(runtime.realToInt32C47(&ry, null));
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
-    if (realIsPositive(&rx) and realIsPositive(&ry) and realCompareLessEqual(&rx, &rcols) and realCompareLessEqual(&ry, &rrows)) {
+    if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rcols) and math_comparison_reals.realCompareLessEqual(&ry, &rrows)) {
         var mat: complex34Matrix_t = undefined;
         runtime.fnDropY(runtime.NOPARAM);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
@@ -310,19 +307,19 @@ fn putWrongType(fnName: [*:0]const u8, suffix: []const u8) void {
 
 pub export fn fnGetMatrix(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&getMatrixReal, &getMatrixComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&getMatrixReal, &getMatrixComplex);
 }
 pub export fn fnPutMatrix(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&putMatrixReal, &putMatrixComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&putMatrixReal, &putMatrixComplex);
 }
 pub export fn fnSwapRows(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&swapRowsReal, &swapRowsComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&swapRowsReal, &swapRowsComplex);
 }
 pub export fn fnSwapColumns(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&swapColumnsReal, &swapColumnsComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&swapColumnsReal, &swapColumnsComplex);
 }
 
 pub export fn fnRowColSum(isRow: u16) callconv(.c) void {
@@ -461,7 +458,7 @@ fn _row_columnNorm(pParam: u16) void {
                 runtime.realSetPositiveSign(&elem);
                 runtime.realAdd(&sum, &elem, &sum, &runtime.ctxtReal39);
             }
-            if (realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
+            if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
         }
         writeNorm(&norm);
     } else if (dt == dtComplex34Matrix) {
@@ -486,7 +483,7 @@ fn _row_columnNorm(pParam: u16) void {
                 runtime.complexMagnitude(&elem, &imag, &elem, &runtime.ctxtReal39);
                 runtime.realAdd(&sum, &elem, &sum, &runtime.ctxtReal39);
             }
-            if (realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
+            if (math_comparison_reals.realCompareGreaterThan(&sum, &norm)) realCopy(&sum, &norm);
         }
         writeNorm(&norm);
     } else {
@@ -522,7 +519,7 @@ pub export fn fnPNorm(param: u16) callconv(.c) void {
         pNorm_0_NNZ, pNorm_1_CNORM, pNorm_inf_RNORM => _row_columnNorm(param),
         else => {
             // pNorm_2_ENORM and default: Euclidean (Frobenius) norm.
-            if (runtime.saveLastX()) _fnEuclideanNorm(param);
+            if (runtime.saveLastX()) math_matrix_euclidean_norm_command._fnEuclideanNorm(param);
         },
     }
 }

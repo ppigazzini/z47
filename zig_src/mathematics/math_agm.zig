@@ -13,6 +13,10 @@ const const39_pi = consts.const39_pi;
 // hint becomes a fixed moreInfoOnError string.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -51,18 +55,14 @@ inline fn const_1on2() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 extern fn realSetOne(value: *real_t) void;
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *align(1) const real_t) bool;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 
 // WP34S_RelativeError with a *align(1) const tolerance (const_1e_37 is blob).
-extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *align(1) const real_t, real_context: *realContext_t) bool;
 
 // Complex helpers.
-extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
-extern fn sqrtComplex(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 
 const AGM_MODE = enum(c_int) {
     AGM_MODE_NORMAL = 0,
@@ -90,7 +90,7 @@ fn _realAgm(mode: AGM_MODE, a: *const real_t, b: *const real_t, c: ?*real_t, res
         realCopy(&bReal, &_b.?[0]);
     }
 
-    while (!WP34S_RelativeError(&aReal, &bReal, const_1e_37(), realContext)) {
+    while (!math_wp34s.WP34S_RelativeError(&aReal, &bReal, const_1e_37(), realContext)) {
         if (mode == AGM_MODE_E) {
             realMultiply(&cCoeff, const_2(), &cCoeff, realContext);
             realSubtract(&aReal, &bReal, &cReal, realContext); // c = a - b
@@ -147,14 +147,14 @@ fn _complexAgm(mode: AGM_MODE, ar: *const real_t, ai: *const real_t, br: *const 
         realCopy(&bImag, &_bi.?[0]);
     }
 
-    while (!WP34S_RelativeError(&aReal, &bReal, const_1e_37(), realContext) or !WP34S_RelativeError(&aImag, &bImag, const_1e_37(), realContext)) {
+    while (!math_wp34s.WP34S_RelativeError(&aReal, &bReal, const_1e_37(), realContext) or !math_wp34s.WP34S_RelativeError(&aImag, &bImag, const_1e_37(), realContext)) {
         if (mode == AGM_MODE_E) {
             realMultiply(&cCoeff, const_2(), &cCoeff, realContext);
             realSubtract(&aReal, &bReal, &cReal, realContext);
             realSubtract(&aImag, &bImag, &cImag, realContext); // c = a - b
             realMultiply(&cReal, const_1on2(), &cReal, realContext);
             realMultiply(&cImag, const_1on2(), &cImag, realContext); // c = (a - b) / 2
-            mulComplexComplex(&cReal, &cImag, &cReal, &cImag, &cReal, &cImag, realContext); // c^2
+            math_multiplication_cells.mulComplexComplex(&cReal, &cImag, &cReal, &cImag, &cReal, &cImag, realContext); // c^2
             realFMA(&cReal, &cCoeff, cr.?, cr.?, realContext);
             realFMA(&cImag, &cCoeff, ci.?, ci.?, realContext);
         }
@@ -164,10 +164,10 @@ fn _complexAgm(mode: AGM_MODE, ar: *const real_t, ai: *const real_t, br: *const 
         realAdd(&aReal, &bReal, &cReal, realContext); // c = a + b real part
         realAdd(&aImag, &bImag, &cImag, realContext); // c = a + b imag part
 
-        mulComplexComplex(&aReal, &aImag, &bReal, &bImag, &bReal, &bImag, realContext); // b = a * b
+        math_multiplication_cells.mulComplexComplex(&aReal, &aImag, &bReal, &bImag, &bReal, &bImag, realContext); // b = a * b
 
         // b = sqrt(a * b)
-        sqrtComplex(&bReal, &bImag, &bReal, &bImag, realContext);
+        math_transform_complex_helpers.sqrtComplex(&bReal, &bImag, &bReal, &bImag, realContext);
 
         realMultiply(&cReal, const_1on2(), &aReal, realContext); // a = (a + b) / 2 real part
         realMultiply(&cImag, const_1on2(), &aImag, realContext); // a = (a + b) / 2 imag part
@@ -181,7 +181,7 @@ fn _complexAgm(mode: AGM_MODE, ar: *const real_t, ai: *const real_t, br: *const 
         realSubtract(&cArg, &bArg, &cArg, realContext);
         realSetPositiveSign(&cArg);
         realAdd(&aArg, &cArg, &bArg, realContext);
-        if (realCompareGreaterThan(&bArg, const39_pi())) {
+        if (math_comparison_reals.realCompareGreaterThan(&bArg, const39_pi())) {
             realChangeSign(&bReal);
             realChangeSign(&bImag);
         }

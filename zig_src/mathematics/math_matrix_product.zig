@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -17,8 +18,6 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 
 // Owned by math_matrix_lifecycle.zig (B1).
-extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
-extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 
 const realElems = abi.matrixRealElems;
 const constRealElems = abi.matrixConstRealElems;
@@ -44,7 +43,7 @@ pub export fn multiplyRealMatrices(y: *const real34Matrix_t, x: *const real34Mat
         return;
     }
 
-    if (realMatrixInit(res, rows, cols)) {
+    if (math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const ye = constRealElems(y);
         const xe = constRealElems(x);
         const re = realElems(res);
@@ -85,7 +84,7 @@ pub export fn multiplyComplexMatrices(y: *const complex34Matrix_t, x: *const com
         return;
     }
 
-    if (complexMatrixInit(res, rows, cols)) {
+    if (math_matrix_lifecycle.complexMatrixInit(res, rows, cols)) {
         const ye = constComplexElems(y);
         const xe = constComplexElems(x);
         const re = complexElems(res);

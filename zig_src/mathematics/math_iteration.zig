@@ -46,6 +46,8 @@ const consts = abi.constants;
 // =====================================================================
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_register_compare = @import("math_register_compare.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const real_t = runtime.real_t;
@@ -97,12 +99,6 @@ inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-extern fn incDecLonI(regist: u16, flag: u8) void;
-extern fn incDecReal(regist: u16, flag: u8) void;
-extern fn incDecShoI(regist: u16, flag: u8) void;
-extern fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, result: *i8) bool;
-extern fn real34CompareAbsLessThan(number1: *const real34_t, number2: *const real34_t) bool;
-extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) bool;
 
 // real34 sign / predicate / set helpers (realType.h macros / decQuad).
 extern fn decQuadZero(res: *real34_t) *real34_t;
@@ -179,25 +175,25 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
     getIterParam(regist, &fp, registerReal34Data(TEMP_REGISTER_1), &step);
     switch (getRegisterDataType(@intCast(regist))) {
         dtLongInteger => {
-            incDecLonI(regist, @intCast(mode >> 2));
-            _ = registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
+            math_register_compare.incDecLonI(regist, @intCast(mode >> 2));
+            _ = math_register_compare.registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
         },
         dtShortInteger => {
-            incDecShoI(regist, @intCast(mode >> 2));
-            _ = registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
+            math_register_compare.incDecShoI(regist, @intCast(mode >> 2));
+            _ = math_register_compare.registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
         },
         dtReal34 => {
             if ((mode & 2) == 2) {
                 real34SetOne(&step);
-                incDecReal(regist, @intCast(mode >> 2));
-                compared = if (real34CompareAbsLessThan(registerReal34Data(@intCast(regist)), const34_1())) 0 else 1;
+                math_register_compare.incDecReal(regist, @intCast(mode >> 2));
+                compared = if (math_comparison_reals.real34CompareAbsLessThan(registerReal34Data(@intCast(regist)), const34_1())) 0 else 1;
             } else if (getRegisterAngularMode(@intCast(regist)) == amNone) {
                 real34ToIntegralValue(registerReal34Data(@intCast(regist)), registerReal34Data(@intCast(regist)), DEC_ROUND_DOWN);
                 if ((mode >> 2) == DEC_FLAG) {
                     real34SetNegativeSign(&step);
                 }
                 real34Add(registerReal34Data(@intCast(regist)), &step, registerReal34Data(@intCast(regist)));
-                _ = registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
+                _ = math_register_compare.registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
                 if (real34IsNegative(registerReal34Data(@intCast(regist)))) {
                     real34SetNegativeSign(&fp);
                 }
@@ -217,7 +213,7 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
                     realAdd(&v, const_3600(), &v, ctxtReal39);
                 } // step = 1 hour = 3600 s
                 realToReal34(&v, registerReal34Data(@intCast(regist)));
-                compared = if (realCompareAbsLessThan(&v, const_3600())) 0 else 1; // |time| < 1h -> treat as zero
+                compared = if (math_comparison_reals.realCompareAbsLessThan(&v, const_3600())) 0 else 1; // |time| < 1h -> treat as zero
             } else {
                 // ISG/DSE/ISE/DSL counter format has no meaning for Time
                 return invalidType(regist);

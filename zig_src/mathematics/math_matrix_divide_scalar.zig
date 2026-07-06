@@ -11,6 +11,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -21,8 +22,6 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 
 // Owned by math_matrix_lifecycle.zig (B1).
-extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
-extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 
 const realElems = abi.matrixRealElems;
 const constRealElems = abi.matrixConstRealElems;
@@ -44,7 +43,7 @@ pub export fn divideRealMatrix(matrix: *const real34Matrix_t, x: *const real34_t
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -61,7 +60,7 @@ pub export fn _divideRealMatrix(matrix: *const real34Matrix_t, x: *const real_t,
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -89,7 +88,7 @@ pub export fn _divideComplexMatrix(matrix: *const complex34Matrix_t, xr: *const 
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or complexMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.complexMatrixInit(res, rows, cols)) {
         const me = constComplexElems(matrix);
         const re = complexElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -112,7 +111,7 @@ pub export fn divideByRealMatrix(y: *const real34_t, matrix: *const real34Matrix
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -129,7 +128,7 @@ pub export fn _divideByRealMatrix(y: *const real_t, matrix: *const real34Matrix_
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -157,7 +156,7 @@ pub export fn _divideByComplexMatrix(yr: *const real_t, yi: *const real_t, matri
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or complexMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.complexMatrixInit(res, rows, cols)) {
         const me = constComplexElems(matrix);
         const re = complexElems(res);
         const count = @as(usize, cols) * @as(usize, rows);

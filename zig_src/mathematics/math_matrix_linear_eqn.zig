@@ -6,6 +6,8 @@
 // commands.
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_matrix_eigen = @import("math_matrix_eigen.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_named = @import("math_matrix_named.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -24,8 +26,6 @@ const MNU_SIMQ: i16 = 1347;
 const MNU_TAM: i16 = 1385;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 
-extern fn allocateNamedMatrix(name: [*:0]const u8, rows: u16, cols: u16) calcRegister_t;
-extern fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, ctxt: *realContext_t) void;
 extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
 extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
 // Softmenu / matrix-editor surface (frontier owners).
@@ -73,7 +73,7 @@ pub export fn real_matrix_linear_eqn(a: *const real34Matrix_t, b: *const real34M
                     runtime.real34ToReal(rmEl(b, i), &bb[i * 2]);
                     runtime.realSetZero(&bb[i * 2 + 1]);
                 }
-                cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
+                math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
                 if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                     if (runtime.realMatrixInit(r, size, 1)) {
                         i = 0;
@@ -128,7 +128,7 @@ pub export fn complex_matrix_linear_eqn(a: *const complex34Matrix_t, b: *const c
                     runtime.real34ToReal(&cmEl(b, i).real, &bb[i * 2]);
                     runtime.real34ToReal(&cmEl(b, i).imag, &bb[i * 2 + 1]);
                 }
-                cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
+                math_matrix_eigen.cpxLinearEqn(aa, bb, rr, size, &runtime.ctxtReal51);
                 if (runtime.lastErrorCode == runtime.ERROR_NONE) {
                     if (runtime.complexMatrixInit(r, size, 1)) {
                         i = 0;
@@ -200,9 +200,9 @@ fn mismatchC(a: *const complex34Matrix_t, r: *const complex34Matrix_t, fnName: [
 // --- commands -------------------------------------------------------------
 
 pub export fn fnSimultaneousLinearEquation(numberOfUnknowns: u16) callconv(.c) void {
-    if (allocateNamedMatrix("Mat_A", numberOfUnknowns, numberOfUnknowns) != runtime.INVALID_VARIABLE) {
-        if (allocateNamedMatrix("Mat_B", numberOfUnknowns, 1) != runtime.INVALID_VARIABLE) {
-            if (allocateNamedMatrix("Mat_X", numberOfUnknowns, 1) != runtime.INVALID_VARIABLE) {
+    if (math_matrix_named.allocateNamedMatrix("Mat_A", numberOfUnknowns, numberOfUnknowns) != runtime.INVALID_VARIABLE) {
+        if (math_matrix_named.allocateNamedMatrix("Mat_B", numberOfUnknowns, 1) != runtime.INVALID_VARIABLE) {
+            if (math_matrix_named.allocateNamedMatrix("Mat_X", numberOfUnknowns, 1) != runtime.INVALID_VARIABLE) {
                 popSoftmenu();
                 showSoftmenu(-MNU_SIMQ);
                 showSoftmenu(-MNU_TAM);

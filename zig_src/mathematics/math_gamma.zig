@@ -21,6 +21,11 @@ const const_1680 = consts.const_1680;
 // DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_ln_complex = @import("math_ln_complex.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -105,8 +110,6 @@ inline fn realFMAB(f1: *align(1) const real_t, f2: *align(1) const real_t, term:
 }
 const decNumberFMA = @extern(*const fn (result: *real_t, factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) callconv(.c) *real_t, .{ .name = "decNumberFMA" });
 
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 
 // real34ToReal with a register-resident (unaligned) real34 source.
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
@@ -118,15 +121,6 @@ extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: runtime.c
 // realSetNaN against a blob-aligned destination (const_NaN is read-only, but the
 // register temp dest path stays aligned via realSetNaN runtime).
 // Cross-domain externs (wp34s + complex helpers).
-extern fn WP34S_Gamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ComplexGamma(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ComplexLnGamma(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
-extern fn lnComplex(real: *const real_t, imag: *const real_t, ln_real: *real_t, ln_imag: *real_t, real_context: *realContext_t) void;
-extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
-extern fn divRealComplex(numer: *const real_t, denom_real: *const real_t, denom_imag: *const real_t, quotient_real: *real_t, quotient_imag: *real_t, real_context: *realContext_t) void;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -143,7 +137,7 @@ fn checkGammaDomain(xReal: *const real_t, out: *real_t) i32 {
         }
         return 0;
     }
-    if (realCompareLessEqual(xReal, const_0()) and realIsAnInteger(xReal)) {
+    if (math_comparison_reals.realCompareLessEqual(xReal, const_0()) and realIsAnInteger(xReal)) {
         if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag D is not set", null, null);
@@ -163,7 +157,7 @@ fn gammaReal() callconv(.c) void {
     }
 
     if (checkGammaDomain(&x, &x) != 0) {
-        WP34S_Gamma(&x, &x, &runtime.ctxtReal39);
+        math_wp34s.WP34S_Gamma(&x, &x, &runtime.ctxtReal39);
     }
     runtime.convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
@@ -183,20 +177,20 @@ fn lnGammaReal() callconv(.c) void {
         return;
     }
 
-    if (realCompareLessEqual(&xReal, const_0())) { // x <= 0
+    if (math_comparison_reals.realCompareLessEqual(&xReal, const_0())) { // x <= 0
         // x is negative and not an integer
         realMinus(&xReal, &xImag, &runtime.ctxtReal39); // x.imag is used as a temp variable here
-        WP34S_Mod(&xImag, const_2(), &xImag, &runtime.ctxtReal39);
-        if (realCompareGreaterThan(&xImag, const_1())) { // the result is a real
-            WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal39);
+        math_wp34s.WP34S_Mod(&xImag, const_2(), &xImag, &runtime.ctxtReal39);
+        if (math_comparison_reals.realCompareGreaterThan(&xImag, const_1())) { // the result is a real
+            math_wp34s.WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal39);
             convertRealToReal34ResultRegister(&xReal, REGISTER_X);
         } else { // the result is a complex
             if (runtime.getFlag(FLAG_CPXRES)) { // We can calculate a complex
                 real34ToReal(runtime.registerReal34Ptr(REGISTER_X), &xImag);
                 reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-                WP34S_Gamma(&xReal, &xReal, &runtime.ctxtReal39);
+                math_wp34s.WP34S_Gamma(&xReal, &xReal, &runtime.ctxtReal39);
                 realSetPositiveSign(&xReal);
-                WP34S_Ln(&xReal, &xReal, &runtime.ctxtReal39);
+                math_wp34s.WP34S_Ln(&xReal, &xReal, &runtime.ctxtReal39);
                 realToIntegralValue(&xImag, &xImag, DEC_ROUND_FLOOR, &runtime.ctxtReal39);
                 realMulB(&xImag, const39_pi(), &xImag, &runtime.ctxtReal39);
                 runtime.convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
@@ -208,7 +202,7 @@ fn lnGammaReal() callconv(.c) void {
         return;
     }
 
-    WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal39);
+    math_wp34s.WP34S_LnGamma(&xReal, &xReal, &runtime.ctxtReal39);
     // end:
     runtime.convertRealToResultRegister(&xReal, REGISTER_X, amNone);
 }
@@ -220,7 +214,7 @@ fn gammaCplx() callconv(.c) void {
     if (!runtime.getRegisterAsComplex(REGISTER_X, &zReal, &zImag)) {
         return;
     }
-    WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &runtime.ctxtReal39);
+    math_wp34s.WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &runtime.ctxtReal39);
     runtime.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
@@ -237,9 +231,9 @@ fn complexLnGamma_Stirling(xReal: *const real_t, xImag: *const real_t, rReal: *r
     var tImag: real_t = undefined;
     realCopy(xReal, &zReal);
     realCopy(xImag, &zImag);
-    lnComplex(&zReal, &zImag, rReal, rImag, realContext);
+    math_ln_complex.lnComplex(&zReal, &zImag, rReal, rImag, realContext);
     realSubtract(&zReal, const_1on2(), &tReal, realContext);
-    mulComplexComplex(&tReal, &zImag, rReal, rImag, rReal, rImag, realContext);
+    math_multiplication_cells.mulComplexComplex(&tReal, &zImag, rReal, rImag, rReal, rImag, realContext);
 
     realSubtract(rReal, &zReal, rReal, realContext);
     realSubtract(rImag, &zImag, rImag, realContext);
@@ -248,36 +242,36 @@ fn complexLnGamma_Stirling(xReal: *const real_t, xImag: *const real_t, rReal: *r
 
     realMulB(const_12(), &zReal, &tReal, realContext);
     realMulB(const_12(), &zImag, &tImag, realContext);
-    divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
+    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
     realAdd(rReal, &zReal, rReal, realContext);
     realAdd(rImag, &zImag, rImag, realContext);
 
-    mulComplexComplex(&zReal, &zImag, &zReal, &zImag, &z2Real, &z2Imag, realContext);
-    mulComplexComplex(&zReal, &zImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
+    math_multiplication_cells.mulComplexComplex(&zReal, &zImag, &zReal, &zImag, &z2Real, &z2Imag, realContext);
+    math_multiplication_cells.mulComplexComplex(&zReal, &zImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
     realMulB(const_360(), &zxReal, &tReal, realContext);
     realMulB(const_360(), &zxImag, &tImag, realContext);
-    divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
+    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
     realSubtract(rReal, &zReal, rReal, realContext);
     realSubtract(rImag, &zImag, rImag, realContext);
 
-    mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
+    math_multiplication_cells.mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
     realMulB(const_1260(), &zxReal, &tReal, realContext);
     realMulB(const_1260(), &zxImag, &tImag, realContext);
-    divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
+    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
     realAdd(rReal, &zReal, rReal, realContext);
     realAdd(rImag, &zImag, rImag, realContext);
 
-    mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
+    math_multiplication_cells.mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
     realMulB(const_1680(), &zxReal, &tReal, realContext);
     realMulB(const_1680(), &zxImag, &tImag, realContext);
-    divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
+    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
     realSubtract(rReal, &zReal, rReal, realContext);
     realSubtract(rImag, &zImag, rImag, realContext);
 }
 
 pub export fn complexLnGamma(xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) callconv(.c) void {
     if (realIsZero(xImag)) {
-        WP34S_LnGamma(xReal, rReal, realContext);
+        math_wp34s.WP34S_LnGamma(xReal, rReal, realContext);
         realCopy(if (realIsNaN(rReal)) const_NaN() else const_0(), rImag);
     } else {
         var zReal: real_t = undefined;
@@ -286,7 +280,7 @@ pub export fn complexLnGamma(xReal: *const real_t, xImag: *const real_t, rReal: 
         realCopy(xReal, &zReal);
         realCopy(xImag, &zImag);
         complexLnGamma_Stirling(&zReal, &zImag, rReal, &tImag, &runtime.ctxtReal39);
-        WP34S_ComplexLnGamma(&zReal, &zImag, rReal, rImag, &runtime.ctxtReal39);
+        math_wp34s.WP34S_ComplexLnGamma(&zReal, &zImag, rReal, rImag, &runtime.ctxtReal39);
         realSubtract(&tImag, rImag, &tImag, &runtime.ctxtReal39);
         realDivB(&tImag, const39_2pi(), &tImag, &runtime.ctxtReal39);
         realToIntegralValue(&tImag, &tImag, DEC_ROUND_HALF_EVEN, &runtime.ctxtReal39);
